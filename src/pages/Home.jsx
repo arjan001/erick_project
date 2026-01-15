@@ -31,6 +31,7 @@ export default function Home() {
   const [projectType, setProjectType] = useState('commercial');
   const [isExtracting, setIsExtracting] = useState(false);
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleExtract = async () => {
     if (!referenceUrl.trim()) return;
@@ -46,6 +47,28 @@ export default function Home() {
       alert('Failed to extract website content. Please try again.');
     } finally {
       setIsExtracting(false);
+    }
+  };
+
+  const handleRefreshDescription = async (newType) => {
+    if (!description.trim()) return;
+    
+    setIsRefreshing(true);
+    try {
+      const typeLabel = PROJECT_TYPES.find(t => t.value === newType)?.label || 'commercial';
+      const { data } = await base44.functions.invoke('extractWebsite', { 
+        url: `refresh-${Date.now()}`,
+        description: description,
+        projectType: typeLabel
+      });
+      
+      if (data.success) {
+        setDescription(data.description);
+      }
+    } catch (error) {
+      console.error('Refresh error:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -80,6 +103,17 @@ export default function Home() {
         {/* Hero Content - Form Style */}
         <div className="relative z-20 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-12 border border-gray-100">
+            {/* Studio22 Branding */}
+            <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-200">
+              <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
+                <span className="text-xl font-bold text-white">S22</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-black">Studio<span className="text-gray-600">22</span></h2>
+                <p className="text-sm text-gray-500">Production Network</p>
+              </div>
+            </div>
+
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 text-black">
               New Project
             </h1>
@@ -129,11 +163,16 @@ export default function Home() {
                 Project Description
               </label>
               <textarea
-                rows={8}
+                rows={3}
                 placeholder="Describe your project or use Extract button above. You can write multiple sentences with details about your vision, target audience, style, and goals."
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-5 py-4 border border-gray-300 rounded-xl text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
+                }}
+                className="w-full px-5 py-4 border border-gray-300 rounded-xl text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none overflow-hidden"
+                style={{ minHeight: '80px' }}
               />
             </div>
 
@@ -155,8 +194,12 @@ export default function Home() {
                       <button
                         key={type.value}
                         onClick={() => {
-                          setProjectType(type.value);
+                          const newType = type.value;
+                          setProjectType(newType);
                           setShowTypeDropdown(false);
+                          if (description.trim()) {
+                            handleRefreshDescription(newType);
+                          }
                         }}
                         className={`w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 ${
                           projectType === type.value ? 'bg-blue-50' : ''

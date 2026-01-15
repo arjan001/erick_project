@@ -14,21 +14,35 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { url } = await req.json();
+        const { url, description, projectType } = await req.json();
 
-        if (!url) {
-            return Response.json({ error: 'URL is required' }, { status: 400 });
-        }
+        let prompt = '';
+        
+        // Check if this is a refresh request (changing project type)
+        if (url && url.startsWith('refresh-')) {
+            if (!description || !projectType) {
+                return Response.json({ error: 'Description and project type required' }, { status: 400 });
+            }
+            
+            prompt = `Current project description: "${description}"\n\nRewrite this description to better fit a ${projectType} production. Keep the core concept but adjust the language, tone, and focus to match ${projectType} style. Keep it to 3-4 sentences maximum.`;
+        } else {
+            // Original extraction from URL
+            if (!url) {
+                return Response.json({ error: 'URL is required' }, { status: 400 });
+            }
 
-        // Fetch website content
-        let websiteContent = '';
-        try {
-            const response = await fetch(url);
-            const html = await response.text();
-            // Extract text content (simple approach - remove HTML tags)
-            websiteContent = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 5000);
-        } catch (error) {
-            return Response.json({ error: 'Failed to fetch website content' }, { status: 400 });
+            // Fetch website content
+            let websiteContent = '';
+            try {
+                const response = await fetch(url);
+                const html = await response.text();
+                // Extract text content (simple approach - remove HTML tags)
+                websiteContent = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 5000);
+            } catch (error) {
+                return Response.json({ error: 'Failed to fetch website content' }, { status: 400 });
+            }
+
+            prompt = `Website URL: ${url}\n\nWebsite Content:\n${websiteContent}\n\nGenerate a project description for a video production based on this website. Focus on brand identity, target audience, visual style, and production needs. Keep it to 3-4 sentences maximum.`;
         }
 
         // Use OpenAI to analyze and generate project description
@@ -37,11 +51,11 @@ Deno.serve(async (req) => {
             messages: [
                 {
                     role: "system",
-                    content: "You are an expert production planner. Analyze website content and create a concise, professional project description for a video production. Focus on brand identity, target audience, visual style, and production needs. Keep it to 3-4 sentences maximum."
+                    content: "You are an expert production planner. Create concise, professional project descriptions for video productions."
                 },
                 {
                     role: "user",
-                    content: `Website URL: ${url}\n\nWebsite Content:\n${websiteContent}\n\nGenerate a project description for a video production based on this website.`
+                    content: prompt
                 }
             ],
             temperature: 0.7,
