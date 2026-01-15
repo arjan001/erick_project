@@ -14,11 +14,29 @@ css
 
   html.light body {
     @apply bg-white text-black;
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
   }
 
   html.light {
     --studio-black: #FFFFFF;
     --studio-white: #000000;
+  }
+
+  html.light .bg-black {
+    background-color: #FFFFFF !important;
+  }
+
+  html.light .text-white {
+    color: #000000 !important;
+  }
+
+  html.light .bg-zinc-900 {
+    background-color: #F5F5F5 !important;
+  }
+
+  html.light .border-zinc-800 {
+    border-color: #E5E5E5 !important;
   }
 }
 

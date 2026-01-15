@@ -71,7 +71,8 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   key={item.name}
                   to={createPageUrl(item.href)}
-                  className={`flex items-center gap-3 px-4 py-4 text-sm font-medium transition-all ${
+                  onClick={() => window.scrollTo(0, 0)}
+                  className={`flex items-center gap-3 px-4 py-4 text-sm font-medium transition-all relative group/item ${
                     isActive
                       ? 'bg-white text-black'
                       : item.highlight
@@ -80,7 +81,7 @@ export default function Layout({ children, currentPageName }) {
                   }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                  <span className="absolute left-full ml-4 px-3 py-2 bg-white text-black text-sm font-medium rounded shadow-lg opacity-0 group-hover/item:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
                     {item.name}
                   </span>
                 </Link>
@@ -88,9 +89,11 @@ export default function Layout({ children, currentPageName }) {
             })}
           </nav>
 
-          {/* Language Selector & Theme Toggle */}
-          <div className="px-6 pt-4 border-t border-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 space-y-3">
-            <LanguageSelector />
+          {/* Theme Toggle & Language Selector */}
+          <div className="px-4 pt-4 border-t border-white/10 space-y-2">
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <LanguageSelector />
+            </div>
             <ThemeToggle />
           </div>
         </div>

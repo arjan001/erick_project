@@ -6,30 +6,44 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     const saved = localStorage.getItem('theme');
-    if (saved) {
-      setIsDark(saved === 'dark');
-      document.documentElement.classList.toggle('light', saved === 'light');
+    if (saved === 'light') {
+      setIsDark(false);
+      document.documentElement.classList.add('light');
+    } else {
+      setIsDark(true);
+      document.documentElement.classList.remove('light');
     }
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = isDark ? 'light' : 'dark';
-    setIsDark(!isDark);
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    const newTheme = newIsDark ? 'dark' : 'light';
     localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('light');
+    
+    if (newIsDark) {
+      document.documentElement.classList.remove('light');
+      document.body.style.backgroundColor = '#000000';
+    } else {
+      document.documentElement.classList.add('light');
+      document.body.style.backgroundColor = '#FFFFFF';
+    }
   };
 
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+      className="flex items-center gap-3 px-4 py-4 w-full text-sm font-medium transition-all text-gray-400 hover:text-white hover:bg-white/5 relative group/item"
       aria-label="Toggle theme"
     >
       {isDark ? (
-        <Sun className="w-5 h-5 text-gray-400" />
+        <Sun className="w-5 h-5 flex-shrink-0" />
       ) : (
-        <Moon className="w-5 h-5 text-gray-600" />
+        <Moon className="w-5 h-5 flex-shrink-0" />
       )}
+      <span className="absolute left-full ml-4 px-3 py-2 bg-white text-black text-sm font-medium rounded shadow-lg opacity-0 group-hover/item:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+        {isDark ? 'Light Mode' : 'Dark Mode'}
+      </span>
     </button>
   );
 }

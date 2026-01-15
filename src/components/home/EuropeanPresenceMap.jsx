@@ -49,9 +49,7 @@ const CITIES = [
 export default function EuropeanPresenceMap() {
   const [hoveredCity, setHoveredCity] = useState(null);
   const [visibleCities, setVisibleCities] = useState([]);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const mapRef = useRef(null);
 
   // Rotate visible city names every 3 seconds
@@ -66,21 +64,12 @@ export default function EuropeanPresenceMap() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleMouseDown = (e) => {
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-  };
-
   const handleMouseMove = (e) => {
-    if (!isDragging) return;
-    setPan({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
-    });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
+    if (!mapRef.current) return;
+    const rect = mapRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setMousePos({ x, y });
   };
 
   return (
@@ -108,16 +97,15 @@ export default function EuropeanPresenceMap() {
         {/* Desktop Interactive Map */}
         <div 
           ref={mapRef}
-          className="hidden lg:block relative h-[700px] mb-12 cursor-grab active:cursor-grabbing"
-          onMouseDown={handleMouseDown}
+          className="hidden lg:block relative h-[700px] mb-12"
           onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-black rounded-3xl border border-zinc-800 overflow-hidden">
             <svg 
-              className="absolute inset-0 w-full h-full pointer-events-none" 
-              style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}
+              className="absolute inset-0 w-full h-full pointer-events-none transition-transform duration-200" 
+              style={{ 
+                transform: `translate(${(mousePos.x - 50) * 0.05}px, ${(mousePos.y - 50) * 0.05}px)`
+              }}
             >
               {/* Connection lines */}
               {CITIES.map((city, i) => 
@@ -128,8 +116,9 @@ export default function EuropeanPresenceMap() {
                     y1={`${city.y}%`}
                     x2={`${otherCity.x}%`}
                     y2={`${otherCity.y}%`}
-                    stroke="rgba(255,255,255,0.03)"
+                    stroke="rgba(255,255,255,0.05)"
                     strokeWidth="1"
+                    className="transition-all duration-200"
                   />
                 ))
               )}
@@ -137,8 +126,10 @@ export default function EuropeanPresenceMap() {
 
             {/* Cities */}
             <div 
-              className="relative w-full h-full"
-              style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}
+              className="relative w-full h-full transition-transform duration-200"
+              style={{ 
+                transform: `translate(${(mousePos.x - 50) * 0.08}px, ${(mousePos.y - 50) * 0.08}px)`
+              }}
             >
               {CITIES.map((city, index) => (
                 <div
@@ -154,11 +145,11 @@ export default function EuropeanPresenceMap() {
                   }`}>
                     <div className={`w-3 h-3 rounded-full ${
                       city.status === 'headquarters'
-                        ? 'bg-white ring-4 ring-white/30'
+                        ? 'bg-white ring-4 ring-white/30 shadow-lg shadow-white/50'
                         : city.status === 'global'
                         ? 'bg-blue-500 ring-2 ring-blue-500/30'
                         : 'bg-amber-500 ring-2 ring-amber-500/30'
-                    } animate-pulse`} />
+                    } ${city.status === 'headquarters' ? '' : 'animate-pulse'}`} />
                     
                     {/* City Name Label (soft, rotating) */}
                     {visibleCities.includes(city) && !hoveredCity && (
