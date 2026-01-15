@@ -17,7 +17,7 @@ export default function Home() {
       <section className="relative h-screen flex items-center justify-center overflow-hidden bg-white">
         {/* Background Video/Image */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/30 to-white/80 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/10 to-white z-10" />
           <img 
             src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2000" 
             alt="Production"
