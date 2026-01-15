@@ -16,8 +16,8 @@ export default function ArtistStepDetails({ data, updateData }) {
 
   return (
     <div>
-      <h2 className="text-2xl sm:text-3xl font-bold mb-3">Contact Details</h2>
-      <p className="text-gray-400 mb-8">How can we reach you?</p>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Contact Details</h2>
+      <p className="text-gray-600 mb-8">How can we reach you?</p>
 
       <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -27,7 +27,7 @@ export default function ArtistStepDetails({ data, updateData }) {
               id="full_name"
               value={data.full_name}
               onChange={(e) => updateData('full_name', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white h-12"
+              className="bg-white border-gray-300 text-black h-12"
             />
           </div>
 
@@ -38,7 +38,7 @@ export default function ArtistStepDetails({ data, updateData }) {
               type="email"
               value={data.email}
               onChange={(e) => updateData('email', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white h-12"
+              className="bg-white border-gray-300 text-black h-12"
             />
           </div>
         </div>
@@ -51,7 +51,7 @@ export default function ArtistStepDetails({ data, updateData }) {
               value={data.based_in_city}
               onChange={(e) => updateData('based_in_city', e.target.value)}
               placeholder="e.g., Amsterdam"
-              className="bg-zinc-800 border-zinc-700 text-white h-12"
+              className="bg-white border-gray-300 text-black h-12"
             />
           </div>
 
@@ -62,7 +62,7 @@ export default function ArtistStepDetails({ data, updateData }) {
               value={data.based_in_country}
               onChange={(e) => updateData('based_in_country', e.target.value)}
               placeholder="e.g., Netherlands"
-              className="bg-zinc-800 border-zinc-700 text-white h-12"
+              className="bg-white border-gray-300 text-black h-12"
             />
           </div>
         </div>
@@ -74,7 +74,7 @@ export default function ArtistStepDetails({ data, updateData }) {
             type="number"
             value={data.years_experience}
             onChange={(e) => updateData('years_experience', e.target.value)}
-            className="bg-zinc-800 border-zinc-700 text-white h-12"
+            className="bg-white border-gray-300 text-black h-12"
           />
         </div>
 
@@ -88,7 +88,7 @@ export default function ArtistStepDetails({ data, updateData }) {
                 className={`px-4 py-2 rounded-lg text-sm transition-all ${
                   (data.languages_spoken || []).includes(lang)
                     ? 'bg-amber-600 text-white'
-                    : 'bg-zinc-800 text-gray-300 hover:bg-zinc-700'
+                    : 'bg-white border border-gray-300 text-black hover:bg-gray-50'
                 }`}
               >
                 {lang}
@@ -97,32 +97,32 @@ export default function ArtistStepDetails({ data, updateData }) {
           </div>
         </div>
 
-        <div className="pt-4 border-t border-zinc-800">
-          <h3 className="font-semibold mb-4">Social Links (optional)</h3>
+        <div className="pt-4 border-t border-gray-200">
+          <h3 className="font-semibold mb-4 text-black">Social Links (optional)</h3>
           <div className="space-y-4">
             <Input
               placeholder="Website URL"
               value={data.website}
               onChange={(e) => updateData('website', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white h-12"
+              className="bg-white border-gray-300 text-black h-12"
             />
             <Input
               placeholder="Instagram @username"
               value={data.instagram}
               onChange={(e) => updateData('instagram', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white h-12"
+              className="bg-white border-gray-300 text-black h-12"
             />
             <Input
               placeholder="Vimeo URL"
               value={data.vimeo}
               onChange={(e) => updateData('vimeo', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white h-12"
+              className="bg-white border-gray-300 text-black h-12"
             />
             <Input
               placeholder="IMDb URL"
               value={data.imdb}
               onChange={(e) => updateData('imdb', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white h-12"
+              className="bg-white border-gray-300 text-black h-12"
             />
           </div>
         </div>
