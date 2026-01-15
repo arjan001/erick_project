@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from './components/useTranslation';
 import LanguageSelector from './components/LanguageSelector';
+import ThemeToggle from './components/ThemeToggle';
 
 export default function Layout({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -87,9 +88,10 @@ export default function Layout({ children, currentPageName }) {
             })}
           </nav>
 
-          {/* Language Selector */}
-          <div className="px-6 pt-4 border-t border-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {/* Language Selector & Theme Toggle */}
+          <div className="px-6 pt-4 border-t border-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 space-y-3">
             <LanguageSelector />
+            <ThemeToggle />
           </div>
         </div>
       </aside>
@@ -104,6 +106,7 @@ export default function Layout({ children, currentPageName }) {
             <span className="text-xl font-bold tracking-tight">Studio<span className="text-amber-600">22</span></span>
           </Link>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <LanguageSelector />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
