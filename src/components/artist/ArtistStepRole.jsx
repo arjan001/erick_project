@@ -1,0 +1,83 @@
+import React from 'react';
+import { Video, Camera, Scissors, Briefcase, Box, Wand2, Palette, Music, Mic, User } from 'lucide-react';
+
+const ROLES = [
+  { value: 'director', label: 'Director', icon: Video },
+  { value: 'cinematographer', label: 'Cinematographer', icon: Camera },
+  { value: 'editor', label: 'Editor', icon: Scissors },
+  { value: 'producer', label: 'Producer', icon: Briefcase },
+  { value: '3d_artist', label: '3D Artist', icon: Box },
+  { value: 'vfx_artist', label: 'VFX Artist', icon: Wand2 },
+  { value: 'motion_designer', label: 'Motion Designer', icon: Palette },
+  { value: 'sound_designer', label: 'Sound Designer', icon: Music },
+  { value: 'music_composer', label: 'Music Composer', icon: Music },
+  { value: 'voice_artist', label: 'Voice Artist', icon: Mic },
+  { value: 'actor', label: 'Actor', icon: User },
+];
+
+export default function ArtistStepRole({ data, updateData }) {
+  const toggleSecondaryRole = (role) => {
+    const current = data.secondary_roles || [];
+    if (current.includes(role)) {
+      updateData('secondary_roles', current.filter(r => r !== role));
+    } else {
+      updateData('secondary_roles', [...current, role]);
+    }
+  };
+
+  return (
+    <div>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-3">What's your primary role?</h2>
+      <p className="text-gray-400 mb-8">Select your main specialty</p>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-10">
+        {ROLES.map((role) => {
+          const Icon = role.icon;
+          const isSelected = data.role === role.value;
+          return (
+            <button
+              key={role.value}
+              onClick={() => updateData('role', role.value)}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                isSelected
+                  ? 'border-amber-600 bg-amber-600/10'
+                  : 'border-zinc-800 hover:border-zinc-700 bg-zinc-800/50'
+              }`}
+            >
+              <Icon className={`w-6 h-6 mb-2 mx-auto ${isSelected ? 'text-amber-600' : 'text-gray-400'}`} />
+              <p className="text-sm font-medium text-center">{role.label}</p>
+            </button>
+          );
+        })}
+      </div>
+
+      {data.role && (
+        <div>
+          <h3 className="text-xl font-semibold mb-3">Additional skills (optional)</h3>
+          <p className="text-sm text-gray-400 mb-4">Select any secondary roles you can perform</p>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {ROLES.filter(r => r.value !== data.role).map((role) => {
+              const Icon = role.icon;
+              const isSelected = (data.secondary_roles || []).includes(role.value);
+              return (
+                <button
+                  key={role.value}
+                  onClick={() => toggleSecondaryRole(role.value)}
+                  className={`p-3 rounded-lg border transition-all text-left flex items-center gap-2 ${
+                    isSelected
+                      ? 'border-amber-600/50 bg-amber-600/5'
+                      : 'border-zinc-800 hover:border-zinc-700 bg-zinc-800/30'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isSelected ? 'text-amber-600' : 'text-gray-400'}`} />
+                  <span className="text-sm">{role.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

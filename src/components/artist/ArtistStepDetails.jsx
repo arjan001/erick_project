@@ -1,0 +1,132 @@
+import React from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+const LANGUAGES = ['English', 'Dutch', 'Spanish', 'French', 'German', 'Italian', 'Portuguese'];
+
+export default function ArtistStepDetails({ data, updateData }) {
+  const toggleLanguage = (lang) => {
+    const current = data.languages_spoken || [];
+    if (current.includes(lang)) {
+      updateData('languages_spoken', current.filter(l => l !== lang));
+    } else {
+      updateData('languages_spoken', [...current, lang]);
+    }
+  };
+
+  return (
+    <div>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-3">Contact Details</h2>
+      <p className="text-gray-400 mb-8">How can we reach you?</p>
+
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <Label htmlFor="full_name" className="text-base mb-3 block">Full Name *</Label>
+            <Input
+              id="full_name"
+              value={data.full_name}
+              onChange={(e) => updateData('full_name', e.target.value)}
+              className="bg-zinc-800 border-zinc-700 text-white h-12"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="email" className="text-base mb-3 block">Email *</Label>
+            <Input
+              id="email"
+              type="email"
+              value={data.email}
+              onChange={(e) => updateData('email', e.target.value)}
+              className="bg-zinc-800 border-zinc-700 text-white h-12"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <Label htmlFor="city" className="text-base mb-3 block">Based in City</Label>
+            <Input
+              id="city"
+              value={data.based_in_city}
+              onChange={(e) => updateData('based_in_city', e.target.value)}
+              placeholder="e.g., Amsterdam"
+              className="bg-zinc-800 border-zinc-700 text-white h-12"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="country" className="text-base mb-3 block">Country</Label>
+            <Input
+              id="country"
+              value={data.based_in_country}
+              onChange={(e) => updateData('based_in_country', e.target.value)}
+              placeholder="e.g., Netherlands"
+              className="bg-zinc-800 border-zinc-700 text-white h-12"
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="experience" className="text-base mb-3 block">Years of Experience</Label>
+          <Input
+            id="experience"
+            type="number"
+            value={data.years_experience}
+            onChange={(e) => updateData('years_experience', e.target.value)}
+            className="bg-zinc-800 border-zinc-700 text-white h-12"
+          />
+        </div>
+
+        <div>
+          <Label className="text-base mb-3 block">Languages Spoken</Label>
+          <div className="flex flex-wrap gap-2">
+            {LANGUAGES.map(lang => (
+              <button
+                key={lang}
+                onClick={() => toggleLanguage(lang)}
+                className={`px-4 py-2 rounded-lg text-sm transition-all ${
+                  (data.languages_spoken || []).includes(lang)
+                    ? 'bg-amber-600 text-white'
+                    : 'bg-zinc-800 text-gray-300 hover:bg-zinc-700'
+                }`}
+              >
+                {lang}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-zinc-800">
+          <h3 className="font-semibold mb-4">Social Links (optional)</h3>
+          <div className="space-y-4">
+            <Input
+              placeholder="Website URL"
+              value={data.website}
+              onChange={(e) => updateData('website', e.target.value)}
+              className="bg-zinc-800 border-zinc-700 text-white h-12"
+            />
+            <Input
+              placeholder="Instagram @username"
+              value={data.instagram}
+              onChange={(e) => updateData('instagram', e.target.value)}
+              className="bg-zinc-800 border-zinc-700 text-white h-12"
+            />
+            <Input
+              placeholder="Vimeo URL"
+              value={data.vimeo}
+              onChange={(e) => updateData('vimeo', e.target.value)}
+              className="bg-zinc-800 border-zinc-700 text-white h-12"
+            />
+            <Input
+              placeholder="IMDb URL"
+              value={data.imdb}
+              onChange={(e) => updateData('imdb', e.target.value)}
+              className="bg-zinc-800 border-zinc-700 text-white h-12"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
