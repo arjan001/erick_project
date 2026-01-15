@@ -35,15 +35,12 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-black text-white">
       <style>{`
         :root {
           --studio-gold: #C9A962;
           --studio-black: #000000;
           --studio-white: #FFFFFF;
-        }
-        body {
-          background: #000000;
         }
       `}</style>
 
@@ -68,11 +65,11 @@ export default function Layout({ children, currentPageName }) {
               const Icon = item.icon;
               const isActive = currentPageName === item.href;
               return (
-<div key={item.name} className="relative">
+                <div key={item.name} className="relative group/navitem">
                   <Link
                     to={createPageUrl(item.href)}
                     onClick={() => window.scrollTo(0, 0)}
-                    className={`flex items-center gap-3 px-4 py-4 text-sm font-medium transition-all group/item ${
+                    className={`flex items-center gap-3 px-4 py-4 text-sm font-medium transition-all ${
                       isActive
                         ? 'bg-white text-black'
                         : item.highlight
@@ -85,8 +82,8 @@ export default function Layout({ children, currentPageName }) {
                       {item.name}
                     </span>
                   </Link>
-                  {/* Icon-only tooltip */}
-                  <div className="lg:group-hover:hidden absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white text-black text-sm font-medium rounded shadow-lg opacity-0 group-hover/item:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                  {/* Tooltip - only shows when sidebar is collapsed */}
+                  <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white text-black text-sm font-medium rounded-lg shadow-xl opacity-0 group-hover/navitem:group-hover:opacity-0 group-hover/navitem:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100]">
                     {item.name}
                   </div>
                 </div>
