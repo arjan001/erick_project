@@ -34,12 +34,12 @@ export default function Home() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleExtract = async () => {
-    if (!referenceUrl.trim()) return;
+    if (!referenceUrl?.trim()) return;
     
     setIsExtracting(true);
     try {
       const { data } = await base44.functions.invoke('extractWebsite', { url: referenceUrl });
-      if (data.success) {
+      if (data?.success && data?.description) {
         setDescription(data.description);
       }
     } catch (error) {
@@ -51,7 +51,7 @@ export default function Home() {
   };
 
   const handleRefreshDescription = async (newType) => {
-    if (!description.trim()) return;
+    if (!description?.trim()) return;
     
     setIsRefreshing(true);
     try {
@@ -62,7 +62,7 @@ export default function Home() {
         projectType: typeLabel
       });
       
-      if (data.success) {
+      if (data?.success && data?.description) {
         setDescription(data.description);
       }
     } catch (error) {
@@ -136,7 +136,7 @@ export default function Home() {
                 />
                 <Button 
                   onClick={handleExtract}
-                  disabled={!referenceUrl.trim() || isExtracting}
+                  disabled={!referenceUrl?.trim() || isExtracting}
                   className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-xl text-base font-medium disabled:opacity-50"
                 >
                   {isExtracting ? (
@@ -199,7 +199,7 @@ export default function Home() {
                             const newType = type.value;
                             setProjectType(newType);
                             setShowTypeDropdown(false);
-                            if (description.trim()) {
+                            if (description?.trim()) {
                               handleRefreshDescription(newType);
                             }
                           }}
@@ -219,7 +219,7 @@ export default function Home() {
               <div className="flex gap-3">
                 <Button 
                   onClick={handleGenerate}
-                  disabled={!description.trim()}
+                  disabled={!description?.trim()}
                   size="lg" 
                   className="bg-gray-700 hover:bg-gray-800 text-white px-10 py-4 text-base font-medium rounded-xl shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
