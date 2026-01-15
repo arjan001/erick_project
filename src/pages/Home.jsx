@@ -26,33 +26,21 @@ export default function Home() {
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6 animate-fadeInUp">
-            <span className="block text-black mb-2">Production</span>
-            <span className="block gradient-text">Excellence</span>
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto mb-12 animate-fadeInUp" style={{animationDelay: '0.2s'}}>
+        <div className="relative z-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-block bg-blue-600 px-12 py-8 mb-8 animate-fadeInUp">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white leading-tight">
+              Production<br />Excellence
+            </h1>
+          </div>
+          <p className="text-xl sm:text-2xl md:text-3xl text-white font-medium max-w-3xl mx-auto mb-16 animate-fadeInUp bg-blue-600 inline-block px-8 py-4" style={{animationDelay: '0.2s'}}>
             European network of curated production specialists
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeInUp" style={{animationDelay: '0.4s'}}>
+          <div className="flex justify-center animate-fadeInUp" style={{animationDelay: '0.4s'}}>
             <Link to={createPageUrl('SubmitProject')}>
-              <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-12 py-7 text-lg font-semibold rounded-none group relative overflow-hidden">
-                <span className="relative z-10">SUBMIT PROJECT</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-amber-600 transform translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
+              <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-16 py-8 text-xl font-medium rounded-sm shadow-2xl border-2 border-black">
+                SUBMIT PROJECT
               </Button>
             </Link>
-            <Link to={createPageUrl('Work')}>
-              <Button size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-black px-12 py-7 text-lg font-semibold rounded-none transition-all duration-300">
-                VIEW PORTFOLIO
-              </Button>
-            </Link>
-          </div>
-
-          {/* Scroll Indicator */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center pt-2">
-              <div className="w-1 h-3 bg-white/50 rounded-full"></div>
-            </div>
           </div>
         </div>
       </section>
