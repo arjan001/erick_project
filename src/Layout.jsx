@@ -14,13 +14,8 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import { useTranslation } from './components/useTranslation';
-import LanguageSelector from './components/LanguageSelector';
-import ThemeToggle from './components/ThemeToggle';
-
 export default function Layout({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { t } = useTranslation();
 
   const navigation = [
     { name: 'Home', href: 'Home', icon: Home },
@@ -91,18 +86,18 @@ export default function Layout({ children, currentPageName }) {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-zinc-900 border-b border-zinc-800">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
         <div className="flex items-center justify-between px-4 py-4">
           <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-amber-600 to-amber-800 rounded-sm flex items-center justify-center">
+            <div className="w-8 h-8 bg-black rounded-sm flex items-center justify-center">
               <span className="text-sm font-bold text-white">S22</span>
             </div>
-            <span className="text-xl font-bold tracking-tight">Studio<span className="text-amber-600">22</span></span>
+            <span className="text-xl font-bold tracking-tight text-black">Studio<span className="text-black">22</span></span>
           </Link>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-gray-400 hover:text-white"
+              className="p-2 text-gray-600 hover:text-black"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -111,7 +106,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <nav className="px-4 py-4 bg-zinc-900 border-t border-zinc-800 max-h-[80vh] overflow-y-auto">
+          <nav className="px-4 py-4 bg-white border-t border-gray-200 max-h-[80vh] overflow-y-auto">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = currentPageName === item.href;
@@ -125,10 +120,8 @@ export default function Layout({ children, currentPageName }) {
                   }}
                   className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all mb-1 ${
                     isActive
-                      ? 'bg-amber-600 text-white'
-                      : item.highlight
-                      ? 'bg-zinc-800 text-amber-500 border border-amber-600/20'
-                      : 'text-gray-400 hover:text-white hover:bg-zinc-800'
+                      ? 'bg-black text-white'
+                      : 'text-gray-600 hover:text-black hover:bg-gray-100'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
