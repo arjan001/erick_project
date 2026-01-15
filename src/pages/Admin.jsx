@@ -17,45 +17,45 @@ export default function Admin() {
     queryFn: () => base44.auth.me(),
   });
 
-  // Check if user is admin
+  // Check if user is admin (superadmin)
   if (!user || user.role !== 'admin') {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Access Denied</h1>
-          <p className="text-gray-400">Admin access required</p>
+          <h1 className="text-4xl font-bold text-black mb-4">Access Denied</h1>
+          <p className="text-gray-600">Superadmin access required</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 py-8">
+    <div className="min-h-screen bg-white py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Studio22 Admin</h1>
-          <p className="text-gray-400">Manage projects, applications, and assignments</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-black mb-2">Studio22 Superadmin</h1>
+          <p className="text-gray-600">Manage projects, applications, and assignments</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-zinc-900 border border-zinc-800 mb-8 overflow-x-auto">
-            <TabsTrigger value="projects" className="data-[state=active]:bg-amber-600">
+          <TabsList className="bg-gray-100 border border-gray-200 mb-8 overflow-x-auto">
+            <TabsTrigger value="projects" className="data-[state=active]:bg-black data-[state=active]:text-white">
               <FolderKanban className="w-4 h-4 mr-2" />
               Projects
             </TabsTrigger>
-            <TabsTrigger value="artists" className="data-[state=active]:bg-amber-600">
+            <TabsTrigger value="artists" className="data-[state=active]:bg-black data-[state=active]:text-white">
               <Users className="w-4 h-4 mr-2" />
               Artists
             </TabsTrigger>
-            <TabsTrigger value="teams" className="data-[state=active]:bg-amber-600">
+            <TabsTrigger value="teams" className="data-[state=active]:bg-black data-[state=active]:text-white">
               <UsersRound className="w-4 h-4 mr-2" />
               Teams
             </TabsTrigger>
-            <TabsTrigger value="portfolio" className="data-[state=active]:bg-amber-600">
+            <TabsTrigger value="portfolio" className="data-[state=active]:bg-black data-[state=active]:text-white">
               <Film className="w-4 h-4 mr-2" />
               Portfolio
             </TabsTrigger>
-            <TabsTrigger value="assignments" className="data-[state=active]:bg-amber-600">
+            <TabsTrigger value="assignments" className="data-[state=active]:bg-black data-[state=active]:text-white">
               <Link2 className="w-4 h-4 mr-2" />
               Assignments
             </TabsTrigger>

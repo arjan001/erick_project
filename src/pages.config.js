@@ -8,6 +8,9 @@ import Pricing from './pages/Pricing';
 import Services from './pages/Services';
 import SubmitProject from './pages/SubmitProject';
 import Work from './pages/Work';
+import ProjectAdmin from './pages/ProjectAdmin';
+import TeamAdmin from './pages/TeamAdmin';
+import ArtistAdmin from './pages/ArtistAdmin';
 import __Layout from './Layout.jsx';
 
 
@@ -22,6 +25,9 @@ export const PAGES = {
     "Services": Services,
     "SubmitProject": SubmitProject,
     "Work": Work,
+    "ProjectAdmin": ProjectAdmin,
+    "TeamAdmin": TeamAdmin,
+    "ArtistAdmin": ArtistAdmin,
 }
 
 export const pagesConfig = {

@@ -23,10 +23,11 @@ export default function Layout({ children, currentPageName }) {
   const { t } = useTranslation();
 
   const navigation = [
+    { name: 'Home', href: 'Home', icon: Home },
     { name: 'Services', href: 'Services', icon: Briefcase },
     { name: 'First Frame', href: 'FirstFrame', icon: Award },
-    { name: 'Apply as Artist', href: 'ApplyArtist', icon: UserPlus },
-    { name: 'Apply as Team', href: 'ApplyTeam', icon: Users },
+    { name: 'Artist', href: 'ApplyArtist', icon: UserPlus },
+    { name: 'Team', href: 'ApplyTeam', icon: Users },
     { name: 'Contact', href: 'Contact', icon: Mail },
   ];
 
@@ -85,13 +86,7 @@ export default function Layout({ children, currentPageName }) {
             })}
           </nav>
 
-          {/* Theme Toggle & Language Selector */}
-          <div className="px-4 pt-4 border-t border-gray-200 space-y-2">
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <LanguageSelector />
-            </div>
-            <ThemeToggle />
-          </div>
+
         </div>
       </aside>
 
@@ -105,8 +100,6 @@ export default function Layout({ children, currentPageName }) {
             <span className="text-xl font-bold tracking-tight">Studio<span className="text-amber-600">22</span></span>
           </Link>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <LanguageSelector />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-gray-400 hover:text-white"
