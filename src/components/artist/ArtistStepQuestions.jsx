@@ -1,107 +1,135 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const ACTOR_TAGS = [
-  'Method Acting', 'Classical Theatre', 'Improvisation', 'Voice Acting', 'Physical Theatre',
-  'Comedy', 'Drama', 'Musical Theatre', 'Screen Acting', 'Stage Combat',
-  'Character Development', 'Accent Training', 'Period Performance', 'Contemporary',
-  'Shakespeare', 'Chekhov', 'Meisner Technique', 'Stanislavski', 'Action Hero',
-  'Romantic Lead', 'Villain', 'Comic Relief', 'Ensemble Work', 'Solo Performance',
-  'Motion Capture', 'Voice-Over', 'Narrator', 'Stunt Work', 'Dance', 'Singing'
+  'Leading Role', 'Supporting Role', 'Character Actor', 'Voice Acting', 'Motion Capture',
+  'Theater', 'Film', 'TV Series', 'Commercials', 'Improvisation',
+  'Drama', 'Comedy', 'Action', 'Horror', 'Romance',
+  'Method Acting', 'Classical Training', 'Shakespearean', 'Musical Theater', 'Physical Theater',
+  'Stage Combat', 'Stunt Work', 'Dialect Coach', 'Accent Work', 'Multiple Languages'
+];
+
+const VOICE_ARTIST_TAGS = [
+  'Narration', 'Character Voices', 'Audiobook', 'Commercial VO', 'Documentary',
+  'Animation', 'Video Game', 'E-Learning', 'IVR Systems', 'Podcast',
+  'Multiple Accents', 'Age Range', 'Vocal Effects', 'Singing', 'Impressions',
+  'Home Studio', 'Professional Studio', 'Fast Turnaround', 'Script Writing', 'Audio Editing'
 ];
 
 export default function ArtistStepQuestions({ data, updateData }) {
+  const [questions, setQuestions] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [selectedTags, setSelectedTags] = useState(data.ai_questionnaire_response?.tags || []);
+  const [selectedTags, setSelectedTags] = useState(data.questionnaire_response?.tags || []);
+  const [availableTags, setAvailableTags] = useState([]);
 
-  // For non-actor roles, generate questions
   useEffect(() => {
-    if (data.role === 'actor') return;
-    
-    if (!data.ai_questionnaire_response || Object.keys(data.ai_questionnaire_response).length === 0) {
-      generateQuestions();
+    // For actors and voice artists, show tag selection instead
+    if (data.role === 'actor') {
+      setAvailableTags(ACTOR_TAGS);
+    } else if (data.role === 'voice_artist') {
+      setAvailableTags(VOICE_ARTIST_TAGS);
+    } else {
+      // For other roles, fetch AI questions
+      fetchQuestions();
     }
   }, [data.role]);
 
-  const generateQuestions = async () => {
+  const fetchQuestions = async () => {
+    if (!data.role) return;
+    
     setLoading(true);
     try {
-      const response = await fetch('/api/integrations/Core/InvokeLLM', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: `Generate 3 specific interview questions for a ${data.role} applying to a premium production company. Questions should help understand their expertise, approach, and technical capabilities. Return as JSON with keys q1, q2, q3.`,
-          response_json_schema: {
-            type: 'object',
-            properties: {
-              q1: { type: 'string' },
-              q2: { type: 'string' },
-              q3: { type: 'string' }
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Generate 3 professional questions for a ${data.role} applying to join a high-end production network. 
+        Questions should assess their experience, approach, and technical capabilities. 
+        Return as JSON array with format: [{"question": "..."}]`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            questions: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  question: { type: "string" }
+                }
+              }
             }
           }
-        })
+        }
       });
-      const result = await response.json();
-      
-      const questionnaire = {
-        q1: result.q1 || '',
-        q2: result.q2 || '',
-        q3: result.q3 || ''
-      };
-      updateData({ ai_questionnaire_response: questionnaire });
+
+      const questionsData = result.questions.map((q, i) => ({
+        id: i + 1,
+        question: q.question,
+        answer: data.questionnaire_response?.[`q${i + 1}`] || ''
+      }));
+
+      setQuestions(questionsData);
     } catch (error) {
-      console.error('Error generating questions:', error);
-      const defaultQuestionnaire = {
-        q1: 'Can you describe your experience and approach in your field?',
-        q2: 'What tools and techniques do you specialize in?',
-        q3: 'How do you collaborate with other creative professionals?'
-      };
-      updateData({ ai_questionnaire_response: defaultQuestionnaire });
+      console.error('Error fetching questions:', error);
+      // Fallback questions
+      setQuestions([
+        { id: 1, question: `What is your experience as a ${data.role}?`, answer: '' },
+        { id: 2, question: 'What is your creative approach?', answer: '' },
+        { id: 3, question: 'What are your technical capabilities?', answer: '' }
+      ]);
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleTag = (tag) => {
-    if (selectedTags.includes(tag)) {
-      const newTags = selectedTags.filter(t => t !== tag);
-      setSelectedTags(newTags);
-      updateData({ ai_questionnaire_response: { tags: newTags } });
-    } else if (selectedTags.length < 5) {
-      const newTags = [...selectedTags, tag];
-      setSelectedTags(newTags);
-      updateData({ ai_questionnaire_response: { tags: newTags } });
-    }
+  const handleAnswerChange = (questionId, value) => {
+    const updatedQuestions = questions.map(q => 
+      q.id === questionId ? { ...q, answer: value } : q
+    );
+    setQuestions(updatedQuestions);
+    
+    const responses = {};
+    updatedQuestions.forEach(q => {
+      responses[`q${q.id}`] = q.answer;
+    });
+    updateData({ questionnaire_response: responses });
   };
 
-  // Actor gets tag selection
-  if (data.role === 'actor') {
+  const toggleTag = (tag) => {
+    let newTags;
+    if (selectedTags.includes(tag)) {
+      newTags = selectedTags.filter(t => t !== tag);
+    } else if (selectedTags.length < 5) {
+      newTags = [...selectedTags, tag];
+    } else {
+      return; // Max 5 tags
+    }
+    
+    setSelectedTags(newTags);
+    updateData({ questionnaire_response: { tags: newTags } });
+  };
+
+  // Tag selection for actors and voice artists
+  if (data.role === 'actor' || data.role === 'voice_artist') {
     return (
       <div className="space-y-6">
         <div>
-          <h3 className="text-xl font-semibold mb-2 text-white">Select Your Specialties</h3>
-          <p className="text-gray-400 mb-6">Choose up to 5 tags that best describe your acting expertise ({selectedTags.length}/5 selected)</p>
+          <h3 className="text-2xl font-bold text-white mb-2">Select Your Specialties</h3>
+          <p className="text-gray-400">Choose up to 5 tags that best describe your expertise ({selectedTags.length}/5 selected)</p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {ACTOR_TAGS.map((tag) => {
+        <div className="flex flex-wrap gap-3">
+          {availableTags.map((tag) => {
             const isSelected = selectedTags.includes(tag);
-            const isDisabled = !isSelected && selectedTags.length >= 5;
-            
             return (
               <button
                 key={tag}
                 onClick={() => toggleTag(tag)}
-                disabled={isDisabled}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   isSelected
-                    ? 'bg-white text-black'
-                    : isDisabled
-                    ? 'bg-zinc-800 text-gray-600 cursor-not-allowed'
-                    : 'bg-zinc-800 text-white hover:bg-zinc-700'
-                }`}
+                    ? 'bg-white text-black ring-2 ring-white'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                } ${selectedTags.length >= 5 && !isSelected ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={selectedTags.length >= 5 && !isSelected}
               >
                 {tag}
               </button>
@@ -110,10 +138,10 @@ export default function ArtistStepQuestions({ data, updateData }) {
         </div>
 
         {selectedTags.length > 0 && (
-          <div className="mt-6 p-4 bg-zinc-900 rounded-lg">
-            <p className="text-sm text-gray-400 mb-2">Selected specialties:</p>
+          <div className="p-4 bg-white/5 rounded-lg">
+            <h4 className="text-sm font-semibold text-white mb-2">Selected Tags:</h4>
             <div className="flex flex-wrap gap-2">
-              {selectedTags.map((tag) => (
+              {selectedTags.map(tag => (
                 <Badge key={tag} className="bg-white text-black">
                   {tag}
                 </Badge>
@@ -125,37 +153,37 @@ export default function ArtistStepQuestions({ data, updateData }) {
     );
   }
 
-  // Other roles get questions
+  // Question-based approach for other roles
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Generating questions...</p>
+        </div>
       </div>
     );
   }
 
-  const questions = data.ai_questionnaire_response || {};
+  if (!questions) return null;
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-xl font-semibold mb-2 text-white">Tell us about yourself</h3>
+        <h3 className="text-2xl font-bold text-white mb-2">Tell us about yourself</h3>
         <p className="text-gray-400">Answer these questions to help us understand your expertise</p>
       </div>
 
-      {Object.entries(questions).map(([key, question], index) => (
-        <div key={key} className="space-y-2">
-          <label className="block text-sm font-medium text-white">
-            {index + 1}. {question}
+      {questions.map((q) => (
+        <div key={q.id} className="space-y-2">
+          <label className="text-sm font-medium text-white">
+            {q.id}. {q.question}
           </label>
           <textarea
-            value={questions[key + '_answer'] || ''}
-            onChange={(e) => {
-              const updatedQuestions = { ...questions, [key + '_answer']: e.target.value };
-              updateData({ ai_questionnaire_response: updatedQuestions });
-            }}
-            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-600 min-h-[100px]"
+            value={q.answer}
+            onChange={(e) => handleAnswerChange(q.id, e.target.value)}
             placeholder="Your answer..."
+            className="w-full h-32 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
           />
         </div>
       ))}

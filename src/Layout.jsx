@@ -130,7 +130,10 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   key={item.name}
                   to={createPageUrl(item.href)}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setTimeout(() => window.scrollTo(0, 0), 100);
+                  }}
                   className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all mb-1 ${
                     isActive
                       ? 'bg-amber-600 text-white'
