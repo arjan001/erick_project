@@ -14,33 +14,79 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden bg-white">
+      <section className="relative min-h-screen flex items-center justify-center py-20 bg-white">
         {/* Background Video/Image */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/10 to-white z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/90 to-white z-10" />
           <img 
             src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2000" 
             alt="Production"
-            className="w-full h-full object-cover opacity-30"
+            className="w-full h-full object-cover opacity-20"
           />
         </div>
 
-        {/* Hero Content */}
-        <div className="relative z-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-block bg-blue-600 px-12 py-8 mb-8 animate-fadeInUp">
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white leading-tight">
-              Production<br />Excellence
+        {/* Hero Content - Form Style */}
+        <div className="relative z-20 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-12 border border-gray-100">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 text-black">
+              New Project
             </h1>
-          </div>
-          <p className="text-xl sm:text-2xl md:text-3xl text-white font-medium max-w-3xl mx-auto mb-16 animate-fadeInUp bg-blue-600 inline-block px-8 py-4" style={{animationDelay: '0.2s'}}>
-            European network of curated production specialists
-          </p>
-          <div className="flex justify-center animate-fadeInUp" style={{animationDelay: '0.4s'}}>
-            <Link to={createPageUrl('SubmitProject')}>
-              <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-16 py-8 text-xl font-medium rounded-sm shadow-2xl border-2 border-black">
-                SUBMIT PROJECT
-              </Button>
-            </Link>
+            <p className="text-lg text-gray-600 mb-12">
+              One sentence. The system handles the rest.
+            </p>
+
+            {/* Reference Website */}
+            <div className="mb-8">
+              <label className="block text-base font-semibold mb-3 text-black">
+                Reference Website (Optional)
+              </label>
+              <div className="flex gap-3">
+                <input
+                  type="url"
+                  placeholder="www.example.com"
+                  className="flex-1 px-5 py-4 border border-gray-300 rounded-xl text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                />
+                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-xl text-base font-medium">
+                  Extract
+                </Button>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                Provide a URL and click Extract to auto-generate your project description
+              </p>
+            </div>
+
+            {/* Project Description */}
+            <div className="mb-8">
+              <label className="block text-base font-semibold mb-3 text-black">
+                Project Description
+              </label>
+              <textarea
+                rows={8}
+                placeholder="Describe your project or use Extract button above. You can write multiple sentences with details about your vision, target audience, style, and goals."
+                className="w-full px-5 py-4 border border-gray-300 rounded-xl text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
+              />
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+              <button className="px-6 py-3 border border-gray-300 rounded-xl text-base font-medium hover:bg-gray-50 transition-all flex items-center gap-2">
+                <span>⭐</span>
+                Commercial
+                <span className="text-gray-400">▼</span>
+              </button>
+              <div className="flex gap-3">
+                <button className="px-6 py-3 border border-gray-300 rounded-xl text-base font-medium hover:bg-gray-50 transition-all flex items-center gap-2">
+                  <span>📎</span>
+                  Attach
+                </button>
+                <Link to={createPageUrl('SubmitProject')}>
+                  <Button size="lg" className="bg-gray-600 hover:bg-gray-700 text-white px-10 py-4 text-base font-medium rounded-xl shadow-xl">
+                    <span className="mr-2">✨</span>
+                    Generate Production Plan
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
