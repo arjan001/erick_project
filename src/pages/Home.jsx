@@ -183,32 +183,35 @@ export default function Home() {
                   onClick={() => setShowTypeDropdown(!showTypeDropdown)}
                   className="px-6 py-3 border border-gray-300 rounded-xl text-base font-medium hover:bg-gray-50 transition-all flex items-center gap-2"
                 >
-                  <span>{selectedType.icon}</span>
+                  {React.createElement(selectedType.icon, { className: "w-4 h-4 text-gray-600" })}
                   {selectedType.label}
                   <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showTypeDropdown ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {showTypeDropdown && (
                   <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl border border-gray-200 shadow-xl z-50 max-h-96 overflow-y-auto">
-                    {PROJECT_TYPES.map((type) => (
-                      <button
-                        key={type.value}
-                        onClick={() => {
-                          const newType = type.value;
-                          setProjectType(newType);
-                          setShowTypeDropdown(false);
-                          if (description.trim()) {
-                            handleRefreshDescription(newType);
-                          }
-                        }}
-                        className={`w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 ${
-                          projectType === type.value ? 'bg-blue-50' : ''
-                        }`}
-                      >
-                        <span className="text-xl">{type.icon}</span>
-                        <span className="text-sm font-medium">{type.label}</span>
-                      </button>
-                    ))}
+                    {PROJECT_TYPES.map((type) => {
+                      const IconComponent = type.icon;
+                      return (
+                        <button
+                          key={type.value}
+                          onClick={() => {
+                            const newType = type.value;
+                            setProjectType(newType);
+                            setShowTypeDropdown(false);
+                            if (description.trim()) {
+                              handleRefreshDescription(newType);
+                            }
+                          }}
+                          className={`w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 transition-colors ${
+                            projectType === type.value ? 'bg-gray-100' : ''
+                          }`}
+                        >
+                          <IconComponent className="w-4 h-4 text-gray-600" />
+                          <span className="text-sm font-medium text-gray-700">{type.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>

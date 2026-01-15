@@ -1,9 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import OpenAI from 'npm:openai';
-
-const openai = new OpenAI({
-    apiKey: Deno.env.get("OPENAI_API_KEY"),
-});
 
 Deno.serve(async (req) => {
     try {
@@ -26,51 +21,31 @@ Deno.serve(async (req) => {
             
             prompt = `Current project description: "${description}"\n\nRewrite this description to better fit a ${projectType} production. Keep the core concept but adjust the language, tone, and focus to match ${projectType} style. Keep it to 3-4 sentences maximum.`;
         } else {
-            // Original extraction from URL
+            // Original extraction from URL using web search
             if (!url) {
                 return Response.json({ error: 'URL is required' }, { status: 400 });
             }
 
-            // Fetch website content
-            let websiteContent = '';
-            try {
-                const response = await fetch(url);
-                const html = await response.text();
-                // Extract text content (simple approach - remove HTML tags)
-                websiteContent = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 5000);
-            } catch (error) {
-                return Response.json({ error: 'Failed to fetch website content' }, { status: 400 });
-            }
-
-            prompt = `Website URL: ${url}\n\nWebsite Content:\n${websiteContent}\n\nGenerate a project description for a video production based on this website. Focus on brand identity, target audience, visual style, and production needs. Keep it to 3-4 sentences maximum.`;
+            prompt = `Analyze the website at ${url} and generate a professional project description for a video production. Focus on the brand's identity, target audience, visual style, and production needs based on what you find. Keep it to 3-4 sentences maximum.`;
         }
 
-        // Use OpenAI to analyze and generate project description
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages: [
-                {
-                    role: "system",
-                    content: "You are an expert production planner. Create concise, professional project descriptions for video productions."
-                },
-                {
-                    role: "user",
-                    content: prompt
-                }
-            ],
-            temperature: 0.7,
-            max_tokens: 300
+        // Use OpenAI with web search capability
+        const { data } = await base44.integrations.Core.InvokeLLM({
+            prompt: prompt,
+            add_context_from_internet: true,
+            response_json_schema: null
         });
-
-        const description = completion.choices[0].message.content;
 
         return Response.json({ 
             success: true, 
-            description: description 
+            description: data 
         });
 
     } catch (error) {
         console.error('Error:', error);
-        return Response.json({ error: error.message }, { status: 500 });
+        return Response.json({ 
+            success: false,
+            error: error.message 
+        }, { status: 500 });
     }
 });
