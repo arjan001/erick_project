@@ -25,12 +25,13 @@ export default function Layout({ children, currentPageName }) {
   const navigation = [
     { name: 'Services', href: 'Services', icon: Briefcase },
     { name: 'First Frame', href: 'FirstFrame', icon: Award },
-    { name: 'Apply', href: 'ApplyArtist', icon: UserPlus },
+    { name: 'Apply as Artist', href: 'ApplyArtist', icon: UserPlus },
+    { name: 'Apply as Team', href: 'ApplyTeam', icon: Users },
     { name: 'Contact', href: 'Contact', icon: Mail },
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-black">
       <style>{`
         :root {
           --studio-gold: #C9A962;
@@ -40,16 +41,16 @@ export default function Layout({ children, currentPageName }) {
       `}</style>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-20 hover:lg:w-72 lg:flex-col bg-black border-r border-white/10 transition-all duration-300 group z-50">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-20 hover:lg:w-72 lg:flex-col bg-white border-r border-gray-200 transition-all duration-300 group z-50">
         <div className="flex flex-col flex-grow pt-8 pb-4 overflow-y-auto">
           {/* Logo */}
           <div className="flex items-center flex-shrink-0 px-6 mb-12">
             <Link to={createPageUrl('Home')} className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-none flex items-center justify-center flex-shrink-0">
-                <span className="text-xl font-bold text-black">S22</span>
+              <div className="w-10 h-10 bg-black rounded-none flex items-center justify-center flex-shrink-0">
+                <span className="text-xl font-bold text-white">S22</span>
               </div>
-              <span className="text-2xl font-bold tracking-tight text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-                Studio<span className="text-white">22</span>
+              <span className="text-2xl font-bold tracking-tight text-black opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                Studio<span className="text-black">22</span>
               </span>
             </Link>
           </div>
@@ -66,8 +67,8 @@ export default function Layout({ children, currentPageName }) {
                     onClick={() => window.scrollTo(0, 0)}
                     className={`flex items-center gap-3 px-4 py-4 text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-white text-black'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        ? 'bg-black text-white'
+                        : 'text-gray-400 hover:text-black hover:bg-gray-100'
                     }`}
                   >
                     <Icon className="w-5 h-5 flex-shrink-0" />
@@ -85,7 +86,7 @@ export default function Layout({ children, currentPageName }) {
           </nav>
 
           {/* Theme Toggle & Language Selector */}
-          <div className="px-4 pt-4 border-t border-white/10 space-y-2">
+          <div className="px-4 pt-4 border-t border-gray-200 space-y-2">
             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <LanguageSelector />
             </div>

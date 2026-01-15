@@ -2,25 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('theme');
-    applyTheme(saved !== 'light');
+    const shouldBeDark = saved === 'dark';
+    setIsDark(shouldBeDark);
+    applyTheme(shouldBeDark);
   }, []);
 
   const applyTheme = (dark) => {
-    setIsDark(dark);
     const root = document.documentElement;
     const body = document.body;
     
     if (dark) {
+      root.classList.add('dark');
       root.classList.remove('light');
       root.style.backgroundColor = '#000000';
       body.style.backgroundColor = '#000000';
       body.style.color = '#ffffff';
     } else {
       root.classList.add('light');
+      root.classList.remove('dark');
       root.style.backgroundColor = '#ffffff';
       body.style.backgroundColor = '#ffffff';
       body.style.color = '#000000';
@@ -29,9 +32,9 @@ export default function ThemeToggle() {
 
   const toggleTheme = () => {
     const newIsDark = !isDark;
+    setIsDark(newIsDark);
     localStorage.setItem('theme', newIsDark ? 'dark' : 'light');
     applyTheme(newIsDark);
-    window.location.reload(); // Force reload to apply all styles
   };
 
   return (
