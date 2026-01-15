@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -24,6 +25,7 @@ const STEPS = [
 ];
 
 export default function SubmitProject() {
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [projectData, setProjectData] = useState({
@@ -44,6 +46,16 @@ export default function SubmitProject() {
     project_owner_company: '',
   });
   const [submitted, setSubmitted] = useState(false);
+
+  // Initialize with data from Home page if available
+  useEffect(() => {
+    if (location.state?.initialData) {
+      setProjectData(prev => ({
+        ...prev,
+        ...location.state.initialData
+      }));
+    }
+  }, [location.state]);
 
   const updateData = (field, value) => {
     setProjectData(prev => ({ ...prev, [field]: value }));
