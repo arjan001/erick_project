@@ -110,6 +110,16 @@ export default function FeaturedWork() {
             </div>
           ))}
         </div>
+        
+        {/* Load More Button */}
+        <div className="text-center mt-12">
+          <Link to={createPageUrl('Work')}>
+            <button className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white font-semibold rounded-lg transition-all hover-lift">
+              LOAD MORE
+              <ArrowRight className="inline-block ml-2 w-5 h-5" />
+            </button>
+          </Link>
+        </div>
       </div>
     </section>
   );

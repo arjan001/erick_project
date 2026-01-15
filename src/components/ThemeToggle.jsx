@@ -50,8 +50,8 @@ export default function ThemeToggle() {
           {isDark ? 'Light Mode' : 'Dark Mode'}
         </span>
       </button>
-      {/* Tooltip - only when sidebar collapsed */}
-      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white text-black text-sm font-medium rounded-lg shadow-xl opacity-0 group-hover/theme:group-hover:opacity-0 group-hover/theme:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100]">
+      {/* Tooltip - only shows when sidebar is NOT hovered (collapsed) */}
+      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white text-black text-sm font-medium rounded-lg shadow-xl opacity-0 group-hover/theme:opacity-100 group-hover:group-hover/theme:opacity-0 pointer-events-none transition-opacity whitespace-nowrap z-[100]">
         {isDark ? 'Light Mode' : 'Dark Mode'}
       </div>
     </div>

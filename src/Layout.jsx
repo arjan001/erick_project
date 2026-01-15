@@ -23,15 +23,10 @@ export default function Layout({ children, currentPageName }) {
   const { t } = useTranslation();
 
   const navigation = [
-    { name: t('nav.home'), href: 'Home', icon: Home },
-    { name: t('nav.work'), href: 'Work', icon: Film },
-    { name: t('nav.services'), href: 'Services', icon: Briefcase },
-    { name: t('nav.first_frame'), href: 'FirstFrame', icon: Award },
-    { name: t('nav.pricing'), href: 'Pricing', icon: DollarSign },
-    { name: t('nav.submit'), href: 'SubmitProject', icon: Upload, highlight: true },
-    { name: t('nav.apply_artist'), href: 'ApplyArtist', icon: UserPlus },
-    { name: t('nav.apply_team'), href: 'ApplyTeam', icon: Users },
-    { name: t('nav.contact'), href: 'Contact', icon: Mail },
+    { name: 'Services', href: 'Services', icon: Briefcase },
+    { name: 'First Frame', href: 'FirstFrame', icon: Award },
+    { name: 'Apply', href: 'ApplyArtist', icon: UserPlus },
+    { name: 'Contact', href: 'Contact', icon: Mail },
   ];
 
   return (

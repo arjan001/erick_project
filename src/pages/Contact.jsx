@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Mail, MapPin, Send } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import EuropeanPresenceMap from '../components/home/EuropeanPresenceMap';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -66,7 +67,10 @@ ${formData.message}
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 py-12">
+    <div className="min-h-screen bg-black py-12">
+      {/* Global Network Map */}
+      <EuropeanPresenceMap />
+      
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Get in Touch</h1>

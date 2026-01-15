@@ -1,27 +1,27 @@
-import Home from './pages/Home';
-import SubmitProject from './pages/SubmitProject';
+import Admin from './pages/Admin';
 import ApplyArtist from './pages/ApplyArtist';
 import ApplyTeam from './pages/ApplyTeam';
-import Admin from './pages/Admin';
-import Work from './pages/Work';
-import Services from './pages/Services';
-import FirstFrame from './pages/FirstFrame';
-import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
+import FirstFrame from './pages/FirstFrame';
+import Home from './pages/Home';
+import Pricing from './pages/Pricing';
+import Services from './pages/Services';
+import SubmitProject from './pages/SubmitProject';
+import Work from './pages/Work';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Home": Home,
-    "SubmitProject": SubmitProject,
+    "Admin": Admin,
     "ApplyArtist": ApplyArtist,
     "ApplyTeam": ApplyTeam,
-    "Admin": Admin,
-    "Work": Work,
-    "Services": Services,
-    "FirstFrame": FirstFrame,
-    "Pricing": Pricing,
     "Contact": Contact,
+    "FirstFrame": FirstFrame,
+    "Home": Home,
+    "Pricing": Pricing,
+    "Services": Services,
+    "SubmitProject": SubmitProject,
+    "Work": Work,
 }
 
 export const pagesConfig = {

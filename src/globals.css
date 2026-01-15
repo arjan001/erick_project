@@ -1,4 +1,3 @@
-css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,37 +6,66 @@ css
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-black text-white;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
+}
 
-  html.light body {
-    @apply bg-white text-black;
-    background-color: #FFFFFF !important;
-    color: #000000 !important;
-  }
+/* Light Mode - Force override all dark theme colors */
+html.light,
+html.light body {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
 
-  html.light {
-    --studio-black: #FFFFFF;
-    --studio-white: #000000;
-  }
+html.light .bg-black {
+  background-color: #ffffff !important;
+}
 
-  html.light .bg-black {
-    background-color: #FFFFFF !important;
-  }
+html.light .bg-zinc-950 {
+  background-color: #f9fafb !important;
+}
 
-  html.light .text-white {
-    color: #000000 !important;
-  }
+html.light .bg-zinc-900 {
+  background-color: #f3f4f6 !important;
+}
 
-  html.light .bg-zinc-900 {
-    background-color: #F5F5F5 !important;
-  }
+html.light .bg-zinc-800 {
+  background-color: #e5e7eb !important;
+}
 
-  html.light .border-zinc-800 {
-    border-color: #E5E5E5 !important;
-  }
+html.light .text-white {
+  color: #000000 !important;
+}
+
+html.light .text-gray-400 {
+  color: #6b7280 !important;
+}
+
+html.light .text-gray-300 {
+  color: #4b5563 !important;
+}
+
+html.light .border-zinc-800 {
+  border-color: #d1d5db !important;
+}
+
+html.light .border-zinc-700 {
+  border-color: #d1d5db !important;
+}
+
+html.light .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Cinematic scrollbar */
@@ -50,18 +78,25 @@ css
   background: #18181b;
 }
 
+html.light ::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #3f3f46;
   border-radius: 4px;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #d1d5db;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #52525b;
 }
 
-/* Smooth video hover transitions */
-video {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 
 /* Premium gradient text */
@@ -72,10 +107,22 @@ video {
   background-clip: text;
 }
 
+html.light .gradient-text {
+  background: linear-gradient(135deg, #C9A962 0%, #000000 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* Cinematic blur backdrop */
 .backdrop-cinematic {
   backdrop-filter: blur(20px) saturate(180%);
   background-color: rgba(10, 10, 10, 0.8);
+}
+
+html.light .backdrop-cinematic {
+  backdrop-filter: blur(20px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.8);
 }
 
 /* Animation utilities */

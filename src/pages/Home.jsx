@@ -62,9 +62,6 @@ export default function Home() {
       {/* Featured Work */}
       <FeaturedWork />
 
-      {/* European Presence Map */}
-      <EuropeanPresenceMap />
-
       {/* Services Preview */}
       <ServicesPreview />
 
