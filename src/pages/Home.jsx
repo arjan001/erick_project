@@ -14,25 +14,25 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-screen flex items-center justify-center overflow-hidden bg-white">
         {/* Background Video/Image */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-zinc-950 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-white z-10" />
           <img 
             src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2000" 
             alt="Production"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover opacity-30"
           />
         </div>
 
         {/* Hero Content */}
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6 animate-fadeInUp">
-            <span className="block text-white mb-2">Production</span>
+            <span className="block text-black mb-2">Production</span>
             <span className="block gradient-text">Excellence</span>
           </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto mb-12 animate-fadeInUp" style={{animationDelay: '0.2s'}}>
-            {t('hero.subtitle')}
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto mb-12 animate-fadeInUp" style={{animationDelay: '0.2s'}}>
+            European network of curated production specialists
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeInUp" style={{animationDelay: '0.4s'}}>
             <Link to={createPageUrl('SubmitProject')}>
@@ -66,11 +66,11 @@ export default function Home() {
       <ServicesPreview />
 
       {/* First Frame CTA */}
-      <section className="py-24 bg-gradient-to-br from-amber-900/20 via-zinc-900 to-zinc-950">
+      <section className="py-24 bg-gradient-to-br from-amber-50 to-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Award className="w-16 h-16 text-amber-600 mx-auto mb-6" />
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">Studio22 First Frame</h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black">Studio22 First Frame</h2>
+          <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
             Experience how Studio22 works with one complimentary production day for verified projects. See our quality firsthand.
           </p>
           <Link to={createPageUrl('FirstFrame')}>
@@ -83,10 +83,10 @@ export default function Home() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 bg-zinc-900 border-t border-zinc-800">
+      <section className="py-24 bg-gray-50 border-t border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to start?</h2>
-          <p className="text-xl text-gray-300 mb-8">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black">Ready to start?</h2>
+          <p className="text-xl text-gray-700 mb-8">
             Submit your project and let us assemble the perfect team.
           </p>
           <Link to={createPageUrl('SubmitProject')}>

@@ -42,10 +42,10 @@ export default function Layout({ children, currentPageName }) {
           {/* Logo */}
           <div className="flex items-center flex-shrink-0 px-6 mb-12">
             <Link to={createPageUrl('Home')} className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-black rounded-none flex items-center justify-center flex-shrink-0">
-                <span className="text-xl font-bold text-white">S22</span>
+              <div className="w-14 h-14 bg-black rounded-none flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl font-bold text-white">S22</span>
               </div>
-              <span className="text-2xl font-bold tracking-tight text-black opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+              <span className="text-3xl font-bold tracking-tight text-black opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
                 Studio<span className="text-black">22</span>
               </span>
             </Link>

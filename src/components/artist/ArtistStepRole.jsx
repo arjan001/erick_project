@@ -27,8 +27,8 @@ export default function ArtistStepRole({ data, updateData }) {
 
   return (
     <div>
-      <h2 className="text-2xl sm:text-3xl font-bold mb-3">What's your primary role?</h2>
-      <p className="text-gray-400 mb-8">Select your main specialty</p>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What's your primary role?</h2>
+      <p className="text-gray-600 mb-8">Select your main specialty</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-10">
         {ROLES.map((role) => {
@@ -40,11 +40,11 @@ export default function ArtistStepRole({ data, updateData }) {
               onClick={() => updateData('role', role.value)}
               className={`p-4 rounded-xl border-2 transition-all ${
                 isSelected
-                  ? 'border-amber-600 bg-amber-600/10'
-                  : 'border-zinc-800 hover:border-zinc-700 bg-zinc-800/50'
+                  ? 'border-amber-600 bg-amber-600/10 text-black'
+                  : 'border-gray-300 hover:border-gray-400 bg-white text-black'
               }`}
             >
-              <Icon className={`w-6 h-6 mb-2 mx-auto ${isSelected ? 'text-amber-600' : 'text-gray-400'}`} />
+              <Icon className={`w-6 h-6 mb-2 mx-auto ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
               <p className="text-sm font-medium text-center">{role.label}</p>
             </button>
           );
@@ -53,8 +53,8 @@ export default function ArtistStepRole({ data, updateData }) {
 
       {data.role && (
         <div>
-          <h3 className="text-xl font-semibold mb-3">Additional skills (optional)</h3>
-          <p className="text-sm text-gray-400 mb-4">Select any secondary roles you can perform</p>
+          <h3 className="text-xl font-semibold mb-3 text-black">Additional skills (optional)</h3>
+          <p className="text-sm text-gray-600 mb-4">Select any secondary roles you can perform</p>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {ROLES.filter(r => r.value !== data.role).map((role) => {
@@ -66,11 +66,11 @@ export default function ArtistStepRole({ data, updateData }) {
                   onClick={() => toggleSecondaryRole(role.value)}
                   className={`p-3 rounded-lg border transition-all text-left flex items-center gap-2 ${
                     isSelected
-                      ? 'border-amber-600/50 bg-amber-600/5'
-                      : 'border-zinc-800 hover:border-zinc-700 bg-zinc-800/30'
+                      ? 'border-amber-600/50 bg-amber-600/5 text-black'
+                      : 'border-gray-300 hover:border-gray-400 bg-white text-black'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isSelected ? 'text-amber-600' : 'text-gray-400'}`} />
+                  <Icon className={`w-4 h-4 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
                   <span className="text-sm">{role.label}</span>
                 </button>
               );

@@ -50,14 +50,14 @@ const SERVICES = [
 
 export default function ServicesPreview() {
   return (
-    <section className="py-24 bg-zinc-950">
+    <section className="py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-black">
             What We Do
           </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             End-to-end production services with curated specialists
           </p>
         </div>
@@ -69,7 +69,7 @@ export default function ServicesPreview() {
             return (
               <div
                 key={index}
-                className="group relative p-6 md:p-8 bg-zinc-900 hover:bg-zinc-800 rounded-xl border border-zinc-800 hover:border-zinc-700 transition-all duration-300 hover-lift"
+                className="group relative p-6 md:p-8 bg-white hover:bg-gray-50 rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-300 hover-lift"
               >
                 {/* Gradient accent */}
                 <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${service.color} opacity-0 group-hover:opacity-100 transition-opacity rounded-t-xl`} />
@@ -78,11 +78,11 @@ export default function ServicesPreview() {
                   <Icon className="w-6 h-6 text-white" />
                 </div>
                 
-                <h3 className="text-xl font-bold mb-2 text-white group-hover:text-amber-600 transition-colors">
+                <h3 className="text-xl font-bold mb-2 text-black group-hover:text-amber-600 transition-colors">
                   {service.title}
                 </h3>
                 
-                <p className="text-gray-400 text-sm leading-relaxed">
+                <p className="text-gray-600 text-sm leading-relaxed">
                   {service.description}
                 </p>
               </div>

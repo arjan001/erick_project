@@ -52,13 +52,13 @@ export default function FeaturedWork() {
   const [hoveredId, setHoveredId] = useState(null);
 
   return (
-    <section className="py-24 bg-zinc-950">
+    <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
           <div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">Featured Work</h2>
-            <p className="text-xl text-gray-400 max-w-2xl">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-black">Featured Work</h2>
+            <p className="text-xl text-gray-600 max-w-2xl">
               Curated productions delivered by our European network
             </p>
           </div>
@@ -114,7 +114,7 @@ export default function FeaturedWork() {
         {/* Load More Button */}
         <div className="text-center mt-12">
           <Link to={createPageUrl('Work')}>
-            <button className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white font-semibold rounded-lg transition-all hover-lift">
+            <button className="px-8 py-4 bg-black hover:bg-gray-800 text-white font-semibold rounded-lg transition-all hover-lift">
               LOAD MORE
               <ArrowRight className="inline-block ml-2 w-5 h-5" />
             </button>
