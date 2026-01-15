@@ -149,7 +149,7 @@ export default function EuropeanPresenceMap() {
                         : city.status === 'global'
                         ? 'bg-blue-500 ring-2 ring-blue-500/30'
                         : 'bg-amber-500 ring-2 ring-amber-500/30'
-                    } ${city.status === 'headquarters' ? '' : 'animate-pulse'}`} />
+                    } ${city.status !== 'headquarters' ? 'animate-pulse' : ''}`} />
                     
                     {/* City Name Label (soft, rotating) */}
                     {visibleCities.includes(city) && !hoveredCity && (

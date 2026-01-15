@@ -68,23 +68,28 @@ export default function Layout({ children, currentPageName }) {
               const Icon = item.icon;
               const isActive = currentPageName === item.href;
               return (
-                <Link
-                  key={item.name}
-                  to={createPageUrl(item.href)}
-                  onClick={() => window.scrollTo(0, 0)}
-                  className={`flex items-center gap-3 px-4 py-4 text-sm font-medium transition-all relative group/item ${
-                    isActive
-                      ? 'bg-white text-black'
-                      : item.highlight
-                      ? 'bg-white/10 text-white hover:bg-white hover:text-black border border-white/20'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  <span className="absolute left-full ml-4 px-3 py-2 bg-white text-black text-sm font-medium rounded shadow-lg opacity-0 group-hover/item:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+<div key={item.name} className="relative">
+                  <Link
+                    to={createPageUrl(item.href)}
+                    onClick={() => window.scrollTo(0, 0)}
+                    className={`flex items-center gap-3 px-4 py-4 text-sm font-medium transition-all group/item ${
+                      isActive
+                        ? 'bg-white text-black'
+                        : item.highlight
+                        ? 'bg-white/10 text-white hover:bg-white hover:text-black border border-white/20'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                      {item.name}
+                    </span>
+                  </Link>
+                  {/* Icon-only tooltip */}
+                  <div className="lg:group-hover:hidden absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white text-black text-sm font-medium rounded shadow-lg opacity-0 group-hover/item:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
                     {item.name}
-                  </span>
-                </Link>
+                  </div>
+                </div>
               );
             })}
           </nav>
