@@ -2,6 +2,7 @@ import Home from './pages/Home';
 import SubmitProject from './pages/SubmitProject';
 import ApplyArtist from './pages/ApplyArtist';
 import ApplyTeam from './pages/ApplyTeam';
+import Admin from './pages/Admin';
 import __Layout from './Layout.jsx';
 
 
@@ -10,6 +11,7 @@ export const PAGES = {
     "SubmitProject": SubmitProject,
     "ApplyArtist": ApplyArtist,
     "ApplyTeam": ApplyTeam,
+    "Admin": Admin,
 }
 
 export const pagesConfig = {
