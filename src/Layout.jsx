@@ -6,8 +6,6 @@ import {
   Film, 
   Briefcase, 
   Award, 
-  DollarSign, 
-  Upload, 
   UserPlus, 
   Users, 
   Mail,
@@ -21,6 +19,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Home', href: 'Home', icon: Home },
     { name: 'Services', href: 'Services', icon: Briefcase },
     { name: 'First Frame', href: 'FirstFrame', icon: Award },
+    { name: 'Work', href: 'Work', icon: Film },
     { name: 'Artist', href: 'ApplyArtist', icon: UserPlus },
     { name: 'Team', href: 'ApplyTeam', icon: Users },
     { name: 'Contact', href: 'Contact', icon: Mail },
@@ -37,51 +36,41 @@ export default function Layout({ children, currentPageName }) {
       `}</style>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-20 hover:lg:w-72 lg:flex-col bg-white border-r border-gray-200 transition-all duration-300 group z-50">
-        <div className="flex flex-col flex-grow pt-8 pb-4 overflow-y-auto">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-24 lg:flex-col bg-white border-r border-gray-200 z-50">
+        <div className="flex flex-col flex-grow pt-6 pb-4 overflow-y-auto">
           {/* Logo */}
-          <div className="flex items-center flex-shrink-0 px-6 mb-12">
-            <Link to={createPageUrl('Home')} className="flex items-center gap-3">
-              <div className="w-14 h-14 bg-black rounded-none flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl font-bold text-white">S22</span>
+          <div className="flex items-center justify-center flex-shrink-0 mb-8">
+            <Link to={createPageUrl('Home')} className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-black rounded-sm flex items-center justify-center mb-2">
+                <span className="text-xl font-bold text-white">S22</span>
               </div>
-              <span className="text-3xl font-bold tracking-tight text-black opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-                Studio<span className="text-black">22</span>
-              </span>
             </Link>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 space-y-1">
+          <nav className="flex-1 px-2 space-y-2">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = currentPageName === item.href;
               return (
-                <div key={item.name} className="relative group/navitem">
-                  <Link
-                    to={createPageUrl(item.href)}
-                    onClick={() => window.scrollTo(0, 0)}
-                    className={`flex items-center gap-3 px-4 py-4 text-sm font-medium transition-all ${
-                      isActive
-                        ? 'bg-black text-white'
-                        : 'text-gray-400 hover:text-black hover:bg-gray-100'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5 flex-shrink-0" />
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-                      {item.name}
-                    </span>
-                  </Link>
-                  {/* Tooltip - only shows when sidebar is NOT expanded */}
-                  <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white text-black text-sm font-medium rounded-lg shadow-xl opacity-0 group-hover/navitem:opacity-100 group-hover:group-hover/navitem:opacity-0 pointer-events-none transition-opacity whitespace-nowrap z-[100]">
+                <Link
+                  key={item.name}
+                  to={createPageUrl(item.href)}
+                  onClick={() => window.scrollTo(0, 0)}
+                  className={`flex flex-col items-center gap-1 px-2 py-3 text-xs font-normal transition-all rounded-lg ${
+                    isActive
+                      ? 'bg-black text-white'
+                      : 'text-gray-500 hover:text-black hover:bg-gray-100'
+                  }`}
+                >
+                  <Icon className="w-6 h-6 flex-shrink-0" />
+                  <span className="text-[10px] leading-tight text-center">
                     {item.name}
-                  </div>
-                </div>
+                  </span>
+                </Link>
               );
             })}
           </nav>
-
-
         </div>
       </aside>
 
@@ -134,7 +123,7 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       {/* Main Content */}
-      <div className="lg:pl-20">
+      <div className="lg:pl-24">
         <main className="pt-16 lg:pt-0">
           {children}
         </main>
