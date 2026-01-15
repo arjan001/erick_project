@@ -40,11 +40,11 @@ export default function StepVisualDirection({ data, updateData }) {
   if (isLoading) {
     return (
       <div>
-        <h2 className="text-2xl sm:text-3xl font-bold mb-3">Visual Direction</h2>
-        <p className="text-gray-400 mb-8">Loading examples...</p>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Visual Direction</h2>
+        <p className="text-gray-600 mb-8">Loading examples...</p>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="aspect-video bg-zinc-800 rounded-lg animate-pulse" />
+            <div key={i} className="aspect-video bg-gray-200 rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -54,16 +54,16 @@ export default function StepVisualDirection({ data, updateData }) {
   if (clips.length === 0) {
     return (
       <div>
-        <h2 className="text-2xl sm:text-3xl font-bold mb-3">Visual Direction</h2>
-        <p className="text-gray-400 mb-8">No approved clips available yet. You can skip this step.</p>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Visual Direction</h2>
+        <p className="text-gray-600 mb-8">No approved clips available yet. You can skip this step.</p>
       </div>
     );
   }
 
   return (
     <div>
-      <h2 className="text-2xl sm:text-3xl font-bold mb-3">Visual Direction</h2>
-      <p className="text-gray-400 mb-2">Select 1-3 examples that match your vision</p>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Visual Direction</h2>
+      <p className="text-gray-600 mb-2">Select 1-3 examples that match your vision</p>
       <p className="text-sm text-amber-600 mb-8">{selectedCount}/3 selected</p>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">

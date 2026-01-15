@@ -11,8 +11,8 @@ const COUNTRIES = [
 export default function StepLocation({ data, updateData }) {
   return (
     <div>
-      <h2 className="text-2xl sm:text-3xl font-bold mb-3">Where is production?</h2>
-      <p className="text-gray-400 mb-8">Help us find teams in your area</p>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Where is production?</h2>
+      <p className="text-gray-600 mb-8">Help us find teams in your area</p>
 
       <div className="space-y-6">
         <div>
@@ -21,7 +21,7 @@ export default function StepLocation({ data, updateData }) {
             id="country"
             value={data.location_country}
             onChange={(e) => updateData('location_country', e.target.value)}
-            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20"
+            className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-black focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20"
           >
             <option value="">Select a country</option>
             {COUNTRIES.map(country => (
@@ -37,16 +37,15 @@ export default function StepLocation({ data, updateData }) {
             value={data.location_city}
             onChange={(e) => updateData('location_city', e.target.value)}
             placeholder="e.g., Amsterdam, Barcelona, Paris"
-            className="bg-zinc-800 border-zinc-700 text-white h-12"
+            className="bg-white border-gray-300 text-black h-12"
           />
         </div>
 
-        <div className="flex items-center gap-3 p-4 bg-zinc-800/50 rounded-lg">
+        <div className="flex items-center gap-3 p-4 bg-gray-100 rounded-lg border border-gray-200">
           <Checkbox
             id="remote"
             checked={data.is_remote}
             onCheckedChange={(checked) => updateData('is_remote', checked)}
-            className="border-zinc-600"
           />
           <Label htmlFor="remote" className="text-base cursor-pointer">
             Remote production possible

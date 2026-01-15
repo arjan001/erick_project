@@ -24,8 +24,8 @@ export default function StepDepartments({ data, updateData }) {
 
   return (
     <div>
-      <h2 className="text-2xl sm:text-3xl font-bold mb-3">What services do you need?</h2>
-      <p className="text-gray-400 mb-8">Select all departments required</p>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What services do you need?</h2>
+      <p className="text-gray-600 mb-8">Select all departments required</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {DEPARTMENTS.map((dept) => {
@@ -38,12 +38,12 @@ export default function StepDepartments({ data, updateData }) {
               className={`p-5 rounded-xl border-2 transition-all text-left ${
                 isSelected
                   ? 'border-amber-600 bg-amber-600/10'
-                  : 'border-zinc-800 hover:border-zinc-700 bg-zinc-800/50'
+                  : 'border-gray-300 hover:border-gray-400 bg-white'
               }`}
             >
-              <Icon className={`w-7 h-7 mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-400'}`} />
-              <h3 className="text-base font-semibold mb-1">{dept.label}</h3>
-              <p className="text-sm text-gray-400">{dept.description}</p>
+              <Icon className={`w-7 h-7 mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
+              <h3 className="text-base font-semibold mb-1 text-black">{dept.label}</h3>
+              <p className="text-sm text-gray-600">{dept.description}</p>
             </button>
           );
         })}

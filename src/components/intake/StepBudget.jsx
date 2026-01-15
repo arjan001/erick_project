@@ -14,8 +14,8 @@ const BUDGET_RANGES = [
 export default function StepBudget({ data, updateData }) {
   return (
     <div>
-      <h2 className="text-2xl sm:text-3xl font-bold mb-3">Budget Range</h2>
-      <p className="text-gray-400 mb-2">This helps us match you with the right teams</p>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Budget Range</h2>
+      <p className="text-gray-600 mb-2">This helps us match you with the right teams</p>
       <p className="text-sm text-gray-500 mb-8">Optional - you can discuss exact numbers later</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -28,12 +28,12 @@ export default function StepBudget({ data, updateData }) {
               className={`p-5 rounded-xl border-2 transition-all text-left ${
                 isSelected
                   ? 'border-amber-600 bg-amber-600/10'
-                  : 'border-zinc-800 hover:border-zinc-700 bg-zinc-800/50'
+                  : 'border-gray-300 hover:border-gray-400 bg-white'
               }`}
             >
-              <DollarSign className={`w-7 h-7 mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-400'}`} />
-              <h3 className="text-base font-semibold mb-1">{range.label}</h3>
-              <p className="text-sm text-gray-400">{range.description}</p>
+              <DollarSign className={`w-7 h-7 mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
+              <h3 className="text-base font-semibold mb-1 text-black">{range.label}</h3>
+              <p className="text-sm text-gray-600">{range.description}</p>
             </button>
           );
         })}

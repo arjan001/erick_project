@@ -6,8 +6,8 @@ import { Calendar } from 'lucide-react';
 export default function StepTimeline({ data, updateData }) {
   return (
     <div>
-      <h2 className="text-2xl sm:text-3xl font-bold mb-3">Timeline</h2>
-      <p className="text-gray-400 mb-8">When do you need this project?</p>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Timeline</h2>
+      <p className="text-gray-600 mb-8">When do you need this project?</p>
 
       <div className="space-y-6">
         <div>
@@ -20,7 +20,7 @@ export default function StepTimeline({ data, updateData }) {
             type="date"
             value={data.timeline_start}
             onChange={(e) => updateData('timeline_start', e.target.value)}
-            className="bg-zinc-800 border-zinc-700 text-white h-12"
+            className="bg-white border-gray-300 text-black h-12"
           />
         </div>
 
@@ -34,12 +34,12 @@ export default function StepTimeline({ data, updateData }) {
             type="date"
             value={data.timeline_deadline}
             onChange={(e) => updateData('timeline_deadline', e.target.value)}
-            className="bg-zinc-800 border-zinc-700 text-white h-12"
+            className="bg-white border-gray-300 text-black h-12"
           />
         </div>
 
-        <div className="p-4 bg-zinc-800/50 rounded-lg border border-zinc-700">
-          <p className="text-sm text-gray-400">
+        <div className="p-4 bg-gray-100 rounded-lg border border-gray-200">
+          <p className="text-sm text-gray-600">
             💡 We recommend booking teams at least 4-6 weeks in advance for best availability
           </p>
         </div>
