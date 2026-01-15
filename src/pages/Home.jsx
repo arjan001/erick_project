@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowRight, Play, MapPin, Award, Sparkles, Wand2, Paperclip, ChevronDown } from 'lucide-react';
+import { ArrowRight, Play, MapPin, Award, Sparkles, Wand2, Paperclip, ChevronDown, Tv, Music, Film, Clapperboard, Video, Zap, Camera, Package, Share2, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '../components/useTranslation';
 import { base44 } from '@/api/base44Client';
@@ -10,16 +10,16 @@ import FeaturedWork from '../components/home/FeaturedWork';
 import ServicesPreview from '../components/home/ServicesPreview';
 
 const PROJECT_TYPES = [
-  { value: 'commercial', label: 'Commercial', icon: '📺' },
-  { value: 'music_video', label: 'Music Video', icon: '🎵' },
-  { value: 'short_film', label: 'Short Film', icon: '🎬' },
-  { value: 'feature_film', label: 'Feature Film', icon: '🎥' },
-  { value: 'documentary', label: 'Documentary', icon: '📹' },
-  { value: 'branded_content', label: 'Branded Content', icon: '✨' },
-  { value: 'event_coverage', label: 'Event Coverage', icon: '📸' },
-  { value: 'product_demo', label: 'Product Demo', icon: '🎁' },
-  { value: 'social_media', label: 'Social Media', icon: '💬' },
-  { value: 'animation', label: 'Animation', icon: '🎨' },
+  { value: 'commercial', label: 'Commercial', icon: Tv },
+  { value: 'music_video', label: 'Music Video', icon: Music },
+  { value: 'short_film', label: 'Short Film', icon: Film },
+  { value: 'feature_film', label: 'Feature Film', icon: Clapperboard },
+  { value: 'documentary', label: 'Documentary', icon: Video },
+  { value: 'branded_content', label: 'Branded Content', icon: Zap },
+  { value: 'event_coverage', label: 'Event Coverage', icon: Camera },
+  { value: 'product_demo', label: 'Product Demo', icon: Package },
+  { value: 'social_media', label: 'Social Media', icon: Share2 },
+  { value: 'animation', label: 'Animation', icon: Palette },
 ];
 
 export default function Home() {
