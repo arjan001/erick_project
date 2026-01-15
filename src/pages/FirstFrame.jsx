@@ -6,20 +6,19 @@ import { Award, CheckCircle, Calendar, Gift, ArrowRight } from 'lucide-react';
 
 export default function FirstFrame() {
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-white">
       {/* Hero */}
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-zinc-950 to-zinc-950" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(201,169,98,0.1),transparent_50%)]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 via-white to-white" />
         </div>
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <Award className="w-20 h-20 text-amber-600 mx-auto mb-8" />
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 text-black">
             Studio22 <span className="gradient-text">First Frame</span>
           </h1>
-          <p className="text-xl sm:text-2xl text-gray-400 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Experience how Studio22 works with one complimentary production day for serious projects
           </p>
           <Link to={createPageUrl('SubmitProject')}>
@@ -34,7 +33,7 @@ export default function FirstFrame() {
       {/* What's Included */}
       <section className="py-20 bg-zinc-900/50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center mb-16">What's Included</h2>
+          <h2 className="text-4xl font-bold text-center mb-16 text-black">What's Included</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
@@ -47,15 +46,15 @@ export default function FirstFrame() {
             ].map((item, i) => {
               const Icon = item.icon;
               return (
-                <div key={i} className="flex gap-4 p-6 bg-zinc-900 rounded-xl border border-zinc-800">
+                <div key={i} className="flex gap-4 p-6 bg-white rounded-xl border border-gray-200">
                   <div className="flex-shrink-0">
                     <div className="w-12 h-12 bg-amber-600/20 rounded-lg flex items-center justify-center">
                       <Icon className="w-6 h-6 text-amber-600" />
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">{item.title}</h3>
-                    <p className="text-sm text-gray-400">{item.desc}</p>
+                    <h3 className="font-semibold mb-1 text-black">{item.title}</h3>
+                    <p className="text-sm text-gray-600">{item.desc}</p>
                   </div>
                 </div>
               );
@@ -67,10 +66,10 @@ export default function FirstFrame() {
       {/* Eligibility */}
       <section className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center mb-12">Eligibility</h2>
+          <h2 className="text-4xl font-bold text-center mb-12 text-black">Eligibility</h2>
           
-          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-8 md:p-12">
-            <p className="text-lg text-gray-300 mb-8">
+          <div className="bg-gray-50 rounded-2xl border border-gray-200 p-8 md:p-12">
+            <p className="text-lg text-gray-700 mb-8">
               Studio22 First Frame is designed for serious projects that meet our quality standards. We evaluate applications based on:
             </p>
             
@@ -84,14 +83,14 @@ export default function FirstFrame() {
               ].map((item, i) => (
                 <li key={i} className="flex gap-3">
                   <CheckCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-300">{item}</span>
+                  <span className="text-gray-700">{item}</span>
                 </li>
               ))}
             </ul>
 
             <div className="bg-amber-600/10 border border-amber-600/20 rounded-xl p-6">
               <p className="text-amber-600 font-semibold mb-2">Important Note</p>
-              <p className="text-gray-300 text-sm">
+              <p className="text-gray-700 text-sm">
                 First Frame is not a free service for small projects. It's a trial day for serious productions to experience Studio22's approach before committing to a full production contract.
               </p>
             </div>
@@ -102,7 +101,7 @@ export default function FirstFrame() {
       {/* How to Apply */}
       <section className="py-20 bg-zinc-900/50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center mb-12">How to Apply</h2>
+          <h2 className="text-4xl font-bold text-center mb-12 text-black">How to Apply</h2>
           
           <div className="space-y-6 mb-12">
             {[
@@ -116,8 +115,8 @@ export default function FirstFrame() {
                   {step.num}
                 </div>
                 <div className="pt-2">
-                  <h3 className="text-xl font-semibold mb-1">{step.title}</h3>
-                  <p className="text-gray-400">{step.desc}</p>
+                  <h3 className="text-xl font-semibold mb-1 text-black">{step.title}</h3>
+                  <p className="text-gray-600">{step.desc}</p>
                 </div>
               </div>
             ))}

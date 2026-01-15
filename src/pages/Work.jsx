@@ -26,12 +26,12 @@ export default function Work() {
   const allStyles = [...new Set(clips?.flatMap(c => c.visual_style_tags || []))];
 
   return (
-    <div className="min-h-screen bg-zinc-950 py-12">
+    <div className="min-h-screen bg-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4">Our Work</h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 text-black">Our Work</h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Curated productions from our network of artists and teams across Europe
           </p>
         </div>
@@ -39,12 +39,12 @@ export default function Work() {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 mb-12 justify-center">
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-400" />
+            <Filter className="w-4 h-4 text-gray-600" />
             <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-40 bg-zinc-900 border-zinc-800">
+              <SelectTrigger className="w-40 bg-white border-gray-300">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-800">
+              <SelectContent className="bg-white border-gray-300">
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="commercial">Commercial</SelectItem>
                 <SelectItem value="short_film">Short Film</SelectItem>
@@ -57,10 +57,10 @@ export default function Work() {
 
           {allStyles.length > 0 && (
             <Select value={filterStyle} onValueChange={setFilterStyle}>
-              <SelectTrigger className="w-40 bg-zinc-900 border-zinc-800">
+              <SelectTrigger className="w-40 bg-white border-gray-300">
                 <SelectValue placeholder="Style" />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-800">
+              <SelectContent className="bg-white border-gray-300">
                 <SelectItem value="all">All Styles</SelectItem>
                 {allStyles.map(style => (
                   <SelectItem key={style} value={style}>{style}</SelectItem>
@@ -74,7 +74,7 @@ export default function Work() {
         {isLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="aspect-video bg-zinc-900 rounded-xl animate-pulse" />
+              <div key={i} className="aspect-video bg-gray-200 rounded-xl animate-pulse" />
             ))}
           </div>
         )}
@@ -85,7 +85,7 @@ export default function Work() {
             {filteredClips.map((clip) => (
               <div
                 key={clip.id}
-                className="group relative aspect-video bg-zinc-900 rounded-xl overflow-hidden cursor-pointer hover-lift"
+                className="group relative aspect-video bg-gray-100 rounded-xl overflow-hidden cursor-pointer hover-lift"
               >
                 <img
                   src={clip.thumbnail_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=800'}
@@ -125,7 +125,7 @@ export default function Work() {
         {/* Empty State */}
         {!isLoading && filteredClips.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-gray-400 text-lg">No work matches your filters</p>
+            <p className="text-gray-600 text-lg">No work matches your filters</p>
           </div>
         )}
       </div>

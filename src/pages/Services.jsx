@@ -61,16 +61,16 @@ const SERVICES = [
 
 export default function Services() {
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-white">
       {/* Hero */}
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-amber-600/10 to-transparent" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 text-black">
               Full-Spectrum <span className="gradient-text">Production Services</span>
             </h1>
-            <p className="text-xl text-gray-400 mb-8">
+            <p className="text-xl text-gray-600 mb-8">
               From initial concept to final delivery, we handle every aspect of your production with curated teams across Europe
             </p>
             <Link to={createPageUrl('SubmitProject')}>
@@ -92,18 +92,18 @@ export default function Services() {
               return (
                 <div
                   key={index}
-                  className="bg-zinc-900 rounded-2xl border border-zinc-800 p-8 hover-lift"
+                  className="bg-gray-50 rounded-2xl border border-gray-200 p-8 hover-lift"
                 >
                   <div className={`w-16 h-16 bg-gradient-to-br ${service.gradient} rounded-xl flex items-center justify-center mb-6`}>
                     <Icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold mb-3">{service.title}</h3>
-                  <p className="text-gray-400 mb-6">{service.description}</p>
+                  <h3 className="text-2xl font-bold mb-3 text-black">{service.title}</h3>
+                  <p className="text-gray-600 mb-6">{service.description}</p>
                   <ul className="space-y-3">
                     {service.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-3">
                         <CheckCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-300">{feature}</span>
+                        <span className="text-gray-700">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -115,9 +115,9 @@ export default function Services() {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 bg-zinc-900/50">
+      <section className="py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center mb-16">How Studio22 Works</h2>
+          <h2 className="text-4xl font-bold text-center mb-16 text-black">How Studio22 Works</h2>
           
           <div className="space-y-12">
             {[
@@ -133,8 +133,8 @@ export default function Services() {
                   </div>
                 </div>
                 <div className="pt-3">
-                  <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                  <p className="text-gray-400">{item.desc}</p>
+                  <h3 className="text-xl font-bold mb-2 text-black">{item.title}</h3>
+                  <p className="text-gray-600">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -145,8 +145,8 @@ export default function Services() {
       {/* CTA */}
       <section className="py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to start your production?</h2>
-          <p className="text-xl text-gray-400 mb-8">
+          <h2 className="text-4xl font-bold mb-6 text-black">Ready to start your production?</h2>
+          <p className="text-xl text-gray-600 mb-8">
             Submit your project and let us assemble the perfect team
           </p>
           <Link to={createPageUrl('SubmitProject')}>

@@ -81,11 +81,11 @@ export default function ApplyTeam() {
   const CurrentStepComponent = STEPS[currentStep - 1].component;
 
   return (
-    <div className="min-h-screen bg-zinc-950 py-8 lg:py-12">
+    <div className="min-h-screen bg-white py-8 lg:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 lg:mb-12">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3">Join Studio22 Network</h1>
-          <p className="text-lg text-gray-400">Apply as a team</p>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 text-black">Join Studio22 Network</h1>
+          <p className="text-lg text-gray-600">Apply as a team</p>
         </div>
 
         <div className="mb-8 lg:mb-12">
@@ -99,7 +99,7 @@ export default function ApplyTeam() {
                         ? 'bg-amber-600 text-white'
                         : step.id === currentStep
                         ? 'bg-amber-600 text-white ring-4 ring-amber-600/20'
-                        : 'bg-zinc-800 text-gray-500'
+                        : 'bg-gray-200 text-gray-500'
                     }`}
                   >
                     {step.id < currentStep ? <Check className="w-5 h-5" /> : step.id}
@@ -108,18 +108,18 @@ export default function ApplyTeam() {
                 </div>
                 {index < STEPS.length - 1 && (
                   <div className={`flex-1 h-1 mx-2 rounded-full ${
-                    step.id < currentStep ? 'bg-amber-600' : 'bg-zinc-800'
+                    step.id < currentStep ? 'bg-amber-600' : 'bg-gray-200'
                   }`} />
                 )}
               </React.Fragment>
             ))}
           </div>
-          <div className="text-center text-sm text-gray-400">
+          <div className="text-center text-sm text-gray-600">
             Step {currentStep} of {STEPS.length}
           </div>
         </div>
 
-        <div className="bg-zinc-900 rounded-2xl p-6 sm:p-8 lg:p-10 mb-8 border border-zinc-800 min-h-[400px]">
+        <div className="bg-gray-50 rounded-2xl p-6 sm:p-8 lg:p-10 mb-8 border border-gray-200 min-h-[400px]">
           <CurrentStepComponent data={teamData} updateData={updateData} />
         </div>
 
@@ -129,7 +129,7 @@ export default function ApplyTeam() {
             size="lg"
             onClick={handleBack}
             disabled={currentStep === 1}
-            className="border-zinc-700 hover:bg-zinc-800 order-2 sm:order-1"
+            className="border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back
