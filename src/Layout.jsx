@@ -67,8 +67,6 @@ export default function Layout({ children, currentPageName }) {
                     className={`flex items-center gap-3 px-4 py-4 text-sm font-medium transition-all ${
                       isActive
                         ? 'bg-white text-black'
-                        : item.highlight
-                        ? 'bg-white/10 text-white hover:bg-white hover:text-black border border-white/20'
                         : 'text-gray-400 hover:text-white hover:bg-white/5'
                     }`}
                   >
@@ -77,8 +75,8 @@ export default function Layout({ children, currentPageName }) {
                       {item.name}
                     </span>
                   </Link>
-                  {/* Tooltip - only shows when sidebar is collapsed */}
-                  <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white text-black text-sm font-medium rounded-lg shadow-xl opacity-0 group-hover/navitem:group-hover:opacity-0 group-hover/navitem:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100]">
+                  {/* Tooltip - only shows when sidebar is NOT expanded */}
+                  <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white text-black text-sm font-medium rounded-lg shadow-xl opacity-0 group-hover/navitem:opacity-100 group-hover:group-hover/navitem:opacity-0 pointer-events-none transition-opacity whitespace-nowrap z-[100]">
                     {item.name}
                   </div>
                 </div>
