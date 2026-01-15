@@ -154,7 +154,7 @@ ${formData.message}
                       required
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="bg-zinc-800 border-zinc-700 h-12"
+                      className="bg-white border-gray-300 h-12"
                     />
                   </div>
 
@@ -166,7 +166,7 @@ ${formData.message}
                       required
                       value={formData.email}
                       onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className="bg-zinc-800 border-zinc-700 h-12"
+                      className="bg-white border-gray-300 h-12"
                     />
                   </div>
                 </div>
@@ -178,7 +178,7 @@ ${formData.message}
                     required
                     value={formData.subject}
                     onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-                    className="bg-zinc-800 border-zinc-700 h-12"
+                    className="bg-white border-gray-300 h-12"
                   />
                 </div>
 
