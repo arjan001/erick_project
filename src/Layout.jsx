@@ -38,24 +38,26 @@ export default function Layout({ children, currentPageName }) {
       <style>{`
         :root {
           --studio-gold: #C9A962;
-          --studio-black: #0A0A0A;
-          --studio-white: #FAFAFA;
+          --studio-black: #000000;
+          --studio-white: #FFFFFF;
         }
         body {
-          background: #0A0A0A;
+          background: #000000;
         }
       `}</style>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col bg-zinc-900 border-r border-zinc-800">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-20 hover:lg:w-72 lg:flex-col bg-black border-r border-white/10 transition-all duration-300 group z-50">
         <div className="flex flex-col flex-grow pt-8 pb-4 overflow-y-auto">
           {/* Logo */}
           <div className="flex items-center flex-shrink-0 px-6 mb-12">
             <Link to={createPageUrl('Home')} className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-600 to-amber-800 rounded-sm flex items-center justify-center">
-                <span className="text-xl font-bold text-white">S22</span>
+              <div className="w-10 h-10 bg-white rounded-none flex items-center justify-center flex-shrink-0">
+                <span className="text-xl font-bold text-black">S22</span>
               </div>
-              <span className="text-2xl font-bold tracking-tight">Studio<span className="text-amber-600">22</span></span>
+              <span className="text-2xl font-bold tracking-tight text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                Studio<span className="text-white">22</span>
+              </span>
             </Link>
           </div>
 
@@ -68,23 +70,25 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   key={item.name}
                   to={createPageUrl(item.href)}
-                  className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all ${
+                  className={`flex items-center gap-3 px-4 py-4 text-sm font-medium transition-all ${
                     isActive
-                      ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
+                      ? 'bg-white text-black'
                       : item.highlight
-                      ? 'bg-zinc-800 text-amber-500 hover:bg-zinc-700 border border-amber-600/20'
-                      : 'text-gray-400 hover:text-white hover:bg-zinc-800'
+                      ? 'bg-white/10 text-white hover:bg-white hover:text-black border border-white/20'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
-                  {item.name}
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                    {item.name}
+                  </span>
                 </Link>
               );
             })}
           </nav>
 
           {/* Language Selector */}
-          <div className="px-6 pt-4 border-t border-zinc-800">
+          <div className="px-6 pt-4 border-t border-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <LanguageSelector />
           </div>
         </div>
@@ -139,7 +143,7 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       {/* Main Content */}
-      <div className="lg:pl-72">
+      <div className="lg:pl-20">
         <main className="pt-16 lg:pt-0">
           {children}
         </main>

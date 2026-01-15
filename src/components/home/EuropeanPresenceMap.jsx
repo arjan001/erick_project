@@ -1,118 +1,124 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MapPin } from 'lucide-react';
 
 const CITIES = [
-  { name: 'Amsterdam', country: 'Netherlands', teams: 5, status: 'available', position: { left: '48%', top: '25%' } },
-  { name: 'Brussels', country: 'Belgium', teams: 3, status: 'limited', position: { left: '47%', top: '30%' } },
-  { name: 'Paris', country: 'France', teams: 6, status: 'available', position: { left: '45%', top: '35%' } },
-  { name: 'Barcelona', country: 'Spain', teams: 4, status: 'available', position: { left: '42%', top: '50%' } },
-  { name: 'Madrid', country: 'Spain', teams: 3, status: 'available', position: { left: '40%', top: '48%' } },
-  { name: 'Berlin', country: 'Germany', teams: 5, status: 'available', position: { left: '52%', top: '28%' } },
-  { name: 'Munich', country: 'Germany', teams: 3, status: 'limited', position: { left: '51%', top: '35%' } },
-  { name: 'Milan', country: 'Italy', teams: 4, status: 'available', position: { left: '50%', top: '42%' } },
-  { name: 'Rome', country: 'Italy', teams: 3, status: 'available', position: { left: '51%', top: '48%' } },
-  { name: 'London', country: 'UK', teams: 7, status: 'available', position: { left: '44%', top: '28%' } },
-  { name: 'Vienna', country: 'Austria', teams: 3, status: 'available', position: { left: '54%', top: '36%' } },
-  { name: 'Luxembourg', country: 'Luxembourg', teams: 2, status: 'available', position: { left: '47%', top: '32%' } },
+  { name: 'Tenerife', country: 'Canary Islands', teams: 'HQ', status: 'headquarters', image: 'https://images.unsplash.com/photo-1584735175097-719d848f8449?q=80&w=400', x: 15, y: 85 },
+  { name: 'Amsterdam', country: 'Netherlands', teams: 3, status: 'active', image: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?q=80&w=400', x: 48, y: 25 },
+  { name: 'Barcelona', country: 'Spain', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?q=80&w=400', x: 42, y: 52 },
+  { name: 'Berlin', country: 'Germany', teams: 4, status: 'active', image: 'https://images.unsplash.com/photo-1560930950-5cc20e80e392?q=80&w=400', x: 55, y: 28 },
+  { name: 'Paris', country: 'France', teams: 3, status: 'active', image: 'https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?q=80&w=400', x: 42, y: 35 },
+  { name: 'Brussels', country: 'Belgium', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1559113202-c916b8e44373?q=80&w=400', x: 45, y: 30 },
+  { name: 'Milan', country: 'Italy', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1543429257-818c36605555?q=80&w=400', x: 52, y: 48 },
+  { name: 'Vienna', country: 'Austria', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1516550893923-42d28e5677af?q=80&w=400', x: 58, y: 38 },
+  { name: 'Lisbon', country: 'Portugal', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1585208798174-6cedd86e019a?q=80&w=400', x: 28, y: 55 },
+  { name: 'Copenhagen', country: 'Denmark', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?q=80&w=400', x: 54, y: 18 },
+  { name: 'Zurich', country: 'Switzerland', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1506665531195-14828a5b7c48?q=80&w=400', x: 50, y: 42 },
+  { name: 'London', country: 'United Kingdom', teams: 3, status: 'active', image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=400', x: 38, y: 28 },
+  { name: 'Rome', country: 'Italy', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=400', x: 54, y: 55 },
+  { name: 'Budapest', country: 'Hungary', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1541849546-216549ae216d?q=80&w=400', x: 62, y: 42 },
+  { name: 'Madrid', country: 'Spain', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?q=80&w=400', x: 35, y: 55 },
+  { name: 'Stockholm', country: 'Sweden', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1509356843151-3e7d96241e11?q=80&w=400', x: 60, y: 12 },
+  { name: 'Dublin', country: 'Ireland', teams: 1, status: 'active', image: 'https://images.unsplash.com/photo-1548690596-55342a7c99d8?q=80&w=400', x: 32, y: 25 },
+  { name: 'Prague', country: 'Czech Republic', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1541849546-216549ae216d?q=80&w=400', x: 57, y: 35 },
+  { name: 'Athens', country: 'Greece', teams: 1, status: 'active', image: 'https://images.unsplash.com/photo-1555993539-1732b0258235?q=80&w=400', x: 68, y: 58 },
+  { name: 'Warsaw', country: 'Poland', teams: 1, status: 'active', image: 'https://images.unsplash.com/photo-1601823984263-b8f0146c0c25?q=80&w=400', x: 63, y: 28 },
+  { name: 'Helsinki', country: 'Finland', teams: 1, status: 'active', image: 'https://images.unsplash.com/photo-1554827187-dd7d0e0eb4c5?q=80&w=400', x: 68, y: 8 },
+  { name: 'Oslo', country: 'Norway', teams: 1, status: 'active', image: 'https://images.unsplash.com/photo-1520034475321-cbe63696469a?q=80&w=400', x: 52, y: 12 },
+  { name: 'Valencia', country: 'Spain', teams: 1, status: 'active', image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=400', x: 38, y: 58 },
+  { name: 'Lyon', country: 'France', teams: 1, status: 'active', image: 'https://images.unsplash.com/photo-1557992260-ec58e38d363c?q=80&w=400', x: 46, y: 42 },
+  { name: 'Munich', country: 'Germany', teams: 2, status: 'active', image: 'https://images.unsplash.com/photo-1595867818082-083862f3d630?q=80&w=400', x: 53, y: 38 },
+  { name: 'Hamburg', country: 'Germany', teams: 1, status: 'active', image: 'https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?q=80&w=400', x: 52, y: 22 },
+  { name: 'Nice', country: 'France', teams: 1, status: 'active', image: 'https://images.unsplash.com/photo-1533929736458-ca588d08c8be?q=80&w=400', x: 48, y: 48 }
 ];
 
 export default function EuropeanPresenceMap() {
-  return (
-    <section className="py-24 bg-zinc-900 relative overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(201, 169, 98, 0.3) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }} />
-      </div>
+  const [hoveredCity, setHoveredCity] = useState(null);
 
+  return (
+    <section className="py-32 bg-black relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.03),transparent_70%)]" />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-            European Network
+        <div className="text-center mb-20">
+          <h2 className="text-5xl sm:text-6xl font-bold mb-6 text-white">
+            Global Network
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Curated teams across major production hubs
+            Headquartered in Tenerife, Canary Islands, with curated teams across 27 European cities
           </p>
         </div>
 
-        {/* Map Container */}
-        <div className="relative max-w-5xl mx-auto">
-          {/* Stylized Map Background */}
-          <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 rounded-2xl p-8 backdrop-blur-sm border border-zinc-700/50">
-            {/* Stone lines effect connecting cities */}
-            <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
-              <defs>
-                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" style={{ stopColor: '#C9A962', stopOpacity: 0.1 }} />
-                  <stop offset="50%" style={{ stopColor: '#C9A962', stopOpacity: 0.3 }} />
-                  <stop offset="100%" style={{ stopColor: '#C9A962', stopOpacity: 0.1 }} />
-                </linearGradient>
-              </defs>
-              {/* Connect nearby cities with lines */}
-              <line x1="48%" y1="25%" x2="47%" y2="30%" stroke="url(#lineGradient)" strokeWidth="1" />
-              <line x1="47%" y1="30%" x2="45%" y2="35%" stroke="url(#lineGradient)" strokeWidth="1" />
-              <line x1="48%" y1="25%" x2="52%" y2="28%" stroke="url(#lineGradient)" strokeWidth="1" />
-              <line x1="52%" y1="28%" x2="54%" y2="36%" stroke="url(#lineGradient)" strokeWidth="1" />
-              <line x1="45%" y1="35%" x2="42%" y2="50%" stroke="url(#lineGradient)" strokeWidth="1" />
-              <line x1="44%" y1="28%" x2="48%" y2="25%" stroke="url(#lineGradient)" strokeWidth="1" />
-            </svg>
-
-            {/* City Markers */}
-            {CITIES.map((city, index) => (
-              <div
-                key={index}
-                className="absolute group cursor-pointer"
-                style={{
-                  left: city.position.left,
-                  top: city.position.top,
-                  transform: 'translate(-50%, -50%)',
-                  zIndex: 10
-                }}
-              >
-                {/* Pulse animation */}
-                <div className={`absolute inset-0 rounded-full animate-ping ${
-                  city.status === 'available' ? 'bg-amber-600/50' : 'bg-orange-600/50'
-                }`} style={{ animationDuration: '3s' }} />
-                
-                {/* Pin */}
-                <div className={`relative w-3 h-3 rounded-full ${
-                  city.status === 'available' ? 'bg-amber-600' : 'bg-orange-600'
-                } border-2 border-white shadow-lg`} />
-
-                {/* Tooltip */}
-                <div className="absolute left-1/2 -translate-x-1/2 top-6 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                  <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 shadow-xl whitespace-nowrap">
-                    <div className="font-semibold text-white text-sm">{city.name}</div>
-                    <div className="text-xs text-gray-400">{city.teams} teams • {city.status}</div>
+        {/* Desktop Map */}
+        <div className="hidden lg:block relative h-[600px] mb-12">
+          <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-black rounded-3xl border border-zinc-800">
+            {/* Map Container */}
+            <div className="relative w-full h-full">
+              {CITIES.map((city, index) => (
+                <div
+                  key={index}
+                  className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                  style={{ left: `${city.x}%`, top: `${city.y}%` }}
+                  onMouseEnter={() => setHoveredCity(city)}
+                  onMouseLeave={() => setHoveredCity(null)}
+                >
+                  {/* City Marker */}
+                  <div className={`relative cursor-pointer group ${
+                    city.status === 'headquarters' ? 'scale-150' : ''
+                  }`}>
+                    <div className={`w-3 h-3 rounded-full ${
+                      city.status === 'headquarters'
+                        ? 'bg-white ring-4 ring-white/30'
+                        : 'bg-amber-500 ring-2 ring-amber-500/30'
+                    } animate-pulse`} />
+                    
+                    {/* Hover Card */}
+                    {hoveredCity?.name === city.name && (
+                      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-64 bg-white rounded-lg shadow-2xl overflow-hidden z-50 animate-fadeInUp">
+                        <img 
+                          src={city.image} 
+                          alt={city.name}
+                          className="w-full h-32 object-cover"
+                        />
+                        <div className="p-4 bg-white">
+                          <h3 className="font-bold text-black text-lg">{city.name}</h3>
+                          <p className="text-gray-600 text-sm mb-2">{city.country}</p>
+                          {city.status === 'headquarters' ? (
+                            <div className="inline-block px-3 py-1 bg-black text-white text-xs font-semibold rounded-full">
+                              HEADQUARTERS
+                            </div>
+                          ) : (
+                            <p className="text-gray-500 text-xs">{city.teams} {city.teams === 1 ? 'Team' : 'Teams'} Available</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Legend */}
-          <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-amber-600"></div>
-              <span className="text-gray-400">Available</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-orange-600"></div>
-              <span className="text-gray-400">Limited Availability</span>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* City List (Mobile) */}
-        <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 lg:hidden">
+        {/* Mobile List */}
+        <div className="lg:hidden grid grid-cols-2 gap-4">
           {CITIES.map((city, index) => (
-            <div key={index} className="text-center p-3 bg-zinc-800/50 rounded-lg">
-              <MapPin className="w-4 h-4 text-amber-600 mx-auto mb-1" />
-              <div className="text-sm font-semibold text-white">{city.name}</div>
-              <div className="text-xs text-gray-400">{city.teams} teams</div>
+            <div key={index} className="bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800">
+              <img 
+                src={city.image} 
+                alt={city.name}
+                className="w-full h-24 object-cover"
+              />
+              <div className="p-3">
+                <h3 className="font-semibold text-white text-sm">{city.name}</h3>
+                <p className="text-gray-400 text-xs">{city.country}</p>
+                {city.status === 'headquarters' ? (
+                  <div className="inline-block mt-2 px-2 py-1 bg-white text-black text-xs font-semibold rounded">
+                    HQ
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-xs mt-1">{city.teams} teams</p>
+                )}
+              </div>
             </div>
           ))}
         </div>

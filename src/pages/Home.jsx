@@ -36,15 +36,14 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeInUp" style={{animationDelay: '0.4s'}}>
             <Link to={createPageUrl('SubmitProject')}>
-              <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-6 text-lg rounded-lg shadow-2xl shadow-amber-600/20 group">
-                {t('hero.cta')}
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-12 py-7 text-lg font-semibold rounded-none group relative overflow-hidden">
+                <span className="relative z-10">SUBMIT PROJECT</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-amber-600 transform translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
               </Button>
             </Link>
             <Link to={createPageUrl('Work')}>
-              <Button size="lg" variant="outline" className="border-2 border-white/20 text-white hover:bg-white/10 px-8 py-6 text-lg rounded-lg backdrop-blur-sm group">
-                <Play className="mr-2 w-5 h-5" />
-                View Our Work
+              <Button size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-black px-12 py-7 text-lg font-semibold rounded-none transition-all duration-300">
+                VIEW PORTFOLIO
               </Button>
             </Link>
           </div>
@@ -58,29 +57,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trust Bar */}
-      <section className="py-12 bg-zinc-900/50 backdrop-blur-sm border-y border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl font-bold text-amber-600 mb-2">12+</div>
-              <div className="text-sm text-gray-400">European Cities</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-amber-600 mb-2">200+</div>
-              <div className="text-sm text-gray-400">Productions Delivered</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-amber-600 mb-2">50+</div>
-              <div className="text-sm text-gray-400">Curated Teams</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-amber-600 mb-2">150+</div>
-              <div className="text-sm text-gray-400">Verified Artists</div>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* Featured Work */}
       <FeaturedWork />
