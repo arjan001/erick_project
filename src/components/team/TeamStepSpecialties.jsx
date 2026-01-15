@@ -24,8 +24,8 @@ export default function TeamStepSpecialties({ data, updateData }) {
 
   return (
     <div>
-      <h2 className="text-2xl sm:text-3xl font-bold mb-3">What are your specialties?</h2>
-      <p className="text-gray-400 mb-8">Select all services your team provides</p>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What are your specialties?</h2>
+      <p className="text-gray-600 mb-8">Select all services your team provides</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {SPECIALTIES.map((specialty) => {
@@ -37,11 +37,11 @@ export default function TeamStepSpecialties({ data, updateData }) {
               onClick={() => toggleSpecialty(specialty.value)}
               className={`p-5 rounded-xl border-2 transition-all ${
                 isSelected
-                  ? 'border-amber-600 bg-amber-600/10'
-                  : 'border-zinc-800 hover:border-zinc-700 bg-zinc-800/50'
+                  ? 'border-amber-600 bg-amber-600/10 text-black'
+                  : 'border-gray-300 hover:border-gray-400 bg-white text-black'
               }`}
             >
-              <Icon className={`w-8 h-8 mb-3 mx-auto ${isSelected ? 'text-amber-600' : 'text-gray-400'}`} />
+              <Icon className={`w-8 h-8 mb-3 mx-auto ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
               <p className="text-sm font-medium text-center">{specialty.label}</p>
             </button>
           );

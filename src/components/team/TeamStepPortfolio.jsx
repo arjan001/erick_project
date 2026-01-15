@@ -51,11 +51,11 @@ export default function TeamStepPortfolio({ data, updateData }) {
 
   return (
     <div>
-      <h2 className="text-2xl sm:text-3xl font-bold mb-3">Team Portfolio</h2>
-      <p className="text-gray-400 mb-8">Upload 1-3 clips showcasing your team's work (max 30 seconds each)</p>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Team Portfolio</h2>
+      <p className="text-gray-600 mb-8">Upload 1-3 clips showcasing your team's work (max 30 seconds each)</p>
 
-      <div className="space-y-4 mb-8 p-6 bg-zinc-800/50 rounded-xl border border-zinc-700">
-        <h3 className="font-semibold mb-3">Portfolio Requirements</h3>
+      <div className="space-y-4 mb-8 p-6 bg-gray-100 rounded-xl border border-gray-200">
+        <h3 className="font-semibold mb-3 text-black">Portfolio Requirements</h3>
         
         <div className="flex items-start gap-3">
           <Checkbox
@@ -85,10 +85,10 @@ export default function TeamStepPortfolio({ data, updateData }) {
       {(data.portfolio_clips || []).length > 0 && (
         <div className="space-y-3 mb-6">
           {data.portfolio_clips.map((clip, index) => (
-            <div key={index} className="flex items-center justify-between p-4 bg-zinc-800 rounded-lg border border-zinc-700">
+            <div key={index} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-300">
               <div className="flex items-center gap-3">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span className="text-sm">Portfolio clip {index + 1}</span>
+                <span className="text-sm text-black">Portfolio clip {index + 1}</span>
               </div>
               <button
                 onClick={() => removeClip(index)}
@@ -114,14 +114,14 @@ export default function TeamStepPortfolio({ data, updateData }) {
           <Label htmlFor="team-portfolio-upload">
             <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
               agreements.noLogos && agreements.portfolioUsage
-                ? 'border-zinc-700 hover:border-amber-600 cursor-pointer'
-                : 'border-zinc-800 opacity-50 cursor-not-allowed'
+                ? 'border-gray-300 hover:border-amber-600 cursor-pointer'
+                : 'border-gray-300 opacity-50 cursor-not-allowed'
             }`}>
-              <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <p className="font-medium mb-2">
+              <Upload className="w-12 h-12 mx-auto mb-4 text-gray-500" />
+              <p className="font-medium mb-2 text-black">
                 {isUploading ? 'Uploading...' : 'Click to upload video'}
               </p>
-              <p className="text-sm text-gray-400">Max 30 seconds, MP4 or MOV</p>
+              <p className="text-sm text-gray-600">Max 30 seconds, MP4 or MOV</p>
             </div>
           </Label>
         </div>
