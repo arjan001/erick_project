@@ -1,15 +1,67 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowRight, Play, MapPin, Award } from 'lucide-react';
+import { ArrowRight, Play, MapPin, Award, Sparkles, Wand2, Paperclip, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '../components/useTranslation';
+import { base44 } from '@/api/base44Client';
 import EuropeanPresenceMap from '../components/home/EuropeanPresenceMap';
 import FeaturedWork from '../components/home/FeaturedWork';
 import ServicesPreview from '../components/home/ServicesPreview';
 
+const PROJECT_TYPES = [
+  { value: 'commercial', label: 'Commercial', icon: '📺' },
+  { value: 'music_video', label: 'Music Video', icon: '🎵' },
+  { value: 'short_film', label: 'Short Film', icon: '🎬' },
+  { value: 'feature_film', label: 'Feature Film', icon: '🎥' },
+  { value: 'documentary', label: 'Documentary', icon: '📹' },
+  { value: 'branded_content', label: 'Branded Content', icon: '✨' },
+  { value: 'event_coverage', label: 'Event Coverage', icon: '📸' },
+  { value: 'product_demo', label: 'Product Demo', icon: '🎁' },
+  { value: 'social_media', label: 'Social Media', icon: '💬' },
+  { value: 'animation', label: 'Animation', icon: '🎨' },
+];
+
 export default function Home() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  
+  const [referenceUrl, setReferenceUrl] = useState('');
+  const [description, setDescription] = useState('');
+  const [projectType, setProjectType] = useState('commercial');
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+
+  const handleExtract = async () => {
+    if (!referenceUrl.trim()) return;
+    
+    setIsExtracting(true);
+    try {
+      const { data } = await base44.functions.invoke('extractWebsite', { url: referenceUrl });
+      if (data.success) {
+        setDescription(data.description);
+      }
+    } catch (error) {
+      console.error('Extract error:', error);
+      alert('Failed to extract website content. Please try again.');
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
+  const handleGenerate = () => {
+    // Navigate to SubmitProject with initial data
+    const projectData = {
+      notes: description,
+      project_type: projectType,
+    };
+    
+    navigate(createPageUrl('SubmitProject'), { 
+      state: { initialData: projectData } 
+    });
+  };
+
+  const selectedType = PROJECT_TYPES.find(t => t.value === projectType) || PROJECT_TYPES[0];
 
   return (
     <div className="min-h-screen">
@@ -44,10 +96,26 @@ export default function Home() {
                 <input
                   type="url"
                   placeholder="www.example.com"
+                  value={referenceUrl}
+                  onChange={(e) => setReferenceUrl(e.target.value)}
                   className="flex-1 px-5 py-4 border border-gray-300 rounded-xl text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                 />
-                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-xl text-base font-medium">
-                  Extract
+                <Button 
+                  onClick={handleExtract}
+                  disabled={!referenceUrl.trim() || isExtracting}
+                  className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-xl text-base font-medium disabled:opacity-50"
+                >
+                  {isExtracting ? (
+                    <>
+                      <Wand2 className="w-4 h-4 mr-2 animate-spin" />
+                      Extracting...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="w-4 h-4 mr-2" />
+                      Extract
+                    </>
+                  )}
                 </Button>
               </div>
               <p className="text-sm text-gray-500 mt-2">
@@ -63,28 +131,55 @@ export default function Home() {
               <textarea
                 rows={8}
                 placeholder="Describe your project or use Extract button above. You can write multiple sentences with details about your vision, target audience, style, and goals."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 className="w-full px-5 py-4 border border-gray-300 rounded-xl text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
               />
             </div>
 
             {/* Bottom Actions */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
-              <button className="px-6 py-3 border border-gray-300 rounded-xl text-base font-medium hover:bg-gray-50 transition-all flex items-center gap-2">
-                <span>⭐</span>
-                Commercial
-                <span className="text-gray-400">▼</span>
-              </button>
-              <div className="flex gap-3">
-                <button className="px-6 py-3 border border-gray-300 rounded-xl text-base font-medium hover:bg-gray-50 transition-all flex items-center gap-2">
-                  <span>📎</span>
-                  Attach
+              <div className="relative">
+                <button 
+                  onClick={() => setShowTypeDropdown(!showTypeDropdown)}
+                  className="px-6 py-3 border border-gray-300 rounded-xl text-base font-medium hover:bg-gray-50 transition-all flex items-center gap-2"
+                >
+                  <span>{selectedType.icon}</span>
+                  {selectedType.label}
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showTypeDropdown ? 'rotate-180' : ''}`} />
                 </button>
-                <Link to={createPageUrl('SubmitProject')}>
-                  <Button size="lg" className="bg-gray-600 hover:bg-gray-700 text-white px-10 py-4 text-base font-medium rounded-xl shadow-xl">
-                    <span className="mr-2">✨</span>
-                    Generate Production Plan
-                  </Button>
-                </Link>
+                
+                {showTypeDropdown && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl border border-gray-200 shadow-xl z-50 max-h-96 overflow-y-auto">
+                    {PROJECT_TYPES.map((type) => (
+                      <button
+                        key={type.value}
+                        onClick={() => {
+                          setProjectType(type.value);
+                          setShowTypeDropdown(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 ${
+                          projectType === type.value ? 'bg-blue-50' : ''
+                        }`}
+                      >
+                        <span className="text-xl">{type.icon}</span>
+                        <span className="text-sm font-medium">{type.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                <Button 
+                  onClick={handleGenerate}
+                  disabled={!description.trim()}
+                  size="lg" 
+                  className="bg-gray-700 hover:bg-gray-800 text-white px-10 py-4 text-base font-medium rounded-xl shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Generate Production Plan
+                </Button>
               </div>
             </div>
           </div>
