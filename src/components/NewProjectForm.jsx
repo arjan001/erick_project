@@ -6,12 +6,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sparkles, Wand2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-export default function NewProjectForm() {
+export default function NewProjectForm({ selectedCategory = 'commercial' }) {
   const [referenceUrl, setReferenceUrl] = useState('');
   const [description, setDescription] = useState('');
-  const [projectType, setProjectType] = useState('commercial');
+  const projectTypeMap = {
+    commercial: 'commercial',
+    short: 'short_film',
+    feature: 'film',
+    music: 'music_video',
+    documentary: 'documentary'
+  };
+  const [projectType, setProjectType] = useState(projectTypeMap[selectedCategory] || 'commercial');
   const [extracting, setExtracting] = useState(false);
   const [generating, setGenerating] = useState(false);
+
+  React.useEffect(() => {
+    setProjectType(projectTypeMap[selectedCategory] || 'commercial');
+  }, [selectedCategory]);
 
   const handleExtract = async () => {
     if (!referenceUrl) return;
@@ -49,18 +60,18 @@ export default function NewProjectForm() {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold mb-2">New Project</h2>
-      <p className="text-gray-500 mb-8">One sentence. The system handles the rest.</p>
+      <h2 className="text-2xl font-bold mb-2 text-[#1a1a1a]">New Project</h2>
+      <p className="text-[#666] text-sm mb-6">One sentence. The system handles the rest.</p>
 
       {/* Reference Website */}
-      <div className="mb-6">
-        <label className="block text-sm font-semibold mb-2">Reference Website (Optional)</label>
-        <div className="flex gap-2 mb-2">
+      <div className="mb-5">
+        <label className="block text-xs font-semibold mb-2 text-[#666]">Reference Website (Optional)</label>
+        <div className="flex gap-2 mb-1">
           <Input 
             placeholder="www.example.com"
             value={referenceUrl}
             onChange={(e) => setReferenceUrl(e.target.value)}
-            className="flex-1"
+            className="flex-1 bg-white border-gray-300 text-sm"
           />
           <Button 
             onClick={handleExtract}
@@ -69,29 +80,29 @@ export default function NewProjectForm() {
             className="bg-emerald-400 hover:bg-emerald-500 text-white"
           >
             <Sparkles className="w-3 h-3 mr-1" />
-            {extracting ? 'Extracting...' : 'Extract'}
+            {extracting ? 'Ext...' : 'Extract'}
           </Button>
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-[#999]">
           Provide a URL and click Extract to auto-generate your project description
         </p>
       </div>
 
       {/* Project Description */}
-      <div className="mb-6">
-        <label className="block text-sm font-semibold mb-2">Project Description</label>
+      <div className="mb-5">
+        <label className="block text-xs font-semibold mb-2 text-[#666]">Project Description</label>
         <Textarea
           placeholder="Describe your project or use Extract button above. You can write multiple sentences with details about your vision, target audience, style, and goals."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="min-h-[140px] text-sm"
+          className="min-h-[120px] text-sm bg-white border-gray-300"
         />
       </div>
 
       {/* Bottom Actions */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <Select value={projectType} onValueChange={setProjectType}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full bg-white border-gray-300">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -107,7 +118,7 @@ export default function NewProjectForm() {
         <Button 
           onClick={handleGeneratePlan}
           disabled={!description || generating}
-          className="w-full bg-gray-500 hover:bg-gray-600 text-white"
+          className="w-full bg-gray-500 hover:bg-gray-600 text-white text-sm"
         >
           <Wand2 className="w-4 h-4 mr-2" />
           {generating ? 'Generating...' : 'Generate Production Plan'}
