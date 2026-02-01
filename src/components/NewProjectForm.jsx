@@ -59,12 +59,12 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-2 text-[#1a1a1a]">New Project</h2>
-      <p className="text-[#666] text-sm mb-6">One sentence. The system handles the rest.</p>
+    <div className="bg-white rounded-[15px] p-8">
+      <h2 className="text-2xl font-bold mb-1 text-[#1a1a1a]">New Project</h2>
+      <p className="text-[#666] text-sm mb-4">One sentence. The system handles the rest.</p>
 
       {/* Reference Website */}
-      <div className="mb-5">
+      <div className="mb-4">
         <label className="block text-xs font-semibold mb-2 text-[#666]">Reference Website (Optional)</label>
         <div className="flex gap-2 mb-1">
           <Input 
@@ -89,13 +89,13 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
       </div>
 
       {/* Project Description */}
-      <div className="mb-5">
+      <div className="mb-4">
         <label className="block text-xs font-semibold mb-2 text-[#666]">Project Description</label>
         <Textarea
           placeholder="Describe your project or use Extract button above. You can write multiple sentences with details about your vision, target audience, style, and goals."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="min-h-[120px] text-sm bg-white border-gray-300"
+          className="min-h-[80px] text-sm bg-white border-gray-300"
         />
       </div>
 
