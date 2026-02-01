@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowRight, Play, MapPin, Award, Sparkles, Wand2, Paperclip, ChevronDown, Tv, Music, Film, Clapperboard, Video, Zap, Camera, Package, Share2, Palette } from 'lucide-react';
+import { ArrowRight, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useTranslation } from '../components/useTranslation';
-import { base44 } from '@/api/base44Client';
-import EuropeanPresenceMap from '../components/home/EuropeanPresenceMap';
-import FeaturedWork from '../components/home/FeaturedWork';
-import ServicesPreview from '../components/home/ServicesPreview';
+import HeroShowcase from '../components/home/HeroShowcase';
+import ProjectGrid from '../components/home/ProjectGrid';
 
 const PROJECT_TYPES = [
   { value: 'commercial', label: 'Commercial', icon: Tv },
@@ -23,252 +20,131 @@ const PROJECT_TYPES = [
 ];
 
 export default function Home() {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  
-  const [referenceUrl, setReferenceUrl] = useState('');
-  const [description, setDescription] = useState('');
-  const [projectType, setProjectType] = useState('commercial');
-  const [isExtracting, setIsExtracting] = useState(false);
-  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleExtract = async () => {
-    if (!referenceUrl?.trim()) return;
-    
-    setIsExtracting(true);
-    try {
-      const { data } = await base44.functions.invoke('extractWebsite', { url: referenceUrl });
-      if (data?.success && data?.description) {
-        setDescription(data.description);
-      }
-    } catch (error) {
-      console.error('Extract error:', error);
-      alert('Failed to extract website content. Please try again.');
-    } finally {
-      setIsExtracting(false);
-    }
-  };
-
-  const handleRefreshDescription = async (newType) => {
-    if (!description?.trim()) return;
-    
-    setIsRefreshing(true);
-    try {
-      const typeLabel = PROJECT_TYPES.find(t => t.value === newType)?.label || 'commercial';
-      const { data } = await base44.functions.invoke('extractWebsite', { 
-        url: `refresh-${Date.now()}`,
-        description: description,
-        projectType: typeLabel
-      });
-      
-      if (data?.success && data?.description) {
-        setDescription(data.description);
-      }
-    } catch (error) {
-      console.error('Refresh error:', error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const handleGenerate = () => {
-    // Navigate to SubmitProject with initial data
-    const projectData = {
-      notes: description,
-      project_type: projectType,
-    };
-    
-    navigate(createPageUrl('SubmitProject'), { 
-      state: { initialData: projectData } 
-    });
-  };
-
-  const selectedType = PROJECT_TYPES.find(t => t.value === projectType) || PROJECT_TYPES[0];
-
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center py-20 bg-white">
-        {/* Background Video/Image */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/90 to-white z-10" />
-          <img 
-            src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2000" 
-            alt="Production"
-            className="w-full h-full object-cover opacity-20"
-          />
-        </div>
+      {/* Hero Showcase */}
+      <HeroShowcase />
 
-        {/* Hero Content - Form Style */}
-        <div className="relative z-20 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-12 border border-gray-100">
-            {/* Studio22 Branding */}
-            <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-200">
-              <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
-                <span className="text-xl font-bold text-white">S22</span>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-black">Studio<span className="text-gray-600">22</span></h2>
-                <p className="text-sm text-gray-500">Production Network</p>
-              </div>
-            </div>
+      {/* Nominees Section */}
+      <ProjectGrid />
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 text-black">
-              New Project
-            </h1>
-            <p className="text-lg text-gray-600 mb-12">
-              One sentence. The system handles the rest.
+      {/* Winners Section */}
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12">
+            <h2 className="text-5xl md:text-6xl font-black uppercase mb-4 tracking-tight">
+              Winners
+            </h2>
+            <p className="text-xl text-gray-600">
+              Recent Productions of the Day
             </p>
+          </div>
 
-            {/* Reference Website */}
-            <div className="mb-8">
-              <label className="block text-base font-semibold mb-3 text-black">
-                Reference Website (Optional)
-              </label>
-              <div className="flex gap-3">
-                <input
-                  type="url"
-                  placeholder="www.example.com"
-                  value={referenceUrl}
-                  onChange={(e) => setReferenceUrl(e.target.value)}
-                  className="flex-1 px-5 py-4 border border-gray-300 rounded-xl text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                />
-                <Button 
-                  onClick={handleExtract}
-                  disabled={!referenceUrl?.trim() || isExtracting}
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-xl text-base font-medium disabled:opacity-50"
-                >
-                  {isExtracting ? (
-                    <>
-                      <Wand2 className="w-4 h-4 mr-2 animate-spin" />
-                      Extracting...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="w-4 h-4 mr-2" />
-                      Extract
-                    </>
-                  )}
-                </Button>
-              </div>
-              <p className="text-sm text-gray-500 mt-2">
-                Provide a URL and click Extract to auto-generate your project description
-              </p>
-            </div>
-
-            {/* Project Description */}
-            <div className="mb-8">
-              <label className="block text-base font-semibold mb-3 text-black">
-                Project Description
-              </label>
-              <textarea
-                rows={3}
-                placeholder="Describe your project or use Extract button above. You can write multiple sentences with details about your vision, target audience, style, and goals."
-                value={description}
-                onChange={(e) => {
-                  setDescription(e.target.value);
-                  e.target.style.height = 'auto';
-                  e.target.style.height = e.target.scrollHeight + 'px';
-                }}
-                className="w-full px-5 py-4 border border-gray-300 rounded-xl text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none overflow-hidden"
-                style={{ minHeight: '80px' }}
-              />
-            </div>
-
-            {/* Bottom Actions */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
-              <div className="relative">
-                <button 
-                  onClick={() => setShowTypeDropdown(!showTypeDropdown)}
-                  className="px-6 py-3 border border-gray-300 rounded-xl text-base font-medium hover:bg-gray-50 transition-all flex items-center gap-2"
-                >
-                  {React.createElement(selectedType.icon, { className: "w-4 h-4 text-gray-600" })}
-                  {selectedType.label}
-                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showTypeDropdown ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {showTypeDropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl border border-gray-200 shadow-xl z-50 max-h-96 overflow-y-auto">
-                    {PROJECT_TYPES.map((type) => {
-                      const IconComponent = type.icon;
-                      return (
-                        <button
-                          key={type.value}
-                          onClick={() => {
-                            const newType = type.value;
-                            setProjectType(newType);
-                            setShowTypeDropdown(false);
-                            if (description?.trim()) {
-                              handleRefreshDescription(newType);
-                            }
-                          }}
-                          className={`w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 transition-colors ${
-                            projectType === type.value ? 'bg-gray-100' : ''
-                          }`}
-                        >
-                          <IconComponent className="w-4 h-4 text-gray-600" />
-                          <span className="text-sm font-medium text-gray-700">{type.label}</span>
-                        </button>
-                      );
-                    })}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Winner Cards */}
+            {[1, 2].map((i) => (
+              <Link 
+                key={i}
+                to={createPageUrl('Work')}
+                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 card-hover"
+              >
+                <div className="relative aspect-video overflow-hidden">
+                  <img 
+                    src={`https://images.unsplash.com/photo-${i === 1 ? '1579547621113' : '1574267432553'}-c130c5abfa72?q=80&w=1200`}
+                    alt="Winner"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <div className="inline-flex flex-col items-center px-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-black rounded-lg">
+                      <div className="text-xs font-bold uppercase tracking-wider text-gray-600">POTD</div>
+                      <div className="text-3xl font-black leading-none">8.{i}7</div>
+                      <div className="text-xs text-gray-500">/10</div>
+                    </div>
                   </div>
-                )}
-              </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-2xl font-black uppercase tracking-tight mb-2">
+                    Featured Commercial
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="w-5 h-5 rounded-full bg-gray-300" />
+                    <span className="font-medium">Studio22 Amsterdam</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
 
-              <div className="flex gap-3">
-                <Button 
-                  onClick={handleGenerate}
-                  disabled={!description?.trim()}
-                  size="lg" 
-                  className="bg-gray-700 hover:bg-gray-800 text-white px-10 py-4 text-base font-medium rounded-xl shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Generate Production Plan
-                </Button>
-              </div>
-            </div>
+          <div className="text-center mt-12">
+            <Link to={createPageUrl('Work')}>
+              <button className="px-8 py-4 border-2 border-black text-black font-bold uppercase text-sm tracking-wider hover:bg-black hover:text-white transition-all duration-300">
+                View All Winners
+              </button>
+            </Link>
           </div>
         </div>
       </section>
 
+      {/* Services Section */}
+      <section className="py-20 px-6 bg-[#FAFAFA]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-display uppercase mb-6 tracking-tighter">
+              Full-Service
+              <br />
+              Production
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              From concept to delivery, we handle every aspect with curated teams across Europe
+            </p>
+          </div>
 
-
-      {/* Featured Work */}
-      <FeaturedWork />
-
-      {/* Services Preview */}
-      <ServicesPreview />
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { title: 'Commercial', desc: 'High-end commercial production from concept to delivery' },
+              { title: 'Film & Docs', desc: 'Feature films, shorts, and documentaries' },
+              { title: 'Post Production', desc: 'Editing, color grading, and finishing' },
+              { title: 'VFX & 3D', desc: 'Visual effects and 3D animation' },
+              { title: 'Sound & Music', desc: 'Sound design, mixing, and composition' },
+              { title: 'Web Dev', desc: 'Marketing websites and digital experiences' },
+            ].map((service, i) => (
+              <div key={i} className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="w-12 h-12 bg-black rounded-lg mb-4" />
+                <h3 className="text-2xl font-black uppercase mb-3 tracking-tight">{service.title}</h3>
+                <p className="text-gray-600">{service.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* First Frame CTA */}
-      <section className="py-24 bg-gradient-to-br from-amber-50 to-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Award className="w-16 h-16 text-amber-600 mx-auto mb-6" />
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black">Studio22 First Frame</h2>
-          <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
-            Experience how Studio22 works with one complimentary production day for verified projects. See our quality firsthand.
+      <section className="py-24 bg-black text-white">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <Award className="w-16 h-16 mx-auto mb-6 text-yellow-400" />
+          <h2 className="text-5xl md:text-6xl font-black uppercase mb-6 tracking-tight">Studio22 First Frame</h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto text-gray-300">
+            Experience our quality with one complimentary production day for verified projects
           </p>
           <Link to={createPageUrl('FirstFrame')}>
-            <Button size="lg" variant="outline" className="border-2 border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white px-8 py-6 text-lg rounded-lg">
-              Learn More About First Frame
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
+            <button className="px-8 py-4 bg-yellow-400 text-black font-bold uppercase text-sm tracking-wider hover:bg-yellow-300 transition-all duration-300 rounded-lg">
+              Learn More <ArrowRight className="inline-block ml-2 w-4 h-4" />
+            </button>
           </Link>
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black">Ready to start?</h2>
-          <p className="text-xl text-gray-700 mb-8">
-            Submit your project and let us assemble the perfect team.
+      <section className="py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-display uppercase mb-6 tracking-tighter">Ready to Start?</h2>
+          <p className="text-xl text-gray-600 mb-8">
+            Submit your project and we'll assemble the perfect team
           </p>
           <Link to={createPageUrl('SubmitProject')}>
-            <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-10 py-6 text-lg rounded-lg shadow-2xl shadow-amber-600/20">
-              Submit Your Project
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
+            <button className="px-12 py-5 bg-black text-white font-bold uppercase text-sm tracking-wider hover:bg-gray-800 transition-all duration-300 rounded-lg shadow-2xl">
+              Submit Project <ArrowRight className="inline-block ml-2 w-4 h-4" />
+            </button>
           </Link>
         </div>
       </section>
