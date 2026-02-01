@@ -79,40 +79,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Bottom Nav Bar */}
-        <div className="flex justify-center">
-          <div className="inline-flex items-center bg-[#1a1a1a] rounded-2xl shadow-2xl px-3 py-3 gap-2">
-            <Link 
-              to={createPageUrl('Home')}
-              className="flex items-center justify-center px-3 py-2 hover:bg-white/5 rounded-lg transition-all"
-            >
-              <span className="text-base font-black text-white tracking-tighter">22.</span>
-            </Link>
 
-            <div className="h-6 w-px bg-gray-700" />
-
-            {[
-              { name: 'In Production', href: 'Home' },
-              { name: 'Released', href: 'Work' },
-              { name: 'Collections', href: 'Services' },
-              { name: 'Creators', href: 'ApplyArtist' },
-              { name: 'Market', href: 'ApplyTeam' },
-              { name: 'Visit Sotd.', href: 'FirstFrame', highlight: true },
-            ].map((item) => (
-              <Link
-                key={item.name}
-                to={createPageUrl(item.href)}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${
-                  item.highlight 
-                    ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]' 
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* IN PRODUCTION Section */}
