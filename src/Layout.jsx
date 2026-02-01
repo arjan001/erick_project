@@ -42,27 +42,35 @@ export default function Layout({ children, currentPageName }) {
                     onMouseLeave={() => setExploreOpen(false)}
                     className="flex items-center gap-1 text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors"
                   >
-                    Explore <ChevronDown className="w-3 h-3" />
+                    Start to shoot <span className="ml-1 px-1.5 py-0.5 bg-black text-white text-[10px] font-bold rounded">NEW</span> <ChevronDown className="w-3 h-3" />
                   </button>
-                  
+
                   {exploreOpen && (
                     <div 
                       onMouseEnter={() => setExploreOpen(true)}
                       onMouseLeave={() => setExploreOpen(false)}
-                      className="absolute top-full left-0 mt-4 w-72 bg-white text-black rounded-lg shadow-2xl py-4 px-2"
+                      className="absolute top-full left-0 mt-4 w-80 bg-white text-black rounded-lg shadow-2xl py-4 px-2"
                     >
                       <div className="space-y-1">
-                        <Link to={createPageUrl('Home')} className="block px-4 py-2 text-sm hover:bg-gray-100 rounded-lg">
-                          <div className="font-bold">In Production</div>
-                          <div className="text-xs text-gray-500">49K projects in development</div>
+                        <Link to={createPageUrl('Home')} className="block px-4 py-3 text-sm hover:bg-gray-100 rounded-lg">
+                          <div className="font-bold">Commercial</div>
+                          <div className="text-xs text-gray-500">Brand films, ads, campaigns. Clear structure. Clear budgets.</div>
                         </Link>
-                        <Link to={createPageUrl('Work')} className="block px-4 py-2 text-sm hover:bg-gray-100 rounded-lg">
-                          <div className="font-bold">Released</div>
-                          <div className="text-xs text-gray-500">6236 completed productions</div>
+                        <Link to={createPageUrl('Home')} className="block px-4 py-3 text-sm hover:bg-gray-100 rounded-lg">
+                          <div className="font-bold">Short Film</div>
+                          <div className="text-xs text-gray-500">Narrative driven. Script heavy. Small to mid crews.</div>
                         </Link>
-                        <Link to={createPageUrl('Services')} className="block px-4 py-2 text-sm hover:bg-gray-100 rounded-lg">
-                          <div className="font-bold">Collections</div>
-                          <div className="text-xs text-gray-500">201 curated showcases</div>
+                        <Link to={createPageUrl('Home')} className="block px-4 py-3 text-sm hover:bg-gray-100 rounded-lg">
+                          <div className="font-bold">Feature Film</div>
+                          <div className="text-xs text-gray-500">Full production planning. Cast, locations, long schedule.</div>
+                        </Link>
+                        <Link to={createPageUrl('Home')} className="block px-4 py-3 text-sm hover:bg-gray-100 rounded-lg">
+                          <div className="font-bold">Music Video</div>
+                          <div className="text-xs text-gray-500">Visual first. Short schedule. Strong art direction.</div>
+                        </Link>
+                        <Link to={createPageUrl('Home')} className="block px-4 py-3 text-sm hover:bg-gray-100 rounded-lg">
+                          <div className="font-bold">Documentary</div>
+                          <div className="text-xs text-gray-500">Real world. Flexible planning. Research focused.</div>
                         </Link>
                       </div>
                     </div>
