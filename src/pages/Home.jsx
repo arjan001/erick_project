@@ -71,7 +71,7 @@ export default function Home() {
         <div className="relative max-w-5xl mx-auto px-6 mb-16">
           <div className="relative rounded-xl overflow-hidden shadow-2xl">
             <img 
-              src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2000"
+              src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&amp;w=2000"
               alt="Cinematic production"
               className="w-full aspect-video object-cover"
             />
@@ -79,7 +79,40 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Bottom Nav Bar */}
+        <div className="flex justify-center">
+          <div className="inline-flex items-center bg-[#1a1a1a] rounded-2xl shadow-2xl px-3 py-3 gap-2">
+            <Link 
+              to={createPageUrl('Home')}
+              className="flex items-center justify-center px-3 py-2 hover:bg-white/5 rounded-lg transition-all"
+            >
+              <span className="text-base font-black text-white tracking-tighter">22.</span>
+            </Link>
 
+            <div className="h-6 w-px bg-gray-700" />
+
+            {[
+              { name: 'In Production', href: 'Home' },
+              { name: 'Released', href: 'Work' },
+              { name: 'Collections', href: 'Services' },
+              { name: 'Creators', href: 'ApplyArtist' },
+              { name: 'Market', href: 'ApplyTeam' },
+              { name: 'Visit Sotd.', href: 'FirstFrame', highlight: true },
+            ].map((item) => (
+              <Link
+                key={item.name}
+                to={createPageUrl(item.href)}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${
+                  item.highlight 
+                    ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]' 
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* IN PRODUCTION Section */}
