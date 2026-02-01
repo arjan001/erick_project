@@ -58,7 +58,7 @@ export default function Home() {
 
         {/* Main Title */}
         <div className="text-center px-6 max-w-6xl mx-auto mb-12">
-          <h1 className="text-[80px] md:text-[140px] lg:text-[180px] font-black uppercase leading-[0.9] tracking-tighter text-[#1a1a1a] mb-6">
+          <h1 className="text-[80px] md:text-[140px] lg:text-[180px] font-bold uppercase leading-[0.9] tracking-tighter text-[#1a1a1a] mb-6">
             STUDIO22
           </h1>
           
@@ -79,47 +79,13 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Bottom Nav Bar */}
-        <div className="flex justify-center">
-          <div className="inline-flex items-center bg-[#1a1a1a] rounded-2xl shadow-2xl px-3 py-3 gap-2">
-            <Link 
-              to={createPageUrl('Home')}
-              className="flex items-center justify-center px-3 py-2 hover:bg-white/5 rounded-lg transition-all"
-            >
-              <span className="text-base font-black text-white tracking-tighter">22.</span>
-            </Link>
-
-            <div className="h-6 w-px bg-gray-700" />
-
-            {[
-              { name: 'In Production', href: 'Home' },
-              { name: 'Released', href: 'Work' },
-              { name: 'Collections', href: 'Services' },
-              { name: 'Creators', href: 'ApplyArtist' },
-              { name: 'Market', href: 'ApplyTeam' },
-              { name: 'Visit Sotd.', href: 'FirstFrame', highlight: true },
-            ].map((item) => (
-              <Link
-                key={item.name}
-                to={createPageUrl(item.href)}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${
-                  item.highlight 
-                    ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]' 
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* IN PRODUCTION Section */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
-            <h2 className="text-6xl md:text-8xl font-black uppercase mb-4 tracking-tighter">
+            <h2 className="text-6xl md:text-8xl font-bold uppercase mb-4 tracking-tighter">
               IN PRODUCTION
             </h2>
             <div className="flex items-center justify-between">
@@ -197,7 +163,7 @@ export default function Home() {
       <section className="py-20 px-6 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
-            <h2 className="text-6xl md:text-8xl font-black uppercase mb-4 tracking-tighter">
+            <h2 className="text-6xl md:text-8xl font-bold uppercase mb-4 tracking-tighter">
               RELEASED
             </h2>
             <p className="text-xl text-gray-600">Completed and delivered productions</p>
@@ -262,7 +228,7 @@ export default function Home() {
       <section className="py-20 px-6 bg-white">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
-            <h2 className="text-6xl md:text-8xl font-black uppercase mb-4 tracking-tighter">
+            <h2 className="text-6xl md:text-8xl font-bold uppercase mb-4 tracking-tighter">
               COLLECTIONS
             </h2>
             <p className="text-xl text-gray-600">Curated production showcases</p>
@@ -304,7 +270,7 @@ export default function Home() {
       <section className="py-20 px-6 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
-            <h2 className="text-6xl md:text-8xl font-black uppercase mb-4 tracking-tighter">
+            <h2 className="text-6xl md:text-8xl font-bold uppercase mb-4 tracking-tighter">
               WE ARE 22. CREATORS
             </h2>
             <p className="text-xl text-gray-600">The people behind our productions</p>
@@ -354,7 +320,7 @@ export default function Home() {
       <section className="py-20 px-6 bg-white">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
-            <h2 className="text-6xl md:text-8xl font-black uppercase mb-4 tracking-tighter">
+            <h2 className="text-6xl md:text-8xl font-bold uppercase mb-4 tracking-tighter">
               RECENT PRODUCTIONS
             </h2>
             <p className="text-xl text-gray-600">Recently updated and completed</p>
@@ -432,7 +398,7 @@ export default function Home() {
       <section className="py-24 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-6xl md:text-8xl font-black uppercase mb-6 tracking-tighter">
+            <h2 className="text-6xl md:text-8xl font-bold uppercase mb-6 tracking-tighter">
               STUDIO22 MARKET
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -475,7 +441,7 @@ export default function Home() {
       <section className="py-24 bg-[#1a1a1a] text-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <Award className="w-20 h-20 mx-auto mb-8 text-[#FFD700]" />
-          <h2 className="text-5xl md:text-7xl font-black uppercase mb-6 tracking-tighter">STUDIO22 FIRST FRAME</h2>
+          <h2 className="text-5xl md:text-7xl font-bold uppercase mb-6 tracking-tighter">STUDIO22 FIRST FRAME</h2>
           <p className="text-2xl mb-10 max-w-2xl mx-auto text-gray-300 font-light">
             Experience our quality with one complimentary production day for verified projects
           </p>

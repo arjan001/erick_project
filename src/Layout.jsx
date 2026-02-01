@@ -151,7 +151,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Bottom Floating Navigation */}
       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slideUp">
-        <div className="bg-[#1a1a1a] rounded-2xl shadow-2xl backdrop-blur-sm border border-white/10">
+        <div className="bg-[#3a3a3a] rounded-2xl shadow-2xl backdrop-blur-sm border border-white/10">
           <div className="flex items-center gap-0 px-3 py-2.5">
             <Link 
               to={createPageUrl('Home')}
@@ -160,7 +160,7 @@ export default function Layout({ children, currentPageName }) {
               <span className="text-lg font-black text-white tracking-tighter">22.</span>
             </Link>
 
-            <div className="h-6 w-px bg-gray-700 mr-2" />
+            <div className="h-6 w-px bg-gray-600 mr-2" />
 
             {bottomNav.map((item) => {
               const isActive = currentPageName === item.href;
@@ -173,7 +173,7 @@ export default function Layout({ children, currentPageName }) {
                       ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]' 
                       : isActive
                         ? 'text-white bg-white/10'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        : 'text-gray-300 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   {item.name}
