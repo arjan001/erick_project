@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Wand2 } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { createPageUrl } from '../utils';
 
 export default function NewProjectForm({ selectedCategory = 'commercial' }) {
+  const navigate = useNavigate();
   const [referenceUrl, setReferenceUrl] = useState('');
   const [description, setDescription] = useState('');
   const projectTypeMap = {
@@ -18,7 +20,6 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
   };
   const [projectType, setProjectType] = useState(projectTypeMap[selectedCategory] || 'commercial');
   const [extracting, setExtracting] = useState(false);
-  const [generating, setGenerating] = useState(false);
 
   React.useEffect(() => {
     setProjectType(projectTypeMap[selectedCategory] || 'commercial');
@@ -32,6 +33,8 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
       const response = await base44.functions.invoke('extractWebsite', { url: referenceUrl });
       if (response.data?.description) {
         setDescription(response.data.description);
+      } else if (response.data?.error) {
+        console.error('Extract error:', response.data.error);
       }
     } catch (error) {
       console.error('Extract failed:', error);
@@ -40,22 +43,14 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
     }
   };
 
-  const handleGeneratePlan = async () => {
+  const handleSubmit = () => {
     if (!description) return;
     
-    setGenerating(true);
-    try {
-      const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `Generate a detailed production plan for this project:\n\nType: ${projectType}\nDescription: ${description}\n\nProvide a structured production plan with timeline, departments needed, and key deliverables.`,
-      });
-      
-      console.log('Production plan:', response);
-      alert('Production plan generated! Check console for details.');
-    } catch (error) {
-      console.error('Generation failed:', error);
-    } finally {
-      setGenerating(false);
-    }
+    // Navigate to SubmitProject with the description
+    const params = new URLSearchParams();
+    params.set('description', description);
+    params.set('category', selectedCategory);
+    navigate(createPageUrl(`SubmitProject?${params.toString()}`));
   };
 
   return (
@@ -102,12 +97,11 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
       {/* Bottom Actions */}
       <div className="space-y-2">
         <Button 
-          onClick={handleGeneratePlan}
-          disabled={!description || generating}
+          onClick={handleSubmit}
+          disabled={!description}
           className="w-full bg-gray-500 hover:bg-gray-600 text-white text-sm"
         >
-          <Wand2 className="w-4 h-4 mr-2" />
-          {generating ? 'Generating...' : 'Generate Production Plan'}
+          Continue to Project Details
         </Button>
       </div>
     </div>
