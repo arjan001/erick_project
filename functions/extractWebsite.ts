@@ -9,25 +9,23 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { url, description, projectType } = await req.json();
+        const { url, projectType } = await req.json();
 
-        let prompt = '';
-        
-        // Check if this is a refresh request (changing project type)
-        if (url && url.startsWith('refresh-')) {
-            if (!description || !projectType) {
-                return Response.json({ error: 'Description and project type required' }, { status: 400 });
-            }
-            
-            prompt = `Current project description: "${description}"\n\nRewrite this description to better fit a ${projectType} production. Keep the core concept but adjust the language, tone, and focus to match ${projectType} style. Keep it to 3-4 sentences maximum.`;
-        } else {
-            // Original extraction from URL using web search
-            if (!url) {
-                return Response.json({ error: 'URL is required' }, { status: 400 });
-            }
-
-            prompt = `Analyze the website at ${url} and generate a professional project description for a video production. Focus on the brand's identity, target audience, visual style, and production needs based on what you find. Keep it to 3-4 sentences maximum.`;
+        if (!url) {
+            return Response.json({ error: 'URL is required' }, { status: 400 });
         }
+
+        const categoryMap = {
+            commercial: 'commercial advertisement',
+            short: 'short film',
+            feature: 'feature film',
+            music: 'music video',
+            documentary: 'documentary'
+        };
+
+        const categoryLabel = categoryMap[projectType] || projectType;
+
+        const prompt = `Analyze the website at ${url} and generate a professional project description for a ${categoryLabel} production. Focus on the brand's identity, target audience, visual style, tone, and production requirements based on what you find. Tailor the description specifically for a ${categoryLabel} context. Keep it to 3-4 sentences maximum.`;
 
         // Use OpenAI with web search capability
         const { data } = await base44.integrations.Core.InvokeLLM({

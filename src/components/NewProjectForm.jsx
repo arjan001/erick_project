@@ -30,7 +30,10 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
     
     setExtracting(true);
     try {
-      const response = await base44.functions.invoke('extractWebsite', { url: referenceUrl });
+      const response = await base44.functions.invoke('extractWebsite', { 
+        url: referenceUrl,
+        projectType: selectedCategory
+      });
       if (response.data?.description) {
         setDescription(response.data.description);
       } else if (response.data?.error) {
