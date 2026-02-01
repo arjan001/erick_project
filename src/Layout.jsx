@@ -131,9 +131,6 @@ export default function Layout({ children, currentPageName }) {
               <Button variant="ghost" size="sm" className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent">
                 Sign Up
               </Button>
-              <Button size="sm" className="bg-black hover:bg-gray-800 text-white font-bold px-4">
-                Be Pro
-              </Button>
               <Link to={createPageUrl('SubmitProject')}>
                 <Button size="sm" className="border-2 border-black hover:bg-black hover:text-white text-white font-bold">
                   Submit Project
