@@ -2,22 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ArrowRight, Award } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import HeroShowcase from '../components/home/HeroShowcase';
 import ProjectGrid from '../components/home/ProjectGrid';
-
-const PROJECT_TYPES = [
-  { value: 'commercial', label: 'Commercial', icon: Tv },
-  { value: 'music_video', label: 'Music Video', icon: Music },
-  { value: 'short_film', label: 'Short Film', icon: Film },
-  { value: 'feature_film', label: 'Feature Film', icon: Clapperboard },
-  { value: 'documentary', label: 'Documentary', icon: Video },
-  { value: 'branded_content', label: 'Branded Content', icon: Zap },
-  { value: 'event_coverage', label: 'Event Coverage', icon: Camera },
-  { value: 'product_demo', label: 'Product Demo', icon: Package },
-  { value: 'social_media', label: 'Social Media', icon: Share2 },
-  { value: 'animation', label: 'Animation', icon: Palette },
-];
 
 export default function Home() {
   return (
