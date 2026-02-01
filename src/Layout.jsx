@@ -10,6 +10,30 @@ export default function Layout({ children, currentPageName }) {
   const [exploreOpen, setExploreOpen] = useState(false);
   const [academyOpen, setAcademyOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('commercial');
+  const [expandedCategory, setExpandedCategory] = useState('commercial');
+
+  const categoryInfo = {
+    commercial: {
+      title: 'Commercial',
+      desc: 'Brand films, ads, campaigns.\nClear structure. Clear budgets.'
+    },
+    short: {
+      title: 'Short Film',
+      desc: 'Narrative driven.\nScript heavy. Small to mid crews.'
+    },
+    feature: {
+      title: 'Feature Film',
+      desc: 'Full production planning.\nCast, locations, long schedule.'
+    },
+    music: {
+      title: 'Music Video',
+      desc: 'Visual first.\nShort schedule. Strong art direction.'
+    },
+    documentary: {
+      title: 'Documentary',
+      desc: 'Real world.\nFlexible planning. Research focused.'
+    }
+  };
 
   const bottomNav = [
     { name: 'In Production', href: 'Home' },
@@ -101,8 +125,8 @@ export default function Layout({ children, currentPageName }) {
 
           <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40" style={{ height: '70vh' }}>
             <div className="flex h-full rounded-bl-3xl rounded-br-3xl overflow-hidden">
-              {/* LEFT COLUMN - 30% width - Categories */}
-              <div className="w-[30%] bg-[#EDEDED] p-12 overflow-y-auto rounded-bl-3xl">
+              {/* LEFT COLUMN - 30% width - Categories with expand/collapse */}
+              <div className="w-[30%] bg-[#EDEDED] p-8 overflow-y-auto rounded-bl-3xl">
                 <button 
                   onClick={() => setExploreOpen(false)}
                   className="absolute top-4 right-4 p-2 hover:bg-gray-300 transition-colors"
@@ -110,113 +134,33 @@ export default function Layout({ children, currentPageName }) {
                   <X className="w-5 h-5 text-[#666]" />
                 </button>
 
-                <div className="space-y-0">
-                  <button
-                    onClick={() => setSelectedCategory('commercial')}
-                    className={`w-full text-left px-6 py-4 transition-colors ${
-                      selectedCategory === 'commercial' 
-                        ? 'bg-gray-300 text-[#1a1a1a]' 
-                        : 'text-[#999] hover:bg-gray-200 hover:text-[#666]'
-                    }`}
-                  >
-                    <div className="text-base font-medium">Commercial</div>
-                  </button>
-                  <button
-                    onClick={() => setSelectedCategory('short')}
-                    className={`w-full text-left px-6 py-4 transition-colors ${
-                      selectedCategory === 'short' 
-                        ? 'bg-gray-300 text-[#1a1a1a]' 
-                        : 'text-[#999] hover:bg-gray-200 hover:text-[#666]'
-                    }`}
-                  >
-                    <div className="text-base font-medium">Short Film</div>
-                  </button>
-                  <button
-                    onClick={() => setSelectedCategory('feature')}
-                    className={`w-full text-left px-6 py-4 transition-colors ${
-                      selectedCategory === 'feature' 
-                        ? 'bg-gray-300 text-[#1a1a1a]' 
-                        : 'text-[#999] hover:bg-gray-200 hover:text-[#666]'
-                    }`}
-                  >
-                    <div className="text-base font-medium">Feature Film</div>
-                  </button>
-                  <button
-                    onClick={() => setSelectedCategory('music')}
-                    className={`w-full text-left px-6 py-4 transition-colors ${
-                      selectedCategory === 'music' 
-                        ? 'bg-gray-300 text-[#1a1a1a]' 
-                        : 'text-[#999] hover:bg-gray-200 hover:text-[#666]'
-                    }`}
-                  >
-                    <div className="text-base font-medium">Music Video</div>
-                  </button>
-                  <button
-                    onClick={() => setSelectedCategory('documentary')}
-                    className={`w-full text-left px-6 py-4 transition-colors ${
-                      selectedCategory === 'documentary' 
-                        ? 'bg-gray-300 text-[#1a1a1a]' 
-                        : 'text-[#999] hover:bg-gray-200 hover:text-[#666]'
-                    }`}
-                  >
-                    <div className="text-base font-medium">Documentary</div>
-                  </button>
+                <div className="space-y-2">
+                  {Object.entries(categoryInfo).map(([key, info]) => (
+                    <div key={key}>
+                      <button
+                        onClick={() => setExpandedCategory(expandedCategory === key ? null : key)}
+                        className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between ${
+                          expandedCategory === key 
+                            ? 'bg-gray-300 text-[#1a1a1a]' 
+                            : 'text-[#999] hover:bg-gray-200 hover:text-[#666]'
+                        }`}
+                      >
+                        <div className="text-sm font-medium">{info.title}</div>
+                        <ChevronDown className={`w-4 h-4 transition-transform ${expandedCategory === key ? 'rotate-180' : ''}`} />
+                      </button>
+                      {expandedCategory === key && (
+                        <div className="px-4 py-3 bg-gray-200 text-[#666] text-xs leading-relaxed whitespace-pre-line">
+                          {info.desc}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* RIGHT COLUMN - 70% width - Category info + Form */}
+              {/* RIGHT COLUMN - 70% width - New Project Form only */}
               <div className="w-[70%] bg-[#EDEDED] p-12 overflow-y-auto rounded-br-3xl">
-                {selectedCategory === 'commercial' && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-[#1a1a1a] mb-2">Commercial</h3>
-                    <p className="text-sm text-[#666] leading-relaxed">
-                      Brand films, ads, campaigns.<br />
-                      Clear structure. Clear budgets.
-                    </p>
-                  </div>
-                )}
-
-                {selectedCategory === 'short' && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-[#1a1a1a] mb-2">Short Film</h3>
-                    <p className="text-sm text-[#666] leading-relaxed">
-                      Narrative driven.<br />
-                      Script heavy. Small to mid crews.
-                    </p>
-                  </div>
-                )}
-
-                {selectedCategory === 'feature' && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-[#1a1a1a] mb-2">Feature Film</h3>
-                    <p className="text-sm text-[#666] leading-relaxed">
-                      Full production planning.<br />
-                      Cast, locations, long schedule.
-                    </p>
-                  </div>
-                )}
-
-                {selectedCategory === 'music' && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-[#1a1a1a] mb-2">Music Video</h3>
-                    <p className="text-sm text-[#666] leading-relaxed">
-                      Visual first.<br />
-                      Short schedule. Strong art direction.
-                    </p>
-                  </div>
-                )}
-
-                {selectedCategory === 'documentary' && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-[#1a1a1a] mb-2">Documentary</h3>
-                    <p className="text-sm text-[#666] leading-relaxed">
-                      Real world.<br />
-                      Flexible planning. Research focused.
-                    </p>
-                  </div>
-                )}
-
-                <NewProjectForm selectedCategory={selectedCategory} />
+                <NewProjectForm selectedCategory={Object.keys(categoryInfo)[0]} />
               </div>
             </div>
           </div>
