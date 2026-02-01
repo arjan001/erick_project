@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown, Search, X } from 'lucide-react';
 import TopBanner from './components/home/TopBanner';
 
 export default function Layout({ children, currentPageName }) {
   const [exploreOpen, setExploreOpen] = useState(false);
   const [academyOpen, setAcademyOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('commercial');
 
   const bottomNav = [
     { name: 'In Production', href: 'Home' },
@@ -38,77 +39,16 @@ export default function Layout({ children, currentPageName }) {
               <nav className="hidden lg:flex items-center gap-6">
                 <div className="relative">
                   <button 
-                    onMouseEnter={() => setExploreOpen(true)}
-                    onMouseLeave={() => setExploreOpen(false)}
+                    onClick={() => setExploreOpen(!exploreOpen)}
                     className="flex items-center gap-1 text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors"
                   >
                     Start to shoot <span className="ml-1 px-1.5 py-0.5 bg-black text-white text-[10px] font-bold rounded">NEW</span> <ChevronDown className="w-3 h-3" />
                   </button>
-
-                  {exploreOpen && (
-                    <div 
-                      onMouseEnter={() => setExploreOpen(true)}
-                      onMouseLeave={() => setExploreOpen(false)}
-                      className="absolute top-full left-0 mt-4 w-80 bg-white text-black rounded-lg shadow-2xl py-4 px-2"
-                    >
-                      <div className="space-y-1">
-                        <Link to={createPageUrl('Home')} className="block px-4 py-3 text-sm hover:bg-gray-100 rounded-lg">
-                          <div className="font-bold">Commercial</div>
-                          <div className="text-xs text-gray-500">Brand films, ads, campaigns. Clear structure. Clear budgets.</div>
-                        </Link>
-                        <Link to={createPageUrl('Home')} className="block px-4 py-3 text-sm hover:bg-gray-100 rounded-lg">
-                          <div className="font-bold">Short Film</div>
-                          <div className="text-xs text-gray-500">Narrative driven. Script heavy. Small to mid crews.</div>
-                        </Link>
-                        <Link to={createPageUrl('Home')} className="block px-4 py-3 text-sm hover:bg-gray-100 rounded-lg">
-                          <div className="font-bold">Feature Film</div>
-                          <div className="text-xs text-gray-500">Full production planning. Cast, locations, long schedule.</div>
-                        </Link>
-                        <Link to={createPageUrl('Home')} className="block px-4 py-3 text-sm hover:bg-gray-100 rounded-lg">
-                          <div className="font-bold">Music Video</div>
-                          <div className="text-xs text-gray-500">Visual first. Short schedule. Strong art direction.</div>
-                        </Link>
-                        <Link to={createPageUrl('Home')} className="block px-4 py-3 text-sm hover:bg-gray-100 rounded-lg">
-                          <div className="font-bold">Documentary</div>
-                          <div className="text-xs text-gray-500">Real world. Flexible planning. Research focused.</div>
-                        </Link>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
-                <div className="relative">
-                  <button 
-                    onMouseEnter={() => setAcademyOpen(true)}
-                    onMouseLeave={() => setAcademyOpen(false)}
-                    className="flex items-center gap-1 text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors"
-                  >
-                    FilmAcademy <span className="ml-1 px-1.5 py-0.5 bg-black text-white text-[10px] font-bold rounded">NEW</span>
-                  </button>
-                  
-                  {academyOpen && (
-                    <div 
-                      onMouseEnter={() => setAcademyOpen(true)}
-                      onMouseLeave={() => setAcademyOpen(false)}
-                      className="absolute top-full left-0 mt-4 w-72 bg-white text-black rounded-lg shadow-2xl py-4 px-2"
-                    >
-                      <div className="space-y-1">
-                        <Link to={createPageUrl('FirstFrame')} className="block px-4 py-2 text-sm hover:bg-gray-100 rounded-lg">
-                          <div className="font-bold">Cinematography</div>
-                          <div className="text-xs text-gray-500">Master camera work</div>
-                        </Link>
-                        <Link to={createPageUrl('FirstFrame')} className="block px-4 py-2 text-sm hover:bg-gray-100 rounded-lg">
-                          <div className="font-bold">Studio Lighting</div>
-                          <div className="text-xs text-gray-500">Professional lighting setups</div>
-                        </Link>
-                        <Link to={createPageUrl('FirstFrame')} className="block px-4 py-2 text-sm hover:bg-gray-100 rounded-lg">
-                          <div className="font-bold">3D Environments</div>
-                          <div className="text-xs text-gray-500">Virtual production techniques</div>
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <Link to={createPageUrl('FirstFrame')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
+                  FilmAcademy
+                </Link>
 
                 <Link to={createPageUrl('ApplyTeam')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
                   Jobs
@@ -148,6 +88,157 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
       </header>
+
+      {/* Mega Menu Overlay */}
+      {exploreOpen && (
+        <div className="fixed inset-0 bg-white z-50 pt-[100px]">
+          <div className="max-w-[1800px] mx-auto px-6 h-full">
+            {/* Close Button */}
+            <button 
+              onClick={() => setExploreOpen(false)}
+              className="absolute top-[120px] right-8 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="w-6 h-6 text-[#1a1a1a]" />
+            </button>
+
+            <div className="flex gap-12 h-full py-8">
+              {/* Left Sidebar - Categories */}
+              <div className="w-64 flex-shrink-0">
+                <nav className="space-y-2">
+                  <button
+                    onClick={() => setSelectedCategory('commercial')}
+                    className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      selectedCategory === 'commercial' ? 'bg-gray-100 text-[#1a1a1a]' : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    Commercial
+                  </button>
+                  <button
+                    onClick={() => setSelectedCategory('short')}
+                    className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      selectedCategory === 'short' ? 'bg-gray-100 text-[#1a1a1a]' : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    Short Film
+                  </button>
+                  <button
+                    onClick={() => setSelectedCategory('feature')}
+                    className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      selectedCategory === 'feature' ? 'bg-gray-100 text-[#1a1a1a]' : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    Feature Film
+                  </button>
+                  <button
+                    onClick={() => setSelectedCategory('music')}
+                    className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      selectedCategory === 'music' ? 'bg-gray-100 text-[#1a1a1a]' : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    Music Video
+                  </button>
+                  <button
+                    onClick={() => setSelectedCategory('documentary')}
+                    className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      selectedCategory === 'documentary' ? 'bg-gray-100 text-[#1a1a1a]' : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    Documentary
+                  </button>
+                </nav>
+              </div>
+
+              {/* Right Content Area */}
+              <div className="flex-1">
+                {selectedCategory === 'commercial' && (
+                  <div className="space-y-4">
+                    <h2 className="text-3xl font-bold text-[#1a1a1a] mb-6">Commercial</h2>
+                    <p className="text-gray-600 text-lg mb-8">Brand films, ads, campaigns. Clear structure. Clear budgets.</p>
+                    <div className="grid grid-cols-2 gap-6">
+                      <Link to={createPageUrl('Home')} className="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
+                        <div className="font-bold text-lg mb-2">In Production</div>
+                        <div className="text-sm text-gray-500">49K projects in development</div>
+                      </Link>
+                      <Link to={createPageUrl('Work')} className="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
+                        <div className="font-bold text-lg mb-2">Released</div>
+                        <div className="text-sm text-gray-500">6236 completed productions</div>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {selectedCategory === 'short' && (
+                  <div className="space-y-4">
+                    <h2 className="text-3xl font-bold text-[#1a1a1a] mb-6">Short Film</h2>
+                    <p className="text-gray-600 text-lg mb-8">Narrative driven. Script heavy. Small to mid crews.</p>
+                    <div className="grid grid-cols-2 gap-6">
+                      <Link to={createPageUrl('Home')} className="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
+                        <div className="font-bold text-lg mb-2">In Production</div>
+                        <div className="text-sm text-gray-500">Active short film projects</div>
+                      </Link>
+                      <Link to={createPageUrl('Work')} className="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
+                        <div className="font-bold text-lg mb-2">Released</div>
+                        <div className="text-sm text-gray-500">Completed short films</div>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {selectedCategory === 'feature' && (
+                  <div className="space-y-4">
+                    <h2 className="text-3xl font-bold text-[#1a1a1a] mb-6">Feature Film</h2>
+                    <p className="text-gray-600 text-lg mb-8">Full production planning. Cast, locations, long schedule.</p>
+                    <div className="grid grid-cols-2 gap-6">
+                      <Link to={createPageUrl('Home')} className="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
+                        <div className="font-bold text-lg mb-2">In Production</div>
+                        <div className="text-sm text-gray-500">Feature films in development</div>
+                      </Link>
+                      <Link to={createPageUrl('Work')} className="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
+                        <div className="font-bold text-lg mb-2">Released</div>
+                        <div className="text-sm text-gray-500">Completed features</div>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {selectedCategory === 'music' && (
+                  <div className="space-y-4">
+                    <h2 className="text-3xl font-bold text-[#1a1a1a] mb-6">Music Video</h2>
+                    <p className="text-gray-600 text-lg mb-8">Visual first. Short schedule. Strong art direction.</p>
+                    <div className="grid grid-cols-2 gap-6">
+                      <Link to={createPageUrl('Home')} className="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
+                        <div className="font-bold text-lg mb-2">In Production</div>
+                        <div className="text-sm text-gray-500">Active music video projects</div>
+                      </Link>
+                      <Link to={createPageUrl('Work')} className="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
+                        <div className="font-bold text-lg mb-2">Released</div>
+                        <div className="text-sm text-gray-500">Completed music videos</div>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {selectedCategory === 'documentary' && (
+                  <div className="space-y-4">
+                    <h2 className="text-3xl font-bold text-[#1a1a1a] mb-6">Documentary</h2>
+                    <p className="text-gray-600 text-lg mb-8">Real world. Flexible planning. Research focused.</p>
+                    <div className="grid grid-cols-2 gap-6">
+                      <Link to={createPageUrl('Home')} className="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
+                        <div className="font-bold text-lg mb-2">In Production</div>
+                        <div className="text-sm text-gray-500">Active documentary projects</div>
+                      </Link>
+                      <Link to={createPageUrl('Work')} className="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
+                        <div className="font-bold text-lg mb-2">Released</div>
+                        <div className="text-sm text-gray-500">Completed documentaries</div>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="pt-[100px] pb-24">
