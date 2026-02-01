@@ -25,13 +25,10 @@ export default function Layout({ children, currentPageName }) {
         <div className="max-w-[1600px] mx-auto px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to={createPageUrl('Home')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                <rect width="32" height="32" rx="2" fill="#000000"/>
-                <text x="16" y="22" textAnchor="middle" fill="white" fontSize="16" fontWeight="900" fontFamily="Inter, sans-serif">
-                  S
-                </text>
-              </svg>
+            <Link to={createPageUrl('Home')} className="hover:opacity-80 transition-opacity">
+              <span className="text-3xl font-black tracking-tighter" style={{ color: '#1a1a1a' }}>
+                22.
+              </span>
             </Link>
 
             {/* Right Actions */}
@@ -64,24 +61,19 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Bottom Floating Navigation (Exact Awwwards Style) */}
-      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slideUp">
-        <div className="bg-[#2B2B2B] rounded-2xl shadow-2xl border border-gray-700/50 backdrop-blur-sm">
-          <div className="flex items-center gap-1 px-2 py-2">
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slideUp">
+        <div className="bg-[#1a1a1a] rounded-2xl shadow-2xl backdrop-blur-sm">
+          <div className="flex items-center gap-0 px-3 py-2.5">
             {/* Logo Section */}
             <Link 
               to={createPageUrl('Home')}
-              className="flex items-center justify-center px-4 py-3 hover:bg-gray-700/50 rounded-xl transition-all"
+              className="flex items-center justify-center px-3 py-2 hover:bg-white/5 rounded-lg transition-all mr-2"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <rect width="24" height="24" rx="2" fill="#FFFFFF"/>
-                <text x="12" y="17" textAnchor="middle" fill="#000" fontSize="14" fontWeight="900" fontFamily="Inter, sans-serif">
-                  S
-                </text>
-              </svg>
+              <span className="text-lg font-black text-white tracking-tighter">22.</span>
             </Link>
 
             {/* Divider */}
-            <div className="h-8 w-px bg-gray-600" />
+            <div className="h-6 w-px bg-gray-700 mr-2" />
 
             {/* Navigation Items */}
             {bottomNav.map((item) => {
@@ -90,12 +82,12 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   key={item.name}
                   to={createPageUrl(item.href)}
-                  className={`px-4 py-3 text-sm font-medium rounded-xl transition-all ${
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${
                     item.highlight 
-                      ? 'bg-yellow-400 text-black hover:bg-yellow-300' 
+                      ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]' 
                       : isActive
-                        ? 'text-white bg-gray-700/50'
-                        : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                        ? 'text-white bg-white/10'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   {item.name}
