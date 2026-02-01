@@ -147,17 +147,17 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Bottom Floating Navigation */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slideUp">
+      <nav className="fixed bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-slideUp">
         <div className="bg-[#3a3a3a] rounded-2xl shadow-2xl backdrop-blur-sm border border-white/10">
-          <div className="flex items-center gap-0 px-3 py-2.5">
+          <div className="flex items-center gap-0 px-2 md:px-3 py-2.5 overflow-x-auto scrollbar-hide">
             <Link 
               to={createPageUrl('Home')}
-              className="flex items-center justify-center px-3 py-2 hover:bg-white/5 rounded-lg transition-all mr-2"
+              className="flex items-center justify-center px-2 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-all mr-1 md:mr-2 flex-shrink-0"
             >
-              <span className="text-lg font-black text-white tracking-tighter">22.</span>
+              <span className="text-base md:text-lg font-black text-white tracking-tighter">22.</span>
             </Link>
 
-            <div className="h-6 w-px bg-gray-600 mr-2" />
+            <div className="h-6 w-px bg-gray-600 mr-1 md:mr-2 flex-shrink-0" />
 
             {bottomNav.map((item) => {
               const isActive = currentPageName === item.href;
@@ -165,7 +165,7 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   key={item.name}
                   to={createPageUrl(item.href)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${
+                  className={`px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 ${
                     item.highlight 
                       ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]' 
                       : isActive
