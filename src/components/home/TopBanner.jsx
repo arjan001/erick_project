@@ -1,7 +1,7 @@
 import React from 'react';
 
 export default function TopBanner() {
-  const message = "The Creative Pass — Watch all courses for just €11.50/month";
+  const message = "Experience how Studio22 works with one complimentary production day for verified projects. See our quality firsthand.";
   
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-[#F5F5F5] text-[#4A4A4A] overflow-hidden">
