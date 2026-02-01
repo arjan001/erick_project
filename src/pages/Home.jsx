@@ -46,48 +46,77 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2400"
-            alt="Cinematic"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#FAFAFA]" />
+      <section className="relative bg-[#F9F9F9] py-20 overflow-hidden">
+        {/* Small Category Tag */}
+        <div className="text-center mb-8">
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">
+            Business
+          </span>
         </div>
 
-        <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
-          <div className="inline-block px-4 py-2 bg-[#FFD700] text-black text-xs font-bold uppercase tracking-widest rounded-full mb-6">
-            Production of the Day - Feb 1, 2026
-          </div>
-          
-          <h1 className="text-[120px] md:text-[180px] lg:text-[220px] font-black uppercase leading-[0.85] tracking-tighter text-white mb-8">
-            WE ARE 22.
+        {/* Main Title */}
+        <div className="text-center px-6 max-w-6xl mx-auto mb-12">
+          <h1 className="text-[80px] md:text-[140px] lg:text-[180px] font-black uppercase leading-[0.9] tracking-tighter text-[#1a1a1a] mb-6">
+            STUDIO22
           </h1>
           
-          <p className="text-2xl md:text-3xl text-white/90 font-light tracking-wide mb-12">
+          <p className="text-lg md:text-xl text-gray-600 font-light mb-8">
             Creators of cinematic worlds.
           </p>
+        </div>
 
-          <div className="flex items-center justify-center gap-4">
-            <Link to={createPageUrl('SubmitProject')}>
-              <button className="px-8 py-4 bg-white text-black font-bold uppercase text-sm tracking-wider hover:bg-gray-100 transition-all rounded-lg">
-                Submit Project
-              </button>
+        {/* Background Image (smaller, positioned lower) */}
+        <div className="relative max-w-5xl mx-auto px-6 mb-16">
+          <div className="relative rounded-xl overflow-hidden shadow-2xl">
+            <img 
+              src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2000"
+              alt="Cinematic production"
+              className="w-full aspect-video object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+          </div>
+        </div>
+
+        {/* Bottom Nav Bar */}
+        <div className="flex justify-center">
+          <div className="inline-flex items-center bg-[#1a1a1a] rounded-2xl shadow-2xl px-3 py-3 gap-2">
+            <Link 
+              to={createPageUrl('Home')}
+              className="flex items-center justify-center px-3 py-2 hover:bg-white/5 rounded-lg transition-all"
+            >
+              <span className="text-base font-black text-white tracking-tighter">22.</span>
             </Link>
-            <Link to={createPageUrl('Work')}>
-              <button className="px-8 py-4 border-2 border-white text-white font-bold uppercase text-sm tracking-wider hover:bg-white hover:text-black transition-all rounded-lg">
-                View Productions
-              </button>
-            </Link>
+
+            <div className="h-6 w-px bg-gray-700" />
+
+            {[
+              { name: 'In Production', href: 'Home' },
+              { name: 'Released', href: 'Work' },
+              { name: 'Collections', href: 'Services' },
+              { name: 'Creators', href: 'ApplyArtist' },
+              { name: 'Market', href: 'ApplyTeam' },
+              { name: 'Visit Sotd.', href: 'FirstFrame', highlight: true },
+            ].map((item) => (
+              <Link
+                key={item.name}
+                to={createPageUrl(item.href)}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${
+                  item.highlight 
+                    ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]' 
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
       {/* IN PRODUCTION Section */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 bg-white">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
             <h2 className="text-6xl md:text-8xl font-black uppercase mb-4 tracking-tighter">
@@ -165,7 +194,7 @@ export default function Home() {
       </section>
 
       {/* RELEASED Section */}
-      <section className="py-20 px-6 bg-white">
+      <section className="py-20 px-6 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
             <h2 className="text-6xl md:text-8xl font-black uppercase mb-4 tracking-tighter">
@@ -230,7 +259,7 @@ export default function Home() {
       </section>
 
       {/* COLLECTIONS Section */}
-      <section className="py-20 px-6 bg-[#FAFAFA]">
+      <section className="py-20 px-6 bg-white">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
             <h2 className="text-6xl md:text-8xl font-black uppercase mb-4 tracking-tighter">
@@ -272,7 +301,7 @@ export default function Home() {
       </section>
 
       {/* WE ARE 22. CREATORS Section */}
-      <section className="py-20 px-6 bg-white">
+      <section className="py-20 px-6 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
             <h2 className="text-6xl md:text-8xl font-black uppercase mb-4 tracking-tighter">
@@ -322,7 +351,7 @@ export default function Home() {
       </section>
 
       {/* RECENT PRODUCTIONS Section */}
-      <section className="py-20 px-6 bg-[#FAFAFA]">
+      <section className="py-20 px-6 bg-white">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
             <h2 className="text-6xl md:text-8xl font-black uppercase mb-4 tracking-tighter">
@@ -400,7 +429,7 @@ export default function Home() {
       </section>
 
       {/* Studio22 Market Section */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-6xl md:text-8xl font-black uppercase mb-6 tracking-tighter">

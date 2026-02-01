@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, Search } from 'lucide-react';
+import TopBanner from './components/home/TopBanner';
 
 export default function Layout({ children, currentPageName }) {
   const [exploreOpen, setExploreOpen] = useState(false);
@@ -18,16 +19,19 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#212121]">
+    <div className="min-h-screen bg-white text-[#212121]">
+      {/* Top Banner */}
+      <TopBanner />
+
       {/* Main Header (Awwwards Style) */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#1a1a1a] text-white">
+      <header className="fixed top-[40px] left-0 right-0 z-40 bg-white border-b border-gray-200">
         <div className="max-w-[1800px] mx-auto px-6">
-          <div className="flex items-center justify-between h-[72px]">
+          <div className="flex items-center justify-between h-[60px]">
             {/* Left Navigation */}
             <div className="flex items-center gap-8">
               {/* Logo */}
-              <Link to={createPageUrl('Home')} className="hover:opacity-80 transition-opacity">
-                <span className="text-2xl font-black tracking-tighter">22.</span>
+              <Link to={createPageUrl('Home')} className="hover:opacity-70 transition-opacity">
+                <span className="text-2xl font-black tracking-tighter text-[#1a1a1a]">22.</span>
               </Link>
 
               {/* Main Nav */}
@@ -36,7 +40,7 @@ export default function Layout({ children, currentPageName }) {
                   <button 
                     onMouseEnter={() => setExploreOpen(true)}
                     onMouseLeave={() => setExploreOpen(false)}
-                    className="flex items-center gap-1 text-sm font-medium hover:text-[#FFD700] transition-colors"
+                    className="flex items-center gap-1 text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors"
                   >
                     Explore <ChevronDown className="w-3 h-3" />
                   </button>
@@ -69,9 +73,9 @@ export default function Layout({ children, currentPageName }) {
                   <button 
                     onMouseEnter={() => setAcademyOpen(true)}
                     onMouseLeave={() => setAcademyOpen(false)}
-                    className="flex items-center gap-1 text-sm font-medium hover:text-[#FFD700] transition-colors"
+                    className="flex items-center gap-1 text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors"
                   >
-                    FilmAcademy <ChevronDown className="w-3 h-3" />
+                    FilmAcademy <span className="ml-1 px-1.5 py-0.5 bg-black text-white text-[10px] font-bold rounded">NEW</span>
                   </button>
                   
                   {academyOpen && (
@@ -98,10 +102,10 @@ export default function Layout({ children, currentPageName }) {
                   )}
                 </div>
 
-                <Link to={createPageUrl('ApplyTeam')} className="text-sm font-medium hover:text-[#FFD700] transition-colors">
+                <Link to={createPageUrl('ApplyTeam')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
                   Jobs
                 </Link>
-                <Link to={createPageUrl('ApplyTeam')} className="text-sm font-medium hover:text-[#FFD700] transition-colors">
+                <Link to={createPageUrl('ApplyTeam')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
                   Market
                 </Link>
               </nav>
@@ -113,26 +117,26 @@ export default function Layout({ children, currentPageName }) {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input 
                   type="search" 
-                  placeholder="Search productions, studios, creators, locations"
-                  className="w-full pl-10 pr-4 py-2 text-sm bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-[#FFD700] transition-colors text-white placeholder:text-gray-400"
+                  placeholder="Search by Inspiration"
+                  className="w-full pl-10 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 transition-colors text-[#1a1a1a] placeholder:text-gray-500"
                 />
               </div>
             </div>
 
             {/* Right Actions */}
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" className="text-sm font-medium text-white hover:text-[#FFD700] hover:bg-transparent">
+              <Button variant="ghost" size="sm" className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent">
                 Log in
               </Button>
-              <Button variant="ghost" size="sm" className="text-sm font-medium text-white hover:text-[#FFD700] hover:bg-transparent">
+              <Button variant="ghost" size="sm" className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent">
                 Sign Up
               </Button>
-              <Button size="sm" className="bg-[#FFD700] hover:bg-[#FFC700] text-black font-bold px-4">
+              <Button size="sm" className="bg-black hover:bg-gray-800 text-white font-bold px-4">
                 Be Pro
               </Button>
               <Link to={createPageUrl('SubmitProject')}>
-                <Button size="sm" className="bg-white hover:bg-gray-100 text-black font-bold">
-                  Submit Project
+                <Button size="sm" className="border-2 border-black hover:bg-black hover:text-white text-black font-bold">
+                  Join Directory
                 </Button>
               </Link>
             </div>
@@ -141,7 +145,7 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main className="pt-[72px] pb-24">
+      <main className="pt-[100px] pb-24">
         {children}
       </main>
 
