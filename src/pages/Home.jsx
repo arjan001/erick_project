@@ -85,11 +85,11 @@ export default function Home() {
       <section className="py-20 px-6 bg-white">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
-            <h2 className="text-6xl md:text-8xl font-bold uppercase mb-4 tracking-tighter">
+            <h2 className="text-5xl md:text-7xl font-normal uppercase mb-4 tracking-tight">
               IN PRODUCTION
             </h2>
             <div className="flex items-center justify-between">
-              <p className="text-xl text-gray-600">Projects currently in development</p>
+              <p className="text-lg text-gray-600">Projects currently in development</p>
               <Link to={createPageUrl('Work')} className="text-sm font-bold uppercase tracking-wider hover:underline flex items-center gap-2">
                 View All <ArrowRight className="w-4 h-4" />
               </Link>
@@ -137,7 +137,7 @@ export default function Home() {
 
                 <div className="p-5">
                   <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-xl font-black uppercase tracking-tight flex-1">{project.title}</h3>
+                    <h3 className="text-lg font-semibold uppercase tracking-tight flex-1">{project.title}</h3>
                     <div className="flex items-center gap-1 ml-3">
                       <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center">
                         <span className="text-[10px] font-bold">22</span>
@@ -163,10 +163,10 @@ export default function Home() {
       <section className="py-20 px-6 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
-            <h2 className="text-6xl md:text-8xl font-bold uppercase mb-4 tracking-tighter">
+            <h2 className="text-5xl md:text-7xl font-normal uppercase mb-4 tracking-tight">
               RELEASED
             </h2>
-            <p className="text-xl text-gray-600">Completed and delivered productions</p>
+            <p className="text-lg text-gray-600">Completed and delivered productions</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -199,7 +199,7 @@ export default function Home() {
                 </div>
 
                 <div className="p-6">
-                  <h3 className="text-2xl font-black uppercase tracking-tight mb-3">{project.title}</h3>
+                  <h3 className="text-xl font-semibold uppercase tracking-tight mb-3">{project.title}</h3>
                   <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                     <div className="w-5 h-5 rounded-full bg-gray-300" />
                     <span className="font-medium">{project.studio}</span>
@@ -228,10 +228,10 @@ export default function Home() {
       <section className="py-20 px-6 bg-white">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
-            <h2 className="text-6xl md:text-8xl font-bold uppercase mb-4 tracking-tighter">
+            <h2 className="text-5xl md:text-7xl font-normal uppercase mb-4 tracking-tight">
               COLLECTIONS
             </h2>
-            <p className="text-xl text-gray-600">Curated production showcases</p>
+            <p className="text-lg text-gray-600">Curated production showcases</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -253,7 +253,7 @@ export default function Home() {
                     <div className="text-xs font-bold uppercase tracking-widest mb-2 text-gray-300">
                       {collection.project_count} Productions
                     </div>
-                    <h3 className="text-2xl font-black uppercase tracking-tight">{collection.title}</h3>
+                    <h3 className="text-xl font-semibold uppercase tracking-tight">{collection.title}</h3>
                   </div>
                 </div>
                 
@@ -270,10 +270,10 @@ export default function Home() {
       <section className="py-20 px-6 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
-            <h2 className="text-6xl md:text-8xl font-bold uppercase mb-4 tracking-tighter">
+            <h2 className="text-5xl md:text-7xl font-normal uppercase mb-4 tracking-tight">
               WE ARE 22. CREATORS
             </h2>
-            <p className="text-xl text-gray-600">The people behind our productions</p>
+            <p className="text-lg text-gray-600">The people behind our productions</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -292,7 +292,7 @@ export default function Home() {
                 </div>
 
                 <div className="p-4">
-                  <h3 className="text-sm font-black uppercase tracking-tight mb-1 line-clamp-1">{creator.name}</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-tight mb-1 line-clamp-1">{creator.name}</h3>
                   
                   <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
                     <MapPin className="w-3 h-3" />
@@ -320,10 +320,10 @@ export default function Home() {
       <section className="py-20 px-6 bg-white">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
-            <h2 className="text-6xl md:text-8xl font-bold uppercase mb-4 tracking-tighter">
+            <h2 className="text-5xl md:text-7xl font-normal uppercase mb-4 tracking-tight">
               RECENT PRODUCTIONS
             </h2>
-            <p className="text-xl text-gray-600">Recently updated and completed</p>
+            <p className="text-lg text-gray-600">Recently updated and completed</p>
           </div>
 
           <div className="grid md:grid-cols-4 gap-6">
@@ -348,7 +348,7 @@ export default function Home() {
                 </div>
 
                 <div className="p-4">
-                  <h3 className="text-base font-black uppercase tracking-tight mb-2 line-clamp-1">{project.title}</h3>
+                  <h3 className="text-base font-semibold uppercase tracking-tight mb-2 line-clamp-1">{project.title}</h3>
                   <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
                     <div className="w-3 h-3 rounded-full bg-gray-300" />
                     <span className="font-medium line-clamp-1">{project.studio}</span>
@@ -386,7 +386,7 @@ export default function Home() {
             ].map((service, i) => (
               <div key={i} className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
                 <div className="w-12 h-12 bg-black rounded-lg mb-4" />
-                <h3 className="text-2xl font-black uppercase mb-3 tracking-tight">{service.title}</h3>
+                <h3 className="text-xl font-semibold uppercase mb-3 tracking-tight">{service.title}</h3>
                 <p className="text-gray-600">{service.desc}</p>
               </div>
             ))}
@@ -398,10 +398,10 @@ export default function Home() {
       <section className="py-24 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-6xl md:text-8xl font-bold uppercase mb-6 tracking-tighter">
+            <h2 className="text-5xl md:text-7xl font-normal uppercase mb-6 tracking-tight">
               STUDIO22 MARKET
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Professional network for sharing cameras, lenses, lighting, audio gear, locations, studios, and special equipment
             </p>
           </div>
@@ -421,7 +421,7 @@ export default function Home() {
                 className="group bg-[#FAFAFA] rounded-lg p-8 hover:bg-white hover:shadow-xl transition-all duration-300"
               >
                 <div className="text-4xl mb-4">{category.icon}</div>
-                <h3 className="text-2xl font-black uppercase tracking-tight mb-2">{category.title}</h3>
+                <h3 className="text-xl font-semibold uppercase tracking-tight mb-2">{category.title}</h3>
                 <p className="text-sm text-gray-500 font-medium">{category.count}</p>
               </Link>
             ))}
@@ -441,7 +441,7 @@ export default function Home() {
       <section className="py-24 bg-[#1a1a1a] text-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <Award className="w-20 h-20 mx-auto mb-8 text-[#FFD700]" />
-          <h2 className="text-5xl md:text-7xl font-bold uppercase mb-6 tracking-tighter">STUDIO22 FIRST FRAME</h2>
+          <h2 className="text-4xl md:text-6xl font-normal uppercase mb-6 tracking-tight">STUDIO22 FIRST FRAME</h2>
           <p className="text-2xl mb-10 max-w-2xl mx-auto text-gray-300 font-light">
             Experience our quality with one complimentary production day for verified projects
           </p>
