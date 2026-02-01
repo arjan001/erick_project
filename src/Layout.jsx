@@ -135,8 +135,8 @@ export default function Layout({ children, currentPageName }) {
                 Be Pro
               </Button>
               <Link to={createPageUrl('SubmitProject')}>
-                <Button size="sm" className="border-2 border-black hover:bg-black hover:text-white text-black font-bold">
-                  Join Directory
+                <Button size="sm" className="border-2 border-black hover:bg-black hover:text-white text-white font-bold">
+                  Submit Project
                 </Button>
               </Link>
             </div>
