@@ -49,13 +49,6 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative bg-[#F9F9F9] py-20 overflow-hidden">
-        {/* Small Category Tag */}
-        <div className="text-center mb-8">
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">
-            Business
-          </span>
-        </div>
-
         {/* Main Title */}
         <div className="text-center px-6 max-w-6xl mx-auto mb-12">
           <h1 className="text-[80px] md:text-[140px] lg:text-[180px] font-bold uppercase leading-[0.9] tracking-tighter text-[#1a1a1a] mb-6">
