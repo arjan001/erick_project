@@ -123,10 +123,10 @@ export default function Layout({ children, currentPageName }) {
           {/* Top menu background change */}
           <div className="fixed top-0 left-0 right-0 h-[100px] bg-[#EDEDED] z-39" />
 
-          <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40 rounded-bl-[15px] rounded-br-[15px]" style={{ height: '70vh' }}>
-            <div className="flex h-full">
+          <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40 rounded-[25px]" style={{ height: '70vh' }}>
+            <div className="flex h-full rounded-[25px]">
               {/* LEFT COLUMN - 30% width - Categories with expand/collapse */}
-              <div className="w-[30%] bg-[#EDEDED] p-8 overflow-y-auto rounded-bl-[15px]">
+              <div className="w-[30%] bg-[#EDEDED] p-8 overflow-y-auto rounded-l-[25px]">
                 <button 
                   onClick={() => setExploreOpen(false)}
                   className="absolute top-4 right-4 p-2 hover:bg-gray-300 transition-colors"
@@ -159,7 +159,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               {/* RIGHT COLUMN - 70% width - New Project Form only */}
-              <div className="w-[70%] bg-[#EDEDED] p-12 overflow-y-auto rounded-br-[15px]">
+              <div className="w-[70%] bg-[#EDEDED] p-12 overflow-y-auto rounded-r-[25px]">
                 <NewProjectForm selectedCategory={Object.keys(categoryInfo)[0]} />
               </div>
             </div>
