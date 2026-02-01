@@ -59,7 +59,7 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
   };
 
   return (
-    <div className="bg-white rounded-[15px] p-8">
+    <div>
       <h2 className="text-2xl font-bold mb-1 text-[#1a1a1a]">New Project</h2>
       <p className="text-[#666] text-sm mb-4">One sentence. The system handles the rest.</p>
 
@@ -101,20 +101,6 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
 
       {/* Bottom Actions */}
       <div className="space-y-2">
-        <Select value={projectType} onValueChange={setProjectType}>
-          <SelectTrigger className="w-full bg-white border-gray-300">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="commercial">Commercial</SelectItem>
-            <SelectItem value="short_film">Short Film</SelectItem>
-            <SelectItem value="film">Film</SelectItem>
-            <SelectItem value="music_video">Music Video</SelectItem>
-            <SelectItem value="documentary">Documentary</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
-          </SelectContent>
-        </Select>
-
         <Button 
           onClick={handleGeneratePlan}
           disabled={!description || generating}
