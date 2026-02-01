@@ -99,10 +99,10 @@ export default function Layout({ children, currentPageName }) {
           {/* Top menu background change */}
           <div className="fixed top-0 left-0 right-0 h-[100px] bg-[#EDEDED] z-39" />
 
-          <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40" style={{ maxHeight: '60vh' }}>
-            <div className="flex h-full">
-              {/* LEFT COLUMN - 60% width - Categories */}
-              <div className="w-[60%] bg-[#EDEDED] p-12 overflow-y-auto">
+          <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40" style={{ height: '70vh' }}>
+            <div className="flex h-full rounded-bl-3xl rounded-br-3xl overflow-hidden">
+              {/* LEFT COLUMN - 30% width - Categories */}
+              <div className="w-[30%] bg-[#EDEDED] p-12 overflow-y-auto rounded-bl-3xl">
                 <button 
                   onClick={() => setExploreOpen(false)}
                   className="absolute top-4 right-4 p-2 hover:bg-gray-300 transition-colors"
@@ -164,8 +164,8 @@ export default function Layout({ children, currentPageName }) {
                 </div>
               </div>
 
-              {/* RIGHT COLUMN - 40% width - Category info + Form */}
-              <div className="w-[40%] bg-[#EDEDED] p-12 overflow-y-auto">
+              {/* RIGHT COLUMN - 70% width - Category info + Form */}
+              <div className="w-[70%] bg-[#EDEDED] p-12 overflow-y-auto rounded-br-3xl">
                 {selectedCategory === 'commercial' && (
                   <div className="mb-8">
                     <h3 className="text-lg font-semibold text-[#1a1a1a] mb-2">Commercial</h3>
