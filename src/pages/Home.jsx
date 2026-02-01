@@ -51,11 +51,9 @@ export default function Home() {
       <section className="relative bg-[#F9F9F9] py-20 overflow-hidden">
         {/* Main Title */}
         <div className="text-center px-6 max-w-6xl mx-auto mb-12">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/96a21864c_F0076689-8283-4A88-8E40-60EC2632D834.png"
-            alt="Studio22"
-            className="w-full max-w-4xl mx-auto mb-8"
-          />
+          <h1 className="text-[80px] md:text-[140px] lg:text-[180px] font-bold uppercase leading-[0.9] tracking-tighter text-[#1a1a1a] mb-6">
+            STUDIO22
+          </h1>
           
           <p className="text-lg md:text-xl text-gray-600 font-light mb-8">
             Creators of cinematic worlds.
