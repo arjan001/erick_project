@@ -50,7 +50,7 @@ export default function Layout({ children, currentPageName }) {
       <TopBanner />
 
       {/* Main Header (Awwwards Style) */}
-      <header className={`fixed top-[40px] left-0 right-0 z-40 border-b border-gray-200 transition-colors ${exploreOpen ? 'bg-[#EDEDED]' : 'bg-white'}`}>
+      <header className={`fixed top-[40px] left-0 right-0 z-40 transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="flex items-center justify-between h-[60px]">
             {/* Left Navigation */}
@@ -65,7 +65,7 @@ export default function Layout({ children, currentPageName }) {
                 <div className="relative">
                   <button 
                     onClick={() => setExploreOpen(!exploreOpen)}
-                    className="flex items-center gap-1 text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors"
+                    className={`flex items-center gap-1 text-sm font-medium transition-colors ${exploreOpen ? 'text-[#1a1a1a]' : 'text-[#1a1a1a] hover:text-gray-600'}`}
                   >
                     Start to shoot <span className="ml-1 px-1.5 py-0.5 bg-black text-white text-[10px] font-bold">NEW</span> <ChevronDown className="w-3 h-3" />
                   </button>
@@ -90,11 +90,11 @@ export default function Layout({ children, currentPageName }) {
             {/* Center Search */}
             <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
               <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input 
                   type="search" 
                   placeholder="Search by Inspiration"
-                  className="w-full pl-10 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 transition-colors text-[#1a1a1a] placeholder:text-gray-500"
+                  className={`w-full pl-12 pr-4 py-3 text-base rounded-lg focus:outline-none transition-colors ${exploreOpen ? 'bg-white border border-gray-300 text-[#1a1a1a] placeholder:text-gray-500' : 'bg-gray-50 border border-gray-200 text-[#1a1a1a] placeholder:text-gray-500 focus:border-gray-400'}`}
                 />
               </div>
             </div>
@@ -120,16 +120,23 @@ export default function Layout({ children, currentPageName }) {
       {/* Mega Menu Overlay */}
       {exploreOpen && (
         <>
-          {/* Top menu background change */}
-          <div className="fixed top-0 left-0 right-0 h-[100px] bg-[#EDEDED] z-39 rounded-b-[25px]" />
+          {/* Backdrop Overlay */}
+          <div 
+            className="fixed inset-0 bg-black/30 z-35"
+            onClick={() => setExploreOpen(false)}
+          />
 
-          <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40" style={{ height: '70vh' }}>
-            <div className="flex h-full rounded-[25px]">
-              {/* LEFT COLUMN - 30% width - Categories with expand/collapse */}
-              <div className="w-[30%] bg-[#EDEDED] p-8 overflow-y-auto rounded-l-[25px]">
+          {/* Top menu background - rounded cap */}
+          <div className="fixed top-[40px] left-0 right-0 h-[60px] bg-[#EDEDED] z-39 rounded-t-[25px]" />
+
+          {/* Mega Menu Container */}
+          <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40 rounded-b-[25px]" style={{ height: '60vh' }}>
+            <div className="flex h-full">
+              {/* LEFT COLUMN - 60% width - Categories */}
+              <div className="w-[60%] bg-[#EDEDED] p-8 overflow-y-auto">
                 <button 
                   onClick={() => setExploreOpen(false)}
-                  className="absolute top-4 right-4 p-2 hover:bg-gray-300 transition-colors"
+                  className="absolute top-4 right-4 p-2 hover:bg-gray-300 rounded transition-colors z-50"
                 >
                   <X className="w-5 h-5 text-[#666]" />
                 </button>
@@ -158,9 +165,9 @@ export default function Layout({ children, currentPageName }) {
                 </div>
               </div>
 
-              {/* RIGHT COLUMN - 70% width - New Project Form only */}
-              <div className="w-[70%] bg-[#EDEDED] p-12 overflow-y-auto rounded-r-[25px]">
-                <NewProjectForm selectedCategory={Object.keys(categoryInfo)[0]} />
+              {/* RIGHT COLUMN - 40% width - New Project Form */}
+              <div className="w-[40%] bg-[#EDEDED] p-8 overflow-y-auto">
+                <NewProjectForm selectedCategory={expandedCategory || 'commercial'} />
               </div>
             </div>
           </div>

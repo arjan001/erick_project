@@ -58,8 +58,8 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-1 text-[#1a1a1a]">New Project</h2>
-      <p className="text-[#666] text-sm mb-4">One sentence. The system handles the rest.</p>
+      <h2 className="text-2xl font-bold mb-1 text-[#1a1a1a] -mt-2">New Project</h2>
+      <p className="text-[#666] text-sm mb-6">One sentence. The system handles the rest.</p>
 
       {/* Reference Website */}
       <div className="mb-4">
