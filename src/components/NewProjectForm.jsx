@@ -58,8 +58,8 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-2 text-[#1a1a1a]">New Project</h2>
-      <p className="text-[#666] text-sm mb-3">One sentence. The system handles the rest.</p>
+      <h2 className="text-2xl font-bold mb-1 text-[#1a1a1a]">New Project</h2>
+      <p className="text-[#666] text-sm mb-4">One sentence. The system handles the rest.</p>
 
       {/* Reference Website */}
       <div className="mb-4">
@@ -98,13 +98,15 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
       </div>
 
       {/* Bottom Actions */}
-      <Button 
-        onClick={handleSubmit}
-        disabled={!description}
-        className="w-full bg-gray-500 hover:bg-gray-600 text-white text-sm"
-      >
-        Continue to Project Details
-      </Button>
+      <div className="space-y-2">
+        <Button 
+          onClick={handleSubmit}
+          disabled={!description}
+          className="w-full bg-gray-500 hover:bg-gray-600 text-white text-sm"
+        >
+          Continue to Project Details
+        </Button>
+      </div>
     </div>
   );
 }
