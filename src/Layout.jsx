@@ -166,7 +166,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               {/* RIGHT COLUMN - 70% width - New Project Form */}
-              <div className="w-[70%] bg-[#EDEDED] p-8 overflow-y-auto">
+              <div className="w-[70%] bg-[#EDEDED] p-8 overflow-y-auto rounded-br-[25px]">
                 <NewProjectForm selectedCategory={expandedCategory || 'commercial'} />
               </div>
             </div>
