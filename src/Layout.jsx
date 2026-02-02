@@ -132,8 +132,8 @@ export default function Layout({ children, currentPageName }) {
           {/* Mega Menu Container */}
           <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40 rounded-b-[25px]" style={{ height: '60vh' }}>
             <div className="flex h-full">
-              {/* LEFT COLUMN - 60% width - Categories */}
-              <div className="w-[60%] bg-[#EDEDED] p-8 overflow-y-auto">
+              {/* LEFT COLUMN - 30% width - Categories */}
+              <div className="w-[30%] bg-[#EDEDED] p-8 overflow-y-auto">
                 <button 
                   onClick={() => setExploreOpen(false)}
                   className="absolute top-4 right-4 p-2 hover:bg-gray-300 rounded transition-colors z-50"
@@ -165,8 +165,8 @@ export default function Layout({ children, currentPageName }) {
                 </div>
               </div>
 
-              {/* RIGHT COLUMN - 40% width - New Project Form */}
-              <div className="w-[40%] bg-[#EDEDED] p-8 overflow-y-auto">
+              {/* RIGHT COLUMN - 70% width - New Project Form */}
+              <div className="w-[70%] bg-[#EDEDED] p-8 overflow-y-auto">
                 <NewProjectForm selectedCategory={expandedCategory || 'commercial'} />
               </div>
             </div>
