@@ -25,11 +25,18 @@ Deno.serve(async (req) => {
 
         const promptContext = categoryContext[projectType] || `Create a production concept for ${url}`;
 
+        const randomSeed = Math.random();
+        const creativityLevel = randomSeed > 0.66 ? 'bold and unexpected' : randomSeed > 0.33 ? 'emotional and intimate' : 'cinematic and dramatic';
+
         const prompt = `${promptContext}
+
+Generate a UNIQUE and ${creativityLevel} concept. Random seed: ${randomSeed}
 
 Write 3-4 sentences describing ONLY the creative concept. Start with the opening scene, describe the emotional journey, and end with how it concludes. Use plain conversational language without any formatting, citations, or explanations. Make it feel like a real creative pitch.
 
-Example style: "We open on a woman staring at herself in the mirror, avoiding her own eyes. Cut to her workplace where colleagues chat easily while she sits alone. She makes a decision. Montage of her transformation journey - early morning workouts, medical consultations, small victories. Final scene: she walks into that same office, head high, radiant. Brand reveal."`;
+Example style: "We open on a woman staring at herself in the mirror, avoiding her own eyes. Cut to her workplace where colleagues chat easily while she sits alone. She makes a decision. Montage of her transformation journey - early morning workouts, medical consultations, small victories. Final scene: she walks into that same office, head high, radiant. Brand reveal."
+
+Generate a COMPLETELY DIFFERENT concept each time. Be creative and vary the characters, settings, and emotional arc.`;
 
 
         // Use OpenAI with web search capability
