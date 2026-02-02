@@ -88,7 +88,20 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
 
       {/* Project Description */}
       <div className="mb-4">
-        <label className="block text-xs font-semibold mb-2 text-[#666]">Project Description</label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-xs font-semibold text-[#666]">Project Description</label>
+          {description && (
+            <Button 
+              onClick={handleExtract}
+              disabled={!referenceUrl || extracting}
+              variant="ghost"
+              size="sm"
+              className="text-xs h-7 px-2 text-gray-600 hover:text-gray-900"
+            >
+              {extracting ? 'Regenerating...' : 'Regenerate'}
+            </Button>
+          )}
+        </div>
         <Textarea
           placeholder="Describe your project or use Extract button above. You can write multiple sentences with details about your vision, target audience, style, and goals."
           value={description}

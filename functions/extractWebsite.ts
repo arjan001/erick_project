@@ -16,20 +16,20 @@ Deno.serve(async (req) => {
         }
 
         const categoryContext = {
-            commercial: 'Think like a creative director for advertising. Based on this brand, what ORIGINAL commercial concept would perfectly showcase them? Consider their identity and values. Propose a bold, memorable campaign idea that would make people stop and watch.',
-            short: 'Think like a film director. Based on this company, what compelling SHORT FILM story could be created? Develop an original narrative concept inspired by their world that captures attention.',
-            feature: 'Think like a feature film producer. Based on this brand or industry, what FULL-LENGTH CINEMATIC story could be developed? Create an original film concept with dramatic potential and character depth.',
-            music: 'Think like a music video director. Based on this brand\'s aesthetic, what visually STRIKING MUSIC VIDEO concept would work? Propose an original creative direction with bold visual metaphors.',
-            documentary: 'Think like a documentary filmmaker. What FASCINATING DOCUMENTARY story could explore this company or industry? Propose an original investigative angle that reveals something surprising.'
+            commercial: 'You are a creative director pitching a commercial concept. Based on this brand, create an original 30-60 second commercial script concept.',
+            short: 'You are a film director pitching a short film. Based on this company, create an original 5-10 minute narrative film concept.',
+            feature: 'You are a producer pitching a feature film. Based on this brand or industry, create an original full-length cinematic story concept.',
+            music: 'You are a music video director pitching a concept. Based on this brand aesthetic, create an original music video treatment.',
+            documentary: 'You are a documentary filmmaker pitching a story. Based on this company or industry, create an original documentary concept.'
         };
 
-        const promptContext = categoryContext[projectType] || 'Based on this brand, what original production concept would work best?';
+        const promptContext = categoryContext[projectType] || 'Create an original production concept based on this brand.';
 
-        const prompt = `You are a visionary creative producer analyzing this website: ${url}
+        const prompt = `Analyze website: ${url}
 
 ${promptContext}
 
-Generate an ORIGINAL PROJECT CONCEPT (3-4 sentences). Be creative, cinematic, and specific. This is a NEW PRODUCTION PITCH, not a description of what they already do. Think outside the box.`;
+Write a SHORT CONCEPT PITCH (2-3 sentences). Focus on the core idea, visual approach, and emotional tone. Write in plain text without any markdown formatting, asterisks, or special characters. Make it feel like a real production pitch.`;
 
         // Use OpenAI with web search capability
         const response = await base44.integrations.Core.InvokeLLM({
@@ -37,9 +37,20 @@ Generate an ORIGINAL PROJECT CONCEPT (3-4 sentences). Be creative, cinematic, an
             add_context_from_internet: true
         });
 
+        // Clean up markdown formatting
+        const cleanedDescription = response
+            .replace(/\*\*/g, '')
+            .replace(/\*/g, '')
+            .replace(/—/g, '-')
+            .replace(/––/g, '-')
+            .replace(/###/g, '')
+            .replace(/##/g, '')
+            .replace(/#/g, '')
+            .trim();
+
         return Response.json({ 
             success: true, 
-            description: response 
+            description: cleanedDescription 
         });
 
     } catch (error) {
