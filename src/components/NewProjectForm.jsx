@@ -34,7 +34,10 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
         url: referenceUrl,
         projectType: selectedCategory
       });
+      console.log('Extract response:', response.data);
       if (response.data?.description) {
+        setDescription(response.data.description);
+      } else if (response.data?.success && response.data?.description) {
         setDescription(response.data.description);
       } else if (response.data?.error) {
         console.error('Extract error:', response.data.error);
