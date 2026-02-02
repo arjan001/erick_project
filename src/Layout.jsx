@@ -90,11 +90,11 @@ export default function Layout({ children, currentPageName }) {
             {/* Center Search */}
             <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
               <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input 
                   type="search" 
                   placeholder="Search by Inspiration"
-                  className="w-full pl-10 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 transition-colors text-[#1a1a1a] placeholder:text-gray-500"
+                  className="w-full pl-12 pr-4 py-3 text-base bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 transition-colors text-[#1a1a1a] placeholder:text-gray-500"
                 />
               </div>
             </div>
@@ -120,47 +120,55 @@ export default function Layout({ children, currentPageName }) {
       {/* Mega Menu Overlay */}
       {exploreOpen && (
         <>
-          {/* Top menu background change */}
-          <div className="fixed top-0 left-0 right-0 h-[100px] bg-[#EDEDED] z-39 rounded-b-[25px]" />
+          {/* Backdrop Overlay */}
+          <div 
+            className="fixed inset-0 bg-black/30 z-38"
+            onClick={() => setExploreOpen(false)}
+          />
 
-          <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40" style={{ height: '70vh' }}>
-            <div className="flex h-full rounded-[25px]">
-              {/* LEFT COLUMN - 30% width - Categories with expand/collapse */}
-              <div className="w-[30%] bg-[#EDEDED] p-8 overflow-y-auto rounded-l-[25px]">
+          {/* Top menu background - rounded all corners */}
+          <div className="fixed top-0 left-0 right-0 h-[100px] bg-[#EDEDED] z-39 rounded-[25px]" />
+
+          {/* Mega Menu Container - rounded bottom only */}
+          <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40 rounded-b-[25px]" style={{ height: '60vh' }}>
+            <div className="flex h-full">
+              {/* LEFT COLUMN - 60% width - Categories list */}
+              <div className="w-[60%] bg-[#EDEDED] p-8 overflow-y-auto">
                 <button 
                   onClick={() => setExploreOpen(false)}
-                  className="absolute top-4 right-4 p-2 hover:bg-gray-300 transition-colors"
+                  className="absolute top-4 right-4 p-2 hover:bg-gray-300 rounded transition-colors"
                 >
                   <X className="w-5 h-5 text-[#666]" />
                 </button>
 
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {Object.entries(categoryInfo).map(([key, info]) => (
-                    <div key={key}>
-                      <button
-                        onClick={() => setExpandedCategory(expandedCategory === key ? null : key)}
-                        className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between ${
-                          expandedCategory === key 
-                            ? 'bg-gray-300 text-[#1a1a1a]' 
-                            : 'text-[#999] hover:bg-gray-200 hover:text-[#666]'
-                        }`}
-                      >
-                        <div className="text-sm font-medium">{info.title}</div>
-                        <ChevronDown className={`w-4 h-4 transition-transform ${expandedCategory === key ? 'rotate-180' : ''}`} />
-                      </button>
-                      {expandedCategory === key && (
-                        <div className="px-4 py-3 bg-gray-200 text-[#666] text-xs leading-relaxed whitespace-pre-line">
-                          {info.desc}
-                        </div>
-                      )}
-                    </div>
+                    <button
+                      key={key}
+                      onClick={() => setSelectedCategory(key)}
+                      className={`w-full text-left px-4 py-3 transition-colors ${
+                        selectedCategory === key 
+                          ? 'bg-gray-300 text-[#1a1a1a]' 
+                          : 'text-[#999] hover:bg-gray-200 hover:text-[#666]'
+                      }`}
+                    >
+                      <div className="text-sm font-medium">{info.title}</div>
+                    </button>
                   ))}
                 </div>
               </div>
 
-              {/* RIGHT COLUMN - 70% width - New Project Form only */}
-              <div className="w-[70%] bg-[#EDEDED] p-12 overflow-y-auto rounded-r-[25px]">
-                <NewProjectForm selectedCategory={Object.keys(categoryInfo)[0]} />
+              {/* RIGHT COLUMN - 40% width - Description + Form */}
+              <div className="w-[40%] bg-[#EDEDED] p-8 overflow-y-auto">
+                {/* Category Description */}
+                <div className="mb-6">
+                  <p className="text-xs text-[#666] leading-relaxed whitespace-pre-line">
+                    {categoryInfo[selectedCategory].desc}
+                  </p>
+                </div>
+
+                {/* New Project Form */}
+                <NewProjectForm selectedCategory={selectedCategory} />
               </div>
             </div>
           </div>
