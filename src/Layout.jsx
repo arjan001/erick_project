@@ -123,7 +123,7 @@ export default function Layout({ children, currentPageName }) {
           {/* Top menu background change */}
           <div className="fixed top-0 left-0 right-0 h-[100px] bg-[#EDEDED] z-39 rounded-b-[25px]" />
 
-          <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40 rounded-[25px]" style={{ height: '70vh' }}>
+          <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40" style={{ height: '70vh' }}>
             <div className="flex h-full rounded-[25px]">
               {/* LEFT COLUMN - 30% width - Categories with expand/collapse */}
               <div className="w-[30%] bg-[#EDEDED] p-8 overflow-y-auto rounded-l-[25px]">
