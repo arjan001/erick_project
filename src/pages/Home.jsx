@@ -12,6 +12,15 @@ export default function Home({ editMode = false }) {
   const [collections, setCollections] = useState([]);
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [savedProjects, setSavedProjects] = useState({
+    inproduction: [],
+    released: [],
+    collections: [],
+    creators: [],
+    recent: [],
+    services: []
+  });
+  const [viewingProject, setViewingProject] = useState(null);
 
   useEffect(() => {
     loadContent();
@@ -40,6 +49,44 @@ export default function Home({ editMode = false }) {
   };
   return (
     <div className="min-h-screen bg-white">
+      {/* Project Viewer Modal */}
+      {viewingProject && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6"
+          onClick={() => setViewingProject(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-8">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-3xl font-bold mb-2">{viewingProject.title || 'Untitled Project'}</h2>
+                  <p className="text-gray-600">{viewingProject.description || 'No description'}</p>
+                </div>
+                <button 
+                  onClick={() => setViewingProject(null)}
+                  className="text-gray-400 hover:text-black text-4xl leading-none"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                {viewingProject.images.map((img, idx) => (
+                  <div key={idx} className="relative aspect-video rounded-lg overflow-hidden shadow-lg">
+                    <img src={img} alt={`Shot ${idx + 1}`} className="w-full h-full object-cover" />
+                    <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-3 py-1 rounded">
+                      Shot {idx + 1}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Hero Section */}
       <section className="relative bg-[#F9F9F9] py-20 overflow-hidden">
         {/* Main Title */}
@@ -97,8 +144,41 @@ export default function Home({ editMode = false }) {
           {editMode && (
             <EditableSection 
               title="IN PRODUCTION" 
-              onGenerate={(boxes) => console.log('Generated:', boxes)}
+              onGenerate={(boxes) => {
+                setSavedProjects(prev => ({
+                  ...prev,
+                  inproduction: [...prev.inproduction, ...boxes]
+                }));
+              }}
             />
+          )}
+
+          {savedProjects.inproduction.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-lg font-bold mb-4 text-green-600">✓ Saved Projects ({savedProjects.inproduction.length})</h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                {savedProjects.inproduction.map((project, idx) => (
+                  <div 
+                    key={idx}
+                    onClick={() => setViewingProject(project)}
+                    className="cursor-pointer group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all"
+                  >
+                    <div className="relative aspect-[16/10] overflow-hidden">
+                      {project.images[0] && (
+                        <img src={project.images[0]} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      )}
+                      <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                        {project.images.length} shots
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h4 className="font-bold text-sm mb-1">{project.title || 'Untitled'}</h4>
+                      <p className="text-xs text-gray-600 line-clamp-2">{project.description || 'No description'}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -177,8 +257,41 @@ export default function Home({ editMode = false }) {
           {editMode && (
             <EditableSection 
               title="RELEASED" 
-              onGenerate={(boxes) => console.log('Generated:', boxes)}
+              onGenerate={(boxes) => {
+                setSavedProjects(prev => ({
+                  ...prev,
+                  released: [...prev.released, ...boxes]
+                }));
+              }}
             />
+          )}
+
+          {savedProjects.released.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-lg font-bold mb-4 text-green-600">✓ Saved Projects ({savedProjects.released.length})</h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                {savedProjects.released.map((project, idx) => (
+                  <div 
+                    key={idx}
+                    onClick={() => setViewingProject(project)}
+                    className="cursor-pointer group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all"
+                  >
+                    <div className="relative aspect-video overflow-hidden">
+                      {project.images[0] && (
+                        <img src={project.images[0]} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      )}
+                      <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                        {project.images.length} shots
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h4 className="font-bold text-sm mb-1">{project.title || 'Untitled'}</h4>
+                      <p className="text-xs text-gray-600 line-clamp-2">{project.description || 'No description'}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           <div className="grid md:grid-cols-2 gap-6">

@@ -10,9 +10,9 @@ export default function EditableSection({ title, onGenerate }) {
   const [prompt, setPrompt] = useState('');
   const [generating, setGenerating] = useState(false);
   const [boxes, setBoxes] = useState([
-    { id: 1, images: [], prompt: '', uploading: false, progress: '' },
-    { id: 2, images: [], prompt: '', uploading: false, progress: '' },
-    { id: 3, images: [], prompt: '', uploading: false, progress: '' }
+    { id: 1, images: [], prompt: '', title: '', description: '', uploading: false, progress: '' },
+    { id: 2, images: [], prompt: '', title: '', description: '', uploading: false, progress: '' },
+    { id: 3, images: [], prompt: '', title: '', description: '', uploading: false, progress: '' }
   ]);
   const [hoveredBox, setHoveredBox] = useState(null);
 
@@ -154,6 +154,28 @@ export default function EditableSection({ title, onGenerate }) {
                     <Upload className="w-8 h-8 text-gray-300" />
                   )}
                 </div>
+
+                <Input
+                  placeholder="Project Title"
+                  value={box.title}
+                  onChange={(e) => {
+                    setBoxes(boxes.map(b => 
+                      b.id === box.id ? { ...b, title: e.target.value } : b
+                    ));
+                  }}
+                  className="text-xs mb-2"
+                />
+
+                <Textarea
+                  placeholder="Short description (1-2 sentences)"
+                  value={box.description}
+                  onChange={(e) => {
+                    setBoxes(boxes.map(b => 
+                      b.id === box.id ? { ...b, description: e.target.value } : b
+                    ));
+                  }}
+                  className="text-xs mb-2 h-16"
+                />
 
                 <Textarea
                   placeholder="Describe 5 cinematic shots for your project..."
