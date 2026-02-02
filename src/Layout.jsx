@@ -185,54 +185,64 @@ export default function Layout({ children, currentPageName }) {
       <nav className="fixed bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-slideUp">
         <div className="bg-[#3a3a3a] rounded-2xl shadow-2xl backdrop-blur-sm border border-white/10">
           <div className="flex items-center gap-0 px-2 md:px-3 py-2.5 overflow-x-auto scrollbar-hide">
-            <button
-              onClick={() => {
-                if (currentPageName === 'Home') {
-                  window.location.href = createPageUrl('Home');
-                }
-              }}
-              onMouseDown={() => {
-                if (currentPageName === 'Home') {
+            {currentPageName === 'Home' ? (
+              <button
+                onMouseDown={() => {
                   const timer = setTimeout(() => {
-                    setEditMode(!editMode);
-                  }, 10000);
+                    setEditMode(true);
+                  }, 3000);
                   setPressTimer(timer);
-                }
-              }}
-              onMouseUp={() => {
-                if (pressTimer) {
-                  clearTimeout(pressTimer);
-                  setPressTimer(null);
-                }
-              }}
-              onMouseLeave={() => {
-                if (pressTimer) {
-                  clearTimeout(pressTimer);
-                  setPressTimer(null);
-                }
-              }}
-              onTouchStart={() => {
-                if (currentPageName === 'Home') {
+                }}
+                onMouseUp={() => {
+                  if (pressTimer) {
+                    clearTimeout(pressTimer);
+                    setPressTimer(null);
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (pressTimer) {
+                    clearTimeout(pressTimer);
+                    setPressTimer(null);
+                  }
+                }}
+                onTouchStart={() => {
                   const timer = setTimeout(() => {
-                    setEditMode(!editMode);
-                  }, 10000);
+                    setEditMode(true);
+                  }, 3000);
                   setPressTimer(timer);
-                }
-              }}
-              onTouchEnd={() => {
-                if (pressTimer) {
-                  clearTimeout(pressTimer);
-                  setPressTimer(null);
-                }
-              }}
-              className={`flex items-center justify-center px-2 md:px-3 py-2 rounded-lg transition-all mr-1 md:mr-2 flex-shrink-0 ${
-                editMode ? 'bg-white text-black' : 'hover:bg-white/5 text-white'
-              }`}
-            >
-              <span className="text-base md:text-lg font-black tracking-tighter">22.</span>
-            </button>
+                }}
+                onTouchEnd={() => {
+                  if (pressTimer) {
+                    clearTimeout(pressTimer);
+                    setPressTimer(null);
+                  }
+                }}
+                className={`flex items-center justify-center px-2 md:px-3 py-2 rounded-lg transition-all mr-1 md:mr-2 flex-shrink-0 ${
+                  editMode ? 'bg-white text-black' : 'hover:bg-white/5 text-white'
+                }`}
+                title={editMode ? 'Edit Mode Active' : 'Hold for 3 seconds to edit'}
+              >
+                <span className="text-base md:text-lg font-black tracking-tighter">22.</span>
+              </button>
+            ) : (
+              <Link 
+                to={createPageUrl('Home')}
+                className="flex items-center justify-center px-2 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-all mr-1 md:mr-2 flex-shrink-0"
+              >
+                <span className="text-base md:text-lg font-black text-white tracking-tighter">22.</span>
+              </Link>
+            )}
 
             <div className="h-6 w-px bg-gray-600 mr-1 md:mr-2 flex-shrink-0" />
+
+            {editMode && currentPageName === 'Home' && (
+              <button
+                onClick={() => setEditMode(false)}
+                className="px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 bg-red-500 text-white hover:bg-red-600"
+              >
+                Exit Edit Mode
+              </button>
+            )}
 
             {bottomNav.map((item) => {
               const isActive = currentPageName === item.href;
