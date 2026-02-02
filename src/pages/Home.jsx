@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ArrowRight, Award, MapPin, User, Play, Bookmark } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import EditableSection from '../components/EditableSection';
 
-export default function Home() {
+export default function Home({ editMode = false }) {
   const [inProduction, setInProduction] = useState([]);
   const [released, setReleased] = useState([]);
   const [creators, setCreators] = useState([]);
@@ -37,14 +38,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
-        <div className="text-2xl font-bold">Loading...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -56,6 +49,7 @@ export default function Home() {
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/1fb910d51_IMG_5196.jpg" 
               alt="Studio22" 
               className="w-full max-w-[800px] h-auto"
+              loading="eager"
             />
           </div>
           
@@ -67,11 +61,18 @@ export default function Home() {
         {/* Background Image (smaller, positioned lower) */}
         <div className="relative max-w-5xl mx-auto px-6 mb-16">
           <div className="relative rounded-xl overflow-hidden shadow-2xl">
-            <img 
-              src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&amp;w=2000"
-              alt="Cinematic production"
-              className="w-full aspect-video object-cover"
-            />
+            {loading ? (
+              <div className="w-full aspect-video bg-gray-200 flex items-center justify-center">
+                <div className="text-gray-400">Loading...</div>
+              </div>
+            ) : (
+              <img 
+                src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&amp;w=2000"
+                alt="Cinematic production"
+                className="w-full aspect-video object-cover"
+                loading="eager"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
           </div>
         </div>
@@ -92,6 +93,13 @@ export default function Home() {
               </Link>
             </div>
           </div>
+
+          {editMode && (
+            <EditableSection 
+              title="IN PRODUCTION" 
+              onGenerate={(boxes) => console.log('Generated:', boxes)}
+            />
+          )}
 
           <div className="grid md:grid-cols-3 gap-6">
             {inProduction.slice(0, 9).map((project, i) => (
@@ -166,6 +174,13 @@ export default function Home() {
             <p className="text-lg text-gray-600">Completed and delivered productions</p>
           </div>
 
+          {editMode && (
+            <EditableSection 
+              title="RELEASED" 
+              onGenerate={(boxes) => console.log('Generated:', boxes)}
+            />
+          )}
+
           <div className="grid md:grid-cols-2 gap-6">
             {released.slice(0, 6).map((project, i) => (
               <Link 
@@ -231,6 +246,13 @@ export default function Home() {
             <p className="text-lg text-gray-600">Curated production showcases</p>
           </div>
 
+          {editMode && (
+            <EditableSection 
+              title="COLLECTIONS" 
+              onGenerate={(boxes) => console.log('Generated:', boxes)}
+            />
+          )}
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {collections.map((collection, i) => (
               <Link 
@@ -272,6 +294,13 @@ export default function Home() {
             </h2>
             <p className="text-lg text-gray-600">The people behind our productions</p>
           </div>
+
+          {editMode && (
+            <EditableSection 
+              title="WE ARE 22. CREATORS" 
+              onGenerate={(boxes) => console.log('Generated:', boxes)}
+            />
+          )}
 
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {creators.map((creator, i) => (
@@ -323,6 +352,13 @@ export default function Home() {
             <p className="text-lg text-gray-600">Recently updated and completed</p>
           </div>
 
+          {editMode && (
+            <EditableSection 
+              title="RECENT PRODUCTIONS" 
+              onGenerate={(boxes) => console.log('Generated:', boxes)}
+            />
+          )}
+
           <div className="grid md:grid-cols-4 gap-6">
             {recent.map((project, i) => (
               <Link 
@@ -371,6 +407,15 @@ export default function Home() {
               From concept to delivery, we handle every aspect with curated teams across Europe
             </p>
           </div>
+
+          {editMode && (
+            <div className="mb-8">
+              <EditableSection 
+                title="SERVICES" 
+                onGenerate={(boxes) => console.log('Generated:', boxes)}
+              />
+            </div>
+          )}
 
           <div className="grid md:grid-cols-3 gap-6">
             {[

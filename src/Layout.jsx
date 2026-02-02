@@ -11,6 +11,8 @@ export default function Layout({ children, currentPageName }) {
   const [academyOpen, setAcademyOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('commercial');
   const [expandedCategory, setExpandedCategory] = useState('commercial');
+  const [editMode, setEditMode] = useState(false);
+  const [pressTimer, setPressTimer] = useState(null);
 
   const categoryInfo = {
     commercial: {
@@ -176,19 +178,59 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Main Content */}
       <main className="pt-[100px] pb-24">
-        {children}
+        {React.cloneElement(children, { editMode })}
       </main>
 
       {/* Bottom Floating Navigation */}
       <nav className="fixed bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-slideUp">
         <div className="bg-[#3a3a3a] rounded-2xl shadow-2xl backdrop-blur-sm border border-white/10">
           <div className="flex items-center gap-0 px-2 md:px-3 py-2.5 overflow-x-auto scrollbar-hide">
-            <Link 
-              to={createPageUrl('Home')}
-              className="flex items-center justify-center px-2 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-all mr-1 md:mr-2 flex-shrink-0"
+            <button
+              onClick={() => {
+                if (currentPageName === 'Home') {
+                  window.location.href = createPageUrl('Home');
+                }
+              }}
+              onMouseDown={() => {
+                if (currentPageName === 'Home') {
+                  const timer = setTimeout(() => {
+                    setEditMode(!editMode);
+                  }, 10000);
+                  setPressTimer(timer);
+                }
+              }}
+              onMouseUp={() => {
+                if (pressTimer) {
+                  clearTimeout(pressTimer);
+                  setPressTimer(null);
+                }
+              }}
+              onMouseLeave={() => {
+                if (pressTimer) {
+                  clearTimeout(pressTimer);
+                  setPressTimer(null);
+                }
+              }}
+              onTouchStart={() => {
+                if (currentPageName === 'Home') {
+                  const timer = setTimeout(() => {
+                    setEditMode(!editMode);
+                  }, 10000);
+                  setPressTimer(timer);
+                }
+              }}
+              onTouchEnd={() => {
+                if (pressTimer) {
+                  clearTimeout(pressTimer);
+                  setPressTimer(null);
+                }
+              }}
+              className={`flex items-center justify-center px-2 md:px-3 py-2 rounded-lg transition-all mr-1 md:mr-2 flex-shrink-0 ${
+                editMode ? 'bg-white text-black' : 'hover:bg-white/5 text-white'
+              }`}
             >
-              <span className="text-base md:text-lg font-black text-white tracking-tighter">22.</span>
-            </Link>
+              <span className="text-base md:text-lg font-black tracking-tighter">22.</span>
+            </button>
 
             <div className="h-6 w-px bg-gray-600 mr-1 md:mr-2 flex-shrink-0" />
 
