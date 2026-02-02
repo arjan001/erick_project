@@ -28,15 +28,14 @@ Deno.serve(async (req) => {
         const prompt = `Analyze the website at ${url} and generate a professional project description for a ${categoryLabel} production. Focus on the brand's identity, target audience, visual style, tone, and production requirements based on what you find. Tailor the description specifically for a ${categoryLabel} context. Keep it to 3-4 sentences maximum.`;
 
         // Use OpenAI with web search capability
-        const { data } = await base44.integrations.Core.InvokeLLM({
+        const response = await base44.integrations.Core.InvokeLLM({
             prompt: prompt,
-            add_context_from_internet: true,
-            response_json_schema: null
+            add_context_from_internet: true
         });
 
         return Response.json({ 
             success: true, 
-            description: data 
+            description: response 
         });
 
     } catch (error) {
