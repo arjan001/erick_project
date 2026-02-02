@@ -75,7 +75,7 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
             onClick={handleExtract}
             disabled={!referenceUrl || extracting}
             size="sm"
-            className="bg-emerald-400 hover:bg-emerald-500 text-white"
+            className="bg-gray-700 hover:bg-gray-800 text-white"
           >
             <Sparkles className="w-3 h-3 mr-1" />
             {extracting ? 'Ext...' : 'Extract'}
