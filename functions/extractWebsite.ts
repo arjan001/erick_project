@@ -16,20 +16,21 @@ Deno.serve(async (req) => {
         }
 
         const categoryContext = {
-            commercial: 'You are a creative director pitching a commercial concept. Based on this brand, create an original 30-60 second commercial script concept.',
-            short: 'You are a film director pitching a short film. Based on this company, create an original 5-10 minute narrative film concept.',
-            feature: 'You are a producer pitching a feature film. Based on this brand or industry, create an original full-length cinematic story concept.',
-            music: 'You are a music video director pitching a concept. Based on this brand aesthetic, create an original music video treatment.',
-            documentary: 'You are a documentary filmmaker pitching a story. Based on this company or industry, create an original documentary concept.'
+            commercial: `You are a commercial director creating a 30-60 second ad concept for the brand/company at ${url}. Write ONLY the commercial concept as if pitching to a client. Describe the scenes, characters, emotions, and story arc. DO NOT explain what the company does. DO NOT include sources or citations. DO NOT mention the brand name until the very end. Focus purely on the creative narrative and visual storytelling.`,
+            short: `You are a film director creating a 5-10 minute short film inspired by the brand/company at ${url}. Write ONLY the film concept. Describe the protagonist, their journey, the conflict, and resolution. DO NOT explain what the company does. Focus purely on the creative narrative.`,
+            feature: `You are a producer creating a feature film concept inspired by the industry/brand at ${url}. Write ONLY the film concept. Describe the main characters, plot, themes, and dramatic arc. DO NOT explain what the company does. Focus purely on the cinematic story.`,
+            music: `You are a music video director creating a concept inspired by the brand at ${url}. Write ONLY the music video treatment. Describe the visuals, symbolism, and artistic direction. DO NOT explain what the company does. Focus purely on the creative visuals.`,
+            documentary: `You are a documentary filmmaker creating a concept about the industry/topic at ${url}. Write ONLY the documentary concept. Describe the story angle, subjects, and narrative structure. DO NOT explain what the company does. Focus purely on the investigative story.`
         };
 
-        const promptContext = categoryContext[projectType] || 'Create an original production concept based on this brand.';
+        const promptContext = categoryContext[projectType] || `Create a production concept for ${url}`;
 
-        const prompt = `Analyze website: ${url}
+        const prompt = `${promptContext}
 
-${promptContext}
+Write 3-4 sentences describing ONLY the creative concept. Start with the opening scene, describe the emotional journey, and end with how it concludes. Use plain conversational language without any formatting, citations, or explanations. Make it feel like a real creative pitch.
 
-Write a SHORT CONCEPT PITCH (2-3 sentences). Focus on the core idea, visual approach, and emotional tone. Write in plain text without any markdown formatting, asterisks, or special characters. Make it feel like a real production pitch.`;
+Example style: "We open on a woman staring at herself in the mirror, avoiding her own eyes. Cut to her workplace where colleagues chat easily while she sits alone. She makes a decision. Montage of her transformation journey - early morning workouts, medical consultations, small victories. Final scene: she walks into that same office, head high, radiant. Brand reveal."`;
+
 
         // Use OpenAI with web search capability
         const response = await base44.integrations.Core.InvokeLLM({
