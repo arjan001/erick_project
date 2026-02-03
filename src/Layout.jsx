@@ -50,7 +50,7 @@ export default function Layout({ children, currentPageName }) {
       <TopBanner />
 
       {/* Main Header (Awwwards Style) */}
-      <header className={`fixed top-[40px] left-0 right-0 z-40 transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
+      <header className={`fixed top-[40px] left-0 right-0 z-[55] transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="flex items-center justify-between h-[60px]">
             {/* Left Navigation */}
@@ -62,26 +62,35 @@ export default function Layout({ children, currentPageName }) {
 
               {/* Main Nav */}
               <nav className="hidden lg:flex items-center gap-6">
-                <div className="relative">
-                  <button 
-                    onClick={() => setExploreOpen(!exploreOpen)}
-                    className={`flex items-center gap-1 text-sm font-medium transition-colors ${exploreOpen ? 'text-[#1a1a1a]' : 'text-[#1a1a1a] hover:text-gray-600'}`}
-                  >
-                    Post a Project <ChevronDown className="w-3 h-3" />
-                  </button>
-                </div>
-
                 {!exploreOpen && (
                   <>
                     <Link to={createPageUrl('Home')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
                       Projects
                     </Link>
                     <Link to={createPageUrl('ApplyArtist')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
-                      Creators
+                      For Creators
                     </Link>
                     <Link to={createPageUrl('ApplyTeam')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
-                      Teams
+                      For Teams
                     </Link>
+                    <div className="relative">
+                      <button 
+                        onClick={() => setAcademyOpen(!academyOpen)}
+                        className="flex items-center gap-1 text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors"
+                      >
+                        Backed <ChevronDown className="w-3 h-3" />
+                      </button>
+                      {academyOpen && (
+                        <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
+                          <Link to={createPageUrl('Home')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            Projects Seeking Backing
+                          </Link>
+                          <Link to={createPageUrl('Services')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            How Backing Works
+                          </Link>
+                        </div>
+                      )}
+                    </div>
                   </>
                 )}
               </nav>
@@ -104,16 +113,12 @@ export default function Layout({ children, currentPageName }) {
               <Button variant="ghost" size="sm" className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent">
                 Login
               </Button>
-              <Link to={createPageUrl('ApplyArtist')}>
-                <Button variant="ghost" size="sm" className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent">
-                  Join as Creator
-                </Button>
-              </Link>
-              <Link to={createPageUrl('ApplyTeam')}>
-                <Button variant="ghost" size="sm" className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent">
-                  Join as Team
-                </Button>
-              </Link>
+              <button
+                onClick={() => setExploreOpen(true)}
+                className="px-4 py-2 bg-black text-white hover:bg-gray-800 font-bold text-sm rounded-md transition-colors"
+              >
+                Post a Project
+              </button>
             </div>
           </div>
         </div>
@@ -124,21 +129,21 @@ export default function Layout({ children, currentPageName }) {
         <>
           {/* Backdrop Overlay */}
           <div 
-            className="fixed inset-0 bg-black/30 z-35"
+            className="fixed inset-0 bg-black/30 z-50"
             onClick={() => setExploreOpen(false)}
           />
 
           {/* Top menu background - rounded cap */}
-          <div className="fixed top-[40px] left-0 right-0 h-[60px] bg-[#EDEDED] z-39 rounded-t-[25px]" />
+          <div className="fixed top-[40px] left-0 right-0 h-[60px] bg-[#EDEDED] z-[60] rounded-t-[25px]" />
 
           {/* Mega Menu Container */}
-          <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-40 rounded-b-[25px]" style={{ height: '60vh' }}>
-            <div className="flex h-full">
+          <div className="fixed top-[100px] left-0 right-0 bottom-0 bg-[#EDEDED] z-[60] rounded-t-[25px] overflow-hidden">
+            <div className="flex h-full max-h-[calc(100vh-100px)]">
               {/* LEFT COLUMN - 30% width - Categories */}
-              <div className="w-[30%] bg-[#EDEDED] p-8 overflow-y-auto rounded-bl-[25px]">
+              <div className="w-[30%] bg-[#EDEDED] p-8 overflow-y-auto">
                 <button 
                   onClick={() => setExploreOpen(false)}
-                  className="absolute top-4 right-4 p-2 hover:bg-gray-300 rounded transition-colors z-50"
+                  className="absolute top-4 right-4 p-2 hover:bg-gray-300 rounded transition-colors z-[70]"
                 >
                   <X className="w-5 h-5 text-[#666]" />
                 </button>
@@ -168,7 +173,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               {/* RIGHT COLUMN - 70% width - New Project Form */}
-              <div className="w-[70%] bg-[#EDEDED] p-8 overflow-y-auto rounded-br-[25px]">
+              <div className="w-[70%] bg-[#EDEDED] p-8 overflow-y-auto">
                 <NewProjectForm selectedCategory={expandedCategory || 'commercial'} />
               </div>
             </div>
