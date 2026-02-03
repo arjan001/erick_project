@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { RotateCcw, ChevronDown, X } from 'lucide-react';
+import { RotateCcw, ChevronDown, X, Grid3x3, List } from 'lucide-react';
 
 const TYPES = ['All Types', 'Freelance', 'Studio', 'Agency', 'Team', 'Collective'];
 
@@ -51,9 +51,9 @@ const COUNTRIES = [
   'Poland'
 ];
 
-export default function CreatorFilterBar({ filters, onFilterChange, onReset, resultCount, allCreators, categoryCounts }) {
+export default function CreatorFilterBar({ filters, onFilterChange, onReset, resultCount, allCreators, categoryCounts, view, onViewChange }) {
   return (
-    <div className="bg-white border-t border-b border-gray-200 py-6 sticky top-[100px] z-10">
+    <div className="bg-white border-t border-b border-gray-200 py-3 sticky top-[100px] z-10">
       <div className="max-w-[1800px] mx-auto px-6">
         <div className="flex flex-wrap items-center gap-4 justify-between">
           <div className="flex flex-wrap items-center gap-3">
@@ -173,14 +173,32 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
             )}
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-bold">
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-bold">
               {resultCount}
             </div>
-            <Button variant="outline" size="sm" onClick={onReset} className="gap-2">
+            <Button variant="outline" size="sm" onClick={onReset} className="gap-2 h-8">
               <RotateCcw className="w-4 h-4" />
               Reset filters
             </Button>
+            <div className="flex gap-1">
+              <Button
+                variant={view === 'grid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onViewChange('grid')}
+                className="h-8 w-8 p-0"
+              >
+                <Grid3x3 className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={view === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onViewChange('list')}
+                className="h-8 w-8 p-0"
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

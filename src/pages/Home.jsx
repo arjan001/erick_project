@@ -707,6 +707,8 @@ export default function Home({ editMode = false }) {
             onFilterChange={(key, value) => setCreatorFilters({...creatorFilters, [key]: value})}
             onReset={() => setCreatorFilters({ type: 'all_types', category: 'all_categories', countries: [] })}
             allCreators={allCreators}
+            view={creatorView}
+            onViewChange={setCreatorView}
             categoryCounts={(() => {
               const counts = {};
               allCreators.forEach(creator => {
@@ -732,23 +734,6 @@ export default function Home({ editMode = false }) {
               return filtered.length;
             })()}
           />
-
-          <div className="mb-6 flex justify-end gap-2">
-            <Button
-              variant={creatorView === 'grid' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setCreatorView('grid')}
-            >
-              <Grid3x3 className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={creatorView === 'list' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setCreatorView('list')}
-            >
-              <List className="w-4 h-4" />
-            </Button>
-          </div>
 
           <CreatorGrid
             creators={(() => {
