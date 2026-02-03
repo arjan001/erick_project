@@ -28,10 +28,18 @@ export default function TopBanner() {
   }, []);
 
   const defaultMessages = [
-    'Documentary project backed 45k of 80k',
-    'Feature film secured 120k of 300k',
-    'Short film project backed 12k of 20k',
-    'Music video partially backed 8k of 15k'
+    'New commercial project posted in Berlin',
+    'Documentary project reached 45k of 80k',
+    'Short film secured full backing and moving to production',
+    'Feature film production started, crew assembling',
+    'Music video successfully backed and in post-production',
+    'Independent filmmaker joined the network',
+    'Production team available for bookings across Europe',
+    'New 3D animation project seeking specialists',
+    'Documentary collective expanded to Spain',
+    'Brand campaign completed ahead of schedule',
+    'First project successfully delivered to client',
+    'Emerging director added portfolio to platform'
   ];
 
   const displayEntries = entries.length > 0 
