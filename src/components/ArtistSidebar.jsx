@@ -41,7 +41,7 @@ export default function ArtistSidebar() {
       {/* Logo */}
       <Link to={createPageUrl('Home')} className="h-20 flex items-center justify-center border-b border-gray-200 hover:bg-gray-100 transition-colors">
         <span className={`font-black text-gray-900 transition-all ${expanded ? 'text-2xl' : 'text-lg'}`}>
-          {expanded ? '22.' : '22'}
+          {expanded ? '22.' : '22.'}
         </span>
       </Link>
 
