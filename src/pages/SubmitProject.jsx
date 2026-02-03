@@ -11,18 +11,36 @@ import StepDepartments from '../components/intake/StepDepartments';
 import StepTimeline from '../components/intake/StepTimeline';
 import StepBudget from '../components/intake/StepBudget';
 import StepFinal from '../components/intake/StepFinal';
+import StepFundingDetails from '../components/intake/StepFundingDetails';
 import StepSuccess from '../components/intake/StepSuccess';
 
-const STEPS = [
-  { id: 1, name: 'Project Type', component: StepProjectType },
-  { id: 2, name: 'Usage', component: StepUsage },
-  { id: 3, name: 'Visual Direction', component: StepVisualDirection },
-  { id: 4, name: 'Location', component: StepLocation },
-  { id: 5, name: 'Departments', component: StepDepartments },
-  { id: 6, name: 'Timeline', component: StepTimeline },
-  { id: 7, name: 'Budget', component: StepBudget },
-  { id: 8, name: 'Details', component: StepFinal },
-];
+const getStepsForProjectType = (projectType) => {
+  const baseSteps = [
+    { id: 1, name: 'Project Type', component: StepProjectType },
+  ];
+
+  if (projectType === 'funding_coproduction') {
+    return [
+      ...baseSteps,
+      { id: 2, name: 'Funding Details', component: StepFundingDetails },
+      { id: 3, name: 'Budget', component: StepBudget },
+      { id: 4, name: 'Timeline', component: StepTimeline },
+      { id: 5, name: 'Location', component: StepLocation },
+      { id: 6, name: 'Details', component: StepFinal },
+    ];
+  }
+
+  return [
+    ...baseSteps,
+    { id: 2, name: 'Usage', component: StepUsage },
+    { id: 3, name: 'Visual Direction', component: StepVisualDirection },
+    { id: 4, name: 'Location', component: StepLocation },
+    { id: 5, name: 'Departments', component: StepDepartments },
+    { id: 6, name: 'Timeline', component: StepTimeline },
+    { id: 7, name: 'Budget', component: StepBudget },
+    { id: 8, name: 'Details', component: StepFinal },
+  ];
+};
 
 export default function SubmitProject() {
   const location = useLocation();
@@ -61,17 +79,32 @@ export default function SubmitProject() {
     setProjectData(prev => ({ ...prev, [field]: value }));
   };
 
+  const STEPS = getStepsForProjectType(projectData.project_type);
+
   const canProceed = () => {
-    switch (currentStep) {
-      case 1: return projectData.project_type !== '';
-      case 2: return projectData.usage.length > 0;
-      case 3: return projectData.visual_direction_clips.length > 0;
-      case 4: return projectData.location_country !== '';
-      case 5: return projectData.departments_needed.length > 0;
-      case 6: return projectData.timeline_start !== '' && projectData.timeline_deadline !== '';
-      case 7: return true; // Budget is optional
-      case 8: return projectData.project_owner_email !== '' && projectData.project_owner_name !== '';
-      default: return true;
+    if (currentStep === 1) return projectData.project_type !== '';
+    
+    const currentStepName = STEPS[currentStep - 1]?.name;
+    
+    switch (currentStepName) {
+      case 'Funding Details':
+        return projectData.funding_stage && (projectData.seeking_partners || []).length > 0;
+      case 'Usage':
+        return projectData.usage.length > 0;
+      case 'Visual Direction':
+        return projectData.visual_direction_clips.length > 0;
+      case 'Location':
+        return projectData.location_country !== '';
+      case 'Departments':
+        return projectData.departments_needed.length > 0;
+      case 'Timeline':
+        return projectData.timeline_start !== '' && projectData.timeline_deadline !== '';
+      case 'Budget':
+        return true; // Optional
+      case 'Details':
+        return projectData.project_owner_email !== '' && projectData.project_owner_name !== '';
+      default:
+        return true;
     }
   };
 
