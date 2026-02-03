@@ -58,11 +58,14 @@ import Home2 from './pages/Home2';
 import HowBackingWorks from './pages/HowBackingWorks';
 import Pricing from './pages/Pricing';
 import ProjectAdmin from './pages/ProjectAdmin';
+import Projects from './pages/Projects';
 import Services from './pages/Services';
 import SubmitProject from './pages/SubmitProject';
 import TeamAdmin from './pages/TeamAdmin';
 import Work from './pages/Work';
-import Projects from './pages/Projects';
+import ArtistDashboard from './pages/ArtistDashboard';
+import JobBoard from './pages/JobBoard';
+import JobApplications from './pages/JobApplications';
 import __Layout from './Layout.jsx';
 
 
@@ -78,11 +81,14 @@ export const PAGES = {
     "HowBackingWorks": HowBackingWorks,
     "Pricing": Pricing,
     "ProjectAdmin": ProjectAdmin,
+    "Projects": Projects,
     "Services": Services,
     "SubmitProject": SubmitProject,
     "TeamAdmin": TeamAdmin,
     "Work": Work,
-    "Projects": Projects,
+    "ArtistDashboard": ArtistDashboard,
+    "JobBoard": JobBoard,
+    "JobApplications": JobApplications,
 }
 
 export const pagesConfig = {
