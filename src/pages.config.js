@@ -53,6 +53,7 @@ import ApplyTeam from './pages/ApplyTeam';
 import ArtistAdmin from './pages/ArtistAdmin';
 import Contact from './pages/Contact';
 import FirstFrame from './pages/FirstFrame';
+import Home from './pages/Home';
 import Home2 from './pages/Home2';
 import Pricing from './pages/Pricing';
 import ProjectAdmin from './pages/ProjectAdmin';
@@ -60,7 +61,6 @@ import Services from './pages/Services';
 import SubmitProject from './pages/SubmitProject';
 import TeamAdmin from './pages/TeamAdmin';
 import Work from './pages/Work';
-import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
@@ -71,6 +71,7 @@ export const PAGES = {
     "ArtistAdmin": ArtistAdmin,
     "Contact": Contact,
     "FirstFrame": FirstFrame,
+    "Home": Home,
     "Home2": Home2,
     "Pricing": Pricing,
     "ProjectAdmin": ProjectAdmin,
@@ -78,7 +79,6 @@ export const PAGES = {
     "SubmitProject": SubmitProject,
     "TeamAdmin": TeamAdmin,
     "Work": Work,
-    "Home": Home,
 }
 
 export const pagesConfig = {

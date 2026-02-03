@@ -38,12 +38,11 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const bottomNav = [
-    { name: 'In Production', href: 'Home' },
-    { name: 'Released', href: 'Work' },
-    { name: 'Collections', href: 'Services' },
+    { name: 'Projects', href: 'Home' },
     { name: 'Creators', href: 'ApplyArtist' },
-    { name: 'Market', href: 'ApplyTeam' },
-    { name: 'Visit Sotd.', href: 'FirstFrame', highlight: true },
+    { name: 'Teams', href: 'ApplyTeam' },
+    { name: 'How It Works', href: 'Services' },
+    { name: 'Post Project', href: 'SubmitProject', highlight: true },
   ];
 
   return (
@@ -75,14 +74,14 @@ export default function Layout({ children, currentPageName }) {
 
                 {!exploreOpen && (
                   <>
-                    <Link to={createPageUrl('FirstFrame')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
-                      FilmAcademy
+                    <Link to={createPageUrl('ApplyArtist')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
+                      For Creators
                     </Link>
                     <Link to={createPageUrl('ApplyTeam')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
-                      Jobs
+                      For Teams
                     </Link>
-                    <Link to={createPageUrl('ApplyTeam')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
-                      Market
+                    <Link to={createPageUrl('Services')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
+                      How It Works
                     </Link>
                   </>
                 )}
@@ -110,8 +109,8 @@ export default function Layout({ children, currentPageName }) {
                 Sign Up
               </Button>
               <Link to={createPageUrl('SubmitProject')}>
-                <Button size="sm" className="border-2 border-black hover:bg-black hover:text-white text-white font-bold">
-                  Submit Project
+                <Button size="sm" className="bg-black text-white hover:bg-gray-800 font-bold">
+                  Post a Project
                 </Button>
               </Link>
             </div>
@@ -273,41 +272,41 @@ export default function Layout({ children, currentPageName }) {
             <div>
               <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Studio22</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl('Home')} className="hover:text-white">About</Link></li>
-                <li><Link to={createPageUrl('Home')} className="hover:text-white">Our Story</Link></li>
+                <li><Link to={createPageUrl('Services')} className="hover:text-white">About the Network</Link></li>
+                <li><Link to={createPageUrl('Services')} className="hover:text-white">How It Works</Link></li>
                 <li><Link to={createPageUrl('Home')} className="hover:text-white">Contact</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Productions</h3>
+              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">For Clients</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl('Home')} className="hover:text-white">In Production</Link></li>
-                <li><Link to={createPageUrl('Work')} className="hover:text-white">Released</Link></li>
-                <li><Link to={createPageUrl('Services')} className="hover:text-white">Collections</Link></li>
+                <li><Link to={createPageUrl('SubmitProject')} className="hover:text-white">Post a Project</Link></li>
+                <li><Link to={createPageUrl('Home')} className="hover:text-white">Browse Projects</Link></li>
+                <li><Link to={createPageUrl('Services')} className="hover:text-white">Pricing</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Services</h3>
+              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">For Creators</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl('FirstFrame')} className="hover:text-white">First Frame</Link></li>
-                <li><Link to={createPageUrl('Services')} className="hover:text-white">Full Service</Link></li>
-                <li><Link to={createPageUrl('Services')} className="hover:text-white">Virtual Production</Link></li>
+                <li><Link to={createPageUrl('ApplyArtist')} className="hover:text-white">Apply as Creator</Link></li>
+                <li><Link to={createPageUrl('ApplyArtist')} className="hover:text-white">Creator Directory</Link></li>
+                <li><Link to={createPageUrl('Services')} className="hover:text-white">Membership Plans</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Creators</h3>
+              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">For Teams</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl('ApplyArtist')} className="hover:text-white">Apply as Artist</Link></li>
                 <li><Link to={createPageUrl('ApplyTeam')} className="hover:text-white">Apply as Team</Link></li>
-                <li><Link to={createPageUrl('ApplyArtist')} className="hover:text-white">Directory</Link></li>
+                <li><Link to={createPageUrl('ApplyTeam')} className="hover:text-white">Team Directory</Link></li>
+                <li><Link to={createPageUrl('Services')} className="hover:text-white">Partnership Options</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Market</h3>
+              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Showcase</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl('ApplyTeam')} className="hover:text-white">Equipment</Link></li>
-                <li><Link to={createPageUrl('ApplyTeam')} className="hover:text-white">Locations</Link></li>
-                <li><Link to={createPageUrl('ApplyTeam')} className="hover:text-white">Studios</Link></li>
+                <li><Link to={createPageUrl('Work')} className="hover:text-white">Featured Work</Link></li>
+                <li><Link to={createPageUrl('Home')} className="hover:text-white">Success Stories</Link></li>
+                <li><Link to={createPageUrl('Work')} className="hover:text-white">Project Gallery</Link></li>
               </ul>
             </div>
             <div>
