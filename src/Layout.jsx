@@ -291,12 +291,11 @@ export default function Layout({ children, currentPageName }) {
             </Link>
           </div>
         </div>
-        </nav>
-        )}
+      </nav>
+      )}
 
-        {/* Footer (Awwwards Style) */}
-        {!user && (
-        <footer className="bg-[#1a1a1a] text-white py-16">
+      {/* Footer (Awwwards Style) */}
+      {!user && (<footer className="bg-[#1a1a1a] text-white py-16">
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 mb-12">
             <div>
