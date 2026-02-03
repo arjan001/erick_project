@@ -935,7 +935,7 @@ export default function Home({ editMode = false }) {
       </section>
 
       {/* First Frame CTA */}
-      <section className="py-24 bg-[#1a1a1a] text-white">
+      <section className="py-12 md:py-24 bg-[#1a1a1a] text-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-4xl md:text-6xl font-normal uppercase mb-6 tracking-tight">Ready to Start?</h2>
           <p className="text-2xl mb-10 max-w-2xl mx-auto text-gray-300 font-light">
