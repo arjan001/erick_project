@@ -45,7 +45,7 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-[#212121]">
+    <div className={`min-h-screen bg-white text-[#212121] ${exploreOpen ? 'overflow-hidden' : ''}`}>
       {/* Top Banner */}
       <TopBanner />
 
