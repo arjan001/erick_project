@@ -97,7 +97,7 @@ export default function Home({ editMode = false }) {
     countries: []
   });
   const [creatorView, setCreatorView] = useState('list');
-  const [creatorsPerPage, setCreatorsPerPage] = useState(20);
+  const [creatorsPerPage, setCreatorsPerPage] = useState(10);
   const [showCreatorGenerator, setShowCreatorGenerator] = useState(false);
 
   useEffect(() => {
@@ -770,13 +770,27 @@ export default function Home({ editMode = false }) {
             onDelete={editMode ? loadCreators : null}
           />
 
-          {allCreators.length > creatorsPerPage && (
+          {(() => {
+            let filtered = allCreators;
+            if (creatorFilters.type !== 'all_types') {
+              filtered = filtered.filter(c => c.type === creatorFilters.type);
+            }
+            if (creatorFilters.category !== 'all_categories') {
+              filtered = filtered.filter(c => c.categories?.includes(creatorFilters.category));
+            }
+            if (creatorFilters.countries?.length > 0) {
+              filtered = filtered.filter(c => 
+                creatorFilters.countries.includes(c.country?.toLowerCase().replace(' ', '_'))
+              );
+            }
+            return filtered.length > creatorsPerPage;
+          })() && (
             <div className="text-center mt-12">
               <button 
-                onClick={() => setCreatorsPerPage(creatorsPerPage + 15)}
+                onClick={() => setCreatorsPerPage(creatorsPerPage + 10)}
                 className="px-10 py-4 border-2 border-black text-black font-bold uppercase text-sm tracking-wider hover:bg-black hover:text-white transition-all duration-300 rounded-lg"
               >
-                View More Creators
+                Show More
               </button>
             </div>
           )}
