@@ -60,6 +60,9 @@ import Services from './pages/Services';
 import SubmitProject from './pages/SubmitProject';
 import TeamAdmin from './pages/TeamAdmin';
 import Work from './pages/Work';
+import Projects from './pages/Projects';
+import Creators from './pages/Creators';
+import Teams from './pages/Teams';
 import __Layout from './Layout.jsx';
 
 
@@ -77,6 +80,9 @@ export const PAGES = {
     "SubmitProject": SubmitProject,
     "TeamAdmin": TeamAdmin,
     "Work": Work,
+    "Projects": Projects,
+    "Creators": Creators,
+    "Teams": Teams,
 }
 
 export const pagesConfig = {
