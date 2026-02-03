@@ -105,8 +105,8 @@ export default function Admin() {
         <h1 className="text-4xl font-bold mb-2 text-black">Admin Panel</h1>
         <p className="text-gray-600 mb-8">Manage projects, creators, and teams. Approve backing initiatives.</p>
 
-        <Tabs defaultValue="projects" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs defaultValue="projects" className="space-y-4 md:space-y-6">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2">
             <TabsTrigger value="projects">Projects ({projects.length})</TabsTrigger>
             <TabsTrigger value="backed">Backed ({backedProjects.length})</TabsTrigger>
             <TabsTrigger value="creators">Creators ({pendingArtists.length})</TabsTrigger>
