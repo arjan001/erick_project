@@ -51,26 +51,26 @@ import Admin from './pages/Admin';
 import ApplyArtist from './pages/ApplyArtist';
 import ApplyTeam from './pages/ApplyTeam';
 import ArtistAdmin from './pages/ArtistAdmin';
+import ArtistDashboard from './pages/ArtistDashboard';
+import ArtistProfile from './pages/ArtistProfile';
 import BackedProjects from './pages/BackedProjects';
 import Contact from './pages/Contact';
 import Home from './pages/Home';
 import Home2 from './pages/Home2';
 import HowBackingWorks from './pages/HowBackingWorks';
+import JobApplications from './pages/JobApplications';
+import JobBoard from './pages/JobBoard';
+import JobInvitations from './pages/JobInvitations';
+import Jobs from './pages/Jobs';
+import Messages from './pages/Messages';
 import Pricing from './pages/Pricing';
 import ProjectAdmin from './pages/ProjectAdmin';
 import Projects from './pages/Projects';
 import Services from './pages/Services';
+import SignIn from './pages/SignIn';
 import SubmitProject from './pages/SubmitProject';
 import TeamAdmin from './pages/TeamAdmin';
 import Work from './pages/Work';
-import ArtistDashboard from './pages/ArtistDashboard';
-import JobBoard from './pages/JobBoard';
-import JobApplications from './pages/JobApplications';
-import JobInvitations from './pages/JobInvitations';
-import Messages from './pages/Messages';
-import ArtistProfile from './pages/ArtistProfile';
-import SignIn from './pages/SignIn';
-import Jobs from './pages/Jobs';
 import __Layout from './Layout.jsx';
 
 
@@ -79,26 +79,26 @@ export const PAGES = {
     "ApplyArtist": ApplyArtist,
     "ApplyTeam": ApplyTeam,
     "ArtistAdmin": ArtistAdmin,
+    "ArtistDashboard": ArtistDashboard,
+    "ArtistProfile": ArtistProfile,
     "BackedProjects": BackedProjects,
     "Contact": Contact,
     "Home": Home,
     "Home2": Home2,
     "HowBackingWorks": HowBackingWorks,
+    "JobApplications": JobApplications,
+    "JobBoard": JobBoard,
+    "JobInvitations": JobInvitations,
+    "Jobs": Jobs,
+    "Messages": Messages,
     "Pricing": Pricing,
     "ProjectAdmin": ProjectAdmin,
     "Projects": Projects,
     "Services": Services,
+    "SignIn": SignIn,
     "SubmitProject": SubmitProject,
     "TeamAdmin": TeamAdmin,
     "Work": Work,
-    "ArtistDashboard": ArtistDashboard,
-    "JobBoard": JobBoard,
-    "JobApplications": JobApplications,
-    "JobInvitations": JobInvitations,
-    "Messages": Messages,
-    "ArtistProfile": ArtistProfile,
-    "SignIn": SignIn,
-    "Jobs": Jobs,
 }
 
 export const pagesConfig = {
