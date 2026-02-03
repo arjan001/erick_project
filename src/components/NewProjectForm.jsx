@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, CheckCircle2, Loader } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '../utils';
 
@@ -20,30 +20,56 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
   };
   const [projectType, setProjectType] = useState(projectTypeMap[selectedCategory] || 'commercial');
   const [extracting, setExtracting] = useState(false);
+  const [extractProgress, setExtractProgress] = useState(null);
 
   React.useEffect(() => {
     setProjectType(projectTypeMap[selectedCategory] || 'commercial');
   }, [selectedCategory]);
 
+  const progressSteps = [
+    'Fetching site content',
+    'Analyzing brand and tone',
+    'Identifying visual language',
+    'Translating into a film concept'
+  ];
+
   const handleExtract = async () => {
     if (!referenceUrl) return;
     
     setExtracting(true);
+    setExtractProgress(0);
+
+    // Simulate progress through steps
+    const progressInterval = setInterval(() => {
+      setExtractProgress(prev => {
+        if (prev === null) return 0;
+        if (prev < progressSteps.length - 1) return prev + 1;
+        return prev;
+      });
+    }, 800);
+
     try {
-      const response = await base44.functions.invoke('extractWebsite', { 
+      const response = await base44.functions.invoke('extractAndAnalyze', { 
         url: referenceUrl,
         projectType: selectedCategory
       });
-      console.log('Extract response:', response.data);
-      if (response.data?.description) {
+      
+      clearInterval(progressInterval);
+      
+      if (response.data?.success && response.data?.description) {
         setDescription(response.data.description);
-      } else if (response.data?.success && response.data?.description) {
-        setDescription(response.data.description);
+        setExtractProgress(progressSteps.length - 1);
+        setTimeout(() => {
+          setExtractProgress(null);
+        }, 600);
       } else if (response.data?.error) {
         console.error('Extract error:', response.data.error);
+        setExtractProgress(null);
       }
     } catch (error) {
       console.error('Extract failed:', error);
+      setExtractProgress(null);
+      clearInterval(progressInterval);
     } finally {
       setExtracting(false);
     }
@@ -81,12 +107,36 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
             className="bg-gray-700 hover:bg-gray-800 text-white"
           >
             <Sparkles className="w-3 h-3 mr-1" />
-            {extracting ? 'Ext...' : 'Extract'}
+            {extracting ? 'Extracting...' : 'Extract'}
           </Button>
         </div>
         <p className="text-xs text-[#999]">
           Provide a URL and click Extract to auto-generate your project description
         </p>
+
+        {/* Progress Indicator */}
+        {extractProgress !== null && (
+          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="space-y-2">
+              {progressSteps.map((step, idx) => (
+                <div key={idx} className="flex items-center gap-2 text-xs">
+                  {idx < extractProgress && (
+                    <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  )}
+                  {idx === extractProgress && (
+                    <Loader className="w-4 h-4 text-blue-600 flex-shrink-0 animate-spin" />
+                  )}
+                  {idx > extractProgress && (
+                    <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0" />
+                  )}
+                  <span className={idx <= extractProgress ? 'text-gray-800' : 'text-gray-500'}>
+                    {step}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Project Description */}
