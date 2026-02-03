@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Trash2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
-export default function CreatorGrid({ creators, view = 'grid' }) {
+export default function CreatorGrid({ creators, view = 'list', onDelete }) {
   if (view === 'list') {
     return (
       <div className="space-y-2">
@@ -44,9 +45,24 @@ export default function CreatorGrid({ creators, view = 'grid' }) {
                 </span>
               </div>
 
-              <button className="px-6 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-black transition-all">
-                View
-              </button>
+              <div className="flex items-center gap-2">
+                <button className="px-6 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-black transition-all">
+                  View
+                </button>
+                {onDelete && (
+                  <button 
+                    onClick={async () => {
+                      if (confirm(`Delete ${creator.name}?`)) {
+                        await base44.entities.Creator.delete(creator.id);
+                        onDelete();
+                      }
+                    }}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}

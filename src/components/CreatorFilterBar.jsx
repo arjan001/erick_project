@@ -1,7 +1,7 @@
-import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { RotateCcw } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { RotateCcw, ChevronDown, X } from 'lucide-react';
 
 const TYPES = ['All Types', 'Freelance', 'Studio', 'Agency', 'Team', 'Collective'];
 
@@ -50,50 +50,142 @@ const COUNTRIES = [
   'Poland'
 ];
 
-export default function CreatorFilterBar({ filters, onFilterChange, onReset, resultCount }) {
+export default function CreatorFilterBar({ filters, onFilterChange, onReset, resultCount, allCreators, categoryCounts }) {
+  const [typeOpen, setTypeOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [countryOpen, setCountryOpen] = useState(false);
+
   return (
-    <div className="bg-white border-t border-b border-gray-200 py-6 sticky top-[100px] z-20">
+    <div className="bg-white border-t border-b border-gray-200 py-6 sticky top-[100px] z-10">
       <div className="max-w-[1800px] mx-auto px-6">
         <div className="flex flex-wrap items-center gap-4 justify-between">
           <div className="flex flex-wrap items-center gap-3">
-            <Select value={filters.type} onValueChange={(value) => onFilterChange('type', value)}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                {TYPES.map(type => (
-                  <SelectItem key={type} value={type.toLowerCase().replace(' ', '_')}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Type Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setTypeOpen(!typeOpen)}
+                className="w-[160px] px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50"
+              >
+                <span className="text-sm">
+                  {filters.type === 'all_types' ? 'All Types' : filters.type.replace('_', ' ')}
+                </span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {typeOpen && (
+                <div className="absolute top-full mt-1 w-[160px] bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-[300px] overflow-y-auto">
+                  {TYPES.map(type => {
+                    const value = type.toLowerCase().replace(' ', '_');
+                    return (
+                      <button
+                        key={type}
+                        onClick={() => {
+                          onFilterChange('type', value);
+                          setTypeOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                      >
+                        {type}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
-            <Select value={filters.category} onValueChange={(value) => onFilterChange('category', value)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map(cat => (
-                  <SelectItem key={cat} value={cat.toLowerCase().replace(' ', '_')}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Category Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setCategoryOpen(!categoryOpen)}
+                className="w-[200px] px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50"
+              >
+                <span className="text-sm truncate">
+                  {filters.category === 'all_categories' ? 'All Categories' : filters.category.replace('_', ' ')}
+                </span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {categoryOpen && (
+                <div className="absolute top-full mt-1 w-[200px] bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-[300px] overflow-y-auto">
+                  <button
+                    onClick={() => {
+                      onFilterChange('category', 'all_categories');
+                      setCategoryOpen(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                  >
+                    All Categories
+                  </button>
+                  {Object.entries(categoryCounts || {})
+                    .filter(([_, count]) => count > 0)
+                    .map(([cat, count]) => (
+                      <button
+                        key={cat}
+                        onClick={() => {
+                          onFilterChange('category', cat);
+                          setCategoryOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between"
+                      >
+                        <span className="capitalize">{cat.replace('_', ' ')}</span>
+                        <span className="text-xs text-gray-500">({count})</span>
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
 
-            <Select value={filters.country} onValueChange={(value) => onFilterChange('country', value)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Country" />
-              </SelectTrigger>
-              <SelectContent>
-                {COUNTRIES.map(country => (
-                  <SelectItem key={country} value={country.toLowerCase().replace(' ', '_')}>
-                    {country}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Country Multi-Select Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setCountryOpen(!countryOpen)}
+                className="min-w-[200px] px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50"
+              >
+                <span className="text-sm truncate">
+                  {filters.countries?.length > 0 
+                    ? `${filters.countries.length} selected` 
+                    : 'All Countries'}
+                </span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {countryOpen && (
+                <div className="absolute top-full mt-1 w-[250px] bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-[300px] overflow-y-auto">
+                  {COUNTRIES.slice(1).map(country => {
+                    const value = country.toLowerCase().replace(' ', '_');
+                    const isSelected = filters.countries?.includes(value);
+                    return (
+                      <label
+                        key={country}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => {
+                            const current = filters.countries || [];
+                            const newCountries = isSelected
+                              ? current.filter(c => c !== value)
+                              : [...current, value];
+                            onFilterChange('countries', newCountries);
+                          }}
+                        />
+                        <span className="text-sm">{country}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Clear selected countries */}
+            {filters.countries?.length > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => onFilterChange('countries', [])}
+                className="h-8"
+              >
+                <X className="w-3 h-3 mr-1" />
+                Clear
+              </Button>
+            )}
           </div>
 
           <div className="flex items-center gap-4">

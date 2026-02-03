@@ -40,17 +40,21 @@ ${config.type !== 'all' ? `Type: ${config.type}` : 'Mix of: freelance, studio, a
 ${config.category !== 'all' ? `Specialty: ${config.category}` : 'Various specialties in film production'}
 ${config.country !== 'all' ? `Country: ${config.country}` : 'Various European countries'}
 
-Requirements:
+CRITICAL REQUIREMENTS:
 - Real-sounding company/creator names (professional, creative)
-- Realistic European cities
-- Professional website domains (use format: companyname.com or .co.uk, etc)
-- Award counts (0-100, weighted toward lower numbers)
-- 2-4 category specialties per creator
+- Realistic European cities matching the country
+- Professional website domains (use format: companyname.com or .co.uk for UK, .nl for Netherlands, etc)
+- Award counts (0-100, weighted toward lower numbers, realistic distribution)
+- 2-4 category specialties per creator from the provided list
 - Diverse mix of types and specialties
-- logo_url: Use high-quality Unsplash images of logos, brand marks, or abstract designs (format: https://images.unsplash.com/photo-[id]?q=80&w=200)
-- profile_image_url: Use cinematic production/studio images from Unsplash (format: https://images.unsplash.com/photo-[id]?q=80&w=800)
+- logo_url: MUST use REAL Unsplash photo IDs for logos, company marks, abstract minimal designs. Format: https://images.unsplash.com/photo-1234567890123-etc?q=80&w=200
+- profile_image_url: MUST use REAL Unsplash photo IDs showing actual film production, camera equipment, studios, cinematography. Format: https://images.unsplash.com/photo-1234567890123-etc?q=80&w=800
 
-Return ONLY a JSON array, no markdown formatting.`;
+IMPORTANT: Use actual Unsplash photo IDs that exist. For example:
+- Logos: photo-1599305445671-ac291c95aaa9, photo-1634942537034-2531766767d1
+- Production: photo-1492691527719-9d1e07e534b4, photo-1574267432553-4b4628081c31
+
+Return ONLY valid JSON, no markdown formatting.`;
 
       const response = await base44.integrations.Core.InvokeLLM({
         prompt,
@@ -176,7 +180,10 @@ Return ONLY a JSON array, no markdown formatting.`;
 
         {progress && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <p className="text-sm text-blue-800 font-medium">{progress}</p>
+            <div className="flex items-center gap-3">
+              <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm text-blue-800 font-medium">{progress}</p>
+            </div>
           </div>
         )}
 
