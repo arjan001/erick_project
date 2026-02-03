@@ -1,9 +1,73 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowRight, Award, MapPin, User, Play, Bookmark } from 'lucide-react';
+import { ArrowRight, Award, MapPin, User, Play, Bookmark, Sparkles, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
 import EditableSection from '../components/EditableSection';
+
+// Saved Project Card Component with futuristic hover effect
+function SavedProjectCard({ project, editMode, onEdit, onView }) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
+
+  useEffect(() => {
+    if (!isHovering || project.images.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % project.images.length);
+    }, 800);
+    
+    return () => clearInterval(interval);
+  }, [isHovering, project.images.length]);
+
+  return (
+    <div 
+      onClick={editMode ? onEdit : onView}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => {
+        setIsHovering(false);
+        setCurrentImageIndex(0);
+      }}
+      className="cursor-pointer group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all"
+    >
+      <div className="relative aspect-[16/10] overflow-hidden bg-black">
+        {project.images.map((img, idx) => (
+          <img 
+            key={idx}
+            src={img} 
+            alt={`${project.title} - Shot ${idx + 1}`}
+            className="absolute inset-0 w-full h-full object-cover transition-all duration-700"
+            style={{
+              opacity: currentImageIndex === idx ? 1 : 0,
+              transform: currentImageIndex === idx ? 'scale(1)' : 'scale(1.1)',
+              filter: currentImageIndex === idx ? 'blur(0px)' : 'blur(4px)'
+            }}
+          />
+        ))}
+        <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+          {isHovering ? `${currentImageIndex + 1}/${project.images.length}` : `${project.images.length} shots`}
+        </div>
+        {editMode && (
+          <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded font-bold">
+            EDIT
+          </div>
+        )}
+      </div>
+      <div className="p-4">
+        <h4 className="font-bold text-sm mb-1">{project.title || 'Untitled'}</h4>
+        <p className="text-xs text-gray-600 line-clamp-2">{project.description || 'No description'}</p>
+      </div>
+    </div>
+  );
+}
+
+async function generateSingleShot(prompt) {
+  const response = await base44.integrations.Core.GenerateImage({
+    prompt: `${prompt}\n\nCinematic style. Muted colors. Practical lights. Natural grain. In-production feel.`
+  });
+  return response.url;
+}
 
 export default function Home({ editMode = false }) {
   const [inProduction, setInProduction] = useState([]);
@@ -49,7 +113,7 @@ export default function Home({ editMode = false }) {
   };
   return (
     <div className="min-h-screen bg-white">
-      {/* Project Viewer Modal */}
+      {/* Project Viewer/Editor Modal */}
       {viewingProject && (
         <div 
           className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6"
@@ -61,28 +125,88 @@ export default function Home({ editMode = false }) {
           >
             <div className="p-8">
               <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h2 className="text-3xl font-bold mb-2">{viewingProject.title || 'Untitled Project'}</h2>
-                  <p className="text-gray-600">{viewingProject.description || 'No description'}</p>
+                <div className="flex-1">
+                  {editMode && viewingProject._editIndex !== undefined ? (
+                    <>
+                      <input
+                        value={viewingProject.title || ''}
+                        onChange={(e) => setViewingProject({ ...viewingProject, title: e.target.value })}
+                        className="text-3xl font-bold mb-2 w-full border-b-2 border-gray-200 focus:border-blue-500 outline-none"
+                        placeholder="Project Title"
+                      />
+                      <textarea
+                        value={viewingProject.description || ''}
+                        onChange={(e) => setViewingProject({ ...viewingProject, description: e.target.value })}
+                        className="text-gray-600 w-full border-b-2 border-gray-200 focus:border-blue-500 outline-none resize-none"
+                        placeholder="Project Description"
+                        rows={2}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-3xl font-bold mb-2">{viewingProject.title || 'Untitled Project'}</h2>
+                      <p className="text-gray-600">{viewingProject.description || 'No description'}</p>
+                    </>
+                  )}
                 </div>
                 <button 
                   onClick={() => setViewingProject(null)}
-                  className="text-gray-400 hover:text-black text-4xl leading-none"
+                  className="text-gray-400 hover:text-black text-4xl leading-none ml-4"
                 >
                   ×
                 </button>
               </div>
               
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
                 {viewingProject.images.map((img, idx) => (
-                  <div key={idx} className="relative aspect-video rounded-lg overflow-hidden shadow-lg">
+                  <div key={idx} className="relative aspect-video rounded-lg overflow-hidden shadow-lg group">
                     <img src={img} alt={`Shot ${idx + 1}`} className="w-full h-full object-cover" />
                     <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-3 py-1 rounded">
                       Shot {idx + 1}
                     </div>
+                    {editMode && viewingProject._editIndex !== undefined && (
+                      <button
+                        onClick={() => {
+                          const newImages = viewingProject.images.filter((_, i) => i !== idx);
+                          setViewingProject({ ...viewingProject, images: newImages });
+                        }}
+                        className="absolute top-3 right-3 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
+
+              {editMode && viewingProject._editIndex !== undefined && (
+                <div className="flex gap-3">
+                  <Button
+                    onClick={async () => {
+                      const newShot = await generateSingleShot(viewingProject.prompt || 'Additional cinematic shot');
+                      setViewingProject({ ...viewingProject, images: [...viewingProject.images, newShot] });
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Add Shot
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const section = viewingProject._section;
+                      const idx = viewingProject._editIndex;
+                      setSavedProjects(prev => ({
+                        ...prev,
+                        [section]: prev[section].map((p, i) => i === idx ? viewingProject : p)
+                      }));
+                      setViewingProject(null);
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Save Changes
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -158,24 +282,13 @@ export default function Home({ editMode = false }) {
               <h3 className="text-lg font-bold mb-4 text-green-600">✓ Saved Projects ({savedProjects.inproduction.length})</h3>
               <div className="grid md:grid-cols-3 gap-4">
                 {savedProjects.inproduction.map((project, idx) => (
-                  <div 
+                  <SavedProjectCard
                     key={idx}
-                    onClick={() => setViewingProject(project)}
-                    className="cursor-pointer group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all"
-                  >
-                    <div className="relative aspect-[16/10] overflow-hidden">
-                      {project.images[0] && (
-                        <img src={project.images[0]} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      )}
-                      <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                        {project.images.length} shots
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <h4 className="font-bold text-sm mb-1">{project.title || 'Untitled'}</h4>
-                      <p className="text-xs text-gray-600 line-clamp-2">{project.description || 'No description'}</p>
-                    </div>
-                  </div>
+                    project={project}
+                    editMode={editMode}
+                    onEdit={() => setViewingProject({ ...project, _editIndex: idx, _section: 'inproduction' })}
+                    onView={() => setViewingProject(project)}
+                  />
                 ))}
               </div>
             </div>
@@ -271,24 +384,13 @@ export default function Home({ editMode = false }) {
               <h3 className="text-lg font-bold mb-4 text-green-600">✓ Saved Projects ({savedProjects.released.length})</h3>
               <div className="grid md:grid-cols-3 gap-4">
                 {savedProjects.released.map((project, idx) => (
-                  <div 
+                  <SavedProjectCard
                     key={idx}
-                    onClick={() => setViewingProject(project)}
-                    className="cursor-pointer group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all"
-                  >
-                    <div className="relative aspect-video overflow-hidden">
-                      {project.images[0] && (
-                        <img src={project.images[0]} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      )}
-                      <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                        {project.images.length} shots
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <h4 className="font-bold text-sm mb-1">{project.title || 'Untitled'}</h4>
-                      <p className="text-xs text-gray-600 line-clamp-2">{project.description || 'No description'}</p>
-                    </div>
-                  </div>
+                    project={project}
+                    editMode={editMode}
+                    onEdit={() => setViewingProject({ ...project, _editIndex: idx, _section: 'released' })}
+                    onView={() => setViewingProject(project)}
+                  />
                 ))}
               </div>
             </div>
