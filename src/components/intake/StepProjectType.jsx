@@ -1,5 +1,5 @@
 import React from 'react';
-import { Film, Video, Tv, Music, FileText, Sparkles } from 'lucide-react';
+import { Film, Video, Tv, Music, FileText, Sparkles, Handshake } from 'lucide-react';
 
 const PROJECT_TYPES = [
   { value: 'commercial', label: 'Commercial', icon: Tv, description: 'Brand campaigns and advertising' },
@@ -7,6 +7,7 @@ const PROJECT_TYPES = [
   { value: 'film', label: 'Feature Film', icon: Video, description: 'Long-form cinema production' },
   { value: 'music_video', label: 'Music Video', icon: Music, description: 'Music and performance videos' },
   { value: 'documentary', label: 'Documentary', icon: FileText, description: 'Non-fiction storytelling' },
+  { value: 'funding_coproduction', label: 'Funding / Co-Production', icon: Handshake, description: 'Seeking investment or production partners' },
   { value: 'other', label: 'Other', icon: Sparkles, description: 'Other creative projects' },
 ];
 

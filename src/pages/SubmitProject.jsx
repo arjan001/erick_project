@@ -109,7 +109,7 @@ export default function SubmitProject() {
     return <StepSuccess projectData={projectData} />;
   }
 
-  const CurrentStepComponent = STEPS[currentStep - 1].component;
+  const CurrentStepComponent = STEPS[currentStep - 1]?.component || StepProjectType;
 
   return (
     <div className="min-h-screen bg-white py-8 lg:py-12">
