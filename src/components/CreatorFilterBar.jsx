@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RotateCcw, ChevronDown, X } from 'lucide-react';
 
 const TYPES = ['All Types', 'Freelance', 'Studio', 'Agency', 'Team', 'Collective'];
@@ -51,37 +52,29 @@ const COUNTRIES = [
 ];
 
 export default function CreatorFilterBar({ filters, onFilterChange, onReset, resultCount, allCreators, categoryCounts }) {
-  const [typeOpen, setTypeOpen] = useState(false);
-  const [categoryOpen, setCategoryOpen] = useState(false);
-  const [countryOpen, setCountryOpen] = useState(false);
-
   return (
     <div className="bg-white border-t border-b border-gray-200 py-6 sticky top-[100px] z-10">
       <div className="max-w-[1800px] mx-auto px-6">
         <div className="flex flex-wrap items-center gap-4 justify-between">
           <div className="flex flex-wrap items-center gap-3">
             {/* Type Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setTypeOpen(!typeOpen)}
-                className="w-[160px] px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50"
-              >
-                <span className="text-sm">
-                  {filters.type === 'all_types' ? 'All Types' : filters.type.replace('_', ' ')}
-                </span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              {typeOpen && (
-                <div className="absolute top-full mt-1 w-[160px] bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-[300px] overflow-y-auto">
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="w-[160px] px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50">
+                  <span className="text-sm">
+                    {filters.type === 'all_types' ? 'All Types' : filters.type.replace('_', ' ')}
+                  </span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[160px] p-0" align="start">
+                <div className="max-h-[300px] overflow-y-auto">
                   {TYPES.map(type => {
                     const value = type.toLowerCase().replace(' ', '_');
                     return (
                       <button
                         key={type}
-                        onClick={() => {
-                          onFilterChange('type', value);
-                          setTypeOpen(false);
-                        }}
+                        onClick={() => onFilterChange('type', value)}
                         className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
                       >
                         {type}
@@ -89,27 +82,23 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
                     );
                   })}
                 </div>
-              )}
-            </div>
+              </PopoverContent>
+            </Popover>
 
             {/* Category Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setCategoryOpen(!categoryOpen)}
-                className="w-[200px] px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50"
-              >
-                <span className="text-sm truncate">
-                  {filters.category === 'all_categories' ? 'All Categories' : filters.category.replace('_', ' ')}
-                </span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              {categoryOpen && (
-                <div className="absolute top-full mt-1 w-[200px] bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-[300px] overflow-y-auto">
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="w-[200px] px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50">
+                  <span className="text-sm truncate">
+                    {filters.category === 'all_categories' ? 'All Categories' : filters.category.replace('_', ' ')}
+                  </span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[200px] p-0" align="start">
+                <div className="max-h-[300px] overflow-y-auto">
                   <button
-                    onClick={() => {
-                      onFilterChange('category', 'all_categories');
-                      setCategoryOpen(false);
-                    }}
+                    onClick={() => onFilterChange('category', 'all_categories')}
                     className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
                   >
                     All Categories
@@ -119,10 +108,7 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
                     .map(([cat, count]) => (
                       <button
                         key={cat}
-                        onClick={() => {
-                          onFilterChange('category', cat);
-                          setCategoryOpen(false);
-                        }}
+                        onClick={() => onFilterChange('category', cat)}
                         className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between"
                       >
                         <span className="capitalize">{cat.replace('_', ' ')}</span>
@@ -130,24 +116,23 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
                       </button>
                     ))}
                 </div>
-              )}
-            </div>
+              </PopoverContent>
+            </Popover>
 
             {/* Country Multi-Select Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setCountryOpen(!countryOpen)}
-                className="min-w-[200px] px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50"
-              >
-                <span className="text-sm truncate">
-                  {filters.countries?.length > 0 
-                    ? `${filters.countries.length} selected` 
-                    : 'All Countries'}
-                </span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              {countryOpen && (
-                <div className="absolute top-full mt-1 w-[250px] bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-[300px] overflow-y-auto">
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="min-w-[200px] px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50">
+                  <span className="text-sm truncate">
+                    {filters.countries?.length > 0 
+                      ? `${filters.countries.length} selected` 
+                      : 'All Countries'}
+                  </span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[250px] p-0" align="start">
+                <div className="max-h-[300px] overflow-y-auto">
                   {COUNTRIES.slice(1).map(country => {
                     const value = country.toLowerCase().replace(' ', '_');
                     const isSelected = filters.countries?.includes(value);
@@ -171,8 +156,8 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
                     );
                   })}
                 </div>
-              )}
-            </div>
+              </PopoverContent>
+            </Popover>
 
             {/* Clear selected countries */}
             {filters.countries?.length > 0 && (
