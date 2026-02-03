@@ -107,7 +107,7 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Right Actions */}
             <div className="flex items-center gap-3">
-              <Link to={createPageUrl('Login')}>
+              <Link to={createPageUrl('SignIn')}>
                 <Button variant="ghost" size="sm" className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent">
                   Login
                 </Button>
