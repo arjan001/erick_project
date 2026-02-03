@@ -884,7 +884,7 @@ export default function Home({ editMode = false }) {
       </section>
 
       {/* Studio22 Market Section */}
-      <section className="py-24 bg-[#F9F9F9]">
+      <section className="py-12 md:py-24 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-5xl md:text-7xl font-normal uppercase mb-6 tracking-tight">
