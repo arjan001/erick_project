@@ -38,7 +38,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const bottomNav = [
-    { name: 'Projects', href: 'Home' },
+    { name: 'Projects', href: 'Projects' },
     { name: 'Creators', href: 'ApplyArtist' },
     { name: 'Teams', href: 'ApplyTeam' },
     { name: 'Post Project', href: 'SubmitProject', highlight: true },
@@ -63,10 +63,10 @@ export default function Layout({ children, currentPageName }) {
               {/* Main Nav */}
               <nav className="hidden lg:flex items-center gap-6">
                 {!exploreOpen && (
-                  <>
-                    <Link to={createPageUrl('Home')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
-                      Projects
-                    </Link>
+                    <>
+                      <Link to={createPageUrl('Projects')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
+                        Projects
+                      </Link>
                     <Link to={createPageUrl('ApplyArtist')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
                       For Creators
                     </Link>

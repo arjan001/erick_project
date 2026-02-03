@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, Banknote } from 'lucide-react';
 
 export default function BackedProjects() {
@@ -122,10 +123,10 @@ export default function BackedProjects() {
                     </div>
                   )}
 
-                  <div className="pt-4 border-t">
-                    <p className="text-xs text-gray-500">
-                      Contact: {project.project_owner_email}
-                    </p>
+                  <div className="pt-4 border-t mt-4">
+                    <Button variant="outline" className="w-full text-xs font-medium">
+                      Express Interest
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
