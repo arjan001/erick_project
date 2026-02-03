@@ -15,12 +15,10 @@ export default function Layout({ children, currentPageName }) {
   const [expandedCategory, setExpandedCategory] = useState('commercial');
   const [editMode, setEditMode] = useState(false);
   const [pressTimer, setPressTimer] = useState(null);
-  const [user, setUser] = useState(null);
-
-  React.useEffect(() => {
+  const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem('studio22_user');
-    setUser(storedUser ? JSON.parse(storedUser) : null);
-  }, []);
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
 
   const categoryInfo = {
     commercial: {
