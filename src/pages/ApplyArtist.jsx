@@ -90,8 +90,8 @@ export default function ApplyArtist() {
     <div className="min-h-screen bg-white py-8 lg:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 lg:mb-12">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 text-black">Join Studio22 Network</h1>
-          <p className="text-lg text-gray-600">Apply as an artist</p>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 text-black">Join the Creator Network</h1>
+          <p className="text-lg text-gray-600 max-w-3xl">Apply as an individual creator to get access to a curated marketplace of projects, connect with clients, and collaborate with top-tier professionals from around the world.</p>
         </div>
 
         {/* Progress */}
@@ -103,9 +103,9 @@ export default function ApplyArtist() {
                   <div
                     className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                       step.id < currentStep
-                        ? 'bg-amber-600 text-white'
+                        ? 'bg-black text-white'
                         : step.id === currentStep
-                        ? 'bg-amber-600 text-white ring-4 ring-amber-600/20'
+                        ? 'bg-black text-white ring-4 ring-black/20'
                         : 'bg-gray-200 text-gray-500'
                     }`}
                   >
@@ -115,7 +115,7 @@ export default function ApplyArtist() {
                 </div>
                 {index < STEPS.length - 1 && (
                   <div className={`flex-1 h-1 mx-2 rounded-full ${
-                    step.id < currentStep ? 'bg-amber-600' : 'bg-gray-200'
+                    step.id < currentStep ? 'bg-black' : 'bg-gray-200'
                   }`} />
                 )}
               </React.Fragment>
@@ -147,7 +147,7 @@ export default function ApplyArtist() {
               size="lg"
               onClick={handleNext}
               disabled={!canProceed()}
-              className="bg-amber-600 hover:bg-amber-700 order-1 sm:order-2"
+              className="bg-black text-white hover:bg-gray-800 order-1 sm:order-2"
             >
               Next
               <ArrowRight className="w-5 h-5 ml-2" />
@@ -157,7 +157,7 @@ export default function ApplyArtist() {
               size="lg"
               onClick={handleSubmit}
               disabled={!canProceed() || isSubmitting}
-              className="bg-amber-600 hover:bg-amber-700 order-1 sm:order-2"
+              className="bg-black text-white hover:bg-gray-800 order-1 sm:order-2"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Application'}
               <Check className="w-5 h-5 ml-2" />
