@@ -20,7 +20,7 @@ export default function ArtistDashboard() {
   return (
     <div className="flex h-screen bg-white">
       <ArtistSidebar />
-      <main className="flex-1 ml-20 hover:ml-64 transition-all duration-300 overflow-auto">
+      <main className="flex-1 overflow-auto pl-20">
         <div className="p-12">
           <h1 className="text-4xl font-bold mb-4">Welcome, {user.full_name}</h1>
           <p className="text-gray-600 mb-12">Find your next project opportunity</p>
