@@ -75,7 +75,6 @@ async function generateSingleShot(prompt) {
 export default function Home({ editMode = false }) {
   const [inProduction, setInProduction] = useState([]);
   const [released, setReleased] = useState([]);
-  const [creators, setCreators] = useState([]);
   const [collections, setCollections] = useState([]);
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,7 +90,7 @@ export default function Home({ editMode = false }) {
   const [showAddShotPopup, setShowAddShotPopup] = useState(false);
   const [addShotPrompt, setAddShotPrompt] = useState('');
   const [generatingShot, setGeneratingShot] = useState(false);
-  const [creators, setCreators] = useState([]);
+  const [allCreators, setAllCreators] = useState([]);
   const [creatorFilters, setCreatorFilters] = useState({
     type: 'all_types',
     category: 'all_categories', 
@@ -109,8 +108,8 @@ export default function Home({ editMode = false }) {
 
   const loadCreators = async () => {
     try {
-      const allCreators = await base44.entities.Creator.list();
-      setCreators(allCreators);
+      const creators = await base44.entities.Creator.list();
+      setAllCreators(creators);
     } catch (error) {
       console.error('Failed to load creators:', error);
     }
@@ -155,17 +154,15 @@ export default function Home({ editMode = false }) {
 
   const loadContent = async () => {
     try {
-      const [inProdRes, releasedRes, creatorsRes, collectionsRes, recentRes] = await Promise.all([
+      const [inProdRes, releasedRes, collectionsRes, recentRes] = await Promise.all([
         base44.functions.invoke('generateContent', { section: 'inproduction' }),
         base44.functions.invoke('generateContent', { section: 'released' }),
-        base44.functions.invoke('generateContent', { section: 'creators' }),
         base44.functions.invoke('generateContent', { section: 'collections' }),
         base44.functions.invoke('generateContent', { section: 'recent' })
       ]);
 
       if (inProdRes.data?.success) setInProduction(inProdRes.data.data.projects || []);
       if (releasedRes.data?.success) setReleased(releasedRes.data.data.projects || []);
-      if (creatorsRes.data?.success) setCreators(creatorsRes.data.data.creators || []);
       if (collectionsRes.data?.success) setCollections(collectionsRes.data.data.collections || []);
       if (recentRes.data?.success) setRecent(recentRes.data.data.projects || []);
     } catch (error) {
@@ -680,57 +677,94 @@ export default function Home({ editMode = false }) {
       {/* WE ARE 22. CREATORS Section */}
       <section className="py-20 px-6 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto">
-          <div className="mb-12">
+          <div className="mb-8 text-center">
             <h2 className="text-5xl md:text-7xl font-normal uppercase mb-4 tracking-tight">
               WE ARE 22. CREATORS
             </h2>
-            <p className="text-lg text-gray-600">The people behind our productions</p>
           </div>
 
           {editMode && (
-            <EditableSection 
-              title="WE ARE 22. CREATORS" 
-              onGenerate={(boxes) => console.log('Generated:', boxes)}
+            <div className="mb-8">
+              <Button
+                onClick={() => setShowCreatorGenerator(true)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Generate Creators with AI
+              </Button>
+            </div>
+          )}
+
+          {showCreatorGenerator && (
+            <CreatorGeneratorModal
+              onClose={() => setShowCreatorGenerator(false)}
+              onGenerated={loadCreators}
             />
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {creators.map((creator, i) => (
-              <Link 
-                key={i}
-                to={createPageUrl('ApplyArtist')}
-                className="group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500"
+          <CreatorFilterBar
+            filters={creatorFilters}
+            onFilterChange={(key, value) => setCreatorFilters({...creatorFilters, [key]: value})}
+            onReset={() => setCreatorFilters({ type: 'all_types', category: 'all_categories', country: 'all_countries' })}
+            resultCount={(() => {
+              let filtered = allCreators;
+              if (creatorFilters.type !== 'all_types') {
+                filtered = filtered.filter(c => c.type === creatorFilters.type);
+              }
+              if (creatorFilters.category !== 'all_categories') {
+                filtered = filtered.filter(c => c.categories?.includes(creatorFilters.category));
+              }
+              if (creatorFilters.country !== 'all_countries') {
+                filtered = filtered.filter(c => c.country?.toLowerCase().replace(' ', '_') === creatorFilters.country);
+              }
+              return filtered.length;
+            })()}
+          />
+
+          <div className="mb-6 flex justify-end gap-2">
+            <Button
+              variant={creatorView === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setCreatorView('grid')}
+            >
+              <Grid3x3 className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={creatorView === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setCreatorView('list')}
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <CreatorGrid
+            creators={(() => {
+              let filtered = allCreators;
+              if (creatorFilters.type !== 'all_types') {
+                filtered = filtered.filter(c => c.type === creatorFilters.type);
+              }
+              if (creatorFilters.category !== 'all_categories') {
+                filtered = filtered.filter(c => c.categories?.includes(creatorFilters.category));
+              }
+              if (creatorFilters.country !== 'all_countries') {
+                filtered = filtered.filter(c => c.country?.toLowerCase().replace(' ', '_') === creatorFilters.country);
+              }
+              return filtered.slice(0, creatorsPerPage);
+            })()}
+            view={creatorView}
+          />
+
+          {allCreators.length > creatorsPerPage && (
+            <div className="text-center mt-12">
+              <button 
+                onClick={() => setCreatorsPerPage(creatorsPerPage + 15)}
+                className="px-10 py-4 border-2 border-black text-black font-bold uppercase text-sm tracking-wider hover:bg-black hover:text-white transition-all duration-300 rounded-lg"
               >
-                <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <User className="w-12 h-12 text-gray-400" />
-                  </div>
-                  
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-
-                <div className="p-4">
-                  <h3 className="text-sm font-semibold uppercase tracking-tight mb-1 line-clamp-1">{creator.name}</h3>
-                  
-                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                    <MapPin className="w-3 h-3" />
-                    <span className="line-clamp-1">{creator.city}</span>
-                  </div>
-                  
-                  <p className="text-xs font-bold text-gray-700 mb-2">{creator.role}</p>
-                  <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{creator.specialty}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          <div className="text-center mt-12">
-            <Link to={createPageUrl('ApplyArtist')}>
-              <button className="px-10 py-4 border-2 border-black text-black font-bold uppercase text-sm tracking-wider hover:bg-black hover:text-white transition-all duration-300 rounded-lg">
-                View All Creators
+                View More Creators
               </button>
-            </Link>
-          </div>
+            </div>
+          )}
         </div>
       </section>
 
