@@ -380,7 +380,7 @@ export default function Home({ editMode = false }) {
       </section>
 
       {/* IN PRODUCTION Section */}
-      <section className="py-20 px-6 bg-white">
+      <section className="py-12 md:py-20 px-4 md:px-6 bg-white">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
             <h2 className="text-5xl md:text-7xl font-normal uppercase mb-4 tracking-tight">
