@@ -337,23 +337,46 @@ export default function Home({ editMode = false }) {
         </div>
       )}
       {/* Hero Section */}
-      <section className="text-center py-32 bg-white">
-        <div className="max-w-4xl mx-auto px-6">
-          <h1 className="text-6xl md:text-8xl font-black text-[#1a1a1a] tracking-tighter leading-none mb-6">
-            Where Vision<br/>Meets Talent
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-700 font-light max-w-2xl mx-auto mb-10">
-            The leading marketplace for film and creative projects. Connect with a curated network of professional creators and teams from across Europe.
+      <section className="relative bg-[#F9F9F9] py-20 overflow-hidden">
+        {/* Main Title */}
+        <div className="text-center px-6 max-w-6xl mx-auto mb-12">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6">CONNECT. CREATE.</h1>
+          <p className="text-lg md:text-xl text-gray-600 font-light mb-8 max-w-3xl mx-auto">
+            Studio22 is the curated marketplace connecting clients with the world's best independent creators and production teams. Post a project, find your crew, create incredible work.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to={createPageUrl('SubmitProject')}>
-              <Button size="lg" className="w-full sm:w-auto bg-black text-white hover:bg-gray-800 font-bold px-8 py-6 text-base">Post a Project</Button>
+              <Button size="lg" className="w-full sm:w-auto bg-black text-white hover:bg-gray-800">
+                Post a Project for Free
+              </Button>
             </Link>
             <Link to={createPageUrl('ApplyArtist')}>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto font-bold px-8 py-6 text-base">Join The Network</Button>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                Apply to Join the Network
+              </Button>
             </Link>
           </div>
         </div>
+
+        {/* Background Image (smaller, positioned lower) */}
+        <div className="relative max-w-5xl mx-auto px-6 mb-16">
+          <div className="relative rounded-xl overflow-hidden shadow-2xl">
+            {loading ? (
+              <div className="w-full aspect-video bg-gray-200 flex items-center justify-center">
+                <div className="text-gray-400">Loading...</div>
+              </div>
+            ) : (
+              <img 
+                src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&amp;w=2000"
+                alt="Cinematic production"
+                className="w-full aspect-video object-cover"
+                loading="eager"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+          </div>
+        </div>
+
       </section>
 
       {/* IN PRODUCTION Section */}
@@ -364,7 +387,7 @@ export default function Home({ editMode = false }) {
               Featured Projects
             </h2>
             <div className="flex items-center justify-between">
-              <p className="text-lg text-gray-600">The latest creative opportunities on the network.</p>
+              <p className="text-lg text-gray-600">The most exciting projects currently active on the network.</p>
               <Link to={createPageUrl('Work')} className="text-sm font-bold uppercase tracking-wider hover:underline flex items-center gap-2">
                 Browse All Projects <ArrowRight className="w-4 h-4" />
               </Link>
@@ -373,7 +396,7 @@ export default function Home({ editMode = false }) {
 
           {editMode && (
             <EditableSection 
-              title="FEATURED PROJECTS" 
+              title="IN PRODUCTION" 
               onGenerate={(boxes) => {
                 boxes.forEach(box => saveProjectToDB('inproduction', box));
               }}
@@ -465,9 +488,9 @@ export default function Home({ editMode = false }) {
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
             <h2 className="text-5xl md:text-7xl font-normal uppercase mb-4 tracking-tight">
-              Recently Completed
+              Success Stories
             </h2>
-            <p className="text-lg text-gray-600">Showcase of successful collaborations from the network.</p>
+            <p className="text-lg text-gray-600">Incredible work delivered by creators from the Studio22 network.</p>
           </div>
 
           {editMode && (
@@ -544,51 +567,128 @@ export default function Home({ editMode = false }) {
           <div className="text-center mt-12">
             <Link to={createPageUrl('Work')}>
               <button className="px-10 py-4 border-2 border-black text-black font-bold uppercase text-sm tracking-wider hover:bg-black hover:text-white transition-all duration-300 rounded-lg">
-                View Showcase
+                View All Released
               </button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
+      {/* COLLECTIONS Section */}
       <section className="py-20 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+        <div className="max-w-[1800px] mx-auto">
+          <div className="mb-12">
             <h2 className="text-5xl md:text-7xl font-normal uppercase mb-4 tracking-tight">
-              How It Works
+              Browse by Category
             </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">A streamlined marketplace for creative projects. Clients post jobs, and our curated network of creators and teams deliver.</p>
+            <p className="text-lg text-gray-600">Find inspiration and see what's possible in different fields.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-              <div className="bg-gray-50 p-8 rounded-2xl shadow-lg">
-                <div className="text-4xl font-black text-gray-200 mb-4">1</div>
-                <h3 className="text-xl font-bold mb-2 uppercase tracking-wider">Post a Project</h3>
-                <p className="text-gray-600">Clients submit project briefs for free. Our team verifies the scope before publishing to our private network.</p>
-              </div>
-              <div className="bg-gray-50 p-8 rounded-2xl shadow-lg">
-                <div className="text-4xl font-black text-gray-200 mb-4">2</div>
-                <h3 className="text-xl font-bold mb-2 uppercase tracking-wider">Find Talent</h3>
-                <p className="text-gray-600">Verified creators and teams are matched with projects that fit their skills, location, and availability.</p>
-              </div>
-              <div className="bg-gray-50 p-8 rounded-2xl shadow-lg">
-                <div className="text-4xl font-black text-gray-200 mb-4">3</div>
-                <h3 className="text-xl font-bold mb-2 uppercase tracking-wider">Collaborate</h3>
-                <p className="text-gray-600">Clients select the right fit. Collaboration, communication, and payments are all handled on-platform.</p>
+
+          {editMode && (
+            <EditableSection 
+              title="COLLECTIONS" 
+              onGenerate={(boxes) => {
+                boxes.forEach(box => saveProjectToDB('collections', box));
+              }}
+            />
+          )}
+
+          {savedProjects.collections.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-lg font-bold mb-4 text-green-600">✓ Saved Projects ({savedProjects.collections.length})</h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                {savedProjects.collections.map((project, idx) => (
+                  <SavedProjectCard
+                    key={idx}
+                    project={project}
+                    editMode={editMode}
+                    onEdit={() => setViewingProject({ ...project, _editIndex: idx, _section: 'collections' })}
+                    onView={() => setViewingProject(project)}
+                  />
+                ))}
               </div>
             </div>
+          )}
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                title: 'Automotive Excellence',
+                description: 'High-octane car commercials with dynamic camera work, precision lighting, and cinematic storytelling.',
+                image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1200',
+                count: 24
+              },
+              {
+                title: 'Fashion & Lifestyle',
+                description: 'Elegant fashion films showcasing collections through artful composition and sophisticated visual narratives.',
+                image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200',
+                count: 31
+              },
+              {
+                title: 'Tech & Innovation',
+                description: 'Sleek product reveals and tech launches with modern aesthetics and cutting-edge visual effects.',
+                image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200',
+                count: 18
+              },
+              {
+                title: 'Food & Beverage',
+                description: 'Mouthwatering culinary cinematography with macro shots, steam effects, and appetizing color grading.',
+                image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200',
+                count: 27
+              },
+              {
+                title: 'Documentary Stories',
+                description: 'Authentic human stories captured through intimate interviews, natural lighting, and real-world settings.',
+                image: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1200',
+                count: 15
+              },
+              {
+                title: 'Music Videos',
+                description: 'Bold artistic expressions combining narrative storytelling with dynamic performance cinematography.',
+                image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=1200',
+                count: 22
+              }
+            ].map((collection, i) => (
+              <Link 
+                key={i}
+                to={createPageUrl('Services')}
+                className="group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img 
+                    src={collection.image}
+                    alt={collection.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <div className="text-xs font-bold uppercase tracking-widest mb-2 text-gray-300">
+                      {collection.count} Productions
+                    </div>
+                    <h3 className="text-xl font-semibold uppercase tracking-tight">{collection.title}</h3>
+                  </div>
+                </div>
+
+                <div className="p-5">
+                  <p className="text-sm text-gray-600 leading-relaxed">{collection.description}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
-      </div>
-
-      {/* The Creator Network Section */}
+      {/* WE ARE 22. CREATORS Section */}
       <section className="py-20 px-6 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-8 text-left">
             <h2 className="text-5xl md:text-7xl font-normal uppercase mb-4 tracking-tight">
-              The Creator Network
+              THE NETWORK
             </h2>
+            <p className="text-lg text-gray-600 max-w-3xl">
+              A curated, invite-only collective of the world's best independent talent and production studios. Find your perfect match.
+            </p>
           </div>
 
           {editMode && (
@@ -690,14 +790,14 @@ export default function Home({ editMode = false }) {
         </div>
       </section>
 
-      {/* LATEST PROJECTS Section */}
+      {/* RECENT PRODUCTIONS Section */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-[1800px] mx-auto">
           <div className="mb-12">
             <h2 className="text-5xl md:text-7xl font-normal uppercase mb-4 tracking-tight">
-              Latest Projects
+              Recently Posted Projects
             </h2>
-            <p className="text-lg text-gray-600">Fresh opportunities from the project board.</p>
+            <p className="text-lg text-gray-600">New opportunities posted daily on the network.</p>
           </div>
 
           {editMode && (
@@ -742,17 +842,15 @@ export default function Home({ editMode = false }) {
         </div>
       </section>
 
-      {/* Project Categories Section */}
+      {/* Services Section */}
       <section className="py-20 px-6 bg-[#FAFAFA]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-display uppercase mb-6 tracking-tighter">
-              The Project
-              <br />
-              Marketplace
+              How It Works
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              From large-scale commercials to agile web development, find the right talent for any creative endeavor.
+              A simple, streamlined process for clients and creators to connect and produce amazing work.
             </p>
           </div>
 
@@ -767,12 +865,12 @@ export default function Home({ editMode = false }) {
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { title: 'Commercials', desc: 'Brand films, product spots, and social campaigns.', visual: 'commercial' },
-              { title: 'Film & Documentaries', desc: 'Narrative shorts, features, and non-fiction.', visual: 'film' },
-              { title: 'Post-Production', desc: 'Editing, color, sound, and finishing for existing footage.', visual: 'post' },
-              { title: 'VFX & 3D', desc: 'Digital effects, animation, and motion graphics.', visual: 'vfx' },
-              { title: 'Sound & Music', desc: 'Custom scores, sound design, and audio mixing.', visual: 'sound' },
-              { title: 'Interactive & Web', desc: 'Websites, AR/VR, and digital experiences.', visual: 'web' },
+              { title: 'Post a Project', desc: 'Clients post their project with a clear brief and budget. It\'s free and simple.', visual: 'commercial' },
+              { title: 'Find Your Match', desc: 'Browse curated creators and teams, or let our system recommend the perfect fit.', visual: 'film' },
+              { title: 'Collaborate & Create', desc: 'Connect directly, manage milestones, and create incredible work together.', visual: 'post' },
+              { title: 'Secure Payments', desc: 'Transparent, milestone-based payments ensure everyone is protected.', visual: 'vfx' },
+              { title: 'Deliver & Review', desc: 'Final delivery is handled through the platform, with feedback and review tools.', visual: 'sound' },
+              { title: 'Join the Network', desc: 'Creators and teams apply to join our curated network to access exclusive projects.', visual: 'web' },
             ].map((service, i) => (
               <ServiceCard 
                 key={i}
@@ -785,23 +883,76 @@ export default function Home({ editMode = false }) {
         </div>
       </section>
 
+      {/* Studio22 Market Section */}
+      <section className="py-24 bg-[#F9F9F9]">
+        <div className="max-w-[1800px] mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl md:text-7xl font-normal uppercase mb-6 tracking-tight">
+              STUDIO22 MARKET
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Professional network for sharing cameras, lenses, lighting, audio gear, locations, studios, and special equipment
+            </p>
+          </div>
 
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            {[
+              { title: 'Cinema Cameras', count: '127 items', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/dbce8126d_generated_image.png' },
+              { title: 'Lenses & Optics', count: '243 items', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/f31ed2366_generated_image.png' },
+              { title: 'Lighting', count: '189 items', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/b56a3259c_generated_image.png' },
+              { title: 'Audio Equipment', count: '156 items', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/f53fffda7_generated_image.png' },
+              { title: 'Locations', count: '89 spaces', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/460bb9ffb_generated_image.png' },
+              { title: 'Studios', count: '34 facilities', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/481ecbf61_generated_image.png' },
+            ].map((category, i) => (
+              <Link 
+                key={i}
+                to={createPageUrl('ApplyTeam')}
+                className="group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
+              >
+                <div className="aspect-square bg-white p-8 flex items-center justify-center">
+                  <img 
+                    src={category.image} 
+                    alt={category.title}
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="p-6 border-t border-gray-100">
+                  <h3 className="text-lg font-semibold uppercase tracking-tight mb-2">{category.title}</h3>
+                  <p className="text-sm text-gray-500 font-medium">{category.count}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
 
-      {/* CTA Section */}
+          <div className="text-center">
+            <Link to={createPageUrl('ApplyTeam')}>
+              <button className="px-10 py-4 bg-[#1a1a1a] text-white font-bold uppercase text-sm tracking-wider hover:bg-black transition-all duration-300 rounded-lg">
+                Browse Market <ArrowRight className="inline-block ml-2 w-4 h-4" />
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* First Frame CTA */}
       <section className="py-24 bg-[#1a1a1a] text-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
-            <h2 className="text-4xl md:text-6xl font-black text-center mb-6 tracking-tight">Are you a Creator?</h2>
-            <p className="text-xl max-w-3xl mx-auto text-gray-300 mb-12 font-light">
-              Apply to join our curated network of professional individuals and teams to get access to premium projects from leading brands and agencies.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to={createPageUrl('ApplyArtist')}>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-black font-bold px-8 py-6 text-base">Apply as a Creator</Button>
-              </Link>
-              <Link to={createPageUrl('ApplyTeam')}>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-black font-bold px-8 py-6 text-base">Apply as a Team</Button>
-              </Link>
-            </div>
+          <h2 className="text-4xl md:text-6xl font-normal uppercase mb-6 tracking-tight">Ready to Start?</h2>
+          <p className="text-2xl mb-10 max-w-2xl mx-auto text-gray-300 font-light">
+            Whether you're a client with a vision or a creator ready for your next challenge, the Studio22 network is where it happens.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link to={createPageUrl('SubmitProject')}>
+              <Button size="lg" className="w-full sm:w-auto bg-white text-black hover:bg-gray-200">
+                Post a Project for Free
+              </Button>
+            </Link>
+            <Link to={createPageUrl('ApplyArtist')}>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto text-white border-white hover:bg-white hover:text-black">
+                Apply to Join the Network
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
     </div>
