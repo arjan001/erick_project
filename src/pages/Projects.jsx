@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, Sparkles } from 'lucide-react';
+import { MapPin, Calendar, Sparkles, Loader } from 'lucide-react';
 import RequestIntroductionModal from '../components/RequestIntroductionModal';
 
 export default function Projects() {
@@ -12,6 +12,7 @@ export default function Projects() {
   const [selectedType, setSelectedType] = useState('all');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [projectImages, setProjectImages] = useState({});
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -19,6 +20,11 @@ export default function Projects() {
         const allProjects = await base44.entities.Project.list();
         const verified = allProjects.filter(p => p.status === 'verified');
         setProjects(verified);
+
+        // Generate images for projects
+        verified.forEach(project => {
+          generateProjectImage(project);
+        });
       } catch (error) {
         console.error('Error fetching projects:', error);
       } finally {
@@ -28,6 +34,25 @@ export default function Projects() {
 
     fetchProjects();
   }, []);
+
+  const generateProjectImage = async (project) => {
+    try {
+      const response = await base44.functions.invoke('generateProjectImage', {
+        projectType: project.project_type,
+        description: project.notes,
+        company: project.project_owner_company || project.project_owner_name
+      });
+
+      if (response.data?.image_url) {
+        setProjectImages(prev => ({
+          ...prev,
+          [project.id]: response.data.image_url
+        }));
+      }
+    } catch (error) {
+      console.error('Error generating image for project:', project.id, error);
+    }
+  };
 
   const getProjectTypeLabel = (type) => {
     const labels = {
@@ -115,13 +140,17 @@ export default function Projects() {
                 >
                   {/* Visual Header */}
                   <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden relative group-hover:from-gray-200 group-hover:to-gray-300 transition-all">
-                    <div className="text-6xl opacity-20 group-hover:opacity-30 transition-opacity">
-                      {project.project_type === 'commercial' && '📹'}
-                      {project.project_type === 'short_film' && '🎬'}
-                      {project.project_type === 'film' && '🎭'}
-                      {project.project_type === 'music_video' && '🎵'}
-                      {project.project_type === 'documentary' && '📸'}
-                    </div>
+                    {projectImages[project.id] ? (
+                      <img 
+                        src={projectImages[project.id]} 
+                        alt={project.project_owner_company || project.project_owner_name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                        <Loader className="w-6 h-6 text-gray-400 animate-spin" />
+                      </div>
+                    )}
                   </div>
 
                   <CardContent className="flex-1 pt-6 pb-4 flex flex-col">

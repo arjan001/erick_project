@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Search, X, Instagram, Linkedin, Play } from 'lucide-react';
+import { ChevronDown, X, Instagram, Linkedin, Play } from 'lucide-react';
 import TopBanner from './components/home/TopBanner';
 import NewProjectForm from './components/NewProjectForm';
+import UnifiedSearch from './components/UnifiedSearch';
 
 export default function Layout({ children, currentPageName }) {
   const [exploreOpen, setExploreOpen] = useState(false);
@@ -98,16 +99,11 @@ export default function Layout({ children, currentPageName }) {
             </div>
 
             {/* Center Search */}
-            <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
-              <div className="relative w-full">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input 
-                  type="search" 
-                  placeholder="Search by Inspiration"
-                  className={`w-full pl-12 pr-4 py-3 text-base rounded-lg focus:outline-none transition-colors ${exploreOpen ? 'bg-white border border-gray-300 text-[#1a1a1a] placeholder:text-gray-500' : 'bg-gray-50 border border-gray-200 text-[#1a1a1a] placeholder:text-gray-500 focus:border-gray-400'}`}
-                />
+            {!exploreOpen && (
+              <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
+                <UnifiedSearch />
               </div>
-            </div>
+            )}
 
             {/* Right Actions */}
             <div className="flex items-center gap-3">
