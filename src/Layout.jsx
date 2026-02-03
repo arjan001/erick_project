@@ -253,23 +253,30 @@ export default function Layout({ children, currentPageName }) {
             )}
 
             {bottomNav.map((item) => {
-              const isActive = currentPageName === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  to={createPageUrl(item.href)}
-                  className={`px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 relative ${
-                    item.highlight 
-                      ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]' 
-                      : isActive
-                        ? 'text-white bg-white/10'
-                        : 'text-gray-300 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              );
-            })}
+               const isActive = currentPageName === item.href;
+               return (
+                 <Link
+                   key={item.name}
+                   to={createPageUrl(item.href)}
+                   className={`px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 relative ${
+                     item.highlight 
+                       ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]' 
+                       : isActive
+                         ? 'text-white bg-white/10'
+                         : 'text-gray-300 hover:text-white hover:bg-white/5'
+                   }`}
+                 >
+                   {item.name}
+                 </Link>
+               );
+             })}
+
+            <Link
+              to={createPageUrl('BackedProjects')}
+              className="px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 text-gray-300 hover:text-white hover:bg-white/5"
+            >
+              Backed
+            </Link>
 
             <div className="h-6 w-px bg-gray-600 mx-1 md:mx-2 flex-shrink-0" />
 
