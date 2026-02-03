@@ -8,6 +8,7 @@ import EditableSection from '../components/EditableSection';
 import CreatorFilterBar from '../components/CreatorFilterBar';
 import CreatorGrid from '../components/CreatorGrid';
 import CreatorGeneratorModal from '../components/CreatorGeneratorModal';
+import ServiceCard from '../components/home/ServiceCard';
 
 // Saved Project Card Component with futuristic hover effect
 function SavedProjectCard({ project, editMode, onEdit, onView }) {
@@ -859,18 +860,19 @@ export default function Home({ editMode = false }) {
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { title: 'Commercial', desc: 'High-end commercial production from concept to delivery' },
-              { title: 'Film & Docs', desc: 'Feature films, shorts, and documentaries' },
-              { title: 'Post Production', desc: 'Editing, color grading, and finishing' },
-              { title: 'VFX & 3D', desc: 'Visual effects and 3D animation' },
-              { title: 'Sound & Music', desc: 'Sound design, mixing, and composition' },
-              { title: 'Web Dev', desc: 'Marketing websites and digital experiences' },
+              { title: 'Commercial', desc: 'High-end commercial production from concept to delivery', visual: 'commercial' },
+              { title: 'Film & Docs', desc: 'Feature films, shorts, and documentaries', visual: 'film' },
+              { title: 'Post Production', desc: 'Editing, color grading, and finishing', visual: 'post' },
+              { title: 'VFX & 3D', desc: 'Visual effects and 3D animation', visual: 'vfx' },
+              { title: 'Sound & Music', desc: 'Sound design, mixing, and composition', visual: 'sound' },
+              { title: 'Web Dev', desc: 'Marketing websites and digital experiences', visual: 'web' },
             ].map((service, i) => (
-              <div key={i} className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="w-12 h-12 bg-black rounded-lg mb-4" />
-                <h3 className="text-xl font-semibold uppercase mb-3 tracking-tight">{service.title}</h3>
-                <p className="text-gray-600">{service.desc}</p>
-              </div>
+              <ServiceCard 
+                key={i}
+                title={service.title}
+                desc={service.desc}
+                visualType={service.visual}
+              />
             ))}
           </div>
         </div>
