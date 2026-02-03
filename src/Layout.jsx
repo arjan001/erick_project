@@ -385,7 +385,7 @@ export default function Layout({ children, currentPageName }) {
         .animate-slideUp {
           animation: slideUp 0.4s ease-out;
         }
-      `}</style>
-      </div>
-  );
-}
+        `}</style>
+        </div>
+        );
+        }
