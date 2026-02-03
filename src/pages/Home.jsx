@@ -94,10 +94,10 @@ export default function Home({ editMode = false }) {
   const [creatorFilters, setCreatorFilters] = useState({
     type: 'all_types',
     category: 'all_categories', 
-    country: 'all_countries'
+    countries: []
   });
-  const [creatorView, setCreatorView] = useState('grid');
-  const [creatorsPerPage, setCreatorsPerPage] = useState(12);
+  const [creatorView, setCreatorView] = useState('list');
+  const [creatorsPerPage, setCreatorsPerPage] = useState(20);
   const [showCreatorGenerator, setShowCreatorGenerator] = useState(false);
 
   useEffect(() => {
@@ -705,7 +705,17 @@ export default function Home({ editMode = false }) {
           <CreatorFilterBar
             filters={creatorFilters}
             onFilterChange={(key, value) => setCreatorFilters({...creatorFilters, [key]: value})}
-            onReset={() => setCreatorFilters({ type: 'all_types', category: 'all_categories', country: 'all_countries' })}
+            onReset={() => setCreatorFilters({ type: 'all_types', category: 'all_categories', countries: [] })}
+            allCreators={allCreators}
+            categoryCounts={(() => {
+              const counts = {};
+              allCreators.forEach(creator => {
+                creator.categories?.forEach(cat => {
+                  counts[cat] = (counts[cat] || 0) + 1;
+                });
+              });
+              return counts;
+            })()}
             resultCount={(() => {
               let filtered = allCreators;
               if (creatorFilters.type !== 'all_types') {
@@ -714,8 +724,10 @@ export default function Home({ editMode = false }) {
               if (creatorFilters.category !== 'all_categories') {
                 filtered = filtered.filter(c => c.categories?.includes(creatorFilters.category));
               }
-              if (creatorFilters.country !== 'all_countries') {
-                filtered = filtered.filter(c => c.country?.toLowerCase().replace(' ', '_') === creatorFilters.country);
+              if (creatorFilters.countries?.length > 0) {
+                filtered = filtered.filter(c => 
+                  creatorFilters.countries.includes(c.country?.toLowerCase().replace(' ', '_'))
+                );
               }
               return filtered.length;
             })()}
@@ -747,12 +759,15 @@ export default function Home({ editMode = false }) {
               if (creatorFilters.category !== 'all_categories') {
                 filtered = filtered.filter(c => c.categories?.includes(creatorFilters.category));
               }
-              if (creatorFilters.country !== 'all_countries') {
-                filtered = filtered.filter(c => c.country?.toLowerCase().replace(' ', '_') === creatorFilters.country);
+              if (creatorFilters.countries?.length > 0) {
+                filtered = filtered.filter(c => 
+                  creatorFilters.countries.includes(c.country?.toLowerCase().replace(' ', '_'))
+                );
               }
               return filtered.slice(0, creatorsPerPage);
             })()}
             view={creatorView}
+            onDelete={editMode ? loadCreators : null}
           />
 
           {allCreators.length > creatorsPerPage && (
