@@ -69,6 +69,7 @@ import JobApplications from './pages/JobApplications';
 import JobInvitations from './pages/JobInvitations';
 import Messages from './pages/Messages';
 import ArtistProfile from './pages/ArtistProfile';
+import SignIn from './pages/SignIn';
 import __Layout from './Layout.jsx';
 
 
@@ -95,6 +96,7 @@ export const PAGES = {
     "JobInvitations": JobInvitations,
     "Messages": Messages,
     "ArtistProfile": ArtistProfile,
+    "SignIn": SignIn,
 }
 
 export const pagesConfig = {
