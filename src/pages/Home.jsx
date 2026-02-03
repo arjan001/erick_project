@@ -339,8 +339,8 @@ export default function Home({ editMode = false }) {
       {/* Hero Section */}
       <section className="relative bg-[#F9F9F9] py-12 md:py-20 overflow-hidden">
         {/* Main Title */}
-        <div className="text-center px-6 max-w-6xl mx-auto mb-12">
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6">CONNECT. CREATE.</h1>
+        <div className="text-center px-4 md:px-6 max-w-6xl mx-auto mb-8 md:mb-12">
+          <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold tracking-tighter mb-4 md:mb-6">CONNECT. CREATE.</h1>
           <p className="text-lg md:text-xl text-gray-600 font-light mb-8 max-w-3xl mx-auto">
             Studio22 is the curated marketplace connecting clients with the world's best independent creators and production teams. Post a project, find your crew, create incredible work.
           </p>
