@@ -7,17 +7,17 @@ import {
 import { createPageUrl } from '../utils';
 
 const MENU_ITEMS = [
-  { label: 'Find Work', icon: SearchIcon, href: '/jobs' },
-  { label: 'Job Board', icon: Briefcase, href: '/jobs' },
-  { label: 'Applications', icon: FileText, href: '/jobs/applications' },
-  { label: 'Invitations', icon: Mail, href: '/jobs/invitations' },
-  { label: 'Messages', icon: Mail, href: '/messages' },
-  { label: 'Network', icon: Users, href: '/network' },
-  { label: 'Invites & Rewards', icon: Gift, href: '/invites' },
-  { label: 'Notifications', icon: Bell, href: '/notifications' },
-  { label: 'My Profile', icon: User, href: '/artist/profile' },
-  { label: 'Settings', icon: Settings, href: '/artist/settings' }
-];
+        { label: 'Find Work', icon: SearchIcon, href: 'Jobs' },
+        { label: 'Job Board', icon: Briefcase, href: 'Jobs' },
+        { label: 'Applications', icon: FileText, href: 'JobApplications' },
+        { label: 'Invitations', icon: Mail, href: 'JobInvitations' },
+        { label: 'Messages', icon: Mail, href: 'Messages' },
+        { label: 'Network', icon: Users, href: 'ArtistDashboard' },
+        { label: 'Invites & Rewards', icon: Gift, href: 'ArtistDashboard' },
+        { label: 'Notifications', icon: Bell, href: 'ArtistDashboard' },
+        { label: 'My Profile', icon: User, href: 'ArtistProfile' },
+        { label: 'Settings', icon: Settings, href: 'ArtistDashboard' }
+      ];
 
 export default function ArtistSidebar() {
   const location = useLocation();
