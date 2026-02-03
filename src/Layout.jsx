@@ -20,6 +20,15 @@ export default function Layout({ children, currentPageName }) {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
+  React.useEffect(() => {
+    const handleStorageChange = () => {
+      const storedUser = localStorage.getItem('studio22_user');
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const categoryInfo = {
     commercial: {
       title: 'Commercial',
