@@ -10,9 +10,7 @@ const MENU_ITEMS = [
   { label: 'Find Work', icon: Search, href: 'Jobs', showIcon: true },
   { label: 'Job Board', icon: Briefcase, href: 'Jobs', showIcon: true },
   { label: 'Applications', icon: FileText, href: 'JobApplications', showIcon: true },
-  { label: 'Invitations', icon: Mail, href: 'JobInvitations', showIcon: true },
   { label: 'Messages', icon: Mail, href: 'Messages', showIcon: true },
-  { label: 'Network', icon: Users, href: 'ArtistDashboard', showIcon: true },
   { label: 'My Profile', icon: User, href: 'ArtistProfile', showIcon: true },
   { label: 'Settings', icon: Settings, href: 'ArtistDashboard', showIcon: true }
 ];
