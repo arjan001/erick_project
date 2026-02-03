@@ -85,6 +85,9 @@ export default function Home({ editMode = false }) {
     services: []
   });
   const [viewingProject, setViewingProject] = useState(null);
+  const [showAddShotPopup, setShowAddShotPopup] = useState(false);
+  const [addShotPrompt, setAddShotPrompt] = useState('');
+  const [generatingShot, setGeneratingShot] = useState(false);
 
   useEffect(() => {
     loadContent();
@@ -151,6 +154,56 @@ export default function Home({ editMode = false }) {
   };
   return (
     <div className="min-h-screen bg-white">
+      {/* Add Shot Popup */}
+      {showAddShotPopup && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-6"
+          onClick={() => setShowAddShotPopup(false)}
+        >
+          <div 
+            className="bg-white rounded-xl max-w-2xl w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold mb-4">Generate New Shot</h3>
+            <p className="text-sm text-gray-600 mb-4">Edit the prompt to customize the shot:</p>
+            <textarea
+              value={addShotPrompt}
+              onChange={(e) => setAddShotPrompt(e.target.value)}
+              className="w-full border-2 border-gray-300 rounded-lg p-3 text-sm focus:border-blue-500 outline-none resize-none"
+              rows={4}
+              placeholder="Describe the shot you want to generate..."
+            />
+            <div className="flex gap-3 mt-4">
+              <Button
+                onClick={() => setShowAddShotPopup(false)}
+                variant="outline"
+                disabled={generatingShot}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  setGeneratingShot(true);
+                  try {
+                    const newShot = await generateSingleShot(addShotPrompt);
+                    setViewingProject({ ...viewingProject, images: [...viewingProject.images, newShot] });
+                    setShowAddShotPopup(false);
+                  } catch (error) {
+                    console.error('Failed to generate shot:', error);
+                  } finally {
+                    setGeneratingShot(false);
+                  }
+                }}
+                disabled={!addShotPrompt || generatingShot}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {generatingShot ? 'Generating...' : 'Generate Shot'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Project Viewer/Editor Modal */}
       {viewingProject && (
         <div 
@@ -177,13 +230,6 @@ export default function Home({ editMode = false }) {
                         onChange={(e) => setViewingProject({ ...viewingProject, description: e.target.value })}
                         className="text-gray-600 w-full border-b-2 border-gray-200 focus:border-blue-500 outline-none resize-none"
                         placeholder="Project Description"
-                        rows={2}
-                      />
-                      <textarea
-                        value={viewingProject.prompt || ''}
-                        onChange={(e) => setViewingProject({ ...viewingProject, prompt: e.target.value })}
-                        className="text-sm text-gray-500 w-full border-b border-gray-200 focus:border-blue-500 outline-none resize-none mt-2"
-                        placeholder="Original prompt (edit to regenerate)"
                         rows={2}
                       />
                     </>
@@ -227,9 +273,9 @@ export default function Home({ editMode = false }) {
               {editMode && viewingProject._editIndex !== undefined && (
                 <div className="flex gap-3">
                   <Button
-                    onClick={async () => {
-                      const newShot = await generateSingleShot(viewingProject.prompt || 'Additional cinematic shot');
-                      setViewingProject({ ...viewingProject, images: [...viewingProject.images, newShot] });
+                    onClick={() => {
+                      setAddShotPrompt(viewingProject.prompt || 'Additional cinematic shot');
+                      setShowAddShotPopup(true);
                     }}
                     className="bg-blue-600 hover:bg-blue-700"
                   >
