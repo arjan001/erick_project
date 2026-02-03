@@ -50,7 +50,7 @@ export default function Layout({ children, currentPageName }) {
       <TopBanner />
 
       {/* Main Header (Awwwards Style) */}
-      <header className={`fixed top-[40px] left-0 right-0 z-[55] transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
+      <header className={`fixed top-[40px] left-0 right-0 z-[40] transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="flex items-center justify-between h-[60px]">
             {/* Left Navigation */}
@@ -129,21 +129,21 @@ export default function Layout({ children, currentPageName }) {
         <>
           {/* Backdrop Overlay */}
           <div 
-            className="fixed inset-0 bg-black/30 z-50"
+            className="fixed inset-0 bg-black/30 z-[35]"
             onClick={() => setExploreOpen(false)}
           />
 
           {/* Top menu background - rounded cap */}
-          <div className="fixed top-[40px] left-0 right-0 h-[60px] bg-[#EDEDED] z-[60] rounded-t-[25px]" />
+          <div className="fixed top-[40px] left-0 right-0 h-[60px] bg-[#EDEDED] z-[39] rounded-t-[25px]" />
 
           {/* Mega Menu Container */}
-          <div className="fixed top-[100px] left-0 right-0 bottom-0 bg-[#EDEDED] z-[60] rounded-t-[25px] overflow-hidden">
-            <div className="flex h-full max-h-[calc(100vh-100px)]">
+          <div className="fixed top-[100px] left-0 right-0 bg-[#EDEDED] z-[40] rounded-b-[25px]" style={{ height: '60vh' }}>
+            <div className="flex h-full">
               {/* LEFT COLUMN - 30% width - Categories */}
-              <div className="w-[30%] bg-[#EDEDED] p-8 overflow-y-auto">
+              <div className="w-[30%] bg-[#EDEDED] p-8 overflow-y-auto rounded-bl-[25px]">
                 <button 
                   onClick={() => setExploreOpen(false)}
-                  className="absolute top-4 right-4 p-2 hover:bg-gray-300 rounded transition-colors z-[70]"
+                  className="absolute top-4 right-4 p-2 hover:bg-gray-300 rounded transition-colors z-50"
                 >
                   <X className="w-5 h-5 text-[#666]" />
                 </button>
@@ -173,7 +173,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               {/* RIGHT COLUMN - 70% width - New Project Form */}
-              <div className="w-[70%] bg-[#EDEDED] p-8 overflow-y-auto">
+              <div className="w-[70%] bg-[#EDEDED] p-8 overflow-y-auto rounded-br-[25px]">
                 <NewProjectForm selectedCategory={expandedCategory || 'commercial'} />
               </div>
             </div>
