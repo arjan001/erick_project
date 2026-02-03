@@ -267,7 +267,7 @@ export default function Admin() {
               ))
             )}
           {/* Ticker Tab */}
-          <TabsContent value="ticker" className="space-y-4">
+          <TabsContent value="ticker" className="space-y-4 pb-8">
             <div className="flex gap-2 mb-6">
               <div className="flex-1">
                 <label className="block text-sm font-medium mb-2">Message</label>
