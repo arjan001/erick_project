@@ -34,25 +34,47 @@ export default function CreatorGeneratorModal({ onClose, onGenerated }) {
     setProgress('Generating creators with AI...');
 
     try {
-      const prompt = `CRITICAL MISSION: Research and find ${config.count} REAL, EXISTING European production companies/creators with VERIFIED LOGOS.
+      const prompt = `EXTREMELY CRITICAL TASK: You must search the web EXTENSIVELY and ONLY return companies where you find their ACTUAL REAL LOGO.
 
-${config.types.length > 0 ? `Types to focus on: ${config.types.join(', ')}` : 'Mix of: freelance, studio, agency, team, collective'}
-${config.categories.length > 0 ? `Specialties to focus on: ${config.categories.join(', ')}` : 'Various specialties in film production'}
-${config.countries.length > 0 ? `Countries to focus on: ${config.countries.join(', ')}` : 'Various European countries'}
+Target: ${config.count} companies (but return LESS if you can't find logos)
+${config.types.length > 0 ? `Types: ${config.types.join(', ')}` : 'Mix: freelance, studio, agency, team, collective'}
+${config.categories.length > 0 ? `Categories: ${config.categories.join(', ')}` : 'Various film production specialties'}
+${config.countries.length > 0 ? `Countries: ${config.countries.join(', ')}` : 'Various European countries'}
 
-ABSOLUTE REQUIREMENTS - NO FAKE DATA ALLOWED:
-1. Search the web extensively for REAL production companies (RSA Films, MJZ, Stink Films, Partizan, Somesuch, The Mill, Framestore, MPC, Iconoclast, UNIT9, MediaMonks, etc.)
-2. Use their EXACT real company names
-3. Use their ACTUAL real headquarters city and country
-4. Find and verify their REAL website (the actual domain that exists)
-5. logo_url: MANDATORY - You MUST find the company's REAL logo image URL. Search their website, LinkedIn, or other sources. DO NOT include a company if you cannot find their actual logo. Use direct image URLs (PNG, JPG, SVG) or high-quality sources.
-6. profile_image_url: Find representative images from their portfolio or use cinematic Unsplash images
-7. Award counts: Research their actual awards if possible (0-50 realistic range)
-8. Categories: Based on their actual specialties
+ABSOLUTE RULES - FOLLOW STRICTLY:
 
-CRITICAL: If you cannot find a company's REAL logo, DO NOT include that company. Only return companies where you successfully found their actual logo.
+1. Search for REAL production companies: RSA Films, MJZ, Stink Films, Partizan, Somesuch, The Mill, Framestore, MPC, Iconoclast, UNIT9, MediaMonks, Wieden+Kennedy, Studio 100, Warner Bros, Universal, etc.
 
-Search deeply, take your time, verify logos exist. Quality over speed. Return ONLY valid JSON.`;
+2. For EACH company you consider:
+   - Visit their website or LinkedIn
+   - Find their ACTUAL logo image file (PNG, JPG, SVG)
+   - Get the direct URL to the logo image
+   - If you CANNOT find a real logo URL = SKIP THIS COMPANY COMPLETELY
+
+3. logo_url MUST be:
+   - A direct image URL (ends in .png, .jpg, .svg, .webp)
+   - A CDN URL with the actual logo image
+   - A real, working image link you found on their website
+   - Example formats: https://company.com/logo.png, https://cdn.company.com/images/logo.svg
+
+4. DO NOT:
+   - Include a company without a real logo URL
+   - Use placeholder images
+   - Use generic Unsplash images as logos
+   - Make up fake URLs
+
+5. Other fields:
+   - name: Real company name
+   - type: Their actual type
+   - city & country: Real location
+   - website: Real verified URL
+   - categories: Real specialties (2-4)
+   - awards_count: Realistic 0-30
+   - profile_image_url: Portfolio or Unsplash cinematography image
+
+SPEND TIME SEARCHING. Quality over quantity. If you can only find 3 companies with real logos out of 10 requested, return only those 3.
+
+Return ONLY valid JSON.`;
 
       const response = await base44.integrations.Core.InvokeLLM({
         prompt,
@@ -81,10 +103,28 @@ Search deeply, take your time, verify logos exist. Quality over speed. Return ON
         }
       });
 
-      setProgress(`Saving ${response.creators.length} creators to database...`);
+      // Filter out creators without valid logo URLs
+      const validCreators = response.creators.filter(c => {
+        const hasLogo = c.logo_url && 
+                       c.logo_url.startsWith('http') && 
+                       c.logo_url.length > 20 &&
+                       !c.logo_url.includes('placeholder');
+        if (!hasLogo) {
+          console.log(`Skipping ${c.name} - no valid logo found`);
+        }
+        return hasLogo;
+      });
+
+      if (validCreators.length === 0) {
+        setProgress('Error: No companies with valid logos were found. Try again with different criteria.');
+        setTimeout(() => setGenerating(false), 3000);
+        return;
+      }
+
+      setProgress(`Found ${validCreators.length} creators with verified logos. Saving to database...`);
 
       // Save to database
-      await base44.entities.Creator.bulkCreate(response.creators);
+      await base44.entities.Creator.bulkCreate(validCreators);
 
       setProgress('Complete!');
       setTimeout(() => {
