@@ -364,10 +364,10 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
           </div>
-          </footer>
-          )}
+      </footer>
+      )}
 
-          <style jsx>{`
+      <style jsx>{`
         @keyframes slideUp {
           from {
             opacity: 0;
