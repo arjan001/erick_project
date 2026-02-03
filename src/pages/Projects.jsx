@@ -188,24 +188,31 @@ export default function Projects() {
                       )}
                     </div>
 
-                    {/* Action Button */}
-                    <Button 
-                      onClick={() => {
-                        setSelectedProject(project);
-                        setModalOpen(true);
-                      }}
-                      variant="outline"
-                      className="w-full text-xs font-medium group-hover:bg-black group-hover:text-white group-hover:border-black transition-colors"
-                    >
-                      {project.open_to_backing ? (
-                        <>
+                    {/* Action Buttons */}
+                    <div className="space-y-2">
+                      <Button 
+                        onClick={() => {
+                          setSelectedProject(project);
+                          setModalOpen(true);
+                        }}
+                        className="w-full text-xs font-medium bg-black hover:bg-gray-800 text-white"
+                      >
+                        Request Introduction
+                      </Button>
+                      {project.open_to_backing && (
+                        <Button 
+                          onClick={() => {
+                            setSelectedProject(project);
+                            setModalOpen(true);
+                          }}
+                          variant="outline"
+                          className="w-full text-xs font-medium"
+                        >
                           <Sparkles className="w-3 h-3 mr-2" />
-                          Support This Project
-                        </>
-                      ) : (
-                        <>Request Introduction</>
+                          Express Backing Interest
+                        </Button>
                       )}
-                    </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
