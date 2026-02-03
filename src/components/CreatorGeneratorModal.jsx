@@ -47,6 +47,8 @@ Requirements:
 - Award counts (0-100, weighted toward lower numbers)
 - 2-4 category specialties per creator
 - Diverse mix of types and specialties
+- logo_url: Use high-quality Unsplash images of logos, brand marks, or abstract designs (format: https://images.unsplash.com/photo-[id]?q=80&w=200)
+- profile_image_url: Use cinematic production/studio images from Unsplash (format: https://images.unsplash.com/photo-[id]?q=80&w=800)
 
 Return ONLY a JSON array, no markdown formatting.`;
 
@@ -66,7 +68,9 @@ Return ONLY a JSON array, no markdown formatting.`;
                   country: { type: "string" },
                   city: { type: "string" },
                   website: { type: "string" },
-                  awards_count: { type: "number" }
+                  awards_count: { type: "number" },
+                  logo_url: { type: "string" },
+                  profile_image_url: { type: "string" }
                 }
               }
             }
@@ -95,11 +99,11 @@ Return ONLY a JSON array, no markdown formatting.`;
 
   return (
     <div 
-      className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-6"
+      className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-6"
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-xl max-w-2xl w-full p-8"
+        className="bg-white rounded-xl max-w-2xl w-full p-8 relative z-[101]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">

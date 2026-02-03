@@ -52,7 +52,7 @@ const COUNTRIES = [
 
 export default function CreatorFilterBar({ filters, onFilterChange, onReset, resultCount }) {
   return (
-    <div className="bg-white border-t border-b border-gray-200 py-6 sticky top-[100px] z-30">
+    <div className="bg-white border-t border-b border-gray-200 py-6 sticky top-[100px] z-20">
       <div className="max-w-[1800px] mx-auto px-6">
         <div className="flex flex-wrap items-center gap-4 justify-between">
           <div className="flex flex-wrap items-center gap-3">
