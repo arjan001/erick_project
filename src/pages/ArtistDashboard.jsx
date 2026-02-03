@@ -9,7 +9,7 @@ export default function ArtistDashboard() {
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
     if (!storedUser) {
-      navigate('/login');
+      navigate('/signin');
       return;
     }
     setUser(JSON.parse(storedUser));
