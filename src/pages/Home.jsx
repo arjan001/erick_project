@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowRight, Award, MapPin, User, Play, Bookmark, Sparkles, X } from 'lucide-react';
+import { ArrowRight, Award, MapPin, User, Play, Bookmark, Sparkles, X, Grid3x3, List, Plus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import EditableSection from '../components/EditableSection';
+import CreatorFilterBar from '../components/CreatorFilterBar';
+import CreatorGrid from '../components/CreatorGrid';
+import CreatorGeneratorModal from '../components/CreatorGeneratorModal';
 
 // Saved Project Card Component with futuristic hover effect
 function SavedProjectCard({ project, editMode, onEdit, onView }) {
@@ -88,11 +91,30 @@ export default function Home({ editMode = false }) {
   const [showAddShotPopup, setShowAddShotPopup] = useState(false);
   const [addShotPrompt, setAddShotPrompt] = useState('');
   const [generatingShot, setGeneratingShot] = useState(false);
+  const [creators, setCreators] = useState([]);
+  const [creatorFilters, setCreatorFilters] = useState({
+    type: 'all_types',
+    category: 'all_categories', 
+    country: 'all_countries'
+  });
+  const [creatorView, setCreatorView] = useState('grid');
+  const [creatorsPerPage, setCreatorsPerPage] = useState(12);
+  const [showCreatorGenerator, setShowCreatorGenerator] = useState(false);
 
   useEffect(() => {
     loadContent();
     loadSavedProjects();
+    loadCreators();
   }, []);
+
+  const loadCreators = async () => {
+    try {
+      const allCreators = await base44.entities.Creator.list();
+      setCreators(allCreators);
+    } catch (error) {
+      console.error('Failed to load creators:', error);
+    }
+  };
 
   const loadSavedProjects = async () => {
     try {
