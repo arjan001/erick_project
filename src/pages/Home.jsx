@@ -179,6 +179,13 @@ export default function Home({ editMode = false }) {
                         placeholder="Project Description"
                         rows={2}
                       />
+                      <textarea
+                        value={viewingProject.prompt || ''}
+                        onChange={(e) => setViewingProject({ ...viewingProject, prompt: e.target.value })}
+                        className="text-sm text-gray-500 w-full border-b border-gray-200 focus:border-blue-500 outline-none resize-none mt-2"
+                        placeholder="Original prompt (edit to regenerate)"
+                        rows={2}
+                      />
                     </>
                   ) : (
                     <>
@@ -194,7 +201,7 @@ export default function Home({ editMode = false }) {
                   ×
                 </button>
               </div>
-              
+
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 {viewingProject.images.map((img, idx) => (
                   <div key={idx} className="relative aspect-video rounded-lg overflow-hidden shadow-lg group">
@@ -231,10 +238,24 @@ export default function Home({ editMode = false }) {
                   </Button>
                   <Button
                     onClick={async () => {
+                      if (!confirm('Delete this project permanently?')) return;
+                      await base44.entities.SavedProject.delete(viewingProject.id);
+                      await loadSavedProjects();
+                      setViewingProject(null);
+                    }}
+                    variant="outline"
+                    className="border-red-500 text-red-500 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Delete Project
+                  </Button>
+                  <Button
+                    onClick={async () => {
                       await base44.entities.SavedProject.update(viewingProject.id, {
                         title: viewingProject.title,
                         description: viewingProject.description,
-                        images: viewingProject.images
+                        images: viewingProject.images,
+                        prompt: viewingProject.prompt
                       });
                       await loadSavedProjects();
                       setViewingProject(null);
