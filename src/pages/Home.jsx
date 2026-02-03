@@ -677,7 +677,7 @@ export default function Home({ editMode = false }) {
       {/* WE ARE 22. CREATORS Section */}
       <section className="py-20 px-6 bg-[#F9F9F9]">
         <div className="max-w-[1800px] mx-auto">
-          <div className="mb-8 text-center">
+          <div className="mb-8 text-left">
             <h2 className="text-5xl md:text-7xl font-normal uppercase mb-4 tracking-tight">
               WE ARE 22. CREATORS
             </h2>
