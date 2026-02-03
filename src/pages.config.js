@@ -52,6 +52,7 @@ import ApplyArtist from './pages/ApplyArtist';
 import ApplyTeam from './pages/ApplyTeam';
 import ArtistAdmin from './pages/ArtistAdmin';
 import Contact from './pages/Contact';
+import FirstFrame from './pages/FirstFrame';
 import Home from './pages/Home';
 import Home2 from './pages/Home2';
 import Pricing from './pages/Pricing';
@@ -69,6 +70,7 @@ export const PAGES = {
     "ApplyTeam": ApplyTeam,
     "ArtistAdmin": ArtistAdmin,
     "Contact": Contact,
+    "FirstFrame": FirstFrame,
     "Home": Home,
     "Home2": Home2,
     "Pricing": Pricing,
