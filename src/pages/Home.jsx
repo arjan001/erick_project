@@ -88,7 +88,21 @@ export default function Home({ editMode = false }) {
 
   useEffect(() => {
     loadContent();
+    // Load saved projects from localStorage
+    const saved = localStorage.getItem('studio22_saved_projects');
+    if (saved) {
+      try {
+        setSavedProjects(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to load saved projects:', e);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    // Save projects to localStorage whenever they change
+    localStorage.setItem('studio22_saved_projects', JSON.stringify(savedProjects));
+  }, [savedProjects]);
 
   const loadContent = async () => {
     try {
