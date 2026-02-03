@@ -890,21 +890,19 @@ export default function Home({ editMode = false }) {
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             {[
-              { title: 'Cinema Cameras', count: '127 items', image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=200&h=200&fit=crop' },
-              { title: 'Lenses & Optics', count: '243 items', image: 'https://images.unsplash.com/photo-1606933248010-ef806f5c857a?w=200&h=200&fit=crop' },
-              { title: 'Lighting', count: '189 items', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop' },
-              { title: 'Audio Equipment', count: '156 items', image: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=200&h=200&fit=crop' },
-              { title: 'Locations', count: '89 spaces', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=200&fit=crop' },
-              { title: 'Studios', count: '34 facilities', image: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=200&h=200&fit=crop' },
+              { title: 'Cinema Cameras', count: '127 items', icon: '📹' },
+              { title: 'Lenses & Optics', count: '243 items', icon: '🎥' },
+              { title: 'Lighting', count: '189 items', icon: '💡' },
+              { title: 'Audio Equipment', count: '156 items', icon: '🎤' },
+              { title: 'Locations', count: '89 spaces', icon: '📍' },
+              { title: 'Studios', count: '34 facilities', icon: '🏢' },
             ].map((category, i) => (
               <Link 
                 key={i}
                 to={createPageUrl('ApplyTeam')}
                 className="group bg-[#FAFAFA] rounded-lg p-8 hover:bg-white hover:shadow-xl transition-all duration-300"
               >
-                <div className="w-16 h-16 mb-4 rounded-lg overflow-hidden bg-white flex items-center justify-center">
-                  <img src={category.image} alt={category.title} className="w-full h-full object-cover" />
-                </div>
+                <div className="text-4xl mb-4">{category.icon}</div>
                 <h3 className="text-xl font-semibold uppercase tracking-tight mb-2">{category.title}</h3>
                 <p className="text-sm text-gray-500 font-medium">{category.count}</p>
               </Link>
