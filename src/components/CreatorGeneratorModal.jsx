@@ -34,47 +34,47 @@ export default function CreatorGeneratorModal({ onClose, onGenerated }) {
     setProgress('Generating creators with AI...');
 
     try {
-      const prompt = `EXTREMELY CRITICAL TASK: You must search the web EXTENSIVELY and ONLY return companies where you find their ACTUAL REAL LOGO.
+      const prompt = `YOUR MISSION: Find ${config.count} REAL production companies and get their ACTUAL LOGO from the web.
 
-Target: ${config.count} companies (but return LESS if you can't find logos)
-${config.types.length > 0 ? `Types: ${config.types.join(', ')}` : 'Mix: freelance, studio, agency, team, collective'}
-${config.categories.length > 0 ? `Categories: ${config.categories.join(', ')}` : 'Various film production specialties'}
-${config.countries.length > 0 ? `Countries: ${config.countries.join(', ')}` : 'Various European countries'}
+${config.types.length > 0 ? `Types: ${config.types.join(', ')}` : 'All types'}
+${config.categories.length > 0 ? `Categories: ${config.categories.join(', ')}` : 'All categories'}
+${config.countries.length > 0 ? `Countries: ${config.countries.join(', ')}` : 'European countries'}
 
-ABSOLUTE RULES - FOLLOW STRICTLY:
+STEP-BY-STEP PROCESS FOR EACH COMPANY:
 
-1. Search for REAL production companies: RSA Films, MJZ, Stink Films, Partizan, Somesuch, The Mill, Framestore, MPC, Iconoclast, UNIT9, MediaMonks, Wieden+Kennedy, Studio 100, Warner Bros, Universal, etc.
+1. Pick a REAL company (MJZ, Stink Films, RSA Films, The Mill, Framestore, Partizan, etc.)
+2. Search Google for "[company name] logo"
+3. Find their actual logo image on their website or Wikipedia
+4. Get the DIRECT image URL - must end in .png, .jpg, .svg, or .webp
+5. If NO real logo found = DO NOT include this company
+6. Move to next company
 
-2. For EACH company you consider:
-   - Visit their website or LinkedIn
-   - Find their ACTUAL logo image file (PNG, JPG, SVG)
-   - Get the direct URL to the logo image
-   - If you CANNOT find a real logo URL = SKIP THIS COMPANY COMPLETELY
+LOGO URL EXAMPLES (what GOOD looks like):
+- https://mjzfilms.com/images/mjz-logo.svg
+- https://stinkfilms.com/assets/logo.png  
+- https://upload.wikimedia.org/wikipedia/commons/logo.png
+- https://cdn.company.com/brand/logo.jpg
 
-3. logo_url MUST be:
-   - A direct image URL (ends in .png, .jpg, .svg, .webp)
-   - A CDN URL with the actual logo image
-   - A real, working image link you found on their website
-   - Example formats: https://company.com/logo.png, https://cdn.company.com/images/logo.svg
+WHAT TO AVOID:
+- Unsplash images
+- Placeholder URLs
+- Made-up URLs
+- URLs without image extensions
 
-4. DO NOT:
-   - Include a company without a real logo URL
-   - Use placeholder images
-   - Use generic Unsplash images as logos
-   - Make up fake URLs
+FIELDS TO RETURN:
+- name: Real company name (verified)
+- type: freelance/studio/agency/team/collective
+- city: Real city
+- country: Real country
+- website: Real domain (check it exists)
+- logo_url: DIRECT image URL you found (MANDATORY - no logo = skip company)
+- profile_image_url: Unsplash cinematic/production image
+- categories: 2-4 real specialties
+- awards_count: 0-30 realistic number
 
-5. Other fields:
-   - name: Real company name
-   - type: Their actual type
-   - city & country: Real location
-   - website: Real verified URL
-   - categories: Real specialties (2-4)
-   - awards_count: Realistic 0-30
-   - profile_image_url: Portfolio or Unsplash cinematography image
+CRITICAL: Better to return 3 companies with REAL logos than 10 with fake ones.
 
-SPEND TIME SEARCHING. Quality over quantity. If you can only find 3 companies with real logos out of 10 requested, return only those 3.
-
-Return ONLY valid JSON.`;
+Return ONLY valid JSON array of companies.`;
 
       const response = await base44.integrations.Core.InvokeLLM({
         prompt,
