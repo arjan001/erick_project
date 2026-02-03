@@ -125,9 +125,28 @@ export default function SubmitProject() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      let projectImage = null;
+
+      // Generate and save project image once
+      if (projectData.project_type !== 'funding_coproduction') {
+        try {
+          const imageResponse = await base44.functions.invoke('generateProjectImage', {
+            projectType: projectData.project_type,
+            description: projectData.notes,
+            company: projectData.project_owner_company || projectData.project_owner_name
+          });
+          if (imageResponse.data?.image_url) {
+            projectImage = imageResponse.data.image_url;
+          }
+        } catch (imgError) {
+          console.error('Image generation failed, continuing without image:', imgError);
+        }
+      }
+
       await base44.entities.Project.create({
         ...projectData,
-        status: 'submitted'
+        status: 'submitted',
+        image_url: projectImage
       });
       setSubmitted(true);
     } catch (error) {

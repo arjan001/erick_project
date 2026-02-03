@@ -23,49 +23,32 @@ export default function TopBanner() {
     };
 
     fetchEntries();
-
-    // Poll for updates every 30 seconds
     const interval = setInterval(fetchEntries, 30000);
     return () => clearInterval(interval);
   }, []);
 
   const defaultMessages = [
-    'Studio22 connects creators across Europe',
-    'Post your project, discover your team',
-    'Backing and partnerships available',
-    'Production support in 12 countries'
+    'Documentary project backed 45k of 80k',
+    'Feature film secured 120k of 300k',
+    'Short film project backed 12k of 20k',
+    'Music video partially backed 8k of 15k'
   ];
 
   const displayEntries = entries.length > 0 
-    ? entries.map(e => ({ text: e.text, amount: e.amount, link_type: e.link_type, link_target_id: e.link_target_id }))
-    : defaultMessages.map(msg => ({ text: msg, amount: null, link_type: 'none' }));
+    ? entries.map(e => ({ text: e.text, link_type: e.link_type, link_target_id: e.link_target_id }))
+    : defaultMessages.map(msg => ({ text: msg, link_type: 'none' }));
 
-  // Duplicate for seamless loop
   const tickerItems = [...displayEntries, ...displayEntries];
 
   const renderItem = (item, idx) => {
-    const content = item.amount 
-      ? `${item.text} (${item.amount})`
-      : item.text;
-
     if (item.link_type === 'project' && item.link_target_id) {
       return (
         <Link
           key={idx}
           to={createPageUrl('Projects')}
-          className="px-6 text-sm font-medium flex items-center h-full border-r border-gray-700 last:border-r-0 hover:bg-gray-900 transition-colors cursor-pointer"
+          className="px-8 text-sm font-medium flex items-center h-full border-r border-gray-300 last:border-r-0 hover:bg-gray-50 transition-colors cursor-pointer"
         >
-          {content}
-        </Link>
-      );
-    } else if (item.link_type === 'backed_discovery') {
-      return (
-        <Link
-          key={idx}
-          to={createPageUrl('BackedProjects')}
-          className="px-6 text-sm font-medium flex items-center h-full border-r border-gray-700 last:border-r-0 hover:bg-gray-900 transition-colors cursor-pointer"
-        >
-          {content}
+          {item.text}
         </Link>
       );
     }
@@ -73,15 +56,15 @@ export default function TopBanner() {
     return (
       <div
         key={idx}
-        className="px-6 text-sm font-medium flex items-center h-full border-r border-gray-700 last:border-r-0"
+        className="px-8 text-sm font-medium flex items-center h-full border-r border-gray-300 last:border-r-0"
       >
-        {content}
+        {item.text}
       </div>
     );
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-[40px] bg-black text-white z-50 overflow-hidden">
+    <div className="fixed top-0 left-0 right-0 h-[40px] bg-[#F5F5F5] text-[#4A4A4A] z-50 overflow-hidden border-b border-gray-200">
       <div className="flex items-center h-full">
         <style jsx>{`
           @keyframes scroll {
@@ -89,8 +72,7 @@ export default function TopBanner() {
             100% { transform: translateX(-50%); }
           }
           .scroll-container {
-            animation: scroll ${40 + displayEntries.length * 2}s linear infinite;
-            animation-play-state: running;
+            animation: scroll ${40 + displayEntries.length * 3}s linear infinite;
           }
           .scroll-container:hover {
             animation-play-state: paused;
