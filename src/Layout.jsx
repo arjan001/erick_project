@@ -128,9 +128,10 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
         </div>
-      </header>
+        </header>
+        )}
 
-      {/* Mega Menu Overlay */}
+        {/* Mega Menu Overlay */}
       {exploreOpen && (
         <>
           {/* Backdrop Overlay */}
