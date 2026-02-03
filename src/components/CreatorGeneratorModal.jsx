@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Sparkles } from 'lucide-react';
+import { X, Sparkles, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 const TYPES = ['freelance', 'studio', 'agency', 'team', 'collective'];
@@ -28,6 +27,7 @@ export default function CreatorGeneratorModal({ onClose, onGenerated }) {
   });
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState('');
+  const [openDropdown, setOpenDropdown] = useState(null);
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -104,7 +104,10 @@ Return ONLY valid JSON, no markdown formatting.`;
   return (
     <div 
       className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-6"
-      onClick={onClose}
+      onClick={() => {
+        setOpenDropdown(null);
+        onClose();
+      }}
     >
       <div 
         className="bg-white rounded-xl max-w-2xl w-full p-8 relative z-[101]"
@@ -120,49 +123,122 @@ Return ONLY valid JSON, no markdown formatting.`;
         <div className="space-y-4 mb-6">
           <div>
             <label className="text-sm font-medium mb-2 block">Type</label>
-            <Select value={config.type} onValueChange={(value) => setConfig({...config, type: value})}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types (Mixed)</SelectItem>
-                {TYPES.map(t => (
-                  <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="relative">
+              <button
+                onClick={() => setOpenDropdown(openDropdown === 'type' ? null : 'type')}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50 text-left"
+              >
+                <span className="capitalize">
+                  {config.type === 'all' ? 'All Types (Mixed)' : config.type}
+                </span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {openDropdown === 'type' && (
+                <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] max-h-[200px] overflow-y-auto">
+                  <button
+                    onClick={() => {
+                      setConfig({...config, type: 'all'});
+                      setOpenDropdown(null);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                  >
+                    All Types (Mixed)
+                  </button>
+                  {TYPES.map(t => (
+                    <button
+                      key={t}
+                      onClick={() => {
+                        setConfig({...config, type: t});
+                        setOpenDropdown(null);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 capitalize"
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div>
             <label className="text-sm font-medium mb-2 block">Category Focus</label>
-            <Select value={config.category} onValueChange={(value) => setConfig({...config, category: value})}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories (Mixed)</SelectItem>
-                {CATEGORIES.map(c => (
-                  <SelectItem key={c} value={c} className="capitalize">
-                    {c.replace('_', ' ')}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="relative">
+              <button
+                onClick={() => setOpenDropdown(openDropdown === 'category' ? null : 'category')}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50 text-left"
+              >
+                <span className="capitalize">
+                  {config.category === 'all' ? 'All Categories (Mixed)' : config.category.replace('_', ' ')}
+                </span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {openDropdown === 'category' && (
+                <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] max-h-[200px] overflow-y-auto">
+                  <button
+                    onClick={() => {
+                      setConfig({...config, category: 'all'});
+                      setOpenDropdown(null);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                  >
+                    All Categories (Mixed)
+                  </button>
+                  {CATEGORIES.map(c => (
+                    <button
+                      key={c}
+                      onClick={() => {
+                        setConfig({...config, category: c});
+                        setOpenDropdown(null);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 capitalize"
+                    >
+                      {c.replace('_', ' ')}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div>
             <label className="text-sm font-medium mb-2 block">Country</label>
-            <Select value={config.country} onValueChange={(value) => setConfig({...config, country: value})}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Countries (Mixed)</SelectItem>
-                {COUNTRIES.map(c => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="relative">
+              <button
+                onClick={() => setOpenDropdown(openDropdown === 'country' ? null : 'country')}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50 text-left"
+              >
+                <span>
+                  {config.country === 'all' ? 'All Countries (Mixed)' : config.country}
+                </span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {openDropdown === 'country' && (
+                <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] max-h-[200px] overflow-y-auto">
+                  <button
+                    onClick={() => {
+                      setConfig({...config, country: 'all'});
+                      setOpenDropdown(null);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                  >
+                    All Countries (Mixed)
+                  </button>
+                  {COUNTRIES.map(c => (
+                    <button
+                      key={c}
+                      onClick={() => {
+                        setConfig({...config, country: c});
+                        setOpenDropdown(null);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div>
