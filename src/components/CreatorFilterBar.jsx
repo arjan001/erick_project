@@ -67,7 +67,7 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
                   <ChevronDown className="w-4 h-4" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-[160px] p-0 z-[70]" align="start">
+              <PopoverContent className="w-[160px] p-0" align="start">
                 <div className="max-h-[300px] overflow-y-auto">
                   {TYPES.map(type => {
                     const value = type.toLowerCase().replace(' ', '_');
@@ -95,7 +95,7 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
                   <ChevronDown className="w-4 h-4" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0 z-[70]" align="start">
+              <PopoverContent className="w-[200px] p-0" align="start">
                 <div className="max-h-[300px] overflow-y-auto">
                   <button
                     onClick={() => onFilterChange('category', 'all_categories')}
@@ -131,7 +131,7 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
                   <ChevronDown className="w-4 h-4" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-[250px] p-0 z-[70]" align="start">
+              <PopoverContent className="w-[250px] p-0" align="start">
                 <div className="max-h-[300px] overflow-y-auto">
                   {COUNTRIES.slice(1).map(country => {
                     const value = country.toLowerCase().replace(' ', '_');

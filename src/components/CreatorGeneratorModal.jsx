@@ -103,11 +103,11 @@ Return ONLY valid JSON, no markdown formatting.`;
 
   return (
     <div 
-      className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-6"
+      className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-6"
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-xl max-w-2xl w-full p-8 relative"
+        className="bg-white rounded-xl max-w-2xl w-full p-8 relative z-[101]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
