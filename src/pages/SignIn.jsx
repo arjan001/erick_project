@@ -36,10 +36,10 @@ export default function SignIn() {
         }));
 
         const redirects = {
-          artist: '/artist/dashboard',
-          team: '/team/dashboard',
-          project_owner: '/projects/dashboard',
-          backer: '/backed/dashboard',
+          artist: '/artistdashboard',
+          team: '/artistdashboard',
+          project_owner: '/artistdashboard',
+          backer: '/artistdashboard',
           admin: '/admin'
         };
 
