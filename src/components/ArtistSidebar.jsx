@@ -34,7 +34,7 @@ export default function ArtistSidebar() {
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen bg-[#F8F8F8] border-r border-gray-200 flex flex-col transition-all duration-300 z-50 ${
+      className={`fixed left-0 top-0 h-screen bg-[#F8F8F8] border-r border-gray-200 flex flex-col transition-all duration-300 z-[45] ${
         expanded ? 'w-64' : 'w-20'
       }`}
       onMouseEnter={() => setExpanded(true)}
