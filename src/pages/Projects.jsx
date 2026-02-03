@@ -4,11 +4,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, Sparkles } from 'lucide-react';
+import RequestIntroductionModal from '../components/RequestIntroductionModal';
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState('all');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -158,6 +161,10 @@ export default function Projects() {
 
                     {/* Action Button */}
                     <Button 
+                      onClick={() => {
+                        setSelectedProject(project);
+                        setModalOpen(true);
+                      }}
                       variant="outline"
                       className="w-full text-xs font-medium group-hover:bg-black group-hover:text-white group-hover:border-black transition-colors"
                     >
@@ -188,6 +195,13 @@ export default function Projects() {
           </Button>
         </div>
       </section>
+
+      {/* Modal */}
+      <RequestIntroductionModal 
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        projectTitle={selectedProject?.project_owner_company || selectedProject?.project_owner_name}
+      />
     </div>
   );
 }
