@@ -6,6 +6,7 @@ import { ChevronDown, X, Instagram, Linkedin, Play } from 'lucide-react';
 import TopBanner from './components/home/TopBanner';
 import NewProjectForm from './components/NewProjectForm';
 import UnifiedSearch from './components/UnifiedSearch';
+import ArtistSidebar from './components/ArtistSidebar';
 
 export default function Layout({ children, currentPageName }) {
   const [exploreOpen, setExploreOpen] = useState(false);
