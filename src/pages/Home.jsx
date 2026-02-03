@@ -890,21 +890,29 @@ export default function Home({ editMode = false }) {
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             {[
-              { title: 'Cinema Cameras', count: '127 items', icon: '📹' },
-              { title: 'Lenses & Optics', count: '243 items', icon: '🎥' },
-              { title: 'Lighting', count: '189 items', icon: '💡' },
-              { title: 'Audio Equipment', count: '156 items', icon: '🎤' },
-              { title: 'Locations', count: '89 spaces', icon: '📍' },
-              { title: 'Studios', count: '34 facilities', icon: '🏢' },
+              { title: 'Cinema Cameras', count: '127 items', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/dbce8126d_generated_image.png' },
+              { title: 'Lenses & Optics', count: '243 items', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/f31ed2366_generated_image.png' },
+              { title: 'Lighting', count: '189 items', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/b56a3259c_generated_image.png' },
+              { title: 'Audio Equipment', count: '156 items', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/f53fffda7_generated_image.png' },
+              { title: 'Locations', count: '89 spaces', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/460bb9ffb_generated_image.png' },
+              { title: 'Studios', count: '34 facilities', image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/481ecbf61_generated_image.png' },
             ].map((category, i) => (
               <Link 
                 key={i}
                 to={createPageUrl('ApplyTeam')}
-                className="group bg-[#FAFAFA] rounded-lg p-8 hover:bg-white hover:shadow-xl transition-all duration-300"
+                className="group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
               >
-                <div className="text-4xl mb-4">{category.icon}</div>
-                <h3 className="text-xl font-semibold uppercase tracking-tight mb-2">{category.title}</h3>
-                <p className="text-sm text-gray-500 font-medium">{category.count}</p>
+                <div className="aspect-square bg-white p-8 flex items-center justify-center">
+                  <img 
+                    src={category.image} 
+                    alt={category.title}
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="p-6 border-t border-gray-100">
+                  <h3 className="text-lg font-semibold uppercase tracking-tight mb-2">{category.title}</h3>
+                  <p className="text-sm text-gray-500 font-medium">{category.count}</p>
+                </div>
               </Link>
             ))}
           </div>
