@@ -341,7 +341,7 @@ export default function Home({ editMode = false }) {
         {/* Main Title */}
         <div className="text-center px-4 md:px-6 max-w-6xl mx-auto mb-8 md:mb-12">
           <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold tracking-tighter mb-4 md:mb-6">CONNECT. CREATE.</h1>
-          <p className="text-lg md:text-xl text-gray-600 font-light mb-8 max-w-3xl mx-auto">
+          <p className="text-base md:text-lg lg:text-xl text-gray-600 font-light mb-6 md:mb-8 max-w-3xl mx-auto">
             Studio22 is the curated marketplace connecting clients with the world's best independent creators and production teams. Post a project, find your crew, create incredible work.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
