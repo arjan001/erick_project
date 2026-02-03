@@ -57,6 +57,7 @@ export default function Layout({ children, currentPageName }) {
           {!user && <TopBanner />}
 
       {/* Main Header (Awwwards Style) */}
+      {!user && (
       <header className={`fixed top-[40px] left-0 right-0 z-[40] transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="flex items-center justify-between h-[60px]">
