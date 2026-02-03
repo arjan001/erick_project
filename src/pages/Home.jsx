@@ -88,21 +88,45 @@ export default function Home({ editMode = false }) {
 
   useEffect(() => {
     loadContent();
-    // Load saved projects from localStorage
-    const saved = localStorage.getItem('studio22_saved_projects');
-    if (saved) {
-      try {
-        setSavedProjects(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to load saved projects:', e);
-      }
-    }
+    loadSavedProjects();
   }, []);
 
-  useEffect(() => {
-    // Save projects to localStorage whenever they change
-    localStorage.setItem('studio22_saved_projects', JSON.stringify(savedProjects));
-  }, [savedProjects]);
+  const loadSavedProjects = async () => {
+    try {
+      const projects = await base44.entities.SavedProject.list();
+      const organized = {
+        inproduction: [],
+        released: [],
+        collections: [],
+        creators: [],
+        recent: [],
+        services: []
+      };
+      
+      projects.forEach(project => {
+        organized[project.section].push(project);
+      });
+      
+      setSavedProjects(organized);
+    } catch (error) {
+      console.error('Failed to load saved projects:', error);
+    }
+  };
+
+  const saveProjectToDB = async (section, projectData) => {
+    try {
+      await base44.entities.SavedProject.create({
+        section,
+        title: projectData.title,
+        description: projectData.description,
+        images: projectData.images,
+        prompt: projectData.prompt
+      });
+      await loadSavedProjects();
+    } catch (error) {
+      console.error('Failed to save project:', error);
+    }
+  };
 
   const loadContent = async () => {
     try {
@@ -206,13 +230,13 @@ export default function Home({ editMode = false }) {
                     Add Shot
                   </Button>
                   <Button
-                    onClick={() => {
-                      const section = viewingProject._section;
-                      const idx = viewingProject._editIndex;
-                      setSavedProjects(prev => ({
-                        ...prev,
-                        [section]: prev[section].map((p, i) => i === idx ? viewingProject : p)
-                      }));
+                    onClick={async () => {
+                      await base44.entities.SavedProject.update(viewingProject.id, {
+                        title: viewingProject.title,
+                        description: viewingProject.description,
+                        images: viewingProject.images
+                      });
+                      await loadSavedProjects();
                       setViewingProject(null);
                     }}
                     className="bg-green-600 hover:bg-green-700"
@@ -283,10 +307,7 @@ export default function Home({ editMode = false }) {
             <EditableSection 
               title="IN PRODUCTION" 
               onGenerate={(boxes) => {
-                setSavedProjects(prev => ({
-                  ...prev,
-                  inproduction: [...prev.inproduction, ...boxes]
-                }));
+                boxes.forEach(box => saveProjectToDB('inproduction', box));
               }}
             />
           )}
@@ -385,10 +406,7 @@ export default function Home({ editMode = false }) {
             <EditableSection 
               title="RELEASED" 
               onGenerate={(boxes) => {
-                setSavedProjects(prev => ({
-                  ...prev,
-                  released: [...prev.released, ...boxes]
-                }));
+                boxes.forEach(box => saveProjectToDB('released', box));
               }}
             />
           )}
