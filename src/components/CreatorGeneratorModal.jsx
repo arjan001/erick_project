@@ -20,9 +20,9 @@ const COUNTRIES = [
 
 export default function CreatorGeneratorModal({ onClose, onGenerated }) {
   const [config, setConfig] = useState({
-    type: 'all',
-    category: 'all',
-    country: 'all',
+    types: [],
+    categories: [],
+    countries: [],
     count: 10
   });
   const [generating, setGenerating] = useState(false);
@@ -34,29 +34,25 @@ export default function CreatorGeneratorModal({ onClose, onGenerated }) {
     setProgress('Generating creators with AI...');
 
     try {
-      const prompt = `CRITICAL: Research and find ${config.count} REAL, EXISTING European production companies/creators.
+      const prompt = `CRITICAL MISSION: Research and find ${config.count} REAL, EXISTING European production companies/creators with VERIFIED LOGOS.
 
-${config.type !== 'all' ? `Type: ${config.type}` : 'Mix of: freelance, studio, agency, team, collective'}
-${config.category !== 'all' ? `Specialty: ${config.category}` : 'Various specialties in film production'}
-${config.country !== 'all' ? `Country: ${config.country}` : 'Various European countries'}
+${config.types.length > 0 ? `Types to focus on: ${config.types.join(', ')}` : 'Mix of: freelance, studio, agency, team, collective'}
+${config.categories.length > 0 ? `Specialties to focus on: ${config.categories.join(', ')}` : 'Various specialties in film production'}
+${config.countries.length > 0 ? `Countries to focus on: ${config.countries.join(', ')}` : 'Various European countries'}
 
-MANDATORY REQUIREMENTS - DO NOT MAKE UP FAKE COMPANIES:
-1. Find REAL production companies, studios, agencies, freelancers (like Ridley Scott Associates, MJZ, Stink Films, etc.)
-2. Use their ACTUAL company names from real world
-3. Use their REAL cities and countries where they operate
-4. Find their REAL website URLs (verify they exist)
-5. logo_url: Search for and use their ACTUAL company logo. If you can find the real logo URL, use it. Otherwise, use a relevant Unsplash image that represents their type of work
-6. profile_image_url: Use high-quality production/cinematography images from Unsplash (e.g., https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=800)
-7. Award counts: Realistic (0-50 range, most companies have 0-10)
-8. Categories: 2-4 realistic specialties based on what they actually do
+ABSOLUTE REQUIREMENTS - NO FAKE DATA ALLOWED:
+1. Search the web extensively for REAL production companies (RSA Films, MJZ, Stink Films, Partizan, Somesuch, The Mill, Framestore, MPC, Iconoclast, UNIT9, MediaMonks, etc.)
+2. Use their EXACT real company names
+3. Use their ACTUAL real headquarters city and country
+4. Find and verify their REAL website (the actual domain that exists)
+5. logo_url: MANDATORY - You MUST find the company's REAL logo image URL. Search their website, LinkedIn, or other sources. DO NOT include a company if you cannot find their actual logo. Use direct image URLs (PNG, JPG, SVG) or high-quality sources.
+6. profile_image_url: Find representative images from their portfolio or use cinematic Unsplash images
+7. Award counts: Research their actual awards if possible (0-50 realistic range)
+8. Categories: Based on their actual specialties
 
-EXAMPLES OF REAL COMPANIES TO FIND:
-- Production companies like RSA Films, Partizan, Somesuch, Iconoclast
-- Studios like The Mill, Framestore, MPC
-- Agencies like UNIT9, MediaMonks
-- Freelance DOPs, directors, editors with real portfolios
+CRITICAL: If you cannot find a company's REAL logo, DO NOT include that company. Only return companies where you successfully found their actual logo.
 
-Use your web search capability to find REAL companies. Return ONLY valid JSON.`;
+Search deeply, take your time, verify logos exist. Quality over speed. Return ONLY valid JSON.`;
 
       const response = await base44.integrations.Core.InvokeLLM({
         prompt,
@@ -125,123 +121,144 @@ Use your web search capability to find REAL companies. Return ONLY valid JSON.`;
 
         <div className="space-y-4 mb-6">
           <div>
-            <label className="text-sm font-medium mb-2 block">Type</label>
+            <label className="text-sm font-medium mb-2 block">Types (Multi-select)</label>
             <div className="relative">
               <button
                 onClick={() => setOpenDropdown(openDropdown === 'type' ? null : 'type')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50 text-left"
               >
-                <span className="capitalize">
-                  {config.type === 'all' ? 'All Types (Mixed)' : config.type}
+                <span className="capitalize text-sm">
+                  {config.types.length === 0 ? 'All Types (Mixed)' : `${config.types.length} selected`}
                 </span>
                 <ChevronDown className="w-4 h-4" />
               </button>
               {openDropdown === 'type' && (
                 <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] max-h-[200px] overflow-y-auto">
-                  <button
-                    onClick={() => {
-                      setConfig({...config, type: 'all'});
-                      setOpenDropdown(null);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
-                  >
-                    All Types (Mixed)
-                  </button>
-                  {TYPES.map(t => (
-                    <button
-                      key={t}
-                      onClick={() => {
-                        setConfig({...config, type: t});
-                        setOpenDropdown(null);
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 capitalize"
-                    >
-                      {t}
-                    </button>
-                  ))}
+                  {TYPES.map(t => {
+                    const isSelected = config.types.includes(t);
+                    return (
+                      <label key={t} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {
+                            const newTypes = isSelected
+                              ? config.types.filter(x => x !== t)
+                              : [...config.types, t];
+                            setConfig({...config, types: newTypes});
+                          }}
+                          className="w-4 h-4"
+                        />
+                        <span className="capitalize text-sm">{t}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               )}
             </div>
+            {config.types.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {config.types.map(t => (
+                  <span key={t} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded capitalize">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">Category Focus</label>
+            <label className="text-sm font-medium mb-2 block">Categories (Multi-select)</label>
             <div className="relative">
               <button
                 onClick={() => setOpenDropdown(openDropdown === 'category' ? null : 'category')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50 text-left"
               >
-                <span className="capitalize">
-                  {config.category === 'all' ? 'All Categories (Mixed)' : config.category.replace('_', ' ')}
+                <span className="capitalize text-sm">
+                  {config.categories.length === 0 ? 'All Categories (Mixed)' : `${config.categories.length} selected`}
                 </span>
                 <ChevronDown className="w-4 h-4" />
               </button>
               {openDropdown === 'category' && (
                 <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] max-h-[200px] overflow-y-auto">
-                  <button
-                    onClick={() => {
-                      setConfig({...config, category: 'all'});
-                      setOpenDropdown(null);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
-                  >
-                    All Categories (Mixed)
-                  </button>
-                  {CATEGORIES.map(c => (
-                    <button
-                      key={c}
-                      onClick={() => {
-                        setConfig({...config, category: c});
-                        setOpenDropdown(null);
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 capitalize"
-                    >
-                      {c.replace('_', ' ')}
-                    </button>
-                  ))}
+                  {CATEGORIES.map(c => {
+                    const isSelected = config.categories.includes(c);
+                    return (
+                      <label key={c} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {
+                            const newCats = isSelected
+                              ? config.categories.filter(x => x !== c)
+                              : [...config.categories, c];
+                            setConfig({...config, categories: newCats});
+                          }}
+                          className="w-4 h-4"
+                        />
+                        <span className="capitalize text-sm">{c.replace('_', ' ')}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               )}
             </div>
+            {config.categories.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {config.categories.map(c => (
+                  <span key={c} className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded capitalize">
+                    {c.replace('_', ' ')}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">Country</label>
+            <label className="text-sm font-medium mb-2 block">Countries (Multi-select)</label>
             <div className="relative">
               <button
                 onClick={() => setOpenDropdown(openDropdown === 'country' ? null : 'country')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg flex items-center justify-between bg-white hover:bg-gray-50 text-left"
               >
-                <span>
-                  {config.country === 'all' ? 'All Countries (Mixed)' : config.country}
+                <span className="text-sm">
+                  {config.countries.length === 0 ? 'All Countries (Mixed)' : `${config.countries.length} selected`}
                 </span>
                 <ChevronDown className="w-4 h-4" />
               </button>
               {openDropdown === 'country' && (
                 <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] max-h-[200px] overflow-y-auto">
-                  <button
-                    onClick={() => {
-                      setConfig({...config, country: 'all'});
-                      setOpenDropdown(null);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
-                  >
-                    All Countries (Mixed)
-                  </button>
-                  {COUNTRIES.map(c => (
-                    <button
-                      key={c}
-                      onClick={() => {
-                        setConfig({...config, country: c});
-                        setOpenDropdown(null);
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
-                    >
-                      {c}
-                    </button>
-                  ))}
+                  {COUNTRIES.map(c => {
+                    const isSelected = config.countries.includes(c);
+                    return (
+                      <label key={c} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {
+                            const newCountries = isSelected
+                              ? config.countries.filter(x => x !== c)
+                              : [...config.countries, c];
+                            setConfig({...config, countries: newCountries});
+                          }}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm">{c}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               )}
             </div>
+            {config.countries.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {config.countries.map(c => (
+                  <span key={c} className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
