@@ -20,10 +20,6 @@ export default function EditableSection({ title, onGenerate }) {
     const box = boxes.find(b => b.id === boxId);
     if (!box.prompt && box.images.length === 0) return;
 
-    setBoxes(boxes.map(b => 
-      b.id === boxId ? { ...b, uploading: true, progress: 'Analyzing prompt...' } : b
-    ));
-
     try {
       // Generate 5 images for the project
       const generatedImages = [];
@@ -36,8 +32,8 @@ export default function EditableSection({ title, onGenerate }) {
       ];
 
       for (let i = 0; i < 5; i++) {
-        setBoxes(boxes.map(b => 
-          b.id === boxId ? { ...b, progress: `Generating shot ${i + 1}/5...` } : b
+        setBoxes(prevBoxes => prevBoxes.map(b => 
+          b.id === boxId ? { ...b, uploading: true, progress: `Generating shot ${i + 1}/5...`, images: generatedImages } : b
         ));
 
         const shotPrompt = `${box.prompt}\n\nSpecific shot: ${shots[i]}\n\nCinematic style. Muted colors. Practical lights. Natural grain. In-production feel.`;
@@ -50,17 +46,17 @@ export default function EditableSection({ title, onGenerate }) {
         generatedImages.push(response.url);
         
         // Update progressively
-        setBoxes(boxes.map(b => 
+        setBoxes(prevBoxes => prevBoxes.map(b => 
           b.id === boxId ? { ...b, images: [...generatedImages] } : b
         ));
       }
 
-      setBoxes(boxes.map(b => 
+      setBoxes(prevBoxes => prevBoxes.map(b => 
         b.id === boxId ? { ...b, images: generatedImages, uploading: false, progress: '' } : b
       ));
     } catch (error) {
       console.error('Failed to generate image:', error);
-      setBoxes(boxes.map(b => 
+      setBoxes(prevBoxes => prevBoxes.map(b => 
         b.id === boxId ? { ...b, uploading: false, progress: 'Error generating' } : b
       ));
     }
