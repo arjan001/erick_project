@@ -34,30 +34,33 @@ export default function CreatorGeneratorModal({ onClose, onGenerated }) {
     setProgress('Generating creators with AI...');
 
     try {
-      const prompt = `Generate ${config.count} realistic European production companies/creators for a film production directory.
+      const prompt = `CRITICAL: Research and find ${config.count} REAL, EXISTING European production companies/creators.
 
 ${config.type !== 'all' ? `Type: ${config.type}` : 'Mix of: freelance, studio, agency, team, collective'}
 ${config.category !== 'all' ? `Specialty: ${config.category}` : 'Various specialties in film production'}
 ${config.country !== 'all' ? `Country: ${config.country}` : 'Various European countries'}
 
-CRITICAL REQUIREMENTS:
-- Real-sounding company/creator names (professional, creative)
-- Realistic European cities matching the country
-- Professional website domains (use format: companyname.com or .co.uk for UK, .nl for Netherlands, etc)
-- Award counts (0-100, weighted toward lower numbers, realistic distribution)
-- 2-4 category specialties per creator from the provided list
-- Diverse mix of types and specialties
-- logo_url: MUST use REAL Unsplash photo IDs for logos, company marks, abstract minimal designs. Format: https://images.unsplash.com/photo-1234567890123-etc?q=80&w=200
-- profile_image_url: MUST use REAL Unsplash photo IDs showing actual film production, camera equipment, studios, cinematography. Format: https://images.unsplash.com/photo-1234567890123-etc?q=80&w=800
+MANDATORY REQUIREMENTS - DO NOT MAKE UP FAKE COMPANIES:
+1. Find REAL production companies, studios, agencies, freelancers (like Ridley Scott Associates, MJZ, Stink Films, etc.)
+2. Use their ACTUAL company names from real world
+3. Use their REAL cities and countries where they operate
+4. Find their REAL website URLs (verify they exist)
+5. logo_url: Search for and use their ACTUAL company logo. If you can find the real logo URL, use it. Otherwise, use a relevant Unsplash image that represents their type of work
+6. profile_image_url: Use high-quality production/cinematography images from Unsplash (e.g., https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=800)
+7. Award counts: Realistic (0-50 range, most companies have 0-10)
+8. Categories: 2-4 realistic specialties based on what they actually do
 
-IMPORTANT: Use actual Unsplash photo IDs that exist. For example:
-- Logos: photo-1599305445671-ac291c95aaa9, photo-1634942537034-2531766767d1
-- Production: photo-1492691527719-9d1e07e534b4, photo-1574267432553-4b4628081c31
+EXAMPLES OF REAL COMPANIES TO FIND:
+- Production companies like RSA Films, Partizan, Somesuch, Iconoclast
+- Studios like The Mill, Framestore, MPC
+- Agencies like UNIT9, MediaMonks
+- Freelance DOPs, directors, editors with real portfolios
 
-Return ONLY valid JSON, no markdown formatting.`;
+Use your web search capability to find REAL companies. Return ONLY valid JSON.`;
 
       const response = await base44.integrations.Core.InvokeLLM({
         prompt,
+        add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
