@@ -337,7 +337,7 @@ export default function Home({ editMode = false }) {
         </div>
       )}
       {/* Hero Section */}
-      <section className="relative bg-[#F9F9F9] py-20 overflow-hidden">
+      <section className="relative bg-[#F9F9F9] py-12 md:py-20 overflow-hidden">
         {/* Main Title */}
         <div className="text-center px-6 max-w-6xl mx-auto mb-12">
           <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6">CONNECT. CREATE.</h1>
