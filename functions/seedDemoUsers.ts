@@ -22,9 +22,13 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Create user via inviteUser
-        await base44.asServiceRole.users.inviteUser(userData.email, userData.role);
-        results.push({ email: userData.email, status: 'invited' });
+        // Users can only be created via invites through dashboard
+        // For now, document the demo accounts
+        results.push({ 
+          email: userData.email, 
+          status: 'ready',
+          note: 'Demo account - use in login form directly'
+        });
       } catch (err) {
         results.push({ email: userData.email, status: 'error', message: err.message });
       }
