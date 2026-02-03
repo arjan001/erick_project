@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
-import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, X, Instagram, Linkedin, Play } from 'lucide-react';
 import TopBanner from './components/home/TopBanner';
@@ -108,14 +107,11 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Right Actions */}
             <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent"
-                onClick={() => base44.auth.redirectToLogin()}
-              >
-                Login
-              </Button>
+              <Link to={createPageUrl('Login')}>
+                <Button variant="ghost" size="sm" className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent">
+                  Login
+                </Button>
+              </Link>
               <button
                 onClick={() => setExploreOpen(true)}
                 className="px-4 py-2 bg-black text-white hover:bg-gray-800 font-bold text-sm rounded-md transition-colors"
