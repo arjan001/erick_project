@@ -38,7 +38,7 @@ export default function ArtistSidebar() {
           return (
             <Link
               key={item.href}
-              to={item.href}
+              to={createPageUrl(item.href)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 isActive
                   ? 'bg-white/10 text-white'
