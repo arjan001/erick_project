@@ -192,7 +192,7 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* Main Content */}
-      <main className={user ? 'pt-0 pb-24' : 'pt-[100px] pb-24'}>
+      <main className={user ? 'pl-20 pt-0 pb-24' : 'pt-[100px] pb-24'}>
         {React.cloneElement(children, { editMode })}
       </main>
 
