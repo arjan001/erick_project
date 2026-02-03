@@ -17,7 +17,6 @@ export default function ApplyTeam() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [teamData, setTeamData] = useState({
-    team_code: '',
     contact_email: '',
     contact_name: '',
     city: '',
@@ -36,9 +35,9 @@ export default function ApplyTeam() {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return teamData.team_code && teamData.contact_email && teamData.city && teamData.country;
-      case 2: return teamData.specialties.length > 0;
-      case 3: return teamData.portfolio_clips.length > 0;
+      case 1: return teamData.contact_name && teamData.contact_email && teamData.city && teamData.country && teamData.team_size;
+      case 2: return true; // Services optional
+      case 3: return true; // Portfolio optional, allow draft save
       default: return true;
     }
   };
@@ -57,11 +56,39 @@ export default function ApplyTeam() {
     }
   };
 
+  const generateTeamCode = () => {
+    const locations = ['AMS', 'BCN', 'BER', 'LON', 'PAR', 'MIL', 'AMS', 'VIE'];
+    const specialties = ['PROD', 'POST', 'VFX', 'FULL'];
+    const location = locations[Math.floor(Math.random() * locations.length)];
+    const specialty = specialties[Math.floor(Math.random() * specialties.length)];
+    const num = String(Math.floor(Math.random() * 100) + 1).padStart(2, '0');
+    return `${location} ${specialty} ${num}`;
+  };
+
+  const handleSaveDraft = async () => {
+    try {
+      await base44.auth.updateMe({
+        team_draft: teamData
+      });
+      alert('Draft saved. You can come back and complete it anytime.');
+    } catch (error) {
+      alert('Error saving draft. Please try again.');
+      console.error(error);
+    }
+  };
+
   const handleSubmit = async () => {
+    if (!teamData.contact_name || !teamData.contact_email || !teamData.city || !teamData.country || !teamData.team_size) {
+      alert('Please fill in team name, email, location, and size to submit.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      const teamCode = generateTeamCode();
       await base44.entities.Team.create({
         ...teamData,
+        team_code: teamCode,
         status: 'pending',
         availability: 'available'
       });
@@ -75,7 +102,7 @@ export default function ApplyTeam() {
   };
 
   if (submitted) {
-    return <ApplicationSuccess type="team" name={teamData.team_code} />;
+    return <ApplicationSuccess type="team" name={teamData.contact_name} />;
   }
 
   const CurrentStepComponent = STEPS[currentStep - 1].component;
@@ -124,16 +151,26 @@ export default function ApplyTeam() {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleBack}
-            disabled={currentStep === 1}
-            className="border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back
-          </Button>
+          <div className="flex gap-2 order-2 sm:order-1">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleBack}
+              disabled={currentStep === 1}
+              className="border-gray-300 hover:bg-gray-50"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleSaveDraft}
+              className="border-gray-300 hover:bg-gray-50"
+            >
+              Save Draft
+            </Button>
+          </div>
 
           {currentStep < STEPS.length ? (
             <Button
@@ -149,7 +186,7 @@ export default function ApplyTeam() {
             <Button
               size="lg"
               onClick={handleSubmit}
-              disabled={!canProceed() || isSubmitting}
+              disabled={isSubmitting}
               className="bg-black text-white hover:bg-gray-800 order-1 sm:order-2"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Application'}

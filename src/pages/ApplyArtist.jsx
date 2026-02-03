@@ -9,10 +9,9 @@ import ArtistStepDetails from '../components/artist/ArtistStepDetails';
 import ApplicationSuccess from '../components/ApplicationSuccess';
 
 const STEPS = [
-  { id: 1, name: 'Role', component: ArtistStepRole },
-  { id: 2, name: 'Questions', component: ArtistStepQuestions },
+  { id: 1, name: 'Personal', component: ArtistStepRole },
+  { id: 2, name: 'Skills', component: ArtistStepQuestions },
   { id: 3, name: 'Portfolio', component: ArtistStepPortfolio },
-  { id: 4, name: 'Details', component: ArtistStepDetails },
 ];
 
 export default function ApplyArtist() {
@@ -42,10 +41,9 @@ export default function ApplyArtist() {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return artistData.role !== '';
-      case 2: return Object.keys(artistData.ai_questionnaire_response || {}).length > 0;
-      case 3: return artistData.portfolio_clips.length > 0;
-      case 4: return artistData.email !== '' && artistData.full_name !== '';
+      case 1: return artistData.role !== '' && artistData.full_name !== '' && artistData.based_in_country !== '';
+      case 2: return true; // Skills optional
+      case 3: return true; // Portfolio optional, allow draft save
       default: return true;
     }
   };
@@ -64,7 +62,24 @@ export default function ApplyArtist() {
     }
   };
 
+  const handleSaveDraft = async () => {
+    try {
+      await base44.auth.updateMe({
+        artist_draft: artistData
+      });
+      alert('Draft saved. You can come back and complete it anytime.');
+    } catch (error) {
+      alert('Error saving draft. Please try again.');
+      console.error(error);
+    }
+  };
+
   const handleSubmit = async () => {
+    if (!artistData.email || !artistData.full_name || !artistData.role || !artistData.based_in_country) {
+      alert('Please fill in name, email, role, and country to submit.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await base44.entities.Artist.create({
@@ -131,16 +146,26 @@ export default function ApplyArtist() {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleBack}
-            disabled={currentStep === 1}
-            className="border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back
-          </Button>
+          <div className="flex gap-2 order-2 sm:order-1">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleBack}
+              disabled={currentStep === 1}
+              className="border-gray-300 hover:bg-gray-50"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleSaveDraft}
+              className="border-gray-300 hover:bg-gray-50"
+            >
+              Save Draft
+            </Button>
+          </div>
 
           {currentStep < STEPS.length ? (
             <Button
@@ -156,7 +181,7 @@ export default function ApplyArtist() {
             <Button
               size="lg"
               onClick={handleSubmit}
-              disabled={!canProceed() || isSubmitting}
+              disabled={isSubmitting}
               className="bg-black text-white hover:bg-gray-800 order-1 sm:order-2"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Application'}
