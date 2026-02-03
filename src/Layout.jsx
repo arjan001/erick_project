@@ -53,8 +53,8 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className={`min-h-screen bg-white text-[#212121] ${exploreOpen ? 'overflow-hidden' : ''}`}>
-      {/* Top Banner */}
-      <TopBanner />
+          {/* Top Banner */}
+          {!user && <TopBanner />}
 
       {/* Main Header (Awwwards Style) */}
       <header className={`fixed top-[40px] left-0 right-0 z-[40] transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
