@@ -563,12 +563,68 @@ export default function Home({ editMode = false }) {
           {editMode && (
             <EditableSection 
               title="COLLECTIONS" 
-              onGenerate={(boxes) => console.log('Generated:', boxes)}
+              onGenerate={(boxes) => {
+                boxes.forEach(box => saveProjectToDB('collections', box));
+              }}
             />
           )}
 
+          {savedProjects.collections.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-lg font-bold mb-4 text-green-600">✓ Saved Projects ({savedProjects.collections.length})</h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                {savedProjects.collections.map((project, idx) => (
+                  <SavedProjectCard
+                    key={idx}
+                    project={project}
+                    editMode={editMode}
+                    onEdit={() => setViewingProject({ ...project, _editIndex: idx, _section: 'collections' })}
+                    onView={() => setViewingProject(project)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {collections.map((collection, i) => (
+            {[
+              {
+                title: 'Automotive Excellence',
+                description: 'High-octane car commercials with dynamic camera work, precision lighting, and cinematic storytelling.',
+                image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1200',
+                count: 24
+              },
+              {
+                title: 'Fashion & Lifestyle',
+                description: 'Elegant fashion films showcasing collections through artful composition and sophisticated visual narratives.',
+                image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200',
+                count: 31
+              },
+              {
+                title: 'Tech & Innovation',
+                description: 'Sleek product reveals and tech launches with modern aesthetics and cutting-edge visual effects.',
+                image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200',
+                count: 18
+              },
+              {
+                title: 'Food & Beverage',
+                description: 'Mouthwatering culinary cinematography with macro shots, steam effects, and appetizing color grading.',
+                image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200',
+                count: 27
+              },
+              {
+                title: 'Documentary Stories',
+                description: 'Authentic human stories captured through intimate interviews, natural lighting, and real-world settings.',
+                image: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1200',
+                count: 15
+              },
+              {
+                title: 'Music Videos',
+                description: 'Bold artistic expressions combining narrative storytelling with dynamic performance cinematography.',
+                image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=1200',
+                count: 22
+              }
+            ].map((collection, i) => (
               <Link 
                 key={i}
                 to={createPageUrl('Services')}
@@ -576,20 +632,20 @@ export default function Home({ editMode = false }) {
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img 
-                    src={`https://images.unsplash.com/photo-${['1574267432553', '1492691527719', '1516035069371', '1485846234645', '1579547621113', '1536240478700'][i]}-c130c5abfa72?q=80&w=800`}
+                    src={collection.image}
                     alt={collection.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  
+
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                     <div className="text-xs font-bold uppercase tracking-widest mb-2 text-gray-300">
-                      {collection.project_count} Productions
+                      {collection.count} Productions
                     </div>
                     <h3 className="text-xl font-semibold uppercase tracking-tight">{collection.title}</h3>
                   </div>
                 </div>
-                
+
                 <div className="p-5">
                   <p className="text-sm text-gray-600 leading-relaxed">{collection.description}</p>
                 </div>
