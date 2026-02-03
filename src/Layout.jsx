@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Search, X } from 'lucide-react';
+import { ChevronDown, Search, X, Instagram, Linkedin, Play } from 'lucide-react';
 import TopBanner from './components/home/TopBanner';
 import NewProjectForm from './components/NewProjectForm';
 
@@ -79,13 +79,14 @@ export default function Layout({ children, currentPageName }) {
                         className="flex items-center gap-1 text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors"
                       >
                         Backed <ChevronDown className="w-3 h-3" />
+                        <span className="inline-block w-1.5 h-1.5 bg-amber-600 rounded-sm"></span>
                       </button>
                       {academyOpen && (
                         <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
-                          <Link to={createPageUrl('Home')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                          <Link to={createPageUrl('BackedProjects')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                             Projects Seeking Backing
                           </Link>
-                          <Link to={createPageUrl('Services')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                          <Link to={createPageUrl('HowBackingWorks')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                             How Backing Works
                           </Link>
                         </div>
@@ -110,9 +111,11 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Right Actions */}
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent">
-                Login
-              </Button>
+              <Link to={createPageUrl('Login')}>
+                <Button variant="ghost" size="sm" className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent">
+                  Login
+                </Button>
+              </Link>
               <button
                 onClick={() => setExploreOpen(true)}
                 className="px-4 py-2 bg-black text-white hover:bg-gray-800 font-bold text-sm rounded-md transition-colors"
@@ -255,7 +258,7 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   key={item.name}
                   to={createPageUrl(item.href)}
-                  className={`px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 ${
+                  className={`px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 relative ${
                     item.highlight 
                       ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]' 
                       : isActive
@@ -267,6 +270,15 @@ export default function Layout({ children, currentPageName }) {
                 </Link>
               );
             })}
+
+            <div className="h-6 w-px bg-gray-600 mx-1 md:mx-2 flex-shrink-0" />
+
+            <Link
+              to={createPageUrl('Admin')}
+              className="px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 text-gray-400 hover:text-white hover:bg-white/5"
+            >
+              Admin
+            </Link>
           </div>
         </div>
       </nav>
@@ -278,15 +290,15 @@ export default function Layout({ children, currentPageName }) {
             <div>
               <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Studio22</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl('Services')} className="hover:text-white">About the Network</Link></li>
-                <li><Link to={createPageUrl('Services')} className="hover:text-white">How It Works</Link></li>
-                <li><Link to={createPageUrl('Home')} className="hover:text-white">Contact</Link></li>
+                <li><Link to={createPageUrl('Home')} className="hover:text-white">Platform</Link></li>
+                <li><Link to={createPageUrl('Services')} className="hover:text-white">About</Link></li>
+                <li><Link to={createPageUrl('BackedProjects')} className="hover:text-white">Backed Projects</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">For Clients</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl('SubmitProject')} className="hover:text-white">Post a Project (Free)</Link></li>
+                <li><Link to={createPageUrl('SubmitProject')} className="hover:text-white">Post a Project</Link></li>
                 <li><Link to={createPageUrl('Home')} className="hover:text-white">Browse Creators</Link></li>
                 <li><Link to={createPageUrl('Services')} className="hover:text-white">How It Works</Link></li>
               </ul>
@@ -296,7 +308,7 @@ export default function Layout({ children, currentPageName }) {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to={createPageUrl('ApplyArtist')} className="hover:text-white">Join as Creator</Link></li>
                 <li><Link to={createPageUrl('Home')} className="hover:text-white">Browse Projects</Link></li>
-                <li><Link to={createPageUrl('Services')} className="hover:text-white">Membership Plans</Link></li>
+                <li><Link to={createPageUrl('Work')} className="hover:text-white">Showcase Work</Link></li>
               </ul>
             </div>
             <div>
@@ -304,15 +316,14 @@ export default function Layout({ children, currentPageName }) {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to={createPageUrl('ApplyTeam')} className="hover:text-white">Join as Team</Link></li>
                 <li><Link to={createPageUrl('Home')} className="hover:text-white">Browse Projects</Link></li>
-                <li><Link to={createPageUrl('Services')} className="hover:text-white">Team Subscriptions</Link></li>
+                <li><Link to={createPageUrl('Services')} className="hover:text-white">Services</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Showcase</h3>
+              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Backing</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl('Work')} className="hover:text-white">Featured Work</Link></li>
-                <li><Link to={createPageUrl('Home')} className="hover:text-white">Success Stories</Link></li>
-                <li><Link to={createPageUrl('Work')} className="hover:text-white">Project Gallery</Link></li>
+                <li><Link to={createPageUrl('BackedProjects')} className="hover:text-white">Projects Seeking Backing</Link></li>
+                <li><Link to={createPageUrl('HowBackingWorks')} className="hover:text-white">How Backing Works</Link></li>
               </ul>
             </div>
             <div>
@@ -320,20 +331,25 @@ export default function Layout({ children, currentPageName }) {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
                 <li><a href="#" className="hover:text-white">Terms & Conditions</a></li>
-                <li><a href="#" className="hover:text-white">Cookies</a></li>
                 <li><a href="#" className="hover:text-white">Imprint</a></li>
               </ul>
             </div>
           </div>
-          
-          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+
+          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="text-sm text-gray-400">
               © 2026 Studio22. All rights reserved.
             </div>
-            <div className="flex gap-6 text-sm text-gray-400">
-              <a href="#" className="hover:text-white">Instagram</a>
-              <a href="#" className="hover:text-white">Vimeo</a>
-              <a href="#" className="hover:text-white">LinkedIn</a>
+            <div className="flex gap-8">
+              <a href="#" className="hover:text-white transition-colors">
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a href="#" className="hover:text-white transition-colors">
+                <Play className="w-5 h-5" />
+              </a>
+              <a href="#" className="hover:text-white transition-colors">
+                <Linkedin className="w-5 h-5" />
+              </a>
             </div>
           </div>
         </div>
