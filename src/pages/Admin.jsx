@@ -11,7 +11,10 @@ export default function Admin() {
   const [projects, setProjects] = useState([]);
   const [artists, setArtists] = useState([]);
   const [teams, setTeams] = useState([]);
+  const [tickerEntries, setTickerEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [newTickerText, setNewTickerText] = useState('');
+  const [newTickerAmount, setNewTickerAmount] = useState('');
 
   useEffect(() => {
     const checkAdminAndFetch = async () => {
@@ -26,15 +29,17 @@ export default function Admin() {
         }
 
         // Fetch data
-        const [projectsList, artistsList, teamsList] = await Promise.all([
+        const [projectsList, artistsList, teamsList, tickerList] = await Promise.all([
           base44.entities.Project.list(),
           base44.entities.Artist.list(),
-          base44.entities.Team.list()
+          base44.entities.Team.list(),
+          base44.entities.TickerEntry.list()
         ]);
 
         setProjects(projectsList);
         setArtists(artistsList);
         setTeams(teamsList);
+        setTickerEntries(tickerList.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)));
       } catch (error) {
         console.error('Admin access denied:', error);
         window.location.href = '/';
@@ -101,11 +106,12 @@ export default function Admin() {
         <p className="text-gray-600 mb-8">Manage projects, creators, and teams. Approve backing initiatives.</p>
 
         <Tabs defaultValue="projects" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="projects">Projects ({projects.length})</TabsTrigger>
             <TabsTrigger value="backed">Backed ({backedProjects.length})</TabsTrigger>
             <TabsTrigger value="creators">Creators ({pendingArtists.length})</TabsTrigger>
             <TabsTrigger value="teams">Teams ({pendingTeams.length})</TabsTrigger>
+            <TabsTrigger value="ticker">Ticker</TabsTrigger>
           </TabsList>
 
           {/* Projects Tab */}
@@ -260,6 +266,121 @@ export default function Admin() {
                 </Card>
               ))
             )}
+          {/* Ticker Tab */}
+          <TabsContent value="ticker" className="space-y-4">
+            <div className="flex gap-2 mb-6">
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-2">Message</label>
+                <input
+                  type="text"
+                  placeholder="Documentary project received new cultural backing"
+                  value={newTickerText}
+                  onChange={(e) => setNewTickerText(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                />
+              </div>
+              <div className="w-32">
+                <label className="block text-sm font-medium mb-2">Amount (optional)</label>
+                <input
+                  type="text"
+                  placeholder="€120k"
+                  value={newTickerAmount}
+                  onChange={(e) => setNewTickerAmount(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                />
+              </div>
+              <div className="flex items-end">
+                <Button
+                  onClick={async () => {
+                    if (!newTickerText.trim()) return;
+                    try {
+                      await base44.entities.TickerEntry.create({
+                        text: newTickerText,
+                        amount: newTickerAmount || null,
+                        status: 'live',
+                        display_order: tickerEntries.length
+                      });
+                      setNewTickerText('');
+                      setNewTickerAmount('');
+                      // Refresh
+                      const updated = await base44.entities.TickerEntry.list();
+                      setTickerEntries(updated.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)));
+                    } catch (error) {
+                      console.error('Error creating ticker entry:', error);
+                    }
+                  }}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Add Entry
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-semibold text-black">Live Entries</h3>
+              {tickerEntries.filter(t => t.status === 'live').length === 0 ? (
+                <p className="text-sm text-gray-500">No live ticker entries yet.</p>
+              ) : (
+                tickerEntries
+                  .filter(t => t.status === 'live')
+                  .map(entry => (
+                    <div key={entry.id} className="p-3 bg-gray-50 rounded border border-gray-200 flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-black">{entry.text}</p>
+                        <p className="text-xs text-gray-500">{entry.amount ? `Amount: ${entry.amount}` : 'No amount'} • Order: {entry.display_order}</p>
+                      </div>
+                      <Button
+                        onClick={async () => {
+                          try {
+                            await base44.entities.TickerEntry.update(entry.id, { status: 'draft' });
+                            const updated = await base44.entities.TickerEntry.list();
+                            setTickerEntries(updated.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)));
+                          } catch (error) {
+                            console.error('Error updating entry:', error);
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Hide
+                      </Button>
+                    </div>
+                  ))
+              )}
+            </div>
+
+            <div className="space-y-2 mt-6">
+              <h3 className="font-semibold text-black">Draft Entries</h3>
+              {tickerEntries.filter(t => t.status === 'draft').length === 0 ? (
+                <p className="text-sm text-gray-500">No draft entries.</p>
+              ) : (
+                tickerEntries
+                  .filter(t => t.status === 'draft')
+                  .map(entry => (
+                    <div key={entry.id} className="p-3 bg-gray-50 rounded border border-gray-200 flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-600">{entry.text}</p>
+                        <p className="text-xs text-gray-500">{entry.amount ? `Amount: ${entry.amount}` : 'No amount'}</p>
+                      </div>
+                      <Button
+                        onClick={async () => {
+                          try {
+                            await base44.entities.TickerEntry.update(entry.id, { status: 'live' });
+                            const updated = await base44.entities.TickerEntry.list();
+                            setTickerEntries(updated.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)));
+                          } catch (error) {
+                            console.error('Error updating entry:', error);
+                          }
+                        }}
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Publish
+                      </Button>
+                    </div>
+                  ))
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </div>
