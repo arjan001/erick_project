@@ -843,7 +843,7 @@ export default function Home({ editMode = false }) {
       </section>
 
       {/* Services Section */}
-      <section className="py-20 px-6 bg-[#FAFAFA]">
+      <section className="py-12 md:py-20 px-4 md:px-6 bg-[#FAFAFA]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-display uppercase mb-6 tracking-tighter">
