@@ -66,6 +66,9 @@ import Work from './pages/Work';
 import ArtistDashboard from './pages/ArtistDashboard';
 import JobBoard from './pages/JobBoard';
 import JobApplications from './pages/JobApplications';
+import JobInvitations from './pages/JobInvitations';
+import Messages from './pages/Messages';
+import ArtistProfile from './pages/ArtistProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -89,6 +92,9 @@ export const PAGES = {
     "ArtistDashboard": ArtistDashboard,
     "JobBoard": JobBoard,
     "JobApplications": JobApplications,
+    "JobInvitations": JobInvitations,
+    "Messages": Messages,
+    "ArtistProfile": ArtistProfile,
 }
 
 export const pagesConfig = {
