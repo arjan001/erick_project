@@ -3,12 +3,93 @@ import { X, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PRODUCTION_POSITIONS } from './positions';
 
+const PROJECT_TYPES = [
+  'Commercial',
+  'E-Commerce Shoot',
+  'Music Video',
+  'Documentary',
+  'Short Film',
+  'Feature Film',
+  'Corporate Video',
+  'Social Media Content',
+  'Branded Content',
+  'Web Series',
+  'TV Series',
+  'Pilot Episode',
+  'Reality TV',
+  'Live Event Coverage',
+  'Concert Film',
+  'Fashion Film',
+  'Behind The Scenes',
+  'Product Photography',
+  'Editorial Photography',
+  'Wedding Film',
+  'Animation',
+  '3D Animation',
+  'Motion Graphics',
+  'VFX Heavy Project',
+  'Green Screen Shoot',
+  'Studio Shoot',
+  'Location Shoot',
+  'Drone Footage',
+  'Underwater Shoot',
+  'Time-Lapse',
+  'Stop Motion',
+  'Experimental Film',
+  'Art Installation',
+  'Theater Recording',
+  'Podcast Video',
+  'Educational Content',
+  'Training Video',
+  'Explainer Video',
+  'Testimonial Video',
+  'Interview',
+  'Q&A Session',
+];
+
+const SKILLS_DATABASE = [
+  // Camera Equipment
+  'ARRI Alexa', 'RED Camera', 'Sony FX', 'Canon Cinema', 'Blackmagic', 
+  'Panasonic Lumix', 'DJI Ronin', 'Steadicam', 'Drone Operation', 'GoPro',
+  
+  // Lenses
+  'Zeiss', 'Cooke', 'Sigma Cine', 'Canon L Series', 'Anamorphic Lenses',
+  
+  // Lighting
+  'ARRI Lighting', 'Aputure', 'Kino Flo', 'LED Panels', 'HMI Lighting',
+  'Natural Light', 'Studio Lighting', 'Practical Lighting', 'RGB Lighting',
+  
+  // Software
+  'Adobe Premiere', 'Final Cut Pro', 'DaVinci Resolve', 'After Effects',
+  'Photoshop', 'Illustrator', 'Cinema 4D', 'Blender', 'Maya', 'Houdini',
+  'Nuke', 'Flame', 'Avid', 'Pro Tools', 'Logic Pro', 'Ableton',
+  
+  // Techniques
+  'Color Grading', 'VFX', 'Motion Graphics', 'Sound Design', 'Compositing',
+  'Rotoscoping', 'Tracking', 'Green Screen', 'Time-Lapse', 'Slow Motion',
+  
+  // Styles
+  'Cinematic', 'Documentary Style', 'Handheld', 'Gimbal Work', 'Aerial',
+  'Product Photography', 'Portrait Photography', 'Lifestyle', 'Fashion',
+  
+  // Production Skills
+  'Script Breakdown', 'Storyboarding', 'Shot Listing', 'Casting',
+  'Location Scouting', 'Production Design', 'Set Design', 'Art Direction',
+  'Costume Design', 'Makeup', 'Hair Styling', 'Prop Making',
+  
+  // Technical
+  '4K', '6K', '8K', 'HDR', 'Log Profiles', 'LUTs', 'RAW Recording',
+  'ProRes', 'H.264', 'H.265', 'Multicam', 'Timecode Sync',
+];
+
 export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     position: '',
     location: '',
     dates: '',
+    date_from: '',
+    date_till: '',
     project_type: '',
     title: '',
     description: '',
@@ -21,7 +102,10 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
   const [positionSearch, setPositionSearch] = useState('');
   const [showPositionDropdown, setShowPositionDropdown] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [showProjectTypeDropdown, setShowProjectTypeDropdown] = useState(false);
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [skillSearch, setSkillSearch] = useState('');
 
   if (!isOpen) return null;
 
@@ -86,21 +170,21 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                 <p className="mb-6">I'm looking to hire:</p>
                 
                 {/* Position field with autocomplete */}
-                <div className="mb-4 relative">
-                  <div className="text-4xl font-light mb-2">
-                    a <span className="text-purple-400">Position</span>
+                <div className="mb-6 relative">
+                  <div className="text-4xl font-light flex items-center gap-3">
+                    a 
+                    <input
+                      type="text"
+                      value={positionSearch}
+                      onChange={(e) => {
+                        setPositionSearch(e.target.value);
+                        setShowPositionDropdown(true);
+                      }}
+                      onFocus={() => setShowPositionDropdown(true)}
+                      placeholder="Position"
+                      className="flex-1 px-3 py-1 border-b-2 border-gray-400 font-bold text-gray-700 focus:border-gray-600 outline-none bg-transparent"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    value={positionSearch}
-                    onChange={(e) => {
-                      setPositionSearch(e.target.value);
-                      setShowPositionDropdown(true);
-                    }}
-                    onFocus={() => setShowPositionDropdown(true)}
-                    placeholder="Type to search positions..."
-                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-sm focus:border-purple-400 outline-none"
-                  />
                   {showPositionDropdown && filteredPositions.length > 0 && (
                     <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
                       {filteredPositions.map((pos) => (
@@ -121,62 +205,89 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                 </div>
 
                 {/* Location field */}
-                <div className="mb-4">
-                  <div className="text-4xl font-light mb-2">
-                    in <span className="text-purple-400">Location</span>
+                <div className="mb-6 relative">
+                  <div className="text-4xl font-light flex items-center gap-3">
+                    in 
+                    <input
+                      type="text"
+                      value={formData.location}
+                      onChange={async (e) => {
+                        const query = e.target.value;
+                        setFormData({ ...formData, location: query });
+                        if (query.length > 2) {
+                          try {
+                            const response = await fetch(`https://nominatim.openstreetmap.org/search?city=${query}&format=json&limit=5`);
+                            const data = await response.json();
+                            setLocationSuggestions(data.filter(item => item.type === 'city' || item.type === 'administrative'));
+                          } catch (err) {
+                            console.error('Location search error:', err);
+                          }
+                        }
+                      }}
+                      onFocus={() => setShowLocationDropdown(true)}
+                      placeholder="Location"
+                      className="flex-1 px-3 py-1 border-b-2 border-gray-400 font-bold text-gray-700 focus:border-gray-600 outline-none bg-transparent"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="Brussels, BE"
-                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-sm focus:border-purple-400 outline-none"
-                  />
+                  {showLocationDropdown && locationSuggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                      {locationSuggestions.map((loc, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setFormData({ ...formData, location: loc.display_name });
+                            setShowLocationDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 text-sm"
+                        >
+                          {loc.display_name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Dates field */}
-                <div className="mb-4 relative">
-                  <div className="text-4xl font-light mb-2">
-                    on <span className="text-purple-400">Dates</span>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={formData.dates}
-                      onChange={(e) => setFormData({ ...formData, dates: e.target.value })}
-                      onClick={() => setShowDatePicker(!showDatePicker)}
-                      placeholder="02/11"
-                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-sm focus:border-purple-400 outline-none cursor-pointer"
-                      readOnly
-                    />
-                    <CalendarIcon className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
+                <div className="mb-6 relative">
+                  <div className="text-4xl font-light flex items-center gap-3">
+                    on 
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        value={formData.dates}
+                        onChange={(e) => setFormData({ ...formData, dates: e.target.value })}
+                        onClick={() => setShowDatePicker(!showDatePicker)}
+                        placeholder="Dates"
+                        className="w-full px-3 py-1 border-b-2 border-gray-400 font-bold text-gray-700 focus:border-gray-600 outline-none cursor-pointer bg-transparent"
+                        readOnly
+                      />
+                      <CalendarIcon className="absolute right-0 top-1 w-5 h-5 text-gray-400 pointer-events-none" />
+                    </div>
                   </div>
                   {showDatePicker && (
-                    <div className="absolute z-10 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
-                      <div className="text-center mb-4">
-                        <h3 className="font-semibold">February 2026</h3>
+                    <div className="absolute z-10 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 w-96">
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium mb-2">From</label>
+                        <input
+                          type="date"
+                          value={formData.date_from}
+                          onChange={(e) => setFormData({ ...formData, date_from: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                        />
                       </div>
-                      <div className="grid grid-cols-7 gap-2 text-center text-sm">
-                        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
-                          <div key={day} className="font-semibold text-gray-600">{day}</div>
-                        ))}
-                        {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
-                          <button
-                            key={day}
-                            onClick={() => {
-                              setFormData({ ...formData, dates: `02/${day.toString().padStart(2, '0')}` });
-                              setShowDatePicker(false);
-                            }}
-                            className="w-8 h-8 hover:bg-purple-100 rounded-full flex items-center justify-center"
-                          >
-                            {day}
-                          </button>
-                        ))}
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium mb-2">Till</label>
+                        <input
+                          type="date"
+                          value={formData.date_till}
+                          onChange={(e) => setFormData({ ...formData, date_till: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                        />
                       </div>
-                      <div className="mt-4 flex gap-2">
+                      <div className="flex gap-2">
                         <button
                           onClick={() => {
-                            setFormData({ ...formData, dates: 'Dates are flexible' });
+                            setFormData({ ...formData, dates: 'Dates are flexible', date_from: '', date_till: '' });
                             setShowDatePicker(false);
                           }}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
@@ -184,7 +295,12 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                           Dates are flexible
                         </button>
                         <button
-                          onClick={() => setShowDatePicker(false)}
+                          onClick={() => {
+                            if (formData.date_from && formData.date_till) {
+                              setFormData({ ...formData, dates: `${formData.date_from} - ${formData.date_till}` });
+                            }
+                            setShowDatePicker(false);
+                          }}
                           className="px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800"
                         >
                           Done
@@ -195,25 +311,37 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                 </div>
 
                 {/* Project type field */}
-                <div className="mb-4">
-                  <div className="text-4xl font-light mb-2">
-                    for <span className="text-purple-400">Project type</span>
+                <div className="mb-6 relative">
+                  <div className="text-4xl font-light flex items-center gap-3">
+                    for 
+                    <input
+                      type="text"
+                      value={formData.project_type}
+                      onChange={(e) => {
+                        setFormData({ ...formData, project_type: e.target.value });
+                        setShowProjectTypeDropdown(true);
+                      }}
+                      onFocus={() => setShowProjectTypeDropdown(true)}
+                      placeholder="Project type"
+                      className="flex-1 px-3 py-1 border-b-2 border-gray-400 font-bold text-gray-700 focus:border-gray-600 outline-none bg-transparent"
+                    />
                   </div>
-                  <div className="space-y-2">
-                    {['Commercial', 'E-Commerce Shoot', 'Music Video', 'Documentary', 'Short Film', 'Feature Film'].map((type) => (
+                  {showProjectTypeDropdown && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                      {PROJECT_TYPES.filter(type => type.toLowerCase().includes(formData.project_type.toLowerCase())).map((type) => (
                       <button
                         key={type}
-                        onClick={() => setFormData({ ...formData, project_type: type })}
-                        className={`w-full text-left px-4 py-3 border-2 rounded-lg text-sm transition-colors ${
-                          formData.project_type === type
-                            ? 'border-purple-400 bg-purple-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
+                        onClick={() => {
+                          setFormData({ ...formData, project_type: type });
+                          setShowProjectTypeDropdown(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 text-sm"
                       >
                         {type}
                       </button>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Description */}
@@ -328,21 +456,41 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                 </div>
               </div>
 
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium mb-2">Skills (optional)</label>
                 <input
                   type="text"
-                  placeholder="Add skills..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:border-purple-400 outline-none"
+                  value={skillSearch}
+                  onChange={(e) => setSkillSearch(e.target.value)}
+                  placeholder="Type to search skills (e.g., Blender, ARRI Alexa, After Effects)..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:border-gray-400 outline-none"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && e.target.value) {
                       setFormData({ ...formData, skills: [...formData.skills, e.target.value] });
-                      e.target.value = '';
+                      setSkillSearch('');
                     }
                   }}
                 />
+                {skillSearch && SKILLS_DATABASE.filter(s => s.toLowerCase().includes(skillSearch.toLowerCase())).length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {SKILLS_DATABASE.filter(s => s.toLowerCase().includes(skillSearch.toLowerCase())).slice(0, 10).map((skill) => (
+                      <button
+                        key={skill}
+                        onClick={() => {
+                          if (!formData.skills.includes(skill)) {
+                            setFormData({ ...formData, skills: [...formData.skills, skill] });
+                          }
+                          setSkillSearch('');
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 text-sm"
+                      >
+                        {skill}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {formData.skills.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-2 mt-3">
                     {formData.skills.map((skill, idx) => (
                       <span key={idx} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
                         {skill}
