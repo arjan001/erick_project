@@ -223,12 +223,12 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* Main Content */}
-      <main className={user ? 'pt-0 pb-24' : 'pt-[100px] pb-24'}>
+      <main className={shouldHideMenus ? 'pt-0 pb-24' : 'pt-[100px] pb-24'}>
         {React.cloneElement(children, { editMode })}
       </main>
 
         {/* Bottom Floating Navigation */}
-        {!user && (<nav className="fixed bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-slideUp">
+        {!shouldHideMenus && (<nav className="fixed bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-slideUp">
         <div className="bg-[#3a3a3a] rounded-2xl shadow-2xl backdrop-blur-sm border border-white/10">
           <div className="flex items-center gap-0 px-2 md:px-3 py-2.5 overflow-x-auto scrollbar-hide">
             {currentPageName === 'Home' ? (
