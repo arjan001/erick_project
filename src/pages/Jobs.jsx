@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '../components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, DollarSign, ChevronDown } from 'lucide-react';
+import JobPostingModal from '../components/JobPostingModal';
 
 export default function Jobs() {
   const [jobs, setJobs] = useState([]);
@@ -18,6 +19,7 @@ export default function Jobs() {
     skills: null,
     paid: null
   });
+  const [showJobModal, setShowJobModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -60,6 +62,20 @@ export default function Jobs() {
       alert('Application submitted!');
     } catch (err) {
       console.error('Error applying:', err);
+    }
+  };
+
+  const handleJobSubmit = async (jobData) => {
+    try {
+      await base44.entities.Job.create(jobData);
+      setShowJobModal(false);
+      // Refresh jobs list
+      const allJobs = await base44.entities.Job.list();
+      setJobs(allJobs.filter(j => j.status === 'open'));
+      alert('Job posted successfully!');
+    } catch (err) {
+      console.error('Error posting job:', err);
+      alert('Failed to post job');
     }
   };
 
@@ -112,7 +128,10 @@ export default function Jobs() {
                 Invitations
               </button>
             </div>
-            <Button className="bg-black text-white hover:bg-gray-800 font-semibold px-6 py-2">
+            <Button 
+              onClick={() => setShowJobModal(true)}
+              className="bg-black text-white hover:bg-gray-800 font-semibold px-6 py-2"
+            >
               Post a job
             </Button>
           </div>
@@ -267,6 +286,13 @@ export default function Jobs() {
           </div>
         )}
       </main>
+
+      <JobPostingModal
+        isOpen={showJobModal}
+        onClose={() => setShowJobModal(false)}
+        onSubmit={handleJobSubmit}
+        user={user}
+      />
     </div>
   );
 }
