@@ -19,27 +19,15 @@ export default function Layout({ children, currentPageName }) {
     const storedUser = localStorage.getItem('studio22_user');
     return storedUser ? JSON.parse(storedUser) : null;
   });
-  const [isLoading, setIsLoading] = useState(false);
 
   React.useEffect(() => {
     const handleStorageChange = () => {
       const storedUser = localStorage.getItem('studio22_user');
-      const newUser = storedUser ? JSON.parse(storedUser) : null;
-      
-      // If user just logged in (was null, now has value)
-      if (!user && newUser) {
-        setIsLoading(true);
-        setTimeout(() => {
-          setUser(newUser);
-          setIsLoading(false);
-        }, 5000);
-      } else {
-        setUser(newUser);
-      }
+      setUser(storedUser ? JSON.parse(storedUser) : null);
     };
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [user]);
+  }, []);
 
   const categoryInfo = {
     commercial: {
@@ -73,23 +61,14 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className={`min-h-screen bg-white text-[#212121] ${exploreOpen ? 'overflow-hidden' : ''}`}>
-      {/* Loading Screen */}
-      {isLoading && (
-        <div className="fixed inset-0 bg-white z-[100] flex items-center justify-center">
-          <div className="w-32 h-32 rounded-full border-4 border-gray-200 flex items-center justify-center animate-spin">
-            <span className="text-4xl font-black tracking-tighter text-gray-900">22.</span>
-          </div>
-        </div>
-      )}
-
       {/* Artist Sidebar (when logged in) */}
-      {user && !isLoading && <ArtistSidebar />}
+      {user && <ArtistSidebar />}
 
       {/* Top Banner */}
-      {!user && !isLoading && <TopBanner />}
+      {!user && <TopBanner />}
 
       {/* Main Header (Awwwards Style) */}
-      {!user && !isLoading && (<header className={`fixed top-[40px] left-0 right-0 z-[40] transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
+      {!user && (<header className={`fixed top-[40px] left-0 right-0 z-[40] transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="flex items-center justify-between h-[60px]">
             {/* Left Navigation */}
@@ -225,7 +204,7 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
         {/* Bottom Floating Navigation */}
-        {!user && !isLoading && (<nav className="fixed bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-slideUp">
+        {!user && (<nav className="fixed bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-slideUp">
         <div className="bg-[#3a3a3a] rounded-2xl shadow-2xl backdrop-blur-sm border border-white/10">
           <div className="flex items-center gap-0 px-2 md:px-3 py-2.5 overflow-x-auto scrollbar-hide">
             {currentPageName === 'Home' ? (
@@ -327,7 +306,7 @@ export default function Layout({ children, currentPageName }) {
       )}
 
         {/* Footer (Awwwards Style) */}
-        {!user && !isLoading && (<footer className="bg-[#1a1a1a] text-white py-16">
+        {!user && (<footer className="bg-[#1a1a1a] text-white py-16">
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 mb-12">
             <div>
