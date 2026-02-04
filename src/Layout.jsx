@@ -22,10 +22,10 @@ export default function Layout({ children, currentPageName }) {
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
 
   React.useEffect(() => {
-    const justLoggedIn = localStorage.getItem('studio22_just_logged_in');
+    const justLoggedIn = sessionStorage.getItem('studio22_just_logged_in');
     if (justLoggedIn === 'true') {
       setShowLoadingScreen(true);
-      localStorage.removeItem('studio22_just_logged_in');
+      sessionStorage.removeItem('studio22_just_logged_in');
       setTimeout(() => {
         setShowLoadingScreen(false);
       }, 5000);
