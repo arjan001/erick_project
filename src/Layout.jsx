@@ -19,6 +19,18 @@ export default function Layout({ children, currentPageName }) {
     const storedUser = localStorage.getItem('studio22_user');
     return storedUser ? JSON.parse(storedUser) : null;
   });
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
+
+  React.useEffect(() => {
+    const justLoggedIn = localStorage.getItem('studio22_just_logged_in');
+    if (justLoggedIn === 'true') {
+      setShowLoadingScreen(true);
+      localStorage.removeItem('studio22_just_logged_in');
+      setTimeout(() => {
+        setShowLoadingScreen(false);
+      }, 5000);
+    }
+  }, []);
 
   React.useEffect(() => {
     const handleStorageChange = () => {
@@ -28,6 +40,9 @@ export default function Layout({ children, currentPageName }) {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  const isArtistPage = ['Jobs', 'ArtistDashboard', 'ArtistProfile', 'Messages', 'JobApplications', 'JobBoard', 'JobInvitations'].includes(currentPageName);
+  const shouldHideMenus = user && isArtistPage;
 
   const categoryInfo = {
     commercial: {
