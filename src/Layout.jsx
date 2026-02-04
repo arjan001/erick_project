@@ -76,14 +76,23 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className={`min-h-screen bg-white text-[#212121] ${exploreOpen ? 'overflow-hidden' : ''}`}>
+      {/* Loading Screen */}
+      {showLoadingScreen && (
+        <div className="fixed inset-0 bg-white z-[100] flex items-center justify-center">
+          <div className="w-32 h-32 rounded-full border-4 border-gray-200 flex items-center justify-center animate-pulse">
+            <span className="text-4xl font-black tracking-tighter text-[#1a1a1a]">22.</span>
+          </div>
+        </div>
+      )}
+
       {/* Artist Sidebar (when logged in) */}
       {user && <ArtistSidebar />}
 
       {/* Top Banner */}
-      {!user && <TopBanner />}
+      {!shouldHideMenus && <TopBanner />}
 
       {/* Main Header (Awwwards Style) */}
-      {!user && (<header className={`fixed top-[40px] left-0 right-0 z-[40] transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
+      {!shouldHideMenus && (<header className={`fixed top-[40px] left-0 right-0 z-[40] transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="flex items-center justify-between h-[60px]">
             {/* Left Navigation */}
