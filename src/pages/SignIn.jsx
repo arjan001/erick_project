@@ -44,7 +44,7 @@ export default function SignIn() {
           admin: '/admin'
         };
 
-        navigate(redirects[user.role] || '/');
+        window.location.href = createPageUrl(redirects[user.role]?.replace('/', '') || 'Home');
       } else {
         setError('Invalid email or password');
       }
