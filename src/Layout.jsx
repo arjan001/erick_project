@@ -85,8 +85,8 @@ export default function Layout({ children, currentPageName }) {
         </div>
       )}
 
-      {/* Artist Sidebar (when logged in) */}
-      {user && <ArtistSidebar />}
+      {/* Artist Sidebar (when logged in on artist pages) */}
+      {user && isArtistPage && <ArtistSidebar />}
 
       {/* Top Banner */}
       {!shouldHideMenus && <TopBanner />}
