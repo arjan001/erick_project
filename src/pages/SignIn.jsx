@@ -34,6 +34,7 @@ export default function SignIn() {
           full_name: user.name,
           role: user.role
         }));
+        localStorage.setItem('studio22_just_logged_in', 'true');
 
         const redirects = {
           artist: '/artistdashboard',
