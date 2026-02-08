@@ -26,9 +26,26 @@ export default function ArtistStepRole({ data, updateData }) {
     const current = data.secondary_roles || [];
     if (current.includes(role)) {
       updateData('secondary_roles', current.filter(r => r !== role));
+      // Remove from skills_experience as well
+      updateData('skills_experience', (data.skills_experience || []).filter(s => s.skill !== role));
     } else {
       updateData('secondary_roles', [...current, role]);
     }
+  };
+
+  const updateSkillExperience = (skill, years) => {
+    const current = data.skills_experience || [];
+    const existing = current.find(s => s.skill === skill);
+    if (existing) {
+      updateData('skills_experience', current.map(s => s.skill === skill ? { skill, years: Number(years) } : s));
+    } else {
+      updateData('skills_experience', [...current, { skill, years: Number(years) }]);
+    }
+  };
+
+  const getSkillExperience = (skill) => {
+    const exp = (data.skills_experience || []).find(s => s.skill === skill);
+    return exp?.years || '';
   };
 
   const addSkillFromDatabase = (skill) => {
@@ -39,6 +56,21 @@ export default function ArtistStepRole({ data, updateData }) {
     }
     setSkillSearch('');
     setShowSkillDropdown(false);
+  };
+
+  const updateCustomSkillExperience = (skillValue, years) => {
+    const current = data.skills_experience || [];
+    const existing = current.find(s => s.skill === skillValue);
+    if (existing) {
+      updateData('skills_experience', current.map(s => s.skill === skillValue ? { skill: skillValue, years: Number(years) } : s));
+    } else {
+      updateData('skills_experience', [...current, { skill: skillValue, years: Number(years) }]);
+    }
+  };
+
+  const getCustomSkillExperience = (skillValue) => {
+    const exp = (data.skills_experience || []).find(s => s.skill === skillValue);
+    return exp?.years || '';
   };
 
   const removeCustomSkill = (value) => {
@@ -78,9 +110,9 @@ export default function ArtistStepRole({ data, updateData }) {
   return (
     <div>
       <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What's your primary role?</h2>
-      <p className="text-gray-600 mb-8">Select your main specialty</p>
+      <p className="text-gray-600 mb-8">Select your main specialty and years of experience</p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-10">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
         {ROLES.map((role) => {
           const Icon = role.icon;
           const isSelected = data.role === role.value;
@@ -102,27 +134,54 @@ export default function ArtistStepRole({ data, updateData }) {
       </div>
 
       {data.role && (
+        <div className="mb-8">
+          <Label className="text-sm mb-2 block">Years of experience as {ROLES.find(r => r.value === data.role)?.label}</Label>
+          <Input
+            type="number"
+            min="0"
+            max="50"
+            value={getSkillExperience(data.role)}
+            onChange={(e) => updateSkillExperience(data.role, e.target.value)}
+            placeholder="e.g., 5"
+            className="bg-white border-gray-300 text-black h-10 max-w-xs"
+          />
+        </div>
+      )}
+
+      {data.role && (
         <div>
           <h3 className="text-xl font-semibold mb-3 text-black">Additional skills (optional)</h3>
           <p className="text-sm text-gray-600 mb-4">Select any secondary roles you can perform</p>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="space-y-3">
             {ROLES.filter(r => r.value !== data.role).map((role) => {
               const Icon = role.icon;
               const isSelected = (data.secondary_roles || []).includes(role.value);
               return (
-                <button
-                  key={role.value}
-                  onClick={() => toggleSecondaryRole(role.value)}
-                  className={`p-3 rounded-lg border transition-all text-left flex items-center gap-2 ${
-                    isSelected
-                      ? 'border-amber-600/50 bg-amber-600/5 text-black'
-                      : 'border-gray-300 hover:border-gray-400 bg-white text-black'
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
-                  <span className="text-sm">{role.label}</span>
-                </button>
+                <div key={role.value} className="flex items-center gap-3">
+                  <button
+                    onClick={() => toggleSecondaryRole(role.value)}
+                    className={`flex-1 p-3 rounded-lg border transition-all text-left flex items-center gap-2 ${
+                      isSelected
+                        ? 'border-amber-600/50 bg-amber-600/5 text-black'
+                        : 'border-gray-300 hover:border-gray-400 bg-white text-black'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
+                    <span className="text-sm">{role.label}</span>
+                  </button>
+                  {isSelected && (
+                    <Input
+                      type="number"
+                      min="0"
+                      max="50"
+                      value={getSkillExperience(role.value)}
+                      onChange={(e) => updateSkillExperience(role.value, e.target.value)}
+                      placeholder="Years"
+                      className="w-24 h-12 text-sm"
+                    />
+                  )}
+                </div>
               );
             })}
           </div>
@@ -170,21 +229,29 @@ export default function ArtistStepRole({ data, updateData }) {
             </div>
 
             {(data.secondary_roles || []).some(isCustomSkill) && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-700">Custom Skills:</p>
-                <div className="flex flex-wrap gap-2">
+              <div className="space-y-3 mt-4">
+                <p className="text-sm font-medium text-gray-700">Additional Skills:</p>
+                <div className="space-y-2">
                   {(data.secondary_roles || []).filter(isCustomSkill).map(skill => (
-                    <div
-                      key={skill}
-                      className="flex items-center gap-2 px-3 py-2 bg-amber-600/10 border border-amber-600/50 rounded-lg text-sm"
-                    >
-                      <span className="text-black">{getSkillLabel(skill)}</span>
-                      <button
-                        onClick={() => removeCustomSkill(skill)}
-                        className="text-gray-500 hover:text-red-500 transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                    <div key={skill} className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 px-3 py-2 bg-amber-600/10 border border-amber-600/50 rounded-lg text-sm flex-1">
+                        <span className="text-black">{getSkillLabel(skill)}</span>
+                        <button
+                          onClick={() => removeCustomSkill(skill)}
+                          className="text-gray-500 hover:text-red-500 transition-colors ml-auto"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="50"
+                        value={getCustomSkillExperience(skill)}
+                        onChange={(e) => updateCustomSkillExperience(skill, e.target.value)}
+                        placeholder="Years"
+                        className="w-24 h-10 text-sm"
+                      />
                     </div>
                   ))}
                 </div>

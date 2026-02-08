@@ -73,6 +73,8 @@ import TeamAdmin from './pages/TeamAdmin';
 import Work from './pages/Work';
 import ArtistPublicProfile from './pages/ArtistPublicProfile';
 import TeamPublicProfile from './pages/TeamPublicProfile';
+import CreatorDashboard from './pages/CreatorDashboard';
+import TeamDashboard from './pages/TeamDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -103,6 +105,8 @@ export const PAGES = {
     "Work": Work,
     "ArtistPublicProfile": ArtistPublicProfile,
     "TeamPublicProfile": TeamPublicProfile,
+    "CreatorDashboard": CreatorDashboard,
+    "TeamDashboard": TeamDashboard,
 }
 
 export const pagesConfig = {

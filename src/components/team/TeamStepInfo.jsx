@@ -24,22 +24,7 @@ export default function TeamStepInfo({ data, updateData }) {
           />
         </div>
 
-        <div>
-          <Label htmlFor="team_code" className="text-base mb-3 flex items-center gap-2">
-            Team Code *
-            <Info className="w-4 h-4 text-gray-400" />
-          </Label>
-          <Input
-            id="team_code"
-            value={data.team_code}
-            onChange={(e) => updateData('team_code', e.target.value.toUpperCase())}
-            placeholder="e.g., AMS LUX 01, BCN POST 03"
-            className="bg-white border-gray-300 text-black h-12 font-mono"
-          />
-          <p className="text-xs text-gray-600 mt-2">
-            Format: CITY CODE NUMBER (e.g., AMS CAM 01, BRU POST A)
-          </p>
-        </div>
+
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
@@ -67,28 +52,39 @@ export default function TeamStepInfo({ data, updateData }) {
             <Label htmlFor="contact_name" className="text-base mb-3 block">Contact Name *</Label>
             <Input
               id="contact_name"
-              value={data.contact_name}
+              value={data.contact_name || ''}
               onChange={(e) => updateData('contact_name', e.target.value)}
               className="bg-white border-gray-300 text-black h-12"
             />
           </div>
 
           <div>
-            <Label htmlFor="contact_email" className="text-base mb-3 flex items-center gap-2">
+            <Label htmlFor="contact_email" className="text-base mb-3 block">
               Contact Email *
-              <Info className="w-4 h-4 text-gray-400" />
             </Label>
             <Input
               id="contact_email"
               type="email"
-              value={data.contact_email}
+              value={data.contact_email || ''}
               onChange={(e) => updateData('contact_email', e.target.value)}
               className="bg-white border-gray-300 text-black h-12"
             />
-            <p className="text-xs text-gray-600 mt-2">
-              We need your email to send project opportunities and communicate with clients
-            </p>
           </div>
+        </div>
+
+        <div>
+          <Label htmlFor="phone" className="text-base mb-3 block">Mobile Number (WhatsApp preferred) *</Label>
+          <Input
+            id="phone"
+            type="tel"
+            value={data.phone || ''}
+            onChange={(e) => updateData('phone', e.target.value)}
+            placeholder="+31 6 1234 5678"
+            className="bg-white border-gray-300 text-black h-12"
+          />
+          <p className="text-xs text-gray-600 mt-2">
+            We'll use this to communicate quickly about project opportunities
+          </p>
         </div>
 
         <div>

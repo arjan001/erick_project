@@ -1,15 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, Image as ImageIcon } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 import CountrySelector from '../CountrySelector';
 
 const LANGUAGES = ['English', 'Dutch', 'Spanish', 'French', 'German', 'Italian', 'Portuguese'];
 
 export default function ArtistStepDetails({ data, updateData }) {
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-
   const toggleLanguage = (lang) => {
     const current = data.languages_spoken || [];
     if (current.includes(lang)) {
@@ -19,64 +15,13 @@ export default function ArtistStepDetails({ data, updateData }) {
     }
   };
 
-  const handleLogoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploadingLogo(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      updateData('artist_logo', file_url);
-    } catch (error) {
-      alert('Error uploading photo. Please try again.');
-    } finally {
-      setIsUploadingLogo(false);
-    }
-  };
-
   return (
     <div>
       <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Contact Details</h2>
       <p className="text-gray-600 mb-8">How can we reach you?</p>
 
       <div className="space-y-6">
-        {/* Profile Photo Section */}
-        <div className="p-6 bg-gray-50 rounded-xl border border-gray-200">
-          <h3 className="font-semibold mb-3 text-black">Profile Photo (optional)</h3>
-          <p className="text-sm text-gray-600 mb-4">Upload a professional headshot or logo</p>
-          
-          {data.artist_logo ? (
-            <div className="flex items-center gap-4">
-              <img src={data.artist_logo} alt="Profile" className="w-20 h-20 object-cover rounded-full border-2 border-gray-300" />
-              <button
-                onClick={() => updateData('artist_logo', null)}
-                className="text-sm text-red-500 hover:text-red-700"
-              >
-                Remove photo
-              </button>
-            </div>
-          ) : (
-            <>
-              <input
-                type="file"
-                id="artist-logo-upload"
-                accept="image/*"
-                onChange={handleLogoUpload}
-                className="hidden"
-                disabled={isUploadingLogo}
-              />
-              <label htmlFor="artist-logo-upload">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-amber-600 cursor-pointer transition-all">
-                  <ImageIcon className="w-10 h-10 mx-auto mb-3 text-gray-400" />
-                  <p className="font-medium text-black mb-1">
-                    {isUploadingLogo ? 'Uploading...' : 'Click to upload photo'}
-                  </p>
-                  <p className="text-xs text-gray-500">PNG, JPG (max 2MB)</p>
-                </div>
-              </label>
-            </>
-          )}
-        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <Label htmlFor="full_name" className="text-base mb-3 block">Full Name *</Label>
@@ -122,12 +67,13 @@ export default function ArtistStepDetails({ data, updateData }) {
         </div>
 
         <div>
-          <Label htmlFor="experience" className="text-base mb-3 block">Years of Experience</Label>
+          <Label htmlFor="phone" className="text-base mb-3 block">Mobile Number (WhatsApp preferred)</Label>
           <Input
-            id="experience"
-            type="number"
-            value={data.years_experience}
-            onChange={(e) => updateData('years_experience', e.target.value)}
+            id="phone"
+            type="tel"
+            value={data.phone || ''}
+            onChange={(e) => updateData('phone', e.target.value)}
+            placeholder="+31 6 1234 5678"
             className="bg-white border-gray-300 text-black h-12"
           />
         </div>
@@ -153,31 +99,52 @@ export default function ArtistStepDetails({ data, updateData }) {
 
         <div className="pt-4 border-t border-gray-200">
           <h3 className="font-semibold mb-4 text-black">Social Links (optional)</h3>
-          <div className="space-y-4">
-            <Input
-              placeholder="Website URL"
-              value={data.website}
-              onChange={(e) => updateData('website', e.target.value)}
-              className="bg-white border-gray-300 text-black h-12"
-            />
-            <Input
-              placeholder="Instagram @username"
-              value={data.instagram}
-              onChange={(e) => updateData('instagram', e.target.value)}
-              className="bg-white border-gray-300 text-black h-12"
-            />
-            <Input
-              placeholder="Vimeo URL"
-              value={data.vimeo}
-              onChange={(e) => updateData('vimeo', e.target.value)}
-              className="bg-white border-gray-300 text-black h-12"
-            />
-            <Input
-              placeholder="IMDb URL"
-              value={data.imdb}
-              onChange={(e) => updateData('imdb', e.target.value)}
-              className="bg-white border-gray-300 text-black h-12"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🌐</span>
+              <Input
+                placeholder="Website URL"
+                value={data.website || ''}
+                onChange={(e) => updateData('website', e.target.value)}
+                className="bg-white border-gray-300 text-black h-12 pl-10"
+              />
+            </div>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">📷</span>
+              <Input
+                placeholder="Instagram @username"
+                value={data.instagram || ''}
+                onChange={(e) => updateData('instagram', e.target.value)}
+                className="bg-white border-gray-300 text-black h-12 pl-10"
+              />
+            </div>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">▶️</span>
+              <Input
+                placeholder="Vimeo URL"
+                value={data.vimeo || ''}
+                onChange={(e) => updateData('vimeo', e.target.value)}
+                className="bg-white border-gray-300 text-black h-12 pl-10"
+              />
+            </div>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🎬</span>
+              <Input
+                placeholder="IMDb URL"
+                value={data.imdb || ''}
+                onChange={(e) => updateData('imdb', e.target.value)}
+                className="bg-white border-gray-300 text-black h-12 pl-10"
+              />
+            </div>
+            <div className="relative sm:col-span-2">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">💼</span>
+              <Input
+                placeholder="LinkedIn URL"
+                value={data.linkedin || ''}
+                onChange={(e) => updateData('linkedin', e.target.value)}
+                className="bg-white border-gray-300 text-black h-12 pl-10"
+              />
+            </div>
           </div>
         </div>
       </div>
