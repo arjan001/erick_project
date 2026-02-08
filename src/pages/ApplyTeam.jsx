@@ -56,15 +56,6 @@ export default function ApplyTeam() {
     }
   };
 
-  const generateTeamCode = () => {
-    const locations = ['AMS', 'BCN', 'BER', 'LON', 'PAR', 'MIL', 'AMS', 'VIE'];
-    const specialties = ['PROD', 'POST', 'VFX', 'FULL'];
-    const location = locations[Math.floor(Math.random() * locations.length)];
-    const specialty = specialties[Math.floor(Math.random() * specialties.length)];
-    const num = String(Math.floor(Math.random() * 100) + 1).padStart(2, '0');
-    return `${location} ${specialty} ${num}`;
-  };
-
   const handleSaveDraft = async () => {
     try {
       await base44.auth.updateMe({
