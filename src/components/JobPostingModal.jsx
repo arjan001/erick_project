@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { base44 } from '@/api/base44Client';
 import { PRODUCTION_POSITIONS } from './positions';
 
 const PROJECT_TYPES = [
@@ -97,7 +98,8 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
     pay_type: 'fixed',
     rate: '',
     frequency: 'flat_fee',
-    skills: []
+    skills: [],
+    image_url: ''
   });
   const [positionSearch, setPositionSearch] = useState('');
   const [showPositionDropdown, setShowPositionDropdown] = useState(false);
@@ -377,9 +379,33 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
 
               <div>
                 <label className="block text-sm font-medium mb-2">Image</label>
-                <button className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 hover:border-gray-400">
-                  <span className="text-4xl">+</span>
-                </button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      try {
+                        const { data } = await base44.integrations.Core.UploadFile({ file });
+                        setFormData({ ...formData, image_url: data.file_url });
+                      } catch (err) {
+                        console.error('Upload error:', err);
+                      }
+                    }
+                  }}
+                  className="hidden"
+                  id="job-image-upload"
+                />
+                <label
+                  htmlFor="job-image-upload"
+                  className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 hover:border-gray-400 cursor-pointer"
+                >
+                  {formData.image_url ? (
+                    <img src={formData.image_url} alt="Job" className="w-full h-full object-cover rounded-lg" />
+                  ) : (
+                    <span className="text-4xl">+</span>
+                  )}
+                </label>
               </div>
 
               <div>
@@ -431,7 +457,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                 <div>
                   <label className="block text-sm font-medium mb-2">Rate</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-3 text-gray-500">$</span>
+                    <span className="absolute left-4 top-3 text-gray-500">€</span>
                     <input
                       type="number"
                       value={formData.rate}
@@ -528,7 +554,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
 
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-gray-600 uppercase mb-2">Pay type</h4>
-                  <p className="text-lg font-bold text-black">${formData.rate} USD</p>
+                  <p className="text-lg font-bold text-black">€{formData.rate} EUR</p>
                 </div>
               </div>
             </div>

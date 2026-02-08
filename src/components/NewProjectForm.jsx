@@ -92,10 +92,10 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
 
       {/* Reference Website */}
       <div className="mb-4">
-        <label className="block text-xs font-semibold mb-2 text-[#666]">Reference Website (Optional)</label>
+        <label className="block text-xs font-semibold mb-2 text-[#666]">Domain or Reference (Optional)</label>
         <div className="flex gap-2 mb-1">
           <Input 
-            placeholder="www.example.com"
+            placeholder="www.example.com or nike.com or apple.com"
             value={referenceUrl}
             onChange={(e) => setReferenceUrl(e.target.value)}
             className="flex-1 bg-white border-gray-300 text-sm"
@@ -107,11 +107,11 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
             className="bg-gray-700 hover:bg-gray-800 text-white"
           >
             <Sparkles className="w-3 h-3 mr-1" />
-            {extracting ? 'Extracting...' : 'Extract'}
+            {extracting ? 'Analyzing...' : 'Analyze'}
           </Button>
         </div>
         <p className="text-xs text-[#999]">
-          Provide a URL and click Extract to auto-generate your project description
+          Enter any company domain or reference URL. We'll analyze their brand, visual language, and tone to help frame your project.
         </p>
 
         {/* Progress Indicator */}
@@ -156,10 +156,10 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
           )}
         </div>
         <Textarea
-          placeholder="Describe your project or use Extract button above. You can write multiple sentences with details about your vision, target audience, style, and goals."
+          placeholder="Describe your project or use Analyze button above. Example: 'We need a 30-second commercial showcasing our new product line with a sleek, modern aesthetic inspired by Nike's visual style. Target audience is 25-40 year olds who value innovation.'"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="min-h-[80px] text-sm bg-white border-gray-300"
+          className="min-h-[100px] text-sm bg-white border-gray-300"
         />
       </div>
 
