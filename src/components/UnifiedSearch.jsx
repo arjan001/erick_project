@@ -134,7 +134,7 @@ export default function UnifiedSearch() {
                     {results.artists.map(a => (
                       <Link
                         key={a.id}
-                        to={createPageUrl('ApplyArtist')}
+                        to={`${createPageUrl('ArtistPublicProfile')}?id=${a.id}`}
                         onClick={() => setIsOpen(false)}
                         className="block p-2 hover:bg-gray-50 rounded text-sm text-gray-900 hover:text-black transition-colors"
                       >
@@ -154,7 +154,7 @@ export default function UnifiedSearch() {
                     {results.teams.map(t => (
                       <Link
                         key={t.id}
-                        to={createPageUrl('ApplyTeam')}
+                        to={`${createPageUrl('TeamPublicProfile')}?id=${t.id}`}
                         onClick={() => setIsOpen(false)}
                         className="block p-2 hover:bg-gray-50 rounded text-sm text-gray-900 hover:text-black transition-colors"
                       >

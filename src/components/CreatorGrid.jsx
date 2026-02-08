@@ -46,9 +46,11 @@ export default function CreatorGrid({ creators, view = 'list', onDelete }) {
               </div>
 
               <div className="flex items-center gap-2">
-                <button className="px-6 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-black transition-all">
-                  View
-                </button>
+                <Link to={`${createPageUrl('ArtistPublicProfile')}?id=${creator.id}`}>
+                  <button className="px-6 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-black transition-all">
+                    View
+                  </button>
+                </Link>
                 {onDelete && (
                   <button 
                     onClick={async () => {
@@ -73,9 +75,10 @@ export default function CreatorGrid({ creators, view = 'list', onDelete }) {
   return (
     <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
       {creators.map((creator, idx) => (
-        <div 
+        <Link 
+          to={`${createPageUrl('ArtistPublicProfile')}?id=${creator.id}`}
           key={idx}
-          className="group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500"
+          className="group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 block"
         >
           <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900">
             {creator.profile_image_url ? (
@@ -149,7 +152,7 @@ export default function CreatorGrid({ creators, view = 'list', onDelete }) {
               </div>
             )}
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );
