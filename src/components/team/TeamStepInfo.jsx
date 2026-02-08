@@ -2,14 +2,28 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Info } from 'lucide-react';
+import CountrySelector from '../CountrySelector';
 
 export default function TeamStepInfo({ data, updateData }) {
   return (
     <div>
       <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Team Information</h2>
-      <p className="text-gray-600 mb-8">Basic details about your team</p>
+      <p className="text-gray-600 mb-8">Tell us about your team and how to reach you</p>
 
       <div className="space-y-6">
+        <div>
+          <Label htmlFor="team_name" className="text-base mb-3 block">
+            Team/Company Name *
+          </Label>
+          <Input
+            id="team_name"
+            value={data.team_name || ''}
+            onChange={(e) => updateData('team_name', e.target.value)}
+            placeholder="e.g., Amsterdam Post House, Lux Studios"
+            className="bg-white border-gray-300 text-black h-12"
+          />
+        </div>
+
         <div>
           <Label htmlFor="team_code" className="text-base mb-3 flex items-center gap-2">
             Team Code *
@@ -41,12 +55,9 @@ export default function TeamStepInfo({ data, updateData }) {
 
           <div>
             <Label htmlFor="country" className="text-base mb-3 block">Country *</Label>
-            <Input
-              id="country"
+            <CountrySelector
               value={data.country}
-              onChange={(e) => updateData('country', e.target.value)}
-              placeholder="e.g., Netherlands"
-              className="bg-white border-gray-300 text-black h-12"
+              onChange={(country) => updateData('country', country)}
             />
           </div>
         </div>
@@ -63,7 +74,10 @@ export default function TeamStepInfo({ data, updateData }) {
           </div>
 
           <div>
-            <Label htmlFor="contact_email" className="text-base mb-3 block">Contact Email *</Label>
+            <Label htmlFor="contact_email" className="text-base mb-3 flex items-center gap-2">
+              Contact Email *
+              <Info className="w-4 h-4 text-gray-400" />
+            </Label>
             <Input
               id="contact_email"
               type="email"
@@ -71,6 +85,9 @@ export default function TeamStepInfo({ data, updateData }) {
               onChange={(e) => updateData('contact_email', e.target.value)}
               className="bg-white border-gray-300 text-black h-12"
             />
+            <p className="text-xs text-gray-600 mt-2">
+              We need your email to send project opportunities and communicate with clients
+            </p>
           </div>
         </div>
 

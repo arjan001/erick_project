@@ -1,5 +1,6 @@
-import React from 'react';
-import { Video, Camera, Scissors, Briefcase, Box, Wand2, Palette, Music, Mic, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { Video, Camera, Scissors, Briefcase, Box, Wand2, Palette, Music, Mic, User, Plus, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 const ROLES = [
   { value: 'director', label: 'Director', icon: Video },
@@ -16,6 +17,8 @@ const ROLES = [
 ];
 
 export default function ArtistStepRole({ data, updateData }) {
+  const [customSkill, setCustomSkill] = useState('');
+
   const toggleSecondaryRole = (role) => {
     const current = data.secondary_roles || [];
     if (current.includes(role)) {
@@ -23,6 +26,33 @@ export default function ArtistStepRole({ data, updateData }) {
     } else {
       updateData('secondary_roles', [...current, role]);
     }
+  };
+
+  const addCustomSkill = () => {
+    if (customSkill.trim()) {
+      const customValue = customSkill.toLowerCase().replace(/\s+/g, '_');
+      if (!(data.secondary_roles || []).includes(customValue)) {
+        updateData('secondary_roles', [...(data.secondary_roles || []), customValue]);
+        updateData('custom_skills', [...(data.custom_skills || []), { value: customValue, label: customSkill.trim() }]);
+      }
+      setCustomSkill('');
+    }
+  };
+
+  const removeCustomSkill = (value) => {
+    updateData('secondary_roles', (data.secondary_roles || []).filter(r => r !== value));
+    updateData('custom_skills', (data.custom_skills || []).filter(s => s.value !== value));
+  };
+
+  const isCustomSkill = (value) => {
+    return (data.custom_skills || []).some(s => s.value === value);
+  };
+
+  const getSkillLabel = (value) => {
+    const predefined = ROLES.find(r => r.value === value);
+    if (predefined) return predefined.label;
+    const custom = (data.custom_skills || []).find(s => s.value === value);
+    return custom ? custom.label : value;
   };
 
   return (
@@ -75,6 +105,50 @@ export default function ArtistStepRole({ data, updateData }) {
                 </button>
               );
             })}
+          </div>
+
+          {/* Custom Skills Section */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <h4 className="text-base font-semibold mb-3 text-black">Add Custom Skill</h4>
+            <p className="text-sm text-gray-600 mb-4">Don't see your skill? Add it here</p>
+            
+            <div className="flex gap-2 mb-4">
+              <Input
+                value={customSkill}
+                onChange={(e) => setCustomSkill(e.target.value)}
+                placeholder="e.g., Drone Operator, Color Grading..."
+                className="bg-white border-gray-300 text-black h-12"
+                onKeyPress={(e) => e.key === 'Enter' && addCustomSkill()}
+              />
+              <button
+                onClick={addCustomSkill}
+                className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2 whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4" /> Add
+              </button>
+            </div>
+
+            {(data.secondary_roles || []).some(isCustomSkill) && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700">Custom Skills:</p>
+                <div className="flex flex-wrap gap-2">
+                  {(data.secondary_roles || []).filter(isCustomSkill).map(skill => (
+                    <div
+                      key={skill}
+                      className="flex items-center gap-2 px-3 py-2 bg-amber-600/10 border border-amber-600/50 rounded-lg text-sm"
+                    >
+                      <span className="text-black">{getSkillLabel(skill)}</span>
+                      <button
+                        onClick={() => removeCustomSkill(skill)}
+                        className="text-gray-500 hover:text-red-500 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

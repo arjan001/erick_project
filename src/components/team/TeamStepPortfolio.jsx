@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, X, CheckCircle } from 'lucide-react';
+import { Upload, X, CheckCircle, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,6 +7,7 @@ import { base44 } from '@/api/base44Client';
 
 export default function TeamStepPortfolio({ data, updateData }) {
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [agreements, setAgreements] = useState({
     noLogos: false,
     portfolioUsage: false
@@ -49,12 +50,69 @@ export default function TeamStepPortfolio({ data, updateData }) {
     updateData('portfolio_clips', data.portfolio_clips.filter((_, i) => i !== index));
   };
 
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingLogo(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      updateData('team_logo', file_url);
+    } catch (error) {
+      alert('Error uploading logo. Please try again.');
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
   return (
     <div>
       <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Team Portfolio</h2>
-      <p className="text-gray-600 mb-8">Upload 1-3 clips showcasing your team's work (max 30 seconds each)</p>
+      <p className="text-gray-600 mb-8">Upload your team logo and showcase clips</p>
 
-      <div className="space-y-4 mb-8 p-6 bg-gray-100 rounded-xl border border-gray-200">
+      {/* Team Logo Section */}
+      <div className="mb-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
+        <h3 className="font-semibold mb-3 text-black">Team Logo</h3>
+        <p className="text-sm text-gray-600 mb-4">Upload your company or team logo</p>
+        
+        {data.team_logo ? (
+          <div className="flex items-center gap-4">
+            <img src={data.team_logo} alt="Team logo" className="w-20 h-20 object-contain rounded-lg border border-gray-300 bg-white p-2" />
+            <button
+              onClick={() => updateData('team_logo', null)}
+              className="text-sm text-red-500 hover:text-red-700"
+            >
+              Remove logo
+            </button>
+          </div>
+        ) : (
+          <>
+            <input
+              type="file"
+              id="team-logo-upload"
+              accept="image/*"
+              onChange={handleLogoUpload}
+              className="hidden"
+              disabled={isUploadingLogo}
+            />
+            <Label htmlFor="team-logo-upload">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-amber-600 cursor-pointer transition-all">
+                <Image className="w-10 h-10 mx-auto mb-3 text-gray-400" />
+                <p className="font-medium text-black mb-1">
+                  {isUploadingLogo ? 'Uploading...' : 'Click to upload logo'}
+                </p>
+                <p className="text-xs text-gray-500">PNG, JPG, SVG (max 2MB)</p>
+              </div>
+            </Label>
+          </>
+        )}
+      </div>
+
+      <div className="border-t border-gray-200 pt-8">
+        <h3 className="font-semibold mb-3 text-black">Portfolio Clips</h3>
+        <p className="text-sm text-gray-600 mb-6">Upload 1-3 video clips (max 30 seconds each)</p>
+
+        <div className="space-y-4 mb-8 p-6 bg-gray-100 rounded-xl border border-gray-200">
         <h3 className="font-semibold mb-3 text-black">Portfolio Requirements</h3>
         
         <div className="flex items-start gap-3">
@@ -125,7 +183,8 @@ export default function TeamStepPortfolio({ data, updateData }) {
             </div>
           </Label>
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
