@@ -71,6 +71,8 @@ import SignIn from './pages/SignIn';
 import SubmitProject from './pages/SubmitProject';
 import TeamAdmin from './pages/TeamAdmin';
 import Work from './pages/Work';
+import ArtistPublicProfile from './pages/ArtistPublicProfile';
+import TeamPublicProfile from './pages/TeamPublicProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -99,6 +101,8 @@ export const PAGES = {
     "SubmitProject": SubmitProject,
     "TeamAdmin": TeamAdmin,
     "Work": Work,
+    "ArtistPublicProfile": ArtistPublicProfile,
+    "TeamPublicProfile": TeamPublicProfile,
 }
 
 export const pagesConfig = {
