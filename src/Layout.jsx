@@ -227,9 +227,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Main Content */}
       <main className={shouldHideMenus ? 'pt-0 pb-24' : 'pt-[100px] pb-24'}>
-        <div className={shouldHideMenus ? '' : ''}>
-          {React.cloneElement(children, { editMode })}
-        </div>
+        {React.cloneElement(children, { editMode })}
       </main>
 
         {/* Bottom Floating Navigation */}
