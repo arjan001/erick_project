@@ -73,11 +73,22 @@ export default function CreatorDashboard() {
 
   const handleSaveProfile = async () => {
     try {
-      await base44.entities.Artist.update(artist.id, artist);
+      await base44.entities.Artist.update(artist.id, {
+        full_name: artist.full_name,
+        email: artist.email,
+        phone: artist.phone,
+        website: artist.website,
+        instagram: artist.instagram,
+        linkedin: artist.linkedin,
+        vimeo: artist.vimeo,
+        imdb: artist.imdb
+      });
       setEditingProfile(false);
+      await loadDashboardData();
       alert('Profile updated successfully!');
     } catch (error) {
-      alert('Error updating profile');
+      console.error('Update error:', error);
+      alert('Error updating profile: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -258,40 +269,100 @@ export default function CreatorDashboard() {
           </Card>
         )}
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
           {/* Quick Stats */}
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Profile Views</p>
-                  <p className="text-3xl font-bold text-black">{portfolioClips.reduce((sum, clip) => sum + (clip.view_count || 0), 0)}</p>
+                  <p className="text-sm text-gray-600 mb-1">Active Jobs</p>
+                  <p className="text-3xl font-bold text-black">0</p>
+                  <p className="text-xs text-gray-500 mt-1">In progress</p>
                 </div>
-                <Eye className="w-10 h-10 text-amber-600" />
+                <Briefcase className="w-10 h-10 text-amber-600" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Portfolio Clips</p>
-                  <p className="text-3xl font-bold text-black">{portfolioClips.length}</p>
-                </div>
-                <Film className="w-10 h-10 text-amber-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Applications</p>
                   <p className="text-3xl font-bold text-black">{applications.length}</p>
+                  <p className="text-xs text-gray-500 mt-1">Pending review</p>
                 </div>
-                <Briefcase className="w-10 h-10 text-amber-600" />
+                <Calendar className="w-10 h-10 text-blue-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Profile Views</p>
+                  <p className="text-3xl font-bold text-black">{portfolioClips.reduce((sum, clip) => sum + (clip.view_count || 0), 0)}</p>
+                  <p className="text-xs text-gray-500 mt-1">This month</p>
+                </div>
+                <Eye className="w-10 h-10 text-green-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Portfolio</p>
+                  <p className="text-3xl font-bold text-black">{portfolioClips.length}</p>
+                  <p className="text-xs text-gray-500 mt-1">Clips uploaded</p>
+                </div>
+                <Film className="w-10 h-10 text-purple-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 mb-8">
+          {/* Current Projects */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Active Projects</span>
+                <Link to={createPageUrl('Projects')}>
+                  <Button size="sm" variant="outline">Browse</Button>
+                </Link>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-600 mb-4">No active projects yet</p>
+                <Link to={createPageUrl('Projects')}>
+                  <Button size="sm" className="bg-amber-600 hover:bg-amber-700">Find Projects</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Applications */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Recent Applications</span>
+                <Link to={createPageUrl('JobApplications')}>
+                  <Button size="sm" variant="outline">View All</Button>
+                </Link>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-600 mb-4">No applications yet</p>
+                <Link to={createPageUrl('JobBoard')}>
+                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Browse Jobs</Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

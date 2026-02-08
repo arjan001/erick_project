@@ -98,7 +98,10 @@ export default function Layout({ children, currentPageName }) {
             {/* Left Navigation */}
             <div className="flex items-center gap-8">
               {/* Logo */}
-              <Link to={createPageUrl('Home')} className="hover:opacity-70 transition-opacity">
+              <Link 
+                to={user ? (isArtistPage ? createPageUrl('ArtistDashboard') : createPageUrl('TeamDashboard')) : createPageUrl('Home')} 
+                className="hover:opacity-70 transition-opacity"
+              >
                 <span className="text-2xl font-black tracking-tighter text-[#1a1a1a]">22.</span>
               </Link>
 
@@ -224,7 +227,9 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Main Content */}
       <main className={shouldHideMenus ? 'pt-0 pb-24' : 'pt-[100px] pb-24'}>
-        {React.cloneElement(children, { editMode })}
+        <div className={shouldHideMenus ? '' : ''}>
+          {React.cloneElement(children, { editMode })}
+        </div>
       </main>
 
         {/* Bottom Floating Navigation */}
@@ -272,7 +277,7 @@ export default function Layout({ children, currentPageName }) {
               </button>
             ) : (
               <Link 
-                to={createPageUrl('Home')}
+                to={user ? (isArtistPage ? createPageUrl('ArtistDashboard') : createPageUrl('TeamDashboard')) : createPageUrl('Home')}
                 className="flex items-center justify-center px-2 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-all mr-1 md:mr-2 flex-shrink-0"
               >
                 <span className="text-base md:text-lg font-black text-white tracking-tighter">22.</span>

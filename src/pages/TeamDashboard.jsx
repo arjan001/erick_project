@@ -72,11 +72,19 @@ export default function TeamDashboard() {
 
   const handleSaveProfile = async () => {
     try {
-      await base44.entities.Team.update(team.id, team);
+      await base44.entities.Team.update(team.id, {
+        team_name: team.team_name,
+        contact_name: team.contact_name,
+        contact_email: team.contact_email,
+        phone: team.phone,
+        availability: team.availability
+      });
       setEditingProfile(false);
+      await loadDashboardData();
       alert('Team profile updated successfully!');
     } catch (error) {
-      alert('Error updating profile');
+      console.error('Update error:', error);
+      alert('Error updating profile: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -270,40 +278,92 @@ export default function TeamDashboard() {
           </Card>
         )}
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
           {/* Quick Stats */}
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Profile Views</p>
-                  <p className="text-3xl font-bold text-black">{portfolioClips.reduce((sum, clip) => sum + (clip.view_count || 0), 0)}</p>
+                  <p className="text-sm text-gray-600 mb-1">Active Projects</p>
+                  <p className="text-3xl font-bold text-black">0</p>
+                  <p className="text-xs text-gray-500 mt-1">In progress</p>
                 </div>
-                <Eye className="w-10 h-10 text-blue-600" />
+                <Briefcase className="w-10 h-10 text-blue-600" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Portfolio Clips</p>
-                  <p className="text-3xl font-bold text-black">{portfolioClips.length}</p>
-                </div>
-                <Film className="w-10 h-10 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Team Members</p>
                   <p className="text-3xl font-bold text-black">{team.team_members?.length || 0}</p>
+                  <p className="text-xs text-gray-500 mt-1">Active crew</p>
                 </div>
-                <Users className="w-10 h-10 text-blue-600" />
+                <Users className="w-10 h-10 text-amber-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Profile Views</p>
+                  <p className="text-3xl font-bold text-black">{portfolioClips.reduce((sum, clip) => sum + (clip.view_count || 0), 0)}</p>
+                  <p className="text-xs text-gray-500 mt-1">This month</p>
+                </div>
+                <Eye className="w-10 h-10 text-green-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Portfolio</p>
+                  <p className="text-3xl font-bold text-black">{portfolioClips.length}</p>
+                  <p className="text-xs text-gray-500 mt-1">Work samples</p>
+                </div>
+                <Film className="w-10 h-10 text-purple-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 mb-8">
+          {/* Current Projects */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Active Contracts</span>
+                <Link to={createPageUrl('Projects')}>
+                  <Button size="sm" variant="outline">Browse</Button>
+                </Link>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-600 mb-4">No active contracts yet</p>
+                <Link to={createPageUrl('Projects')}>
+                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Find Projects</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Project Timeline */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Project Timeline</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-600">No upcoming deadlines</p>
               </div>
             </CardContent>
           </Card>
