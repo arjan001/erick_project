@@ -35,8 +35,8 @@ export default function ApplyTeam() {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return teamData.contact_name && teamData.contact_email && teamData.city && teamData.country && teamData.team_size;
-      case 2: return true; // Services optional
+      case 1: return teamData.team_name && teamData.team_code && teamData.contact_name && teamData.contact_email && teamData.city && teamData.country;
+      case 2: return teamData.specialties && teamData.specialties.length > 0;
       case 3: return true; // Portfolio optional, allow draft save
       default: return true;
     }
@@ -78,17 +78,15 @@ export default function ApplyTeam() {
   };
 
   const handleSubmit = async () => {
-    if (!teamData.contact_name || !teamData.contact_email || !teamData.city || !teamData.country || !teamData.team_size) {
-      alert('Please fill in team name, email, location, and size to submit.');
+    if (!teamData.team_name || !teamData.team_code || !teamData.contact_name || !teamData.contact_email || !teamData.city || !teamData.country) {
+      alert('Please fill in all required fields to submit.');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const teamCode = generateTeamCode();
       await base44.entities.Team.create({
         ...teamData,
-        team_code: teamCode,
         status: 'pending',
         availability: 'available'
       });
