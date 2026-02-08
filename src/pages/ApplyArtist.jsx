@@ -9,9 +9,10 @@ import ArtistStepDetails from '../components/artist/ArtistStepDetails';
 import ApplicationSuccess from '../components/ApplicationSuccess';
 
 const STEPS = [
-  { id: 1, name: 'Personal', component: ArtistStepRole },
-  { id: 2, name: 'Skills', component: ArtistStepQuestions },
-  { id: 3, name: 'Portfolio', component: ArtistStepPortfolio },
+  { id: 1, name: 'Details', component: ArtistStepDetails },
+  { id: 2, name: 'Role', component: ArtistStepRole },
+  { id: 3, name: 'Skills', component: ArtistStepQuestions },
+  { id: 4, name: 'Portfolio', component: ArtistStepPortfolio },
 ];
 
 export default function ApplyArtist() {
@@ -41,9 +42,10 @@ export default function ApplyArtist() {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return artistData.role !== '' && artistData.full_name !== '' && artistData.based_in_country !== '';
-      case 2: return true; // Skills optional
-      case 3: return true; // Portfolio optional, allow draft save
+      case 1: return artistData.full_name !== '' && artistData.email !== '' && artistData.based_in_country !== '';
+      case 2: return artistData.role !== '';
+      case 3: return true; // Skills optional
+      case 4: return true; // Portfolio optional, allow draft save
       default: return true;
     }
   };

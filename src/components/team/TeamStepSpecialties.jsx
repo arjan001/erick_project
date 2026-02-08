@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Video, Scissors, Wand2, Box, Music, Camera, Zap, Package, Plus, X } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Video, Scissors, Wand2, Box, Music, Camera, Zap, Package, Plus, X, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { SKILLS_DATABASE } from '../SkillsDatabase';
 
 const SPECIALTIES = [
   { value: 'production', label: 'Production', icon: Video },
@@ -14,7 +15,9 @@ const SPECIALTIES = [
 ];
 
 export default function TeamStepSpecialties({ data, updateData }) {
-  const [customSpecialty, setCustomSpecialty] = useState('');
+  const [skillSearch, setSkillSearch] = useState('');
+  const [showSkillDropdown, setShowSkillDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   const toggleSpecialty = (value) => {
     const current = data.specialties || [];
@@ -25,15 +28,14 @@ export default function TeamStepSpecialties({ data, updateData }) {
     }
   };
 
-  const addCustomSpecialty = () => {
-    if (customSpecialty.trim()) {
-      const customValue = customSpecialty.toLowerCase().replace(/\s+/g, '_');
-      if (!(data.specialties || []).includes(customValue)) {
-        updateData('specialties', [...(data.specialties || []), customValue]);
-        updateData('custom_specialties', [...(data.custom_specialties || []), { value: customValue, label: customSpecialty.trim() }]);
-      }
-      setCustomSpecialty('');
+  const addSkillFromDatabase = (skill) => {
+    const skillValue = skill.toLowerCase().replace(/\s+/g, '_');
+    if (!(data.specialties || []).includes(skillValue)) {
+      updateData('specialties', [...(data.specialties || []), skillValue]);
+      updateData('custom_specialties', [...(data.custom_specialties || []), { value: skillValue, label: skill }]);
     }
+    setSkillSearch('');
+    setShowSkillDropdown(false);
   };
 
   const removeCustomSpecialty = (value) => {
@@ -51,6 +53,24 @@ export default function TeamStepSpecialties({ data, updateData }) {
     const custom = (data.custom_specialties || []).find(s => s.value === value);
     return custom ? custom.label : value;
   };
+
+  const filteredSkills = SKILLS_DATABASE.filter(skill =>
+    skill.toLowerCase().includes(skillSearch.toLowerCase()) &&
+    !(data.specialties || []).includes(skill.toLowerCase().replace(/\s+/g, '_'))
+  ).slice(0, 20);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowSkillDropdown(false);
+      }
+    };
+
+    if (showSkillDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showSkillDropdown]);
 
   return (
     <div>
@@ -78,25 +98,46 @@ export default function TeamStepSpecialties({ data, updateData }) {
         })}
       </div>
 
-      {/* Custom Specialties Section */}
+      {/* Additional Specialties from Database */}
       <div className="mt-8 pt-8 border-t border-gray-200">
-        <h3 className="text-lg font-semibold mb-3 text-black">Add Custom Specialty</h3>
-        <p className="text-sm text-gray-600 mb-4">Don't see your specialty? Add it here</p>
+        <h3 className="text-lg font-semibold mb-3 text-black">Add Additional Specialties</h3>
+        <p className="text-sm text-gray-600 mb-4">Search and select from our database of professional specialties</p>
         
-        <div className="flex gap-2 mb-4">
-          <Input
-            value={customSpecialty}
-            onChange={(e) => setCustomSpecialty(e.target.value)}
-            placeholder="e.g., Drone Cinematography, Color Grading..."
-            className="bg-white border-gray-300 text-black h-12"
-            onKeyPress={(e) => e.key === 'Enter' && addCustomSpecialty()}
-          />
-          <button
-            onClick={addCustomSpecialty}
-            className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2 whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4" /> Add
-          </button>
+        <div className="relative" ref={dropdownRef}>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Input
+              value={skillSearch}
+              onChange={(e) => {
+                setSkillSearch(e.target.value);
+                setShowSkillDropdown(true);
+              }}
+              onFocus={() => setShowSkillDropdown(true)}
+              placeholder="Search: Camera, Lighting, VFX, Editing, Sound..."
+              className="bg-white border-gray-300 text-black h-12 pl-11"
+            />
+          </div>
+
+          {showSkillDropdown && skillSearch && (
+            <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-h-64 overflow-y-auto">
+              {filteredSkills.length > 0 ? (
+                filteredSkills.map(skill => (
+                  <button
+                    key={skill}
+                    type="button"
+                    onClick={() => addSkillFromDatabase(skill)}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm transition-colors"
+                  >
+                    {skill}
+                  </button>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                  No specialties found
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {(data.specialties || []).some(isCustomSpecialty) && (

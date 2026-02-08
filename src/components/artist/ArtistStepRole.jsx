@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Video, Camera, Scissors, Briefcase, Box, Wand2, Palette, Music, Mic, User, Plus, X } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Video, Camera, Scissors, Briefcase, Box, Wand2, Palette, Music, Mic, User, Plus, X, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { SKILLS_DATABASE } from '../SkillsDatabase';
 
 const ROLES = [
   { value: 'director', label: 'Director', icon: Video },
@@ -17,7 +18,9 @@ const ROLES = [
 ];
 
 export default function ArtistStepRole({ data, updateData }) {
-  const [customSkill, setCustomSkill] = useState('');
+  const [skillSearch, setSkillSearch] = useState('');
+  const [showSkillDropdown, setShowSkillDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   const toggleSecondaryRole = (role) => {
     const current = data.secondary_roles || [];
@@ -28,15 +31,14 @@ export default function ArtistStepRole({ data, updateData }) {
     }
   };
 
-  const addCustomSkill = () => {
-    if (customSkill.trim()) {
-      const customValue = customSkill.toLowerCase().replace(/\s+/g, '_');
-      if (!(data.secondary_roles || []).includes(customValue)) {
-        updateData('secondary_roles', [...(data.secondary_roles || []), customValue]);
-        updateData('custom_skills', [...(data.custom_skills || []), { value: customValue, label: customSkill.trim() }]);
-      }
-      setCustomSkill('');
+  const addSkillFromDatabase = (skill) => {
+    const skillValue = skill.toLowerCase().replace(/\s+/g, '_');
+    if (!(data.secondary_roles || []).includes(skillValue)) {
+      updateData('secondary_roles', [...(data.secondary_roles || []), skillValue]);
+      updateData('custom_skills', [...(data.custom_skills || []), { value: skillValue, label: skill }]);
     }
+    setSkillSearch('');
+    setShowSkillDropdown(false);
   };
 
   const removeCustomSkill = (value) => {
@@ -54,6 +56,24 @@ export default function ArtistStepRole({ data, updateData }) {
     const custom = (data.custom_skills || []).find(s => s.value === value);
     return custom ? custom.label : value;
   };
+
+  const filteredSkills = SKILLS_DATABASE.filter(skill =>
+    skill.toLowerCase().includes(skillSearch.toLowerCase()) &&
+    !(data.secondary_roles || []).includes(skill.toLowerCase().replace(/\s+/g, '_'))
+  ).slice(0, 20);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowSkillDropdown(false);
+      }
+    };
+
+    if (showSkillDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showSkillDropdown]);
 
   return (
     <div>
@@ -107,25 +127,46 @@ export default function ArtistStepRole({ data, updateData }) {
             })}
           </div>
 
-          {/* Custom Skills Section */}
+          {/* Additional Skills from Database */}
           <div className="mt-6 pt-6 border-t border-gray-200">
-            <h4 className="text-base font-semibold mb-3 text-black">Add Custom Skill</h4>
-            <p className="text-sm text-gray-600 mb-4">Don't see your skill? Add it here</p>
+            <h4 className="text-base font-semibold mb-3 text-black">Add Additional Skills</h4>
+            <p className="text-sm text-gray-600 mb-4">Search and select from our database of professional skills</p>
             
-            <div className="flex gap-2 mb-4">
-              <Input
-                value={customSkill}
-                onChange={(e) => setCustomSkill(e.target.value)}
-                placeholder="e.g., Drone Operator, Color Grading..."
-                className="bg-white border-gray-300 text-black h-12"
-                onKeyPress={(e) => e.key === 'Enter' && addCustomSkill()}
-              />
-              <button
-                onClick={addCustomSkill}
-                className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2 whitespace-nowrap"
-              >
-                <Plus className="w-4 h-4" /> Add
-              </button>
+            <div className="relative" ref={dropdownRef}>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Input
+                  value={skillSearch}
+                  onChange={(e) => {
+                    setSkillSearch(e.target.value);
+                    setShowSkillDropdown(true);
+                  }}
+                  onFocus={() => setShowSkillDropdown(true)}
+                  placeholder="Search skills: Camera, Lighting, VFX, Editing..."
+                  className="bg-white border-gray-300 text-black h-12 pl-11"
+                />
+              </div>
+
+              {showSkillDropdown && skillSearch && (
+                <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-h-64 overflow-y-auto">
+                  {filteredSkills.length > 0 ? (
+                    filteredSkills.map(skill => (
+                      <button
+                        key={skill}
+                        type="button"
+                        onClick={() => addSkillFromDatabase(skill)}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm transition-colors"
+                      >
+                        {skill}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                      No skills found
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {(data.secondary_roles || []).some(isCustomSkill) && (
