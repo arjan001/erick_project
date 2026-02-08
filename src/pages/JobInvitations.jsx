@@ -21,7 +21,7 @@ export default function JobInvitations() {
     <div className="flex h-screen bg-white">
       <ArtistSidebar />
       
-      <main className="flex-1 ml-64 overflow-auto">
+      <main className="flex-1 overflow-auto">
         <div className="p-8">
           <h1 className="text-4xl font-bold mb-8">Invitations</h1>
           
