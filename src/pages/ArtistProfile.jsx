@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '../components/ArtistSidebar';
 import AboutSection from '../components/AboutSection';
 import { Button } from '@/components/ui/button';
-import { MapPin, MessageCircle, Briefcase, MoreHorizontal, ChevronDown, Copy, Globe, Instagram, Linkedin, Star, ThumbsUp, Play, Users, Plus } from 'lucide-react';
+import { MapPin, MessageCircle, Briefcase, MoreHorizontal, ChevronDown, Copy, Globe, Instagram, Linkedin, Star, ThumbsUp, Play, Users, Plus, Edit2 } from 'lucide-react';
 
 export default function ArtistProfile() {
   const [user, setUser] = useState(null);
@@ -18,6 +18,10 @@ export default function ArtistProfile() {
   const [showRolesDropdown, setShowRolesDropdown] = useState(false);
   const [showProjectTypesDropdown, setShowProjectTypesDropdown] = useState(false);
   const [showPortfolioModal, setShowPortfolioModal] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [editingRole, setEditingRole] = useState(false);
+  const [profileName, setProfileName] = useState(user?.full_name || '');
+  const [profileRole, setProfileRole] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,6 +63,7 @@ export default function ArtistProfile() {
           recipient_email: user.email 
         });
         setTestimonials(testimonialsData);
+        setProfileRole(artistData[0]?.role || '');
       } catch (err) {
         console.error('Error fetching profile data:', err);
       }
@@ -111,19 +116,79 @@ export default function ArtistProfile() {
           <div className="flex items-start gap-6 -mt-16 relative z-10 mb-8">
             <div className="w-40 h-40 bg-black rounded-full border-4 border-white flex-shrink-0" />
             <div className="flex-1 pt-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">{artist?.full_name || user.full_name}</h1>
-              <p className="text-gray-600 text-base mb-3">
-                {artist?.role ? artist.role.charAt(0).toUpperCase() + artist.role.slice(1).replace(/_/g, ', ') : 'Creative Professional'}
-              </p>
-              <div className="flex items-center gap-4 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  {artist?.based_in_city || 'Location'}, {artist?.based_in_country || 'Country'}
+              {/* Name Section */}
+              {editingName ? (
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    className="text-3xl font-bold px-2 border border-gray-300 rounded text-gray-900 focus:outline-none focus:border-gray-400 flex-1"
+                  />
+                  <Button size="sm" onClick={() => setEditingName(false)} className="bg-black text-white hover:bg-gray-800">Save</Button>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  {Math.floor(Math.random() * 200) + 50} Mutuals
+              ) : (
+                <div className="flex items-center gap-3 mb-1">
+                  <h1 className="text-3xl font-bold text-gray-900">{profileName}</h1>
+                  <button onClick={() => setEditingName(true)} className="text-gray-400 hover:text-gray-600">
+                    <Edit2 className="w-4 h-4" />
+                  </button>
                 </div>
+              )}
+
+              {/* Role Section */}
+              {editingRole ? (
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={profileRole}
+                    onChange={(e) => setProfileRole(e.target.value)}
+                    placeholder="Your role/title"
+                    className="text-base px-2 border border-gray-300 rounded text-gray-600 focus:outline-none focus:border-gray-400 flex-1"
+                  />
+                  <Button size="sm" onClick={() => setEditingRole(false)} className="bg-black text-white hover:bg-gray-800">Save</Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mb-3">
+                  <p className="text-gray-600 text-base">
+                    {profileRole || 'Add your role'}
+                  </p>
+                  <button onClick={() => setEditingRole(true)} className="text-gray-400 hover:text-gray-600">
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Location & Contact Info */}
+              <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                {artist?.based_in_city && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    {artist.based_in_city}, {artist.based_in_country}
+                  </div>
+                )}
+                {user?.email && (
+                  <p>{user.email}</p>
+                )}
+              </div>
+
+              {/* Social Links */}
+              <div className="flex items-center gap-3">
+                {artist?.website && (
+                  <a href={artist.website} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900" title="Website">
+                    <Globe className="w-5 h-5" />
+                  </a>
+                )}
+                {artist?.instagram && (
+                  <a href={artist.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900" title="Instagram">
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                )}
+                {artist?.linkedin && (
+                  <a href={artist.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900" title="LinkedIn">
+                    <Linkedin className="w-5 h-5" />
+                  </a>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2 pt-8">
