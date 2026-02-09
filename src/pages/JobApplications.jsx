@@ -63,10 +63,10 @@ export default function JobApplications() {
   };
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="h-screen bg-white">
       <ArtistSidebar />
       
-      <main className="flex-1 overflow-auto pl-0">
+      <main className="w-full h-full overflow-auto">
         <div className="p-8">
           <h1 className="text-4xl font-bold mb-8">Applications</h1>
 

@@ -58,10 +58,10 @@ export default function JobBoard() {
   if (!user || loading) return null;
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="h-screen bg-white">
       <ArtistSidebar />
       
-      <main className="flex-1 flex overflow-hidden pl-0">
+      <main className="w-full h-full flex overflow-hidden">
         {/* Job List */}
         <div className="w-1/2 border-r border-gray-200 overflow-y-auto">
           <div className="p-6 space-y-4">

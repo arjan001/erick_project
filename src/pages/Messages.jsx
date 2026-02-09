@@ -19,10 +19,10 @@ export default function Messages() {
   if (!user) return null;
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="h-screen bg-white">
       <ArtistSidebar />
       
-      <main className="flex-1 flex overflow-hidden pl-0">
+      <main className="w-full h-full flex overflow-hidden">
         {/* Conversations List */}
         <div className="w-1/3 border-r border-gray-200 flex flex-col">
           <div className="p-4 border-b border-gray-200">

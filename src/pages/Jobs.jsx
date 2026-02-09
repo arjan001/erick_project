@@ -89,10 +89,10 @@ export default function Jobs() {
   );
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="h-screen bg-white">
       <ArtistSidebar />
       
-      <main className="flex-1 flex flex-col overflow-hidden bg-white pl-0">
+      <main className="w-full h-full flex flex-col overflow-hidden bg-white">
         {/* Header with Tabs */}
         <div className="border-b border-gray-200 px-6 pt-6">
           <div className="flex items-center justify-between mb-6">
