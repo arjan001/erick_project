@@ -34,6 +34,30 @@ export default function Network() {
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
 
+  // Generate random profile images
+  const getProfileImage = (id) => `https://i.pravatar.cc/150?img=${id}`;
+
+  // Mock data with images and mutual connections
+  const mockConnections = [
+    { id: 1, name: 'Saint', role: 'Editor, Graphic Designer, Art Director', location: 'Paris, France', image: getProfileImage(1), mutualConnections: 12 },
+    { id: 2, name: 'Moritz Giesl', role: 'Director, Creative Director', location: 'Berlin, DE', image: getProfileImage(2), mutualConnections: 8 },
+    { id: 3, name: 'Michaela Ceci', role: 'Stylist, Costume Designer', location: 'Milan, IT', image: getProfileImage(3), mutualConnections: 15 },
+    { id: 4, name: 'Aidan Cullen', role: 'Director, Photographer', location: 'Dublin, IE', image: getProfileImage(4), mutualConnections: 6 },
+    { id: 5, name: 'onda', role: 'Director, Photographer, Creative Director', location: 'Barcelona, ES', image: getProfileImage(5), mutualConnections: 22 },
+    { id: 6, name: 'Holdenmedia', role: 'Photographer, Editor, Graphic Designer', location: 'London, UK', image: getProfileImage(6), mutualConnections: 9 },
+    { id: 7, name: 'Antonio Molina', role: 'Editor, VFX Artist, Motion Designer', location: 'Madrid, ES', image: getProfileImage(7), mutualConnections: 11 },
+    { id: 8, name: 'Neema Sadeghi', role: 'Director, Photographer, Director of Photography', location: 'Amsterdam, NL', image: getProfileImage(8), mutualConnections: 18 },
+  ];
+
+  const mockSuggestions = [
+    { id: 20, name: 'Simon Floris', role: 'Director, Editor, 3D Artist', location: 'Brussels, BE', image: getProfileImage(20), mutualConnections: 17, status: 'pending' },
+    { id: 21, name: 'Luka Demol', role: 'Photographer', location: 'Brussels, BE', image: getProfileImage(21), mutualConnections: 2 },
+    { id: 22, name: 'Ulrich Carlos', role: 'Photographer, Videographer, Photo Assistant', location: 'Brussels, BE', image: getProfileImage(22), mutualConnections: 2 },
+    { id: 23, name: 'Emma Laurent', role: 'Cinematographer, DOP', location: 'Lyon, FR', image: getProfileImage(23), mutualConnections: 14 },
+    { id: 24, name: 'Marcus Chen', role: 'Motion Designer, 3D Artist', location: 'Vienna, AT', image: getProfileImage(24), mutualConnections: 7 },
+    { id: 25, name: 'Sofia Martinez', role: 'Producer, Line Producer', location: 'Barcelona, ES', image: getProfileImage(25), mutualConnections: 19 },
+  ];
+
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
     if (!storedUser) {
