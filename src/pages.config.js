@@ -78,6 +78,7 @@ import TeamPublicProfile from './pages/TeamPublicProfile';
 import Work from './pages/Work';
 import JobBoard from './pages/JobBoard';
 import Settings from './pages/Settings';
+import ArtistHome from './pages/ArtistHome';
 import __Layout from './Layout.jsx';
 
 
@@ -113,6 +114,7 @@ export const PAGES = {
     "Work": Work,
     "JobBoard": JobBoard,
     "Settings": Settings,
+    "ArtistHome": ArtistHome,
 }
 
 export const pagesConfig = {
