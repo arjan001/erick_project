@@ -360,6 +360,93 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                 <div className="mt-6">
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-sm font-medium">Describe this job (optional):</label>
+                    {!showExtractInput ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowExtractInput(true)}
+                        className="text-xs px-3 py-1 bg-blue-50 hover:bg-blue-100 rounded-full text-blue-700 border border-blue-200"
+                      >
+                        ✨ Extract from URL
+                      </button>
+                    ) : null}
+                  </div>
+                  
+                  {showExtractInput && (
+                    <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <label className="block text-xs font-medium text-blue-900 mb-2">
+                        Paste a website URL to extract project info from:
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={extractUrl}
+                          onChange={(e) => setExtractUrl(e.target.value)}
+                          placeholder="https://example.com/project-details"
+                          className="flex-1 px-4 py-2 border border-blue-300 rounded-lg text-sm focus:border-blue-500 outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!extractUrl) {
+                              alert('Please enter a URL');
+                              return;
+                            }
+                            if (!formData.position || !formData.location || !formData.project_type) {
+                              alert('Please fill in position, location, and project type first');
+                              return;
+                            }
+                            setIsExtracting(true);
+                            try {
+                              const response = await base44.integrations.Core.InvokeLLM({
+                                prompt: `Analyze this website: ${extractUrl}
+
+Based on the website content, create a professional job description for hiring a ${formData.position} in ${formData.location} for a ${formData.project_type} project.
+
+Include:
+• Project Overview (brief description of what the project is about based on website)
+• Key Responsibilities for the ${formData.position}
+• Required Skills & Experience
+• Deliverables Expected
+
+Format using HTML for better readability:
+- Use <strong>text</strong> for bold headings
+- Use bullet points with •
+- Keep paragraphs clear and concise
+- DO NOT use ** or markdown, use actual HTML tags
+
+Write in a professional, direct tone.`,
+                                add_context_from_internet: true
+                              });
+                              setFormData({ ...formData, description: response });
+                              setShowExtractInput(false);
+                              setExtractUrl('');
+                            } catch (err) {
+                              console.error('Extract error:', err);
+                              alert('Failed to extract from URL: ' + err.message);
+                            } finally {
+                              setIsExtracting(false);
+                            }
+                          }}
+                          disabled={isExtracting}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:bg-gray-400"
+                        >
+                          {isExtracting ? 'Extracting...' : 'Extract'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowExtractInput(false);
+                            setExtractUrl('');
+                          }}
+                          className="px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {!showExtractInput && (
                     <button
                       type="button"
                       onClick={async () => {
@@ -373,12 +460,18 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                             prompt: `Create a professional job description for hiring a ${formData.position} in ${formData.location} for a ${formData.project_type} project. The dates are: ${formData.dates || 'flexible'}.
 
 Include:
-- Brief project overview (2-3 sentences)
-- Key responsibilities for the ${formData.position}
-- What deliverables are expected
-- Required skills and experience
+• Project Overview
+• Key Responsibilities for the ${formData.position}
+• Required Skills & Experience
+• Deliverables Expected
 
-Format it as a clear, professional job description (3-4 paragraphs). Write in a direct, engaging tone.`
+Format using HTML for better readability:
+- Use <strong>text</strong> for bold headings
+- Use bullet points with •
+- Keep paragraphs clear and concise
+- DO NOT use ** or markdown, use actual HTML tags
+
+Write in a professional, direct tone.`
                           });
                           setFormData({ ...formData, description: response });
                         } catch (err) {
@@ -389,18 +482,18 @@ Format it as a clear, professional job description (3-4 paragraphs). Write in a 
                         }
                       }}
                       disabled={isExtracting}
-                      className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700 disabled:bg-gray-300"
+                      className="w-full mb-3 px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg text-sm hover:from-purple-600 hover:to-blue-600 disabled:bg-gray-400"
                     >
-                      {isExtracting ? '✨ Generating...' : '✨ Generate with AI'}
+                      {isExtracting ? '✨ Generating...' : '✨ Generate with AI (no URL)'}
                     </button>
-                  </div>
+                  )}
                   
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Add a description or click 'Generate with AI' to create one automatically"
+                    placeholder="Use 'Extract from URL' for website-based projects, or 'Generate with AI' for custom descriptions"
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-sm focus:border-purple-400 outline-none resize-none"
-                    rows={4}
+                    rows={6}
                   />
                   <div className="text-xs text-gray-500 text-right mt-1">
                     {(formData.description || '').length} / 5000
