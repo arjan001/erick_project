@@ -237,12 +237,17 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               />
               <div className="flex gap-2">
                 <Button
-                  onClick={() => setEditingBio(false)}
-                  className="flex-1 bg-black text-white hover:bg-gray-800"
-                >
-                  <Check className="w-4 h-4 mr-1" />
-                  Save Bio
-                </Button>
+                    onClick={async () => {
+                      if (artist) {
+                        await base44.entities.Artist.update(artist.id, { bio });
+                      }
+                      setEditingBio(false);
+                    }}
+                    className="flex-1 bg-black text-white hover:bg-gray-800"
+                  >
+                    <Check className="w-4 h-4 mr-1" />
+                    Save Bio
+                  </Button>
                 <Button
                   onClick={generateBioWithAI}
                   disabled={bioLoading}
@@ -327,7 +332,13 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               </div>
 
               <Button
-                onClick={() => setEditingSkills(false)}
+                onClick={async () => {
+                  if (artist) {
+                    const skillsData = skills.map(s => ({ skill: s, years: 0 }));
+                    await base44.entities.Artist.update(artist.id, { skills_experience: skillsData });
+                  }
+                  setEditingSkills(false);
+                }}
                 className="w-full bg-black text-white hover:bg-gray-800"
               >
                 <Check className="w-4 h-4 mr-1" />
@@ -431,15 +442,20 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               </div>
 
               <Button
-                onClick={() => setEditingClients(false)}
+                onClick={async () => {
+                  if (artist) {
+                    await base44.entities.Artist.update(artist.id, { past_clients: clients });
+                  }
+                  setEditingClients(false);
+                }}
                 className="w-full bg-black text-white hover:bg-gray-800"
               >
                 <Check className="w-4 h-4 mr-1" />
                 Done
               </Button>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-3">
+              </div>
+              ) : (
+              <div className="flex flex-wrap gap-3">
               {clients.length > 0 ? clients.map((client) => (
                 <div key={client} className="w-16 h-16 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" title={client}>
                   {client.slice(0, 2).toUpperCase()}
@@ -517,15 +533,20 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               </div>
 
               <Button
-                onClick={() => setEditingProjects(false)}
+                onClick={async () => {
+                  if (artist) {
+                    await base44.entities.Artist.update(artist.id, { project_specialties: projectTypes });
+                  }
+                  setEditingProjects(false);
+                }}
                 className="w-full bg-black text-white hover:bg-gray-800"
               >
                 <Check className="w-4 h-4 mr-1" />
                 Done
               </Button>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
+              </div>
+              ) : (
+              <div className="flex flex-wrap gap-2">
               {projectTypes.length > 0 ? projectTypes.map((type) => (
                 <span key={type} className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800">
                   {type}
@@ -601,12 +622,17 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 )}
               </div>
 
-              <Button onClick={() => setEditingLanguages(false)} className="w-full bg-black text-white hover:bg-gray-800">
+              <Button onClick={async () => {
+                if (artist) {
+                  await base44.entities.Artist.update(artist.id, { languages_spoken: languages });
+                }
+                setEditingLanguages(false);
+              }} className="w-full bg-black text-white hover:bg-gray-800">
                 <Check className="w-4 h-4 mr-1" /> Done
               </Button>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
+              </div>
+              ) : (
+              <div className="flex flex-wrap gap-2">
               {languages.length > 0 ? languages.map((lang) => (
                 <span key={lang} className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800">
                   {lang}
@@ -677,12 +703,17 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 )}
               </div>
 
-              <Button onClick={() => setEditingCountries(false)} className="w-full bg-black text-white hover:bg-gray-800">
+              <Button onClick={async () => {
+                if (artist) {
+                  await base44.entities.Artist.update(artist.id, { countries_worked: countries });
+                }
+                setEditingCountries(false);
+              }} className="w-full bg-black text-white hover:bg-gray-800">
                 <Check className="w-4 h-4 mr-1" /> Done
               </Button>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
+              </div>
+              ) : (
+              <div className="flex flex-wrap gap-2">
               {countries.length > 0 ? countries.map((c) => (
                 <span key={c} className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800">
                   {c}
@@ -753,12 +784,17 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 )}
               </div>
 
-              <Button onClick={() => setEditingVisited(false)} className="w-full bg-black text-white hover:bg-gray-800">
+              <Button onClick={async () => {
+                if (artist) {
+                  await base44.entities.Artist.update(artist.id, { visited_countries: visitedCountries });
+                }
+                setEditingVisited(false);
+              }} className="w-full bg-black text-white hover:bg-gray-800">
                 <Check className="w-4 h-4 mr-1" /> Done
               </Button>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
+              </div>
+              ) : (
+              <div className="flex flex-wrap gap-2">
               {visitedCountries.length > 0 ? visitedCountries.map((c) => (
                 <span key={c} className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800">
                   {c}
