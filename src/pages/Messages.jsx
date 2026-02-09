@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ArtistSidebar from '../components/ArtistSidebar';
-import { Search, Send, MoreVertical, Paperclip, Phone, Video, Monitor, Star, Users, Plus, X } from 'lucide-react';
+import { Search, Send, MoreVertical, Paperclip, Phone, Video, Monitor, Star, Users, Plus, X, Download, Trash2, MessageSquareOff } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function Messages() {
@@ -17,6 +17,7 @@ export default function Messages() {
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [selectedMembers, setSelectedMembers] = useState([]);
+  const [showChatMenu, setShowChatMenu] = useState(false);
   const messagesEndRef = useRef(null);
 
   // Mock conversations - load from localStorage
@@ -324,6 +325,45 @@ export default function Messages() {
     setShowGroupModal(false);
     setGroupName('');
     setSelectedMembers([]);
+  };
+
+  const exportChat = () => {
+    if (!selectedChat) return;
+    const chatData = JSON.stringify(selectedChat, null, 2);
+    const blob = new Blob([chatData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat-${selectedChat.name.replace(/\s+/g, '-')}-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setShowChatMenu(false);
+  };
+
+  const clearChat = () => {
+    if (!selectedChat) return;
+    if (window.confirm(`Are you sure you want to clear all messages with ${selectedChat.name}? This cannot be undone.`)) {
+      const updatedConversations = conversations.map(conv =>
+        conv.id === selectedChat.id ? { ...conv, messages: [], lastMessage: '', time: Date.now() } : conv
+      );
+      setConversations(updatedConversations);
+      setSelectedChat({ ...selectedChat, messages: [], lastMessage: '' });
+      setShowChatMenu(false);
+    }
+  };
+
+  const deleteConversation = () => {
+    if (!selectedChat) return;
+    const message = selectedChat.isGroup 
+      ? `Are you sure you want to delete the group "${selectedChat.name}"? This cannot be undone.`
+      : `Are you sure you want to remove ${selectedChat.name} from your chats? This cannot be undone.`;
+    
+    if (window.confirm(message)) {
+      const updatedConversations = conversations.filter(conv => conv.id !== selectedChat.id);
+      setConversations(updatedConversations);
+      setSelectedChat(null);
+      setShowChatMenu(false);
+    }
   };
 
   const handleFileAttach = async (event) => {
@@ -803,9 +843,39 @@ export default function Messages() {
                       >
                         <Monitor className="w-5 h-5" />
                       </button>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <MoreVertical className="w-5 h-5 text-gray-600" />
-                      </button>
+                      <div className="relative">
+                        <button 
+                          onClick={() => setShowChatMenu(!showChatMenu)}
+                          className="p-2 hover:bg-gray-100 rounded-lg"
+                        >
+                          <MoreVertical className="w-5 h-5 text-gray-600" />
+                        </button>
+                        {showChatMenu && (
+                          <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
+                            <button
+                              onClick={exportChat}
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                            >
+                              <Download className="w-4 h-4" />
+                              Backup Chat
+                            </button>
+                            <button
+                              onClick={clearChat}
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                            >
+                              <MessageSquareOff className="w-4 h-4" />
+                              Clear Messages
+                            </button>
+                            <button
+                              onClick={deleteConversation}
+                              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              {selectedChat?.isGroup ? 'Delete Group' : 'Remove Chat'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     </div>
                     <div className="mt-2 flex items-center gap-2">
