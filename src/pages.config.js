@@ -52,6 +52,7 @@ import ApplyArtist from './pages/ApplyArtist';
 import ApplyTeam from './pages/ApplyTeam';
 import ArtistAdmin from './pages/ArtistAdmin';
 import ArtistDashboard from './pages/ArtistDashboard';
+import ArtistHome from './pages/ArtistHome';
 import ArtistProfile from './pages/ArtistProfile';
 import ArtistPublicProfile from './pages/ArtistPublicProfile';
 import BackedProjects from './pages/BackedProjects';
@@ -62,6 +63,7 @@ import Home from './pages/Home';
 import Home2 from './pages/Home2';
 import HowBackingWorks from './pages/HowBackingWorks';
 import JobApplications from './pages/JobApplications';
+import JobBoard from './pages/JobBoard';
 import JobInvitations from './pages/JobInvitations';
 import Jobs from './pages/Jobs';
 import Messages from './pages/Messages';
@@ -70,15 +72,13 @@ import Pricing from './pages/Pricing';
 import ProjectAdmin from './pages/ProjectAdmin';
 import Projects from './pages/Projects';
 import Services from './pages/Services';
+import Settings from './pages/Settings';
 import SignIn from './pages/SignIn';
 import SubmitProject from './pages/SubmitProject';
 import TeamAdmin from './pages/TeamAdmin';
 import TeamDashboard from './pages/TeamDashboard';
 import TeamPublicProfile from './pages/TeamPublicProfile';
 import Work from './pages/Work';
-import JobBoard from './pages/JobBoard';
-import Settings from './pages/Settings';
-import ArtistHome from './pages/ArtistHome';
 import __Layout from './Layout.jsx';
 
 
@@ -88,6 +88,7 @@ export const PAGES = {
     "ApplyTeam": ApplyTeam,
     "ArtistAdmin": ArtistAdmin,
     "ArtistDashboard": ArtistDashboard,
+    "ArtistHome": ArtistHome,
     "ArtistProfile": ArtistProfile,
     "ArtistPublicProfile": ArtistPublicProfile,
     "BackedProjects": BackedProjects,
@@ -98,6 +99,7 @@ export const PAGES = {
     "Home2": Home2,
     "HowBackingWorks": HowBackingWorks,
     "JobApplications": JobApplications,
+    "JobBoard": JobBoard,
     "JobInvitations": JobInvitations,
     "Jobs": Jobs,
     "Messages": Messages,
@@ -106,15 +108,13 @@ export const PAGES = {
     "ProjectAdmin": ProjectAdmin,
     "Projects": Projects,
     "Services": Services,
+    "Settings": Settings,
     "SignIn": SignIn,
     "SubmitProject": SubmitProject,
     "TeamAdmin": TeamAdmin,
     "TeamDashboard": TeamDashboard,
     "TeamPublicProfile": TeamPublicProfile,
     "Work": Work,
-    "JobBoard": JobBoard,
-    "Settings": Settings,
-    "ArtistHome": ArtistHome,
 }
 
 export const pagesConfig = {

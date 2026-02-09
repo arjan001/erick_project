@@ -162,11 +162,16 @@ export default function ArtistProfile() {
                     onChange={(e) => setProfileName(e.target.value)}
                     className="text-3xl font-bold px-2 border border-gray-300 rounded text-gray-900 focus:outline-none focus:border-gray-400 flex-1"
                   />
-                  <Button size="sm" onClick={() => setEditingName(false)} className="bg-black text-white hover:bg-gray-800">Save</Button>
+                  <Button size="sm" onClick={async () => {
+                    if (artist && profileName) {
+                      await base44.entities.Artist.update(artist.id, { full_name: profileName });
+                      setEditingName(false);
+                    }
+                  }} className="bg-black text-white hover:bg-gray-800">Save</Button>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-3xl font-bold text-gray-900">{profileName}</h1>
+                  <h1 className="text-3xl font-bold text-gray-900">{profileName || artist?.full_name}</h1>
                   <button onClick={() => setEditingName(true)} className="text-gray-400 hover:text-gray-600">
                     <Edit2 className="w-4 h-4" />
                   </button>
@@ -183,12 +188,17 @@ export default function ArtistProfile() {
                     placeholder="Your role/title"
                     className="text-base px-2 border border-gray-300 rounded text-gray-600 focus:outline-none focus:border-gray-400 flex-1"
                   />
-                  <Button size="sm" onClick={() => setEditingRole(false)} className="bg-black text-white hover:bg-gray-800">Save</Button>
+                  <Button size="sm" onClick={async () => {
+                    if (artist && profileRole) {
+                      await base44.entities.Artist.update(artist.id, { role: profileRole });
+                      setEditingRole(false);
+                    }
+                  }} className="bg-black text-white hover:bg-gray-800">Save</Button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 mb-3">
                   <p className="text-gray-600 text-base">
-                    {profileRole || 'Add your role'}
+                    {profileRole || artist?.role || 'Add your role'}
                   </p>
                   <button onClick={() => setEditingRole(true)} className="text-gray-400 hover:text-gray-600">
                     <Edit2 className="w-4 h-4" />
