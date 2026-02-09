@@ -8,7 +8,7 @@ import { createPageUrl } from '../utils';
 
 const MENU_ITEMS = [
   { label: 'Find Work', icon: Search, href: 'Jobs', showIcon: true },
-  { label: 'Job Board', icon: Briefcase, href: 'JobBoard', showIcon: true },
+  { label: 'Projects from Clients', icon: Briefcase, href: 'JobBoard', showIcon: true },
   { label: 'Applications', icon: FileText, href: 'JobApplications', showIcon: true },
   { label: 'Messages', icon: Mail, href: 'Messages', showIcon: true },
   { label: 'Network', icon: Network, href: 'Network', showIcon: true },
