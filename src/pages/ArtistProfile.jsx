@@ -23,6 +23,7 @@ export default function ArtistProfile() {
   const [profileName, setProfileName] = useState(user?.full_name || '');
   const [profileRole, setProfileRole] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = React.useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
