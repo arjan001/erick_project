@@ -35,16 +35,33 @@ export default function JobBoard() {
         // Fetch applications to show engagement
         const applications = await base44.entities.Application.list();
         
-        // Enrich projects with application counts
-        const enrichedProjects = allProjects.map(project => {
+        // Enrich projects with application counts and generate images
+        const enrichedProjects = await Promise.all(allProjects.map(async (project) => {
           const projectApplications = applications.filter(app => app.job_id === project.id);
+          
+          // Generate image if not exists
+          let generatedImage = project.image_url;
+          if (!generatedImage && project.notes) {
+            try {
+              const prompt = `Creative ${project.project_type?.replace(/_/g, ' ')} project visual. ${project.notes}. Location: ${project.location_city || 'modern city'}, ${project.location_country || 'Europe'}. Cinematic, professional, vibrant colors.`;
+              const imageResult = await base44.integrations.Core.GenerateImage({ prompt });
+              generatedImage = imageResult.url;
+              
+              // Save the generated image back to the project
+              await base44.entities.Project.update(project.id, { image_url: generatedImage });
+            } catch (err) {
+              console.log('Image generation skipped for project', project.id);
+            }
+          }
+          
           return {
             ...project,
+            image_url: generatedImage,
             applicantCount: projectApplications.length,
             hasApplied: projectApplications.some(app => app.artist_email === user.email),
             inDiscussion: projectApplications.filter(app => app.status === 'chat_started').length > 0
           };
-        });
+        }));
         
         setProjects(enrichedProjects);
         if (enrichedProjects.length > 0) setSelectedProject(enrichedProjects[0]);
@@ -208,17 +225,12 @@ export default function JobBoard() {
                   {/* Project Content */}
                   <div className="p-5">
                     {/* Client Info */}
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center text-gray-600 font-bold text-sm">
-                        {project.project_owner_name?.charAt(0) || 'C'}
+                    <div className="mb-3">
+                      <div className="font-semibold text-sm text-gray-900">
+                        {project.project_owner_name || 'Client'}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm text-gray-900 truncate">
-                          {project.project_owner_name || 'Client'}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {project.project_owner_company || 'Independent'}
-                        </div>
+                      <div className="text-xs text-gray-500">
+                        {project.project_owner_company || 'Independent'}
                       </div>
                     </div>
 
@@ -282,14 +294,9 @@ export default function JobBoard() {
             <div className="w-96 border-l border-gray-200 overflow-y-auto bg-gray-50">
               <div className="p-6">
                 {/* Header */}
-                <div className="flex items-start gap-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center text-gray-600 font-bold">
-                    {selectedProject.project_owner_name?.charAt(0) || 'C'}
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-lg font-bold text-gray-900">{selectedProject.project_owner_name}</h2>
-                    <p className="text-sm text-gray-600">{selectedProject.project_owner_company}</p>
-                  </div>
+                <div className="mb-6">
+                  <h2 className="text-lg font-bold text-gray-900">{selectedProject.project_owner_name}</h2>
+                  <p className="text-sm text-gray-600">{selectedProject.project_owner_company}</p>
                 </div>
 
                 {/* Type Badge */}
