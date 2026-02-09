@@ -769,26 +769,32 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
         </div>
       </div>
 
-      {/* Right Column - Contact Info */}
+      {/* Right Column - Contact Info (Editable) */}
       <div className="space-y-8">
         {/* Contact Section */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-500 mb-4">Contact</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-gray-500">Contact</h3>
+            <p className="text-xs text-gray-500">Edit in Settings</p>
+          </div>
           <div className="space-y-3">
-            {artist?.email && <p className="text-sm text-gray-800"><strong>Email:</strong> {artist.email}</p>}
+            {artist?.email && <p className="text-sm text-gray-800"><strong>Email:</strong> <a href={`mailto:${artist.email}`} className="text-gray-600 hover:text-gray-900">{artist.email}</a></p>}
             {artist?.phone && <p className="text-sm text-gray-800"><strong>Phone:</strong> {artist.phone}</p>}
-            {artist?.website && <a href={artist.website} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600"><strong>Website</strong></a>}
+            {artist?.website && <a href={artist.website} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600 block"><Globe className="w-4 h-4 inline mr-2" />{artist.website}</a>}
           </div>
         </div>
 
         {/* Social Media */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-500 mb-4">Socials</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-gray-500">Socials</h3>
+            <p className="text-xs text-gray-500">Edit in Settings</p>
+          </div>
           <div className="space-y-2">
-            {artist?.instagram && <a href={artist.instagram} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600"><Instagram className="w-4 h-4 inline mr-2" />Instagram</a>}
-            {artist?.linkedin && <a href={artist.linkedin} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600"><Linkedin className="w-4 h-4 inline mr-2" />LinkedIn</a>}
-            {artist?.vimeo && <a href={artist.vimeo} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600 block"><strong>Vimeo</strong></a>}
-            {artist?.imdb && <a href={artist.imdb} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600 block"><strong>IMDb</strong></a>}
+            {artist?.instagram && <a href={artist.instagram} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600 block"><Instagram className="w-4 h-4 inline mr-2" />@{artist.instagram.split('/').pop()}</a>}
+            {artist?.linkedin && <a href={artist.linkedin} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600 block"><Linkedin className="w-4 h-4 inline mr-2" />{artist.linkedin.split('/').pop()}</a>}
+            {artist?.vimeo && <a href={artist.vimeo} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600 block">🎬 Vimeo</a>}
+            {artist?.imdb && <a href={artist.imdb} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600 block">🎭 IMDb</a>}
           </div>
         </div>
       </div>
