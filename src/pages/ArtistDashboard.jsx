@@ -20,7 +20,7 @@ export default function ArtistDashboard() {
   return (
     <div className="h-screen bg-white">
       <ArtistSidebar />
-      <main className="w-full h-full overflow-auto">
+      <main className="w-full h-full overflow-auto pl-20">
         <div className="p-12">
           <h1 className="text-4xl font-bold mb-4">Welcome, {user.full_name}</h1>
           <p className="text-gray-600 mb-12">Find your next project opportunity</p>
