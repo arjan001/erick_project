@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { X, Calendar as CalendarIcon } from 'lucide-react';
+import { X, Calendar as CalendarIcon, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { PRODUCTION_POSITIONS } from './positions';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const PROJECT_TYPES = [
   'Commercial',
@@ -145,6 +147,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
   const [showExtractInput, setShowExtractInput] = useState(false);
   const [extractUrl, setExtractUrl] = useState('');
   const [isExtracting, setIsExtracting] = useState(false);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
 
   if (!isOpen) return null;
 
@@ -179,14 +182,47 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
       posted_at: new Date().toISOString()
     };
     onSubmit(jobData);
+    setShowSuccessNotification(true);
+    setTimeout(() => {
+      setShowSuccessNotification(false);
+      onClose();
+    }, 3000);
   };
 
   const handleSaveDraft = () => {
     console.log('Draft saved:', formData);
   };
 
+  const quillModules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      ['link'],
+      ['clean']
+    ]
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <>
+      {/* Success Notification */}
+      {showSuccessNotification && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] animate-slideDown">
+          <div className="bg-white rounded-xl shadow-2xl border-2 border-green-500 px-6 py-4 flex items-center gap-4 min-w-[400px]">
+            <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+              <CheckCircle className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-gray-900">Job posted successfully!</h3>
+              <p className="text-sm text-gray-600">Your job is now live and visible to creators</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <div>
@@ -522,15 +558,19 @@ Write in a professional, direct tone.`
                     </button>
                   )}
                   
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Use 'Extract from URL' for website-based projects, or 'Generate with AI' for custom descriptions"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-sm focus:border-purple-400 outline-none resize-none"
-                    rows={6}
-                  />
+                  <div className="border-2 border-gray-300 rounded-lg overflow-hidden focus-within:border-purple-400">
+                    <ReactQuill
+                      theme="snow"
+                      value={formData.description}
+                      onChange={(value) => setFormData({ ...formData, description: value })}
+                      modules={quillModules}
+                      placeholder="Use 'Extract from URL' for website-based projects, or 'Generate with AI' for custom descriptions"
+                      className="bg-white"
+                      style={{ minHeight: '200px' }}
+                    />
+                  </div>
                   <div className="text-xs text-gray-500 text-right mt-1">
-                    {(formData.description || '').length} / 5000
+                    {(formData.description?.replace(/<[^>]*>/g, '') || '').length} / 5000
                   </div>
                 </div>
               </div>
@@ -721,8 +761,8 @@ Write in a professional, direct tone.`
                 
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-gray-600 uppercase mb-2">Job description</h4>
-                  <p className="text-sm text-gray-800">{formData.description || 'I want to have ...'}</p>
-                </div>
+                  <div className="text-sm text-gray-800 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: formData.description || 'I want to have ...' }} />
+                  </div>
 
                 <div className="mb-6">
                   <h4 className="text-xs font-bold text-gray-600 uppercase mb-2">Job type</h4>
