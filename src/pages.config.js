@@ -62,7 +62,6 @@ import Home from './pages/Home';
 import Home2 from './pages/Home2';
 import HowBackingWorks from './pages/HowBackingWorks';
 import JobApplications from './pages/JobApplications';
-import JobBoard from './pages/JobBoard';
 import JobInvitations from './pages/JobInvitations';
 import Jobs from './pages/Jobs';
 import Messages from './pages/Messages';
@@ -77,6 +76,7 @@ import TeamAdmin from './pages/TeamAdmin';
 import TeamDashboard from './pages/TeamDashboard';
 import TeamPublicProfile from './pages/TeamPublicProfile';
 import Work from './pages/Work';
+import JobBoard from './pages/JobBoard';
 import __Layout from './Layout.jsx';
 
 
@@ -96,7 +96,6 @@ export const PAGES = {
     "Home2": Home2,
     "HowBackingWorks": HowBackingWorks,
     "JobApplications": JobApplications,
-    "JobBoard": JobBoard,
     "JobInvitations": JobInvitations,
     "Jobs": Jobs,
     "Messages": Messages,
@@ -111,6 +110,7 @@ export const PAGES = {
     "TeamDashboard": TeamDashboard,
     "TeamPublicProfile": TeamPublicProfile,
     "Work": Work,
+    "JobBoard": JobBoard,
 }
 
 export const pagesConfig = {

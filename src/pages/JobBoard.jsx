@@ -193,55 +193,65 @@ export default function JobBoard() {
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  {/* Generate Button */}
-                  {!project.image_url && (
-                    <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
-                      <button
-                        onClick={() => handleGenerateImage(project)}
-                        disabled={generatingImageFor === project.id}
-                        className="w-full px-3 py-1.5 bg-black text-white text-xs font-medium rounded hover:bg-gray-800 disabled:opacity-50"
-                      >
-                        {generatingImageFor === project.id ? 'Generating...' : 'Generate Banner'}
-                      </button>
-                    </div>
-                  )}
-
                   {/* Project Image/Banner */}
-                  {project.image_url && (
-                    <div className="relative h-40 bg-gray-100 overflow-hidden">
+                  <div className="relative h-40 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                    {project.image_url ? (
                       <img 
                         src={project.image_url} 
                         alt={project.project_type} 
                         className="w-full h-full object-cover"
                       />
-                      
-                      {/* Status Badges */}
-                      <div className="absolute top-3 left-3 flex gap-2">
-                        {project.hasApplied && (
-                          <span className="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
-                            <CheckCircle className="w-3 h-3" />
-                            Applied
-                          </span>
-                        )}
-                        {project.inDiscussion && (
-                          <span className="px-2 py-1 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
-                            <MessageSquare className="w-3 h-3" />
-                            In Discussion
-                          </span>
-                        )}
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-400">
+                        <span className="text-sm font-medium">No image</span>
                       </div>
-
-                      {/* Trending Badge */}
-                      {project.applicantCount > 5 && (
-                        <div className="absolute top-3 right-3">
-                          <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3" />
-                            Hot
-                          </span>
-                        </div>
+                    )}
+                    
+                    {/* Generate/Refresh Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleGenerateImage(project);
+                      }}
+                      disabled={generatingImageFor === project.id}
+                      className="absolute top-3 right-3 p-2 bg-black/80 text-white rounded-full hover:bg-black disabled:opacity-50 transition-colors"
+                      title="Generate banner image"
+                    >
+                      {generatingImageFor === project.id ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      )}
+                    </button>
+                    
+                    {/* Status Badges */}
+                    <div className="absolute top-3 left-3 flex gap-2">
+                      {project.hasApplied && (
+                        <span className="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" />
+                          Applied
+                        </span>
+                      )}
+                      {project.inDiscussion && (
+                        <span className="px-2 py-1 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                          <MessageSquare className="w-3 h-3" />
+                          In Discussion
+                        </span>
                       )}
                     </div>
-                  )}
+
+                    {/* Trending Badge - moved to bottom right to avoid overlap */}
+                    {project.applicantCount > 5 && (
+                      <div className="absolute bottom-3 right-3">
+                        <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                          <TrendingUp className="w-3 h-3" />
+                          Hot
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Project Content */}
                   <div className="p-5">
