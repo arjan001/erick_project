@@ -143,13 +143,14 @@ export default function ArtistProfile() {
               )}
               <label className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleProfileImageUpload}
                   disabled={uploadingImage}
-                  className="hidden"
+                  className="absolute w-0 h-0 opacity-0"
                 />
-                <span className="text-white text-sm font-medium">{uploadingImage ? 'Uploading...' : 'Change'}</span>
+                <span className="text-white text-sm font-medium pointer-events-none">{uploadingImage ? 'Uploading...' : 'Change'}</span>
               </label>
             </div>
             <div className="flex-1 pt-8">
