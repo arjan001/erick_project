@@ -207,28 +207,15 @@ export default function JobBoard() {
                   )}
 
                   {/* Project Image/Banner */}
-                  <div className="relative h-40 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 overflow-hidden">
-                    {project.image_url ? (
+                  {project.image_url && (
+                    <div className="relative h-40 bg-gray-100 overflow-hidden">
                       <img 
                         src={project.image_url} 
                         alt={project.project_type} 
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
                       />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600">
-                        <div className="text-white text-center p-4">
-                          <div className="text-lg font-bold uppercase tracking-wider">
-                            {project.project_type?.replace(/_/g, ' ')}
-                          </div>
-                          <div className="text-xs mt-1 opacity-80">
-                            {project.location_city || 'Remote'}
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    </div>
+                  )}
                     
                     {/* Status Badges */}
                     <div className="absolute top-3 left-3 flex gap-2">
