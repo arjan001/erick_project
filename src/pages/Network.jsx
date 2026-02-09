@@ -188,9 +188,9 @@ export default function Network() {
   const handleViewProfile = (person) => {
     // Navigate to public profile pages
     if (person.type === 'artist') {
-      navigate(`/artist-public-profile?id=${person.id}`);
+      navigate(`/ArtistPublicProfile?id=${person.id}`);
     } else if (person.type === 'team') {
-      navigate(`/team-public-profile?id=${person.id}`);
+      navigate(`/TeamPublicProfile?id=${person.id}`);
     }
   };
 
