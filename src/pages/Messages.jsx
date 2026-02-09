@@ -646,7 +646,7 @@ export default function Messages() {
   if (!user) return null;
 
   return (
-    <div className="fixed inset-0 bg-white overflow-hidden">
+    <div className="fixed inset-0 bg-white">
       <ArtistSidebar />
 
       {/* Image Lightbox Modal */}
@@ -838,8 +838,8 @@ export default function Messages() {
           </div>
         </div>
       )}
-      
-      <main className="fixed inset-0 flex bg-white pl-20">
+
+      <main className="fixed top-0 left-20 right-0 bottom-0 flex bg-white">
         <div className="flex-1 flex h-full overflow-hidden">
           {/* Conversations List */}
           <div className="w-96 border-r border-gray-200 flex flex-col h-full bg-white overflow-hidden">

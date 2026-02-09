@@ -234,20 +234,15 @@ export default function Network() {
   if (!user || loading) return null;
 
   return (
-    <div className="h-screen bg-white">
+    <div className="fixed inset-0 bg-white overflow-hidden">
       <ArtistSidebar />
       
-      <main className="w-full h-full flex flex-col overflow-hidden bg-white pl-20">
+      <main className="fixed inset-0 flex flex-col bg-white pl-20">
         {/* Header */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <NetworkIcon className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Network</h1>
-              <p className="text-sm text-gray-600">Manage connections and discover creatives</p>
-            </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Network</h1>
+            <p className="text-sm text-gray-600">Manage connections and discover creatives</p>
           </div>
           <div className="text-sm text-gray-600">
             <span className="font-semibold text-gray-900">{myConnections.length}</span> connections

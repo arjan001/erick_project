@@ -11,7 +11,7 @@ const MENU_ITEMS = [
   { label: 'Job Board', icon: Briefcase, href: 'JobBoard', showIcon: true },
   { label: 'Applications', icon: FileText, href: 'JobApplications', showIcon: true },
   { label: 'Messages', icon: Mail, href: 'Messages', showIcon: true },
-  { label: 'Network', icon: Users, href: 'Network', showIcon: true },
+  { label: 'Network', icon: Users, href: 'Network', showIcon: true, iconText: '22.' },
   { label: 'My Profile', icon: User, href: 'ArtistProfile', showIcon: true },
   { label: 'Settings', icon: Settings, href: 'ArtistDashboard', showIcon: true }
 ];
@@ -62,7 +62,11 @@ export default function ArtistSidebar() {
               }`}
               title={!expanded ? item.label : ''}
             >
-              <Icon className="w-5 h-5 flex-shrink-0" />
+              {item.iconText ? (
+                <span className="text-base font-black flex-shrink-0">{item.iconText}</span>
+              ) : (
+                <Icon className="w-5 h-5 flex-shrink-0" />
+              )}
               {expanded && <span className="text-sm font-medium">{item.label}</span>}
             </Link>
           );
