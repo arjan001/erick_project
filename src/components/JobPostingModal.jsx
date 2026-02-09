@@ -233,18 +233,25 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                   </div>
                   {showLocationDropdown && locationSuggestions.length > 0 && (
                     <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
-                      {locationSuggestions.map((loc, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            setFormData({ ...formData, location: loc.display_name });
-                            setShowLocationDropdown(false);
-                          }}
-                          className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 text-sm"
-                        >
-                          {loc.display_name}
-                        </button>
-                      ))}
+                      {locationSuggestions.map((loc, idx) => {
+                        const addressParts = loc.display_name.split(', ');
+                        const city = loc.name || addressParts[0];
+                        const country = addressParts[addressParts.length - 1];
+                        const displayText = `${city}, ${country}`;
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              setFormData({ ...formData, location: displayText });
+                              setShowLocationDropdown(false);
+                              setLocationSuggestions([]);
+                            }}
+                            className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 text-sm"
+                          >
+                            {displayText}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
