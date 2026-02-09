@@ -108,15 +108,34 @@ export default function ArtistProfile() {
 
   const handleProfileImageUpload = async (e) => {
     const file = e.target.files?.[0];
-    if (!file || !artist) return;
+    if (!file || !artist) {
+      console.error('No file or artist:', { file, artist });
+      return;
+    }
 
+    console.log('Uploading file:', file.name, file.type, file.size);
     setUploadingImage(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      await base44.entities.Artist.update(artist.id, { profile_photo_url: file_url });
-      setArtist({ ...artist, profile_photo_url: file_url });
+      const response = await base44.integrations.Core.UploadFile({ file });
+      console.log('Upload response:', response);
+      
+      const fileUrl = response.file_url || response.url;
+      if (!fileUrl) {
+        throw new Error('No file URL in response');
+      }
+      
+      console.log('Saving to artist:', artist.id, fileUrl);
+      await base44.entities.Artist.update(artist.id, { profile_photo_url: fileUrl });
+      
+      setArtist(prev => ({ ...prev, profile_photo_url: fileUrl }));
+      console.log('Image saved successfully');
+      
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } catch (err) {
       console.error('Error uploading image:', err);
+      alert('Failed to upload image: ' + err.message);
     } finally {
       setUploadingImage(false);
     }
@@ -142,16 +161,16 @@ export default function ArtistProfile() {
               ) : (
                 <div className="w-40 h-40 bg-black rounded-full border-4 border-white flex-shrink-0" />
               )}
-              <label className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleProfileImageUpload}
-                  disabled={uploadingImage}
-                  className="absolute w-0 h-0 opacity-0"
-                />
-                <span className="text-white text-sm font-medium pointer-events-none">{uploadingImage ? 'Uploading...' : 'Change'}</span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,.gif,.jpg,.jpeg,.png,.jfif,.webp"
+                onChange={handleProfileImageUpload}
+                disabled={uploadingImage}
+                className="hidden"
+              />
+              <label onClick={() => fileInputRef.current?.click()} className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-white text-sm font-medium">{uploadingImage ? 'Uploading...' : 'Change'}</span>
               </label>
             </div>
             <div className="flex-1 pt-8">
