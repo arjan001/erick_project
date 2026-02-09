@@ -125,17 +125,9 @@ export default function ArtistProfile() {
               </div>
             </div>
             <div className="flex items-center gap-2 pt-8">
-              <Button className="bg-black text-white hover:bg-gray-800 px-6">
-                <Copy className="w-4 h-4 mr-2" />
-                Copy link
-              </Button>
-              <Button className="bg-black text-white hover:bg-gray-800 px-6">
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Message
-              </Button>
-              <Button className="bg-black text-white hover:bg-gray-800 px-6">
-                <Briefcase className="w-4 h-4 mr-2" />
-                Invite to Job
+              <Button onClick={() => navigate('ArtistDashboard')} className="bg-black text-white hover:bg-gray-800 px-6">
+                <Edit2 className="w-4 h-4 mr-2" />
+                Edit Profile
               </Button>
               <Button variant="ghost" className="p-2">
                 <MoreHorizontal className="w-5 h-5" />
@@ -258,9 +250,18 @@ export default function ArtistProfile() {
           {activeTab === 'work' && (
             <div>
               <div className="grid grid-cols-3 gap-6 mb-12">
+                {/* Add Portfolio Button */}
+                <button
+                  onClick={() => {/* TODO: Add modal for uploading portfolio */}}
+                  className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg aspect-video flex flex-col items-center justify-center hover:bg-gray-100 transition-colors group"
+                >
+                  <div className="text-4xl mb-2">+</div>
+                  <p className="text-sm font-medium text-gray-600">Add portfolio</p>
+                </button>
+
                 {filteredClips.length > 0 ? (
                   filteredClips.map((clip) => (
-                    <div key={clip.id} className="group cursor-pointer">
+                    <div key={clip.id} className="group cursor-pointer relative">
                       <div className="relative bg-gray-900 aspect-video rounded-lg mb-3 overflow-hidden">
                         {clip.thumbnail_url ? (
                           <img src={clip.thumbnail_url} alt={clip.title} className="w-full h-full object-cover group-hover:opacity-80 transition-opacity" />
@@ -281,11 +282,7 @@ export default function ArtistProfile() {
                       </p>
                     </div>
                   ))
-                ) : (
-                  <div className="col-span-3 text-center py-16 text-gray-500">
-                    <p>No portfolio work yet. Upload your first project!</p>
-                  </div>
-                )}
+                ) : null}
               </div>
 
               {/* Testimonials Section */}
