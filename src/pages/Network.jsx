@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '../components/ArtistSidebar';
-import { Search, MapPin, Euro, ChevronDown, Users, Building2, TrendingUp, X, MessageCircle, Briefcase, Network as NetworkIcon, Clock } from 'lucide-react';
+import { Search, MapPin, Euro, ChevronDown, Users, Building2, TrendingUp, X, MessageCircle, Briefcase, Network as NetworkIcon, Clock, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Network() {
@@ -10,10 +10,14 @@ export default function Network() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchTags, setSearchTags] = useState([]);
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [selectedType, setSelectedType] = useState('all'); // all, artist, team, backer
   const [selectedRole, setSelectedRole] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [selectedBudget, setSelectedBudget] = useState('all');
+  const [referralsLeft, setReferralsLeft] = useState(3);
+  const [showReferralModal, setShowReferralModal] = useState(false);
   
   const [artists, setArtists] = useState([]);
   const [teams, setTeams] = useState([]);
@@ -182,12 +186,53 @@ export default function Network() {
   };
 
   const handleViewProfile = (person) => {
+    // Navigate to public profile pages
     if (person.type === 'artist') {
-      navigate(`/artist-profile/${person.id}`);
+      navigate(`/artist-public-profile?id=${person.id}`);
     } else if (person.type === 'team') {
-      navigate(`/team-profile/${person.id}`);
+      navigate(`/team-public-profile?id=${person.id}`);
     }
   };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      setSearchTags([...searchTags, searchQuery.trim()]);
+      setSearchQuery('');
+      setSearchSuggestions([]);
+    }
+  };
+
+  const removeSearchTag = (tagToRemove) => {
+    setSearchTags(searchTags.filter(tag => tag !== tagToRemove));
+  };
+
+  // Generate search suggestions as user types
+  useEffect(() => {
+    if (searchQuery.length >= 2) {
+      const suggestions = [];
+      mockConnections.concat(mockSuggestions).forEach(person => {
+        if (person.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+          suggestions.push({ type: 'name', value: person.name, icon: '👤' });
+        }
+        if (person.location.toLowerCase().includes(searchQuery.toLowerCase())) {
+          const loc = person.location.split(',')[0];
+          if (!suggestions.find(s => s.value === loc)) {
+            suggestions.push({ type: 'location', value: loc, icon: '📍' });
+          }
+        }
+        person.skills?.forEach(skill => {
+          if (skill.toLowerCase().includes(searchQuery.toLowerCase())) {
+            if (!suggestions.find(s => s.value === skill)) {
+              suggestions.push({ type: 'skill', value: skill, icon: '🔧' });
+            }
+          }
+        });
+      });
+      setSearchSuggestions(suggestions.slice(0, 5));
+    } else {
+      setSearchSuggestions([]);
+    }
+  }, [searchQuery]);
 
   // Combine all people into one list with type indicator
   const allPeople = [
@@ -279,27 +324,78 @@ export default function Network() {
       <ArtistSidebar />
       
       <main className="fixed inset-0 flex flex-col bg-white pl-20">
-        {/* Header - Connection Requests */}
+        {/* Header - Connection Requests & Referrals */}
         <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-1">
-            <h2 className="text-base font-semibold text-gray-900">Connection requests (0)</h2>
-            <button className="text-sm text-gray-600 hover:underline">View all</button>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-8">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">Connection requests (0)</h2>
+                <button className="text-sm text-gray-600 hover:underline">View all</button>
+              </div>
+              
+              {/* Referrals Section */}
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2 text-sm">
+                  <Gift className="w-4 h-4 text-amber-600" />
+                  <span className="font-semibold text-gray-900">{referralsLeft} Referrals left this month</span>
+                </div>
+                <button 
+                  onClick={() => setShowReferralModal(true)}
+                  className="text-sm text-gray-600 hover:underline flex items-center gap-1"
+                >
+                  Referral requests (0)
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Search and Filters */}
         <div className="p-6 border-b border-gray-200 bg-gray-50">
           <div className="flex gap-3 mb-4">
-            {/* Search */}
+            {/* Search with Tags */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, role, or location (min 3 letters)..."
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+              <div className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white flex flex-wrap items-center gap-2 min-h-[42px]">
+                {searchTags.map((tag, idx) => (
+                  <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full flex items-center gap-1">
+                    {tag}
+                    <button onClick={() => removeSearchTag(tag)} className="hover:bg-blue-200 rounded-full">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  placeholder={searchTags.length === 0 ? "Type and press Enter to add search tags..." : "Add more tags..."}
+                  className="flex-1 min-w-[200px] outline-none text-sm"
+                />
+              </div>
+              
+              {/* Search Suggestions Dropdown */}
+              {searchSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                  {searchSuggestions.map((suggestion, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setSearchTags([...searchTags, suggestion.value]);
+                        setSearchQuery('');
+                        setSearchSuggestions([]);
+                      }}
+                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0 flex items-center gap-2"
+                    >
+                      <span>{suggestion.icon}</span>
+                      <span>{suggestion.value}</span>
+                      <span className="text-xs text-gray-500 ml-auto">{suggestion.type}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -315,7 +411,7 @@ export default function Network() {
                 <ChevronDown className="w-4 h-4" />
               </button>
               {showFilters.type && (
-                <div className="absolute z-10 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
+                <div className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
                   {['all', 'artist', 'team', 'backer'].map(type => (
                     <button
                       key={type}
@@ -342,7 +438,7 @@ export default function Network() {
                 <ChevronDown className="w-4 h-4" />
               </button>
               {showFilters.role && (
-                <div className="absolute z-10 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                <div className="absolute z-50 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
                   <button
                     onClick={() => {
                       setSelectedRole('all');
@@ -378,7 +474,7 @@ export default function Network() {
                 <ChevronDown className="w-4 h-4" />
               </button>
               {showFilters.location && (
-                <div className="absolute z-10 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                <div className="absolute z-50 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
                   <button
                     onClick={() => {
                       setSelectedLocation('all');
@@ -445,11 +541,11 @@ export default function Network() {
         </div>
 
         {/* Network List - Two Column Layout */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-0 divide-x divide-gray-200 h-full">
+        <div className="flex-1 overflow-hidden">
+          <div className="grid grid-cols-2 gap-0 h-full">
             {/* LEFT COLUMN: Connections */}
-            <div className="overflow-y-auto">
-              <div className="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+            <div className="overflow-y-auto border-r border-gray-200" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
+              <div className="p-6 border-b border-gray-200 sticky top-0 bg-white z-20">
                 <h2 className="text-base font-semibold text-gray-900">Connections ({mockConnections.length})</h2>
               </div>
               <div className="space-y-0 divide-y divide-gray-100">
@@ -502,76 +598,152 @@ export default function Network() {
               </div>
             </div>
 
-            {/* RIGHT COLUMN: Suggestions */}
-            <div className="overflow-y-auto">
-              <div className="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-                <h2 className="text-base font-semibold text-gray-900">People you may know</h2>
-              </div>
-              <div className="space-y-0 divide-y divide-gray-100">
-                {mockSuggestions.map((person) => (
-                  <div key={person.id} className="p-4 hover:bg-gray-50">
-                    <div className="flex items-start gap-3">
-                      <img 
-                        src={person.image}
-                        alt={person.name}
-                        onClick={() => handleViewProfile(person)}
-                        className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 flex-shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="flex-1">
-                            <h3 
-                              onClick={() => handleViewProfile(person)}
-                              className="font-semibold text-gray-900 hover:underline cursor-pointer text-sm"
-                            >
-                              {person.name}
-                            </h3>
-                            <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
+            {/* RIGHT COLUMN: Suggestions & People you may know */}
+            <div className="overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
+              {/* Suggestions Section */}
+              <div className="border-b-4 border-gray-200">
+                <div className="p-6 border-b border-gray-200 sticky top-0 bg-gradient-to-r from-purple-50 to-blue-50 z-20">
+                  <h2 className="text-base font-semibold text-gray-900">Suggestions for you</h2>
+                  <p className="text-xs text-gray-600 mt-1">Based on your profile and activity</p>
+                </div>
+                <div className="space-y-0 divide-y divide-gray-100 bg-gradient-to-br from-purple-50/30 to-blue-50/30">
+                  {mockSuggestions.slice(0, 3).map((person) => (
+                    <div key={person.id} className="p-4 hover:bg-white/60 transition-colors">
+                      <div className="flex items-start gap-3">
+                        <div className="relative flex-shrink-0">
+                          <img 
+                            src={person.image}
+                            alt={person.name}
+                            onClick={() => handleViewProfile(person)}
+                            className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80"
+                          />
+                          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
+                            <TrendingUp className="w-3 h-3 text-white" />
                           </div>
-                          {person.status === 'pending' ? (
-                            <Button size="sm" variant="outline" className="text-xs px-3 flex-shrink-0" disabled>
-                              <Clock className="w-3 h-3 mr-1" />
-                              Pending
-                            </Button>
-                          ) : (
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex-1">
+                              <h3 
+                                onClick={() => handleViewProfile(person)}
+                                className="font-semibold text-gray-900 hover:underline cursor-pointer text-sm"
+                              >
+                                {person.name}
+                              </h3>
+                              <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
+                            </div>
+                            {person.status === 'pending' ? (
+                              <Button size="sm" variant="outline" className="text-xs px-3 flex-shrink-0 bg-white" disabled>
+                                <Clock className="w-3 h-3 mr-1" />
+                                Pending
+                              </Button>
+                            ) : (
+                              <Button
+                                onClick={() => {
+                                  setSelectedPerson(person);
+                                  setShowConnectionModal(true);
+                                }}
+                                size="sm"
+                                className="bg-purple-600 text-white hover:bg-purple-700 text-xs px-3 flex-shrink-0"
+                              >
+                                Connect
+                              </Button>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                            <div className="flex items-center gap-1">
+                              <div className="flex -space-x-1">
+                                <div className="w-4 h-4 rounded-full bg-purple-300 border border-white" />
+                                <div className="w-4 h-4 rounded-full bg-blue-300 border border-white" />
+                              </div>
+                              <span className="font-medium">{person.mutualConnections} Mutuals</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              {person.location}
+                            </div>
+                          </div>
+                          {person.skills && (
+                            <div className="flex flex-wrap gap-1">
+                              {person.skills.slice(0, 3).map((skill, idx) => (
+                                <span key={idx} className="px-2 py-0.5 bg-white text-gray-700 text-[10px] rounded border border-purple-200">
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* People you may know Section */}
+              <div>
+                <div className="p-6 border-b border-gray-200 sticky top-0 bg-white z-20">
+                  <h2 className="text-base font-semibold text-gray-900">People you may know</h2>
+                </div>
+                <div className="space-y-0 divide-y divide-gray-100">
+                  {mockSuggestions.slice(3).map((person) => (
+                    <div key={person.id} className="p-4 hover:bg-gray-50">
+                      <div className="flex items-start gap-3">
+                        <img 
+                          src={person.image}
+                          alt={person.name}
+                          onClick={() => handleViewProfile(person)}
+                          className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex-1">
+                              <h3 
+                                onClick={() => handleViewProfile(person)}
+                                className="font-semibold text-gray-900 hover:underline cursor-pointer text-sm"
+                              >
+                                {person.name}
+                              </h3>
+                              <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
+                            </div>
                             <Button
                               onClick={() => {
                                 setSelectedPerson(person);
                                 setShowConnectionModal(true);
                               }}
                               size="sm"
-                              className="bg-black text-white hover:bg-gray-800 text-xs px-3 flex-shrink-0"
+                              variant="outline"
+                              className="text-xs px-3 flex-shrink-0"
                             >
                               Connect
                             </Button>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                            <div className="flex items-center gap-1">
+                              <div className="flex -space-x-1">
+                                <div className="w-4 h-4 rounded-full bg-gray-300 border border-white" />
+                                <div className="w-4 h-4 rounded-full bg-gray-400 border border-white" />
+                              </div>
+                              <span>{person.mutualConnections} Mutuals</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              {person.location}
+                            </div>
+                          </div>
+                          {person.skills && (
+                            <div className="flex flex-wrap gap-1">
+                              {person.skills.slice(0, 3).map((skill, idx) => (
+                                <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded">
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
-                          <div className="flex items-center gap-1">
-                            <div className="flex -space-x-1">
-                              <div className="w-4 h-4 rounded-full bg-gray-300 border border-white" />
-                              <div className="w-4 h-4 rounded-full bg-gray-400 border border-white" />
-                            </div>
-                            <span>{person.mutualConnections} Mutuals</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {person.location}
-                          </div>
-                        </div>
-                        {person.skills && (
-                          <div className="flex flex-wrap gap-1">
-                            {person.skills.slice(0, 3).map((skill, idx) => (
-                              <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded">
-                                {skill}
-                              </span>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -662,6 +834,48 @@ export default function Network() {
           </div>
         ))}
       </div>
+
+      {/* Referral Modal */}
+      {showReferralModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Referrals</h3>
+              <button onClick={() => setShowReferralModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-2">
+                <Gift className="w-5 h-5 text-amber-600" />
+                <p className="text-sm font-semibold text-gray-900">You have {referralsLeft} referrals left this month</p>
+              </div>
+              <p className="text-sm text-gray-600">
+                Refer fellow creatives you believe are a good fit for our community. Your decisions on referrals are fast-tracked for review.
+              </p>
+            </div>
+
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-gray-900">Referral requests (0)</h4>
+              </div>
+              <div className="text-center py-8 text-gray-500">
+                <p className="text-sm">No pending referral requests</p>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-gray-900">Past referrals</h4>
+              </div>
+              <div className="text-center py-4 text-gray-500">
+                <p className="text-xs">Your referral history will appear here</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Invite to Job Modal */}
       {showInviteModal && selectedPerson && (
