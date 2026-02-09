@@ -24,6 +24,7 @@ export default function Messages() {
         id: 1,
         name: 'Sarah Johnson',
         avatar: 'https://i.pravatar.cc/150?img=1',
+        contact_email: 'sarah.johnson@example.com',
         lastMessage: 'Looking forward to working with you on this project!',
         time: '2m ago',
         unread: 2,
@@ -41,6 +42,7 @@ export default function Messages() {
         id: 2,
         name: 'Mike Rodriguez',
         avatar: 'https://i.pravatar.cc/150?img=12',
+        contact_email: 'mike.rodriguez@example.com',
         lastMessage: 'Can you send me your portfolio?',
         time: '1h ago',
         unread: 0,
@@ -56,6 +58,7 @@ export default function Messages() {
         id: 3,
         name: 'Emma Chen',
         avatar: 'https://i.pravatar.cc/150?img=5',
+        contact_email: 'emma.chen@example.com',
         lastMessage: 'The shoot is scheduled for next Monday',
         time: '2h ago',
         unread: 0,
@@ -71,6 +74,7 @@ export default function Messages() {
         id: 4,
         name: 'Alex Martinez',
         avatar: 'https://i.pravatar.cc/150?img=13',
+        contact_email: 'alex.martinez@example.com',
         lastMessage: 'What\'s your rate for this project?',
         time: '3h ago',
         unread: 1,
@@ -86,6 +90,7 @@ export default function Messages() {
         id: 5,
         name: 'Lisa Wong',
         avatar: 'https://i.pravatar.cc/150?img=9',
+        contact_email: 'lisa.wong@example.com',
         lastMessage: 'Perfect, let\'s schedule a call',
         time: 'Yesterday',
         unread: 0,
@@ -101,6 +106,7 @@ export default function Messages() {
         id: 6,
         name: 'David Kim',
         avatar: 'https://i.pravatar.cc/150?img=14',
+        contact_email: 'david.kim@example.com',
         lastMessage: 'When can we start the project?',
         time: 'Yesterday',
         unread: 0,
@@ -116,6 +122,7 @@ export default function Messages() {
         id: 7,
         name: 'Rachel Green',
         avatar: 'https://i.pravatar.cc/150?img=10',
+        contact_email: 'rachel.green@example.com',
         lastMessage: 'Looking forward to the shoot!',
         time: '2 days ago',
         unread: 0,
@@ -131,6 +138,7 @@ export default function Messages() {
         id: 8,
         name: 'James Wilson',
         avatar: 'https://i.pravatar.cc/150?img=15',
+        contact_email: 'james.wilson@example.com',
         lastMessage: 'The budget looks good',
         time: '2 days ago',
         unread: 0,
@@ -146,6 +154,7 @@ export default function Messages() {
         id: 9,
         name: 'Sophie Anderson',
         avatar: 'https://i.pravatar.cc/150?img=20',
+        contact_email: 'sophie.anderson@example.com',
         lastMessage: 'Script revisions are ready',
         time: '3 days ago',
         unread: 0,
@@ -161,6 +170,7 @@ export default function Messages() {
         id: 10,
         name: 'Tom Harris',
         avatar: 'https://i.pravatar.cc/150?img=33',
+        contact_email: 'tom.harris@example.com',
         lastMessage: 'Let\'s discuss the timeline',
         time: '3 days ago',
         unread: 0,
@@ -201,6 +211,17 @@ export default function Messages() {
       const result = await base44.integrations.Core.UploadFile({ file });
       const file_url = result.file_url;
 
+      const conversationId = `${user.email}_${selectedChat.contact_email}`.split('').sort().join('');
+      
+      await base44.entities.Message.create({
+        conversation_id: conversationId,
+        sender_email: user.email,
+        recipient_email: selectedChat.contact_email,
+        text: file.name,
+        file_url: file_url,
+        file_name: file.name
+      });
+
       const newMessage = {
         id: Date.now(),
         sender: 'me',
@@ -214,10 +235,15 @@ export default function Messages() {
           return {
             ...conv,
             messages: [...conv.messages, newMessage],
-            lastMessage: file.name
+            lastMessage: file.name,
+            time: 'Just now'
           };
         }
         return conv;
+      }).sort((a, b) => {
+        if (a.id === selectedChat.id) return -1;
+        if (b.id === selectedChat.id) return 1;
+        return 0;
       });
       
       setConversations(updatedConversations);
@@ -244,6 +270,17 @@ export default function Messages() {
             const result = await base44.integrations.Core.UploadFile({ file });
             const file_url = result.file_url;
 
+            const conversationId = `${user.email}_${selectedChat.contact_email}`.split('').sort().join('');
+            
+            await base44.entities.Message.create({
+              conversation_id: conversationId,
+              sender_email: user.email,
+              recipient_email: selectedChat.contact_email,
+              text: file.name,
+              file_url: file_url,
+              file_name: file.name
+            });
+
             const newMessage = {
               id: Date.now(),
               sender: 'me',
@@ -257,10 +294,15 @@ export default function Messages() {
                 return {
                   ...conv,
                   messages: [...conv.messages, newMessage],
-                  lastMessage: file.name
+                  lastMessage: file.name,
+                  time: 'Just now'
                 };
               }
               return conv;
+            }).sort((a, b) => {
+              if (a.id === selectedChat.id) return -1;
+              if (b.id === selectedChat.id) return 1;
+              return 0;
             });
             
             setConversations(updatedConversations);
@@ -277,35 +319,54 @@ export default function Messages() {
     }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!messageInput.trim() || !selectedChat) return;
     
-    const newMessage = {
-      id: Date.now(),
-      sender: 'me',
-      text: messageInput,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    
-    const updatedConversations = conversations.map(conv => {
-      if (conv.id === selectedChat.id) {
-        return {
-          ...conv,
-          messages: [...conv.messages, newMessage],
-          lastMessage: messageInput
-        };
-      }
-      return conv;
-    });
-    
-    setConversations(updatedConversations);
-    setSelectedChat({
-      ...selectedChat,
-      messages: [...selectedChat.messages, newMessage]
-    });
-    
-    setMessageInput('');
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    try {
+      const conversationId = `${user.email}_${selectedChat.contact_email}`.split('').sort().join('');
+      
+      await base44.entities.Message.create({
+        conversation_id: conversationId,
+        sender_email: user.email,
+        recipient_email: selectedChat.contact_email,
+        text: messageInput
+      });
+
+      const newMessage = {
+        id: Date.now(),
+        sender: 'me',
+        text: messageInput,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      
+      const updatedConversations = conversations.map(conv => {
+        if (conv.id === selectedChat.id) {
+          return {
+            ...conv,
+            messages: [...conv.messages, newMessage],
+            lastMessage: messageInput,
+            time: 'Just now'
+          };
+        }
+        return conv;
+      }).sort((a, b) => {
+        if (a.id === selectedChat.id) return -1;
+        if (b.id === selectedChat.id) return 1;
+        return 0;
+      });
+      
+      setConversations(updatedConversations);
+      setSelectedChat({
+        ...selectedChat,
+        messages: [...selectedChat.messages, newMessage]
+      });
+      
+      setMessageInput('');
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Failed to send message.');
+    }
   };
 
   const filteredConversations = conversations.filter(conv =>
@@ -346,7 +407,7 @@ export default function Messages() {
                   key={conv.id}
                   onClick={() => setSelectedChat(conv)}
                   className={`w-full p-4 hover:bg-gray-50 border-b border-gray-100 text-left transition-colors ${
-                    selectedChat?.id === conv.id ? 'bg-gray-50' : ''
+                    selectedChat?.id === conv.id ? 'bg-gray-100' : ''
                   }`}
                 >
                   <div className="flex items-start gap-3">

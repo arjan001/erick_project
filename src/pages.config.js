@@ -55,6 +55,7 @@ import ArtistDashboard from './pages/ArtistDashboard';
 import ArtistProfile from './pages/ArtistProfile';
 import ArtistPublicProfile from './pages/ArtistPublicProfile';
 import BackedProjects from './pages/BackedProjects';
+import ClientDashboard from './pages/ClientDashboard';
 import Contact from './pages/Contact';
 import CreatorDashboard from './pages/CreatorDashboard';
 import Home from './pages/Home';
@@ -65,6 +66,7 @@ import JobBoard from './pages/JobBoard';
 import JobInvitations from './pages/JobInvitations';
 import Jobs from './pages/Jobs';
 import Messages from './pages/Messages';
+import Network from './pages/Network';
 import Pricing from './pages/Pricing';
 import ProjectAdmin from './pages/ProjectAdmin';
 import Projects from './pages/Projects';
@@ -75,8 +77,6 @@ import TeamAdmin from './pages/TeamAdmin';
 import TeamDashboard from './pages/TeamDashboard';
 import TeamPublicProfile from './pages/TeamPublicProfile';
 import Work from './pages/Work';
-import Network from './pages/Network';
-import ClientDashboard from './pages/ClientDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -89,6 +89,7 @@ export const PAGES = {
     "ArtistProfile": ArtistProfile,
     "ArtistPublicProfile": ArtistPublicProfile,
     "BackedProjects": BackedProjects,
+    "ClientDashboard": ClientDashboard,
     "Contact": Contact,
     "CreatorDashboard": CreatorDashboard,
     "Home": Home,
@@ -99,6 +100,7 @@ export const PAGES = {
     "JobInvitations": JobInvitations,
     "Jobs": Jobs,
     "Messages": Messages,
+    "Network": Network,
     "Pricing": Pricing,
     "ProjectAdmin": ProjectAdmin,
     "Projects": Projects,
@@ -109,8 +111,6 @@ export const PAGES = {
     "TeamDashboard": TeamDashboard,
     "TeamPublicProfile": TeamPublicProfile,
     "Work": Work,
-    "Network": Network,
-    "ClientDashboard": ClientDashboard,
 }
 
 export const pagesConfig = {
