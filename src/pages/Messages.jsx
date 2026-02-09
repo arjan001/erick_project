@@ -12,86 +12,167 @@ export default function Messages() {
   const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef(null);
 
-  // Mock conversations
-  const [conversations, setConversations] = useState([
-    {
-      id: 1,
-      name: 'Sarah Johnson',
-      avatar: 'https://i.pravatar.cc/150?img=1',
-      lastMessage: 'Looking forward to working with you on this project!',
-      time: '2m ago',
-      unread: 2,
-      online: true,
-      job: 'VFX Artist needed for Branding',
-      messages: [
-        { id: 1, sender: 'them', text: 'Hi! I saw your application for the VFX Artist position.', time: '10:30 AM' },
-        { id: 2, sender: 'me', text: 'Hello! Yes, I\'m very interested in this opportunity.', time: '10:32 AM' },
-        { id: 3, sender: 'them', text: 'Great! Can you tell me more about your experience with particle effects?', time: '10:35 AM' },
-        { id: 4, sender: 'me', text: 'Of course! I\'ve worked on several commercial projects creating abstract particle effects and motion graphics.', time: '10:38 AM' },
-        { id: 5, sender: 'them', text: 'Looking forward to working with you on this project!', time: '10:40 AM' },
-      ]
-    },
-    {
-      id: 2,
-      name: 'Mike Rodriguez',
-      avatar: 'https://i.pravatar.cc/150?img=12',
-      lastMessage: 'Can you send me your portfolio?',
-      time: '1h ago',
-      unread: 0,
-      online: true,
-      job: 'Director needed for Commercial',
-      messages: [
-        { id: 1, sender: 'them', text: 'Hey, I noticed you applied for our Director position.', time: '9:15 AM' },
-        { id: 2, sender: 'me', text: 'Yes! I have experience directing commercials.', time: '9:20 AM' },
-        { id: 3, sender: 'them', text: 'Can you send me your portfolio?', time: '9:25 AM' },
-      ]
-    },
-    {
-      id: 3,
-      name: 'Emma Chen',
-      avatar: 'https://i.pravatar.cc/150?img=5',
-      lastMessage: 'The shoot is scheduled for next Monday',
-      time: '2h ago',
-      unread: 0,
-      online: false,
-      job: 'Cinematographer for Music Video',
-      messages: [
-        { id: 1, sender: 'them', text: 'Hi! Congrats on getting the cinematographer position!', time: 'Yesterday' },
-        { id: 2, sender: 'me', text: 'Thank you! I\'m excited to work on this.', time: 'Yesterday' },
-        { id: 3, sender: 'them', text: 'The shoot is scheduled for next Monday', time: 'Yesterday' },
-      ]
-    },
-    {
-      id: 4,
-      name: 'Alex Martinez',
-      avatar: 'https://i.pravatar.cc/150?img=13',
-      lastMessage: 'What\'s your rate for this project?',
-      time: '3h ago',
-      unread: 1,
-      online: false,
-      job: 'Editor needed for Documentary',
-      messages: [
-        { id: 1, sender: 'them', text: 'Hello! I\'m interested in your editing skills.', time: '2:00 PM' },
-        { id: 2, sender: 'me', text: 'Thanks for reaching out!', time: '2:10 PM' },
-        { id: 3, sender: 'them', text: 'What\'s your rate for this project?', time: '2:15 PM' },
-      ]
-    },
-    {
-      id: 5,
-      name: 'Lisa Wong',
-      avatar: 'https://i.pravatar.cc/150?img=9',
-      lastMessage: 'Perfect, let\'s schedule a call',
-      time: 'Yesterday',
-      unread: 0,
-      online: true,
-      job: 'Motion Designer for Social Media',
-      messages: [
-        { id: 1, sender: 'them', text: 'Your motion graphics work is impressive!', time: 'Yesterday' },
-        { id: 2, sender: 'me', text: 'Thank you! I\'d love to discuss the project.', time: 'Yesterday' },
-        { id: 3, sender: 'them', text: 'Perfect, let\'s schedule a call', time: 'Yesterday' },
-      ]
-    },
-  ]);
+  // Mock conversations - load from localStorage
+  const [conversations, setConversations] = useState(() => {
+    const saved = localStorage.getItem('studio22_conversations');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return [
+      {
+        id: 1,
+        name: 'Sarah Johnson',
+        avatar: 'https://i.pravatar.cc/150?img=1',
+        lastMessage: 'Looking forward to working with you on this project!',
+        time: '2m ago',
+        unread: 2,
+        online: true,
+        job: 'VFX Artist needed for Branding',
+        messages: [
+          { id: 1, sender: 'them', text: 'Hi! I saw your application for the VFX Artist position.', time: '10:30 AM' },
+          { id: 2, sender: 'me', text: 'Hello! Yes, I\'m very interested in this opportunity.', time: '10:32 AM' },
+          { id: 3, sender: 'them', text: 'Great! Can you tell me more about your experience with particle effects?', time: '10:35 AM' },
+          { id: 4, sender: 'me', text: 'Of course! I\'ve worked on several commercial projects creating abstract particle effects and motion graphics.', time: '10:38 AM' },
+          { id: 5, sender: 'them', text: 'Looking forward to working with you on this project!', time: '10:40 AM' },
+        ]
+      },
+      {
+        id: 2,
+        name: 'Mike Rodriguez',
+        avatar: 'https://i.pravatar.cc/150?img=12',
+        lastMessage: 'Can you send me your portfolio?',
+        time: '1h ago',
+        unread: 0,
+        online: true,
+        job: 'Director needed for Commercial',
+        messages: [
+          { id: 1, sender: 'them', text: 'Hey, I noticed you applied for our Director position.', time: '9:15 AM' },
+          { id: 2, sender: 'me', text: 'Yes! I have experience directing commercials.', time: '9:20 AM' },
+          { id: 3, sender: 'them', text: 'Can you send me your portfolio?', time: '9:25 AM' },
+        ]
+      },
+      {
+        id: 3,
+        name: 'Emma Chen',
+        avatar: 'https://i.pravatar.cc/150?img=5',
+        lastMessage: 'The shoot is scheduled for next Monday',
+        time: '2h ago',
+        unread: 0,
+        online: false,
+        job: 'Cinematographer for Music Video',
+        messages: [
+          { id: 1, sender: 'them', text: 'Hi! Congrats on getting the cinematographer position!', time: 'Yesterday' },
+          { id: 2, sender: 'me', text: 'Thank you! I\'m excited to work on this.', time: 'Yesterday' },
+          { id: 3, sender: 'them', text: 'The shoot is scheduled for next Monday', time: 'Yesterday' },
+        ]
+      },
+      {
+        id: 4,
+        name: 'Alex Martinez',
+        avatar: 'https://i.pravatar.cc/150?img=13',
+        lastMessage: 'What\'s your rate for this project?',
+        time: '3h ago',
+        unread: 1,
+        online: false,
+        job: 'Editor needed for Documentary',
+        messages: [
+          { id: 1, sender: 'them', text: 'Hello! I\'m interested in your editing skills.', time: '2:00 PM' },
+          { id: 2, sender: 'me', text: 'Thanks for reaching out!', time: '2:10 PM' },
+          { id: 3, sender: 'them', text: 'What\'s your rate for this project?', time: '2:15 PM' },
+        ]
+      },
+      {
+        id: 5,
+        name: 'Lisa Wong',
+        avatar: 'https://i.pravatar.cc/150?img=9',
+        lastMessage: 'Perfect, let\'s schedule a call',
+        time: 'Yesterday',
+        unread: 0,
+        online: true,
+        job: 'Motion Designer for Social Media',
+        messages: [
+          { id: 1, sender: 'them', text: 'Your motion graphics work is impressive!', time: 'Yesterday' },
+          { id: 2, sender: 'me', text: 'Thank you! I\'d love to discuss the project.', time: 'Yesterday' },
+          { id: 3, sender: 'them', text: 'Perfect, let\'s schedule a call', time: 'Yesterday' },
+        ]
+      },
+      {
+        id: 6,
+        name: 'David Kim',
+        avatar: 'https://i.pravatar.cc/150?img=14',
+        lastMessage: 'When can we start the project?',
+        time: 'Yesterday',
+        unread: 0,
+        online: true,
+        job: 'Sound Designer for Short Film',
+        messages: [
+          { id: 1, sender: 'them', text: 'Hi! Your sound design portfolio is amazing.', time: 'Yesterday' },
+          { id: 2, sender: 'me', text: 'Thanks! Happy to discuss the project.', time: 'Yesterday' },
+          { id: 3, sender: 'them', text: 'When can we start the project?', time: 'Yesterday' },
+        ]
+      },
+      {
+        id: 7,
+        name: 'Rachel Green',
+        avatar: 'https://i.pravatar.cc/150?img=10',
+        lastMessage: 'Looking forward to the shoot!',
+        time: '2 days ago',
+        unread: 0,
+        online: false,
+        job: 'Photographer for Brand Campaign',
+        messages: [
+          { id: 1, sender: 'them', text: 'Your photography style is exactly what we need.', time: '2 days ago' },
+          { id: 2, sender: 'me', text: 'Glad to hear! Let\'s make it happen.', time: '2 days ago' },
+          { id: 3, sender: 'them', text: 'Looking forward to the shoot!', time: '2 days ago' },
+        ]
+      },
+      {
+        id: 8,
+        name: 'James Wilson',
+        avatar: 'https://i.pravatar.cc/150?img=15',
+        lastMessage: 'The budget looks good',
+        time: '2 days ago',
+        unread: 0,
+        online: true,
+        job: 'Producer for Feature Film',
+        messages: [
+          { id: 1, sender: 'them', text: 'We need an experienced producer.', time: '2 days ago' },
+          { id: 2, sender: 'me', text: 'I have 10 years in feature production.', time: '2 days ago' },
+          { id: 3, sender: 'them', text: 'The budget looks good', time: '2 days ago' },
+        ]
+      },
+      {
+        id: 9,
+        name: 'Sophie Anderson',
+        avatar: 'https://i.pravatar.cc/150?img=20',
+        lastMessage: 'Script revisions are ready',
+        time: '3 days ago',
+        unread: 0,
+        online: false,
+        job: 'Screenwriter for TV Series',
+        messages: [
+          { id: 1, sender: 'them', text: 'We loved your previous work.', time: '3 days ago' },
+          { id: 2, sender: 'me', text: 'Excited to collaborate on this.', time: '3 days ago' },
+          { id: 3, sender: 'them', text: 'Script revisions are ready', time: '3 days ago' },
+        ]
+      },
+      {
+        id: 10,
+        name: 'Tom Harris',
+        avatar: 'https://i.pravatar.cc/150?img=33',
+        lastMessage: 'Let\'s discuss the timeline',
+        time: '3 days ago',
+        unread: 0,
+        online: true,
+        job: 'Art Director for Ad Campaign',
+        messages: [
+          { id: 1, sender: 'them', text: 'Your art direction is impressive.', time: '3 days ago' },
+          { id: 2, sender: 'me', text: 'Thank you! What\'s the scope?', time: '3 days ago' },
+          { id: 3, sender: 'them', text: 'Let\'s discuss the timeline', time: '3 days ago' },
+        ]
+      },
+    ];
+  });
 
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
@@ -106,6 +187,10 @@ export default function Messages() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [selectedChat, conversations]);
+
+  useEffect(() => {
+    localStorage.setItem('studio22_conversations', JSON.stringify(conversations));
+  }, [conversations]);
 
   const handleFileAttach = async (event) => {
     const file = event.target.files[0];
@@ -233,10 +318,10 @@ export default function Messages() {
     <div className="h-screen bg-white">
       <ArtistSidebar />
       
-      <main className="w-full h-full flex overflow-hidden bg-white pl-20">
-        <div className="flex-1 flex overflow-hidden">
+      <main className="w-full h-screen flex bg-white pl-20">
+        <div className="flex-1 flex h-full">
           {/* Conversations List */}
-          <div className="w-96 border-r border-gray-200 flex flex-col overflow-hidden bg-white">
+          <div className="w-96 border-r border-gray-200 flex flex-col h-full bg-white">
             <div className="p-4 border-b border-gray-200 flex-shrink-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -292,10 +377,10 @@ export default function Messages() {
           </div>
 
           {/* Chat Area */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-white">
+          <div className="flex-1 flex flex-col h-full bg-white">
             {selectedChat ? (
               <>
-                <div className="p-4 border-b border-gray-200 bg-white flex-shrink-0">
+                <div className="p-4 border-b border-gray-200 bg-white flex-shrink-0 sticky top-0 z-10">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="relative">
@@ -316,13 +401,25 @@ export default function Messages() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Start Audio Call">
+                      <button 
+                        onClick={() => alert(`Starting audio call with ${selectedChat.name}...`)}
+                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" 
+                        title="Start Audio Call"
+                      >
                         <Phone className="w-5 h-5" />
                       </button>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Start Video Call">
+                      <button 
+                        onClick={() => alert(`Starting video call with ${selectedChat.name}...`)}
+                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" 
+                        title="Start Video Call"
+                      >
                         <Video className="w-5 h-5" />
                       </button>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Share Screen">
+                      <button 
+                        onClick={() => alert(`Starting screen share with ${selectedChat.name}...`)}
+                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" 
+                        title="Share Screen"
+                      >
                         <Monitor className="w-5 h-5" />
                       </button>
                       <button className="p-2 hover:bg-gray-100 rounded-lg">
