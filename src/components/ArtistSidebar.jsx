@@ -7,13 +7,14 @@ import {
 import { createPageUrl } from '../utils';
 
 const MENU_ITEMS = [
+  { label: 'Dashboard', icon: HomeIcon, href: 'ArtistHome', showIcon: true },
   { label: 'Find Work', icon: Search, href: 'Jobs', showIcon: true },
   { label: 'Projects from Clients', icon: Briefcase, href: 'JobBoard', showIcon: true },
   { label: 'Applications', icon: FileText, href: 'JobApplications', showIcon: true },
   { label: 'Messages', icon: Mail, href: 'Messages', showIcon: true },
   { label: 'Network', icon: Network, href: 'Network', showIcon: true },
   { label: 'My Profile', icon: User, href: 'ArtistProfile', showIcon: true },
-  { label: 'Settings', icon: Settings, href: 'ArtistDashboard', showIcon: true }
+  { label: 'Settings', icon: Settings, href: 'Settings', showIcon: true }
 ];
 
 export default function ArtistSidebar() {
