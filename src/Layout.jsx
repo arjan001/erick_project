@@ -106,7 +106,7 @@ export default function Layout({ children, currentPageName }) {
             <div className="flex items-center gap-8">
               {/* Logo */}
               <Link 
-                to={user ? (isArtistPage ? createPageUrl('ArtistDashboard') : createPageUrl('TeamDashboard')) : createPageUrl('Home')} 
+                to={createPageUrl('ArtistDashboard')} 
                 className="hover:opacity-70 transition-opacity"
               >
                 <span className="text-2xl font-black tracking-tighter text-[#1a1a1a]">22.</span>
