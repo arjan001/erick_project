@@ -61,7 +61,7 @@ export default function JobBoard() {
     <div className="flex h-screen bg-white">
       <ArtistSidebar />
       
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex overflow-hidden pl-0">
         {/* Job List */}
         <div className="w-1/2 border-r border-gray-200 overflow-y-auto">
           <div className="p-6 space-y-4">

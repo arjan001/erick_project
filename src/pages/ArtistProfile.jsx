@@ -24,7 +24,7 @@ export default function ArtistProfile() {
     <div className="flex h-screen bg-white">
       <ArtistSidebar />
       
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto pl-0">
         <div className="bg-gray-100 h-40" />
         
         <div className="px-8 pb-8">

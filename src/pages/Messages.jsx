@@ -22,7 +22,7 @@ export default function Messages() {
     <div className="flex h-screen bg-white">
       <ArtistSidebar />
       
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex overflow-hidden pl-0">
         {/* Conversations List */}
         <div className="w-1/3 border-r border-gray-200 flex flex-col">
           <div className="p-4 border-b border-gray-200">

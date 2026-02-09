@@ -53,8 +53,10 @@ import ApplyTeam from './pages/ApplyTeam';
 import ArtistAdmin from './pages/ArtistAdmin';
 import ArtistDashboard from './pages/ArtistDashboard';
 import ArtistProfile from './pages/ArtistProfile';
+import ArtistPublicProfile from './pages/ArtistPublicProfile';
 import BackedProjects from './pages/BackedProjects';
 import Contact from './pages/Contact';
+import CreatorDashboard from './pages/CreatorDashboard';
 import Home from './pages/Home';
 import Home2 from './pages/Home2';
 import HowBackingWorks from './pages/HowBackingWorks';
@@ -70,11 +72,9 @@ import Services from './pages/Services';
 import SignIn from './pages/SignIn';
 import SubmitProject from './pages/SubmitProject';
 import TeamAdmin from './pages/TeamAdmin';
-import Work from './pages/Work';
-import ArtistPublicProfile from './pages/ArtistPublicProfile';
-import TeamPublicProfile from './pages/TeamPublicProfile';
-import CreatorDashboard from './pages/CreatorDashboard';
 import TeamDashboard from './pages/TeamDashboard';
+import TeamPublicProfile from './pages/TeamPublicProfile';
+import Work from './pages/Work';
 import __Layout from './Layout.jsx';
 
 
@@ -85,8 +85,10 @@ export const PAGES = {
     "ArtistAdmin": ArtistAdmin,
     "ArtistDashboard": ArtistDashboard,
     "ArtistProfile": ArtistProfile,
+    "ArtistPublicProfile": ArtistPublicProfile,
     "BackedProjects": BackedProjects,
     "Contact": Contact,
+    "CreatorDashboard": CreatorDashboard,
     "Home": Home,
     "Home2": Home2,
     "HowBackingWorks": HowBackingWorks,
@@ -102,11 +104,9 @@ export const PAGES = {
     "SignIn": SignIn,
     "SubmitProject": SubmitProject,
     "TeamAdmin": TeamAdmin,
-    "Work": Work,
-    "ArtistPublicProfile": ArtistPublicProfile,
-    "TeamPublicProfile": TeamPublicProfile,
-    "CreatorDashboard": CreatorDashboard,
     "TeamDashboard": TeamDashboard,
+    "TeamPublicProfile": TeamPublicProfile,
+    "Work": Work,
 }
 
 export const pagesConfig = {
