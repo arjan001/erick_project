@@ -43,26 +43,26 @@ export default function Network() {
 
   // Mock data with images, locations, skills and mutual connections
   const mockConnections = [
-    { id: 1, name: 'Saint', role: 'Editor, Graphic Designer, Art Director', location: 'Paris, France', image: getProfileImage(1), mutualConnections: 12, email: 'saint@example.com', skills: ['Adobe Premiere', 'Photoshop', 'Illustrator', 'After Effects'] },
-    { id: 2, name: 'Moritz Giesl', role: 'Director, Creative Director', location: 'Berlin, DE', image: getProfileImage(2), mutualConnections: 8, email: 'moritz@example.com', skills: ['Creative Direction', 'Filmmaking', 'Concept Development'] },
-    { id: 3, name: 'Michaela Ceci', role: 'Stylist, Costume Designer', location: 'Milan, IT', image: getProfileImage(3), mutualConnections: 15, email: 'michaela@example.com', skills: ['Fashion Styling', 'Costume Design', 'Wardrobe'] },
-    { id: 4, name: 'Aidan Cullen', role: 'Director, Photographer', location: 'Dublin, IE', image: getProfileImage(4), mutualConnections: 6, email: 'aidan@example.com', skills: ['Photography', 'Directing', 'Lighting'] },
-    { id: 5, name: 'onda', role: 'Director, Photographer, Creative Director', location: 'Barcelona, ES', image: getProfileImage(5), mutualConnections: 22, email: 'onda@example.com', skills: ['Direction', 'Photography', 'Art Direction'] },
-    { id: 6, name: 'Holdenmedia', role: 'Photographer, Editor, Graphic Designer', location: 'London, UK', image: getProfileImage(6), mutualConnections: 9, email: 'holden@example.com', skills: ['Photography', 'Editing', 'Design'] },
-    { id: 7, name: 'Antonio Molina', role: 'Editor, VFX Artist, Motion Designer', location: 'Madrid, ES', image: getProfileImage(7), mutualConnections: 11, email: 'antonio@example.com', skills: ['VFX', 'Motion Graphics', 'Compositing'] },
-    { id: 8, name: 'Neema Sadeghi', role: 'Director, Photographer, Director of Photography', location: 'Amsterdam, NL', image: getProfileImage(8), mutualConnections: 18, email: 'neema@example.com', skills: ['Cinematography', 'Lighting', 'Camera Operation'] },
-    { id: 9, name: 'Mitchell Francis', role: 'Editor, Producer, Animator', location: 'Toronto, CA', image: getProfileImage(9), mutualConnections: 5, email: 'mitchell@example.com', skills: ['Editing', 'Animation', 'Production'] },
-    { id: 10, name: 'Josh Farias', role: 'Director, Photographer, Creative Director', location: 'Los Angeles, US', image: getProfileImage(10), mutualConnections: 13, email: 'josh@example.com', skills: ['Directing', 'Creative Strategy', 'Photography'] },
+    { id: 1, type: 'artist', name: 'Saint', role: 'Editor, Graphic Designer, Art Director', location: 'Paris, France', image: getProfileImage(1), mutualConnections: 12, email: 'saint@example.com', skills: ['Adobe Premiere', 'Photoshop', 'Illustrator', 'After Effects'] },
+    { id: 2, type: 'artist', name: 'Moritz Giesl', role: 'Director, Creative Director', location: 'Berlin, DE', image: getProfileImage(2), mutualConnections: 8, email: 'moritz@example.com', skills: ['Creative Direction', 'Filmmaking', 'Concept Development'] },
+    { id: 3, type: 'artist', name: 'Michaela Ceci', role: 'Stylist, Costume Designer', location: 'Milan, IT', image: getProfileImage(3), mutualConnections: 15, email: 'michaela@example.com', skills: ['Fashion Styling', 'Costume Design', 'Wardrobe'] },
+    { id: 4, type: 'artist', name: 'Aidan Cullen', role: 'Director, Photographer', location: 'Dublin, IE', image: getProfileImage(4), mutualConnections: 6, email: 'aidan@example.com', skills: ['Photography', 'Directing', 'Lighting'] },
+    { id: 5, type: 'artist', name: 'onda', role: 'Director, Photographer, Creative Director', location: 'Barcelona, ES', image: getProfileImage(5), mutualConnections: 22, email: 'onda@example.com', skills: ['Direction', 'Photography', 'Art Direction'] },
+    { id: 6, type: 'artist', name: 'Holdenmedia', role: 'Photographer, Editor, Graphic Designer', location: 'London, UK', image: getProfileImage(6), mutualConnections: 9, email: 'holden@example.com', skills: ['Photography', 'Editing', 'Design'] },
+    { id: 7, type: 'artist', name: 'Antonio Molina', role: 'Editor, VFX Artist, Motion Designer', location: 'Madrid, ES', image: getProfileImage(7), mutualConnections: 11, email: 'antonio@example.com', skills: ['VFX', 'Motion Graphics', 'Compositing'] },
+    { id: 8, type: 'artist', name: 'Neema Sadeghi', role: 'Director, Photographer, Director of Photography', location: 'Amsterdam, NL', image: getProfileImage(8), mutualConnections: 18, email: 'neema@example.com', skills: ['Cinematography', 'Lighting', 'Camera Operation'] },
+    { id: 9, type: 'artist', name: 'Mitchell Francis', role: 'Editor, Producer, Animator', location: 'Toronto, CA', image: getProfileImage(9), mutualConnections: 5, email: 'mitchell@example.com', skills: ['Editing', 'Animation', 'Production'] },
+    { id: 10, type: 'artist', name: 'Josh Farias', role: 'Director, Photographer, Creative Director', location: 'Los Angeles, US', image: getProfileImage(10), mutualConnections: 13, email: 'josh@example.com', skills: ['Directing', 'Creative Strategy', 'Photography'] },
   ];
 
   const mockSuggestions = [
-    { id: 20, name: 'Simon Floris', role: 'Director, Editor, 3D Artist', location: 'Brussels, BE', image: getProfileImage(20), mutualConnections: 17, status: 'pending', email: 'simon@example.com', skills: ['3D Animation', 'Video Editing', 'Direction'] },
-    { id: 21, name: 'Luka Demol', role: 'Photographer', location: 'Brussels, BE', image: getProfileImage(21), mutualConnections: 2, email: 'luka@example.com', skills: ['Photography', 'Retouching'] },
-    { id: 22, name: 'Ulrich Carlos', role: 'Photographer, Videographer, Photo Assistant', location: 'Brussels, BE', image: getProfileImage(22), mutualConnections: 2, email: 'ulrich@example.com', skills: ['Photography', 'Videography', 'Lighting'] },
-    { id: 23, name: 'Emma Laurent', role: 'Cinematographer, DOP', location: 'Lyon, FR', image: getProfileImage(23), mutualConnections: 14, email: 'emma@example.com', skills: ['Cinematography', 'Camera', 'Lighting Design'] },
-    { id: 24, name: 'Marcus Chen', role: 'Motion Designer, 3D Artist', location: 'Vienna, AT', image: getProfileImage(24), mutualConnections: 7, email: 'marcus@example.com', skills: ['Motion Design', '3D Modeling', 'Animation'] },
-    { id: 25, name: 'Sofia Martinez', role: 'Producer, Line Producer', location: 'Barcelona, ES', image: getProfileImage(25), mutualConnections: 19, email: 'sofia@example.com', skills: ['Production', 'Budgeting', 'Scheduling'] },
-    { id: 26, name: 'kaum', role: '3D Artist, Web Designer', location: 'Prague, CZ', image: getProfileImage(26), mutualConnections: 4, email: 'kaum@example.com', skills: ['3D Design', 'Web Development', 'UI/UX'] },
+    { id: 20, type: 'artist', name: 'Simon Floris', role: 'Director, Editor, 3D Artist', location: 'Brussels, BE', image: getProfileImage(20), mutualConnections: 17, status: 'pending', email: 'simon@example.com', skills: ['3D Animation', 'Video Editing', 'Direction'] },
+    { id: 21, type: 'artist', name: 'Luka Demol', role: 'Photographer', location: 'Brussels, BE', image: getProfileImage(21), mutualConnections: 2, email: 'luka@example.com', skills: ['Photography', 'Retouching'] },
+    { id: 22, type: 'artist', name: 'Ulrich Carlos', role: 'Photographer, Videographer, Photo Assistant', location: 'Brussels, BE', image: getProfileImage(22), mutualConnections: 2, email: 'ulrich@example.com', skills: ['Photography', 'Videography', 'Lighting'] },
+    { id: 23, type: 'artist', name: 'Emma Laurent', role: 'Cinematographer, DOP', location: 'Lyon, FR', image: getProfileImage(23), mutualConnections: 14, email: 'emma@example.com', skills: ['Cinematography', 'Camera', 'Lighting Design'] },
+    { id: 24, type: 'artist', name: 'Marcus Chen', role: 'Motion Designer, 3D Artist', location: 'Vienna, AT', image: getProfileImage(24), mutualConnections: 7, email: 'marcus@example.com', skills: ['Motion Design', '3D Modeling', 'Animation'] },
+    { id: 25, type: 'artist', name: 'Sofia Martinez', role: 'Producer, Line Producer', location: 'Barcelona, ES', image: getProfileImage(25), mutualConnections: 19, email: 'sofia@example.com', skills: ['Production', 'Budgeting', 'Scheduling'] },
+    { id: 26, type: 'artist', name: 'kaum', role: '3D Artist, Web Designer', location: 'Prague, CZ', image: getProfileImage(26), mutualConnections: 4, email: 'kaum@example.com', skills: ['3D Design', 'Web Development', 'UI/UX'] },
   ];
 
   useEffect(() => {
