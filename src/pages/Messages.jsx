@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ArtistSidebar from '../components/ArtistSidebar';
-import { Search, Send, MoreVertical } from 'lucide-react';
+import { Search, Send, MoreVertical, Paperclip, Phone, Video, Monitor } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 export default function Messages() {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ export default function Messages() {
   const [selectedChat, setSelectedChat] = useState(null);
   const [messageInput, setMessageInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const messagesEndRef = useRef(null);
 
   // Mock conversations
   const [conversations, setConversations] = useState([
@@ -101,6 +103,94 @@ export default function Messages() {
     setSelectedChat(conversations[0]);
   }, [navigate]);
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [selectedChat, conversations]);
+
+  const handleFileAttach = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      const file_url = result.file_url;
+
+      const newMessage = {
+        id: Date.now(),
+        sender: 'me',
+        text: file.name,
+        file_url: file_url,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      const updatedConversations = conversations.map(conv => {
+        if (conv.id === selectedChat.id) {
+          return {
+            ...conv,
+            messages: [...conv.messages, newMessage],
+            lastMessage: file.name
+          };
+        }
+        return conv;
+      });
+      
+      setConversations(updatedConversations);
+      setSelectedChat({
+        ...selectedChat,
+        messages: [...selectedChat.messages, newMessage]
+      });
+      event.target.value = null;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Failed to upload file.');
+    }
+  };
+
+  const handlePaste = async (event) => {
+    const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+    for (let index in items) {
+      const item = items[index];
+      if (item.kind === 'file') {
+        event.preventDefault();
+        const file = item.getAsFile();
+        if (file && (file.type.startsWith('image/') || file.type.startsWith('video/') || file.type === 'application/pdf')) {
+          try {
+            const result = await base44.integrations.Core.UploadFile({ file });
+            const file_url = result.file_url;
+
+            const newMessage = {
+              id: Date.now(),
+              sender: 'me',
+              text: file.name,
+              file_url: file_url,
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+            
+            const updatedConversations = conversations.map(conv => {
+              if (conv.id === selectedChat.id) {
+                return {
+                  ...conv,
+                  messages: [...conv.messages, newMessage],
+                  lastMessage: file.name
+                };
+              }
+              return conv;
+            });
+            
+            setConversations(updatedConversations);
+            setSelectedChat({
+              ...selectedChat,
+              messages: [...selectedChat.messages, newMessage]
+            });
+          } catch (error) {
+            console.error('Error uploading pasted file:', error);
+            alert('Failed to upload pasted file.');
+          }
+        }
+      }
+    }
+  };
+
   const handleSendMessage = () => {
     if (!messageInput.trim() || !selectedChat) return;
     
@@ -129,6 +219,7 @@ export default function Messages() {
     });
     
     setMessageInput('');
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const filteredConversations = conversations.filter(conv =>
@@ -224,9 +315,20 @@ export default function Messages() {
                         </div>
                       </div>
                     </div>
-                    <button className="p-2 hover:bg-gray-100 rounded-lg">
-                      <MoreVertical className="w-5 h-5 text-gray-600" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Start Audio Call">
+                        <Phone className="w-5 h-5" />
+                      </button>
+                      <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Start Video Call">
+                        <Video className="w-5 h-5" />
+                      </button>
+                      <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Share Screen">
+                        <Monitor className="w-5 h-5" />
+                      </button>
+                      <button className="p-2 hover:bg-gray-100 rounded-lg">
+                        <MoreVertical className="w-5 h-5 text-gray-600" />
+                      </button>
+                    </div>
                   </div>
                   <div className="mt-2 text-xs text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
                     Re: {selectedChat.job}
@@ -246,7 +348,10 @@ export default function Messages() {
                               ? 'bg-black text-white' 
                               : 'bg-white text-gray-900 border border-gray-200'
                           }`}>
-                            <p className="text-sm">{msg.text}</p>
+                            {msg.text && <p className="text-sm">{msg.text}</p>}
+                            {msg.file_url && (
+                              <img src={msg.file_url} alt="Attached file" className="max-w-full h-auto rounded-lg mt-2" />
+                            )}
                           </div>
                           <div className={`text-xs text-gray-500 mt-1 ${
                             msg.sender === 'me' ? 'text-right' : 'text-left'
@@ -256,11 +361,26 @@ export default function Messages() {
                         </div>
                       </div>
                     ))}
+                    <div ref={messagesEndRef} />
                   </div>
                 </div>
 
                 <div className="p-4 border-t border-gray-200 bg-white">
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      id="file-upload-message"
+                      className="hidden"
+                      onChange={handleFileAttach}
+                    />
+                    <label
+                      htmlFor="file-upload-message"
+                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer"
+                      title="Attach file"
+                    >
+                      <Paperclip className="w-5 h-5" />
+                    </label>
+
                     <input
                       type="text"
                       value={messageInput}
@@ -271,7 +391,8 @@ export default function Messages() {
                           handleSendMessage();
                         }
                       }}
-                      placeholder="Type a message..."
+                      onPaste={handlePaste}
+                      placeholder="Type a message or paste an image/file..."
                       className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
                     />
                     <button 
