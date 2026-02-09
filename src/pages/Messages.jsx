@@ -10,6 +10,7 @@ export default function Messages() {
   const [selectedChat, setSelectedChat] = useState(null);
   const [messageInput, setMessageInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const messagesEndRef = useRef(null);
 
   // Mock conversations - load from localStorage
@@ -312,13 +313,17 @@ export default function Messages() {
     conv.job.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const filteredMessages = selectedChat?.messages.filter(msg =>
+    msg.text?.toLowerCase().includes(messageSearchQuery.toLowerCase())
+  ) || [];
+
   if (!user) return null;
 
   return (
-    <div className="h-screen bg-white overflow-hidden">
+    <div className="fixed inset-0 bg-white overflow-hidden">
       <ArtistSidebar />
       
-      <main className="w-full h-screen flex bg-white pl-20 overflow-hidden">
+      <main className="fixed inset-0 flex bg-white pl-20">
         <div className="flex-1 flex h-full overflow-hidden">
           {/* Conversations List */}
           <div className="w-96 border-r border-gray-200 flex flex-col h-full bg-white overflow-hidden">
@@ -426,15 +431,27 @@ export default function Messages() {
                         <MoreVertical className="w-5 h-5 text-gray-600" />
                       </button>
                     </div>
-                  </div>
-                  <div className="mt-2 text-xs text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
-                    Re: {selectedChat.job}
-                  </div>
-                </div>
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                    <div className="flex-1 text-xs text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
+                      Re: {selectedChat.job}
+                    </div>
+                    <div className="relative w-64">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
+                      <input
+                        type="text"
+                        value={messageSearchQuery}
+                        onChange={(e) => setMessageSearchQuery(e.target.value)}
+                        placeholder="Search messages..."
+                        className="w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:border-gray-400"
+                      />
+                    </div>
+                    </div>
+                    </div>
 
-                <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 bg-gray-50 custom-scrollbar">
-                  <div className="space-y-4 max-w-3xl mx-auto break-words">
-                    {selectedChat.messages.map((msg) => (
+                    <div className="flex-1 overflow-y-auto p-6 bg-gray-50 custom-scrollbar">
+                      <div className="space-y-4 max-w-3xl mx-auto break-words">
+                        {(messageSearchQuery ? filteredMessages : selectedChat.messages).map((msg) => (
                       <div
                         key={msg.id}
                         className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
