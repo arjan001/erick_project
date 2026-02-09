@@ -305,10 +305,11 @@ export default function JobBoard() {
                       </div>
                     )}
                   </div>
-                </button>
-              ))}
+                  </button>
+                  </div>
+                  ))}
 
-              {filteredProjects.length === 0 && (
+                  {filteredProjects.length === 0 && (
                 <div className="col-span-full text-center py-16 text-gray-500">
                   <div className="text-6xl mb-4">🔍</div>
                   <p className="text-lg font-semibold">No projects found</p>
