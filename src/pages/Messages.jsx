@@ -233,11 +233,11 @@ export default function Messages() {
     <div className="h-screen bg-white">
       <ArtistSidebar />
       
-      <main className="w-full h-full flex flex-col overflow-hidden bg-white pl-20">
+      <main className="w-full h-full flex overflow-hidden bg-white pl-20">
         <div className="flex-1 flex overflow-hidden">
           {/* Conversations List */}
-          <div className="w-96 border-r border-gray-200 flex flex-col bg-white">
-            <div className="p-4 border-b border-gray-200">
+          <div className="w-96 border-r border-gray-200 flex flex-col overflow-hidden bg-white">
+            <div className="p-4 border-b border-gray-200 flex-shrink-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -250,7 +250,7 @@ export default function Messages() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden">
               {filteredConversations.map((conv) => (
                 <button
                   key={conv.id}
@@ -292,10 +292,10 @@ export default function Messages() {
           </div>
 
           {/* Chat Area */}
-          <div className="flex-1 flex flex-col bg-white">
+          <div className="flex-1 flex flex-col overflow-hidden bg-white">
             {selectedChat ? (
               <>
-                <div className="p-4 border-b border-gray-200 bg-white">
+                <div className="p-4 border-b border-gray-200 bg-white flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="relative">
@@ -335,20 +335,20 @@ export default function Messages() {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
-                  <div className="space-y-4 max-w-3xl mx-auto">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 bg-gray-50">
+                  <div className="space-y-4 max-w-3xl mx-auto break-words">
                     {selectedChat.messages.map((msg) => (
                       <div
                         key={msg.id}
                         className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
                       >
                         <div className={`max-w-md ${msg.sender === 'me' ? 'order-2' : 'order-1'}`}>
-                          <div className={`rounded-2xl px-4 py-2.5 ${
+                          <div className={`rounded-2xl px-4 py-2.5 break-words ${
                             msg.sender === 'me' 
                               ? 'bg-black text-white' 
                               : 'bg-white text-gray-900 border border-gray-200'
                           }`}>
-                            {msg.text && <p className="text-sm">{msg.text}</p>}
+                            {msg.text && <p className="text-sm break-words">{msg.text}</p>}
                             {msg.file_url && (
                               <img src={msg.file_url} alt="Attached file" className="max-w-full h-auto rounded-lg mt-2" />
                             )}
@@ -365,7 +365,7 @@ export default function Messages() {
                   </div>
                 </div>
 
-                <div className="p-4 border-t border-gray-200 bg-white">
+                <div className="p-4 border-t border-gray-200 bg-white flex-shrink-0">
                   <div className="flex items-center gap-2">
                     <input
                       type="file"
