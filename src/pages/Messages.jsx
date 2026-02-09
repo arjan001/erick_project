@@ -11,6 +11,8 @@ export default function Messages() {
   const [messageInput, setMessageInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
+  const [expandedImage, setExpandedImage] = useState(null);
+  const [activeCall, setActiveCall] = useState(null);
   const messagesEndRef = useRef(null);
 
   // Mock conversations - load from localStorage
@@ -396,6 +398,62 @@ export default function Messages() {
   return (
     <div className="fixed inset-0 bg-white overflow-hidden">
       <ArtistSidebar />
+
+      {/* Image Lightbox Modal */}
+      {expandedImage && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4"
+          onClick={() => setExpandedImage(null)}
+        >
+          <button 
+            onClick={() => setExpandedImage(null)}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 text-4xl font-light"
+          >
+            ×
+          </button>
+          <img 
+            src={expandedImage} 
+            alt="Expanded view" 
+            className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+
+      {/* Active Call Modal */}
+      {activeCall && (
+        <div className="fixed inset-0 bg-black/95 z-[100] flex items-center justify-center">
+          <div className="bg-gray-900 rounded-2xl p-8 max-w-md w-full text-center">
+            <div className="mb-6">
+              <img 
+                src={activeCall.avatar} 
+                alt={activeCall.name}
+                className="w-24 h-24 rounded-full mx-auto mb-4"
+              />
+              <h2 className="text-2xl font-bold text-white mb-2">{activeCall.name}</h2>
+              <p className="text-gray-400">
+                {activeCall.type === 'audio' ? 'Audio Call' : 'Video Call'} - Connecting...
+              </p>
+            </div>
+
+            {activeCall.type === 'video' && (
+              <div className="mb-6 bg-gray-800 rounded-lg h-64 flex items-center justify-center">
+                <Video className="w-16 h-16 text-gray-600" />
+              </div>
+            )}
+
+            <div className="flex gap-4 justify-center">
+              <button 
+                onClick={() => setActiveCall(null)}
+                className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full flex items-center gap-2 transition-colors"
+              >
+                <Phone className="w-5 h-5 rotate-135" />
+                End Call
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <main className="fixed inset-0 flex bg-white pl-20">
         <div className="flex-1 flex h-full overflow-hidden">
@@ -481,14 +539,14 @@ export default function Messages() {
                     </div>
                     <div className="flex items-center gap-2">
                       <button 
-                        onClick={() => alert(`Starting audio call with ${selectedChat.name}...`)}
+                        onClick={() => setActiveCall({ type: 'audio', name: selectedChat.name, avatar: selectedChat.avatar })}
                         className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" 
                         title="Start Audio Call"
                       >
                         <Phone className="w-5 h-5" />
                       </button>
                       <button 
-                        onClick={() => alert(`Starting video call with ${selectedChat.name}...`)}
+                        onClick={() => setActiveCall({ type: 'video', name: selectedChat.name, avatar: selectedChat.avatar })}
                         className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" 
                         title="Start Video Call"
                       >
@@ -538,7 +596,12 @@ export default function Messages() {
                           }`}>
                             {msg.text && <p className="text-sm break-words">{msg.text}</p>}
                             {msg.file_url && (
-                              <img src={msg.file_url} alt="Attached file" className="max-w-full h-auto rounded-lg mt-2" />
+                              <img 
+                                src={msg.file_url} 
+                                alt="Attached file" 
+                                className="max-w-full h-auto rounded-lg mt-2 cursor-pointer hover:opacity-90 transition-opacity" 
+                                onClick={() => setExpandedImage(msg.file_url)}
+                              />
                             )}
                           </div>
                           <div className={`text-xs text-gray-500 mt-1 ${
