@@ -39,23 +39,24 @@ export default function JobBoard() {
         const enrichedProjects = await Promise.all(allProjects.map(async (project) => {
           const projectApplications = applications.filter(app => app.job_id === project.id);
           
-          // Generate image if not exists
+          // Generate image if not exists - only for first 3 projects to avoid rate limits
           let generatedImage = project.image_url;
-          if (!generatedImage) {
+          const projectIndex = allProjects.indexOf(project);
+          if (!generatedImage && projectIndex < 3 && project.notes) {
             try {
-              const description = project.notes || `${project.project_type?.replace(/_/g, ' ')} production project`;
-              const location = project.location_city || project.location_country || 'modern urban setting';
-              const prompt = `Cinematic banner image for a ${project.project_type?.replace(/_/g, ' ')} project. ${description}. Set in ${location}. Professional, vibrant, creative, film production aesthetic, high quality, wide aspect ratio`;
+              const description = project.notes.substring(0, 200);
+              const location = `${project.location_city || 'modern city'}, ${project.location_country || 'Europe'}`;
+              const prompt = `Wide cinematic banner for ${project.project_type?.replace(/_/g, ' ')}. ${description}. Location: ${location}. Film production, creative, professional, vibrant`;
               
-              console.log('Generating image for project:', project.id);
+              console.log('🎨 Generating banner for:', project.project_owner_name);
               const imageResult = await base44.integrations.Core.GenerateImage({ prompt });
               generatedImage = imageResult.url;
               
-              // Save the generated image back to the project
+              // Save immediately
               await base44.entities.Project.update(project.id, { image_url: generatedImage });
-              console.log('Image generated and saved:', generatedImage);
+              console.log('✅ Banner saved:', generatedImage);
             } catch (err) {
-              console.error('Image generation failed for project', project.id, err);
+              console.error('❌ Image generation failed:', err);
             }
           }
           
@@ -191,12 +192,26 @@ export default function JobBoard() {
                   }`}
                 >
                   {/* Project Image/Banner */}
-                  <div className="relative h-40 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 overflow-hidden">
+                  <div className="relative h-40 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 overflow-hidden">
                     {project.image_url ? (
-                      <img src={project.image_url} alt={project.project_type} className="w-full h-full object-cover" />
+                      <img 
+                        src={project.image_url} 
+                        alt={project.project_type} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-6xl opacity-20">🎬</div>
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600">
+                        <div className="text-white text-center p-4">
+                          <div className="text-lg font-bold uppercase tracking-wider">
+                            {project.project_type?.replace(/_/g, ' ')}
+                          </div>
+                          <div className="text-xs mt-1 opacity-80">
+                            {project.location_city || 'Remote'}
+                          </div>
+                        </div>
                       </div>
                     )}
                     
