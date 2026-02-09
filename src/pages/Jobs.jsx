@@ -164,7 +164,11 @@ export default function Jobs() {
   const FilterDropdown = ({ type, label }) => (
     <div className="relative">
       <button
-        onClick={() => setShowFilters(prev => ({ ...prev, [type]: !prev[type] }))}
+        onClick={() => setShowFilters(prev => {
+          const newState = { roles: false, location: false, project_types: false, paid: false };
+          newState[type] = !prev[type];
+          return newState;
+        })}
         className="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
       >
         {label}
