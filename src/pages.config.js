@@ -76,6 +76,7 @@ import TeamDashboard from './pages/TeamDashboard';
 import TeamPublicProfile from './pages/TeamPublicProfile';
 import Work from './pages/Work';
 import Network from './pages/Network';
+import ClientDashboard from './pages/ClientDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -109,6 +110,7 @@ export const PAGES = {
     "TeamPublicProfile": TeamPublicProfile,
     "Work": Work,
     "Network": Network,
+    "ClientDashboard": ClientDashboard,
 }
 
 export const pagesConfig = {
