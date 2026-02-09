@@ -238,14 +238,11 @@ export default function Network() {
       <ArtistSidebar />
       
       <main className="fixed inset-0 flex flex-col bg-white pl-20">
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Network</h1>
-            <p className="text-sm text-gray-600">Manage connections and discover creatives</p>
-          </div>
-          <div className="text-sm text-gray-600">
-            <span className="font-semibold text-gray-900">{myConnections.length}</span> connections
+        {/* Header - Connection Requests */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-base font-semibold text-gray-900">Connection requests (0)</h2>
+            <button className="text-sm text-gray-600 hover:underline">View all</button>
           </div>
         </div>
 
@@ -406,172 +403,109 @@ export default function Network() {
           )}
         </div>
 
-        {/* Network List - Split View */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* LEFT: Connections */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-4">
-                Connections ({myConnections.filter(p => {
-                  if (selectedType !== 'all' && p.type !== selectedType) return false;
-                  if (searchQuery.length >= 3 && !p.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-                  return true;
-                }).length})
-              </h2>
-              <div className="space-y-3">
-                {myConnections.filter(p => {
-                  if (selectedType !== 'all' && p.type !== selectedType) return false;
-                  if (searchQuery.length >= 3 && !p.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-                  return true;
-                }).map((person) => (
-                  <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-start gap-3">
-                      <div 
+        {/* Network List - LinkedIn Style */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-4xl mx-auto">
+            {/* Connections Section */}
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-base font-semibold text-gray-900 mb-4">Connections ({mockConnections.length})</h2>
+              <div className="space-y-0 divide-y divide-gray-100">
+                {mockConnections.map((person) => (
+                  <div key={person.id} className="py-4 flex items-center justify-between hover:bg-gray-50 -mx-4 px-4">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <img 
+                        src={person.image}
+                        alt={person.name}
                         onClick={() => handleViewProfile(person)}
-                        className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex-shrink-0 flex items-center justify-center text-lg font-bold text-gray-600 cursor-pointer hover:opacity-80"
-                      >
-                        {person.displayName?.charAt(0) || '?'}
-                      </div>
-
+                        className="w-14 h-14 rounded-full object-cover cursor-pointer hover:opacity-80 flex-shrink-0"
+                      />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
+                        <h3 
+                          onClick={() => handleViewProfile(person)}
+                          className="font-semibold text-gray-900 hover:underline cursor-pointer text-sm"
+                        >
+                          {person.name}
+                        </h3>
+                        <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      <Button
+                        onClick={() => handleMessage(person)}
+                        size="sm"
+                        variant="outline"
+                        className="text-xs px-4"
+                      >
+                        Message
+                      </Button>
+                      <button className="p-2 hover:bg-gray-100 rounded">
+                        <MessageCircle className="w-4 h-4 text-gray-600" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* People You May Know */}
+            <div className="p-6">
+              <h2 className="text-base font-semibold text-gray-900 mb-4">People you may know</h2>
+              <div className="space-y-0 divide-y divide-gray-100">
+                {mockSuggestions.map((person) => (
+                  <div key={person.id} className="py-4 hover:bg-gray-50 -mx-4 px-4">
+                    <div className="flex items-start gap-3">
+                      <img 
+                        src={person.image}
+                        alt={person.name}
+                        onClick={() => handleViewProfile(person)}
+                        className="w-14 h-14 rounded-full object-cover cursor-pointer hover:opacity-80 flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="flex-1">
                             <h3 
                               onClick={() => handleViewProfile(person)}
-                              className="font-semibold text-gray-900 text-sm hover:underline cursor-pointer"
+                              className="font-semibold text-gray-900 hover:underline cursor-pointer text-sm"
                             >
-                              {person.displayName}
+                              {person.name}
                             </h3>
-                            {person.type === 'artist' && (
-                              <p className="text-xs text-gray-600 capitalize">{person.role?.replace(/_/g, ' ')}</p>
-                            )}
-                            {person.type === 'team' && person.specialties && (
-                              <p className="text-xs text-gray-600">{person.specialties.slice(0, 2).join(', ')}</p>
-                            )}
-                            <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-                              <MapPin className="w-3 h-3" />
-                              {person.based_in_city || person.city}
-                            </div>
+                            <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
                           </div>
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => handleMessage(person)}
-                              size="sm"
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              Message
+                          {person.status === 'pending' ? (
+                            <Button size="sm" variant="outline" className="text-xs px-4" disabled>
+                              <Clock className="w-3 h-3 mr-1" />
+                              Pending
                             </Button>
-                            {jobs.length > 0 && (
-                              <Button
-                                onClick={() => {
-                                  setSelectedPerson(person);
-                                  setShowInviteModal(true);
-                                }}
-                                size="sm"
-                                variant="ghost"
-                                className="text-xs"
-                              >
-                                <Briefcase className="w-3 h-3" />
-                              </Button>
-                            )}
+                          ) : (
+                            <Button
+                              onClick={() => {
+                                setSelectedPerson(person);
+                                setShowConnectionModal(true);
+                              }}
+                              size="sm"
+                              className="bg-black text-white hover:bg-gray-800 text-xs px-4"
+                            >
+                              Connect
+                            </Button>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <div className="flex -space-x-1">
+                              <div className="w-4 h-4 rounded-full bg-gray-300 border border-white" />
+                              <div className="w-4 h-4 rounded-full bg-gray-400 border border-white" />
+                            </div>
+                            <span>{person.mutualConnections} Mutuals</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {person.location}
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 ))}
-                
-                {myConnections.filter(p => {
-                  if (selectedType !== 'all' && p.type !== selectedType) return false;
-                  if (searchQuery.length >= 3 && !p.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-                  return true;
-                }).length === 0 && (
-                  <div className="text-center py-8 text-gray-500 text-sm">
-                    No connections yet
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* RIGHT: People You May Know */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-4">
-                People you may know ({suggestions.filter(p => {
-                  if (selectedType !== 'all' && p.type !== selectedType) return false;
-                  if (searchQuery.length >= 3 && !p.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-                  return true;
-                }).length})
-              </h2>
-              <div className="space-y-3">
-                {suggestions.filter(p => {
-                  if (selectedType !== 'all' && p.type !== selectedType) return false;
-                  if (searchQuery.length >= 3 && !p.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-                  return true;
-                }).map((person) => {
-                  const status = getConnectionStatus(person);
-                  return (
-                    <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-start gap-3">
-                        <div 
-                          onClick={() => handleViewProfile(person)}
-                          className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex-shrink-0 flex items-center justify-center text-lg font-bold text-gray-600 cursor-pointer hover:opacity-80"
-                        >
-                          {person.displayName?.charAt(0) || '?'}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1">
-                              <h3 
-                                onClick={() => handleViewProfile(person)}
-                                className="font-semibold text-gray-900 text-sm hover:underline cursor-pointer"
-                              >
-                                {person.displayName}
-                              </h3>
-                              {person.type === 'artist' && (
-                                <p className="text-xs text-gray-600 capitalize">{person.role?.replace(/_/g, ' ')}</p>
-                              )}
-                              {person.type === 'team' && person.specialties && (
-                                <p className="text-xs text-gray-600">{person.specialties.slice(0, 2).join(', ')}</p>
-                              )}
-                              <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-                                <MapPin className="w-3 h-3" />
-                                {person.based_in_city || person.city}
-                              </div>
-                            </div>
-                            {status === 'pending' ? (
-                              <Button size="sm" variant="outline" className="text-xs" disabled>
-                                Pending
-                              </Button>
-                            ) : (
-                              <Button
-                                onClick={() => {
-                                  setSelectedPerson(person);
-                                  setShowConnectionModal(true);
-                                }}
-                                size="sm"
-                                className="bg-black text-white hover:bg-gray-800 text-xs"
-                              >
-                                Connect
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-                
-                {suggestions.filter(p => {
-                  if (selectedType !== 'all' && p.type !== selectedType) return false;
-                  if (searchQuery.length >= 3 && !p.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-                  return true;
-                }).length === 0 && (
-                  <div className="text-center py-8 text-gray-500 text-sm">
-                    No suggestions available
-                  </div>
-                )}
               </div>
             </div>
           </div>
