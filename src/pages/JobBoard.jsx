@@ -35,39 +35,16 @@ export default function JobBoard() {
         // Fetch applications to show engagement
         const applications = await base44.entities.Application.list();
         
-        // Enrich projects with application counts and generate images
-        const enrichedProjects = await Promise.all(allProjects.map(async (project) => {
+        // Enrich projects with application counts
+        const enrichedProjects = allProjects.map(project => {
           const projectApplications = applications.filter(app => app.job_id === project.id);
-          
-          // Generate image if not exists - only for first 3 projects to avoid rate limits
-          let generatedImage = project.image_url;
-          const projectIndex = allProjects.indexOf(project);
-          if (!generatedImage && projectIndex < 3 && project.notes) {
-            try {
-              const description = project.notes.substring(0, 200);
-              const location = `${project.location_city || 'modern city'}, ${project.location_country || 'Europe'}`;
-              const prompt = `Wide cinematic banner for ${project.project_type?.replace(/_/g, ' ')}. ${description}. Location: ${location}. Film production, creative, professional, vibrant`;
-              
-              console.log('🎨 Generating banner for:', project.project_owner_name);
-              const imageResult = await base44.integrations.Core.GenerateImage({ prompt });
-              generatedImage = imageResult.url;
-              
-              // Save immediately
-              await base44.entities.Project.update(project.id, { image_url: generatedImage });
-              console.log('✅ Banner saved:', generatedImage);
-            } catch (err) {
-              console.error('❌ Image generation failed:', err);
-            }
-          }
-          
           return {
             ...project,
-            image_url: generatedImage,
             applicantCount: projectApplications.length,
             hasApplied: projectApplications.some(app => app.artist_email === user.email),
             inDiscussion: projectApplications.filter(app => app.status === 'chat_started').length > 0
           };
-        }));
+        });
         
         setProjects(enrichedProjects);
         if (enrichedProjects.length > 0) setSelectedProject(enrichedProjects[0]);
@@ -191,6 +168,19 @@ export default function JobBoard() {
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
+                  {/* Generate Button */}
+                  {!project.image_url && (
+                    <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+                      <button
+                        onClick={() => handleGenerateImage(project)}
+                        disabled={generatingImageFor === project.id}
+                        className="w-full px-3 py-1.5 bg-black text-white text-xs font-medium rounded hover:bg-gray-800 disabled:opacity-50"
+                      >
+                        {generatingImageFor === project.id ? 'Generating...' : 'Generate Banner'}
+                      </button>
+                    </div>
+                  )}
+
                   {/* Project Image/Banner */}
                   <div className="relative h-40 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 overflow-hidden">
                     {project.image_url ? (
