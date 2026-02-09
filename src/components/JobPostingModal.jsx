@@ -108,6 +108,9 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [skillSearch, setSkillSearch] = useState('');
+  const [showExtractInput, setShowExtractInput] = useState(false);
+  const [extractUrl, setExtractUrl] = useState('');
+  const [isExtracting, setIsExtracting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -173,7 +176,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                 
                 {/* Position field with autocomplete */}
                 <div className="mb-6 relative">
-                  <div className="text-4xl font-light flex items-center gap-3">
+                  <div className="text-2xl font-normal flex items-center gap-3">
                     a 
                     <input
                       type="text"
@@ -184,7 +187,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                       }}
                       onFocus={() => setShowPositionDropdown(true)}
                       placeholder="Position"
-                      className="flex-1 px-3 py-1 border-b-2 border-gray-400 font-bold text-gray-700 focus:border-gray-600 outline-none bg-transparent"
+                      className="flex-1 px-3 py-1 border-b-2 border-gray-400 font-semibold text-gray-700 focus:border-gray-600 outline-none bg-transparent"
                     />
                   </div>
                   {showPositionDropdown && filteredPositions.length > 0 && (
@@ -208,7 +211,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
 
                 {/* Location field */}
                 <div className="mb-6 relative">
-                  <div className="text-4xl font-light flex items-center gap-3">
+                  <div className="text-2xl font-normal flex items-center gap-3">
                     in 
                     <input
                       type="text"
@@ -228,7 +231,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                       }}
                       onFocus={() => setShowLocationDropdown(true)}
                       placeholder="Location"
-                      className="flex-1 px-3 py-1 border-b-2 border-gray-400 font-bold text-gray-700 focus:border-gray-600 outline-none bg-transparent"
+                      className="flex-1 px-3 py-1 border-b-2 border-gray-400 font-semibold text-gray-700 focus:border-gray-600 outline-none bg-transparent"
                     />
                   </div>
                   {showLocationDropdown && locationSuggestions.length > 0 && (
@@ -258,7 +261,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
 
                 {/* Dates field */}
                 <div className="mb-6 relative">
-                  <div className="text-4xl font-light flex items-center gap-3">
+                  <div className="text-2xl font-normal flex items-center gap-3">
                     on 
                     <div className="relative flex-1">
                       <input
@@ -267,7 +270,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                         onChange={(e) => setFormData({ ...formData, dates: e.target.value })}
                         onClick={() => setShowDatePicker(!showDatePicker)}
                         placeholder="Dates"
-                        className="w-full px-3 py-1 border-b-2 border-gray-400 font-bold text-gray-700 focus:border-gray-600 outline-none cursor-pointer bg-transparent"
+                        className="w-full px-3 py-1 border-b-2 border-gray-400 font-semibold text-gray-700 focus:border-gray-600 outline-none cursor-pointer bg-transparent"
                         readOnly
                       />
                       <CalendarIcon className="absolute right-0 top-1 w-5 h-5 text-gray-400 pointer-events-none" />
@@ -321,7 +324,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
 
                 {/* Project type field */}
                 <div className="mb-6 relative">
-                  <div className="text-4xl font-light flex items-center gap-3">
+                  <div className="text-2xl font-normal flex items-center gap-3">
                     for 
                     <input
                       type="text"
@@ -332,7 +335,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                       }}
                       onFocus={() => setShowProjectTypeDropdown(true)}
                       placeholder="Project type"
-                      className="flex-1 px-3 py-1 border-b-2 border-gray-400 font-bold text-gray-700 focus:border-gray-600 outline-none bg-transparent"
+                      className="flex-1 px-3 py-1 border-b-2 border-gray-400 font-semibold text-gray-700 focus:border-gray-600 outline-none bg-transparent"
                     />
                   </div>
                   {showProjectTypeDropdown && (
@@ -357,27 +360,64 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                 <div className="mt-6">
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-sm font-medium">Describe this job (optional):</label>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const url = prompt('Enter website URL to extract info from:');
-                        if (url) {
+                    {!showExtractInput ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowExtractInput(true)}
+                        className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
+                      >
+                        ✨ Extract from URL
+                      </button>
+                    ) : null}
+                  </div>
+                  
+                  {showExtractInput && (
+                    <div className="mb-3 flex gap-2">
+                      <input
+                        type="url"
+                        value={extractUrl}
+                        onChange={(e) => setExtractUrl(e.target.value)}
+                        placeholder="Enter website URL to extract info from..."
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:border-gray-400 outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!extractUrl) return;
+                          setIsExtracting(true);
                           try {
                             const { data } = await base44.integrations.Core.InvokeLLM({
-                              prompt: `Extract key information from this website: ${url}. Provide a brief, professional summary suitable for a job posting description (2-3 sentences).`,
+                              prompt: `Extract key information from this website: ${extractUrl}. Create a professional job description for a ${formData.project_type || 'production'} project. Include: project overview, key responsibilities, and deliverables. Format it as a concise, well-structured job description (3-4 paragraphs).`,
                               add_context_from_internet: true
                             });
                             setFormData({ ...formData, description: data });
+                            setShowExtractInput(false);
+                            setExtractUrl('');
                           } catch (err) {
                             console.error('Extract error:', err);
+                            alert('Failed to extract information from URL');
+                          } finally {
+                            setIsExtracting(false);
                           }
-                        }
-                      }}
-                      className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
-                    >
-                      ✨ Extract from URL
-                    </button>
-                  </div>
+                        }}
+                        disabled={isExtracting}
+                        className="px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 disabled:bg-gray-400"
+                      >
+                        {isExtracting ? 'Extracting...' : 'Extract'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowExtractInput(false);
+                          setExtractUrl('');
+                        }}
+                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                  
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
