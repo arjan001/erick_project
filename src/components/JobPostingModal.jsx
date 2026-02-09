@@ -813,6 +813,7 @@ Write in a professional, direct tone.`
             )}
           </div>
         </div>
+        </div>
       </div>
 
       <style>{`
@@ -840,7 +841,6 @@ Write in a professional, direct tone.`
           border-bottom-right-radius: 8px;
         }
       `}</style>
-    </div>
     </>
   );
 }
