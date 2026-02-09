@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ArtistSidebar from '../components/ArtistSidebar';
-import { Search, Send, MoreVertical, Paperclip, Phone, Video, Monitor } from 'lucide-react';
+import { Search, Send, MoreVertical, Paperclip, Phone, Video, Monitor, Star } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function Messages() {
@@ -13,6 +13,7 @@ export default function Messages() {
   const [messageSearchQuery, setMessageSearchQuery] = useState('');
   const [expandedImage, setExpandedImage] = useState(null);
   const [activeCall, setActiveCall] = useState(null);
+  const [filterTab, setFilterTab] = useState('all');
   const messagesEndRef = useRef(null);
 
   // Mock conversations - load from localStorage
@@ -28,16 +29,19 @@ export default function Messages() {
         avatar: 'https://i.pravatar.cc/150?img=1',
         contact_email: 'sarah.johnson@example.com',
         lastMessage: 'Looking forward to working with you on this project!',
-        time: '2m ago',
+        time: Date.now() - 2 * 60 * 1000,
         unread: 2,
         online: true,
         job: 'VFX Artist needed for Branding',
+        type: 'client',
+        isFavorite: false,
+        isGroup: false,
         messages: [
-          { id: 1, sender: 'them', text: 'Hi! I saw your application for the VFX Artist position.', time: '10:30 AM' },
-          { id: 2, sender: 'me', text: 'Hello! Yes, I\'m very interested in this opportunity.', time: '10:32 AM' },
-          { id: 3, sender: 'them', text: 'Great! Can you tell me more about your experience with particle effects?', time: '10:35 AM' },
-          { id: 4, sender: 'me', text: 'Of course! I\'ve worked on several commercial projects creating abstract particle effects and motion graphics.', time: '10:38 AM' },
-          { id: 5, sender: 'them', text: 'Looking forward to working with you on this project!', time: '10:40 AM' },
+          { id: 1, sender: 'them', text: 'Hi! I saw your application for the VFX Artist position.', time: '10:30 AM', timestamp: Date.now() - 2 * 60 * 1000 - 10 * 60 * 1000 },
+          { id: 2, sender: 'me', text: 'Hello! Yes, I\'m very interested in this opportunity.', time: '10:32 AM', timestamp: Date.now() - 2 * 60 * 1000 - 8 * 60 * 1000 },
+          { id: 3, sender: 'them', text: 'Great! Can you tell me more about your experience with particle effects?', time: '10:35 AM', timestamp: Date.now() - 2 * 60 * 1000 - 5 * 60 * 1000 },
+          { id: 4, sender: 'me', text: 'Of course! I\'ve worked on several commercial projects creating abstract particle effects and motion graphics.', time: '10:38 AM', timestamp: Date.now() - 2 * 60 * 1000 - 2 * 60 * 1000 },
+          { id: 5, sender: 'them', text: 'Looking forward to working with you on this project!', time: '10:40 AM', timestamp: Date.now() - 2 * 60 * 1000 },
         ]
       },
       {
@@ -46,10 +50,13 @@ export default function Messages() {
         avatar: 'https://i.pravatar.cc/150?img=12',
         contact_email: 'mike.rodriguez@example.com',
         lastMessage: 'Can you send me your portfolio?',
-        time: '1h ago',
+        time: Date.now() - 60 * 60 * 1000,
         unread: 0,
         online: true,
         job: 'Director needed for Commercial',
+        type: 'client',
+        isFavorite: true,
+        isGroup: false,
         messages: [
           { id: 1, sender: 'them', text: 'Hey, I noticed you applied for our Director position.', time: '9:15 AM' },
           { id: 2, sender: 'me', text: 'Yes! I have experience directing commercials.', time: '9:20 AM' },
@@ -62,10 +69,13 @@ export default function Messages() {
         avatar: 'https://i.pravatar.cc/150?img=5',
         contact_email: 'emma.chen@example.com',
         lastMessage: 'The shoot is scheduled for next Monday',
-        time: '2h ago',
+        time: Date.now() - 2 * 60 * 60 * 1000,
         unread: 0,
         online: false,
         job: 'Cinematographer for Music Video',
+        type: 'artist',
+        isFavorite: false,
+        isGroup: false,
         messages: [
           { id: 1, sender: 'them', text: 'Hi! Congrats on getting the cinematographer position!', time: 'Yesterday' },
           { id: 2, sender: 'me', text: 'Thank you! I\'m excited to work on this.', time: 'Yesterday' },
@@ -78,10 +88,13 @@ export default function Messages() {
         avatar: 'https://i.pravatar.cc/150?img=13',
         contact_email: 'alex.martinez@example.com',
         lastMessage: 'What\'s your rate for this project?',
-        time: '3h ago',
+        time: Date.now() - 3 * 60 * 60 * 1000,
         unread: 1,
         online: false,
         job: 'Editor needed for Documentary',
+        type: 'team',
+        isFavorite: false,
+        isGroup: false,
         messages: [
           { id: 1, sender: 'them', text: 'Hello! I\'m interested in your editing skills.', time: '2:00 PM' },
           { id: 2, sender: 'me', text: 'Thanks for reaching out!', time: '2:10 PM' },
@@ -94,10 +107,13 @@ export default function Messages() {
         avatar: 'https://i.pravatar.cc/150?img=9',
         contact_email: 'lisa.wong@example.com',
         lastMessage: 'Perfect, let\'s schedule a call',
-        time: 'Yesterday',
+        time: Date.now() - 24 * 60 * 60 * 1000,
         unread: 0,
         online: true,
         job: 'Motion Designer for Social Media',
+        type: 'artist',
+        isFavorite: true,
+        isGroup: false,
         messages: [
           { id: 1, sender: 'them', text: 'Your motion graphics work is impressive!', time: 'Yesterday' },
           { id: 2, sender: 'me', text: 'Thank you! I\'d love to discuss the project.', time: 'Yesterday' },
@@ -110,10 +126,13 @@ export default function Messages() {
         avatar: 'https://i.pravatar.cc/150?img=14',
         contact_email: 'david.kim@example.com',
         lastMessage: 'When can we start the project?',
-        time: 'Yesterday',
+        time: Date.now() - 26 * 60 * 60 * 1000,
         unread: 0,
         online: true,
         job: 'Sound Designer for Short Film',
+        type: 'client',
+        isFavorite: false,
+        isGroup: false,
         messages: [
           { id: 1, sender: 'them', text: 'Hi! Your sound design portfolio is amazing.', time: 'Yesterday' },
           { id: 2, sender: 'me', text: 'Thanks! Happy to discuss the project.', time: 'Yesterday' },
@@ -126,10 +145,13 @@ export default function Messages() {
         avatar: 'https://i.pravatar.cc/150?img=10',
         contact_email: 'rachel.green@example.com',
         lastMessage: 'Looking forward to the shoot!',
-        time: '2 days ago',
+        time: Date.now() - 2 * 24 * 60 * 60 * 1000,
         unread: 0,
         online: false,
         job: 'Photographer for Brand Campaign',
+        type: 'team',
+        isFavorite: false,
+        isGroup: false,
         messages: [
           { id: 1, sender: 'them', text: 'Your photography style is exactly what we need.', time: '2 days ago' },
           { id: 2, sender: 'me', text: 'Glad to hear! Let\'s make it happen.', time: '2 days ago' },
@@ -142,10 +164,13 @@ export default function Messages() {
         avatar: 'https://i.pravatar.cc/150?img=15',
         contact_email: 'james.wilson@example.com',
         lastMessage: 'The budget looks good',
-        time: '2 days ago',
+        time: Date.now() - 2 * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000,
         unread: 0,
         online: true,
         job: 'Producer for Feature Film',
+        type: 'artist',
+        isFavorite: false,
+        isGroup: false,
         messages: [
           { id: 1, sender: 'them', text: 'We need an experienced producer.', time: '2 days ago' },
           { id: 2, sender: 'me', text: 'I have 10 years in feature production.', time: '2 days ago' },
@@ -158,10 +183,13 @@ export default function Messages() {
         avatar: 'https://i.pravatar.cc/150?img=20',
         contact_email: 'sophie.anderson@example.com',
         lastMessage: 'Script revisions are ready',
-        time: '3 days ago',
+        time: Date.now() - 3 * 24 * 60 * 60 * 1000,
         unread: 0,
         online: false,
         job: 'Screenwriter for TV Series',
+        type: 'client',
+        isFavorite: false,
+        isGroup: false,
         messages: [
           { id: 1, sender: 'them', text: 'We loved your previous work.', time: '3 days ago' },
           { id: 2, sender: 'me', text: 'Excited to collaborate on this.', time: '3 days ago' },
@@ -174,10 +202,13 @@ export default function Messages() {
         avatar: 'https://i.pravatar.cc/150?img=33',
         contact_email: 'tom.harris@example.com',
         lastMessage: 'Let\'s discuss the timeline',
-        time: '3 days ago',
+        time: Date.now() - 3 * 24 * 60 * 60 * 1000 - 5 * 60 * 60 * 1000,
         unread: 0,
         online: true,
         job: 'Art Director for Ad Campaign',
+        type: 'team',
+        isFavorite: false,
+        isGroup: false,
         messages: [
           { id: 1, sender: 'them', text: 'Your art direction is impressive.', time: '3 days ago' },
           { id: 2, sender: 'me', text: 'Thank you! What\'s the scope?', time: '3 days ago' },
@@ -198,12 +229,39 @@ export default function Messages() {
   }, [navigate]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [selectedChat, conversations]);
+    if (selectedChat) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+      }, 100);
+    }
+  }, [selectedChat?.id]);
 
   useEffect(() => {
     localStorage.setItem('studio22_conversations', JSON.stringify(conversations));
   }, [conversations]);
+
+  const formatTimestamp = (timestamp) => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (seconds < 60) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return `${days} days ago`;
+    return new Date(timestamp).toLocaleDateString();
+  };
+
+  const toggleFavorite = (convId) => {
+    const updatedConversations = conversations.map(conv =>
+      conv.id === convId ? { ...conv, isFavorite: !conv.isFavorite } : conv
+    );
+    setConversations(updatedConversations);
+  };
 
   const handleFileAttach = async (event) => {
     const file = event.target.files[0];
@@ -218,7 +276,8 @@ export default function Messages() {
         sender: 'me',
         text: file.name,
         file_url: file_url,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: Date.now()
       };
 
       const updatedConversations = conversations.map(conv => {
@@ -227,7 +286,7 @@ export default function Messages() {
             ...conv,
             messages: [...conv.messages, newMessage],
             lastMessage: file.name,
-            time: 'Just now'
+            time: Date.now()
           };
         }
         return conv;
@@ -283,7 +342,8 @@ export default function Messages() {
               sender: 'me',
               text: file.name,
               file_url: file_url,
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              timestamp: Date.now()
             };
             
             const updatedConversations = conversations.map(conv => {
@@ -292,7 +352,7 @@ export default function Messages() {
                   ...conv,
                   messages: [...conv.messages, newMessage],
                   lastMessage: file.name,
-                  time: 'Just now'
+                  time: Date.now()
                 };
               }
               return conv;
@@ -340,7 +400,8 @@ export default function Messages() {
       id: Date.now(),
       sender: 'me',
       text: messageInput,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: Date.now()
     };
     
     const updatedConversations = conversations.map(conv => {
@@ -349,7 +410,7 @@ export default function Messages() {
           ...conv,
           messages: [...conv.messages, newMessage],
           lastMessage: messageInput,
-          time: 'Just now'
+          time: Date.now()
         };
       }
       return conv;
@@ -384,10 +445,20 @@ export default function Messages() {
     }
   };
 
-  const filteredConversations = conversations.filter(conv =>
-    conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conv.job.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredConversations = conversations.filter(conv => {
+    const matchesSearch = conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conv.job.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    if (filterTab === 'all') return true;
+    if (filterTab === 'favorites') return conv.isFavorite;
+    if (filterTab === 'groups') return conv.isGroup;
+    if (filterTab === 'clients') return conv.type === 'client';
+    if (filterTab === 'teams') return conv.type === 'team';
+    if (filterTab === 'artists') return conv.type === 'artist';
+    return true;
+  });
 
   const filteredMessages = selectedChat?.messages.filter(msg =>
     msg.text?.toLowerCase().includes(messageSearchQuery.toLowerCase())
@@ -460,15 +531,30 @@ export default function Messages() {
           {/* Conversations List */}
           <div className="w-96 border-r border-gray-200 flex flex-col h-full bg-white overflow-hidden">
             <div className="p-4 border-b border-gray-200 flex-shrink-0">
-              <div className="relative">
+              <div className="relative mb-3">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search conversations..."
+                  placeholder="Search or start a new chat"
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
                 />
+              </div>
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+                {['all', 'favorites', 'clients', 'teams', 'artists', 'groups'].map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setFilterTab(tab)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                      filterTab === tab
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -477,10 +563,19 @@ export default function Messages() {
                 <button
                   key={conv.id}
                   onClick={() => setSelectedChat(conv)}
-                  className={`w-full p-4 hover:bg-gray-50 border-b border-gray-100 text-left transition-colors ${
+                  className={`w-full p-4 hover:bg-gray-50 border-b border-gray-100 text-left transition-colors relative group ${
                     selectedChat?.id === conv.id ? 'bg-gray-100' : ''
                   }`}
                 >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(conv.id);
+                    }}
+                    className="absolute top-4 right-4 p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                  >
+                    <Star className={`w-4 h-4 ${conv.isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'}`} />
+                  </button>
                   <div className="flex items-start gap-3">
                     <div className="relative">
                       <img 
@@ -492,12 +587,28 @@ export default function Messages() {
                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 pr-6">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold text-sm text-gray-900">{conv.name}</span>
-                        <span className="text-xs text-gray-500">{conv.time}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm text-gray-900">{conv.name}</span>
+                          {conv.type && (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                              conv.type === 'client' ? 'bg-blue-100 text-blue-700' :
+                              conv.type === 'artist' ? 'bg-purple-100 text-purple-700' :
+                              'bg-green-100 text-green-700'
+                            }`}>
+                              {conv.type}
+                            </span>
+                          )}
+                          {conv.isGroup && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">
+                              group
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-500">{formatTimestamp(conv.time)}</span>
                       </div>
-                      <p className="text-xs text-gray-500 mb-1">{conv.job}</p>
+                      <p className="text-xs text-gray-500 mb-1 truncate">{conv.job}</p>
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-600 truncate flex-1">{conv.lastMessage}</p>
                         {conv.unread > 0 && (
