@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ArtistSidebar from '../components/ArtistSidebar';
-import { Search, Send, MoreVertical, Paperclip, Phone, Video, Monitor, Star, Users, Plus, X, Download, Trash2, MessageSquareOff } from 'lucide-react';
+import { Search, Send, MoreVertical, Paperclip, Phone, Video, Monitor, Star, Users, Plus, X, Download, Trash2, MessageSquareOff, Mic, MicOff, VideoOff } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function Messages() {
@@ -18,6 +18,7 @@ export default function Messages() {
   const [groupName, setGroupName] = useState('');
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [showChatMenu, setShowChatMenu] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(null);
   const messagesEndRef = useRef(null);
 
   // Mock conversations - load from localStorage
@@ -274,26 +275,86 @@ export default function Messages() {
         audio: false
       });
       
-      // Show screen share is active
-      setActiveCall({ 
-        type: 'screenshare', 
-        name: selectedChat.name, 
+      const newCall = activeCall ? {
+        ...activeCall,
+        screenStream: stream,
+        isScreenSharing: true
+      } : {
+        type: 'screenshare',
+        name: selectedChat.name,
         avatar: selectedChat.avatar,
-        stream: stream
-      });
+        screenStream: stream,
+        isScreenSharing: true,
+        hasAudio: false,
+        hasVideo: false
+      };
 
-      // Stop sharing when user clicks stop
+      setActiveCall(newCall);
+
       stream.getVideoTracks()[0].onended = () => {
-        setActiveCall(null);
+        if (activeCall?.hasAudio || activeCall?.hasVideo) {
+          setActiveCall({ ...activeCall, screenStream: null, isScreenSharing: false });
+        } else {
+          setActiveCall(null);
+        }
       };
     } catch (error) {
       console.log('Screen share cancelled or not supported');
     }
   };
 
+  const toggleAudio = async () => {
+    if (activeCall?.hasAudio) {
+      if (activeCall.audioStream) {
+        activeCall.audioStream.getTracks().forEach(track => track.stop());
+      }
+      setActiveCall({ ...activeCall, hasAudio: false, audioStream: null });
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        setActiveCall({ 
+          ...activeCall, 
+          hasAudio: true, 
+          audioStream: stream,
+          name: activeCall?.name || selectedChat.name,
+          avatar: activeCall?.avatar || selectedChat.avatar
+        });
+      } catch (error) {
+        console.log('Microphone access denied');
+      }
+    }
+  };
+
+  const toggleVideo = async () => {
+    if (activeCall?.hasVideo) {
+      if (activeCall.videoStream) {
+        activeCall.videoStream.getTracks().forEach(track => track.stop());
+      }
+      setActiveCall({ ...activeCall, hasVideo: false, videoStream: null });
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+        setActiveCall({ 
+          ...activeCall, 
+          hasVideo: true, 
+          videoStream: stream,
+          name: activeCall?.name || selectedChat.name,
+          avatar: activeCall?.avatar || selectedChat.avatar
+        });
+      } catch (error) {
+        console.log('Camera access denied');
+      }
+    }
+  };
+
   const createGroupChat = () => {
     if (!groupName.trim() || selectedMembers.length < 2) {
-      alert('Please enter a group name and select at least 2 members');
+      setConfirmDialog({
+        title: 'Invalid Group',
+        message: 'Please enter a group name and select at least 2 members',
+        type: 'alert',
+        onConfirm: () => setConfirmDialog(null)
+      });
       return;
     }
 
@@ -342,14 +403,21 @@ export default function Messages() {
 
   const clearChat = () => {
     if (!selectedChat) return;
-    if (window.confirm(`Are you sure you want to clear all messages with ${selectedChat.name}? This cannot be undone.`)) {
-      const updatedConversations = conversations.map(conv =>
-        conv.id === selectedChat.id ? { ...conv, messages: [], lastMessage: '', time: Date.now() } : conv
-      );
-      setConversations(updatedConversations);
-      setSelectedChat({ ...selectedChat, messages: [], lastMessage: '' });
-      setShowChatMenu(false);
-    }
+    setConfirmDialog({
+      title: 'Clear Messages',
+      message: `Are you sure you want to clear all messages with ${selectedChat.name}? This cannot be undone.`,
+      type: 'confirm',
+      onConfirm: () => {
+        const updatedConversations = conversations.map(conv =>
+          conv.id === selectedChat.id ? { ...conv, messages: [], lastMessage: '', time: Date.now() } : conv
+        );
+        setConversations(updatedConversations);
+        setSelectedChat({ ...selectedChat, messages: [], lastMessage: '' });
+        setShowChatMenu(false);
+        setConfirmDialog(null);
+      },
+      onCancel: () => setConfirmDialog(null)
+    });
   };
 
   const deleteConversation = () => {
@@ -358,12 +426,20 @@ export default function Messages() {
       ? `Are you sure you want to delete the group "${selectedChat.name}"? This cannot be undone.`
       : `Are you sure you want to remove ${selectedChat.name} from your chats? This cannot be undone.`;
     
-    if (window.confirm(message)) {
-      const updatedConversations = conversations.filter(conv => conv.id !== selectedChat.id);
-      setConversations(updatedConversations);
-      setSelectedChat(null);
-      setShowChatMenu(false);
-    }
+    setConfirmDialog({
+      title: selectedChat.isGroup ? 'Delete Group' : 'Remove Chat',
+      message: message,
+      type: 'confirm',
+      danger: true,
+      onConfirm: () => {
+        const updatedConversations = conversations.filter(conv => conv.id !== selectedChat.id);
+        setConversations(updatedConversations);
+        setSelectedChat(null);
+        setShowChatMenu(false);
+        setConfirmDialog(null);
+      },
+      onCancel: () => setConfirmDialog(null)
+    });
   };
 
   const handleFileAttach = async (event) => {
@@ -594,6 +670,36 @@ export default function Messages() {
         </div>
       )}
 
+      {/* Custom Confirmation Dialog */}
+      {confirmDialog && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">{confirmDialog.title}</h3>
+            <p className="text-sm text-gray-600 mb-6">{confirmDialog.message}</p>
+            <div className="flex gap-3">
+              {confirmDialog.type === 'confirm' && (
+                <button
+                  onClick={confirmDialog.onCancel}
+                  className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+              )}
+              <button
+                onClick={confirmDialog.onConfirm}
+                className={`flex-1 px-4 py-2 rounded-lg transition-colors font-medium ${
+                  confirmDialog.danger
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-gray-900 text-white hover:bg-gray-800'
+                }`}
+              >
+                {confirmDialog.type === 'alert' ? 'OK' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Group Chat Creation Modal */}
       {showGroupModal && (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
@@ -656,36 +762,77 @@ export default function Messages() {
                 className="w-24 h-24 rounded-full mx-auto mb-4"
               />
               <h2 className="text-2xl font-bold text-white mb-2">{activeCall.name}</h2>
-              <p className="text-gray-400">
-                {activeCall.type === 'audio' ? 'Audio Call' : 'Video Call'} - Connecting...
-              </p>
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
+                {activeCall.isScreenSharing && <span className="flex items-center gap-1"><Monitor className="w-4 h-4" /> Screen</span>}
+                {activeCall.hasAudio && <span className="flex items-center gap-1"><Mic className="w-4 h-4" /> Audio</span>}
+                {activeCall.hasVideo && <span className="flex items-center gap-1"><Video className="w-4 h-4" /> Video</span>}
+                {!activeCall.isScreenSharing && !activeCall.hasAudio && !activeCall.hasVideo && <span>Connecting...</span>}
+              </div>
             </div>
 
-            {activeCall.type === 'video' && (
-              <div className="mb-6 bg-gray-800 rounded-lg h-64 flex items-center justify-center">
-                <Video className="w-16 h-16 text-gray-600" />
-              </div>
-            )}
+            <div className="mb-6 bg-gray-800 rounded-lg h-64 flex items-center justify-center">
+              {activeCall.isScreenSharing && <Monitor className="w-16 h-16 text-gray-600" />}
+              {activeCall.hasVideo && !activeCall.isScreenSharing && <Video className="w-16 h-16 text-gray-600" />}
+              {activeCall.hasAudio && !activeCall.hasVideo && !activeCall.isScreenSharing && <Mic className="w-16 h-16 text-gray-600" />}
+            </div>
 
-            {activeCall.type === 'screenshare' && (
-              <div className="mb-6 bg-gray-800 rounded-lg h-64 flex items-center justify-center">
-                <Monitor className="w-16 h-16 text-gray-600" />
-                <p className="text-white ml-4">Sharing your screen...</p>
-              </div>
-            )}
+            {/* Call Controls */}
+            <div className="flex gap-3 justify-center mb-4">
+              <button
+                onClick={toggleAudio}
+                className={`p-4 rounded-full transition-colors ${
+                  activeCall.hasAudio 
+                    ? 'bg-white text-gray-900 hover:bg-gray-200' 
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                }`}
+                title={activeCall.hasAudio ? 'Mute' : 'Unmute'}
+              >
+                {activeCall.hasAudio ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+              </button>
+              
+              <button
+                onClick={toggleVideo}
+                className={`p-4 rounded-full transition-colors ${
+                  activeCall.hasVideo 
+                    ? 'bg-white text-gray-900 hover:bg-gray-200' 
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                }`}
+                title={activeCall.hasVideo ? 'Stop Video' : 'Start Video'}
+              >
+                {activeCall.hasVideo ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+              </button>
+
+              <button
+                onClick={handleScreenShare}
+                className={`p-4 rounded-full transition-colors ${
+                  activeCall.isScreenSharing 
+                    ? 'bg-white text-gray-900 hover:bg-gray-200' 
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                }`}
+                title={activeCall.isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
+              >
+                <Monitor className="w-5 h-5" />
+              </button>
+            </div>
 
             <div className="flex gap-4 justify-center">
               <button 
                 onClick={() => {
-                  if (activeCall.stream) {
-                    activeCall.stream.getTracks().forEach(track => track.stop());
+                  if (activeCall.screenStream) {
+                    activeCall.screenStream.getTracks().forEach(track => track.stop());
+                  }
+                  if (activeCall.audioStream) {
+                    activeCall.audioStream.getTracks().forEach(track => track.stop());
+                  }
+                  if (activeCall.videoStream) {
+                    activeCall.videoStream.getTracks().forEach(track => track.stop());
                   }
                   setActiveCall(null);
                 }}
                 className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full flex items-center gap-2 transition-colors"
               >
                 <Phone className="w-5 h-5 rotate-135" />
-                {activeCall.type === 'screenshare' ? 'Stop Sharing' : 'End Call'}
+                End Call
               </button>
             </div>
           </div>
@@ -823,14 +970,14 @@ export default function Messages() {
                     </div>
                     <div className="flex items-center gap-2">
                       <button 
-                        onClick={() => setActiveCall({ type: 'audio', name: selectedChat.name, avatar: selectedChat.avatar })}
+                        onClick={() => setActiveCall({ type: 'audio', name: selectedChat.name, avatar: selectedChat.avatar, hasAudio: false, hasVideo: false, isScreenSharing: false })}
                         className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" 
-                        title="Start Audio Call"
+                        title="Start Call"
                       >
                         <Phone className="w-5 h-5" />
                       </button>
                       <button 
-                        onClick={() => setActiveCall({ type: 'video', name: selectedChat.name, avatar: selectedChat.avatar })}
+                        onClick={() => setActiveCall({ type: 'video', name: selectedChat.name, avatar: selectedChat.avatar, hasAudio: false, hasVideo: false, isScreenSharing: false })}
                         className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" 
                         title="Start Video Call"
                       >
