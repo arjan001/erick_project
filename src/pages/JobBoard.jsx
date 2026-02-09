@@ -13,6 +13,7 @@ export default function JobBoard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [generatingImageFor, setGeneratingImageFor] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,6 +58,30 @@ export default function JobBoard() {
 
     fetchProjects();
   }, [user]);
+
+  const handleGenerateImage = async (project) => {
+    setGeneratingImageFor(project.id);
+    try {
+      const description = project.notes || `${project.project_type?.replace(/_/g, ' ')} production project`;
+      const location = `${project.location_city || 'modern city'}, ${project.location_country || 'Europe'}`;
+      const prompt = `Wide cinematic banner for ${project.project_type?.replace(/_/g, ' ')}. ${description}. Location: ${location}. Film production, creative, professional, vibrant`;
+      
+      const imageResult = await base44.integrations.Core.GenerateImage({ prompt });
+      await base44.entities.Project.update(project.id, { image_url: imageResult.url });
+      
+      // Update local state
+      setProjects(prev => prev.map(p => 
+        p.id === project.id ? { ...p, image_url: imageResult.url } : p
+      ));
+      if (selectedProject?.id === project.id) {
+        setSelectedProject({ ...selectedProject, image_url: imageResult.url });
+      }
+    } catch (err) {
+      console.error('Failed to generate image:', err);
+    } finally {
+      setGeneratingImageFor(null);
+    }
+  };
 
   const handleApply = async () => {
     if (!selectedProject || !user) return;
