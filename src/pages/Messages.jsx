@@ -211,17 +211,6 @@ export default function Messages() {
       const result = await base44.integrations.Core.UploadFile({ file });
       const file_url = result.file_url;
 
-      const conversationId = `${user.email}_${selectedChat.contact_email}`.split('').sort().join('');
-      
-      await base44.entities.Message.create({
-        conversation_id: conversationId,
-        sender_email: user.email,
-        recipient_email: selectedChat.contact_email,
-        text: file.name,
-        file_url: file_url,
-        file_name: file.name
-      });
-
       const newMessage = {
         id: Date.now(),
         sender: 'me',
@@ -252,6 +241,23 @@ export default function Messages() {
         messages: [...selectedChat.messages, newMessage]
       });
       event.target.value = null;
+
+      // Optional: Save to database
+      try {
+        if (selectedChat.contact_email) {
+          const conversationId = `${user.email}_${selectedChat.contact_email}`.split('').sort().join('');
+          await base44.entities.Message.create({
+            conversation_id: conversationId,
+            sender_email: user.email,
+            recipient_email: selectedChat.contact_email,
+            text: file.name,
+            file_url: file_url,
+            file_name: file.name
+          });
+        }
+      } catch (error) {
+        console.log('Database save skipped:', error);
+      }
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('Failed to upload file.');
@@ -269,17 +275,6 @@ export default function Messages() {
           try {
             const result = await base44.integrations.Core.UploadFile({ file });
             const file_url = result.file_url;
-
-            const conversationId = `${user.email}_${selectedChat.contact_email}`.split('').sort().join('');
-            
-            await base44.entities.Message.create({
-              conversation_id: conversationId,
-              sender_email: user.email,
-              recipient_email: selectedChat.contact_email,
-              text: file.name,
-              file_url: file_url,
-              file_name: file.name
-            });
 
             const newMessage = {
               id: Date.now(),
@@ -310,6 +305,23 @@ export default function Messages() {
               ...selectedChat,
               messages: [...selectedChat.messages, newMessage]
             });
+
+            // Optional: Save to database
+            try {
+              if (selectedChat.contact_email) {
+                const conversationId = `${user.email}_${selectedChat.contact_email}`.split('').sort().join('');
+                await base44.entities.Message.create({
+                  conversation_id: conversationId,
+                  sender_email: user.email,
+                  recipient_email: selectedChat.contact_email,
+                  text: file.name,
+                  file_url: file_url,
+                  file_name: file.name
+                });
+              }
+            } catch (error) {
+              console.log('Database save skipped:', error);
+            }
           } catch (error) {
             console.error('Error uploading pasted file:', error);
             alert('Failed to upload pasted file.');
@@ -322,50 +334,51 @@ export default function Messages() {
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !selectedChat) return;
     
-    try {
-      const conversationId = `${user.email}_${selectedChat.contact_email}`.split('').sort().join('');
-      
-      await base44.entities.Message.create({
-        conversation_id: conversationId,
-        sender_email: user.email,
-        recipient_email: selectedChat.contact_email,
-        text: messageInput
-      });
+    const newMessage = {
+      id: Date.now(),
+      sender: 'me',
+      text: messageInput,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    
+    const updatedConversations = conversations.map(conv => {
+      if (conv.id === selectedChat.id) {
+        return {
+          ...conv,
+          messages: [...conv.messages, newMessage],
+          lastMessage: messageInput,
+          time: 'Just now'
+        };
+      }
+      return conv;
+    }).sort((a, b) => {
+      if (a.id === selectedChat.id) return -1;
+      if (b.id === selectedChat.id) return 1;
+      return 0;
+    });
+    
+    setConversations(updatedConversations);
+    setSelectedChat({
+      ...selectedChat,
+      messages: [...selectedChat.messages, newMessage]
+    });
+    
+    setMessageInput('');
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
-      const newMessage = {
-        id: Date.now(),
-        sender: 'me',
-        text: messageInput,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      const updatedConversations = conversations.map(conv => {
-        if (conv.id === selectedChat.id) {
-          return {
-            ...conv,
-            messages: [...conv.messages, newMessage],
-            lastMessage: messageInput,
-            time: 'Just now'
-          };
-        }
-        return conv;
-      }).sort((a, b) => {
-        if (a.id === selectedChat.id) return -1;
-        if (b.id === selectedChat.id) return 1;
-        return 0;
-      });
-      
-      setConversations(updatedConversations);
-      setSelectedChat({
-        ...selectedChat,
-        messages: [...selectedChat.messages, newMessage]
-      });
-      
-      setMessageInput('');
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Optional: Save to database
+    try {
+      if (selectedChat.contact_email) {
+        const conversationId = `${user.email}_${selectedChat.contact_email}`.split('').sort().join('');
+        await base44.entities.Message.create({
+          conversation_id: conversationId,
+          sender_email: user.email,
+          recipient_email: selectedChat.contact_email,
+          text: messageInput
+        });
+      }
     } catch (error) {
-      console.error('Error sending message:', error);
-      alert('Failed to send message.');
+      console.log('Database save skipped:', error);
     }
   };
 
