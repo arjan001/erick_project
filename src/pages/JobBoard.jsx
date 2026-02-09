@@ -41,16 +41,21 @@ export default function JobBoard() {
           
           // Generate image if not exists
           let generatedImage = project.image_url;
-          if (!generatedImage && project.notes) {
+          if (!generatedImage) {
             try {
-              const prompt = `Creative ${project.project_type?.replace(/_/g, ' ')} project visual. ${project.notes}. Location: ${project.location_city || 'modern city'}, ${project.location_country || 'Europe'}. Cinematic, professional, vibrant colors.`;
+              const description = project.notes || `${project.project_type?.replace(/_/g, ' ')} production project`;
+              const location = project.location_city || project.location_country || 'modern urban setting';
+              const prompt = `Cinematic banner image for a ${project.project_type?.replace(/_/g, ' ')} project. ${description}. Set in ${location}. Professional, vibrant, creative, film production aesthetic, high quality, wide aspect ratio`;
+              
+              console.log('Generating image for project:', project.id);
               const imageResult = await base44.integrations.Core.GenerateImage({ prompt });
               generatedImage = imageResult.url;
               
               // Save the generated image back to the project
               await base44.entities.Project.update(project.id, { image_url: generatedImage });
+              console.log('Image generated and saved:', generatedImage);
             } catch (err) {
-              console.log('Image generation skipped for project', project.id);
+              console.error('Image generation failed for project', project.id, err);
             }
           }
           
