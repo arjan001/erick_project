@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ArtistSidebar from '../components/ArtistSidebar';
-import { Search, Send, MoreVertical, Paperclip, Phone, Video, Monitor, Star } from 'lucide-react';
+import { Search, Send, MoreVertical, Paperclip, Phone, Video, Monitor, Star, Users, Plus, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function Messages() {
@@ -14,6 +14,9 @@ export default function Messages() {
   const [expandedImage, setExpandedImage] = useState(null);
   const [activeCall, setActiveCall] = useState(null);
   const [filterTab, setFilterTab] = useState('all');
+  const [showGroupModal, setShowGroupModal] = useState(false);
+  const [groupName, setGroupName] = useState('');
+  const [selectedMembers, setSelectedMembers] = useState([]);
   const messagesEndRef = useRef(null);
 
   // Mock conversations - load from localStorage
@@ -263,6 +266,66 @@ export default function Messages() {
     setConversations(updatedConversations);
   };
 
+  const handleScreenShare = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { cursor: "always" },
+        audio: false
+      });
+      
+      // Show screen share is active
+      setActiveCall({ 
+        type: 'screenshare', 
+        name: selectedChat.name, 
+        avatar: selectedChat.avatar,
+        stream: stream
+      });
+
+      // Stop sharing when user clicks stop
+      stream.getVideoTracks()[0].onended = () => {
+        setActiveCall(null);
+      };
+    } catch (error) {
+      console.log('Screen share cancelled or not supported');
+    }
+  };
+
+  const createGroupChat = () => {
+    if (!groupName.trim() || selectedMembers.length < 2) {
+      alert('Please enter a group name and select at least 2 members');
+      return;
+    }
+
+    const newGroup = {
+      id: Date.now(),
+      name: groupName,
+      avatar: 'https://i.pravatar.cc/150?img=50',
+      contact_email: null,
+      lastMessage: 'Group created',
+      time: Date.now(),
+      unread: 0,
+      online: false,
+      job: `${selectedMembers.length} members`,
+      type: 'group',
+      isFavorite: false,
+      isGroup: true,
+      members: selectedMembers,
+      messages: [{
+        id: 1,
+        sender: 'system',
+        text: `Group "${groupName}" created with ${selectedMembers.length} members`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: Date.now()
+      }]
+    };
+
+    setConversations([newGroup, ...conversations]);
+    setSelectedChat(newGroup);
+    setShowGroupModal(false);
+    setGroupName('');
+    setSelectedMembers([]);
+  };
+
   const handleFileAttach = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -491,6 +554,57 @@ export default function Messages() {
         </div>
       )}
 
+      {/* Group Chat Creation Modal */}
+      {showGroupModal && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Create Group Chat</h2>
+              <button onClick={() => setShowGroupModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <input
+              type="text"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              placeholder="Group name"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-gray-400"
+            />
+
+            <p className="text-sm text-gray-600 mb-2">Select members:</p>
+            <div className="max-h-64 overflow-y-auto space-y-2 mb-4">
+              {conversations.filter(c => !c.isGroup).map(conv => (
+                <label key={conv.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedMembers.includes(conv.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedMembers([...selectedMembers, conv.id]);
+                      } else {
+                        setSelectedMembers(selectedMembers.filter(id => id !== conv.id));
+                      }
+                    }}
+                    className="w-4 h-4"
+                  />
+                  <img src={conv.avatar} alt={conv.name} className="w-8 h-8 rounded-full" />
+                  <span className="text-sm text-gray-900">{conv.name}</span>
+                </label>
+              ))}
+            </div>
+
+            <button
+              onClick={createGroupChat}
+              className="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              Create Group ({selectedMembers.length} members)
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Active Call Modal */}
       {activeCall && (
         <div className="fixed inset-0 bg-black/95 z-[100] flex items-center justify-center">
@@ -513,13 +627,25 @@ export default function Messages() {
               </div>
             )}
 
+            {activeCall.type === 'screenshare' && (
+              <div className="mb-6 bg-gray-800 rounded-lg h-64 flex items-center justify-center">
+                <Monitor className="w-16 h-16 text-gray-600" />
+                <p className="text-white ml-4">Sharing your screen...</p>
+              </div>
+            )}
+
             <div className="flex gap-4 justify-center">
               <button 
-                onClick={() => setActiveCall(null)}
+                onClick={() => {
+                  if (activeCall.stream) {
+                    activeCall.stream.getTracks().forEach(track => track.stop());
+                  }
+                  setActiveCall(null);
+                }}
                 className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full flex items-center gap-2 transition-colors"
               >
                 <Phone className="w-5 h-5 rotate-135" />
-                End Call
+                {activeCall.type === 'screenshare' ? 'Stop Sharing' : 'End Call'}
               </button>
             </div>
           </div>
@@ -538,8 +664,15 @@ export default function Messages() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search or start a new chat"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
                 />
+                <button
+                  onClick={() => setShowGroupModal(true)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-lg"
+                  title="Create Group Chat"
+                >
+                  <Users className="w-4 h-4 text-gray-600" />
+                </button>
               </div>
               <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                 {['all', 'favorites', 'clients', 'teams', 'artists', 'groups'].map(tab => (
@@ -664,7 +797,7 @@ export default function Messages() {
                         <Video className="w-5 h-5" />
                       </button>
                       <button 
-                        onClick={() => alert(`Starting screen share with ${selectedChat.name}...`)}
+                        onClick={handleScreenShare}
                         className="p-2 hover:bg-gray-100 rounded-lg text-gray-600" 
                         title="Share Screen"
                       >
