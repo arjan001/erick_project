@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '../components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
-import { Edit2, MapPin, MessageCircle, Briefcase, MoreHorizontal, ChevronDown, Copy, Globe, Instagram, Linkedin, Star, ThumbsUp, Play, Users } from 'lucide-react';
+import { MapPin, MessageCircle, Briefcase, MoreHorizontal, ChevronDown, Copy, Globe, Instagram, Linkedin, Star, ThumbsUp, Play, Users, Plus } from 'lucide-react';
 
 export default function ArtistProfile() {
   const [user, setUser] = useState(null);
@@ -16,6 +16,7 @@ export default function ArtistProfile() {
   const [selectedProjectTypeFilter, setSelectedProjectTypeFilter] = useState('all');
   const [showRolesDropdown, setShowRolesDropdown] = useState(false);
   const [showProjectTypesDropdown, setShowProjectTypesDropdown] = useState(false);
+  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -125,10 +126,6 @@ export default function ArtistProfile() {
               </div>
             </div>
             <div className="flex items-center gap-2 pt-8">
-              <Button onClick={() => navigate('ArtistDashboard')} className="bg-black text-white hover:bg-gray-800 px-6">
-                <Edit2 className="w-4 h-4 mr-2" />
-                Edit Profile
-              </Button>
               <Button variant="ghost" className="p-2">
                 <MoreHorizontal className="w-5 h-5" />
               </Button>
@@ -252,11 +249,11 @@ export default function ArtistProfile() {
               <div className="grid grid-cols-3 gap-6 mb-12">
                 {/* Add Portfolio Button */}
                 <button
-                  onClick={() => {/* TODO: Add modal for uploading portfolio */}}
+                  onClick={() => setShowPortfolioModal(true)}
                   className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg aspect-video flex flex-col items-center justify-center hover:bg-gray-100 transition-colors group"
                 >
-                  <div className="text-4xl mb-2">+</div>
-                  <p className="text-sm font-medium text-gray-600">Add portfolio</p>
+                  <Plus className="w-8 h-8 mb-2 text-gray-400" />
+                  <p className="text-sm font-medium text-gray-600">Add work</p>
                 </button>
 
                 {filteredClips.length > 0 ? (
@@ -441,6 +438,41 @@ export default function ArtistProfile() {
           )}
         </div>
       </main>
+
+      {/* Add Portfolio Modal */}
+      {showPortfolioModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Add Work to Portfolio</h3>
+            <p className="text-sm text-gray-600 mb-4">Upload a video clip to showcase your work</p>
+            
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-4 cursor-pointer hover:border-gray-400 transition-colors">
+              <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-600">Click to upload video</p>
+              <p className="text-xs text-gray-500 mt-1">MP4, WebM up to 100MB</p>
+            </div>
+
+            <input type="text" placeholder="Project title" className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm mb-3 focus:outline-none focus:border-gray-400" />
+            
+            <select className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm mb-4 focus:outline-none focus:border-gray-400">
+              <option>Select project type</option>
+              <option>Commercial</option>
+              <option>Music Video</option>
+              <option>Documentary</option>
+              <option>Short Film</option>
+              <option>Other</option>
+            </select>
+
+            <div className="flex gap-2">
+              <Button onClick={() => setShowPortfolioModal(false)} variant="outline" className="flex-1">Cancel</Button>
+              <Button onClick={() => {
+                setShowPortfolioModal(false);
+                // TODO: Handle upload
+              }} className="flex-1 bg-black text-white hover:bg-gray-800">Add</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
