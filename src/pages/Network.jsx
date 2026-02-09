@@ -37,25 +37,28 @@ export default function Network() {
   // Generate random profile images
   const getProfileImage = (id) => `https://i.pravatar.cc/150?img=${id}`;
 
-  // Mock data with images and mutual connections
+  // Mock data with images, locations, skills and mutual connections
   const mockConnections = [
-    { id: 1, name: 'Saint', role: 'Editor, Graphic Designer, Art Director', location: 'Paris, France', image: getProfileImage(1), mutualConnections: 12 },
-    { id: 2, name: 'Moritz Giesl', role: 'Director, Creative Director', location: 'Berlin, DE', image: getProfileImage(2), mutualConnections: 8 },
-    { id: 3, name: 'Michaela Ceci', role: 'Stylist, Costume Designer', location: 'Milan, IT', image: getProfileImage(3), mutualConnections: 15 },
-    { id: 4, name: 'Aidan Cullen', role: 'Director, Photographer', location: 'Dublin, IE', image: getProfileImage(4), mutualConnections: 6 },
-    { id: 5, name: 'onda', role: 'Director, Photographer, Creative Director', location: 'Barcelona, ES', image: getProfileImage(5), mutualConnections: 22 },
-    { id: 6, name: 'Holdenmedia', role: 'Photographer, Editor, Graphic Designer', location: 'London, UK', image: getProfileImage(6), mutualConnections: 9 },
-    { id: 7, name: 'Antonio Molina', role: 'Editor, VFX Artist, Motion Designer', location: 'Madrid, ES', image: getProfileImage(7), mutualConnections: 11 },
-    { id: 8, name: 'Neema Sadeghi', role: 'Director, Photographer, Director of Photography', location: 'Amsterdam, NL', image: getProfileImage(8), mutualConnections: 18 },
+    { id: 1, name: 'Saint', role: 'Editor, Graphic Designer, Art Director', location: 'Paris, France', image: getProfileImage(1), mutualConnections: 12, email: 'saint@example.com', skills: ['Adobe Premiere', 'Photoshop', 'Illustrator', 'After Effects'] },
+    { id: 2, name: 'Moritz Giesl', role: 'Director, Creative Director', location: 'Berlin, DE', image: getProfileImage(2), mutualConnections: 8, email: 'moritz@example.com', skills: ['Creative Direction', 'Filmmaking', 'Concept Development'] },
+    { id: 3, name: 'Michaela Ceci', role: 'Stylist, Costume Designer', location: 'Milan, IT', image: getProfileImage(3), mutualConnections: 15, email: 'michaela@example.com', skills: ['Fashion Styling', 'Costume Design', 'Wardrobe'] },
+    { id: 4, name: 'Aidan Cullen', role: 'Director, Photographer', location: 'Dublin, IE', image: getProfileImage(4), mutualConnections: 6, email: 'aidan@example.com', skills: ['Photography', 'Directing', 'Lighting'] },
+    { id: 5, name: 'onda', role: 'Director, Photographer, Creative Director', location: 'Barcelona, ES', image: getProfileImage(5), mutualConnections: 22, email: 'onda@example.com', skills: ['Direction', 'Photography', 'Art Direction'] },
+    { id: 6, name: 'Holdenmedia', role: 'Photographer, Editor, Graphic Designer', location: 'London, UK', image: getProfileImage(6), mutualConnections: 9, email: 'holden@example.com', skills: ['Photography', 'Editing', 'Design'] },
+    { id: 7, name: 'Antonio Molina', role: 'Editor, VFX Artist, Motion Designer', location: 'Madrid, ES', image: getProfileImage(7), mutualConnections: 11, email: 'antonio@example.com', skills: ['VFX', 'Motion Graphics', 'Compositing'] },
+    { id: 8, name: 'Neema Sadeghi', role: 'Director, Photographer, Director of Photography', location: 'Amsterdam, NL', image: getProfileImage(8), mutualConnections: 18, email: 'neema@example.com', skills: ['Cinematography', 'Lighting', 'Camera Operation'] },
+    { id: 9, name: 'Mitchell Francis', role: 'Editor, Producer, Animator', location: 'Toronto, CA', image: getProfileImage(9), mutualConnections: 5, email: 'mitchell@example.com', skills: ['Editing', 'Animation', 'Production'] },
+    { id: 10, name: 'Josh Farias', role: 'Director, Photographer, Creative Director', location: 'Los Angeles, US', image: getProfileImage(10), mutualConnections: 13, email: 'josh@example.com', skills: ['Directing', 'Creative Strategy', 'Photography'] },
   ];
 
   const mockSuggestions = [
-    { id: 20, name: 'Simon Floris', role: 'Director, Editor, 3D Artist', location: 'Brussels, BE', image: getProfileImage(20), mutualConnections: 17, status: 'pending' },
-    { id: 21, name: 'Luka Demol', role: 'Photographer', location: 'Brussels, BE', image: getProfileImage(21), mutualConnections: 2 },
-    { id: 22, name: 'Ulrich Carlos', role: 'Photographer, Videographer, Photo Assistant', location: 'Brussels, BE', image: getProfileImage(22), mutualConnections: 2 },
-    { id: 23, name: 'Emma Laurent', role: 'Cinematographer, DOP', location: 'Lyon, FR', image: getProfileImage(23), mutualConnections: 14 },
-    { id: 24, name: 'Marcus Chen', role: 'Motion Designer, 3D Artist', location: 'Vienna, AT', image: getProfileImage(24), mutualConnections: 7 },
-    { id: 25, name: 'Sofia Martinez', role: 'Producer, Line Producer', location: 'Barcelona, ES', image: getProfileImage(25), mutualConnections: 19 },
+    { id: 20, name: 'Simon Floris', role: 'Director, Editor, 3D Artist', location: 'Brussels, BE', image: getProfileImage(20), mutualConnections: 17, status: 'pending', email: 'simon@example.com', skills: ['3D Animation', 'Video Editing', 'Direction'] },
+    { id: 21, name: 'Luka Demol', role: 'Photographer', location: 'Brussels, BE', image: getProfileImage(21), mutualConnections: 2, email: 'luka@example.com', skills: ['Photography', 'Retouching'] },
+    { id: 22, name: 'Ulrich Carlos', role: 'Photographer, Videographer, Photo Assistant', location: 'Brussels, BE', image: getProfileImage(22), mutualConnections: 2, email: 'ulrich@example.com', skills: ['Photography', 'Videography', 'Lighting'] },
+    { id: 23, name: 'Emma Laurent', role: 'Cinematographer, DOP', location: 'Lyon, FR', image: getProfileImage(23), mutualConnections: 14, email: 'emma@example.com', skills: ['Cinematography', 'Camera', 'Lighting Design'] },
+    { id: 24, name: 'Marcus Chen', role: 'Motion Designer, 3D Artist', location: 'Vienna, AT', image: getProfileImage(24), mutualConnections: 7, email: 'marcus@example.com', skills: ['Motion Design', '3D Modeling', 'Animation'] },
+    { id: 25, name: 'Sofia Martinez', role: 'Producer, Line Producer', location: 'Barcelona, ES', image: getProfileImage(25), mutualConnections: 19, email: 'sofia@example.com', skills: ['Production', 'Budgeting', 'Scheduling'] },
+    { id: 26, name: 'kaum', role: '3D Artist, Web Designer', location: 'Prague, CZ', image: getProfileImage(26), mutualConnections: 4, email: 'kaum@example.com', skills: ['3D Design', 'Web Development', 'UI/UX'] },
   ];
 
   useEffect(() => {
@@ -160,8 +163,22 @@ export default function Network() {
     }
   };
 
+  const [activeChatWindows, setActiveChatWindows] = useState([]);
+
   const handleMessage = (person) => {
-    navigate('/messages');
+    // Check if chat window already open
+    if (activeChatWindows.find(w => w.id === person.id)) return;
+    
+    // Add new chat window (max 3 windows)
+    if (activeChatWindows.length >= 3) {
+      setActiveChatWindows([...activeChatWindows.slice(1), person]);
+    } else {
+      setActiveChatWindows([...activeChatWindows, person]);
+    }
+  };
+
+  const closeChatWindow = (personId) => {
+    setActiveChatWindows(activeChatWindows.filter(w => w.id !== personId));
   };
 
   const handleViewProfile = (person) => {
@@ -427,62 +444,78 @@ export default function Network() {
           )}
         </div>
 
-        {/* Network List - LinkedIn Style */}
+        {/* Network List - Two Column Layout */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto">
-            {/* Connections Section */}
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-base font-semibold text-gray-900 mb-4">Connections ({mockConnections.length})</h2>
+          <div className="grid grid-cols-2 gap-0 divide-x divide-gray-200 h-full">
+            {/* LEFT COLUMN: Connections */}
+            <div className="overflow-y-auto">
+              <div className="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+                <h2 className="text-base font-semibold text-gray-900">Connections ({mockConnections.length})</h2>
+              </div>
               <div className="space-y-0 divide-y divide-gray-100">
                 {mockConnections.map((person) => (
-                  <div key={person.id} className="py-4 flex items-center justify-between hover:bg-gray-50 -mx-4 px-4">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div key={person.id} className="p-4 hover:bg-gray-50">
+                    <div className="flex items-start gap-3">
                       <img 
                         src={person.image}
                         alt={person.name}
                         onClick={() => handleViewProfile(person)}
-                        className="w-14 h-14 rounded-full object-cover cursor-pointer hover:opacity-80 flex-shrink-0"
+                        className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 
-                          onClick={() => handleViewProfile(person)}
-                          className="font-semibold text-gray-900 hover:underline cursor-pointer text-sm"
-                        >
-                          {person.name}
-                        </h3>
-                        <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div className="flex-1">
+                            <h3 
+                              onClick={() => handleViewProfile(person)}
+                              className="font-semibold text-gray-900 hover:underline cursor-pointer text-sm"
+                            >
+                              {person.name}
+                            </h3>
+                            <p className="text-xs text-gray-600 line-clamp-1 mb-1">{person.role}</p>
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <MapPin className="w-3 h-3" />
+                              {person.location}
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => handleMessage(person)}
+                            size="sm"
+                            variant="outline"
+                            className="text-xs px-3 flex-shrink-0"
+                          >
+                            Message
+                          </Button>
+                        </div>
+                        {person.skills && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {person.skills.slice(0, 3).map((skill, idx) => (
+                              <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    <div className="flex gap-2 ml-4">
-                      <Button
-                        onClick={() => handleMessage(person)}
-                        size="sm"
-                        variant="outline"
-                        className="text-xs px-4"
-                      >
-                        Message
-                      </Button>
-                      <button className="p-2 hover:bg-gray-100 rounded">
-                        <MessageCircle className="w-4 h-4 text-gray-600" />
-                      </button>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* People You May Know */}
-            <div className="p-6">
-              <h2 className="text-base font-semibold text-gray-900 mb-4">People you may know</h2>
+            {/* RIGHT COLUMN: Suggestions */}
+            <div className="overflow-y-auto">
+              <div className="p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+                <h2 className="text-base font-semibold text-gray-900">People you may know</h2>
+              </div>
               <div className="space-y-0 divide-y divide-gray-100">
                 {mockSuggestions.map((person) => (
-                  <div key={person.id} className="py-4 hover:bg-gray-50 -mx-4 px-4">
+                  <div key={person.id} className="p-4 hover:bg-gray-50">
                     <div className="flex items-start gap-3">
                       <img 
                         src={person.image}
                         alt={person.name}
                         onClick={() => handleViewProfile(person)}
-                        className="w-14 h-14 rounded-full object-cover cursor-pointer hover:opacity-80 flex-shrink-0"
+                        className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-2">
@@ -496,7 +529,7 @@ export default function Network() {
                             <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
                           </div>
                           {person.status === 'pending' ? (
-                            <Button size="sm" variant="outline" className="text-xs px-4" disabled>
+                            <Button size="sm" variant="outline" className="text-xs px-3 flex-shrink-0" disabled>
                               <Clock className="w-3 h-3 mr-1" />
                               Pending
                             </Button>
@@ -507,13 +540,13 @@ export default function Network() {
                                 setShowConnectionModal(true);
                               }}
                               size="sm"
-                              className="bg-black text-white hover:bg-gray-800 text-xs px-4"
+                              className="bg-black text-white hover:bg-gray-800 text-xs px-3 flex-shrink-0"
                             >
                               Connect
                             </Button>
                           )}
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
                           <div className="flex items-center gap-1">
                             <div className="flex -space-x-1">
                               <div className="w-4 h-4 rounded-full bg-gray-300 border border-white" />
@@ -526,6 +559,15 @@ export default function Network() {
                             {person.location}
                           </div>
                         </div>
+                        {person.skills && (
+                          <div className="flex flex-wrap gap-1">
+                            {person.skills.slice(0, 3).map((skill, idx) => (
+                              <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -576,6 +618,50 @@ export default function Network() {
           </div>
         </div>
       )}
+
+      {/* Popup Chat Windows */}
+      <div className="fixed bottom-0 right-6 flex gap-3 z-40">
+        {activeChatWindows.map((person, index) => (
+          <div key={person.id} className="w-80 bg-white rounded-t-lg shadow-2xl border border-gray-200 flex flex-col" style={{ height: '400px' }}>
+            {/* Chat Header */}
+            <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+              <div className="flex items-center gap-2">
+                <img src={person.image} alt={person.name} className="w-8 h-8 rounded-full" />
+                <div>
+                  <div className="font-semibold text-sm text-gray-900">{person.name}</div>
+                  <div className="text-xs text-gray-500">Online</div>
+                </div>
+              </div>
+              <button onClick={() => closeChatWindow(person.id)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Chat Messages */}
+            <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+              <div className="text-center text-xs text-gray-500 mb-4">
+                Start a conversation with {person.name}
+              </div>
+            </div>
+
+            {/* Chat Input */}
+            <div className="p-3 border-t border-gray-200 bg-white">
+              <input
+                type="text"
+                placeholder="Type a message..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && e.target.value.trim()) {
+                    // Here you would save to the Message entity
+                    console.log('Send message to:', person.email, e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Invite to Job Modal */}
       {showInviteModal && selectedPerson && (
