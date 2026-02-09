@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '../components/ArtistSidebar';
-import { Search, MapPin, Euro, ChevronDown, Users, Building2, TrendingUp, X } from 'lucide-react';
+import { Search, MapPin, Euro, ChevronDown, Users, Building2, TrendingUp, X, MessageCircle, Briefcase, Network as NetworkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Network() {
@@ -30,6 +30,9 @@ export default function Network() {
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [connectionMessage, setConnectionMessage] = useState('');
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [jobs, setJobs] = useState([]);
+  const [selectedJob, setSelectedJob] = useState(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
@@ -45,17 +48,24 @@ export default function Network() {
 
     const fetchData = async () => {
       try {
-        const [artistsData, teamsData, backersData, connectionsData] = await Promise.all([
+        const [artistsData, teamsData, backersData, connectionsData, jobsData] = await Promise.all([
           base44.entities.Artist.filter({ status: 'approved' }),
           base44.entities.Team.filter({ status: 'approved' }),
           base44.entities.Backer.filter({ status: 'approved' }),
-          base44.entities.Connection.filter({ requester_email: user.email })
+          base44.entities.Connection.list(),
+          base44.entities.Job.filter({ status: 'open', client_email: user.email })
         ]);
         
         setArtists(artistsData);
         setTeams(teamsData);
         setBackers(backersData);
-        setConnections(connectionsData);
+        
+        // Get both sent and received connections
+        const myConnections = connectionsData.filter(c => 
+          c.requester_email === user.email || c.recipient_email === user.email
+        );
+        setConnections(myConnections);
+        setJobs(jobsData);
       } catch (err) {
         console.error('Error fetching network data:', err);
       } finally {
@@ -91,10 +101,50 @@ export default function Network() {
 
       setShowConnectionModal(false);
       setConnectionMessage('');
-      alert('Connection request sent!');
+      
+      // Refresh connections
+      const connectionsData = await base44.entities.Connection.list();
+      const myConnections = connectionsData.filter(c => 
+        c.requester_email === user.email || c.recipient_email === user.email
+      );
+      setConnections(myConnections);
     } catch (err) {
       console.error('Error sending connection:', err);
-      alert('Failed to send connection request');
+    }
+  };
+
+  const handleInviteToJob = async () => {
+    if (!selectedPerson || !selectedJob) return;
+
+    try {
+      await base44.entities.Notification.create({
+        recipient_email: selectedPerson.email || selectedPerson.contact_email,
+        sender_email: user.email,
+        sender_name: user.full_name,
+        type: 'job_invitation',
+        title: 'Job Invitation',
+        message: `${user.full_name} invited you to apply for: ${selectedJob.title}`,
+        link: '/jobs',
+        action_required: true,
+        action_data: { job_id: selectedJob.id }
+      });
+
+      setShowInviteModal(false);
+      setSelectedJob(null);
+    } catch (err) {
+      console.error('Error sending invitation:', err);
+    }
+  };
+
+  const handleMessage = (person) => {
+    navigate('/messages');
+  };
+
+  const handleViewProfile = (person) => {
+    if (person.type === 'artist') {
+      navigate(`/artist-profile/${person.id}`);
+    } else if (person.type === 'team') {
+      navigate(`/team-profile/${person.id}`);
     }
   };
 
@@ -104,6 +154,22 @@ export default function Network() {
     ...teams.map(t => ({ ...t, type: 'team', displayName: t.team_name })),
     ...backers.map(b => ({ ...b, type: 'backer', displayName: b.organization_name }))
   ];
+
+  // Get connection status for each person
+  const getConnectionStatus = (person) => {
+    const personEmail = person.email || person.contact_email;
+    const connection = connections.find(c =>
+      (c.requester_email === user.email && c.recipient_email === personEmail) ||
+      (c.recipient_email === user.email && c.requester_email === personEmail)
+    );
+    
+    if (!connection) return 'not_connected';
+    return connection.status; // pending, accepted, declined
+  };
+
+  // Separate into connections and suggestions
+  const myConnections = allPeople.filter(person => getConnectionStatus(person) === 'accepted');
+  const suggestions = allPeople.filter(person => getConnectionStatus(person) !== 'accepted');
 
   // Filter logic
   const filteredPeople = allPeople.filter(person => {
@@ -173,9 +239,19 @@ export default function Network() {
       
       <main className="w-full h-full flex flex-col overflow-hidden bg-white pl-20">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Network</h1>
-          <p className="text-sm text-gray-600">Connect with creators, teams, and investors</p>
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <NetworkIcon className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Network</h1>
+              <p className="text-sm text-gray-600">Manage connections and discover creatives</p>
+            </div>
+          </div>
+          <div className="text-sm text-gray-600">
+            <span className="font-semibold text-gray-900">{myConnections.length}</span> connections
+          </div>
         </div>
 
         {/* Search and Filters */}
@@ -335,97 +411,174 @@ export default function Network() {
           )}
         </div>
 
-        {/* Network List */}
+        {/* Network List - Split View */}
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="mb-4 text-sm text-gray-600">
-            {filteredPeople.length} {filteredPeople.length === 1 ? 'person' : 'people'} found
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* LEFT: Connections */}
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                Connections ({myConnections.filter(p => {
+                  if (selectedType !== 'all' && p.type !== selectedType) return false;
+                  if (searchQuery.length >= 3 && !p.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                  return true;
+                }).length})
+              </h2>
+              <div className="space-y-3">
+                {myConnections.filter(p => {
+                  if (selectedType !== 'all' && p.type !== selectedType) return false;
+                  if (searchQuery.length >= 3 && !p.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                  return true;
+                }).map((person) => (
+                  <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-start gap-3">
+                      <div 
+                        onClick={() => handleViewProfile(person)}
+                        className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex-shrink-0 flex items-center justify-center text-lg font-bold text-gray-600 cursor-pointer hover:opacity-80"
+                      >
+                        {person.displayName?.charAt(0) || '?'}
+                      </div>
 
-          <div className="space-y-3">
-            {filteredPeople.map((person) => {
-              const isConnected = connections.some(c => 
-                (c.recipient_email === person.email || c.recipient_email === person.contact_email) && 
-                c.status === 'accepted'
-              );
-              
-              return (
-                <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-4">
-                    {/* Avatar */}
-                    <div className="w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex-shrink-0 flex items-center justify-center text-2xl font-bold text-gray-600">
-                      {person.displayName?.charAt(0) || '?'}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-gray-900">{person.displayName}</h3>
-                            <span className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full flex items-center gap-1">
-                              {getTypeIcon(person.type)}
-                              {getTypeLabel(person.type)}
-                            </span>
-                          </div>
-
-                          {/* Role/Specialty */}
-                          {person.type === 'artist' && (
-                            <p className="text-sm text-gray-700 mb-1 capitalize">{person.role?.replace(/_/g, ' ')}</p>
-                          )}
-                          {person.type === 'team' && person.specialties && (
-                            <p className="text-sm text-gray-700 mb-1">{person.specialties.slice(0, 3).join(', ')}</p>
-                          )}
-                          {person.type === 'backer' && person.backing_types && (
-                            <p className="text-sm text-gray-700 mb-1 capitalize">{person.backing_types.join(', ').replace(/_/g, ' ')}</p>
-                          )}
-
-                          {/* Location */}
-                          <div className="flex items-center gap-3 text-xs text-gray-600">
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3" />
-                              {person.based_in_city || person.city}, {person.based_in_country || person.country}
-                            </span>
-                          </div>
-
-                          {/* Bio preview for backers */}
-                          {person.type === 'backer' && person.bio && (
-                            <p className="text-xs text-gray-600 mt-2 line-clamp-2">{person.bio}</p>
-                          )}
-                        </div>
-
-                        {/* Connect Button */}
-                        <div className="flex-shrink-0">
-                          {isConnected ? (
-                            <Button variant="outline" size="sm" className="text-xs">
-                              Connected
-                            </Button>
-                          ) : (
-                            <Button 
-                              onClick={() => {
-                                setSelectedPerson(person);
-                                setShowConnectionModal(true);
-                              }}
-                              size="sm" 
-                              className="bg-black text-white hover:bg-gray-800 text-xs"
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <h3 
+                              onClick={() => handleViewProfile(person)}
+                              className="font-semibold text-gray-900 text-sm hover:underline cursor-pointer"
                             >
-                              Connect
+                              {person.displayName}
+                            </h3>
+                            {person.type === 'artist' && (
+                              <p className="text-xs text-gray-600 capitalize">{person.role?.replace(/_/g, ' ')}</p>
+                            )}
+                            {person.type === 'team' && person.specialties && (
+                              <p className="text-xs text-gray-600">{person.specialties.slice(0, 2).join(', ')}</p>
+                            )}
+                            <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                              <MapPin className="w-3 h-3" />
+                              {person.based_in_city || person.city}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => handleMessage(person)}
+                              size="sm"
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              Message
                             </Button>
-                          )}
+                            {jobs.length > 0 && (
+                              <Button
+                                onClick={() => {
+                                  setSelectedPerson(person);
+                                  setShowInviteModal(true);
+                                }}
+                                size="sm"
+                                variant="ghost"
+                                className="text-xs"
+                              >
+                                <Briefcase className="w-3 h-3" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-
-            {filteredPeople.length === 0 && (
-              <div className="text-center py-12">
-                <div className="text-gray-400 text-6xl mb-4">🔍</div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">No matches found</h2>
-                <p className="text-gray-600">Try adjusting your search or filters</p>
+                ))}
+                
+                {myConnections.filter(p => {
+                  if (selectedType !== 'all' && p.type !== selectedType) return false;
+                  if (searchQuery.length >= 3 && !p.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                  return true;
+                }).length === 0 && (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    No connections yet
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+
+            {/* RIGHT: People You May Know */}
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                People you may know ({suggestions.filter(p => {
+                  if (selectedType !== 'all' && p.type !== selectedType) return false;
+                  if (searchQuery.length >= 3 && !p.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                  return true;
+                }).length})
+              </h2>
+              <div className="space-y-3">
+                {suggestions.filter(p => {
+                  if (selectedType !== 'all' && p.type !== selectedType) return false;
+                  if (searchQuery.length >= 3 && !p.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                  return true;
+                }).map((person) => {
+                  const status = getConnectionStatus(person);
+                  return (
+                    <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex items-start gap-3">
+                        <div 
+                          onClick={() => handleViewProfile(person)}
+                          className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex-shrink-0 flex items-center justify-center text-lg font-bold text-gray-600 cursor-pointer hover:opacity-80"
+                        >
+                          {person.displayName?.charAt(0) || '?'}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <h3 
+                                onClick={() => handleViewProfile(person)}
+                                className="font-semibold text-gray-900 text-sm hover:underline cursor-pointer"
+                              >
+                                {person.displayName}
+                              </h3>
+                              {person.type === 'artist' && (
+                                <p className="text-xs text-gray-600 capitalize">{person.role?.replace(/_/g, ' ')}</p>
+                              )}
+                              {person.type === 'team' && person.specialties && (
+                                <p className="text-xs text-gray-600">{person.specialties.slice(0, 2).join(', ')}</p>
+                              )}
+                              <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                                <MapPin className="w-3 h-3" />
+                                {person.based_in_city || person.city}
+                              </div>
+                            </div>
+                            {status === 'pending' ? (
+                              <Button size="sm" variant="outline" className="text-xs" disabled>
+                                Pending
+                              </Button>
+                            ) : (
+                              <Button
+                                onClick={() => {
+                                  setSelectedPerson(person);
+                                  setShowConnectionModal(true);
+                                }}
+                                size="sm"
+                                className="bg-black text-white hover:bg-gray-800 text-xs"
+                              >
+                                Connect
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {suggestions.filter(p => {
+                  if (selectedType !== 'all' && p.type !== selectedType) return false;
+                  if (searchQuery.length >= 3 && !p.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                  return true;
+                }).length === 0 && (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    No suggestions available
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </main>
@@ -433,9 +586,9 @@ export default function Network() {
       {/* Connection Request Modal */}
       {showConnectionModal && selectedPerson && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold">Connect with {selectedPerson.displayName}</h3>
+              <h3 className="text-lg font-bold text-gray-900">Connect with {selectedPerson.displayName}</h3>
               <button onClick={() => setShowConnectionModal(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
@@ -465,6 +618,58 @@ export default function Network() {
                 className="flex-1 bg-black text-white hover:bg-gray-800"
               >
                 Send Request
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invite to Job Modal */}
+      {showInviteModal && selectedPerson && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Invite to Job</h3>
+              <button onClick={() => setShowInviteModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Invite {selectedPerson.displayName} to apply for one of your open positions.
+            </p>
+
+            <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
+              {jobs.map(job => (
+                <button
+                  key={job.id}
+                  onClick={() => setSelectedJob(job)}
+                  className={`w-full text-left p-3 border rounded-lg transition-colors ${
+                    selectedJob?.id === job.id
+                      ? 'border-black bg-gray-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="font-semibold text-sm text-gray-900">{job.title}</div>
+                  <div className="text-xs text-gray-600 mt-1">{job.location}</div>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowInviteModal(false)}
+                variant="outline" 
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleInviteToJob}
+                disabled={!selectedJob}
+                className="flex-1 bg-black text-white hover:bg-gray-800 disabled:opacity-50"
+              >
+                Send Invitation
               </Button>
             </div>
           </div>
