@@ -348,11 +348,33 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
 
                 {/* Description */}
                 <div className="mt-6">
-                  <label className="block text-sm font-medium mb-2">Describe this job:</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium">Describe this job (optional):</label>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const url = prompt('Enter website URL to extract info from:');
+                        if (url) {
+                          try {
+                            const { data } = await base44.integrations.Core.InvokeLLM({
+                              prompt: `Extract key information from this website: ${url}. Provide a brief, professional summary suitable for a job posting description (2-3 sentences).`,
+                              add_context_from_internet: true
+                            });
+                            setFormData({ ...formData, description: data });
+                          } catch (err) {
+                            console.error('Extract error:', err);
+                          }
+                        }
+                      }}
+                      className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
+                    >
+                      ✨ Extract from URL
+                    </button>
+                  </div>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Add a description"
+                    placeholder="Add a description or use the Extract button to analyze a website"
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-sm focus:border-purple-400 outline-none resize-none"
                     rows={4}
                   />
@@ -378,7 +400,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Image</label>
+                <label className="block text-sm font-medium mb-2">Image (optional)</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -398,12 +420,15 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                 />
                 <label
                   htmlFor="job-image-upload"
-                  className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 hover:border-gray-400 cursor-pointer"
+                  className="block w-full h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 hover:border-gray-400 cursor-pointer overflow-hidden"
                 >
                   {formData.image_url ? (
                     <img src={formData.image_url} alt="Job" className="w-full h-full object-cover rounded-lg" />
                   ) : (
-                    <span className="text-4xl">+</span>
+                    <div className="flex flex-col items-center">
+                      <span className="text-4xl mb-2">+</span>
+                      <span className="text-sm">Upload image</span>
+                    </div>
                   )}
                 </label>
               </div>
