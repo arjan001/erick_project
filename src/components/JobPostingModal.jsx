@@ -50,37 +50,71 @@ const PROJECT_TYPES = [
 
 const SKILLS_DATABASE = [
   // Camera Equipment
-  'ARRI Alexa', 'RED Camera', 'Sony FX', 'Canon Cinema', 'Blackmagic', 
-  'Panasonic Lumix', 'DJI Ronin', 'Steadicam', 'Drone Operation', 'GoPro',
+  'ARRI Alexa', 'ARRI Alexa Mini', 'ARRI Alexa LF', 'RED Komodo', 'RED Monstro', 'RED Raptor',
+  'Sony FX6', 'Sony FX9', 'Sony Venice', 'Canon C300', 'Canon C500', 'Canon Cinema EOS',
+  'Blackmagic URSA', 'Blackmagic Pocket', 'Panasonic Varicam', 'Panasonic Lumix',
+  'DJI Ronin', 'DJI Ronin 4D', 'Steadicam', 'Drone Operation', 'DJI Inspire', 'GoPro',
   
   // Lenses
-  'Zeiss', 'Cooke', 'Sigma Cine', 'Canon L Series', 'Anamorphic Lenses',
+  'Zeiss Master Prime', 'Zeiss Supreme', 'Cooke S4', 'Cooke Anamorphic', 'Sigma Cine',
+  'Canon CN-E', 'Canon L Series', 'Anamorphic Lenses', 'Vintage Lenses', 'Prime Lenses',
   
-  // Lighting
-  'ARRI Lighting', 'Aputure', 'Kino Flo', 'LED Panels', 'HMI Lighting',
-  'Natural Light', 'Studio Lighting', 'Practical Lighting', 'RGB Lighting',
+  // Lighting Equipment
+  'ARRI SkyPanel', 'ARRI M-Series', 'Aputure 600d', 'Aputure Nova', 'Kino Flo',
+  'LED Panels', 'HMI Lighting', 'Tungsten Lighting', 'Natural Light', 'Studio Lighting',
+  'Practical Lighting', 'RGB Lighting', 'Lighting Design', 'Gaffer Experience',
   
-  // Software
-  'Adobe Premiere', 'Final Cut Pro', 'DaVinci Resolve', 'After Effects',
-  'Photoshop', 'Illustrator', 'Cinema 4D', 'Blender', 'Maya', 'Houdini',
-  'Nuke', 'Flame', 'Avid', 'Pro Tools', 'Logic Pro', 'Ableton',
+  // Grip Equipment
+  'Dolly', 'Technocrane', 'Jib', 'Slider', 'Track & Dolly', 'C-Stand', 'Flags & Diffusion',
   
-  // Techniques
-  'Color Grading', 'VFX', 'Motion Graphics', 'Sound Design', 'Compositing',
-  'Rotoscoping', 'Tracking', 'Green Screen', 'Time-Lapse', 'Slow Motion',
+  // Post-Production Software
+  'Adobe Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'Avid Media Composer',
+  'After Effects', 'Photoshop', 'Lightroom', 'Illustrator', 'InDesign',
   
-  // Styles
-  'Cinematic', 'Documentary Style', 'Handheld', 'Gimbal Work', 'Aerial',
-  'Product Photography', 'Portrait Photography', 'Lifestyle', 'Fashion',
+  // 3D & VFX Software
+  'Cinema 4D', 'Blender', 'Maya', 'Houdini', '3ds Max', 'Nuke', 'Flame', 'Fusion',
+  'Unreal Engine', 'Unity', 'Substance Painter', 'ZBrush', 'Redshift', 'Octane',
+  
+  // Audio Software & Equipment
+  'Pro Tools', 'Logic Pro', 'Ableton Live', 'Cubase', 'FL Studio', 'Reaper',
+  'Sound Design', 'Audio Mixing', 'Audio Mastering', 'Foley Recording',
+  'Boom Operation', 'Location Sound', 'ADR', 'Dialogue Editing',
   
   // Production Skills
-  'Script Breakdown', 'Storyboarding', 'Shot Listing', 'Casting',
-  'Location Scouting', 'Production Design', 'Set Design', 'Art Direction',
-  'Costume Design', 'Makeup', 'Hair Styling', 'Prop Making',
+  'Directing', 'Cinematography', 'Script Breakdown', 'Storyboarding', 'Shot Listing',
+  'Casting', 'Location Scouting', 'Production Management', 'Line Producing',
+  'Unit Production Manager', 'Production Coordination', 'AD Experience',
   
-  // Technical
-  '4K', '6K', '8K', 'HDR', 'Log Profiles', 'LUTs', 'RAW Recording',
-  'ProRes', 'H.264', 'H.265', 'Multicam', 'Timecode Sync',
+  // Camera Department
+  '1st AC', '2nd AC', 'Camera Operator', 'DIT', 'Data Management', 'Focus Pulling',
+  
+  // Art Department
+  'Production Design', 'Set Design', 'Art Direction', 'Set Decoration',
+  'Costume Design', 'Wardrobe Styling', 'Makeup Artist', 'Hair Styling',
+  'Prop Making', 'Prop Master', 'Scenic Painting',
+  
+  // Editorial
+  'Editing', 'Color Grading', 'Color Correction', 'Conform', 'Online Editing',
+  'Offline Editing', 'Assembly', 'Rough Cut', 'Fine Cut',
+  
+  // VFX & Motion Graphics
+  'VFX Supervision', 'Compositing', 'Rotoscoping', 'Tracking', 'Match Moving',
+  'Green Screen', 'Chroma Key', 'Motion Graphics', 'Title Design', 'Animation',
+  '2D Animation', '3D Animation', 'Character Animation', 'Motion Capture',
+  
+  // Technical Skills
+  '4K', '6K', '8K', 'HDR', 'Log Profiles', 'LUTs', 'RAW Recording', 'ProRes',
+  'H.264', 'H.265', 'Multicam', 'Timecode Sync', 'Live Streaming', 'Broadcast',
+  
+  // Shooting Styles
+  'Cinematic', 'Documentary Style', 'Handheld', 'Gimbal Work', 'Aerial Photography',
+  'Product Photography', 'Portrait Photography', 'Fashion Photography', 'Lifestyle',
+  'Time-Lapse', 'Slow Motion', 'Hyperlapse', 'Stop Motion',
+  
+  // Production Types
+  'Commercial Production', 'Music Video', 'Documentary', 'Feature Film', 'Short Film',
+  'Corporate Video', 'Event Coverage', 'Wedding Videography', 'Social Media Content',
+  'Branded Content', 'Web Series', 'TV Production',
 ];
 
 export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
@@ -525,10 +559,11 @@ Write in a professional, direct tone.`
                     const file = e.target.files?.[0];
                     if (file) {
                       try {
-                        const { data } = await base44.integrations.Core.UploadFile({ file });
-                        setFormData({ ...formData, image_url: data.file_url });
+                        const result = await base44.integrations.Core.UploadFile({ file });
+                        setFormData({ ...formData, image_url: result.file_url });
                       } catch (err) {
                         console.error('Upload error:', err);
+                        alert('Failed to upload image');
                       }
                     }
                   }}
@@ -537,10 +572,10 @@ Write in a professional, direct tone.`
                 />
                 <label
                   htmlFor="job-image-upload"
-                  className="block w-full h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 hover:border-gray-400 cursor-pointer overflow-hidden"
+                  className="block w-full h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 hover:border-gray-400 cursor-pointer overflow-hidden bg-gray-50"
                 >
                   {formData.image_url ? (
-                    <img src={formData.image_url} alt="Job" className="w-full h-full object-cover rounded-lg" />
+                    <img src={formData.image_url} alt="Job" className="w-full h-full object-cover" />
                   ) : (
                     <div className="flex flex-col items-center">
                       <span className="text-4xl mb-2">+</span>
