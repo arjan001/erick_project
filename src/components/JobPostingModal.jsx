@@ -814,6 +814,33 @@ Write in a professional, direct tone.`
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -100%);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+          }
+        }
+        .animate-slideDown {
+          animation: slideDown 0.5s ease-out;
+        }
+        
+        .ql-toolbar.ql-snow {
+          border-top-left-radius: 8px;
+          border-top-right-radius: 8px;
+        }
+        
+        .ql-container.ql-snow {
+          border-bottom-left-radius: 8px;
+          border-bottom-right-radius: 8px;
+        }
+      `}</style>
     </div>
+    </>
   );
 }
