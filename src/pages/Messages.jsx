@@ -530,6 +530,21 @@ export default function Messages() {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #9ca3af;
         }
+
+        /* Hide default scrollbars */
+        *:not(.custom-scrollbar)::-webkit-scrollbar {
+          display: none;
+        }
+        
+        * {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        
+        .custom-scrollbar {
+          -ms-overflow-style: auto;
+          scrollbar-width: thin;
+        }
       `}</style>
     </div>
   );
