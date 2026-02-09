@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '../components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, DollarSign, ChevronDown } from 'lucide-react';
+import { MapPin, Clock, Euro, ChevronDown } from 'lucide-react';
 import JobPostingModal from '../components/JobPostingModal';
 
 export default function Jobs() {
@@ -12,14 +12,22 @@ export default function Jobs() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('board');
+  const [applications, setApplications] = useState([]);
   const [filters, setFilters] = useState({
-    roles: null,
-    location: null,
-    project_types: null,
-    skills: null,
+    roles: [],
+    location: [],
+    project_types: [],
+    skills: [],
     paid: null
   });
   const [showJobModal, setShowJobModal] = useState(false);
+  const [showFilters, setShowFilters] = useState({
+    roles: false,
+    location: false,
+    project_types: false,
+    skills: false,
+    paid: false
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,19 +42,29 @@ export default function Jobs() {
   useEffect(() => {
     if (!user) return;
     
-    const fetchJobs = async () => {
+    const fetchData = async () => {
       try {
         const allJobs = await base44.entities.Job.list();
-        setJobs(allJobs.filter(j => j.status === 'open'));
-        if (allJobs.length > 0) setSelectedJob(allJobs[0]);
+        const openJobs = allJobs.filter(j => j.status === 'open');
+        setJobs(openJobs);
+        if (openJobs.length > 0) setSelectedJob(openJobs[0]);
+
+        const userApplications = await base44.entities.Application.filter({ artist_email: user.email });
+        const enrichedApplications = await Promise.all(
+          userApplications.map(async (app) => {
+            const job = await base44.entities.Job.get(app.job_id);
+            return { ...app, job };
+          })
+        );
+        setApplications(enrichedApplications);
       } catch (err) {
-        console.error('Error fetching jobs:', err);
+        console.error('Error fetching data:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchJobs();
+    fetchData();
   }, [user]);
 
   const handleApply = async () => {
@@ -79,13 +97,164 @@ export default function Jobs() {
     }
   };
 
+  // Calculate filter counts from available jobs
+  const filterCounts = useMemo(() => {
+    const filteredJobsForCounts = jobs.filter(job => {
+      if (filters.roles.length > 0 && !filters.roles.some(r => job.roles_needed?.includes(r))) return false;
+      if (filters.location.length > 0 && !filters.location.includes(job.location)) return false;
+      if (filters.project_types.length > 0 && !filters.project_types.some(t => job.project_types?.includes(t))) return false;
+      if (filters.paid && job.budget_min !== undefined) {
+        if (filters.paid === 'below100' && job.budget_min >= 100) return false;
+        if (filters.paid === '100-500' && (job.budget_min < 100 || job.budget_min > 500)) return false;
+        if (filters.paid === '500-1000' && (job.budget_min < 500 || job.budget_min > 1000)) return false;
+        if (filters.paid === 'above1000' && job.budget_min <= 1000) return false;
+      }
+      return true;
+    });
+
+    const roles = {};
+    const locations = {};
+    const projectTypes = {};
+
+    filteredJobsForCounts.forEach(job => {
+      job.roles_needed?.forEach(role => {
+        roles[role] = (roles[role] || 0) + 1;
+      });
+      if (job.location) {
+        locations[job.location] = (locations[job.location] || 0) + 1;
+      }
+      job.project_types?.forEach(type => {
+        projectTypes[type] = (projectTypes[type] || 0) + 1;
+      });
+    });
+
+    return { roles, locations, projectTypes };
+  }, [jobs, filters]);
+
+  const filteredJobs = useMemo(() => {
+    return jobs.filter(job => {
+      if (filters.roles.length > 0 && !filters.roles.some(r => job.roles_needed?.includes(r))) return false;
+      if (filters.location.length > 0 && !filters.location.includes(job.location)) return false;
+      if (filters.project_types.length > 0 && !filters.project_types.some(t => job.project_types?.includes(t))) return false;
+      if (filters.paid && job.budget_min !== undefined) {
+        if (filters.paid === 'below100' && job.budget_min >= 100) return false;
+        if (filters.paid === '100-500' && (job.budget_min < 100 || job.budget_min > 500)) return false;
+        if (filters.paid === '500-1000' && (job.budget_min < 500 || job.budget_min > 1000)) return false;
+        if (filters.paid === 'above1000' && job.budget_min <= 1000) return false;
+      }
+      return true;
+    });
+  }, [jobs, filters]);
+
+  const toggleFilter = (filterType, value) => {
+    setFilters(prev => {
+      if (filterType === 'paid') {
+        return { ...prev, paid: prev.paid === value ? null : value };
+      }
+      const current = prev[filterType];
+      const updated = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
+      return { ...prev, [filterType]: updated };
+    });
+  };
+
   if (!user || loading) return null;
 
-  const FilterButton = ({ label, options }) => (
-    <button className="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-      {label}
-      <ChevronDown className="w-4 h-4" />
-    </button>
+  const FilterDropdown = ({ type, label }) => (
+    <div className="relative">
+      <button
+        onClick={() => setShowFilters(prev => ({ ...prev, [type]: !prev[type] }))}
+        className="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+      >
+        {label}
+        {filters[type]?.length > 0 && type !== 'paid' && (
+          <span className="bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            {filters[type].length}
+          </span>
+        )}
+        {filters.paid && type === 'paid' && (
+          <span className="bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">1</span>
+        )}
+        <ChevronDown className="w-4 h-4" />
+      </button>
+      {showFilters[type] && (
+        <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[200px] max-h-80 overflow-y-auto">
+          {type === 'roles' && Object.entries(filterCounts.roles).map(([role, count]) => (
+            <button
+              key={role}
+              onClick={() => toggleFilter('roles', role)}
+              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${
+                filters.roles.includes(role) ? 'bg-gray-100' : ''
+              }`}
+            >
+              <span>{role}</span>
+              <span className="text-gray-500">({count})</span>
+            </button>
+          ))}
+          {type === 'location' && Object.entries(filterCounts.locations).map(([loc, count]) => (
+            <button
+              key={loc}
+              onClick={() => toggleFilter('location', loc)}
+              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${
+                filters.location.includes(loc) ? 'bg-gray-100' : ''
+              }`}
+            >
+              <span>{loc}</span>
+              <span className="text-gray-500">({count})</span>
+            </button>
+          ))}
+          {type === 'project_types' && Object.entries(filterCounts.projectTypes).map(([type, count]) => (
+            <button
+              key={type}
+              onClick={() => toggleFilter('project_types', type)}
+              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${
+                filters.project_types.includes(type) ? 'bg-gray-100' : ''
+              }`}
+            >
+              <span>{type}</span>
+              <span className="text-gray-500">({count})</span>
+            </button>
+          ))}
+          {type === 'paid' && (
+            <>
+              <button
+                onClick={() => toggleFilter('paid', 'below100')}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
+                  filters.paid === 'below100' ? 'bg-gray-100' : ''
+                }`}
+              >
+                Below €100
+              </button>
+              <button
+                onClick={() => toggleFilter('paid', '100-500')}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
+                  filters.paid === '100-500' ? 'bg-gray-100' : ''
+                }`}
+              >
+                €100 - €500
+              </button>
+              <button
+                onClick={() => toggleFilter('paid', '500-1000')}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
+                  filters.paid === '500-1000' ? 'bg-gray-100' : ''
+                }`}
+              >
+                €500 - €1,000
+              </button>
+              <button
+                onClick={() => toggleFilter('paid', 'above1000')}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
+                  filters.paid === 'above1000' ? 'bg-gray-100' : ''
+                }`}
+              >
+                Above €1,000
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 
   return (
@@ -115,7 +284,7 @@ export default function Jobs() {
                     : 'text-gray-600 hover:text-black'
                 }`}
               >
-                Applications (24)
+                Applications ({applications.length})
               </button>
               <button
                 onClick={() => setActiveTab('invitations')}
@@ -139,11 +308,10 @@ export default function Jobs() {
           {/* Filters */}
           {activeTab === 'board' && (
             <div className="flex gap-3 pb-6">
-              <FilterButton label="Roles" />
-              <FilterButton label="Location" />
-              <FilterButton label="Project types" />
-              <FilterButton label="Skills" />
-              <FilterButton label="Paid" />
+              <FilterDropdown type="roles" label="Roles" />
+              <FilterDropdown type="location" label="Location" />
+              <FilterDropdown type="project_types" label="Project types" />
+              <FilterDropdown type="paid" label="Paid" />
             </div>
           )}
         </div>
@@ -154,12 +322,12 @@ export default function Jobs() {
             {/* Job List */}
             <div className="w-1/2 border-r border-gray-200 overflow-y-auto">
               <div className="p-4 space-y-3">
-                {jobs.length === 0 ? (
+                {filteredJobs.length === 0 ? (
                   <div className="flex items-center justify-center h-32 text-gray-500">
-                    No jobs available
+                    No jobs match your filters
                   </div>
                 ) : (
-                  jobs.map((job) => (
+                  filteredJobs.map((job) => (
                     <button
                       key={job.id}
                       onClick={() => setSelectedJob(job)}
@@ -194,7 +362,7 @@ export default function Jobs() {
                           {job.posted_at ? 'Recently' : '4m ago'}
                         </div>
                         <div className="font-bold text-black">
-                          ${job.budget_min || 0}
+                          €{job.budget_min || 0}
                         </div>
                       </div>
                     </button>
@@ -230,7 +398,7 @@ export default function Jobs() {
                       <div>
                         <div className="text-xs text-gray-600 uppercase font-bold mb-2">Budget</div>
                         <div className="text-lg font-bold text-black">
-                          ${selectedJob.budget_min || 0}
+                          €{selectedJob.budget_min || 0}
                         </div>
                         <div className="text-xs text-gray-600 mt-1">{selectedJob.budget_type || 'Fixed'}</div>
                       </div>
@@ -275,8 +443,46 @@ export default function Jobs() {
         )}
 
         {activeTab === 'applications' && (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
-            <p>Applications coming soon</p>
+          <div className="flex-1 overflow-y-auto p-6">
+            {applications.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                <p>No applications yet</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {applications.map((app) => (
+                  <div key={app.id} className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="font-bold text-black text-sm mb-1">{app.job?.title}</h3>
+                        <p className="text-xs text-gray-600">{app.job?.client_name}</p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        app.status === 'applied' ? 'bg-blue-100 text-blue-700' :
+                        app.status === 'shortlisted' ? 'bg-green-100 text-green-700' :
+                        app.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {app.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {app.job?.location}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {new Date(app.applied_at).toLocaleDateString()}
+                      </div>
+                      <div className="font-bold text-black">
+                        €{app.job?.budget_min || 0}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
