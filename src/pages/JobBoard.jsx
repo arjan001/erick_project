@@ -214,35 +214,34 @@ export default function JobBoard() {
                         alt={project.project_type} 
                         className="w-full h-full object-cover"
                       />
+                      
+                      {/* Status Badges */}
+                      <div className="absolute top-3 left-3 flex gap-2">
+                        {project.hasApplied && (
+                          <span className="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            Applied
+                          </span>
+                        )}
+                        {project.inDiscussion && (
+                          <span className="px-2 py-1 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                            <MessageSquare className="w-3 h-3" />
+                            In Discussion
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Trending Badge */}
+                      {project.applicantCount > 5 && (
+                        <div className="absolute top-3 right-3">
+                          <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                            <TrendingUp className="w-3 h-3" />
+                            Hot
+                          </span>
+                        </div>
+                      )}
                     </div>
                   )}
-                    
-                    {/* Status Badges */}
-                    <div className="absolute top-3 left-3 flex gap-2">
-                      {project.hasApplied && (
-                        <span className="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3" />
-                          Applied
-                        </span>
-                      )}
-                      {project.inDiscussion && (
-                        <span className="px-2 py-1 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
-                          <MessageSquare className="w-3 h-3" />
-                          In Discussion
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Trending Badge */}
-                    {project.applicantCount > 5 && (
-                      <div className="absolute top-3 right-3">
-                        <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
-                          <TrendingUp className="w-3 h-3" />
-                          Hot
-                        </span>
-                      </div>
-                    )}
-                  </div>
 
                   {/* Project Content */}
                   <div className="p-5">
