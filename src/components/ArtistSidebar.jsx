@@ -11,6 +11,7 @@ const MENU_ITEMS = [
   { label: 'Job Board', icon: Briefcase, href: 'JobBoard', showIcon: true },
   { label: 'Applications', icon: FileText, href: 'JobApplications', showIcon: true },
   { label: 'Messages', icon: Mail, href: 'Messages', showIcon: true },
+  { label: 'Network', icon: Users, href: 'Network', showIcon: true },
   { label: 'My Profile', icon: User, href: 'ArtistProfile', showIcon: true },
   { label: 'Settings', icon: Settings, href: 'ArtistDashboard', showIcon: true }
 ];
