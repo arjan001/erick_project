@@ -386,7 +386,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                     rows={4}
                   />
                   <div className="text-xs text-gray-500 text-right mt-1">
-                    {formData.description.length} / 5000
+                    {(formData.description || '').length} / 5000
                   </div>
                 </div>
               </div>
