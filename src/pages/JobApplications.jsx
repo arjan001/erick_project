@@ -1,18 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '../components/ArtistSidebar';
-import { Button } from '@/components/ui/button';
+import { MapPin, Clock } from 'lucide-react';
 
 export default function JobApplications() {
-  const [applications, setApplications] = useState([]);
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
     if (!storedUser) {
-      navigate('/login');
+      navigate('/signin');
       return;
     }
     setUser(JSON.parse(storedUser));
@@ -23,90 +24,115 @@ export default function JobApplications() {
 
     const fetchApplications = async () => {
       try {
-        const apps = await base44.entities.Application.filter({
-          artist_email: user.email
-        });
+        const userApplications = await base44.entities.Application.filter({ artist_email: user.email });
         
-        // Fetch job details for each application
-        const enrichedApps = await Promise.all(
-          apps.map(async (app) => {
-            const job = await base44.entities.Job.get(app.job_id);
-            return { ...app, job };
+        const enrichedApplications = await Promise.all(
+          userApplications.map(async (app) => {
+            try {
+              const job = await base44.entities.Job.get(app.job_id);
+              return { ...app, job };
+            } catch (err) {
+              console.error('Error fetching job:', err);
+              return { ...app, job: null };
+            }
           })
         );
         
-        setApplications(enrichedApps);
+        setApplications(enrichedApplications.filter(app => app.job));
       } catch (err) {
         console.error('Error fetching applications:', err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchApplications();
   }, [user]);
 
-  if (!user) return null;
-
   const statusColors = {
-    applied: 'bg-blue-100 text-blue-700',
-    chat_started: 'bg-purple-100 text-purple-700',
-    shortlisted: 'bg-green-100 text-green-700',
-    hired: 'bg-emerald-100 text-emerald-700',
-    rejected: 'bg-red-100 text-red-700'
+    applied: 'bg-blue-100 text-blue-800',
+    chat_started: 'bg-purple-100 text-purple-800',
+    shortlisted: 'bg-green-100 text-green-800',
+    hired: 'bg-emerald-100 text-emerald-800',
+    rejected: 'bg-red-100 text-red-800',
   };
 
   const statusLabels = {
     applied: 'Applied',
-    chat_started: 'Chat Started',
+    chat_started: 'In Discussion',
     shortlisted: 'Shortlisted',
     hired: 'Hired',
-    rejected: 'Rejected'
+    rejected: 'Rejected',
   };
+
+  if (!user || loading) return null;
 
   return (
     <div className="h-screen bg-white">
       <ArtistSidebar />
       
-      <main className="w-full h-full overflow-auto pl-20">
-        <div className="p-8">
-          <h1 className="text-4xl font-bold mb-8">Applications</h1>
+      <main className="w-full h-full flex flex-col overflow-hidden bg-white pl-20">
+        <div className="p-6 border-b border-gray-200">
+          <h1 className="text-2xl font-bold text-gray-900">My Applications</h1>
+        </div>
 
+        <div className="flex-1 overflow-y-auto p-6">
           {applications.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-600">No applications yet</p>
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="text-gray-400 text-6xl mb-4">📋</div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">No applications yet</h2>
+              <p className="text-gray-600 mb-6">Start applying to jobs to see your applications here</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-bold text-sm text-gray-900">Job</th>
-                    <th className="text-left py-3 px-4 font-bold text-sm text-gray-900">Client</th>
-                    <th className="text-left py-3 px-4 font-bold text-sm text-gray-900">Date Applied</th>
-                    <th className="text-left py-3 px-4 font-bold text-sm text-gray-900">Role</th>
-                    <th className="text-left py-3 px-4 font-bold text-sm text-gray-900">Status</th>
-                    <th className="text-left py-3 px-4 font-bold text-sm text-gray-900">Actions</th>
+                    <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase">Job</th>
+                    <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase">Client</th>
+                    <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase">Date Applied</th>
+                    <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase">Budget</th>
+                    <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase">Status</th>
+                    <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {applications.map((app) => (
                     <tr key={app.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-4 text-sm text-gray-900 font-medium">{app.job?.title}</td>
-                      <td className="py-4 px-4 text-sm text-gray-600">{app.job?.client_name}</td>
-                      <td className="py-4 px-4 text-sm text-gray-600">
-                        {new Date(app.applied_at).toLocaleDateString()}
+                      <td className="py-4 px-4">
+                        <div className="font-medium text-gray-900 text-sm">{app.job.title}</div>
+                        <div className="text-xs text-gray-600 flex items-center gap-4 mt-1">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {app.job.location}
+                          </span>
+                          <span className="text-gray-500">
+                            {app.job.roles_needed?.join(', ') || 'N/A'}
+                          </span>
+                        </div>
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-600">
-                        {app.job?.roles_needed?.[0] || '-'}
+                      <td className="py-4 px-4 text-sm text-gray-700">{app.job.client_name}</td>
+                      <td className="py-4 px-4 text-sm text-gray-700">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-gray-500" />
+                          {new Date(app.applied_at).toLocaleDateString()}
+                        </div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${statusColors[app.status]}`}>
-                          {statusLabels[app.status]}
+                        <div className="font-bold text-black flex items-center gap-1">
+                          €{app.job.budget_min || 0}
+                        </div>
+                        <div className="text-xs text-gray-600">{app.job.budget_type || 'fixed'}</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[app.status] || 'bg-gray-100 text-gray-800'}`}>
+                          {statusLabels[app.status] || app.status}
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        <Button variant="outline" size="sm" className="text-xs">
+                        <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
                           View
-                        </Button>
+                        </button>
                       </td>
                     </tr>
                   ))}
