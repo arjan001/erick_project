@@ -262,10 +262,10 @@ export default function Jobs() {
   );
 
   return (
-    <div className="h-screen bg-white">
+    <div className="fixed inset-0 bg-white">
       <ArtistSidebar />
       
-      <main className="w-full h-full flex flex-col overflow-hidden bg-white pl-20">
+      <main className="fixed top-0 left-20 right-0 bottom-0 flex flex-col bg-white">
         {/* Header with Tabs */}
         <div className="border-b border-gray-200 px-6 pt-6">
           <div className="flex items-center justify-between mb-6">
