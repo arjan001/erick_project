@@ -16,6 +16,7 @@ export default function SignIn() {
   const demoAccounts = {
     'artist@artist.com': { role: 'artist', name: 'Alex Chen' },
     'team@team.com': { role: 'team', name: 'Studio Team' },
+    'client@client.com': { role: 'client', name: 'Client User' },
     'project@project.com': { role: 'project_owner', name: 'Jane Smith' },
     'backer@backer.com': { role: 'backer', name: 'Investment Group' },
     'admin@studio22.com': { role: 'admin', name: 'Admin User' }
@@ -39,6 +40,7 @@ export default function SignIn() {
         const redirects = {
           artist: '/artistdashboard',
           team: '/artistdashboard',
+          client: '/clientdashboard',
           project_owner: '/artistdashboard',
           backer: '/artistdashboard',
           admin: '/admin'
@@ -111,7 +113,7 @@ export default function SignIn() {
           <div className="space-y-2 text-xs text-gray-600 font-mono">
             <div>artist@artist.com</div>
             <div>team@team.com</div>
-            <div>project@project.com</div>
+            <div>client@client.com <span className="text-blue-600">(for posting projects)</span></div>
             <div>backer@backer.com</div>
             <div>admin@studio22.com</div>
             <p className="text-xs text-gray-500 mt-2">Password = email</p>

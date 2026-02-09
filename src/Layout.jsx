@@ -41,8 +41,9 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const isArtistPage = ['Jobs', 'ArtistDashboard', 'ArtistProfile', 'Messages', 'JobApplications', 'JobBoard', 'JobInvitations'].includes(currentPageName);
-  const shouldHideMenus = user && isArtistPage;
+  const isArtistPage = ['Jobs', 'ArtistDashboard', 'ArtistProfile', 'Messages', 'JobApplications', 'JobBoard', 'JobInvitations', 'Network'].includes(currentPageName);
+  const isClientPage = ['ClientDashboard', 'ClientPostProject', 'ClientApplications', 'ClientMessages', 'ClientAnalytics', 'ClientSettings'].includes(currentPageName);
+  const shouldHideMenus = user && (isArtistPage || isClientPage);
 
   const categoryInfo = {
     commercial: {
@@ -87,6 +88,12 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Artist Sidebar (when logged in on artist pages) */}
       {user && isArtistPage && <ArtistSidebar />}
+      
+      {/* Client Sidebar (when logged in on client pages) */}
+      {user && isClientPage && (() => {
+        const ClientSidebar = require('./components/ClientSidebar').default;
+        return <ClientSidebar />;
+      })()}
 
       {/* Top Banner */}
       {!shouldHideMenus && <TopBanner />}
