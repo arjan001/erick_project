@@ -22,6 +22,7 @@ export default function ArtistProfile() {
   const [editingRole, setEditingRole] = useState(false);
   const [profileName, setProfileName] = useState(user?.full_name || '');
   const [profileRole, setProfileRole] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -104,6 +105,22 @@ export default function ArtistProfile() {
     return acc;
   }, {});
 
+  const handleProfileImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !artist) return;
+
+    setUploadingImage(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.entities.Artist.update(artist.id, { profile_photo_url: file_url });
+      setArtist({ ...artist, profile_photo_url: file_url });
+    } catch (err) {
+      console.error('Error uploading image:', err);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   return (
     <div className="h-screen bg-white">
       <ArtistSidebar />
@@ -114,7 +131,27 @@ export default function ArtistProfile() {
         <div className="max-w-7xl mx-auto px-12 pb-12">
           {/* Profile Header */}
           <div className="flex items-start gap-6 -mt-16 relative z-10 mb-8">
-            <div className="w-40 h-40 bg-black rounded-full border-4 border-white flex-shrink-0" />
+            <div className="relative group">
+              {artist?.profile_photo_url ? (
+                <img
+                  src={artist.profile_photo_url}
+                  alt="Profile"
+                  className="w-40 h-40 rounded-full border-4 border-white object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="w-40 h-40 bg-black rounded-full border-4 border-white flex-shrink-0" />
+              )}
+              <label className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfileImageUpload}
+                  disabled={uploadingImage}
+                  className="hidden"
+                />
+                <span className="text-white text-sm font-medium">{uploadingImage ? 'Uploading...' : 'Change'}</span>
+              </label>
+            </div>
             <div className="flex-1 pt-8">
               {/* Name Section */}
               {editingName ? (
