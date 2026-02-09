@@ -184,27 +184,35 @@ export default function JobBoard() {
           <div className="flex-1 overflow-y-auto p-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 max-w-7xl">
               {filteredProjects.map((project) => (
-                <button
+                <div
                   key={project.id}
-                  onClick={() => setSelectedProject(project)}
-                  className={`group relative text-left rounded-2xl border-2 transition-all overflow-hidden hover:shadow-xl ${
+                  className={`group relative rounded-2xl border-2 transition-all overflow-hidden hover:shadow-xl ${
                     selectedProject?.id === project.id
                       ? 'border-black shadow-lg'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  {/* Generate Button */}
-                  {!project.image_url && (
-                    <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
-                      <button
-                        onClick={() => handleGenerateImage(project)}
-                        disabled={generatingImageFor === project.id}
-                        className="w-full px-3 py-1.5 bg-black text-white text-xs font-medium rounded hover:bg-gray-800 disabled:opacity-50"
-                      >
-                        {generatingImageFor === project.id ? 'Generating...' : 'Generate Banner'}
-                      </button>
-                    </div>
-                  )}
+                  {/* Generate/Refresh Button */}
+                  <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                    <span className="text-xs font-medium text-gray-600">
+                      {project.image_url ? 'Banner Image' : 'No Banner Yet'}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleGenerateImage(project);
+                      }}
+                      disabled={generatingImageFor === project.id}
+                      className="px-3 py-1 bg-black text-white text-xs font-medium rounded hover:bg-gray-800 disabled:opacity-50 flex items-center gap-1"
+                    >
+                      {generatingImageFor === project.id ? 'Generating...' : project.image_url ? '🔄 Refresh' : '✨ Generate'}
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedProject(project)}
+                    className="w-full text-left"
+                  >
 
                   {/* Project Image/Banner */}
                   {project.image_url && (
