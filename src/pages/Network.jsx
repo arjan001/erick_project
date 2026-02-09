@@ -257,46 +257,26 @@ export default function Network() {
   const myConnections = allPeople.filter(person => getConnectionStatus(person) === 'accepted');
   const suggestions = allPeople.filter(person => getConnectionStatus(person) !== 'accepted');
 
-  // Filter logic
-  const filteredPeople = allPeople.filter(person => {
-    // Type filter
-    if (selectedType !== 'all' && person.type !== selectedType) return false;
-
-    // Search query (searches name, role, location)
-    if (searchQuery.length >= 3) {
-      const query = searchQuery.toLowerCase();
-      const nameMatch = person.displayName?.toLowerCase().includes(query);
-      const roleMatch = person.role?.toLowerCase().includes(query) || 
-                       person.specialties?.some(s => s.toLowerCase().includes(query)) ||
-                       person.backing_types?.some(b => b.toLowerCase().includes(query));
-      const locationMatch = person.based_in_city?.toLowerCase().includes(query) ||
-                           person.city?.toLowerCase().includes(query) ||
-                           person.based_in_country?.toLowerCase().includes(query) ||
-                           person.country?.toLowerCase().includes(query) ||
-                           person.locations?.some(l => l.toLowerCase().includes(query));
-      
-      if (!nameMatch && !roleMatch && !locationMatch) return false;
-    }
-
-    // Role filter
-    if (selectedRole !== 'all') {
-      if (person.type === 'artist' && person.role !== selectedRole) return false;
-      if (person.type === 'team' && !person.specialties?.includes(selectedRole)) return false;
-    }
-
-    // Location filter
-    if (selectedLocation !== 'all') {
-      const personLocation = person.based_in_city || person.city;
-      if (personLocation !== selectedLocation) return false;
-    }
-
-    // Budget filter (for teams and backers)
-    if (selectedBudget !== 'all' && (person.type === 'team' || person.type === 'backer')) {
-      if (person.type === 'team' && person.team_size !== selectedBudget) return false;
+  // Filter mock connections and suggestions based on search tags and filters
+  const filterPerson = (person) => {
+    // Search tags filter
+    if (searchTags.length > 0) {
+      const matchesTags = searchTags.every(tag => {
+        const tagLower = tag.toLowerCase();
+        const nameMatch = person.name?.toLowerCase().includes(tagLower);
+        const roleMatch = person.role?.toLowerCase().includes(tagLower);
+        const locationMatch = person.location?.toLowerCase().includes(tagLower);
+        const skillsMatch = person.skills?.some(s => s.toLowerCase().includes(tagLower));
+        return nameMatch || roleMatch || locationMatch || skillsMatch;
+      });
+      if (!matchesTags) return false;
     }
 
     return true;
-  });
+  };
+
+  const filteredConnections = mockConnections.filter(filterPerson);
+  const filteredSuggestions = mockSuggestions.filter(filterPerson);
 
   // Get unique locations and roles for filters
   const uniqueLocations = [...new Set(allPeople.map(p => p.based_in_city || p.city).filter(Boolean))];
@@ -325,43 +305,39 @@ export default function Network() {
       
       <main className="fixed inset-0 flex flex-col bg-white pl-20">
         {/* Header - Connection Requests & Referrals */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 bg-white">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <div>
-                <h2 className="text-base font-semibold text-gray-900">Connection requests (0)</h2>
-                <button className="text-sm text-gray-600 hover:underline">View all</button>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold text-gray-900">Connection requests (0)</h2>
+              <button className="text-sm text-gray-600 hover:underline">View all</button>
+            </div>
+            
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2 text-sm">
+                <Gift className="w-4 h-4 text-amber-600" />
+                <span className="font-semibold text-gray-900">{referralsLeft} Referrals left this month</span>
               </div>
-              
-              {/* Referrals Section */}
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2 text-sm">
-                  <Gift className="w-4 h-4 text-amber-600" />
-                  <span className="font-semibold text-gray-900">{referralsLeft} Referrals left this month</span>
-                </div>
-                <button 
-                  onClick={() => setShowReferralModal(true)}
-                  className="text-sm text-gray-600 hover:underline flex items-center gap-1"
-                >
-                  Referral requests (0)
-                  <ChevronDown className="w-3 h-3" />
-                </button>
-              </div>
+              <button 
+                onClick={() => setShowReferralModal(true)}
+                className="text-sm text-gray-600 hover:underline flex items-center gap-1"
+              >
+                Referral requests (0) <ChevronDown className="w-3 h-3" />
+              </button>
             </div>
           </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="p-6 border-b border-gray-200 bg-gray-50">
-          <div className="flex gap-3 mb-4">
-            {/* Search with Tags */}
-            <div className="flex-1 relative">
+        <div className="p-6 border-b border-gray-200 bg-white">
+          <div className="flex gap-3 items-start">
+            {/* Search with Tags - 30% */}
+            <div className="w-[30%] relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
               <div className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white flex flex-wrap items-center gap-2 min-h-[42px]">
                 {searchTags.map((tag, idx) => (
-                  <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full flex items-center gap-1">
+                  <span key={idx} className="px-2 py-1 bg-gray-200 text-gray-800 text-xs rounded-full flex items-center gap-1">
                     {tag}
-                    <button onClick={() => removeSearchTag(tag)} className="hover:bg-blue-200 rounded-full">
+                    <button onClick={() => removeSearchTag(tag)} className="hover:bg-gray-300 rounded-full">
                       <X className="w-3 h-3" />
                     </button>
                   </span>
@@ -371,8 +347,8 @@ export default function Network() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
-                  placeholder={searchTags.length === 0 ? "Type and press Enter to add search tags..." : "Add more tags..."}
-                  className="flex-1 min-w-[200px] outline-none text-sm"
+                  placeholder={searchTags.length === 0 ? "Search and press Enter..." : "Add tag..."}
+                  className="flex-1 min-w-[100px] outline-none text-sm"
                 />
               </div>
               
@@ -397,10 +373,9 @@ export default function Network() {
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Filter Buttons */}
-          <div className="flex gap-2 flex-wrap">
+          {/* Filter Buttons - 70% */}
+          <div className="flex-1 flex gap-2">
             {/* Type Filter */}
             <div className="relative">
               <button
@@ -501,43 +476,8 @@ export default function Network() {
             </div>
           </div>
 
-          {/* Active filters display */}
-          {(selectedType !== 'all' || selectedRole !== 'all' || selectedLocation !== 'all' || searchQuery.length >= 3) && (
-            <div className="flex gap-2 mt-3 flex-wrap">
-              {searchQuery.length >= 3 && (
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full flex items-center gap-1">
-                  Search: "{searchQuery}"
-                  <button onClick={() => setSearchQuery('')} className="hover:bg-blue-200 rounded-full p-0.5">
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              )}
-              {selectedType !== 'all' && (
-                <span className="px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-full flex items-center gap-1">
-                  {getTypeLabel(selectedType)}
-                  <button onClick={() => setSelectedType('all')} className="hover:bg-purple-200 rounded-full p-0.5">
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              )}
-              {selectedRole !== 'all' && (
-                <span className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full flex items-center gap-1 capitalize">
-                  {selectedRole.replace(/_/g, ' ')}
-                  <button onClick={() => setSelectedRole('all')} className="hover:bg-green-200 rounded-full p-0.5">
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              )}
-              {selectedLocation !== 'all' && (
-                <span className="px-3 py-1 bg-orange-100 text-orange-800 text-xs rounded-full flex items-center gap-1">
-                  {selectedLocation}
-                  <button onClick={() => setSelectedLocation('all')} className="hover:bg-orange-200 rounded-full p-0.5">
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              )}
-            </div>
-          )}
+          </div>
+        </div>
         </div>
 
         {/* Network List - Two Column Layout */}
@@ -546,10 +486,10 @@ export default function Network() {
             {/* LEFT COLUMN: Connections */}
             <div className="overflow-y-auto border-r border-gray-200" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
               <div className="p-6 border-b border-gray-200 sticky top-0 bg-white z-20">
-                <h2 className="text-base font-semibold text-gray-900">Connections ({mockConnections.length})</h2>
+                <h2 className="text-base font-semibold text-gray-900">Connections ({filteredConnections.length})</h2>
               </div>
               <div className="space-y-0 divide-y divide-gray-100">
-                {mockConnections.map((person) => (
+                {filteredConnections.map((person) => (
                   <div key={person.id} className="p-4 hover:bg-gray-50">
                     <div className="flex items-start gap-3">
                       <img 
@@ -602,13 +542,13 @@ export default function Network() {
             <div className="overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db transparent' }}>
               {/* Suggestions Section */}
               <div className="border-b-4 border-gray-200">
-                <div className="p-6 border-b border-gray-200 sticky top-0 bg-gradient-to-r from-purple-50 to-blue-50 z-20">
+                <div className="p-6 border-b border-gray-200 sticky top-0 bg-white z-20">
                   <h2 className="text-base font-semibold text-gray-900">Suggestions for you</h2>
                   <p className="text-xs text-gray-600 mt-1">Based on your profile and activity</p>
                 </div>
-                <div className="space-y-0 divide-y divide-gray-100 bg-gradient-to-br from-purple-50/30 to-blue-50/30">
-                  {mockSuggestions.slice(0, 3).map((person) => (
-                    <div key={person.id} className="p-4 hover:bg-white/60 transition-colors">
+                <div className="space-y-0 divide-y divide-gray-100 bg-gray-50">
+                  {filteredSuggestions.slice(0, 3).map((person) => (
+                    <div key={person.id} className="p-4 hover:bg-white transition-colors">
                       <div className="flex items-start gap-3">
                         <div className="relative flex-shrink-0">
                           <img 
@@ -617,7 +557,7 @@ export default function Network() {
                             onClick={() => handleViewProfile(person)}
                             className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80"
                           />
-                          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
+                          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full flex items-center justify-center">
                             <TrendingUp className="w-3 h-3 text-white" />
                           </div>
                         </div>
@@ -644,7 +584,7 @@ export default function Network() {
                                   setShowConnectionModal(true);
                                 }}
                                 size="sm"
-                                className="bg-purple-600 text-white hover:bg-purple-700 text-xs px-3 flex-shrink-0"
+                                className="bg-black text-white hover:bg-gray-800 text-xs px-3 flex-shrink-0"
                               >
                                 Connect
                               </Button>
@@ -653,8 +593,8 @@ export default function Network() {
                           <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
                             <div className="flex items-center gap-1">
                               <div className="flex -space-x-1">
-                                <div className="w-4 h-4 rounded-full bg-purple-300 border border-white" />
-                                <div className="w-4 h-4 rounded-full bg-blue-300 border border-white" />
+                                <div className="w-4 h-4 rounded-full bg-gray-300 border border-white" />
+                                <div className="w-4 h-4 rounded-full bg-gray-400 border border-white" />
                               </div>
                               <span className="font-medium">{person.mutualConnections} Mutuals</span>
                             </div>
@@ -666,7 +606,7 @@ export default function Network() {
                           {person.skills && (
                             <div className="flex flex-wrap gap-1">
                               {person.skills.slice(0, 3).map((skill, idx) => (
-                                <span key={idx} className="px-2 py-0.5 bg-white text-gray-700 text-[10px] rounded border border-purple-200">
+                                <span key={idx} className="px-2 py-0.5 bg-white text-gray-700 text-[10px] rounded border border-gray-200">
                                   {skill}
                                 </span>
                               ))}
@@ -685,7 +625,7 @@ export default function Network() {
                   <h2 className="text-base font-semibold text-gray-900">People you may know</h2>
                 </div>
                 <div className="space-y-0 divide-y divide-gray-100">
-                  {mockSuggestions.slice(3).map((person) => (
+                  {filteredSuggestions.slice(3).map((person) => (
                     <div key={person.id} className="p-4 hover:bg-gray-50">
                       <div className="flex items-start gap-3">
                         <img 
