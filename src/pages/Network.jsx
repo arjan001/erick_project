@@ -475,10 +475,8 @@ export default function Network() {
               )}
             </div>
           </div>
-
-          </div>
         </div>
-        </div>
+      </div>
 
         {/* Network List - Two Column Layout */}
         <div className="flex-1 overflow-hidden">
