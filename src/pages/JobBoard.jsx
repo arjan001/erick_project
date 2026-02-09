@@ -64,7 +64,10 @@ export default function JobBoard() {
     try {
       const description = project.notes || `${project.project_type?.replace(/_/g, ' ')} production project`;
       const location = `${project.location_city || 'modern city'}, ${project.location_country || 'Europe'}`;
-      const prompt = `Wide cinematic banner for ${project.project_type?.replace(/_/g, ' ')}. ${description}. Location: ${location}. Film production, creative, professional, vibrant`;
+      const clientType = project.project_owner_company ? 'corporate brand' : 'independent creator';
+      const departments = project.departments_needed?.join(', ').replace(/_/g, ' ') || 'production';
+      
+      const prompt = `Wide cinematic banner image for ${project.project_type?.replace(/_/g, ' ')} project by ${clientType}. Visual style: ${description}. Location atmosphere: ${location}. Focus on ${departments} aesthetic. Film production, creative, professional, vibrant colors, no text, no logos, cinematic composition`;
       
       const imageResult = await base44.integrations.Core.GenerateImage({ prompt });
       await base44.entities.Project.update(project.id, { image_url: imageResult.url });
