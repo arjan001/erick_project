@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '../components/ArtistSidebar';
+import AboutSection from '../components/AboutSection';
 import { Button } from '@/components/ui/button';
 import { MapPin, MessageCircle, Briefcase, MoreHorizontal, ChevronDown, Copy, Globe, Instagram, Linkedin, Star, ThumbsUp, Play, Users, Plus } from 'lucide-react';
 
@@ -328,113 +329,7 @@ export default function ArtistProfile() {
 
           {/* About Tab */}
           {activeTab === 'about' && (
-            <div className="grid grid-cols-3 gap-12">
-              {/* Left Column - Main Info */}
-              <div className="col-span-2 space-y-8">
-                {/* Past Clients */}
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500 mb-4">Past clients</h3>
-                  <div className="flex flex-wrap gap-4">
-                    {['Travis Scott', 'Nike', 'Offset'].map((client) => (
-                      <div key={client} className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
-                        {client.slice(0, 2)}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Skills with Endorsements */}
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500 mb-4">Skills</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {artist?.skills_experience?.map((skillObj) => {
-                      const endorsementCount = groupedEndorsements[skillObj.skill]?.length || 0;
-                      return (
-                        <button 
-                          key={skillObj.skill} 
-                          className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800 hover:border-gray-300 transition-colors flex items-center gap-2"
-                        >
-                          {skillObj.skill}
-                          {endorsementCount > 0 && (
-                            <span className="flex items-center gap-1 text-xs text-gray-500">
-                              <ThumbsUp className="w-3 h-3" />
-                              {endorsementCount}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    }) || ['After Effects', 'Adobe Premiere Pro', 'Concept Art', 'Creative Direction', 'Editing', 'Fashion Videography', 'Sound Design', 'Treatment Design', 'Visual Research'].map((skill) => (
-                      <span key={skill} className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Project Types */}
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500 mb-4">Project types</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['Branded Content', 'Branding', 'Campaigns', 'Commercials', 'Cover Artwork', 'Editorials', 'Music Videos'].map((type) => (
-                      <span key={type} className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800">
-                        {type}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Languages */}
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500 mb-4">Languages</h3>
-                  <p className="text-gray-800">
-                    {artist?.languages_spoken?.join(', ') || 'English'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Right Column - Contact & Rep */}
-              <div className="space-y-8">
-                {/* Contact */}
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500 mb-4">Contact</h3>
-                  <div className="space-y-3">
-                    {artist?.website && (
-                      <a href={artist.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-800 hover:text-gray-600">
-                        <Globe className="w-4 h-4" />
-                        <span className="text-sm">Website</span>
-                      </a>
-                    )}
-                    {artist?.instagram && (
-                      <a href={artist.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-800 hover:text-gray-600">
-                        <Instagram className="w-4 h-4" />
-                        <span className="text-sm">Instagram</span>
-                      </a>
-                    )}
-                    {artist?.linkedin && (
-                      <a href={artist.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-800 hover:text-gray-600">
-                        <Linkedin className="w-4 h-4" />
-                        <span className="text-sm">LinkedIn</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-
-                {/* Representation */}
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500 mb-4">Representation</h3>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0" />
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900 text-sm">Studio 22</div>
-                      <div className="text-xs text-gray-600">Agency</div>
-                    </div>
-                    <Button variant="ghost" size="sm" className="p-2">
-                      <MessageCircle className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <AboutSection artist={artist} endorsements={endorsements} />
           )}
         </div>
       </main>
