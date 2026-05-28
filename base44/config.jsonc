@@ -1,0 +1,9 @@
+{
+  "name": "Studio22 - Production House",
+  "site": {
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "serveCommand": "npm run dev",
+    "outputDirectory": "./dist"
+  }
+}
