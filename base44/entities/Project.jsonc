@@ -1,0 +1,202 @@
+{
+  "name": "Project",
+  "type": "object",
+  "properties": {
+    "project_owner_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email of the project submitter"
+    },
+    "project_owner_name": {
+      "type": "string",
+      "description": "Name of project owner"
+    },
+    "project_owner_company": {
+      "type": "string",
+      "description": "Company name if applicable"
+    },
+    "project_type": {
+      "type": "string",
+      "enum": [
+        "commercial",
+        "short_film",
+        "film",
+        "music_video",
+        "documentary",
+        "funding_coproduction",
+        "other"
+      ],
+      "description": "Type of production"
+    },
+    "usage": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "online",
+          "cinema",
+          "broadcast",
+          "festival",
+          "internal"
+        ]
+      },
+      "description": "Where the content will be used"
+    },
+    "visual_direction_clips": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of selected portfolio clips for visual reference"
+    },
+    "location_country": {
+      "type": "string"
+    },
+    "location_city": {
+      "type": "string"
+    },
+    "is_remote": {
+      "type": "boolean",
+      "default": false
+    },
+    "departments_needed": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "preproduction",
+          "production",
+          "post",
+          "sound",
+          "vfx",
+          "3d",
+          "music",
+          "web_development"
+        ]
+      }
+    },
+    "timeline_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "timeline_deadline": {
+      "type": "string",
+      "format": "date"
+    },
+    "budget_range": {
+      "type": "string",
+      "enum": [
+        "under_10k",
+        "10k_25k",
+        "25k_50k",
+        "50k_100k",
+        "100k_250k",
+        "250k_plus",
+        "not_disclosed"
+      ]
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional project details"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Generated project image URL"
+    },
+    "open_to_backing": {
+      "type": "boolean",
+      "default": false,
+      "description": "Project is seeking backing, sponsorship, or co-production support"
+    },
+    "backing_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "sponsorship",
+          "co_production",
+          "cultural_support",
+          "city_support",
+          "investment"
+        ]
+      },
+      "description": "Types of backing being sought"
+    },
+    "backing_notes": {
+      "type": "string",
+      "description": "Additional details about backing opportunities"
+    },
+    "funding_stage": {
+      "type": "string",
+      "enum": [
+        "development",
+        "pre_production",
+        "production_ready",
+        "in_production",
+        "post_production"
+      ],
+      "description": "Current production stage for funding projects"
+    },
+    "seeking_partners": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "investment",
+          "co_production",
+          "executive_producer",
+          "strategic_partner",
+          "distribution"
+        ]
+      },
+      "description": "Types of partners or funding being sought"
+    },
+    "rights_collaboration_notes": {
+      "type": "string",
+      "description": "Notes about rights, equity, or collaboration structure"
+    },
+    "verified_only": {
+      "type": "boolean",
+      "default": false,
+      "description": "Restrict project visibility to verified creators only"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Featured project with premium visibility"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "submitted",
+        "verified",
+        "in_progress",
+        "delivered",
+        "rejected"
+      ],
+      "default": "submitted"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Internal admin notes"
+    },
+    "assigned_teams": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Team IDs assigned to this project"
+    },
+    "assigned_artists": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Artist IDs assigned to this project"
+    }
+  },
+  "required": [
+    "project_owner_email",
+    "project_type"
+  ]
+}

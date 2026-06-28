@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Plus, X, Sparkles, ThumbsUp, Edit2, Check } from 'lucide-react';
+import { Plus, X, Sparkles, ThumbsUp, Edit2, Check, Globe, Instagram, Linkedin } from 'lucide-react';
 
 const SKILL_SUGGESTIONS = [
   'After Effects', 'Adobe Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'Concept Art', 'Creative Direction', 

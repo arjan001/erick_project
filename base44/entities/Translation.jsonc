@@ -1,0 +1,39 @@
+{
+  "name": "Translation",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Unique translation key (e.g., 'home.hero.title')"
+    },
+    "en": {
+      "type": "string",
+      "description": "English translation"
+    },
+    "nl": {
+      "type": "string",
+      "description": "Dutch translation"
+    },
+    "es": {
+      "type": "string",
+      "description": "Spanish translation"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "navigation",
+        "homepage",
+        "services",
+        "intake",
+        "applications",
+        "admin",
+        "common"
+      ],
+      "description": "Organization category"
+    }
+  },
+  "required": [
+    "key",
+    "en"
+  ]
+}

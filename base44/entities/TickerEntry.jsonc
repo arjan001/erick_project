@@ -1,0 +1,61 @@
+{
+  "name": "TickerEntry",
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "string",
+      "description": "The ticker message (e.g., 'Documentary project received new cultural backing')"
+    },
+    "amount": {
+      "type": "string",
+      "description": "Optional amount (rounded, e.g., '\u20ac120k', '\u00a350k')"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "sponsorship",
+        "cultural_support",
+        "co_production",
+        "partnership",
+        "institutional"
+      ],
+      "description": "Type of backing activity"
+    },
+    "link_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "project",
+        "backed_discovery"
+      ],
+      "default": "none",
+      "description": "Where the ticker item links to"
+    },
+    "link_target_id": {
+      "type": "string",
+      "description": "Project ID if link_type is 'project'"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "live"
+      ],
+      "default": "draft",
+      "description": "Whether ticker entry is published"
+    },
+    "display_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Sort order in ticker (lower numbers appear first)"
+    },
+    "published_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this entry was published"
+    }
+  },
+  "required": [
+    "text"
+  ]
+}

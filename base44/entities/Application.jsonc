@@ -1,0 +1,40 @@
+{
+  "name": "Application",
+  "type": "object",
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "description": "Job entity ID"
+    },
+    "artist_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Artist email"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "applied",
+        "chat_started",
+        "shortlisted",
+        "hired",
+        "rejected"
+      ],
+      "default": "applied",
+      "description": "Application status"
+    },
+    "applied_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When applied"
+    },
+    "cover_letter": {
+      "type": "string",
+      "description": "Optional cover letter"
+    }
+  },
+  "required": [
+    "job_id",
+    "artist_email"
+  ]
+}

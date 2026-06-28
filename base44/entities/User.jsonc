@@ -1,0 +1,35 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "project_admin",
+        "team_admin",
+        "artist_admin",
+        "user"
+      ],
+      "default": "user",
+      "description": "User role: admin (superadmin), project_admin, team_admin, artist_admin, or regular user"
+    },
+    "linked_entity_type": {
+      "type": "string",
+      "enum": [
+        "project_owner",
+        "team",
+        "artist"
+      ],
+      "description": "Type of entity this user is linked to"
+    },
+    "linked_entity_id": {
+      "type": "string",
+      "description": "ID of the linked ProjectOwner, Team, or Artist entity"
+    }
+  },
+  "required": [
+    "linked_entity_type",
+    "linked_entity_id"
+  ]
+}

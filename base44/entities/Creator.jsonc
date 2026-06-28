@@ -1,0 +1,82 @@
+{
+  "name": "Creator",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Company or freelancer name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "freelance",
+        "studio",
+        "agency",
+        "team",
+        "collective"
+      ],
+      "description": "Type of creator"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "cinematography",
+          "directing",
+          "lighting",
+          "production",
+          "editing",
+          "color_grading",
+          "sound_design",
+          "music",
+          "vfx",
+          "3d_animation",
+          "motion_graphics",
+          "art_direction",
+          "production_design",
+          "costume",
+          "makeup",
+          "camera_operation",
+          "drone",
+          "gaffer",
+          "grip",
+          "dop",
+          "scriptwriting",
+          "web_design"
+        ]
+      },
+      "description": "Specialties"
+    },
+    "country": {
+      "type": "string",
+      "description": "Based in country"
+    },
+    "city": {
+      "type": "string",
+      "description": "City location"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Company logo or profile picture"
+    },
+    "website": {
+      "type": "string",
+      "description": "Website URL"
+    },
+    "awards_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of awards"
+    },
+    "profile_image_url": {
+      "type": "string",
+      "description": "Cover image for profile"
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "country"
+  ]
+}

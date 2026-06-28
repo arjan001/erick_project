@@ -15,22 +15,17 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
-      navigate('/signin');
-      return;
-    }
-    const parsedUser = JSON.parse(storedUser);
-    setUser(parsedUser);
-
-    const fetchData = async () => {
+    const init = async () => {
       try {
-        // Fetch or create ProjectOwner
-        const owners = await base44.entities.ProjectOwner.filter({ email: parsedUser.email });
+        const currentUser = await base44.auth.me();
+        if (!currentUser) { navigate('/signin'); return; }
+        setUser(currentUser);
+
+        const owners = await base44.entities.ProjectOwner.filter({ email: currentUser.email });
         if (owners.length === 0) {
           const newOwner = await base44.entities.ProjectOwner.create({
-            email: parsedUser.email,
-            full_name: parsedUser.full_name,
+            email: currentUser.email,
+            full_name: currentUser.full_name,
             projects_submitted: []
           });
           setProjectOwner(newOwner);
@@ -38,12 +33,11 @@ export default function ClientDashboard() {
           setProjectOwner(owners[0]);
         }
 
-        // Fetch projects
-        const projectsData = await base44.entities.Project.filter({ project_owner_email: parsedUser.email });
+        const [projectsData, jobsData] = await Promise.all([
+          base44.entities.Project.filter({ project_owner_email: currentUser.email }),
+          base44.entities.Job.filter({ client_email: currentUser.email })
+        ]);
         setProjects(projectsData);
-
-        // Fetch jobs posted by this client
-        const jobsData = await base44.entities.Job.filter({ client_email: parsedUser.email });
         setJobs(jobsData);
       } catch (err) {
         console.error('Error fetching client data:', err);
@@ -51,11 +45,15 @@ export default function ClientDashboard() {
         setLoading(false);
       }
     };
-
-    fetchData();
+    init();
   }, [navigate]);
 
-  if (!user || loading) return null;
+  if (loading) return (
+    <div className="h-screen flex items-center justify-center bg-white">
+      <div className="text-gray-500">Loading dashboard...</div>
+    </div>
+  );
+  if (!user) return null;
 
   const stats = [
     { label: 'Active Projects', value: projects.filter(p => p.status === 'verified' || p.status === 'in_progress').length, icon: Briefcase, color: 'bg-blue-500' },

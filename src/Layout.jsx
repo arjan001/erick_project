@@ -7,6 +7,7 @@ import TopBanner from './components/home/TopBanner';
 import NewProjectForm from './components/NewProjectForm';
 import UnifiedSearch from './components/UnifiedSearch';
 import ArtistSidebar from './components/ArtistSidebar';
+import ClientSidebar from './components/ClientSidebar';
 
 export default function Layout({ children, currentPageName }) {
   const [exploreOpen, setExploreOpen] = useState(false);
@@ -90,10 +91,7 @@ export default function Layout({ children, currentPageName }) {
       {user && isArtistPage && <ArtistSidebar />}
       
       {/* Client Sidebar (when logged in on client pages) */}
-      {user && isClientPage && (() => {
-        const ClientSidebar = require('./components/ClientSidebar').default;
-        return <ClientSidebar />;
-      })()}
+      {user && isClientPage && <ClientSidebar />}
 
       {/* Top Banner */}
       {!shouldHideMenus && <TopBanner />}

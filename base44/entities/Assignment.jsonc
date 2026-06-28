@@ -1,0 +1,54 @@
+{
+  "name": "Assignment",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project entity ID"
+    },
+    "assigned_type": {
+      "type": "string",
+      "enum": [
+        "artist",
+        "team"
+      ],
+      "description": "What type of resource is assigned"
+    },
+    "assigned_id": {
+      "type": "string",
+      "description": "Artist or Team entity ID"
+    },
+    "role_in_project": {
+      "type": "string",
+      "description": "Specific role for this assignment"
+    },
+    "assignment_status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "intro_requested",
+        "confirmed",
+        "in_progress",
+        "completed",
+        "declined"
+      ],
+      "default": "proposed"
+    },
+    "intro_call_requested": {
+      "type": "boolean",
+      "default": false
+    },
+    "intro_call_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "assigned_type",
+    "assigned_id"
+  ]
+}

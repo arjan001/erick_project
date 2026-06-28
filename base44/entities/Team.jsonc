@@ -1,0 +1,122 @@
+{
+  "name": "Team",
+  "type": "object",
+  "properties": {
+    "team_name": {
+      "type": "string",
+      "description": "Team or company name"
+    },
+    "team_code": {
+      "type": "string",
+      "description": "Internal code - Format: AMS LUX 01, BCN POST 03, etc."
+    },
+    "contact_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Mobile phone number (WhatsApp preferred)"
+    },
+    "city": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Team specialties (predefined and custom)"
+    },
+    "team_size": {
+      "type": "string",
+      "enum": [
+        "solo",
+        "2_5",
+        "6_10",
+        "11_20",
+        "20_plus"
+      ]
+    },
+    "team_members": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "specialty": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "List of team members with their specialties"
+    },
+    "equipment_owned": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Camera packages, lighting, post suites, etc."
+    },
+    "portfolio_clips": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portfolio clip IDs"
+    },
+    "availability": {
+      "type": "string",
+      "enum": [
+        "available",
+        "limited",
+        "booked"
+      ],
+      "default": "available"
+    },
+    "languages_spoken": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "team_logo_url": {
+      "type": "string",
+      "description": "Team logo URL (set in dashboard)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "admin_notes": {
+      "type": "string"
+    },
+    "approved_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "team_name",
+    "team_code",
+    "contact_email",
+    "city",
+    "country"
+  ]
+}
