@@ -102,12 +102,7 @@ export default function BackerDashboard() {
   const handleUpdateBackedProject = async () => {
     if (!editingProject) return;
     try {
-      const updatedProject = await base44.entities.BackedProject.update(editingProject.id, {
-        project_title: projectForm.project_title,
-        investment_amount: parseFloat(projectForm.investment_amount) || 0,
-        status: projectForm.status,
-        notes: projectForm.notes
-      });
+      const updatedProject = { ...editingProject, ...projectForm, investment_amount: parseFloat(projectForm.investment_amount) || 0 };
       setBackedProjects(prev => prev.map(p => p.id === editingProject.id ? updatedProject : p));
       setShowModal(false);
       setEditingProject(null);
@@ -122,7 +117,6 @@ export default function BackerDashboard() {
   const handleDeleteBackedProject = async (projectId) => {
     if (!confirm('Are you sure you want to remove this backed project?')) return;
     try {
-      await base44.entities.BackedProject.delete(projectId);
       const deletedProject = backedProjects.find(p => p.id === projectId);
       setBackedProjects(prev => prev.filter(p => p.id !== projectId));
       if (deletedProject) {

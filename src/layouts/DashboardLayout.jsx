@@ -1,5 +1,4 @@
 import React, { useState, createContext, useContext } from 'react';
-import { Outlet } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import BackerSidebar from '@/components/BackerSidebar';
@@ -8,7 +7,7 @@ const SidebarContext = createContext();
 
 export const useSidebar = () => useContext(SidebarContext);
 
-export default function DashboardLayout() {
+export default function DashboardLayout({ children }) {
   const { user } = useAuth();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
@@ -31,7 +30,7 @@ export default function DashboardLayout() {
               : ''
           }`}
         >
-          <Outlet />
+          {children}
         </main>
       </div>
     </SidebarContext.Provider>

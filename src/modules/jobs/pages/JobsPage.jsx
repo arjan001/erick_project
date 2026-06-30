@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Euro, ChevronDown } from 'lucide-react';
+import JobPostingModal from '@/components/JobPostingModal';
 import { useToast } from '@/hooks/useToast';
 
 export default function Jobs() {

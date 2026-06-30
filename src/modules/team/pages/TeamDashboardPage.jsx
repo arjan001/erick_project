@@ -166,8 +166,6 @@ export default function TeamDashboard() {
 
         setMessages([]);
 
-      }
-
     } catch (error) {
 
       console.error('Error loading dashboard:', error);

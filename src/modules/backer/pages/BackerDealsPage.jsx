@@ -69,7 +69,7 @@ export default function BackerDealsPage() {
         ...dealForm,
         backer_email: user.email,
         backer_id: backer.id,
-        amount: parseFloat(deal.amount),
+        amount: parseFloat(dealForm.amount),
         created_at: new Date().toISOString()
       });
       success('Deal Created', 'New deal has been created successfully');

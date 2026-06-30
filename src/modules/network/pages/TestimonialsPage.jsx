@@ -106,7 +106,9 @@ export default function TestimonialsPage() {
       setTestimonialForm({ project_title: '', content: '', rating: 5, collaboration_type: 'worked_together' });
 
       success('Testimonial Sent', `You wrote a testimonial for ${selectedPerson.full_name}`);
-      fetchTestimonials();
+      const allT = await base44.entities.Testimonial.list();
+      setTestimonials(allT.filter(t => t.author_email === user.email));
+      setReceivedTestimonials(allT.filter(t => t.recipient_email === user.email));
     } catch (err) {
       console.error('Error creating testimonial:', err);
       error('Failed', 'Failed to create testimonial');
@@ -118,7 +120,6 @@ export default function TestimonialsPage() {
       await base44.entities.Testimonial.delete(testimonialId);
       setTestimonials(prev => prev.filter(t => t.id !== testimonialId));
       success('Deleted', 'Testimonial deleted successfully');
-      fetchTestimonials();
     } catch (err) {
       console.error('Error deleting testimonial:', err);
       error('Failed', 'Failed to delete testimonial');

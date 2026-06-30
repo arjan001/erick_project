@@ -323,7 +323,7 @@ export default function Messages() {
     fetchConversations();
 
     // Initialize WebSocket connection
-    const wsUrl = process.env.REACT_APP_WS_URL || 'ws://localhost:8080';
+    const wsUrl = 'ws://localhost:8080';
     websocketService.connect(wsUrl);
 
     // Listen for new messages

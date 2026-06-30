@@ -110,7 +110,10 @@ export default function EndorsementsPage() {
       setEndorsementForm({ skill: '', message: '', rating: 5 });
 
       success('Endorsement Sent', `You endorsed ${selectedPerson.full_name} for ${endorsementForm.skill}`);
-      fetchEndorsements();
+      // re-fetch after create
+      const allE = await base44.entities.Endorsement.list();
+      setEndorsements(allE.filter(e => e.endorser_email === user.email));
+      setReceivedEndorsements(allE.filter(e => e.endorsed_email === user.email));
     } catch (err) {
       console.error('Error creating endorsement:', err);
       error('Failed', 'Failed to create endorsement');
@@ -122,7 +125,6 @@ export default function EndorsementsPage() {
       await base44.entities.Endorsement.delete(endorsementId);
       setEndorsements(prev => prev.filter(e => e.id !== endorsementId));
       success('Deleted', 'Endorsement deleted successfully');
-      fetchEndorsements();
     } catch (err) {
       console.error('Error deleting endorsement:', err);
       error('Failed', 'Failed to delete endorsement');

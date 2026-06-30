@@ -11,18 +11,18 @@ const RouteLoader = () => (
 
 // Wrap lazy component with Suspense
 const LazyRouteWrapper = ({ component: Component, layout: Layout, guard: Guard }) => {
-  const content = (
+  let content = (
     <Suspense fallback={<RouteLoader />}>
       <Component />
     </Suspense>
   );
 
-  if (Guard) {
-    return <Guard>{content}</Guard>;
+  if (Layout) {
+    content = <Layout>{content}</Layout>;
   }
 
-  if (Layout) {
-    return <Layout>{content}</Layout>;
+  if (Guard) {
+    return <Guard>{content}</Guard>;
   }
 
   return content;

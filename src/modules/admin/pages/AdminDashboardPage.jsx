@@ -19,7 +19,8 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const checkAdminAndFetch = async () => {
       try {
-        const currentUser = await authApi.getSession();
+        const storedUser = localStorage.getItem('studio22_user');
+        const currentUser = { user: storedUser ? JSON.parse(storedUser) : null };
         setUser(currentUser?.user);
 
         // Check if admin
@@ -367,8 +368,8 @@ export default function AdminDashboardPage() {
                       <Button
                         onClick={async () => {
                           try {
-                            await base44.entities.TickerEntry.update(entry.id, { status: 'live' });
-                            const updated = await base44.entities.TickerEntry.list();
+                            await adminApi.ticker.update(entry.id, { status: 'live' });
+                            const updated = await adminApi.ticker.list();
                             setTickerEntries(updated.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)));
                           } catch (error) {
                             console.error('Error updating entry:', error);

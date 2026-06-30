@@ -1,8 +1,8 @@
 // Email Service using Resend API
 // This service handles all email notifications sent to users
 
-const RESEND_API_KEY = process.env.REACT_APP_RESEND_API_KEY || 'your_resend_api_key';
-const FROM_EMAIL = process.env.REACT_APP_FROM_EMAIL || 'noreply@studio22.com';
+const RESEND_API_KEY = 'your_resend_api_key';
+const FROM_EMAIL = 'noreply@studio22.com';
 
 class EmailService {
   constructor() {

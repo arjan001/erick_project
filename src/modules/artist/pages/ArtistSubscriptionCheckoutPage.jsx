@@ -139,7 +139,7 @@ export default function ArtistSubscriptionCheckoutPage() {
               <div className="flex items-center gap-3">
                 <Crown className="w-5 h-5 text-blue-600" />
                 <div>
-                  <div className="font-medium text-blue-900">Current Plan: {getPackageName(currentSubscription.package_id)}</div>
+                  <div className="font-medium text-blue-900">Current Plan: {currentSubscription.package_id}</div>
                   <div className="text-sm text-blue-700">Renews on {currentSubscription.renews_at ? new Date(currentSubscription.renews_at).toLocaleDateString() : 'N/A'}</div>
                 </div>
               </div>

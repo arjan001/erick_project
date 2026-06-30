@@ -25,7 +25,7 @@ export default function BackerProfile() {
     instagram: '',
     twitter: '',
     investment_focus: []
-  ]);
+  });
 
   const logoInputRef = React.useRef(null);
 

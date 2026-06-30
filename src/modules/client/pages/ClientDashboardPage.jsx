@@ -406,7 +406,8 @@ export default function ClientDashboard() {
 
     try {
 
-      const newJob = await base44.entities.Job.create({
+      const { base44: b44 } = await import('@/api/base44Client');
+      const newJob = await b44.entities.Job.create({
 
         client_email: user.email,
 
@@ -454,7 +455,8 @@ export default function ClientDashboard() {
 
     try {
 
-      const updatedJob = await base44.entities.Job.update(editingJob.id, {
+      const { base44: b44b } = await import('@/api/base44Client');
+      const updatedJob = await b44b.entities.Job.update(editingJob.id, {
 
         title: jobForm.title,
 

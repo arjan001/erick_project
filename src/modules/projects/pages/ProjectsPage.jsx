@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, Sparkles, Loader } from 'lucide-react';
+import RequestIntroductionModal from '@/components/RequestIntroductionModal';
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);

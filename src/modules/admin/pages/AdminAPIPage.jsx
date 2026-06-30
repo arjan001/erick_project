@@ -6,6 +6,7 @@ import { Label } from '@/shared/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Badge } from '@/shared/components/ui/badge';
 import { Save, Key, Database, Shield, Copy, Plus, Trash2 } from 'lucide-react';
+import { Switch } from '@/shared/components/ui/switch';
 
 export default function AdminAPIPage() {
   const [apiKeys, setApiKeys] = useState([
