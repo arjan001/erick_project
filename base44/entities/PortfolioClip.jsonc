@@ -1,0 +1,98 @@
+{
+  "name": "PortfolioClip",
+  "type": "object",
+  "properties": {
+    "uploaded_by_type": {
+      "type": "string",
+      "enum": [
+        "artist",
+        "team"
+      ],
+      "description": "Who uploaded this clip"
+    },
+    "uploaded_by_id": {
+      "type": "string",
+      "description": "Artist or Team entity ID"
+    },
+    "original_video_url": {
+      "type": "string",
+      "description": "Full uploaded video URL"
+    },
+    "trimmed_video_url": {
+      "type": "string",
+      "description": "30-second trimmed version URL"
+    },
+    "trim_start_time": {
+      "type": "number",
+      "description": "Start time in seconds for 30-sec trim"
+    },
+    "duration": {
+      "type": "number",
+      "description": "Duration in seconds (max 30)"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "project_type": {
+      "type": "string",
+      "enum": [
+        "commercial",
+        "short_film",
+        "film",
+        "music_video",
+        "documentary",
+        "branded_content",
+        "other"
+      ]
+    },
+    "visual_style_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Admin-added tags for visual direction matching"
+    },
+    "no_logos_agreement": {
+      "type": "boolean",
+      "default": false,
+      "description": "User agreed no logos/watermarks"
+    },
+    "portfolio_usage_agreement": {
+      "type": "boolean",
+      "default": false,
+      "description": "Agreed to Studio22 portfolio usage"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "rejection_reason": {
+      "type": "string"
+    },
+    "approved_for_visual_direction": {
+      "type": "boolean",
+      "default": false,
+      "description": "Show in project intake visual direction step"
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "uploaded_by_type",
+    "uploaded_by_id",
+    "original_video_url"
+  ]
+}

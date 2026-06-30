@@ -1,0 +1,53 @@
+{
+  "name": "Testimonial",
+  "type": "object",
+  "properties": {
+    "author_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email of testimonial author"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Name of testimonial author"
+    },
+    "author_title": {
+      "type": "string",
+      "description": "Job title/company of author"
+    },
+    "recipient_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email of person receiving testimonial"
+    },
+    "recipient_type": {
+      "type": "string",
+      "enum": [
+        "artist",
+        "team"
+      ],
+      "description": "Type of recipient"
+    },
+    "content": {
+      "type": "string",
+      "description": "Testimonial text"
+    },
+    "project_name": {
+      "type": "string",
+      "description": "Project this testimonial relates to"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Star rating (1-5)"
+    }
+  },
+  "required": [
+    "author_email",
+    "author_name",
+    "recipient_email",
+    "recipient_type",
+    "content"
+  ]
+}

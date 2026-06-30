@@ -1,0 +1,94 @@
+{
+  "name": "Job",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Job title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Full job description"
+    },
+    "short_description": {
+      "type": "string",
+      "description": "Short description for job card"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Client/company name"
+    },
+    "client_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Client email"
+    },
+    "client_avatar_url": {
+      "type": "string",
+      "description": "Client avatar image URL"
+    },
+    "location": {
+      "type": "string",
+      "description": "Job location"
+    },
+    "budget_min": {
+      "type": "number",
+      "description": "Minimum budget"
+    },
+    "budget_max": {
+      "type": "number",
+      "description": "Maximum budget"
+    },
+    "budget_type": {
+      "type": "string",
+      "enum": [
+        "fixed",
+        "hourly"
+      ],
+      "default": "fixed",
+      "description": "Budget type"
+    },
+    "roles_needed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Roles needed (e.g., VFX Artist, Motion Designer)"
+    },
+    "skills_required": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Required skills"
+    },
+    "project_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Project types"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed",
+        "filled"
+      ],
+      "default": "open",
+      "description": "Job status"
+    },
+    "posted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When job was posted"
+    }
+  },
+  "required": [
+    "title",
+    "client_name",
+    "client_email",
+    "description"
+  ]
+}

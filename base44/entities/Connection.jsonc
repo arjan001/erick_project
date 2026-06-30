@@ -1,0 +1,56 @@
+{
+  "name": "Connection",
+  "type": "object",
+  "properties": {
+    "requester_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Who sent the connection request"
+    },
+    "requester_type": {
+      "type": "string",
+      "enum": [
+        "artist",
+        "team",
+        "backer",
+        "client"
+      ],
+      "description": "Type of requester"
+    },
+    "recipient_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Who received the connection request"
+    },
+    "recipient_type": {
+      "type": "string",
+      "enum": [
+        "artist",
+        "team",
+        "backer",
+        "client"
+      ],
+      "description": "Type of recipient"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined"
+      ],
+      "default": "pending",
+      "description": "Connection status"
+    },
+    "message": {
+      "type": "string",
+      "description": "Optional message with connection request"
+    }
+  },
+  "required": [
+    "requester_email",
+    "requester_type",
+    "recipient_email",
+    "recipient_type"
+  ]
+}

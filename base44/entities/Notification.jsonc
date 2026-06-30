@@ -1,0 +1,67 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "recipient_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Who receives this notification"
+    },
+    "sender_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Who sent this notification"
+    },
+    "sender_name": {
+      "type": "string",
+      "description": "Name of the sender"
+    },
+    "sender_avatar": {
+      "type": "string",
+      "description": "Avatar URL of sender"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "connection_request",
+        "job_invitation",
+        "message",
+        "application_update",
+        "project_update"
+      ],
+      "description": "Type of notification"
+    },
+    "title": {
+      "type": "string",
+      "description": "Notification title"
+    },
+    "message": {
+      "type": "string",
+      "description": "Notification message"
+    },
+    "link": {
+      "type": "string",
+      "description": "Link to relevant page"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Has the notification been read"
+    },
+    "action_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "Does this require user action (e.g., accept/decline)"
+    },
+    "action_data": {
+      "type": "object",
+      "description": "Data needed for action (e.g., connection request ID)"
+    }
+  },
+  "required": [
+    "recipient_email",
+    "type",
+    "title",
+    "message"
+  ]
+}

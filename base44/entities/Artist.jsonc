@@ -1,0 +1,119 @@
+{
+  "name": "Artist",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Mobile phone number (WhatsApp preferred)"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "director",
+        "cinematographer",
+        "editor",
+        "producer",
+        "3d_artist",
+        "vfx_artist",
+        "motion_designer",
+        "sound_designer",
+        "music_composer",
+        "voice_artist",
+        "actor"
+      ],
+      "description": "Primary specialty"
+    },
+    "secondary_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional capabilities"
+    },
+    "skills_experience": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "skill": {
+            "type": "string"
+          },
+          "years": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Years of experience per skill"
+    },
+    "based_in_city": {
+      "type": "string"
+    },
+    "based_in_country": {
+      "type": "string"
+    },
+    "languages_spoken": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "portfolio_clips": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portfolio clip IDs"
+    },
+    "ai_questionnaire_response": {
+      "type": "object",
+      "description": "AI-generated questions based on specialty with answers"
+    },
+    "website": {
+      "type": "string"
+    },
+    "instagram": {
+      "type": "string"
+    },
+    "vimeo": {
+      "type": "string"
+    },
+    "imdb": {
+      "type": "string"
+    },
+    "linkedin": {
+      "type": "string"
+    },
+    "profile_photo_url": {
+      "type": "string",
+      "description": "Profile photo URL (set in dashboard)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "admin_notes": {
+      "type": "string"
+    },
+    "approved_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "email",
+    "full_name",
+    "role"
+  ]
+}

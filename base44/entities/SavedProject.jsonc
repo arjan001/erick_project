@@ -1,0 +1,41 @@
+{
+  "name": "SavedProject",
+  "type": "object",
+  "properties": {
+    "section": {
+      "type": "string",
+      "enum": [
+        "inproduction",
+        "released",
+        "collections",
+        "creators",
+        "recent",
+        "services"
+      ],
+      "description": "Which section this project belongs to"
+    },
+    "title": {
+      "type": "string",
+      "description": "Project title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Project description"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of image URLs"
+    },
+    "prompt": {
+      "type": "string",
+      "description": "Original prompt used to generate images"
+    }
+  },
+  "required": [
+    "section",
+    "images"
+  ]
+}

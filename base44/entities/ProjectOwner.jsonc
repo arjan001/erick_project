@@ -1,0 +1,43 @@
+{
+  "name": "ProjectOwner",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Primary email for login"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "language_preference": {
+      "type": "string",
+      "enum": [
+        "en",
+        "nl",
+        "es"
+      ],
+      "default": "en"
+    },
+    "projects_submitted": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Project IDs submitted by this owner"
+    }
+  },
+  "required": [
+    "email",
+    "full_name"
+  ]
+}

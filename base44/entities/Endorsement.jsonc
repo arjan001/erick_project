@@ -1,0 +1,39 @@
+{
+  "name": "Endorsement",
+  "type": "object",
+  "properties": {
+    "endorser_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email of person giving endorsement"
+    },
+    "endorser_name": {
+      "type": "string",
+      "description": "Name of person giving endorsement"
+    },
+    "recipient_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email of person receiving endorsement"
+    },
+    "recipient_type": {
+      "type": "string",
+      "enum": [
+        "artist",
+        "team"
+      ],
+      "description": "Type of recipient"
+    },
+    "skill": {
+      "type": "string",
+      "description": "Skill being endorsed"
+    }
+  },
+  "required": [
+    "endorser_email",
+    "endorser_name",
+    "recipient_email",
+    "recipient_type",
+    "skill"
+  ]
+}
