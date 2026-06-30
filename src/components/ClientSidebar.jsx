@@ -4,6 +4,7 @@ import {
   Briefcase, Plus, FileText, Mail, Settings, BarChart3, User
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
+import { useSidebar } from '@/layouts/DashboardLayout';
 
 const MENU_ITEMS = [
   { label: 'My Projects', icon: Briefcase, href: 'ClientDashboard', showIcon: true },
@@ -18,11 +19,16 @@ export default function ClientSidebar() {
   const location = useLocation();
   const [expanded, setExpanded] = useState(false);
   const [user, setUser] = useState(null);
+  const { setSidebarExpanded } = useSidebar();
 
   React.useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
     setUser(storedUser ? JSON.parse(storedUser) : null);
   }, []);
+
+  React.useEffect(() => {
+    setSidebarExpanded(expanded);
+  }, [expanded, setSidebarExpanded]);
 
   const handleLogout = () => {
     localStorage.removeItem('studio22_user');

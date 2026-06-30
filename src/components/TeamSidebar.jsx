@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
+import { useSidebar } from '@/layouts/DashboardLayout';
 import { 
   LayoutDashboard, 
   Users, 
@@ -20,6 +21,7 @@ export default function TeamSidebar() {
   const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [team, setTeam] = useState(null);
+  const { setSidebarExpanded } = useSidebar();
 
   useEffect(() => {
     const storedTeam = localStorage.getItem('studio22_team');
@@ -27,6 +29,10 @@ export default function TeamSidebar() {
       setTeam(JSON.parse(storedTeam));
     }
   }, []);
+
+  useEffect(() => {
+    setSidebarExpanded(isExpanded);
+  }, [isExpanded, setSidebarExpanded]);
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: 'TeamDashboard' },
@@ -52,18 +58,24 @@ export default function TeamSidebar() {
         {isExpanded ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
 
-      <aside className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-40 ${
-        isExpanded ? 'w-64' : 'w-20'
-      } hover:w-64 group`}>
+      <aside
+        className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-[45] shadow-xl ${
+          isExpanded ? 'w-64' : 'w-20'
+        }`}
+        onMouseEnter={() => setIsExpanded(true)}
+        onMouseLeave={() => setIsExpanded(false)}
+      >
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
               <Building2 className="w-6 h-6 text-white" />
             </div>
-            <div className="overflow-hidden whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="font-bold text-gray-900">Studio22</div>
-              <div className="text-xs text-gray-500">Team Portal</div>
-            </div>
+            {isExpanded && (
+              <div className="overflow-hidden whitespace-nowrap">
+                <div className="font-bold text-gray-900">Studio22</div>
+                <div className="text-xs text-gray-500">Team Portal</div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -81,9 +93,7 @@ export default function TeamSidebar() {
                 }`}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
-                <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                  {item.label}
-                </span>
+                {isExpanded && <span className="whitespace-nowrap">{item.label}</span>}
               </button>
             );
           })}
@@ -94,10 +104,12 @@ export default function TeamSidebar() {
             <div className="mb-4 overflow-hidden">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0" />
-                <div className="overflow-hidden whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="font-medium text-gray-900 text-sm truncate">{team.team_name}</div>
-                  <div className="text-xs text-gray-500">Team Admin</div>
-                </div>
+                {isExpanded && (
+                  <div className="overflow-hidden whitespace-nowrap">
+                    <div className="font-medium text-gray-900 text-sm truncate">{team.team_name}</div>
+                    <div className="text-xs text-gray-500">Team Admin</div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -107,9 +119,7 @@ export default function TeamSidebar() {
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
-            <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-              Logout
-            </span>
+            {isExpanded && <span className="whitespace-nowrap">Logout</span>}
           </button>
         </div>
       </aside>

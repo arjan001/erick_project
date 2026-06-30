@@ -54,6 +54,9 @@ export default function SignIn() {
     try {
       if (demoAccounts[email] && password === email) {
         const user = demoAccounts[email];
+        // Clear any previous session first
+        localStorage.removeItem('studio22_user');
+        localStorage.removeItem('studio22_team');
         localStorage.setItem('studio22_user', JSON.stringify({
           email,
           full_name: user.name,
@@ -76,10 +79,10 @@ export default function SignIn() {
           team: '/teamdashboard',
           client: '/clientdashboard',
           backer: '/backerdashboard',
-          admin: '/admin'
+          admin: '/Admin'
         };
 
-        window.location.href = createPageUrl(redirects[user.role]?.replace('/', '') || 'Home');
+        window.location.href = redirects[user.role] || '/';
       } else {
         setError('Invalid email or password');
       }
@@ -102,13 +105,14 @@ export default function SignIn() {
     setLoading(true);
 
     try {
-      const user = {
+      const newUser = {
         id: email,
         email,
         full_name: `${firstName} ${lastName}`,
         role
       };
-      localStorage.setItem('studio22_user', JSON.stringify(user));
+      localStorage.removeItem('studio22_user');
+      localStorage.setItem('studio22_user', JSON.stringify(newUser));
       sessionStorage.setItem('studio22_just_logged_in', 'true');
 
       const redirects = {
@@ -116,10 +120,10 @@ export default function SignIn() {
         team: '/teamdashboard',
         client: '/clientdashboard',
         backer: '/backerdashboard',
-        admin: '/admin'
+        admin: '/Admin'
       };
 
-      window.location.href = createPageUrl(redirects[role]?.replace('/', '') || 'Home');
+      window.location.href = redirects[role] || '/';
     } catch (err) {
       setError('Sign up error. Please try again.');
     } finally {
