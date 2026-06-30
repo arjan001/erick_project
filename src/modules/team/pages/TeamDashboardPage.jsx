@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { PortfolioModal, MemberModal } from '@/modules/team/components/TeamDashboardModals';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -221,6 +222,8 @@ export default function TeamDashboard() {
 
     try {
 
+      const { base44: b44 } = await import('@/api/base44Client');
+      await b44.entities.Team.update(team.id, { admin_notes: profileBio });
       setTeam(prev => ({ ...prev, bio: profileBio }));
 
       setEditingBio(false);
@@ -243,6 +246,12 @@ export default function TeamDashboard() {
 
     try {
 
+      const { base44: b44 } = await import('@/api/base44Client');
+      await b44.entities.Team.update(team.id, {
+        website: profileWebsite,
+        instagram: profileInstagram,
+        linkedin: profileLinkedin,
+      });
       setTeam(prev => ({
 
         ...prev,
@@ -301,26 +310,16 @@ export default function TeamDashboard() {
 
 
 
-      const newClip = {
-
-        id: Date.now(),
-
-        title: portfolioForm.title,
-
-        project_type: portfolioForm.project_type,
-
-        description: portfolioForm.description,
-
-        role: portfolioForm.role,
-
-        video_url: videoUrl,
-
-        thumbnail_url: thumbnailUrl,
-
+      const { base44: b44 } = await import('@/api/base44Client');
+      const newClip = await b44.entities.PortfolioClip.create({
         uploaded_by_type: 'team',
         uploaded_by_id: team.id,
-        status: 'approved'
-      };
+        title: portfolioForm.title,
+        project_type: portfolioForm.project_type,
+        description: portfolioForm.description,
+        original_video_url: videoUrl || '',
+        status: 'pending',
+      });
 
       setPortfolioClips(prev => [...prev, newClip]);
 
@@ -350,6 +349,8 @@ export default function TeamDashboard() {
 
     try {
 
+      const { base44: b44 } = await import('@/api/base44Client');
+      await b44.entities.PortfolioClip.delete(clipId);
       setPortfolioClips(prev => prev.filter(clip => clip.id !== clipId));
 
     } catch (err) {
@@ -404,14 +405,19 @@ export default function TeamDashboard() {
 
       }
 
+      const { base44: b44 } = await import('@/api/base44Client');
+      await b44.entities.PortfolioClip.update(editingPortfolio.id, {
+        title: portfolioForm.title,
+        project_type: portfolioForm.project_type,
+        description: portfolioForm.description,
+        original_video_url: videoUrl || '',
+      });
       const updatedClip = {
         ...editingPortfolio,
         title: portfolioForm.title,
         project_type: portfolioForm.project_type,
         description: portfolioForm.description,
-        role: portfolioForm.role,
-        video_url: videoUrl,
-        thumbnail_url: thumbnailUrl
+        original_video_url: videoUrl || '',
       };
 
       setPortfolioClips(prev => prev.map(clip => 
@@ -455,15 +461,16 @@ export default function TeamDashboard() {
     try {
 
       const newMember = {
-        id: Date.now(),
-        team_id: team.id,
+        id: Date.now().toString(),
         name: memberForm.name,
         role: memberForm.role,
         skills: memberForm.skills.split(',').map(s => s.trim()).filter(s => s),
         avatar_url: memberForm.avatar_url
       };
-
-      setTeamMembers(prev => [...prev, newMember]);
+      const updatedMembers = [...teamMembers, newMember];
+      const { base44: b44 } = await import('@/api/base44Client');
+      await b44.entities.Team.update(team.id, { team_members: updatedMembers });
+      setTeamMembers(updatedMembers);
 
       setShowMemberModal(false);
 
@@ -487,7 +494,10 @@ export default function TeamDashboard() {
 
     try {
 
-      setTeamMembers(prev => prev.filter(member => member.id !== memberId));
+      const updatedMembers = teamMembers.filter(member => member.id !== memberId);
+      const { base44: b44 } = await import('@/api/base44Client');
+      await b44.entities.Team.update(team.id, { team_members: updatedMembers });
+      setTeamMembers(updatedMembers);
 
     } catch (err) {
 
@@ -536,10 +546,12 @@ export default function TeamDashboard() {
         skills: memberForm.skills.split(',').map(s => s.trim()).filter(s => s),
         avatar_url: memberForm.avatar_url
       };
-
-      setTeamMembers(prev => prev.map(member => 
+      const updatedMembers = teamMembers.map(member =>
         member.id === editingMember.id ? updatedMember : member
-      ));
+      );
+      const { base44: b44 } = await import('@/api/base44Client');
+      await b44.entities.Team.update(team.id, { team_members: updatedMembers });
+      setTeamMembers(updatedMembers);
 
       setShowMemberModal(false);
 
@@ -1618,379 +1630,25 @@ export default function TeamDashboard() {
 
 
 
-        {/* Portfolio Modal */}
-
-        {showPortfolioModal && (
-
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-
-            <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
-
-              <h3 className="text-lg font-bold text-gray-900 mb-4">
-
-                {editingPortfolio ? 'Edit Portfolio Item' : 'Add Work to Portfolio'}
-
-              </h3>
-
-              <p className="text-sm text-gray-600 mb-4">
-
-                {editingPortfolio ? 'Update your portfolio item' : 'Upload a video clip to showcase your team\'s work'}
-
-              </p>
-
-              
-
-              <div className="space-y-4">
-
-                <div>
-
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Project Title *</label>
-
-                  <input
-
-                    type="text"
-
-                    value={portfolioForm.title}
-
-                    onChange={(e) => setPortfolioForm(prev => ({ ...prev, title: e.target.value }))}
-
-                    placeholder="Enter project title"
-
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-
-                  />
-
-                </div>
-
-
-
-                <div>
-
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Project Type</label>
-
-                  <select
-
-                    value={portfolioForm.project_type}
-
-                    onChange={(e) => setPortfolioForm(prev => ({ ...prev, project_type: e.target.value }))}
-
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-
-                  >
-
-                    <option value="commercial">Commercial</option>
-
-                    <option value="music_video">Music Video</option>
-
-                    <option value="documentary">Documentary</option>
-
-                    <option value="short_film">Short Film</option>
-
-                    <option value="film">Film</option>
-
-                    <option value="other">Other</option>
-
-                  </select>
-
-                </div>
-
-
-
-                <div>
-
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Team Role</label>
-
-                  <input
-
-                    type="text"
-
-                    value={portfolioForm.role}
-
-                    onChange={(e) => setPortfolioForm(prev => ({ ...prev, role: e.target.value }))}
-
-                    placeholder="e.g., Production Team, Camera Crew"
-
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-
-                  />
-
-                </div>
-
-
-
-                <div>
-
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-
-                  <textarea
-
-                    value={portfolioForm.description}
-
-                    onChange={(e) => setPortfolioForm(prev => ({ ...prev, description: e.target.value }))}
-
-                    placeholder="Describe the project..."
-
-                    rows={3}
-
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400 resize-none"
-
-                  />
-
-                </div>
-
-
-
-                <div>
-
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Video File</label>
-
-                  <div 
-
-                    onClick={() => videoInputRef.current?.click()}
-
-                    className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors"
-
-                  >
-
-                    <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-
-                    <p className="text-sm text-gray-600">Click to upload video</p>
-
-                    <p className="text-xs text-gray-500 mt-1">MP4, WebM up to 100MB</p>
-
-                    {videoInputRef.current?.files?.[0] && (
-
-                      <p className="text-xs text-gray-700 mt-2">{videoInputRef.current.files[0].name}</p>
-
-                    )}
-
-                  </div>
-
-                  <input
-
-                    ref={videoInputRef}
-
-                    type="file"
-
-                    accept="video/*"
-
-                    className="hidden"
-
-                    onChange={() => {}}
-
-                  />
-
-                </div>
-
-              </div>
-
-
-
-              <div className="flex gap-2 mt-6">
-
-                <Button 
-
-                  onClick={() => {
-
-                    setShowPortfolioModal(false);
-
-                    setEditingPortfolio(null);
-
-                    setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '' });
-
-                  }} 
-
-                  variant="outline" 
-
-                  className="flex-1"
-
-                >
-
-                  Cancel
-
-                </Button>
-
-                <Button 
-
-                  onClick={editingPortfolio ? handleUpdatePortfolioClip : handleAddPortfolioClip}
-
-                  disabled={uploadingVideo}
-
-                  className="flex-1 bg-black text-white hover:bg-gray-800"
-
-                >
-
-                  {uploadingVideo ? 'Uploading...' : (editingPortfolio ? 'Update' : 'Add')}
-
-                </Button>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        )}
-
-
-
-        {/* Team Member Modal */}
-
-        {showMemberModal && (
-
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-
-            <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
-
-              <h3 className="text-lg font-bold text-gray-900 mb-4">
-
-                {editingMember ? 'Edit Team Member' : 'Add Team Member'}
-
-              </h3>
-
-              <p className="text-sm text-gray-600 mb-4">
-
-                {editingMember ? 'Update team member information' : 'Add a new member to your team'}
-
-              </p>
-
-              
-
-              <div className="space-y-4">
-
-                <div>
-
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-
-                  <input
-
-                    type="text"
-
-                    value={memberForm.name}
-
-                    onChange={(e) => setMemberForm(prev => ({ ...prev, name: e.target.value }))}
-
-                    placeholder="Enter member name"
-
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-
-                  />
-
-                </div>
-
-
-
-                <div>
-
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-
-                  <input
-
-                    type="text"
-
-                    value={memberForm.role}
-
-                    onChange={(e) => setMemberForm(prev => ({ ...prev, role: e.target.value }))}
-
-                    placeholder="e.g., Director, Cinematographer"
-
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-
-                  />
-
-                </div>
-
-
-
-                <div>
-
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Skills</label>
-
-                  <input
-
-                    type="text"
-
-                    value={memberForm.skills}
-
-                    onChange={(e) => setMemberForm(prev => ({ ...prev, skills: e.target.value }))}
-
-                    placeholder="e.g., Lighting, Camera, Editing (comma separated)"
-
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-
-                  />
-
-                </div>
-
-
-
-                <div>
-
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Avatar URL</label>
-
-                  <input
-
-                    type="text"
-
-                    value={memberForm.avatar_url}
-
-                    onChange={(e) => setMemberForm(prev => ({ ...prev, avatar_url: e.target.value }))}
-
-                    placeholder="https://..."
-
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-
-                  />
-
-                </div>
-
-              </div>
-
-
-
-              <div className="flex gap-2 mt-6">
-
-                <Button 
-
-                  onClick={() => {
-
-                    setShowMemberModal(false);
-
-                    setEditingMember(null);
-
-                    setMemberForm({ name: '', role: '', skills: '', avatar_url: '' });
-
-                  }} 
-
-                  variant="outline" 
-
-                  className="flex-1"
-
-                >
-
-                  Cancel
-
-                </Button>
-
-                <Button 
-
-                  onClick={editingMember ? handleUpdateTeamMember : handleAddTeamMember}
-
-                  className="flex-1 bg-black text-white hover:bg-gray-800"
-
-                >
-
-                  {editingMember ? 'Update' : 'Add'}
-
-                </Button>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        )}
+        <PortfolioModal
+          show={showPortfolioModal}
+          editing={editingPortfolio}
+          form={portfolioForm}
+          setForm={setPortfolioForm}
+          videoInputRef={videoInputRef}
+          uploading={uploadingVideo}
+          onClose={() => { setShowPortfolioModal(false); setEditingPortfolio(null); setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '' }); }}
+          onSave={editingPortfolio ? handleUpdatePortfolioClip : handleAddPortfolioClip}
+        />
+
+        <MemberModal
+          show={showMemberModal}
+          editing={editingMember}
+          form={memberForm}
+          setForm={setMemberForm}
+          onClose={() => { setShowMemberModal(false); setEditingMember(null); setMemberForm({ name: '', role: '', skills: '', avatar_url: '' }); }}
+          onSave={editingMember ? handleUpdateTeamMember : handleAddTeamMember}
+        />
 
       </div>
 
