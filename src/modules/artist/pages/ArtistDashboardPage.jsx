@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 
 import { useNavigate, Link } from 'react-router-dom';
 
-import ArtistSidebar from '@/components/ArtistSidebar';
-
 import { createPageUrl } from '@/shared/utils/routing';
 
 import { Briefcase, MessageCircle, Lightbulb, ArrowRight, Calendar, DollarSign, MapPin, Users, Bell, Settings, TrendingUp, Crown, Zap } from 'lucide-react';
@@ -140,13 +138,9 @@ export default function ArtistDashboard() {
 
   return (
 
-    <div className="h-screen bg-white">
+    <div className="min-h-screen bg-white">
 
-      <ArtistSidebar />
-
-      
-
-      <main className="w-full h-full overflow-auto pl-20 transition-all duration-300">
+      <main className="w-full min-h-screen overflow-auto">
 
         {/* Header */}
         <div className="bg-gray-900 text-white py-12 px-12">
