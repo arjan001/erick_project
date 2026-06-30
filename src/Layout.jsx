@@ -323,15 +323,6 @@ export default function Layout({ children, currentPageName }) {
             >
               Backed
             </Link>
-
-            <div className="h-6 w-px bg-gray-600 mx-1 md:mx-2 flex-shrink-0" />
-
-            <Link
-              to={createPageUrl('Admin')}
-              className="px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 text-gray-400 hover:text-white hover:bg-white/5"
-            >
-              Admin
-            </Link>
           </div>
         </div>
       </nav>

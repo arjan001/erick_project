@@ -8,8 +8,8 @@ import { GuestGuard } from '@/app/router/guards/GuestGuard';
 
 // Create role-specific guard components
 const AdminGuard = createRoleGuard(['admin']);
-const ArtistAdminGuard = createRoleGuard(['admin', 'artist_admin']);
-const TeamAdminGuard = createRoleGuard(['admin', 'team_admin']);
+const ArtistAdminGuard = createRoleGuard(['admin', 'artist_admin', 'artist']);
+const TeamAdminGuard = createRoleGuard(['admin', 'team_admin', 'team']);
 const ProjectAdminGuard = createRoleGuard(['admin', 'project_admin']);
 const ArtistGuard = createRoleGuard(['artist', 'artist_admin']);
 const ClientGuard = createRoleGuard(['client', 'project_owner']);

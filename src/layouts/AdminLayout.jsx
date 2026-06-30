@@ -1,163 +1,141 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from '@/shared/components/ui/button';
-import { LogOut, Settings, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronRight, ChevronDown, Menu, X } from 'lucide-react';
+import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronRight, Menu, X, Bell, Settings } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
-const adminSections = [
-  {
-    category: 'Main',
-    items: [
-      { path: '/Admin', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/ArtistAdmin', label: 'Creators', icon: Users },
-      { path: '/TeamAdmin', label: 'Teams', icon: FolderKanban },
-      { path: '/ProjectAdmin', label: 'Projects', icon: FolderKanban },
-    ]
-  },
-  {
-    category: 'User Management',
-    items: [
-      { path: '/Admin/Users', label: 'Users', icon: Users },
-      { path: '/Admin/Roles', label: 'Roles & Permissions', icon: Shield },
-      { path: '/Admin/Invites', label: 'Invites', icon: Mail },
-    ]
-  },
-  {
-    category: 'System',
-    items: [
-      { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: FileText },
-      { path: '/Admin/Settings', label: 'General Settings', icon: Settings },
-    ]
-  },
-  {
-    category: 'Content',
-    items: [
-      { path: '/Admin/SEO', label: 'SEO & CMS', icon: FileText },
-      { path: '/Admin/Storage', label: 'Image Storage', icon: Image },
-    ]
-  },
-  {
-    category: 'Integrations',
-    items: [
-      { path: '/Admin/AuthProviders', label: 'Login Providers', icon: Shield },
-      { path: '/Admin/API', label: 'API Settings', icon: Database },
-      { path: '/Admin/Payment', label: 'Payment Settings', icon: CreditCard },
-    ]
-  },
-  {
-    category: 'Finance',
-    items: [
-      { path: '/Admin/Finance', label: 'Finance Dashboard', icon: DollarSign },
-      { path: '/Admin/Subscriptions', label: 'Subscription Plans', icon: CreditCard },
-    ]
-  }
+const navItems = [
+  { path: '/Admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { path: '/ArtistAdmin', label: 'Creators', icon: Users },
+  { path: '/TeamAdmin', label: 'Teams', icon: FolderKanban },
+  { path: '/ProjectAdmin', label: 'Projects', icon: FolderKanban },
+  { path: '/Admin/UserManagement', label: 'Users', icon: Users },
+  { path: '/Admin/RolesPermissions', label: 'Roles & Permissions', icon: Shield },
+  { path: '/Admin/Invites', label: 'Invites', icon: Mail },
+  { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: FileText },
+  { path: '/Admin/GeneralSettings', label: 'Settings', icon: Settings },
+  { path: '/Admin/SEOCMS', label: 'SEO & CMS', icon: FileText },
+  { path: '/Admin/ImageStorage', label: 'Image Storage', icon: Image },
+  { path: '/Admin/LoginProviders', label: 'Login Providers', icon: Shield },
+  { path: '/Admin/APISettings', label: 'API Settings', icon: Database },
+  { path: '/Admin/PaymentSettings', label: 'Payment Settings', icon: CreditCard },
+  { path: '/Admin/FinanceDashboard', label: 'Finance', icon: DollarSign },
+  { path: '/Admin/Subscriptions', label: 'Subscription Plans', icon: CreditCard },
+];
+
+const navGroups = [
+  { label: 'Overview', items: ['/Admin', '/ArtistAdmin', '/TeamAdmin', '/ProjectAdmin'] },
+  { label: 'Users', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
+  { label: 'System', items: ['/Admin/AuditLogs', '/Admin/GeneralSettings', '/Admin/SEOCMS', '/Admin/ImageStorage'] },
+  { label: 'Integrations', items: ['/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
+  { label: 'Finance', items: ['/Admin/FinanceDashboard', '/Admin/Subscriptions'] },
 ];
 
 export default function AdminLayout({ children }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  // All categories expanded by default
-  const [expandedCategories, setExpandedCategories] = useState(
-    Object.fromEntries(adminSections.map(s => [s.category, true]))
-  );
 
-  const toggleCategory = (category) => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [category]: !prev[category]
-    }));
-  };
+  const isActive = (path, exact) => exact
+    ? location.pathname === path
+    : location.pathname === path || location.pathname.startsWith(path + '/');
 
-  const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
+  const getNavItem = (path) => navItems.find(n => n.path === path);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-[#f5f6fa] flex">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} bg-white border-r border-gray-200 flex-shrink-0 transition-all duration-300 overflow-hidden`}>
-        <div className="h-full flex flex-col">
-          {/* Logo */}
-          <div className="p-4 border-b border-gray-200">
-            <Link to="/" className="text-2xl font-black tracking-tighter text-black">
-              22.
-            </Link>
-            <p className="text-xs text-gray-500 mt-1">Admin Panel</p>
+      <aside className={`${sidebarOpen ? 'w-60' : 'w-0'} bg-white flex-shrink-0 transition-all duration-300 overflow-hidden flex flex-col`}
+        style={{ boxShadow: '2px 0 8px 0 rgba(60,72,100,0.06)' }}>
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-100">
+          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+            <span className="text-white font-black text-sm tracking-tighter">22</span>
           </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4">
-            {adminSections.map((section) => (
-              <div key={section.category} className="mb-4">
-                <button
-                  onClick={() => toggleCategory(section.category)}
-                  className="w-full px-4 py-2 flex items-center justify-between text-xs font-semibold text-gray-500 uppercase tracking-wider hover:bg-gray-50"
-                >
-                  {section.category}
-                  {expandedCategories[section.category] ? (
-                    <ChevronDown className="w-4 h-4" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4" />
-                  )}
-                </button>
-                {expandedCategories[section.category] && (
-                  <div className="mt-1">
-                    {section.items.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.path}
-                          to={item.path}
-                          className={`flex items-center gap-3 px-4 py-2 text-sm ${
-                            isActive(item.path)
-                              ? 'bg-black text-white'
-                              : 'text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" />
-                          {item.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            ))}
-          </nav>
-
-          {/* User Info */}
-          <div className="p-4 border-t border-gray-200">
-            <p className="text-sm text-gray-600 truncate">{user?.email}</p>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => { logout(false); window.location.href = '/SignIn'; }}
-              className="w-full mt-2"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+          <div>
+            <div className="font-bold text-gray-900 text-sm leading-tight">Studio22</div>
+            <div className="text-[10px] text-gray-400 uppercase tracking-wider">Admin</div>
           </div>
+        </div>
+
+        {/* User */}
+        <div className="px-4 py-3 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
+              {user?.email?.[0]?.toUpperCase() || 'A'}
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-semibold text-gray-800 truncate">{user?.full_name || 'Admin'}</div>
+              <div className="text-[10px] text-gray-400 truncate">{user?.email}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-3 px-2">
+          {navGroups.map((group) => (
+            <div key={group.label} className="mb-4">
+              <div className="px-3 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{group.label}</div>
+              {group.items.map((path) => {
+                const item = getNavItem(path);
+                if (!item) return null;
+                const Icon = item.icon;
+                const active = isActive(path, item.exact);
+                return (
+                  <Link
+                    key={path}
+                    to={path}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm mb-0.5 transition-all ${
+                      active
+                        ? 'bg-black text-white font-medium'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                    {active && <ChevronRight className="w-3 h-3 ml-auto opacity-60" />}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
+
+        {/* Logout */}
+        <div className="p-3 border-t border-gray-100">
+          <button
+            onClick={() => { logout(false); window.location.href = '/SignIn'; }}
+            className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      {/* Main */}
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <Button
-                variant="ghost"
-                size="sm"
+        <header className="bg-white border-b border-gray-100 sticky top-0 z-40"
+          style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>
+          <div className="flex items-center justify-between h-14 px-6">
+            <div className="flex items-center gap-4">
+              <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
               >
-                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </Button>
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600">
-                  {user?.email}
-                </span>
+                {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              </button>
+              <div className="text-sm font-semibold text-gray-700">
+                {navItems.find(n => isActive(n.path, n.exact))?.label || 'Admin Panel'}
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors relative">
+                <Bell className="w-4 h-4" />
+              </button>
+              <Link to="/" className="text-xs text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+                ← Back to site
+              </Link>
             </div>
           </div>
         </header>

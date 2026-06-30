@@ -13,7 +13,8 @@ export function RoleGuard({ roles, children }) {
     }
 
     if (!isLoadingAuth && user && !roles.includes(user.role)) {
-      // Redirect to appropriate dashboard instead of home to avoid loop
+      // admin can access everything — never redirect an admin
+      if (user.role === 'admin') return;
       const roleRedirects = {
         artist: '/artistdashboard',
         artist_admin: '/artistdashboard',
@@ -22,7 +23,6 @@ export function RoleGuard({ roles, children }) {
         client: '/clientdashboard',
         project_owner: '/clientdashboard',
         backer: '/backerdashboard',
-        admin: '/Admin'
       };
       navigate(roleRedirects[user.role] || '/');
     }
@@ -39,6 +39,9 @@ export function RoleGuard({ roles, children }) {
   if (!isAuthenticated) {
     return null;
   }
+
+  // admin bypasses all role checks
+  if (user?.role === 'admin') return children;
 
   if (!user || !roles.includes(user.role)) {
     return null;
