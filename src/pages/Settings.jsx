@@ -3,8 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '../components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
-import { Globe, Instagram, Linkedin, Trash2, Plus, Check, X } from 'lucide-react';
+import { Globe, Instagram, Linkedin, Check, User as UserIcon, Bell, Shield } from 'lucide-react';
 import { notifySuccess, notifyError } from '@/lib/sweetAlert';
+
+const inputClass = "w-full px-4 py-2.5 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition";
+
+function ToggleRow({ title, description, checked, onChange, isLast }) {
+  return (
+    <div className={`flex items-center justify-between py-4 ${!isLast ? 'border-b border-gray-100' : ''}`}>
+      <div>
+        <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
+        <p className="text-sm text-gray-500">{description}</p>
+      </div>
+      <button
+        onClick={onChange}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${checked ? 'bg-indigo-600' : 'bg-gray-200'}`}
+      >
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+      </button>
+    </div>
+  );
+}
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -13,7 +32,6 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(true);
 
-  // Profile fields
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
@@ -22,12 +40,10 @@ export default function Settings() {
   const [vimeo, setVimeo] = useState('');
   const [imdb, setImdb] = useState('');
 
-  // Notification preferences
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [jobAlerts, setJobAlerts] = useState(true);
   const [messageNotifications, setMessageNotifications] = useState(true);
 
-  // Privacy settings
   const [profilePublic, setProfilePublic] = useState(true);
   const [showEmail, setShowEmail] = useState(false);
   const [showPhone, setShowPhone] = useState(false);
@@ -68,14 +84,7 @@ export default function Settings() {
   const handleSaveProfile = async () => {
     if (!artist) return;
     try {
-      await base44.entities.Artist.update(artist.id, {
-        phone,
-        website,
-        instagram,
-        linkedin,
-        vimeo,
-        imdb
-      });
+      await base44.entities.Artist.update(artist.id, { phone, website, instagram, linkedin, vimeo, imdb });
       setArtist({ ...artist, phone, website, instagram, linkedin, vimeo, imdb });
       notifySuccess('Profile Updated', 'Your contact info has been saved');
     } catch (err) {
@@ -104,145 +113,103 @@ export default function Settings() {
 
   if (!user || loading) return null;
 
+  const tabs = [
+    { id: 'profile', label: 'Contact & Social', icon: UserIcon },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'privacy', label: 'Privacy', icon: Shield },
+  ];
+
   return (
-    <div className="h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <ArtistSidebar />
 
-      <main className="w-full h-full overflow-auto pl-20">
-        <div className="max-w-4xl mx-auto px-8 py-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-8">Settings</h1>
+      <main className="w-full pl-20">
+        <div className="max-w-4xl mx-auto px-6 py-10">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Settings</h1>
+          <p className="text-gray-500 mb-8">Manage your account, notifications and privacy</p>
+
+          {/* Profile header card */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6 flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+              {user?.full_name?.charAt(0) || 'A'}
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">{user?.full_name || 'Artist'}</h2>
+              <p className="text-sm text-gray-500">{user?.email}</p>
+            </div>
+          </div>
 
           {/* Tabs */}
-          <div className="flex gap-8 border-b border-gray-200 mb-8">
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`py-4 px-1 font-semibold transition-colors relative ${
-                activeTab === 'profile' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
-              }`}
-            >
-              Contact & Social
-              {activeTab === 'profile' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />}
-            </button>
-            <button
-              onClick={() => setActiveTab('notifications')}
-              className={`py-4 px-1 font-semibold transition-colors relative ${
-                activeTab === 'notifications' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
-              }`}
-            >
-              Notifications
-              {activeTab === 'notifications' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />}
-            </button>
-            <button
-              onClick={() => setActiveTab('privacy')}
-              className={`py-4 px-1 font-semibold transition-colors relative ${
-                activeTab === 'privacy' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
-              }`}
-            >
-              Privacy
-              {activeTab === 'privacy' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />}
-            </button>
+          <div className="flex gap-2 mb-6 bg-white border border-gray-100 rounded-xl p-1.5 shadow-sm w-fit">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === tab.id ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 hover:text-gray-900'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Contact & Social Tab */}
           {activeTab === 'profile' && (
-            <div className="max-w-2xl space-y-6">
-              {/* Email */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5 max-w-2xl">
               <div>
                 <label className="block text-sm font-semibold text-gray-900 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  disabled
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-600 bg-gray-50 cursor-not-allowed"
-                />
-                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                <input type="email" value={email} disabled className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-gray-500 bg-gray-50 cursor-not-allowed" />
+                <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
               </div>
 
-              {/* Phone */}
               <div>
                 <label className="block text-sm font-semibold text-gray-900 mb-2">Phone (WhatsApp)</label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+1 (555) 000-0000"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-gray-400"
-                />
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000" className={inputClass} />
               </div>
 
-              {/* Website */}
               <div>
                 <label className="block text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                  <Globe className="w-4 h-4" /> Website
+                  <Globe className="w-4 h-4 text-indigo-500" /> Website
                 </label>
-                <input
-                  type="url"
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                  placeholder="https://yourwebsite.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-gray-400"
-                />
+                <input type="url" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://yourwebsite.com" className={inputClass} />
               </div>
 
-              {/* Instagram */}
               <div>
                 <label className="block text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                  <Instagram className="w-4 h-4" /> Instagram Username
+                  <Instagram className="w-4 h-4 text-indigo-500" /> Instagram Username
                 </label>
                 <div className="flex items-center">
-                  <span className="text-gray-600 px-4 py-2 bg-gray-50 border border-gray-300 border-r-0 rounded-l-lg">@</span>
-                  <input
-                    type="text"
-                    value={instagram}
-                    onChange={(e) => setInstagram(e.target.value)}
-                    placeholder="yourusername"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg text-gray-900 focus:outline-none focus:border-gray-400"
-                  />
+                  <span className="text-gray-500 px-4 py-2.5 bg-gray-50 border border-gray-200 border-r-0 rounded-l-xl">@</span>
+                  <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="yourusername" className="flex-1 px-4 py-2.5 border border-gray-200 rounded-r-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" />
                 </div>
               </div>
 
-              {/* LinkedIn */}
               <div>
                 <label className="block text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                  <Linkedin className="w-4 h-4" /> LinkedIn Username
+                  <Linkedin className="w-4 h-4 text-indigo-500" /> LinkedIn Username
                 </label>
                 <div className="flex items-center">
-                  <span className="text-gray-600 px-4 py-2 bg-gray-50 border border-gray-300 border-r-0 rounded-l-lg">in/</span>
-                  <input
-                    type="text"
-                    value={linkedin}
-                    onChange={(e) => setLinkedin(e.target.value)}
-                    placeholder="yourprofile"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg text-gray-900 focus:outline-none focus:border-gray-400"
-                  />
+                  <span className="text-gray-500 px-4 py-2.5 bg-gray-50 border border-gray-200 border-r-0 rounded-l-xl">in/</span>
+                  <input type="text" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="yourprofile" className="flex-1 px-4 py-2.5 border border-gray-200 rounded-r-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" />
                 </div>
               </div>
 
-              {/* Vimeo */}
               <div>
                 <label className="block text-sm font-semibold text-gray-900 mb-2">Vimeo Profile</label>
-                <input
-                  type="url"
-                  value={vimeo}
-                  onChange={(e) => setVimeo(e.target.value)}
-                  placeholder="https://vimeo.com/yourprofile"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-gray-400"
-                />
+                <input type="url" value={vimeo} onChange={(e) => setVimeo(e.target.value)} placeholder="https://vimeo.com/yourprofile" className={inputClass} />
               </div>
 
-              {/* IMDb */}
               <div>
                 <label className="block text-sm font-semibold text-gray-900 mb-2">IMDb Profile</label>
-                <input
-                  type="url"
-                  value={imdb}
-                  onChange={(e) => setImdb(e.target.value)}
-                  placeholder="https://imdb.com/name/nm0000000"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-gray-400"
-                />
+                <input type="url" value={imdb} onChange={(e) => setImdb(e.target.value)} placeholder="https://imdb.com/name/nm0000000" className={inputClass} />
               </div>
 
-              <Button onClick={handleSaveProfile} className="w-full bg-black text-white hover:bg-gray-800 py-2">
+              <Button onClick={handleSaveProfile} className="w-full bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl py-2.5">
                 <Check className="w-4 h-4 mr-2" /> Save Contact Info
               </Button>
             </div>
@@ -250,64 +217,13 @@ export default function Settings() {
 
           {/* Notifications Tab */}
           {activeTab === 'notifications' && (
-            <div className="max-w-2xl space-y-6">
-              <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-                {/* Email Notifications */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Email Notifications</h3>
-                    <p className="text-sm text-gray-600">Receive email updates about activity</p>
-                  </div>
-                  <button
-                    onClick={() => setEmailNotifications(!emailNotifications)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      emailNotifications ? 'bg-black' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      emailNotifications ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </div>
-
-                {/* Job Alerts */}
-                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Job Alerts</h3>
-                    <p className="text-sm text-gray-600">Get notified about new job opportunities</p>
-                  </div>
-                  <button
-                    onClick={() => setJobAlerts(!jobAlerts)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      jobAlerts ? 'bg-black' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      jobAlerts ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </div>
-
-                {/* Message Notifications */}
-                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Message Notifications</h3>
-                    <p className="text-sm text-gray-600">Get notified when you receive messages</p>
-                  </div>
-                  <button
-                    onClick={() => setMessageNotifications(!messageNotifications)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      messageNotifications ? 'bg-black' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      messageNotifications ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </div>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-2xl space-y-6">
+              <div>
+                <ToggleRow title="Email Notifications" description="Receive email updates about activity" checked={emailNotifications} onChange={() => setEmailNotifications(!emailNotifications)} />
+                <ToggleRow title="Job Alerts" description="Get notified about new job opportunities" checked={jobAlerts} onChange={() => setJobAlerts(!jobAlerts)} />
+                <ToggleRow title="Message Notifications" description="Get notified when you receive messages" checked={messageNotifications} onChange={() => setMessageNotifications(!messageNotifications)} isLast />
               </div>
-
-              <Button onClick={handleSavePreferences} className="w-full bg-black text-white hover:bg-gray-800 py-2">
+              <Button onClick={handleSavePreferences} className="w-full bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl py-2.5">
                 <Check className="w-4 h-4 mr-2" /> Save Preferences
               </Button>
             </div>
@@ -315,64 +231,13 @@ export default function Settings() {
 
           {/* Privacy Tab */}
           {activeTab === 'privacy' && (
-            <div className="max-w-2xl space-y-6">
-              <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-                {/* Public Profile */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Public Profile</h3>
-                    <p className="text-sm text-gray-600">Allow others to view your profile</p>
-                  </div>
-                  <button
-                    onClick={() => setProfilePublic(!profilePublic)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      profilePublic ? 'bg-black' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      profilePublic ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </div>
-
-                {/* Show Email */}
-                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Show Email Address</h3>
-                    <p className="text-sm text-gray-600">Display email on your public profile</p>
-                  </div>
-                  <button
-                    onClick={() => setShowEmail(!showEmail)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      showEmail ? 'bg-black' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      showEmail ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </div>
-
-                {/* Show Phone */}
-                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Show Phone Number</h3>
-                    <p className="text-sm text-gray-600">Display phone on your public profile</p>
-                  </div>
-                  <button
-                    onClick={() => setShowPhone(!showPhone)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      showPhone ? 'bg-black' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      showPhone ? 'translate-x-6' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </div>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-2xl space-y-6">
+              <div>
+                <ToggleRow title="Public Profile" description="Allow others to view your profile" checked={profilePublic} onChange={() => setProfilePublic(!profilePublic)} />
+                <ToggleRow title="Show Email Address" description="Display email on your public profile" checked={showEmail} onChange={() => setShowEmail(!showEmail)} />
+                <ToggleRow title="Show Phone Number" description="Display phone on your public profile" checked={showPhone} onChange={() => setShowPhone(!showPhone)} isLast />
               </div>
-
-              <Button onClick={handleSavePreferences} className="w-full bg-black text-white hover:bg-gray-800 py-2">
+              <Button onClick={handleSavePreferences} className="w-full bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl py-2.5">
                 <Check className="w-4 h-4 mr-2" /> Save Privacy Settings
               </Button>
             </div>
