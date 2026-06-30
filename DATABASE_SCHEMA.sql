@@ -721,6 +721,37 @@ CREATE TRIGGER update_conversation_last_message_at AFTER INSERT ON messages
     FOR EACH ROW EXECUTE FUNCTION update_conversation_last_message();
 
 -- ============================================
+-- STORAGE BUCKETS (Supabase Storage)
+-- ============================================
+-- Run this in the Supabase SQL editor (or it will run automatically when you
+-- paste this whole schema in). Creates the buckets the app uploads files into.
+
+INSERT INTO storage.buckets (id, name, public) VALUES
+  ('profile-photos', 'profile-photos', true),
+  ('portfolio-clips', 'portfolio-clips', true),
+  ('project-images', 'project-images', true),
+  ('team-logos', 'team-logos', true),
+  ('backer-logos', 'backer-logos', true),
+  ('message-attachments', 'message-attachments', true),
+  ('shop-images', 'shop-images', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Public read access for all the above buckets
+CREATE POLICY "Public read access" ON storage.objects FOR SELECT
+  USING (bucket_id IN ('profile-photos', 'portfolio-clips', 'project-images', 'team-logos', 'backer-logos', 'message-attachments', 'shop-images'));
+
+-- Authenticated users can upload to all the above buckets
+CREATE POLICY "Authenticated upload access" ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id IN ('profile-photos', 'portfolio-clips', 'project-images', 'team-logos', 'backer-logos', 'message-attachments', 'shop-images') AND auth.role() = 'authenticated');
+
+-- Authenticated users can update/delete their own uploaded files
+CREATE POLICY "Authenticated update own files" ON storage.objects FOR UPDATE
+  USING (bucket_id IN ('profile-photos', 'portfolio-clips', 'project-images', 'team-logos', 'backer-logos', 'message-attachments', 'shop-images') AND auth.uid() = owner);
+
+CREATE POLICY "Authenticated delete own files" ON storage.objects FOR DELETE
+  USING (bucket_id IN ('profile-photos', 'portfolio-clips', 'project-images', 'team-logos', 'backer-logos', 'message-attachments', 'shop-images') AND auth.uid() = owner);
+
+-- ============================================
 -- SAMPLE DATA (for development/testing)
 -- ============================================
 

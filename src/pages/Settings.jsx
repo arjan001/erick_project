@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '../components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
 import { Globe, Instagram, Linkedin, Trash2, Plus, Check, X } from 'lucide-react';
+import { notifySuccess, notifyError } from '@/lib/sweetAlert';
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -76,9 +77,10 @@ export default function Settings() {
         imdb
       });
       setArtist({ ...artist, phone, website, instagram, linkedin, vimeo, imdb });
-      alert('Profile updated successfully!');
+      notifySuccess('Profile Updated', 'Your contact info has been saved');
     } catch (err) {
       console.error('Error saving profile:', err);
+      notifyError('Save Failed', 'Failed to update profile');
     }
   };
 
@@ -93,9 +95,10 @@ export default function Settings() {
         show_email: showEmail,
         show_phone: showPhone
       });
-      alert('Preferences updated successfully!');
+      notifySuccess('Preferences Updated', 'Your preferences have been saved');
     } catch (err) {
       console.error('Error saving preferences:', err);
+      notifyError('Save Failed', 'Failed to update preferences');
     }
   };
 

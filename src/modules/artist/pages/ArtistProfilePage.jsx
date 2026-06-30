@@ -17,6 +17,7 @@ import { createPageUrl } from '@/shared/utils/routing';
 import { MapPin, MessageCircle, Briefcase, MoreHorizontal, ChevronDown, Copy, Globe, Instagram, Linkedin, Star, ThumbsUp, Play, Users, Plus, Edit2, X } from 'lucide-react';
 
 import { useToast } from '@/hooks/useToast';
+import { notifyError, confirmDialog } from '@/lib/sweetAlert';
 
 
 
@@ -362,7 +363,7 @@ export default function ArtistProfile() {
 
       console.error('Error saving location:', err);
 
-      alert('Failed to save location');
+      notifyError('Save Failed', 'Failed to save location');
 
     }
 
@@ -526,7 +527,9 @@ export default function ArtistProfile() {
 
   const handleDeletePortfolioClip = async (clipId) => {
 
-    if (!confirm('Are you sure you want to delete this portfolio clip?')) return;
+    const confirmed = await confirmDialog('Delete portfolio clip?', 'This action cannot be undone');
+
+    if (!confirmed) return;
 
 
 
