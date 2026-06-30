@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../../utils';
+import { createPageUrl } from '@/shared/utils/routing';
 import { Film, Clapperboard, Plane, Wand2, Box, Music, Code, ArrowRight } from 'lucide-react';
 
 const SERVICES = [

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Sparkles, CheckCircle2, Loader } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { createPageUrl } from '../utils';
+import { createPageUrl } from '@/shared/utils/routing';
 
 export default function NewProjectForm({ selectedCategory = 'commercial' }) {
   const navigate = useNavigate();

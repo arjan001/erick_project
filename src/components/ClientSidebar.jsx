@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   Briefcase, Plus, FileText, Mail, Settings, BarChart3, User
 } from 'lucide-react';
-import { createPageUrl } from '../utils';
+import { createPageUrl } from '@/shared/utils/routing';
 
 const MENU_ITEMS = [
   { label: 'My Projects', icon: Briefcase, href: 'ClientDashboard', showIcon: true },

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../../utils';
+import { createPageUrl } from '@/shared/utils/routing';
 import { ArrowRight } from 'lucide-react';
 
 const FEATURED_PROJECTS = [

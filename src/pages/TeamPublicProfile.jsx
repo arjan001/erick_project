@@ -3,7 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { MapPin, Users, Award, Globe, Mail, Wrench, Calendar, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createPageUrl } from '../utils';
+import { createPageUrl } from '@/shared/utils/routing';
 
 export default function TeamPublicProfile() {
   const [searchParams] = useSearchParams();

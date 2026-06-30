@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../../utils';
+import { createPageUrl } from '@/shared/utils/routing';
 
 export default function TopBanner() {
   const [entries, setEntries] = useState([]);
@@ -74,7 +74,7 @@ export default function TopBanner() {
   return (
     <div className="fixed top-0 left-0 right-0 h-[40px] bg-[#F5F5F5] text-[#4A4A4A] z-50 overflow-hidden border-b border-gray-200">
       <div className="flex items-center h-full">
-        <style jsx>{`
+        <style>{`
           @keyframes scroll {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }

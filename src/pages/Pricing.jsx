@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { createPageUrl } from '@/shared/utils/routing';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, ArrowRight, Info } from 'lucide-react';
 

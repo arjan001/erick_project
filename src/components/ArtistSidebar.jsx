@@ -4,14 +4,15 @@ import {
   Search, Briefcase, FileText, Mail, Users, Gift, Bell, User, Settings,
   Home as HomeIcon, ChevronRight, Network
 } from 'lucide-react';
-import { createPageUrl } from '../utils';
+import { createPageUrl } from '@/shared/utils/routing';
+import { useSidebar } from '@/layouts/DashboardLayout';
 
 const MENU_ITEMS = [
-  { label: 'Dashboard', icon: HomeIcon, href: 'ArtistHome', showIcon: true },
+  { label: 'Dashboard', icon: HomeIcon, href: 'artistdashboard', showIcon: true },
   { label: 'Find Work', icon: Search, href: 'Jobs', showIcon: true },
   { label: 'Projects from Clients', icon: Briefcase, href: 'JobBoard', showIcon: true },
   { label: 'Applications', icon: FileText, href: 'JobApplications', showIcon: true },
-  { label: 'Messages', icon: Mail, href: 'Messages', showIcon: true },
+  { label: 'Messages', icon: Mail, href: 'Messages', showIcon: true, showBadge: true },
   { label: 'Network', icon: Network, href: 'Network', showIcon: true },
   { label: 'My Profile', icon: User, href: 'ArtistProfile', showIcon: true },
   { label: 'Settings', icon: Settings, href: 'Settings', showIcon: true }
@@ -21,10 +22,25 @@ export default function ArtistSidebar() {
   const location = useLocation();
   const [expanded, setExpanded] = useState(false);
   const [user, setUser] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const { setSidebarExpanded } = useSidebar();
 
   React.useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
     setUser(storedUser ? JSON.parse(storedUser) : null);
+  }, []);
+
+  React.useEffect(() => {
+    setSidebarExpanded(expanded);
+  }, [expanded, setSidebarExpanded]);
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem('studio22_conversations');
+    if (saved) {
+      const conversations = JSON.parse(saved);
+      const totalUnread = conversations.reduce((sum, conv) => sum + (conv.unread || 0), 0);
+      setUnreadCount(totalUnread);
+    }
   }, []);
 
   const handleLogout = () => {
@@ -41,7 +57,7 @@ export default function ArtistSidebar() {
       onMouseLeave={() => setExpanded(false)}
     >
       {/* Logo */}
-      <Link to={createPageUrl('ArtistDashboard')} className="h-20 flex items-center justify-center border-b border-gray-200 hover:bg-gray-100 transition-colors">
+      <Link to={createPageUrl('artistdashboard')} className="h-20 flex items-center justify-center border-b border-gray-200 hover:bg-gray-100 transition-colors">
         <span className={`font-black text-gray-900 transition-all ${expanded ? 'text-2xl' : 'text-lg'}`}>
           {expanded ? '22.' : '22.'}
         </span>
@@ -52,6 +68,7 @@ export default function ArtistSidebar() {
         {MENU_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname.includes(item.href.toLowerCase());
+
           return (
             <Link
               key={item.href}
@@ -65,6 +82,11 @@ export default function ArtistSidebar() {
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               {expanded && <span className="text-sm font-medium">{item.label}</span>}
+              {item.showBadge && unreadCount > 0 && (
+                <span className={`ml-auto bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ${expanded ? '' : 'absolute top-1 right-1'}`}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </Link>
           );
         })}

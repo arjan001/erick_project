@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '../components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
-import { MapPin, MessageCircle, Briefcase, MoreHorizontal, ChevronDown, Globe, Instagram, Linkedin, Star, ThumbsUp, Play, Users } from 'lucide-react';
+import { MapPin, MessageCircle, Briefcase, MoreHorizontal, ChevronDown, Globe, Instagram, Linkedin, Star, ThumbsUp, Play, Users, Crown } from 'lucide-react';
+import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge';
 
 export default function ArtistPublicProfile() {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ export default function ArtistPublicProfile() {
   const [portfolioClips, setPortfolioClips] = useState([]);
   const [endorsements, setEndorsements] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
+  const [subscription, setSubscription] = useState(null);
+  const [subscriptionPackage, setSubscriptionPackage] = useState(null);
   const [activeTab, setActiveTab] = useState('work');
   const [showRolesDropdown, setShowRolesDropdown] = useState(false);
   const [showProjectTypesDropdown, setShowProjectTypesDropdown] = useState(false);
@@ -53,6 +56,21 @@ export default function ArtistPublicProfile() {
           recipient_email: artistsData[0]?.email 
         });
         setTestimonials(testimonialsData);
+
+        // Fetch subscription
+        try {
+          const subsData = await base44.entities.Subscription.filter({ 
+            user_email: artistsData[0]?.email, 
+            status: 'active' 
+          });
+          if (subsData.length > 0) {
+            setSubscription(subsData[0]);
+            const pkgData = await base44.entities.SubscriptionPackage.get(subsData[0].package_id);
+            setSubscriptionPackage(pkgData);
+          }
+        } catch (subErr) {
+          console.error('Error fetching subscription:', subErr);
+        }
       } catch (err) {
         console.error('Error fetching artist data:', err);
       }
@@ -97,7 +115,12 @@ export default function ArtistPublicProfile() {
           <div className="flex items-start gap-6 -mt-24 relative z-10 mb-8">
             <div className="w-40 h-40 bg-gray-300 rounded-full border-4 border-white flex-shrink-0" />
             <div className="flex-1 pt-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">{viewedArtist.full_name}</h1>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900">{viewedArtist.full_name}</h1>
+                {subscriptionPackage && (
+                  <SubscriptionBadge subscription={subscription} package={subscriptionPackage} />
+                )}
+              </div>
               <p className="text-gray-600 text-base mb-3">
                 {viewedArtist.role ? viewedArtist.role.charAt(0).toUpperCase() + viewedArtist.role.slice(1).replace(/_/g, ', ') : 'Creative Professional'}
               </p>
