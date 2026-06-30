@@ -176,6 +176,26 @@ export default function SignIn() {
                 className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
+
+              <div className="flex items-center gap-3 my-1">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-gray-400 uppercase tracking-wide">or</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+
+              <button type="button" disabled
+                onClick={() => setMessage('Google sign-in is coming soon.')}
+                title="Google sign-in coming soon"
+                className="w-full py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.3h6.47c-.28 1.5-1.13 2.77-2.41 3.62v3h3.9c2.28-2.1 3.53-5.2 3.53-8.65z" />
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.93-2.9l-3.9-3c-1.08.73-2.46 1.16-4.03 1.16-3.1 0-5.73-2.09-6.67-4.9H1.3v3.09C3.27 21.3 7.31 24 12 24z" />
+                  <path fill="#FBBC05" d="M5.33 14.36c-.24-.73-.38-1.5-.38-2.36s.14-1.63.38-2.36V6.55H1.3A11.96 11.96 0 0 0 0 12c0 1.93.46 3.76 1.3 5.45l4.03-3.09z" />
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.45-3.45C17.94 1.18 15.24 0 12 0 7.31 0 3.27 2.7 1.3 6.55l4.03 3.09c.94-2.81 3.57-4.89 6.67-4.89z" />
+                </svg>
+                Continue with Google
+                <span className="text-[10px] text-gray-400 font-normal">(soon)</span>
+              </button>
             </form>
           )}
 
@@ -296,9 +316,13 @@ export default function SignIn() {
           <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full border border-white" />
           <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full border border-white" />
         </div>
-        <div className="text-center relative z-10">
-          <span className="text-8xl font-black tracking-tighter text-white/20">22.</span>
-          <p className="text-white/40 text-sm mt-4 uppercase tracking-widest">Studio22 Creative Network</p>
+        <div className="text-center relative z-10 flex flex-col items-center">
+          <img
+            src="https://media.base44.com/images/public/6968a46f6ea94ba83cd1497c/5149728c8_image.png"
+            alt="Studio22"
+            className="w-56 h-56 object-contain drop-shadow-2xl"
+          />
+          <p className="text-white/40 text-sm mt-6 uppercase tracking-widest">Studio22 Creative Network</p>
         </div>
       </div>
     </div>

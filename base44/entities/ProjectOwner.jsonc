@@ -19,6 +19,14 @@
     "website": {
       "type": "string"
     },
+    "profile_photo_url": {
+      "type": "string",
+      "description": "Profile photo URL (set in dashboard)"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Short bio / about"
+    },
     "language_preference": {
       "type": "string",
       "enum": [
