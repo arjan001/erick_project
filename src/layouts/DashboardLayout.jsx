@@ -9,6 +9,9 @@ const SidebarContext = createContext();
 
 export const useSidebar = () => useContext(SidebarContext);
 
+const SIDEBAR_COLLAPSED_WIDTH = 80;  // px  (w-20)
+const SIDEBAR_EXPANDED_WIDTH = 256;  // px  (w-64)
+
 export default function DashboardLayout({ children }) {
   const { user } = useAuth();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -19,17 +22,22 @@ export default function DashboardLayout({ children }) {
   const isBacker = user?.role === 'backer';
   const hasSidebar = isArtist || isTeam || isClient || isBacker;
 
+  const marginLeft = hasSidebar
+    ? sidebarExpanded
+      ? SIDEBAR_EXPANDED_WIDTH
+      : SIDEBAR_COLLAPSED_WIDTH
+    : 0;
+
   return (
     <SidebarContext.Provider value={{ sidebarExpanded, setSidebarExpanded }}>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white flex">
         {isArtist && <ArtistSidebar />}
         {isTeam && <TeamSidebar />}
         {isClient && <ClientSidebar />}
         {isBacker && <BackerSidebar />}
-        <main 
-          className={`transition-all duration-300 ${
-            hasSidebar ? (sidebarExpanded ? 'ml-64' : 'ml-20') : ''
-          }`}
+        <main
+          className="flex-1 transition-all duration-300 min-w-0"
+          style={{ marginLeft }}
         >
           {children}
         </main>

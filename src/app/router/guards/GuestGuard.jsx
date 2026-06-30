@@ -20,7 +20,7 @@ export function GuestGuard({ children }) {
         admin: '/admin'
       };
       const targetRoute = redirects[user.role] || '/';
-      navigate(targetRoute);
+      navigate(targetRoute, { replace: true });
     }
   }, [isAuthenticated, isLoadingAuth, user, navigate]);
 

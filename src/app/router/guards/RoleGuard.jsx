@@ -8,12 +8,23 @@ export function RoleGuard({ roles, children }) {
 
   useEffect(() => {
     if (!isLoadingAuth && !isAuthenticated) {
-      navigate('/signin');
+      navigate('/SignIn');
       return;
     }
 
     if (!isLoadingAuth && user && !roles.includes(user.role)) {
-      navigate('/');
+      // Redirect to appropriate dashboard instead of home to avoid loop
+      const roleRedirects = {
+        artist: '/artistdashboard',
+        artist_admin: '/artistdashboard',
+        team: '/teamdashboard',
+        team_admin: '/teamdashboard',
+        client: '/clientdashboard',
+        project_owner: '/clientdashboard',
+        backer: '/backerdashboard',
+        admin: '/Admin'
+      };
+      navigate(roleRedirects[user.role] || '/');
     }
   }, [isAuthenticated, isLoadingAuth, user, roles, navigate]);
 

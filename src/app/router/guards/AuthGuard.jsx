@@ -8,7 +8,7 @@ export function AuthGuard({ children }) {
 
   useEffect(() => {
     if (!isLoadingAuth && !isAuthenticated) {
-      navigate('/signin');
+      navigate('/SignIn');
     }
   }, [isAuthenticated, isLoadingAuth, navigate]);
 

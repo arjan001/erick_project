@@ -47,12 +47,13 @@ export const authApi = {
   
   logout: (shouldRedirect = true) => {
     localStorage.removeItem('studio22_user');
+    localStorage.removeItem('studio22_team');
     if (shouldRedirect) {
-      window.location.href = '/signin';
+      window.location.href = '/SignIn';
     }
   },
   
   redirectToLogin: (returnUrl) => {
-    window.location.href = '/signin';
+    window.location.href = '/SignIn';
   }
 };
