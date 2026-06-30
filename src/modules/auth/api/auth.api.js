@@ -52,7 +52,7 @@ export const authApi = {
       window.location.href = '/SignIn';
     }
   },
-  
+
   redirectToLogin: (returnUrl) => {
     window.location.href = '/SignIn';
   }

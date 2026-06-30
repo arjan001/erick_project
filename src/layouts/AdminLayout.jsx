@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/shared/components/ui/button';
 import { LogOut, Settings, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronRight, ChevronDown, Menu, X } from 'lucide-react';
-import { useAuth } from '@/modules/auth/hooks/useAuth';
+import { useAuth } from '@/lib/AuthContext';
 
 const adminSections = [
   {
@@ -56,7 +56,10 @@ export default function AdminLayout({ children }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [expandedCategories, setExpandedCategories] = useState({});
+  // All categories expanded by default
+  const [expandedCategories, setExpandedCategories] = useState(
+    Object.fromEntries(adminSections.map(s => [s.category, true]))
+  );
 
   const toggleCategory = (category) => {
     setExpandedCategories(prev => ({
@@ -126,7 +129,7 @@ export default function AdminLayout({ children }) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => logout()}
+              onClick={() => { logout(false); window.location.href = '/SignIn'; }}
               className="w-full mt-2"
             >
               <LogOut className="w-4 h-4 mr-2" />
