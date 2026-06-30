@@ -27,6 +27,16 @@
     "skill": {
       "type": "string",
       "description": "Skill being endorsed"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Star rating (1-5)"
+    },
+    "message": {
+      "type": "string",
+      "description": "Optional personal message"
     }
   },
   "required": [

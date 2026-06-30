@@ -578,6 +578,17 @@ export default function Messages() {
     });
   };
 
+  const getOrCreateConversation = async (otherEmail) => {
+    const existing = await base44.entities.Conversation.filter({ participant_1_email: user.email, participant_2_email: otherEmail });
+    if (existing.length > 0) return existing[0];
+    const existingReverse = await base44.entities.Conversation.filter({ participant_1_email: otherEmail, participant_2_email: user.email });
+    if (existingReverse.length > 0) return existingReverse[0];
+    return base44.entities.Conversation.create({
+      participant_1_email: user.email,
+      participant_2_email: otherEmail,
+    });
+  };
+
   const handleFileAttach = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -619,12 +630,12 @@ export default function Messages() {
       });
       event.target.value = null;
 
-      // Optional: Save to database
+      // Save to database
       try {
         if (selectedChat.contact_email) {
-          const conversationId = `${user.email}_${selectedChat.contact_email}`.split('').sort().join('');
+          const conv = await getOrCreateConversation(selectedChat.contact_email);
           await base44.entities.Message.create({
-            conversation_id: conversationId,
+            conversation_id: conv.id,
             sender_email: user.email,
             recipient_email: selectedChat.contact_email,
             text: file.name,
@@ -685,12 +696,12 @@ export default function Messages() {
               messages: [...selectedChat.messages, newMessage]
             });
 
-            // Optional: Save to database
+            // Save to database
             try {
               if (selectedChat.contact_email) {
-                const conversationId = `${user.email}_${selectedChat.contact_email}`.split('').sort().join('');
+                const conv = await getOrCreateConversation(selectedChat.contact_email);
                 await base44.entities.Message.create({
-                  conversation_id: conversationId,
+                  conversation_id: conv.id,
                   sender_email: user.email,
                   recipient_email: selectedChat.contact_email,
                   text: file.name,
@@ -747,12 +758,12 @@ export default function Messages() {
     setMessageInput('');
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
-    // Optional: Save to database
+    // Save to database
     try {
       if (selectedChat.contact_email) {
-        const conversationId = `${user.email}_${selectedChat.contact_email}`.split('').sort().join('');
+        const conv = await getOrCreateConversation(selectedChat.contact_email);
         await base44.entities.Message.create({
-          conversation_id: conversationId,
+          conversation_id: conv.id,
           sender_email: user.email,
           recipient_email: selectedChat.contact_email,
           text: messageInput

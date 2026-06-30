@@ -11,10 +11,6 @@
       "type": "string",
       "description": "Name of testimonial author"
     },
-    "author_title": {
-      "type": "string",
-      "description": "Job title/company of author"
-    },
     "recipient_email": {
       "type": "string",
       "format": "email",
@@ -35,6 +31,17 @@
     "project_name": {
       "type": "string",
       "description": "Project this testimonial relates to"
+    },
+    "collaboration_type": {
+      "type": "string",
+      "enum": [
+        "worked_together",
+        "hired_them",
+        "was_hired_by",
+        "collaborated_on_project"
+      ],
+      "default": "worked_together",
+      "description": "How the author and recipient collaborated"
     },
     "rating": {
       "type": "number",

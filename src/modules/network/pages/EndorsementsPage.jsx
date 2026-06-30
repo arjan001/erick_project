@@ -44,12 +44,12 @@ export default function EndorsementsPage() {
         const allEndorsements = await base44.entities.Endorsement.list();
         
         const given = allEndorsements.filter(e => e.endorser_email === user.email);
-        const received = allEndorsements.filter(e => e.endorsed_email === user.email);
+        const received = allEndorsements.filter(e => e.recipient_email === user.email);
 
         const enrichedGiven = await Promise.all(
           given.map(async (endorsement) => {
             try {
-              const artist = await base44.entities.Artist.filter({ email: endorsement.endorsed_email });
+              const artist = await base44.entities.Artist.filter({ email: endorsement.recipient_email });
               return { ...endorsement, artist: artist[0] || null };
             } catch (err) {
               return { ...endorsement, artist: null };
@@ -87,12 +87,11 @@ export default function EndorsementsPage() {
       await base44.entities.Endorsement.create({
         endorser_email: user.email,
         endorser_name: user.full_name,
-        endorsed_email: selectedPerson.email,
-        endorsed_name: selectedPerson.full_name,
+        recipient_email: selectedPerson.email,
+        recipient_type: 'artist',
         skill: endorsementForm.skill,
         message: endorsementForm.message,
         rating: endorsementForm.rating,
-        created_date: new Date().toISOString()
       });
 
       await base44.entities.Notification.create({

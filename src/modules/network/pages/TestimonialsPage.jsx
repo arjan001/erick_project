@@ -83,12 +83,11 @@ export default function TestimonialsPage() {
         author_email: user.email,
         author_name: user.full_name,
         recipient_email: selectedPerson.email,
-        recipient_name: selectedPerson.full_name,
-        project_title: testimonialForm.project_title,
+        recipient_type: 'artist',
+        project_name: testimonialForm.project_title,
         content: testimonialForm.content,
         rating: testimonialForm.rating,
         collaboration_type: testimonialForm.collaboration_type,
-        created_date: new Date().toISOString()
       });
 
       await base44.entities.Notification.create({
@@ -189,7 +188,7 @@ export default function TestimonialsPage() {
                             <p className="font-semibold text-gray-900">{testimonial.author?.full_name}</p>
                             <p className="text-sm text-gray-500 flex items-center gap-1">
                               <Briefcase className="w-3 h-3" />
-                              {testimonial.project_title}
+                              {testimonial.project_name}
                             </p>
                           </div>
                         </div>
@@ -230,7 +229,7 @@ export default function TestimonialsPage() {
                             <p className="font-semibold text-gray-900">{testimonial.recipient?.full_name}</p>
                             <p className="text-sm text-gray-500 flex items-center gap-1">
                               <Briefcase className="w-3 h-3" />
-                              {testimonial.project_title}
+                              {testimonial.project_name}
                             </p>
                           </div>
                         </div>
