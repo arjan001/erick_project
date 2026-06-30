@@ -96,80 +96,63 @@ export default function Layout({ children, currentPageName }) {
       {/* Top Banner */}
       {!shouldHideMenus && <TopBanner />}
 
-      {/* Main Header (Awwwards Style) */}
-      {!shouldHideMenus && (<header className={`fixed top-[40px] left-0 right-0 z-[40] transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
-        <div className="max-w-[1800px] mx-auto px-6">
-          <div className="flex items-center justify-between h-[60px]">
-            {/* Left Navigation */}
-            <div className="flex items-center gap-8">
+      {/* Main Header — mobile-first */}
+      {!shouldHideMenus && (
+        <header className={`fixed top-[40px] left-0 right-0 z-[40] transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
+          <div className="max-w-[1800px] mx-auto px-4 sm:px-6">
+            <div className="flex items-center justify-between h-[56px]">
               {/* Logo */}
-              <Link 
-                to={createPageUrl('ArtistDashboard')} 
-                className="hover:opacity-70 transition-opacity"
-              >
-                <span className="text-2xl font-black tracking-tighter text-[#1a1a1a]">22.</span>
+              <Link to={createPageUrl('Home')} className="hover:opacity-70 transition-opacity flex-shrink-0">
+                <span className="text-xl sm:text-2xl font-black tracking-tighter text-[#1a1a1a]">22.</span>
               </Link>
 
-              {/* Main Nav */}
-              <nav className="hidden lg:flex items-center gap-6">
+              {/* Desktop Nav */}
+              <nav className="hidden lg:flex items-center gap-5">
                 {!exploreOpen && (
-                    <>
-                      <Link to={createPageUrl('Projects')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
-                        Projects
-                      </Link>
-                    <Link to={createPageUrl('ApplyArtist')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
-                      For Creators
-                    </Link>
-                    <Link to={createPageUrl('ApplyTeam')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
-                      For Teams
-                    </Link>
+                  <>
+                    <Link to={createPageUrl('Projects')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">Projects</Link>
+                    <Link to={createPageUrl('ApplyArtist')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">For Creators</Link>
+                    <Link to={createPageUrl('ApplyTeam')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">For Teams</Link>
                     <div className="relative">
-                      <button 
-                        onClick={() => setAcademyOpen(!academyOpen)}
-                        className="flex items-center gap-1 text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors"
-                      >
+                      <button onClick={() => setAcademyOpen(!academyOpen)}
+                        className="flex items-center gap-1 text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
                         Backed <ChevronDown className="w-3 h-3" />
-                        <span className="inline-block w-1.5 h-1.5 bg-amber-600 rounded-sm"></span>
+                        <span className="inline-block w-1.5 h-1.5 bg-amber-600 rounded-sm" />
                       </button>
                       {academyOpen && (
-                        <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
-                          <Link to={createPageUrl('BackedProjects')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                            Projects Seeking Backing
-                          </Link>
-                          <Link to={createPageUrl('HowBackingWorks')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                            How Backing Works
-                          </Link>
+                        <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
+                          <Link to={createPageUrl('BackedProjects')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Projects Seeking Backing</Link>
+                          <Link to={createPageUrl('HowBackingWorks')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">How Backing Works</Link>
                         </div>
                       )}
                     </div>
                   </>
                 )}
               </nav>
-            </div>
 
-            {/* Center Search */}
-            {!exploreOpen && (
-              <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
-                <UnifiedSearch />
+              {/* Desktop Search */}
+              {!exploreOpen && (
+                <div className="hidden md:flex items-center flex-1 max-w-xs mx-6">
+                  <UnifiedSearch />
+                </div>
+              )}
+
+              {/* Right Actions */}
+              <div className="flex items-center gap-2">
+                <Link to={createPageUrl('SignIn')}>
+                  <Button variant="ghost" size="sm" className="text-xs sm:text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent px-2 sm:px-3">
+                    Login
+                  </Button>
+                </Link>
+                <button
+                  onClick={() => setExploreOpen(true)}
+                  className="px-3 sm:px-4 py-2 bg-black text-white hover:bg-gray-800 font-bold text-xs sm:text-sm rounded-md transition-colors whitespace-nowrap"
+                >
+                  Post a Project
+                </button>
               </div>
-            )}
-
-            {/* Right Actions */}
-            <div className="flex items-center gap-3">
-              <Link to={createPageUrl('SignIn')}>
-                <Button variant="ghost" size="sm" className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent">
-                  Login
-                </Button>
-              </Link>
-              <button
-                onClick={() => setExploreOpen(true)}
-                className="px-4 py-2 bg-black text-white hover:bg-gray-800 font-bold text-sm rounded-md transition-colors"
-              >
-                Post a Project
-              </button>
             </div>
           </div>
-        </div>
         </header>
       )}
 
@@ -231,14 +214,14 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* Main Content */}
-      <main className={shouldHideMenus ? 'pt-0 pb-24' : 'pt-[100px] pb-24'}>
+      <main className={shouldHideMenus ? 'pt-0 pb-24' : 'pt-[96px] pb-28 md:pb-24'}>
         {React.cloneElement(children, { editMode })}
       </main>
 
         {/* Bottom Floating Navigation */}
-        {!shouldHideMenus && (<nav className="fixed bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-slideUp">
+        {!shouldHideMenus && (<nav className="fixed bottom-4 left-2 right-2 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50">
         <div className="bg-[#3a3a3a] rounded-2xl shadow-2xl backdrop-blur-sm border border-white/10">
-          <div className="flex items-center gap-0 px-2 md:px-3 py-2.5 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-0 px-2 py-2 overflow-x-auto scrollbar-hide">
             {currentPageName === 'Home' ? (
               <button
                 onMouseDown={() => {
@@ -287,14 +270,14 @@ export default function Layout({ children, currentPageName }) {
               </Link>
             )}
 
-            <div className="h-6 w-px bg-gray-600 mr-1 md:mr-2 flex-shrink-0" />
+            <div className="h-5 w-px bg-gray-600 mr-1 flex-shrink-0" />
 
             {editMode && currentPageName === 'Home' && (
               <button
                 onClick={() => setEditMode(false)}
-                className="px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 bg-red-500 text-white hover:bg-red-600"
+                className="px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 bg-red-500 text-white hover:bg-red-600"
               >
-                Exit Edit Mode
+                Exit Edit
               </button>
             )}
 
@@ -304,7 +287,7 @@ export default function Layout({ children, currentPageName }) {
                  <Link
                    key={item.name}
                    to={createPageUrl(item.href)}
-                   className={`px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 relative ${
+                   className={`px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 relative ${
                      item.highlight 
                        ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]' 
                        : isActive
@@ -319,7 +302,7 @@ export default function Layout({ children, currentPageName }) {
 
             <Link
               to={createPageUrl('BackedProjects')}
-              className="px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 text-gray-300 hover:text-white hover:bg-white/5"
+              className="px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 text-gray-300 hover:text-white hover:bg-white/5"
             >
               Backed
             </Link>

@@ -1,6 +1,19 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { supabase } from '@/lib/supabase';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
+
+function buildUserFromSupabase(session) {
+  if (!session?.user) return null;
+  const meta = session.user.user_metadata || {};
+  return {
+    id: session.user.id,
+    email: session.user.email,
+    full_name: meta.full_name || meta.name || session.user.email?.split('@')[0] || 'User',
+    role: meta.role || 'artist',
+  };
+}
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -8,19 +21,40 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
-    // Check localStorage for existing user session on mount
-    const storedUser = localStorage.getItem('studio22_user');
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
+    // Check Supabase session first
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        const u = buildUserFromSupabase(session);
+        setUser(u);
         setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('studio22_user');
+        localStorage.setItem('studio22_user', JSON.stringify(u));
+      } else {
+        // Fallback to localStorage demo session
+        const stored = localStorage.getItem('studio22_user');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            setUser(parsed);
+            setIsAuthenticated(true);
+          } catch {
+            localStorage.removeItem('studio22_user');
+          }
+        }
       }
-    }
-    setIsLoadingAuth(false);
+      setIsLoadingAuth(false);
+    });
+
+    // Listen for Supabase auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        const u = buildUserFromSupabase(session);
+        setUser(u);
+        setIsAuthenticated(true);
+        localStorage.setItem('studio22_user', JSON.stringify(u));
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = (userData) => {
@@ -29,29 +63,19 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('studio22_user', JSON.stringify(userData));
   };
 
-  const logout = (shouldRedirect = true) => {
+  const logout = async (shouldRedirect = true) => {
+    await supabase.auth.signOut();
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('studio22_user');
-    
-    if (shouldRedirect) {
-      window.location.href = '/signin';
-    }
+    localStorage.removeItem('studio22_team');
+    if (shouldRedirect) window.location.href = '/SignIn';
   };
 
-  const navigateToLogin = () => {
-    window.location.href = '/signin';
-  };
+  const navigateToLogin = () => { window.location.href = '/SignIn'; };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isAuthenticated, 
-      isLoadingAuth,
-      login,
-      logout,
-      navigateToLogin
-    }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoadingAuth, login, logout, navigateToLogin }}>
       {children}
     </AuthContext.Provider>
   );
