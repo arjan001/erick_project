@@ -272,6 +272,7 @@ export default function SignIn() {
               <div className="bg-gray-50 px-3 py-2 rounded">team@team.com</div>
               <div className="bg-gray-50 px-3 py-2 rounded">client@client.com</div>
               <div className="bg-gray-50 px-3 py-2 rounded">backer@backer.com</div>
+              <div className="bg-gray-50 px-3 py-2 rounded col-span-2">admin@studio22.com</div>
             </div>
           </div>
           )}
