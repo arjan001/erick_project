@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 import { useNavigate, Link } from 'react-router-dom';
 
+import { useAuth } from '@/lib/AuthContext';
+
 import ClientSidebar from '@/components/ClientSidebar';
 
 import { Plus, Briefcase, Users, MessageSquare, TrendingUp, Calendar, MapPin, Eye, Send, Edit2, X, Globe, Upload, Film } from 'lucide-react';
@@ -17,6 +19,8 @@ import { useToast } from '@/hooks/useToast.jsx';
 export default function ClientDashboard() {
 
   const navigate = useNavigate();
+
+  const { user: authUser, isAuthenticated, isLoadingAuth } = useAuth();
 
   const { success, error: toastError } = useToast();
 
@@ -92,19 +96,13 @@ export default function ClientDashboard() {
 
   useEffect(() => {
 
-    const storedUser = localStorage.getItem('studio22_user');
+    if (isLoadingAuth) return;
 
-    if (!storedUser) {
+    if (!isAuthenticated) { navigate('/SignIn'); return; }
 
-      window.location.href = '/signin';
+    if (!authUser) return;
 
-      return;
-
-    }
-
-    const parsedUser = JSON.parse(storedUser);
-
-    setUser(parsedUser);
+    setUser(authUser);
 
 
 
@@ -115,8 +113,8 @@ export default function ClientDashboard() {
         const { base44: b44 } = await import('@/api/base44Client');
 
         // Load real ProjectOwner profile
-        const owners = await b44.entities.ProjectOwner.filter({ email: parsedUser.email }, '-created_date', 1);
-        const owner = owners?.[0] || { email: parsedUser.email, full_name: parsedUser.full_name };
+        const owners = await b44.entities.ProjectOwner.filter({ email: authUser.email }, '-created_date', 1);
+        const owner = owners?.[0] || { email: authUser.email, full_name: authUser.full_name };
         setProjectOwner(owner);
         setProfileCompanyName(owner.company || '');
         setProfileIndustry('');
@@ -125,11 +123,11 @@ export default function ClientDashboard() {
         setProfileBio('');
 
         // Load real projects
-        const projectsData = await b44.entities.Project.filter({ project_owner_email: parsedUser.email }, '-created_date', 20);
+        const projectsData = await b44.entities.Project.filter({ project_owner_email: authUser.email }, '-created_date', 20);
         setProjects(projectsData || []);
 
         // Load real jobs
-        const jobsData = await b44.entities.Job.filter({ client_email: parsedUser.email }, '-created_date', 20);
+        const jobsData = await b44.entities.Job.filter({ client_email: authUser.email }, '-created_date', 20);
         setJobs(jobsData || []);
 
       } catch (err) {
@@ -148,7 +146,7 @@ export default function ClientDashboard() {
 
     fetchData();
 
-  }, [navigate]);
+  }, [isLoadingAuth, isAuthenticated, authUser, navigate]);
 
 
 
@@ -263,13 +261,16 @@ export default function ClientDashboard() {
 
     try {
 
+      const { base44: b44 } = await import('@/api/base44Client');
+      await b44.entities.Project.delete(projectId);
       setProjects(prev => prev.filter(p => p.id !== projectId));
+      success('Deleted', 'Project deleted');
 
     } catch (err) {
 
       console.error('Error deleting project:', err);
 
-      alert('Failed to delete project');
+      toastError('Error', 'Failed to delete project');
 
     }
 
@@ -279,31 +280,19 @@ export default function ClientDashboard() {
 
   const handleCreateProject = async () => {
 
-    if (!projectOwner) return;
+    if (!user) return;
 
     try {
 
-      const newProject = {
-
-        id: Date.now(),
-
+      const { base44: b44 } = await import('@/api/base44Client');
+      const newProject = await b44.entities.Project.create({
         project_owner_email: user.email,
-
-        title: projectForm.title,
-
-        description: projectForm.description,
-
+        project_owner_name: user.full_name,
+        notes: projectForm.description,
         project_type: projectForm.project_type,
-
-        budget: parseFloat(projectForm.budget) || 0,
-
-        location: projectForm.location,
-
+        location_city: projectForm.location,
         status: 'submitted',
-
-        created_date: new Date().toISOString()
-
-      };
+      });
 
       setProjects(prev => [...prev, newProject]);
 
@@ -331,15 +320,12 @@ export default function ClientDashboard() {
 
     try {
 
-      const updatedProject = {
-
-        ...editingProject,
-        title: projectForm.title,
-        description: projectForm.description,
+      const { base44: b44 } = await import('@/api/base44Client');
+      const updatedProject = await b44.entities.Project.update(editingProject.id, {
+        notes: projectForm.description,
         project_type: projectForm.project_type,
-        budget: parseFloat(projectForm.budget) || 0,
-        location: projectForm.location
-      };
+        location_city: projectForm.location,
+      });
 
       setProjects(prev => prev.map(p => p.id === editingProject.id ? updatedProject : p));
 
@@ -349,13 +335,13 @@ export default function ClientDashboard() {
 
       setProjectForm({ title: '', description: '', project_type: 'commercial', budget: '', location: '' });
 
-      alert('Project updated successfully');
+      success('Updated', 'Project updated successfully');
 
     } catch (err) {
 
       console.error('Error updating project:', err);
 
-      alert('Failed to update project');
+      toastError('Error', 'Failed to update project');
 
     }
 
@@ -369,13 +355,16 @@ export default function ClientDashboard() {
 
     try {
 
+      const { base44: b44 } = await import('@/api/base44Client');
+      await b44.entities.Job.delete(jobId);
       setJobs(prev => prev.filter(j => j.id !== jobId));
+      success('Deleted', 'Job deleted');
 
     } catch (err) {
 
       console.error('Error deleting job:', err);
 
-      alert('Failed to delete job');
+      toastError('Error', 'Failed to delete job');
 
     }
 
@@ -547,7 +536,13 @@ export default function ClientDashboard() {
 
 
 
-  if (!user || loading) return null;
+  if (isLoadingAuth || loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
+    </div>
+  );
+
+  if (!user) return null;
 
 
 

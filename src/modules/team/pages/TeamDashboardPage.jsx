@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 import { Link } from 'react-router-dom';
 
+import { useAuth } from '@/lib/AuthContext';
+
 import { createPageUrl } from '@/shared/utils/routing';
 
 import { 
@@ -25,6 +27,8 @@ import { Input } from '@/components/ui/input';
 
 
 export default function TeamDashboard() {
+
+  const { user: authUser, isAuthenticated, isLoadingAuth } = useAuth();
 
   const [team, setTeam] = useState(null);
 
@@ -96,29 +100,26 @@ export default function TeamDashboard() {
 
   useEffect(() => {
 
-    loadDashboardData();
+    if (!isLoadingAuth && isAuthenticated && authUser) {
+      loadDashboardData(authUser);
+    } else if (!isLoadingAuth && !isAuthenticated) {
+      window.location.href = '/SignIn';
+    }
 
-  }, []);
+  }, [isLoadingAuth, isAuthenticated, authUser]);
 
 
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = async (currentUser) => {
+
+    if (!currentUser) return;
 
     try {
-
-      const storedUser = localStorage.getItem('studio22_user');
-
-      if (!storedUser) {
-        window.location.href = '/SignIn';
-        return;
-      }
-
-      const user = JSON.parse(storedUser);
 
       const { base44: b44 } = await import('@/api/base44Client');
 
       // Load real team profile
-      const teams = await b44.entities.Team.filter({ contact_email: user.email }, '-created_date', 1);
+      const teams = await b44.entities.Team.filter({ contact_email: currentUser.email }, '-created_date', 1);
       const teamData = teams?.[0] || null;
       setTeam(teamData);
 

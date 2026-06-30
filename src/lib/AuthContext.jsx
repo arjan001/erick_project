@@ -4,15 +4,58 @@ import { supabase } from '@/lib/supabase';
 
 const AuthContext = createContext();
 
-function buildUserFromSupabase(session) {
-  if (!session?.user) return null;
-  const meta = session.user.user_metadata || {};
+function buildUserFromSupabase(supaUser) {
+  if (!supaUser) return null;
+  const meta = supaUser.user_metadata || {};
   return {
-    id: session.user.id,
-    email: session.user.email,
-    full_name: meta.full_name || meta.name || session.user.email?.split('@')[0] || 'User',
+    id: supaUser.id,
+    email: supaUser.email,
+    full_name: meta.full_name || meta.name || supaUser.email?.split('@')[0] || 'User',
     role: meta.role || 'artist',
   };
+}
+
+// Ensure an entity profile exists for new Supabase users
+async function ensureProfile(supaUser) {
+  if (!supaUser) return;
+  const role = supaUser.user_metadata?.role || 'artist';
+  const full_name = supaUser.user_metadata?.full_name || supaUser.email?.split('@')[0] || 'User';
+  try {
+    if (role === 'artist') {
+      const existing = await base44.entities.Artist.filter({ email: supaUser.email });
+      if (!existing || existing.length === 0) {
+        await base44.entities.Artist.create({
+          email: supaUser.email,
+          full_name,
+          role: 'director', // default specialty
+          status: 'pending',
+        });
+      }
+    } else if (role === 'team') {
+      const existing = await base44.entities.Team.filter({ contact_email: supaUser.email });
+      if (!existing || existing.length === 0) {
+        await base44.entities.Team.create({
+          team_name: full_name,
+          team_code: 'TM' + Date.now().toString().slice(-4),
+          contact_email: supaUser.email,
+          contact_name: full_name,
+          city: '',
+          country: '',
+          status: 'pending',
+        });
+      }
+    } else if (role === 'client' || role === 'project_owner') {
+      const existing = await base44.entities.ProjectOwner.filter({ email: supaUser.email });
+      if (!existing || existing.length === 0) {
+        await base44.entities.ProjectOwner.create({
+          email: supaUser.email,
+          full_name,
+        });
+      }
+    }
+  } catch (err) {
+    console.error('ensureProfile error:', err);
+  }
 }
 
 export const AuthProvider = ({ children }) => {
@@ -20,14 +63,22 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
+  const applySession = (supaUser) => {
+    const u = buildUserFromSupabase(supaUser);
+    if (u) {
+      setUser(u);
+      setIsAuthenticated(true);
+      localStorage.setItem('studio22_user', JSON.stringify(u));
+    }
+    return u;
+  };
+
   useEffect(() => {
     // Check Supabase session first
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        const u = buildUserFromSupabase(session);
-        setUser(u);
-        setIsAuthenticated(true);
-        localStorage.setItem('studio22_user', JSON.stringify(u));
+      if (session?.user) {
+        applySession(session.user);
+        ensureProfile(session.user);
       } else {
         // Fallback to localStorage demo session
         const stored = localStorage.getItem('studio22_user');
@@ -45,12 +96,16 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Listen for Supabase auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        const u = buildUserFromSupabase(session);
-        setUser(u);
-        setIsAuthenticated(true);
-        localStorage.setItem('studio22_user', JSON.stringify(u));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        applySession(session.user);
+        if (event === 'SIGNED_IN') {
+          ensureProfile(session.user);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setIsAuthenticated(false);
+        localStorage.removeItem('studio22_user');
       }
     });
 

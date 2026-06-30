@@ -12,11 +12,13 @@ import { useToast } from '@/hooks/useToast';
 
 import { base44 } from '@/api/base44Client';
 
+import { useAuth } from '@/lib/AuthContext';
+
 
 
 export default function ArtistDashboard() {
 
-  const [user, setUser] = useState(null);
+  const { user, isAuthenticated, isLoadingAuth } = useAuth();
 
   const [jobs, setJobs] = useState([]);
 
@@ -34,19 +36,13 @@ export default function ArtistDashboard() {
 
   useEffect(() => {
 
-    const storedUser = localStorage.getItem('studio22_user');
+    if (!isLoadingAuth && !isAuthenticated) {
 
-    if (!storedUser) {
-
-      window.location.href = '/SignIn';
-
-      return;
+      navigate('/SignIn');
 
     }
 
-    setUser(JSON.parse(storedUser));
-
-  }, []);
+  }, [isLoadingAuth, isAuthenticated, navigate]);
 
 
 
@@ -100,6 +96,12 @@ export default function ArtistDashboard() {
   }, [user]);
 
 
+
+  if (isLoadingAuth) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
+    </div>
+  );
 
   if (!user) return null;
 

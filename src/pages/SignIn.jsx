@@ -56,6 +56,9 @@ export default function SignIn() {
       const { data, error: supaError } = await supabase.auth.signInWithPassword({ email, password });
       if (supaError) throw supaError;
       const userRole = data.user?.user_metadata?.role || 'artist';
+      const fullName = data.user?.user_metadata?.full_name || data.user?.email?.split('@')[0] || 'User';
+      const userData = { id: data.user.id, email: data.user.email, full_name: fullName, role: userRole };
+      login(userData);
       navigate(ROLE_REDIRECTS[userRole] || '/');
     } catch (err) {
       setError(err.message || 'Invalid email or password');

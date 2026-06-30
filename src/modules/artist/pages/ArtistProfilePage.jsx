@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { base44 } from '@/api/base44Client';
 
+import { useAuth } from '@/lib/AuthContext';
+
 import ArtistSidebar from '@/components/ArtistSidebar';
 
 import AboutSection from '@/components/AboutSection';
@@ -19,6 +21,8 @@ import { useToast } from '@/hooks/useToast';
 
 
 export default function ArtistProfile() {
+
+  const { user: authUser, isAuthenticated, isLoadingAuth } = useAuth();
 
   const [user, setUser] = useState(null);
 
@@ -96,19 +100,19 @@ export default function ArtistProfile() {
 
   useEffect(() => {
 
-    const storedUser = localStorage.getItem('studio22_user');
+    if (isLoadingAuth) return;
 
-    if (!storedUser) {
+    if (!isAuthenticated) {
 
-      navigate('/signin');
+      navigate('/SignIn');
 
       return;
 
     }
 
-    setUser(JSON.parse(storedUser));
+    if (authUser) setUser(authUser);
 
-  }, [navigate]);
+  }, [authUser, isAuthenticated, isLoadingAuth, navigate]);
 
 
 
@@ -201,6 +205,12 @@ export default function ArtistProfile() {
   }, [user]);
 
 
+
+  if (isLoadingAuth) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
+    </div>
+  );
 
   if (!user) return null;
 
