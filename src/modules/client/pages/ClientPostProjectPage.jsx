@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Project } from '@/lib/supabaseEntities';
 import ClientSidebar from '@/components/ClientSidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,7 +52,7 @@ export default function ClientPostProject() {
 
       const notes = [projectForm.title ? `${projectForm.title}\n` : '', projectForm.description, projectForm.requirements ? `\nRequirements: ${projectForm.requirements}` : ''].join('');
 
-      await base44.entities.Project.create({
+      await Project.create({
         project_owner_email: user.email,
         project_owner_name: user.full_name,
         project_type: projectForm.project_type,

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { Job, Application } from '@/lib/supabaseEntities';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Euro, ChevronDown } from 'lucide-react';
@@ -46,15 +47,15 @@ export default function Jobs() {
     
     const fetchData = async () => {
       try {
-        const allJobs = await base44.entities.Job.list();
+        const allJobs = await Job.list();
         const openJobs = allJobs.filter(j => j.status === 'open');
         setJobs(openJobs);
         if (openJobs.length > 0) setSelectedJob(openJobs[0]);
 
-        const userApplications = await base44.entities.Application.filter({ artist_email: user.email });
+        const userApplications = await Application.filter({ artist_email: user.email });
         const enrichedApplications = await Promise.all(
           userApplications.map(async (app) => {
-            const job = await base44.entities.Job.get(app.job_id);
+            const job = await Job.get(app.job_id);
             return { ...app, job };
           })
         );
@@ -89,7 +90,7 @@ export default function Jobs() {
       // Count applications this month
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const monthlyApplications = await base44.entities.Application.filter({
+      const monthlyApplications = await Application.filter({
         artist_email: user.email,
         applied_at: { $gte: startOfMonth.toISOString() }
       });
@@ -113,7 +114,7 @@ export default function Jobs() {
     }
     
     try {
-      await base44.entities.Application.create({
+      await Application.create({
         job_id: selectedJob.id,
         artist_email: user.email,
         status: 'applied',
@@ -128,10 +129,10 @@ export default function Jobs() {
 
   const handleJobSubmit = async (jobData) => {
     try {
-      await base44.entities.Job.create(jobData);
+      await Job.create(jobData);
       setShowJobModal(false);
       // Refresh jobs list
-      const allJobs = await base44.entities.Job.list();
+      const allJobs = await Job.list();
       setJobs(allJobs.filter(j => j.status === 'open'));
       success('Job Posted', 'Your job has been posted successfully');
     } catch (err) {

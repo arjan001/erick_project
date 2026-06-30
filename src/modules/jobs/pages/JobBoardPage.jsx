@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { Project, Application } from '@/lib/supabaseEntities';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
@@ -33,14 +34,14 @@ export default function JobBoard() {
     const fetchProjects = async () => {
       try {
         // Fetch all verified projects from clients
-        const allProjects = await base44.entities.Project.filter({ status: 'verified' });
+        const allProjects = await Project.filter({ status: 'verified' });
         
         // Fetch applications to show engagement
-        const applications = await base44.entities.Application.list();
+        const applications = await Application.list();
         
         // Enrich projects with application counts
         const enrichedProjects = allProjects.map(project => {
-          const projectApplications = applications.filter(app => app.job_id === project.id);
+          const projectApplications = applications.filter(app => app.project_id === project.id);
           return {
             ...project,
             applicantCount: projectApplications.length,
@@ -72,7 +73,7 @@ export default function JobBoard() {
       const prompt = `Wide cinematic banner image for ${project.project_type?.replace(/_/g, ' ')} project by ${clientType}. Visual style: ${description}. Location atmosphere: ${location}. Focus on ${departments} aesthetic. Film production, creative, professional, vibrant colors, no text, no logos, cinematic composition`;
       
       const imageResult = await base44.integrations.Core.GenerateImage({ prompt });
-      await base44.entities.Project.update(project.id, { image_url: imageResult.url });
+      await Project.update(project.id, { image_url: imageResult.url });
       
       // Update local state
       setProjects(prev => prev.map(p => 
@@ -92,8 +93,8 @@ export default function JobBoard() {
     if (!selectedProject || !user) return;
     
     try {
-      await base44.entities.Application.create({
-        job_id: selectedProject.id,
+      await Application.create({
+        project_id: selectedProject.id,
         artist_email: user.email,
         status: 'applied',
         applied_at: new Date().toISOString()

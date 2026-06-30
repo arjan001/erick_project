@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Job, Project, Application } from '@/lib/supabaseEntities';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import { MapPin, Clock } from 'lucide-react';
 
@@ -24,13 +24,24 @@ export default function JobApplications() {
 
     const fetchApplications = async () => {
       try {
-        const userApplications = await base44.entities.Application.filter({ artist_email: user.email });
+        const userApplications = await Application.filter({ artist_email: user.email });
         
         const enrichedApplications = await Promise.all(
           userApplications.map(async (app) => {
             try {
-              const job = await base44.entities.Job.get(app.job_id);
-              return { ...app, job };
+              if (app.job_id) {
+                const job = await Job.get(app.job_id);
+                return { ...app, job };
+              }
+              const project = await Project.get(app.project_id);
+              return { ...app, job: project ? {
+                title: project.project_type?.replace(/_/g, ' ') + ' project',
+                location: [project.location_city, project.location_country].filter(Boolean).join(', '),
+                client_name: project.project_owner_name,
+                budget_min: 0,
+                budget_type: 'fixed',
+                roles_needed: []
+              } : null };
             } catch (err) {
               console.error('Error fetching job:', err);
               return { ...app, job: null };

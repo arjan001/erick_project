@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { Job, JobInvitation, Application } from '@/lib/supabaseEntities';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,7 @@ export default function JobInvitations() {
     const fetchInvitations = async () => {
       try {
         // Fetch invitations where the artist is invited
-        const allInvitations = await base44.entities.JobInvitation.filter({ 
+        const allInvitations = await JobInvitation.filter({ 
           artist_email: user.email,
           status: 'pending'
         });
@@ -36,7 +37,7 @@ export default function JobInvitations() {
         const enrichedInvitations = await Promise.all(
           allInvitations.map(async (invitation) => {
             try {
-              const job = await base44.entities.Job.get(invitation.job_id);
+              const job = await Job.get(invitation.job_id);
               const client = await base44.entities.ProjectOwner.filter({ email: invitation.client_email });
               return { 
                 ...invitation, 
@@ -63,12 +64,12 @@ export default function JobInvitations() {
 
   const handleAcceptInvitation = async (invitationId) => {
     try {
-      await base44.entities.JobInvitation.update(invitationId, { status: 'accepted' });
+      await JobInvitation.update(invitationId, { status: 'accepted' });
       
       // Create application automatically
       const invitation = invitations.find(inv => inv.id === invitationId);
       if (invitation) {
-        await base44.entities.Application.create({
+        await Application.create({
           job_id: invitation.job_id,
           artist_email: user.email,
           status: 'applied',
@@ -86,7 +87,7 @@ export default function JobInvitations() {
 
   const handleDeclineInvitation = async (invitationId) => {
     try {
-      await base44.entities.JobInvitation.update(invitationId, { status: 'declined' });
+      await JobInvitation.update(invitationId, { status: 'declined' });
       setInvitations(prev => prev.filter(inv => inv.id !== invitationId));
       success('Declined', 'Invitation declined');
     } catch (err) {

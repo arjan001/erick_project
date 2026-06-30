@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { Job } from '@/lib/supabaseEntities';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import { useToast } from '@/hooks/useToast';
 import { Search, MapPin, Euro, ChevronDown, Users, Building2, TrendingUp, X, MessageCircle, Briefcase, Network as NetworkIcon, Clock, Gift, UserCheck, UserX } from 'lucide-react';
@@ -87,7 +88,7 @@ export default function Network() {
           base44.entities.Team.filter({ status: 'approved' }),
           base44.entities.Backer.filter({ status: 'approved' }),
           base44.entities.Connection.list(),
-          base44.entities.Job.filter({ status: 'open', client_email: user.email })
+          Job.filter({ status: 'open', client_email: user.email })
         ]);
         
         setArtists(artistsData);

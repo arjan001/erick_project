@@ -1,20 +1,21 @@
 import { base44 } from '@/shared/api/base44.client';
+import { Project } from '@/lib/supabaseEntities';
 import { mapProjectFromEntity, mapArtistFromEntity, mapTeamFromEntity } from '@/shared/types/entities';
 
 export const adminApi = {
   projects: {
     list: async () => {
-      const rows = await base44.entities.Project.list();
+      const rows = await Project.list();
       return rows.map(mapProjectFromEntity);
     },
     approve: async (id) => {
-      return base44.entities.Project.update(id, { status: 'verified' });
+      return Project.update(id, { status: 'verified' });
     },
     reject: async (id) => {
-      return base44.entities.Project.update(id, { status: 'rejected' });
+      return Project.update(id, { status: 'rejected' });
     },
     enableBacking: async (id) => {
-      return base44.entities.Project.update(id, { verified_only: false });
+      return Project.update(id, { verified_only: false });
     }
   },
   artists: {

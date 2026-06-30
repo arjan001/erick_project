@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { Job, Project, Application } from '@/lib/supabaseEntities';
 import ClientSidebar from '@/components/ClientSidebar';
 import { Button } from '@/components/ui/button';
 import { FileText, User, Calendar, MapPin, Check, X, Crown, Star, Briefcase, Eye, Bookmark, BookmarkCheck, Play } from 'lucide-react';
@@ -30,18 +31,27 @@ export default function ClientApplications() {
 
     const fetchApplications = async () => {
       try {
+        const clientEmail = JSON.parse(storedUser).email;
+
         // Fetch jobs posted by this client
-        const jobs = await base44.entities.Job.filter({ client_email: JSON.parse(storedUser).email });
-        
-        // Fetch applications for these jobs
-        const allApplications = await Promise.all(
+        const jobs = await Job.filter({ client_email: clientEmail });
+        const jobApplicationsLists = await Promise.all(
           jobs.map(async (job) => {
-            const jobApplications = await base44.entities.Application.filter({ job_id: job.id });
+            const jobApplications = await Application.filter({ job_id: job.id });
             return jobApplications.map(app => ({ ...app, job_title: job.title }));
           })
         );
-        
-        const flatApplications = allApplications.flat();
+
+        // Fetch projects posted by this client
+        const projects = await Project.filter({ project_owner_email: clientEmail });
+        const projectApplicationsLists = await Promise.all(
+          projects.map(async (project) => {
+            const projectApplications = await Application.filter({ project_id: project.id });
+            return projectApplications.map(app => ({ ...app, job_title: project.project_type?.replace(/_/g, ' ') + ' project' }));
+          })
+        );
+
+        const flatApplications = [...jobApplicationsLists.flat(), ...projectApplicationsLists.flat()];
         setApplications(flatApplications);
 
         // Fetch subscriptions, profiles, and portfolios for all artists who applied
@@ -94,7 +104,7 @@ export default function ClientApplications() {
 
   const handleAccept = async (applicationId) => {
     try {
-      await base44.entities.Application.update(applicationId, { status: 'accepted' });
+      await Application.update(applicationId, { status: 'accepted' });
       setApplications(prev => prev.map(app => 
         app.id === applicationId ? { ...app, status: 'accepted' } : app
       ));
@@ -107,7 +117,7 @@ export default function ClientApplications() {
 
   const handleReject = async (applicationId) => {
     try {
-      await base44.entities.Application.update(applicationId, { status: 'rejected' });
+      await Application.update(applicationId, { status: 'rejected' });
       setApplications(prev => prev.map(app => 
         app.id === applicationId ? { ...app, status: 'rejected' } : app
       ));
@@ -120,7 +130,7 @@ export default function ClientApplications() {
 
   const handleShortlist = async (applicationId) => {
     try {
-      await base44.entities.Application.update(applicationId, { status: 'shortlisted' });
+      await Application.update(applicationId, { status: 'shortlisted' });
       setApplications(prev => prev.map(app => 
         app.id === applicationId ? { ...app, status: 'shortlisted' } : app
       ));
