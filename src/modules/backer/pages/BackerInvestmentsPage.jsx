@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, Filter, Download } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
+import { confirmDialog } from '@/lib/sweetAlert';
 
 export default function BackerInvestmentsPage() {
   const navigate = useNavigate();
@@ -65,7 +66,7 @@ export default function BackerInvestmentsPage() {
   const roiPercentage = totalInvested > 0 ? ((totalROI / totalInvested) * 100).toFixed(1) : 0;
 
   const handleWithdraw = async (investmentId) => {
-    if (!confirm('Are you sure you want to withdraw this investment?')) return;
+    if (!(await confirmDialog('Withdraw this investment?', 'This action cannot be undone'))) return;
     try {
       await base44.entities.BackedProject.update(investmentId, { status: 'withdrawn' });
       success('Withdrawal Initiated', 'Your withdrawal request has been submitted');

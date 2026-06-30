@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../api/admin.api';
 import { Search, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
+import { notifySuccess } from '@/lib/sweetAlert';
 
 const PAGE_SIZE = 10;
 
@@ -76,12 +77,14 @@ export default function TeamAdminPage() {
     await adminApi.teams.approve(id, notes);
     setTeams(prev => prev.map(t => t.id === id ? { ...t, status: 'approved', admin_notes: notes } : t));
     setSelected(null);
+    notifySuccess('Team Approved', 'The team application has been approved');
   };
 
   const handleReject = async (id, notes) => {
     await adminApi.teams.reject(id, notes);
     setTeams(prev => prev.map(t => t.id === id ? { ...t, status: 'rejected', admin_notes: notes } : t));
     setSelected(null);
+    notifySuccess('Team Rejected', 'The team application has been rejected');
   };
 
   return (

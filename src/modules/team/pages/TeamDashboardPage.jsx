@@ -25,6 +25,10 @@ import { Badge } from '@/components/ui/badge';
 
 import { Input } from '@/components/ui/input';
 
+import { notifyError, notifySuccess, confirmDialog } from '@/lib/sweetAlert';
+
+import { base44 } from '@/api/base44Client';
+
 
 
 export default function TeamDashboard() {
@@ -74,6 +78,8 @@ export default function TeamDashboard() {
     name: '',
 
     role: '',
+
+    email: '',
 
     skills: '',
 
@@ -177,7 +183,7 @@ export default function TeamDashboard() {
 
     } catch (error) {
 
-      alert('Error uploading logo');
+      notifyError('Upload Failed', 'Error uploading logo');
 
     } finally {
 
@@ -232,7 +238,7 @@ export default function TeamDashboard() {
 
       console.error('Error saving bio:', err);
 
-      alert('Failed to save bio');
+      notifyError('Save Failed', 'Failed to save bio');
 
     }
 
@@ -270,7 +276,7 @@ export default function TeamDashboard() {
 
       console.error('Error saving social links:', err);
 
-      alert('Failed to save social links');
+      notifyError('Save Failed', 'Failed to save social links');
 
     }
 
@@ -282,7 +288,7 @@ export default function TeamDashboard() {
 
     if (!team || !portfolioForm.title) {
 
-      alert('Please fill in the required fields');
+      notifyError('Validation Error', 'Please fill in the required fields');
 
       return;
 
@@ -331,7 +337,7 @@ export default function TeamDashboard() {
 
       console.error('Error adding portfolio clip:', err);
 
-      alert('Failed to add portfolio clip');
+      notifyError('Upload Failed', 'Failed to add portfolio clip');
 
     } finally {
 
@@ -345,7 +351,7 @@ export default function TeamDashboard() {
 
   const handleDeletePortfolioClip = async (clipId) => {
 
-    if (!confirm('Are you sure you want to delete this portfolio clip?')) return;
+    if (!(await confirmDialog('Delete portfolio clip?', 'This action cannot be undone'))) return;
 
     try {
 
@@ -357,7 +363,7 @@ export default function TeamDashboard() {
 
       console.error('Error deleting portfolio clip:', err);
 
-      alert('Failed to delete portfolio clip');
+      notifyError('Delete Failed', 'Failed to delete portfolio clip');
 
     }
 
@@ -440,7 +446,7 @@ export default function TeamDashboard() {
 
       console.error('Error updating portfolio clip:', err);
 
-      alert('Failed to update portfolio clip');
+      notifyError('Update Failed', 'Failed to update portfolio clip');
 
     }
 
@@ -452,7 +458,7 @@ export default function TeamDashboard() {
 
     if (!team || !memberForm.name || !memberForm.role) {
 
-      alert('Please fill in name and role');
+      notifyError('Validation Error', 'Please fill in name and role');
 
       return;
 
@@ -464,6 +470,7 @@ export default function TeamDashboard() {
         id: Date.now().toString(),
         name: memberForm.name,
         role: memberForm.role,
+        email: memberForm.email,
         skills: memberForm.skills.split(',').map(s => s.trim()).filter(s => s),
         avatar_url: memberForm.avatar_url
       };
@@ -472,15 +479,24 @@ export default function TeamDashboard() {
       await b44.entities.Team.update(team.id, { team_members: updatedMembers });
       setTeamMembers(updatedMembers);
 
+      if (memberForm.email) {
+        await b44.integrations.Core.SendEmail({
+          to: memberForm.email,
+          subject: `You've been added to ${team.team_name} on Studio22`,
+          body: `Hi ${memberForm.name},\n\n${team.contact_name || team.team_name} added you as "${memberForm.role}" to the team "${team.team_name}" on Studio22.\n\nSign in or create an account with this email to get started: ${window.location.origin}/SignIn\n\n— Studio22`
+        });
+        notifySuccess('Member Added', `Invite email sent to ${memberForm.email}`);
+      }
+
       setShowMemberModal(false);
 
-      setMemberForm({ name: '', role: '', skills: '', avatar_url: '' });
+      setMemberForm({ name: '', role: '', email: '', skills: '', avatar_url: '' });
 
     } catch (err) {
 
       console.error('Error adding team member:', err);
 
-      alert('Failed to add team member: ' + err.message);
+      notifyError('Add Failed', 'Failed to add team member: ' + err.message);
 
     }
 
@@ -490,7 +506,7 @@ export default function TeamDashboard() {
 
   const handleDeleteTeamMember = async (memberId) => {
 
-    if (!confirm('Are you sure you want to remove this team member?')) return;
+    if (!(await confirmDialog('Remove team member?', 'This action cannot be undone'))) return;
 
     try {
 
@@ -503,7 +519,7 @@ export default function TeamDashboard() {
 
       console.error('Error deleting team member:', err);
 
-      alert('Failed to delete team member');
+      notifyError('Delete Failed', 'Failed to delete team member');
 
     }
 
@@ -520,6 +536,8 @@ export default function TeamDashboard() {
       name: member.name,
 
       role: member.role,
+
+      email: member.email || '',
 
       skills: member.skills ? member.skills.join(', ') : '',
 
@@ -543,6 +561,7 @@ export default function TeamDashboard() {
         ...editingMember,
         name: memberForm.name,
         role: memberForm.role,
+        email: memberForm.email,
         skills: memberForm.skills.split(',').map(s => s.trim()).filter(s => s),
         avatar_url: memberForm.avatar_url
       };
@@ -557,13 +576,13 @@ export default function TeamDashboard() {
 
       setEditingMember(null);
 
-      setMemberForm({ name: '', role: '', skills: '', avatar_url: '' });
+      setMemberForm({ name: '', role: '', email: '', skills: '', avatar_url: '' });
 
     } catch (err) {
 
       console.error('Error updating team member:', err);
 
-      alert('Failed to update team member: ' + err.message);
+      notifyError('Update Failed', 'Failed to update team member: ' + err.message);
 
     }
 
@@ -1646,7 +1665,7 @@ export default function TeamDashboard() {
           editing={editingMember}
           form={memberForm}
           setForm={setMemberForm}
-          onClose={() => { setShowMemberModal(false); setEditingMember(null); setMemberForm({ name: '', role: '', skills: '', avatar_url: '' }); }}
+          onClose={() => { setShowMemberModal(false); setEditingMember(null); setMemberForm({ name: '', role: '', email: '', skills: '', avatar_url: '' }); }}
           onSave={editingMember ? handleUpdateTeamMember : handleAddTeamMember}
         />
 

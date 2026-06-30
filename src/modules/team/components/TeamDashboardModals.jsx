@@ -85,6 +85,12 @@ export function MemberModal({ show, editing, form, setForm, onClose, onSave }) {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400" />
           </div>
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input type="email" value={form.email || ''} onChange={(e) => setForm(p => ({ ...p, email: e.target.value }))}
+              placeholder="member@example.com (sends an email invite)"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400" />
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Skills</label>
             <input type="text" value={form.skills} onChange={(e) => setForm(p => ({ ...p, skills: e.target.value }))}
               placeholder="e.g., Lighting, Camera, Editing (comma separated)"

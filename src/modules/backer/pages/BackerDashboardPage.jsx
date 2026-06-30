@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
+import { confirmDialog } from '@/lib/sweetAlert';
 
 export default function BackerDashboard() {
   const navigate = useNavigate();
@@ -115,7 +116,7 @@ export default function BackerDashboard() {
   };
 
   const handleDeleteBackedProject = async (projectId) => {
-    if (!confirm('Are you sure you want to remove this backed project?')) return;
+    if (!(await confirmDialog('Remove this investment?', 'This action cannot be undone'))) return;
     try {
       const deletedProject = backedProjects.find(p => p.id === projectId);
       setBackedProjects(prev => prev.filter(p => p.id !== projectId));

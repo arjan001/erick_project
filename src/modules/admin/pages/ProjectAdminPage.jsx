@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../api/admin.api';
 import { Search, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
+import { notifySuccess } from '@/lib/sweetAlert';
 
 const PAGE_SIZE = 10;
 
@@ -67,12 +68,14 @@ export default function ProjectAdminPage() {
     await adminApi.projects.approve(id);
     setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'verified' } : p));
     setSelected(null);
+    notifySuccess('Project Verified', 'The project has been verified');
   };
 
   const handleReject = async (id) => {
     await adminApi.projects.reject(id);
     setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'rejected' } : p));
     setSelected(null);
+    notifySuccess('Project Rejected', 'The project has been rejected');
   };
 
   return (

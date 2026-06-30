@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../api/admin.api';
 import { Search, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
+import { notifySuccess } from '@/lib/sweetAlert';
 
 const PAGE_SIZE = 10;
 
@@ -75,12 +76,14 @@ export default function ArtistAdminPage() {
     await adminApi.artists.approve(id, notes);
     setArtists(prev => prev.map(a => a.id === id ? { ...a, status: 'approved', admin_notes: notes } : a));
     setSelected(null);
+    notifySuccess('Creator Approved', 'The creator application has been approved');
   };
 
   const handleReject = async (id, notes) => {
     await adminApi.artists.reject(id, notes);
     setArtists(prev => prev.map(a => a.id === id ? { ...a, status: 'rejected', admin_notes: notes } : a));
     setSelected(null);
+    notifySuccess('Creator Rejected', 'The creator application has been rejected');
   };
 
   return (

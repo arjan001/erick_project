@@ -41,18 +41,27 @@ export default function ClientPostProject() {
 
     setLoading(true);
     try {
+      const budget = parseFloat(projectForm.budget) || 0;
+      const budget_range =
+        budget <= 0 ? 'not_disclosed' :
+        budget < 10000 ? 'under_10k' :
+        budget < 25000 ? '10k_25k' :
+        budget < 50000 ? '25k_50k' :
+        budget < 100000 ? '50k_100k' :
+        budget < 250000 ? '100k_250k' : '250k_plus';
+
+      const notes = [projectForm.title ? `${projectForm.title}\n` : '', projectForm.description, projectForm.requirements ? `\nRequirements: ${projectForm.requirements}` : ''].join('');
+
       await base44.entities.Project.create({
         project_owner_email: user.email,
-        title: projectForm.title,
-        description: projectForm.description,
+        project_owner_name: user.full_name,
         project_type: projectForm.project_type,
-        budget: parseFloat(projectForm.budget) || 0,
-        location: projectForm.location,
-        timeline_start: projectForm.timeline_start,
-        timeline_end: projectForm.timeline_end,
-        requirements: projectForm.requirements,
-        status: 'submitted',
-        created_date: new Date().toISOString()
+        location_city: projectForm.location,
+        timeline_start: projectForm.timeline_start || undefined,
+        timeline_deadline: projectForm.timeline_end || undefined,
+        budget_range,
+        notes,
+        status: 'submitted'
       });
 
       success('Project Posted', 'Your project has been submitted successfully');
@@ -102,10 +111,11 @@ export default function ClientPostProject() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
               >
                 <option value="commercial">Commercial</option>
-                <option value="short">Short Film</option>
-                <option value="feature">Feature Film</option>
-                <option value="music">Music Video</option>
+                <option value="short_film">Short Film</option>
+                <option value="film">Feature Film</option>
+                <option value="music_video">Music Video</option>
                 <option value="documentary">Documentary</option>
+                <option value="other">Other</option>
               </select>
             </div>
 
