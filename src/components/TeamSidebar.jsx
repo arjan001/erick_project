@@ -25,8 +25,19 @@ export default function TeamSidebar() {
   const { setSidebarExpanded } = useSidebar();
 
   useEffect(() => {
-    const storedTeam = localStorage.getItem('studio22_team');
-    if (storedTeam) setTeam(JSON.parse(storedTeam));
+    const storedUser = localStorage.getItem('studio22_user');
+    if (!storedUser) return;
+    const user = JSON.parse(storedUser);
+    const fetchTeam = async () => {
+      try {
+        const { base44: b44 } = await import('@/api/base44Client');
+        const teams = await b44.entities.Team.filter({ contact_email: user.email }, '-created_date', 1);
+        if (teams?.[0]) setTeam(teams[0]);
+      } catch {
+        // team not found — leave null
+      }
+    };
+    fetchTeam();
   }, []);
 
   const toggle = () => {

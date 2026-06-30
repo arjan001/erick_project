@@ -31,13 +31,18 @@ export default function ArtistSidebar() {
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem('studio22_conversations');
-    if (saved) {
-      const conversations = JSON.parse(saved);
-      const totalUnread = conversations.reduce((sum, conv) => sum + (conv.unread || 0), 0);
-      setUnreadCount(totalUnread);
-    }
-  }, []);
+    if (!user) return;
+    const fetchUnread = async () => {
+      try {
+        const { base44: b44 } = await import('@/api/base44Client');
+        const msgs = await b44.entities.Message.filter({ recipient_email: user.email }, '-created_date', 50);
+        setUnreadCount((msgs || []).length);
+      } catch {
+        setUnreadCount(0);
+      }
+    };
+    fetchUnread();
+  }, [user]);
 
   const toggle = () => {
     const next = !expanded;

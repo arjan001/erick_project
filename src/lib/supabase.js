@@ -1,41 +1,24 @@
 /**
  * Supabase client — Studio22
- *
- * Uses VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY from .env.local
- * Install the client:  npm install @supabase/supabase-js
- *
- * Usage:
- *   import { supabase } from '@/lib/supabase';
- *   const { data, error } = await supabase.from('Artist').select('*');
+ * Credentials are read from VITE_ env vars (Vite exposes only VITE_* to the browser).
  */
+
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-let supabase = null;
-
-if (supabaseUrl && supabaseAnonKey &&
-    !supabaseUrl.includes('your-project-ref')) {
-  // Dynamic import so the app doesn't crash if @supabase/supabase-js isn't installed yet
-  const { createClient } = await import('@supabase/supabase-js').catch(() => ({ createClient: null }));
-  if (createClient) {
-    supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    });
-  }
-}
-
-export { supabase };
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+});
 
 /**
- * Check if Supabase is configured
+ * Service-role client — use ONLY in backend functions (Deno), never in the browser.
+ * The service role key is stored as a Base44 secret: VITE_SERVICE_ROLE_SECRET.
+ * Reading it here is safe only if this file is imported server-side.
  */
-export const isSupabaseConfigured = () =>
-  !!(supabaseUrl &&
-     supabaseAnonKey &&
-     !supabaseUrl.includes('your-project-ref') &&
-     supabase);
+export const isSupabaseConfigured = () => !!(supabaseUrl && supabaseAnonKey);
