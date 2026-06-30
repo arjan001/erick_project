@@ -1,30 +1,7 @@
-// Mock Base44 client to prevent crashes
-// This is a placeholder since we're not using Base44 auth
+import { createClient } from '@base44/sdk';
 
-export const base44 = {
-  auth: {
-    me: async () => {
-      const storedUser = localStorage.getItem('studio22_user');
-      return storedUser ? JSON.parse(storedUser) : null;
-    },
-    logout: () => {
-      localStorage.removeItem('studio22_user');
-    },
-    redirectToLogin: (redirectUrl) => {
-      window.location.href = '/signin';
-    }
-  },
-  entities: {
-    // Mock entity methods - return empty arrays or handle gracefully
-    filter: async () => [],
-    create: async (data) => ({ ...data, id: `mock_${Date.now()}` }),
-    update: async (id, data) => ({ ...data, id }),
-    delete: async (id) => true,
-    get: async (id) => null
-  },
-  appLogs: {
-    logUserInApp: async () => {
-      // Silently ignore - no logging needed
-    }
-  }
-};
+export const base44 = createClient({
+  appId: import.meta.env.VITE_BASE44_APP_ID,
+  publishableKey: import.meta.env.VITE_PUBLISHABLE_KEY,
+  baseUrl: import.meta.env.VITE_BASE44_APP_BASE_URL,
+});
