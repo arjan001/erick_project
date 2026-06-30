@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
 import { Button } from '@/shared/components/ui/button';
 import { ChevronDown, X, Instagram, Linkedin, Play } from 'lucide-react';
@@ -9,7 +9,9 @@ import UnifiedSearch from '@/components/UnifiedSearch';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import ClientSidebar from '@/components/ClientSidebar';
 
-export default function MainLayout({ children, currentPageName }) {
+export default function MainLayout({ children, currentPageName: currentPageNameProp }) {
+  const location = useLocation();
+  const currentPageName = currentPageNameProp || location.pathname.replace('/', '') || 'Home';
   const [exploreOpen, setExploreOpen] = useState(false);
   const [academyOpen, setAcademyOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('commercial');
@@ -246,7 +248,7 @@ export default function MainLayout({ children, currentPageName }) {
 
       {/* Main Content */}
       <main className={shouldHideMenus ? 'pt-0 pb-0' : 'pt-[100px] pb-0'}>
-        {React.cloneElement(children, { editMode })}
+        {children}
       </main>
 
         {/* Bottom Floating Navigation */}

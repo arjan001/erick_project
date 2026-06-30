@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import AdminSidebar from '@/components/AdminSidebar';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { Package, Search, Plus, Edit, Trash2, DollarSign, Box, Eye, ToggleLeft, ToggleRight, Image as ImageIcon, Tag, Stock, MoreVertical } from 'lucide-react';
+import { Package, Search, Plus, Edit, Trash2, DollarSign, Box, Eye, ToggleLeft, ToggleRight, Image as ImageIcon, Tag, MoreVertical, ShoppingCart } from 'lucide-react';
 
 export default function AdminProductsPage() {
   const navigate = useNavigate();
@@ -186,7 +186,7 @@ export default function AdminProductsPage() {
                   <div className="text-sm text-gray-500">Total Sold</div>
                   <div className="text-2xl font-bold text-gray-900">{products.reduce((sum, p) => sum + p.sold, 0)}</div>
                 </div>
-                <Stock className="w-8 h-8 text-green-600" />
+                <ShoppingCart className="w-8 h-8 text-green-600" />
               </div>
             </div>
             <div className="bg-white rounded-lg border border-gray-200 p-6">

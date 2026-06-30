@@ -9,8 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
 
+
 export default function BackerProfile() {
   const navigate = useNavigate();
+  const { success, error: toastError } = useToast();
   const [user, setUser] = useState(null);
   const [backer, setBacker] = useState(null);
   const [loading, setLoading] = useState(true);
