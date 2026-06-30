@@ -109,62 +109,39 @@ export default function TeamDashboard() {
       const storedUser = localStorage.getItem('studio22_user');
 
       if (!storedUser) {
-        window.location.href = '/signin';
+        window.location.href = '/SignIn';
         return;
       }
 
       const user = JSON.parse(storedUser);
 
-      // Mock team data
-      const mockTeam = {
-        id: 'team_1',
-        team_name: 'Creative Studios',
-        contact_email: user.email,
-        bio: 'Award-winning production team specializing in commercials and music videos.',
-        website: 'https://creativestudios.com',
-        instagram: '@creativestudios',
-        linkedin: 'creative-studios',
-        specialties: 'Commercial, Music Video, Documentary',
-        team_logo_url: null
-      };
-      setTeam(mockTeam);
-      setProfileBio(mockTeam.bio || '');
-      setProfileWebsite(mockTeam.website || '');
-      setProfileInstagram(mockTeam.instagram || '');
-      setProfileLinkedin(mockTeam.linkedin || '');
-      setProfileSpecialties(mockTeam.specialties || '');
+      const { base44: b44 } = await import('@/api/base44Client');
 
+      // Load real team profile
+      const teams = await b44.entities.Team.filter({ contact_email: user.email }, '-created_date', 1);
+      const teamData = teams?.[0] || null;
+      setTeam(teamData);
 
+      if (teamData) {
+        setProfileBio('');
+        setProfileWebsite(teamData.website || '');
+        setProfileInstagram('');
+        setProfileLinkedin('');
+        setProfileSpecialties(Array.isArray(teamData.specialties) ? teamData.specialties.join(', ') : '');
 
-      // Mock portfolio clips
-      const mockClips = [
-        { id: 1, title: 'Nike Commercial', project_type: 'commercial', description: 'High-energy sports commercial', video_url: null, thumbnail_url: null },
-        { id: 2, title: 'Music Video - Rising Star', project_type: 'music_video', description: 'Viral music video with 10M views', video_url: null, thumbnail_url: null },
-        { id: 3, title: 'Documentary Short', project_type: 'documentary', description: 'Award-winning short film', video_url: null, thumbnail_url: null }
-      ];
-      setPortfolioClips(mockClips);
+        // Load real portfolio clips
+        const clips = await b44.entities.PortfolioClip.filter({ uploaded_by_id: teamData.id, uploaded_by_type: 'team' }, '-created_date', 20);
+        setPortfolioClips(clips || []);
 
+        // Load real team members from the team's team_members array (embedded)
+        setTeamMembers(teamData.team_members || []);
 
+        // Load real messages
+        const msgs = await b44.entities.Message.filter({ recipient_email: teamData.contact_email }, '-created_date', 5);
+        setMessages(msgs || []);
+      }
 
-      // Mock team members
-      const mockMembers = [
-        { id: 1, name: 'John Smith', role: 'Director', skills: 'Directing, Cinematography', avatar_url: null },
-        { id: 2, name: 'Jane Doe', role: 'Producer', skills: 'Production, Budgeting', avatar_url: null },
-        { id: 3, name: 'Mike Johnson', role: 'Editor', skills: 'Editing, VFX', avatar_url: null }
-      ];
-      setTeamMembers(mockMembers);
-
-
-
-        // Load applications (mock for now)
-
-        setApplications([]);
-
-        
-
-        // Load messages (mock for now)
-
-        setMessages([]);
+      setApplications([]);
 
     } catch (error) {
 
@@ -214,16 +191,22 @@ export default function TeamDashboard() {
 
     try {
 
-      // Mock save - just update local state
-      setEditingProfile(false);
+      if (team?.id) {
+        const { base44: b44 } = await import('@/api/base44Client');
+        await b44.entities.Team.update(team.id, {
+          team_name: team.team_name,
+          contact_name: team.contact_name,
+          contact_email: team.contact_email,
+          phone: team.phone,
+          availability: team.availability,
+        });
+      }
 
-      alert('Team profile updated successfully!');
+      setEditingProfile(false);
 
     } catch (error) {
 
       console.error('Update error:', error);
-
-      alert('Error updating profile: ' + (error.message || 'Unknown error'));
 
     }
 

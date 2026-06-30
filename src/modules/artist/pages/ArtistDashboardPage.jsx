@@ -4,11 +4,13 @@ import { useNavigate, Link } from 'react-router-dom';
 
 import { createPageUrl } from '@/shared/utils/routing';
 
-import { Briefcase, MessageCircle, Lightbulb, ArrowRight, Calendar, DollarSign, MapPin, Users, Bell, Settings, TrendingUp, Crown, Zap } from 'lucide-react';
+import { Briefcase, MessageCircle, Lightbulb, ArrowRight, Calendar, MapPin, Bell, Settings, TrendingUp, Crown, Zap } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
 import { useToast } from '@/hooks/useToast';
+
+import { base44 } from '@/api/base44Client';
 
 
 
@@ -24,10 +26,6 @@ export default function ArtistDashboard() {
 
   const [invitations, setInvitations] = useState([]);
 
-  const [subscription, setSubscription] = useState(null);
-
-  const [subscriptionPackage, setSubscriptionPackage] = useState(null);
-
   const navigate = useNavigate();
 
   const { success, error } = useToast();
@@ -40,7 +38,7 @@ export default function ArtistDashboard() {
 
     if (!storedUser) {
 
-      window.location.href = '/signin';
+      window.location.href = '/SignIn';
 
       return;
 
@@ -62,47 +60,30 @@ export default function ArtistDashboard() {
 
       try {
 
-        // Mock data for jobs
-        const mockJobs = [
-          { id: 1, title: 'Video Editor for Music Video', budget: '$500-800', deadline: '2 days', location: 'Remote' },
-          { id: 2, title: 'Graphic Designer for Album Art', budget: '$300-500', deadline: '5 days', location: 'Remote' },
-          { id: 3, title: 'Sound Engineer for Podcast', budget: '$200-400', deadline: '1 week', location: 'Remote' },
-          { id: 4, title: '3D Animator for Short Film', budget: '$1000-1500', deadline: '2 weeks', location: 'Remote' }
-        ];
-        setJobs(mockJobs);
+        const [jobsData, appsData, msgsData] = await Promise.all([
+          base44.entities.Job.filter({ status: 'open' }, '-created_date', 5),
+          base44.entities.Application.filter({ artist_email: user.email }, '-created_date', 10),
+          base44.entities.Message.filter({ recipient_email: user.email }, '-created_date', 5),
+        ]);
 
+        setJobs(jobsData || []);
+        setApplications(appsData || []);
 
+        // Map messages to display format
+        const formatted = (msgsData || []).map(m => ({
+          id: m.id,
+          name: m.sender_email,
+          message: m.text || '',
+          time: new Date(m.created_date).toLocaleDateString()
+        }));
+        setMessages(formatted);
 
-        // Mock data for applications
-        const mockApplications = [
-          { id: 1, job_title: 'Video Editor for Music Video', status: 'pending', applied_date: '2024-01-15' },
-          { id: 2, job_title: 'Graphic Designer for Album Art', status: 'accepted', applied_date: '2024-01-14' }
-        ];
-        setApplications(mockApplications);
-
-
-
-        // Mock data for invitations
-        const mockInvitations = [
-          { id: 1, from: 'Studio Productions', role: 'Video Editor', project: 'Music Video Series' },
-          { id: 2, title: 'Freelance Project', from: 'Creative Agency', role: 'Motion Designer' }
-        ];
-        setInvitations(mockInvitations);
-
-
-
-        // Mock data for messages
-        const mockMessages = [
-          { id: 1, name: 'Studio Productions', message: 'Your application has been reviewed...', time: '2 hours ago' },
-          { id: 2, name: 'Creative Agency', message: 'We have a new project for you...', time: '1 day ago' },
-          { id: 3, name: 'Music Label', message: 'Interested in collaboration...', time: '2 days ago' }
-        ];
-        setMessages(mockMessages);
-
-
-
-        // Mock subscription data
-        setSubscriptionPackage({ name: 'Pro Plan' });
+        // Invitations = notifications of type job_invitation
+        const notifs = await base44.entities.Notification.filter({
+          recipient_email: user.email,
+          type: 'job_invitation'
+        }, '-created_date', 10);
+        setInvitations(notifs || []);
 
       } catch (err) {
 
@@ -133,6 +114,9 @@ export default function ArtistDashboard() {
     { label: 'Active Messages', value: messages.length, icon: MessageCircle, color: 'bg-green-50' }
 
   ];
+
+  const subscription = null;
+  const subscriptionPackage = null;
 
 
 

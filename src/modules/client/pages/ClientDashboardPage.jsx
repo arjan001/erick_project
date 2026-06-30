@@ -112,42 +112,25 @@ export default function ClientDashboard() {
 
       try {
 
-        // Mock ProjectOwner
-        const mockProjectOwner = {
-          id: 'owner_1',
-          email: parsedUser.email,
-          full_name: parsedUser.full_name,
-          company_name: 'Creative Productions',
-          industry: 'Film & Entertainment',
-          company_size: '11-50',
-          website: 'https://creativeproductions.com',
-          bio: 'Award-winning production company specializing in commercials and feature films.',
-          logo_url: null
-        };
-        setProjectOwner(mockProjectOwner);
-        setProfileCompanyName(mockProjectOwner.company_name || '');
-        setProfileIndustry(mockProjectOwner.industry || '');
-        setProfileCompanySize(mockProjectOwner.company_size || '');
-        setProfileWebsite(mockProjectOwner.website || '');
-        setProfileBio(mockProjectOwner.bio || '');
+        const { base44: b44 } = await import('@/api/base44Client');
 
+        // Load real ProjectOwner profile
+        const owners = await b44.entities.ProjectOwner.filter({ email: parsedUser.email }, '-created_date', 1);
+        const owner = owners?.[0] || { email: parsedUser.email, full_name: parsedUser.full_name };
+        setProjectOwner(owner);
+        setProfileCompanyName(owner.company || '');
+        setProfileIndustry('');
+        setProfileCompanySize('');
+        setProfileWebsite(owner.website || '');
+        setProfileBio('');
 
+        // Load real projects
+        const projectsData = await b44.entities.Project.filter({ project_owner_email: parsedUser.email }, '-created_date', 20);
+        setProjects(projectsData || []);
 
-        // Mock projects
-        const mockProjects = [
-          { id: 1, title: 'Feature Film - The Journey', description: 'Independent feature film', project_type: 'feature', budget: '$500,000', location: 'Los Angeles', status: 'in_progress' },
-          { id: 2, title: 'Commercial Campaign', description: 'National TV commercial series', project_type: 'commercial', budget: '$150,000', location: 'New York', status: 'planning' }
-        ];
-        setProjects(mockProjects);
-
-
-
-        // Mock jobs
-        const mockJobs = [
-          { id: 1, title: 'Video Editor', description: 'Edit commercial footage', job_type: 'editor', location: 'Remote', budget: '$50-80/hour', status: 'open' },
-          { id: 2, title: 'Cinematographer', description: 'Shoot documentary scenes', job_type: 'cinematographer', location: 'Los Angeles', budget: '$500/day', status: 'open' }
-        ];
-        setJobs(mockJobs);
+        // Load real jobs
+        const jobsData = await b44.entities.Job.filter({ client_email: parsedUser.email }, '-created_date', 20);
+        setJobs(jobsData || []);
 
       } catch (err) {
 
