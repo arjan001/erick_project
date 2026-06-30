@@ -17,7 +17,7 @@ export function GuestGuard({ children }) {
         client: '/clientdashboard',
         project_owner: '/clientdashboard',
         backer: '/backerdashboard',
-        admin: '/admin'
+        admin: '/Admin'
       };
       const targetRoute = redirects[user.role] || '/';
       navigate(targetRoute, { replace: true });

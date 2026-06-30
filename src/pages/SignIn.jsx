@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { AlertCircle } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -37,6 +38,7 @@ export default function SignIn() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const demoAccounts = {
     'artist@artist.com': { role: 'artist', name: 'Alex Chen' },
@@ -53,22 +55,17 @@ export default function SignIn() {
 
     try {
       if (demoAccounts[email] && password === email) {
-        const user = demoAccounts[email];
-        // Clear any previous session first
-        localStorage.removeItem('studio22_user');
-        localStorage.removeItem('studio22_team');
-        localStorage.setItem('studio22_user', JSON.stringify({
-          email,
-          full_name: user.name,
-          role: user.role
-        }));
-        sessionStorage.setItem('studio22_just_logged_in', 'true');
+        const account = demoAccounts[email];
+        const userData = { email, full_name: account.name, role: account.role };
+
+        // Use AuthContext login to properly set state
+        login(userData);
 
         // Set team session for team users
-        if (user.role === 'team') {
+        if (account.role === 'team') {
           localStorage.setItem('studio22_team', JSON.stringify({
             id: 'team_001',
-            team_name: user.name,
+            team_name: account.name,
             contact_email: email,
             role: 'team_admin'
           }));
@@ -82,7 +79,7 @@ export default function SignIn() {
           admin: '/Admin'
         };
 
-        window.location.href = redirects[user.role] || '/';
+        navigate(redirects[account.role] || '/');
       } else {
         setError('Invalid email or password');
       }
