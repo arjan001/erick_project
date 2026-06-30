@@ -138,26 +138,6 @@ CREATE INDEX idx_backers_user_id ON backers(user_id);
 CREATE INDEX idx_backers_investment_count ON backers(investment_count);
 
 -- ============================================
--- BACKED PROJECTS
--- ============================================
-
-CREATE TABLE backed_projects (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    backer_id UUID NOT NULL REFERENCES backers(id) ON DELETE CASCADE,
-    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-    investment_amount DECIMAL(15, 2) NOT NULL,
-    investment_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'completed', 'withdrawn')),
-    notes TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_backed_projects_backer_id ON backed_projects(backer_id);
-CREATE INDEX idx_backed_projects_project_id ON backed_projects(project_id);
-CREATE INDEX idx_backed_projects_status ON backed_projects(status);
-
--- ============================================
 -- PROJECTS
 -- ============================================
 
@@ -180,6 +160,26 @@ CREATE TABLE projects (
 CREATE INDEX idx_projects_client_id ON projects(client_id);
 CREATE INDEX idx_projects_status ON projects(status);
 CREATE INDEX idx_projects_type ON projects(project_type);
+
+-- ============================================
+-- BACKED PROJECTS
+-- ============================================
+
+CREATE TABLE backed_projects (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    backer_id UUID NOT NULL REFERENCES backers(id) ON DELETE CASCADE,
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    investment_amount DECIMAL(15, 2) NOT NULL,
+    investment_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'completed', 'withdrawn')),
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_backed_projects_backer_id ON backed_projects(backer_id);
+CREATE INDEX idx_backed_projects_project_id ON backed_projects(project_id);
+CREATE INDEX idx_backed_projects_status ON backed_projects(status);
 
 -- ============================================
 -- JOBS
