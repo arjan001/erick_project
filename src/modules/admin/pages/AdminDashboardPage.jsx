@@ -23,12 +23,6 @@ export default function AdminDashboardPage() {
         const currentUser = { user: storedUser ? JSON.parse(storedUser) : null };
         setUser(currentUser?.user);
 
-        // Check if admin
-        if (currentUser?.user?.role !== 'admin') {
-          window.location.href = '/';
-          return;
-        }
-
         // Fetch data
         const [projectsList, artistsList, teamsList, tickerList] = await Promise.all([
           adminApi.projects.list(),
@@ -42,8 +36,7 @@ export default function AdminDashboardPage() {
         setTeams(teamsList);
         setTickerEntries(tickerList.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)));
       } catch (error) {
-        console.error('Admin access denied:', error);
-        window.location.href = '/';
+        console.error('Error loading admin data:', error);
       } finally {
         setLoading(false);
       }
@@ -83,14 +76,6 @@ export default function AdminDashboardPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <p className="text-gray-500">Loading admin panel...</p>
-      </div>
-    );
-  }
-
-  if (!user || user.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-red-600 font-semibold">Access denied. Admin only.</p>
       </div>
     );
   }

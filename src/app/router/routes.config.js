@@ -214,6 +214,12 @@ const adminRoutes = [
     component: () => import('@/modules/admin/pages/AdminAuditLogsPage'),
     layout: AdminLayout,
     guard: AdminGuard
+  },
+  {
+    path: '/Admin/Subscriptions',
+    component: () => import('@/modules/admin/pages/AdminSubscriptionsPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
   }
 ];
 
@@ -288,6 +294,18 @@ const artistRoutes = [
   {
     path: '/ActivityFeed',
     component: () => import('@/modules/network/pages/ActivityFeedPage'),
+    layout: DashboardLayout,
+    guard: ArtistGuard
+  },
+  {
+    path: '/ArtistSubscriptionCheckout',
+    component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
+    layout: DashboardLayout,
+    guard: ArtistGuard
+  },
+  {
+    path: '/Settings',
+    component: () => import('@/pages/Settings'),
     layout: DashboardLayout,
     guard: ArtistGuard
   }
@@ -378,14 +396,7 @@ const backerRoutes = [
 ];
 
 // Protected routes (auth required, no specific role)
-const protectedRoutes = [
-  {
-    path: '/Settings',
-    component: () => import('@/pages/Settings'),
-    layout: MainLayout,
-    guard: AuthGuard
-  }
-];
+const protectedRoutes = [];
 
 // Combine all routes
 export const routes = [

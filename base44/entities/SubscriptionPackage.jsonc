@@ -1,0 +1,61 @@
+{
+  "name": "SubscriptionPackage",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Plan name e.g. Basic, Pro, Elite"
+    },
+    "description": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number",
+      "description": "Price in USD"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "billing_cycle": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "yearly"
+      ],
+      "default": "monthly"
+    },
+    "job_applications_limit": {
+      "type": "number",
+      "description": "-1 = unlimited"
+    },
+    "message_limit": {
+      "type": "number",
+      "description": "-1 = unlimited"
+    },
+    "featured_listing": {
+      "type": "boolean",
+      "default": false
+    },
+    "priority_support": {
+      "type": "boolean",
+      "default": false
+    },
+    "analytics_access": {
+      "type": "boolean",
+      "default": false
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "display_order": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "price"
+  ]
+}

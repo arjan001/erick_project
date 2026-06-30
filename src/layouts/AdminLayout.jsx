@@ -48,6 +48,7 @@ const adminSections = [
     category: 'Finance',
     items: [
       { path: '/Admin/Finance', label: 'Finance Dashboard', icon: DollarSign },
+      { path: '/Admin/Subscriptions', label: 'Subscription Plans', icon: CreditCard },
     ]
   }
 ];

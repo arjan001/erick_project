@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import ArtistSidebar from '@/components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft } from 'lucide-react';
@@ -65,9 +64,12 @@ export default function ArtistSubscriptionCheckoutPage() {
         package_id: selectedPackage.id,
         package_name: selectedPackage.name,
         amount: selectedPackage.price,
-        currency: selectedPackage.currency,
+        currency: selectedPackage.currency || 'USD',
         status: 'completed',
         payment_method: 'card',
+        card_last4: cardForm.cardNumber.replace(/\s/g, '').slice(-4),
+        card_expiry: cardForm.expiryDate,
+        cardholder_name: cardForm.cardholderName,
         created_at: new Date().toISOString()
       });
 
@@ -102,11 +104,8 @@ export default function ArtistSubscriptionCheckoutPage() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-white">
-        <ArtistSidebar />
-        <main className="w-full h-full flex items-center justify-center pl-20">
-          <div className="text-gray-600">Loading...</div>
-        </main>
+      <div className="h-screen bg-white flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
       </div>
     );
   }
@@ -119,8 +118,7 @@ export default function ArtistSubscriptionCheckoutPage() {
 
   return (
     <div className="h-screen bg-white">
-      <ArtistSidebar />
-      <main className="w-full h-full flex flex-col overflow-y-auto bg-white pl-20">
+      <main className="w-full h-full flex flex-col overflow-y-auto bg-white">
         <div className="p-6 max-w-6xl mx-auto">
           <Button
             variant="ghost"

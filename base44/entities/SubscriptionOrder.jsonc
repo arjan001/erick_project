@@ -1,0 +1,61 @@
+{
+  "name": "SubscriptionOrder",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "package_id": {
+      "type": "string"
+    },
+    "package_name": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "failed",
+        "pending",
+        "refunded"
+      ],
+      "default": "pending"
+    },
+    "payment_method": {
+      "type": "string",
+      "default": "card"
+    },
+    "card_last4": {
+      "type": "string",
+      "description": "Last 4 digits of test card (QA only)"
+    },
+    "card_expiry": {
+      "type": "string",
+      "description": "Card expiry MM/YY (QA only)"
+    },
+    "cardholder_name": {
+      "type": "string",
+      "description": "Name on card (QA only)"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_email",
+    "package_id",
+    "amount"
+  ]
+}
