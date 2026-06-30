@@ -272,11 +272,14 @@ export default function SignIn() {
             <div className="mt-6 pt-6 border-t border-gray-200">
             <p className="text-xs font-medium text-gray-500 mb-3">Demo Accounts (password = email):</p>
             <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-              <div className="bg-gray-50 px-3 py-2 rounded">artist@artist.com</div>
-              <div className="bg-gray-50 px-3 py-2 rounded">team@team.com</div>
-              <div className="bg-gray-50 px-3 py-2 rounded">client@client.com</div>
-              <div className="bg-gray-50 px-3 py-2 rounded">backer@backer.com</div>
-              <div className="bg-gray-50 px-3 py-2 rounded col-span-2">admin@studio22.com</div>
+              <div className="bg-gray-50 px-3 py-2 rounded cursor-pointer hover:bg-gray-100" onClick={() => { setEmail('artist@artist.com'); setPassword('artist@artist.com'); }}>artist@artist.com</div>
+              <div className="bg-gray-50 px-3 py-2 rounded cursor-pointer hover:bg-gray-100" onClick={() => { setEmail('team@team.com'); setPassword('team@team.com'); }}>team@team.com</div>
+              <div className="bg-gray-50 px-3 py-2 rounded cursor-pointer hover:bg-gray-100" onClick={() => { setEmail('client@client.com'); setPassword('client@client.com'); }}>client@client.com</div>
+              <div className="bg-gray-50 px-3 py-2 rounded cursor-pointer hover:bg-gray-100" onClick={() => { setEmail('backer@backer.com'); setPassword('backer@backer.com'); }}>backer@backer.com</div>
+              <div className="bg-black text-white px-3 py-2 rounded col-span-2 cursor-pointer hover:bg-gray-800 flex items-center justify-between" onClick={() => { setEmail('admin@studio22.com'); setPassword('admin@studio22.com'); }}>
+                <span>admin@studio22.com</span>
+                <span className="text-xs bg-white/20 px-2 py-0.5 rounded">Admin</span>
+              </div>
             </div>
           </div>
           )}
