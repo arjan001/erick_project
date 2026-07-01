@@ -226,3 +226,42 @@ CREATE INDEX IF NOT EXISTS idx_subscription_orders_status ON subscription_orders
 ALTER TABLE subscription_orders ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public full access" ON subscription_orders;
 CREATE POLICY "Public full access" ON subscription_orders FOR ALL USING (true) WITH CHECK (true);
+
+-- ============================================
+-- PORTFOLIO CLIPS (artist/team work uploads)
+-- ============================================
+-- Matches the app's PortfolioClip entity exactly (uploaded_by_type/uploaded_by_id,
+-- not the old artist_id/team_id columns from DATABASE_SCHEMA.sql). Safe to re-run:
+-- creates the table if missing, and adds any missing columns to an existing table
+-- (this fixes "Could not find the 'role' column of 'portfolio_clips'" errors).
+CREATE TABLE IF NOT EXISTS portfolio_clips (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS uploaded_by_type VARCHAR(20);
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS uploaded_by_id UUID;
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS original_video_url TEXT;
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS trimmed_video_url TEXT;
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS trim_start_time NUMERIC;
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS duration NUMERIC;
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS title VARCHAR(255);
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS role VARCHAR(255);
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS project_type VARCHAR(50);
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS visual_style_tags TEXT[] DEFAULT ARRAY[]::TEXT[];
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS no_logos_agreement BOOLEAN DEFAULT FALSE;
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS portfolio_usage_agreement BOOLEAN DEFAULT FALSE;
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pending';
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS approved_for_visual_direction BOOLEAN DEFAULT FALSE;
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS view_count NUMERIC DEFAULT 0;
+ALTER TABLE portfolio_clips ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+
+CREATE INDEX IF NOT EXISTS idx_portfolio_clips_uploaded_by_id ON portfolio_clips(uploaded_by_id);
+CREATE INDEX IF NOT EXISTS idx_portfolio_clips_status ON portfolio_clips(status);
+
+ALTER TABLE portfolio_clips ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public full access" ON portfolio_clips;
+CREATE POLICY "Public full access" ON portfolio_clips FOR ALL USING (true) WITH CHECK (true);
