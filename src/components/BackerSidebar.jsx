@@ -23,20 +23,15 @@ const MENU_ITEMS = [
 
 export default function BackerSidebar() {
   const location = useLocation();
-  const [expanded, setExpanded] = useState(false);
   const [user, setUser] = useState(null);
-  const { setSidebarExpanded } = useSidebar();
+  const { sidebarExpanded: expanded, setSidebarExpanded } = useSidebar();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
     setUser(storedUser ? JSON.parse(storedUser) : null);
   }, []);
 
-  const toggle = () => {
-    const next = !expanded;
-    setExpanded(next);
-    setSidebarExpanded(next);
-  };
+  const toggle = () => setSidebarExpanded(!expanded);
 
   const handleLogout = () => {
     localStorage.removeItem('studio22_user');

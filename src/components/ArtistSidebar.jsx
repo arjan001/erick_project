@@ -19,10 +19,9 @@ const MENU_ITEMS = [
 
 export default function ArtistSidebar() {
   const location = useLocation();
-  const [expanded, setExpanded] = useState(false);
   const [user, setUser] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
-  const { setSidebarExpanded } = useSidebar();
+  const { sidebarExpanded: expanded, setSidebarExpanded } = useSidebar();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
@@ -54,11 +53,7 @@ export default function ArtistSidebar() {
     return () => unsubscribe && unsubscribe();
   }, [user]);
 
-  const toggle = () => {
-    const next = !expanded;
-    setExpanded(next);
-    setSidebarExpanded(next);
-  };
+  const toggle = () => setSidebarExpanded(!expanded);
 
   const handleLogout = () => {
     localStorage.removeItem('studio22_user');

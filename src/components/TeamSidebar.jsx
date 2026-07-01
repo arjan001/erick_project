@@ -21,9 +21,8 @@ const MENU_ITEMS = [
 export default function TeamSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [expanded, setExpanded] = useState(false);
   const [team, setTeam] = useState(null);
-  const { setSidebarExpanded } = useSidebar();
+  const { sidebarExpanded: expanded, setSidebarExpanded } = useSidebar();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
@@ -41,11 +40,7 @@ export default function TeamSidebar() {
     fetchTeam();
   }, []);
 
-  const toggle = () => {
-    const next = !expanded;
-    setExpanded(next);
-    setSidebarExpanded(next);
-  };
+  const toggle = () => setSidebarExpanded(!expanded);
 
   const handleLogout = () => {
     localStorage.removeItem('studio22_user');
