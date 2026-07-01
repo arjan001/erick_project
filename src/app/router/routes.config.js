@@ -5,6 +5,7 @@ import AuthLayout from '@/layouts/AuthLayout';
 import { AuthGuard } from '@/app/router/guards/AuthGuard';
 import { RoleGuard, createRoleGuard } from '@/app/router/guards/RoleGuard';
 import { GuestGuard } from '@/app/router/guards/GuestGuard';
+import { HomeGuard } from '@/app/router/guards/HomeGuard';
 
 // Create role-specific guard components
 const AdminGuard = createRoleGuard(['admin']);
@@ -22,6 +23,7 @@ const publicRoutes = [
     path: '/',
     component: () => import('@/pages/Home'),
     layout: MainLayout,
+    guard: HomeGuard,
     exact: true
   },
   {

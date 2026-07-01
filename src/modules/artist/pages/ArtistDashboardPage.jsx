@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 
 import { createPageUrl } from '@/shared/utils/routing';
 
-import { Briefcase, MessageCircle, Lightbulb, ArrowRight, Calendar, MapPin, Bell, Settings, TrendingUp, Crown, Zap } from 'lucide-react';
+import { Briefcase, MessageCircle, Lightbulb, ArrowRight, Calendar, MapPin, Bell, Settings, TrendingUp, Crown, Zap, FolderKanban } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -107,9 +107,14 @@ export default function ArtistDashboard() {
 
 
 
+  const queuedApplications = applications.filter(a => ['applied', 'chat_started', 'shortlisted'].includes(a.status));
+  const activeProjects = applications.filter(a => a.status === 'hired');
+
   const stats = [
 
-    { label: 'Applications', value: applications.length, icon: Briefcase, color: 'bg-blue-50' },
+    { label: 'In Queue', value: queuedApplications.length, icon: Briefcase, color: 'bg-blue-50' },
+
+    { label: 'Projects Working On', value: activeProjects.length, icon: FolderKanban, color: 'bg-indigo-50' },
 
     { label: 'Pending Invitations', value: invitations.length, icon: Bell, color: 'bg-amber-50' },
 
@@ -176,7 +181,7 @@ export default function ArtistDashboard() {
 
           {/* Quick Stats */}
 
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-4 gap-6">
 
             {stats.map((stat, idx) => {
 

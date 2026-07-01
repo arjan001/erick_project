@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AlertCircle, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -23,9 +23,11 @@ const DEMO_ACCOUNTS = {
 };
 
 export default function SignIn() {
-  const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'reset'
+  const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'reset' | 'update_password'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [role, setRole] = useState('artist');
@@ -35,6 +37,37 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  // If the user arrived via a "reset password" email link, Supabase fires a
+  // PASSWORD_RECOVERY event — switch to the "set a new password" form.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setMode('update_password');
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (newPassword.length < 6) { setError('Password must be at least 6 characters'); return; }
+    if (newPassword !== confirmNewPassword) { setError('Passwords do not match'); return; }
+    setLoading(true);
+    try {
+      const { error: supaError } = await supabase.auth.updateUser({ password: newPassword });
+      if (supaError) throw supaError;
+      setMessage('Password updated! You can now sign in with your new password.');
+      setMode('login');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (err) {
+      setError(err.message || 'Failed to update password');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -123,10 +156,10 @@ export default function SignIn() {
           {/* Heading */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">
-              {mode === 'login' ? 'Welcome back' : mode === 'signup' ? 'Create account' : 'Reset password'}
+              {mode === 'login' ? 'Welcome back' : mode === 'signup' ? 'Create account' : mode === 'update_password' ? 'Set new password' : 'Reset password'}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              {mode === 'login' ? 'Sign in to Studio22' : mode === 'signup' ? 'Join the creative network' : 'We\'ll send you a reset link'}
+              {mode === 'login' ? 'Sign in to Studio22' : mode === 'signup' ? 'Join the creative network' : mode === 'update_password' ? 'Choose a new password for your account' : 'We\'ll send you a reset link'}
             </p>
           </div>
 
@@ -276,8 +309,40 @@ export default function SignIn() {
             </form>
           )}
 
+          {/* Update Password Form (after clicking reset link in email) */}
+          {mode === 'update_password' && (
+            <form onSubmit={handleUpdatePassword} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">New password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input type={showPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} required
+                    placeholder="Min 6 characters" disabled={loading}
+                    className="w-full pl-9 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">Confirm new password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input type={showPassword ? 'text' : 'password'} value={confirmNewPassword} onChange={e => setConfirmNewPassword(e.target.value)} required
+                    placeholder="Repeat password" disabled={loading}
+                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                </div>
+              </div>
+              <button type="submit" disabled={loading}
+                className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
+                {loading ? 'Updating...' : 'Update password'}
+              </button>
+            </form>
+          )}
+
           {/* Toggle */}
-          {mode !== 'reset' && (
+          {mode !== 'reset' && mode !== 'update_password' && (
             <p className="mt-5 text-center text-sm text-gray-500">
               {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
               <button type="button" onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setMessage(''); }}
@@ -311,18 +376,16 @@ export default function SignIn() {
       </div>
 
       {/* Visual Side — hidden on mobile */}
-      <div className="hidden lg:flex lg:w-2/5 bg-black items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full border border-white" />
-          <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full border border-white" />
-        </div>
+      <div className="hidden lg:flex lg:w-2/5 items-center justify-center relative overflow-hidden bg-gradient-to-br from-black via-[#2a2a2a] to-[#B8860B]">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full border border-white/10" />
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full border border-yellow-500/10" />
+        <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-yellow-500/10 blur-3xl" />
         <div className="text-center relative z-10 flex flex-col items-center">
-          <img
-            src="https://media.base44.com/images/public/6968a46f6ea94ba83cd1497c/5149728c8_image.png"
-            alt="Studio22"
-            className="w-56 h-56 object-contain drop-shadow-2xl"
-          />
-          <p className="text-white/40 text-sm mt-6 uppercase tracking-widest">Studio22 Creative Network</p>
+          <span className="text-[180px] leading-none font-black tracking-tighter bg-gradient-to-br from-white via-gray-300 to-yellow-400 bg-clip-text text-transparent drop-shadow-2xl">
+            22.
+          </span>
+          <p className="text-white/50 text-sm mt-4 uppercase tracking-widest">Studio22 Creative Network</p>
         </div>
       </div>
     </div>
