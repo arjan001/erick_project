@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Job, Application, Artist, ConnectsTransaction } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Euro, ChevronDown } from 'lucide-react';
-import JobPostingModal from '@/components/JobPostingModal';
 import { useToast } from '@/hooks/useToast';
 
 export default function Jobs() {
@@ -20,7 +19,6 @@ export default function Jobs() {
     skills: [],
     paid: null
   });
-  const [showJobModal, setShowJobModal] = useState(false);
   const [showFilters, setShowFilters] = useState({
     roles: false,
     location: false,
@@ -101,20 +99,6 @@ export default function Jobs() {
     } catch (err) {
       console.error('Error applying:', err);
       toastError('Application Failed', 'Failed to submit application');
-    }
-  };
-
-  const handleJobSubmit = async (jobData) => {
-    try {
-      await Job.create(jobData);
-      setShowJobModal(false);
-      // Refresh jobs list
-      const allJobs = await Job.list();
-      setJobs(allJobs.filter(j => j.status === 'open'));
-      success('Job Posted', 'Your job has been posted successfully');
-    } catch (err) {
-      console.error('Error posting job:', err);
-      toastError('Posting Failed', 'Failed to post job');
     }
   };
 
@@ -320,12 +304,6 @@ export default function Jobs() {
                 Invitations
               </button>
             </div>
-            <Button 
-              onClick={() => setShowJobModal(true)}
-              className="bg-black text-white hover:bg-gray-800 font-semibold px-6 py-2"
-            >
-              Post a job
-            </Button>
           </div>
 
           {/* Filters */}
@@ -515,13 +493,6 @@ export default function Jobs() {
           </div>
         )}
       </main>
-
-      <JobPostingModal
-        isOpen={showJobModal}
-        onClose={() => setShowJobModal(false)}
-        onSubmit={handleJobSubmit}
-        user={user}
-      />
     </div>
   );
 }

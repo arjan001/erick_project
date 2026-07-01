@@ -140,7 +140,7 @@ export default function MessagesPage() {
       setConversations(enriched);
     } catch (err) {
       console.error('Error fetching conversations:', err);
-      error('Error', 'Failed to load messages');
+      setConversations([]);
     } finally {
       setLoading(false);
     }

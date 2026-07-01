@@ -19,6 +19,7 @@ import { MapPin, MessageCircle, Briefcase, MoreHorizontal, ChevronDown, Copy, Gl
 import { useToast } from '@/hooks/useToast';
 import { notifyError, confirmDialog } from '@/lib/sweetAlert';
 import ArtistAccountSettingsTab from '@/components/artist/ArtistAccountSettingsTab';
+import ShareProfileButton from '@/components/artist/ShareProfileButton';
 
 
 
@@ -1067,6 +1068,8 @@ export default function ArtistProfile() {
             </div>
 
             <div className="flex items-center gap-2 pt-8">
+
+              {artist && <ShareProfileButton artistId={artist.id} />}
 
               <Button variant="ghost" className="p-2">
 

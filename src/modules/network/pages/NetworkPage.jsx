@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Artist, Team, Backer, ProjectOwner, Connection, Notification } from '@/lib/supabaseEntities';
+import { Artist, Team, Backer, ProjectOwner, Connection, Notification, Subscription } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast';
@@ -64,6 +64,9 @@ export default function NetworkPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [showTypeFilter, setShowTypeFilter] = useState(false);
+  const [subscriptionFilter, setSubscriptionFilter] = useState('all');
+  const [showSubFilter, setShowSubFilter] = useState(false);
+  const [subscribedEmails, setSubscribedEmails] = useState(new Set());
 
   const [myProfile, setMyProfile] = useState(null);
   const [people, setPeople] = useState([]);
@@ -118,6 +121,16 @@ export default function NetworkPage() {
         );
         setConnections(myConnections);
         setPendingRequests(myConnections.filter(c => c.recipient_email === user.email && c.status === 'pending'));
+
+        // For backers/clients: track which creators have an active paid subscription
+        if (myType === 'backer' || myType === 'client') {
+          try {
+            const activeSubs = await Subscription.filter({ status: 'active' });
+            setSubscribedEmails(new Set(activeSubs.map(s => s.user_email)));
+          } catch (subErr) {
+            console.error('Error fetching subscriptions:', subErr);
+          }
+        }
       } catch (err) {
         console.error('Error fetching network data:', err);
       } finally {
@@ -212,6 +225,11 @@ export default function NetworkPage() {
 
   const filterPerson = (person) => {
     if (selectedType !== 'all' && person.type !== selectedType) return false;
+    if ((myType === 'backer' || myType === 'client') && subscriptionFilter !== 'all' && person.type === 'artist') {
+      const isSubscribed = subscribedEmails.has(person.email);
+      if (subscriptionFilter === 'subscribed' && !isSubscribed) return false;
+      if (subscriptionFilter === 'free' && isSubscribed) return false;
+    }
     const q = searchQuery.toLowerCase();
     if (!q) return true;
     return person.name?.toLowerCase().includes(q) ||
@@ -348,6 +366,30 @@ export default function NetworkPage() {
             </div>
           )}
         </div>
+        {(myType === 'backer' || myType === 'client') && (
+          <div className="relative">
+            <button
+              onClick={() => setShowSubFilter(!showSubFilter)}
+              className="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+            >
+              {subscriptionFilter === 'all' ? 'All Creators' : subscriptionFilter === 'subscribed' ? 'Subscribed' : 'No Subscription'}
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            {showSubFilter && (
+              <div className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
+                {[
+                  { value: 'all', label: 'All Creators' },
+                  { value: 'subscribed', label: 'Subscribed (Paid)' },
+                  { value: 'free', label: 'No Subscription' },
+                ].map(opt => (
+                  <button key={opt.value} onClick={() => { setSubscriptionFilter(opt.value); setShowSubFilter(false); }} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm">
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Two column layout */}

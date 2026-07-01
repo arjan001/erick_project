@@ -70,6 +70,11 @@ const publicRoutes = [
     path: '/Work',
     component: () => import('@/pages/Work'),
     layout: MainLayout
+  },
+  {
+    path: '/ProjectPublic',
+    component: () => import('@/pages/ProjectPublic'),
+    layout: MainLayout
   }
 ];
 

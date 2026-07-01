@@ -5,6 +5,7 @@ import { Project, Application } from '@/lib/supabaseEntities';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, Users, MessageSquare, Search, Filter, CheckCircle, TrendingUp } from 'lucide-react';
+import ShareProjectButton from '@/components/projects/ShareProjectButton';
 
 export default function JobBoard() {
   const [projects, setProjects] = useState([]);
@@ -256,6 +257,10 @@ export default function JobBoard() {
                         </span>
                       </div>
                     )}
+
+                    <div className="absolute bottom-3 left-3">
+                      <ShareProjectButton projectId={project.id} />
+                    </div>
                   </div>
 
                   {/* Project Content */}

@@ -16,6 +16,12 @@ import QuickNotesCard from '@/components/artist/QuickNotesCard';
 
 import UpgradeConnectsBanner from '@/components/artist/UpgradeConnectsBanner';
 
+import ActivityChart from '@/components/artist/dashboard/ActivityChart';
+
+import ProfileCompletionRing from '@/components/artist/dashboard/ProfileCompletionRing';
+
+import RecentConversations from '@/components/artist/dashboard/RecentConversations';
+
 import { useToast } from '@/hooks/useToast';
 
 import { Job, Application, Message, Notification, Artist } from '@/lib/supabaseEntities';
@@ -295,51 +301,19 @@ export default function ArtistDashboard() {
 
               )}
 
+              <ActivityChart applications={applications} />
+
             </div>
 
 
 
-            {/* Right Column - Messages & Brainstorm */}
+            {/* Right Column - Conversations, Profile Strength & Brainstorm */}
 
             <div className="space-y-6">
 
-              {/* Recent Messages */}
+              <ProfileCompletionRing artist={artistProfile} portfolioCount={artistProfile?.portfolio_clips?.length || 0} />
 
-              <div className="border border-gray-200 rounded-lg p-6">
-
-                <div className="flex items-center justify-between mb-4">
-
-                  <h2 className="text-lg font-bold text-gray-900">Messages</h2>
-
-                  <Link to={createPageUrl('Messages')} className="text-sm text-gray-600 hover:text-gray-900">
-
-                    <MessageCircle className="w-4 h-4" />
-
-                  </Link>
-
-                </div>
-
-                <div className="space-y-3">
-
-                  {messages.map((msg) => (
-
-                    <div key={msg.id} className="p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-
-                      <p className="font-semibold text-sm text-gray-900">{msg.name}</p>
-
-                      <p className="text-xs text-gray-600 line-clamp-2 mt-1">{msg.message}</p>
-
-                      <p className="text-xs text-gray-400 mt-2">{msg.time}</p>
-
-                    </div>
-
-                  ))}
-
-                </div>
-
-              </div>
-
-
+              <RecentConversations userEmail={user.email} />
 
               {/* Quick Notes */}
 
