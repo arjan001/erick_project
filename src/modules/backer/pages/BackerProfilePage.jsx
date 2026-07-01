@@ -52,7 +52,7 @@ export default function BackerProfile() {
 
     const fetchData = async () => {
       try {
-        const backers = await base44.entities.Backer.filter({ email: parsedUser.email });
+        const backers = await base44.entities.Backer.filter({ contact_email: parsedUser.email });
         if (backers.length > 0) {
           const b = backers[0];
           setBacker(b);

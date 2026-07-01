@@ -1,12 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../api/admin.api';
-import { Search, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
-import { notifySuccess } from '@/lib/sweetAlert';
+import { base44 } from '@/api/base44Client';
+import { Search, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, X, Ban, Trash2, RotateCcw, Users, CreditCard } from 'lucide-react';
+import { notifySuccess, confirmDialog } from '@/lib/sweetAlert';
 
 const PAGE_SIZE = 10;
 
-function TeamModal({ team, onClose, onApprove, onReject }) {
+const STATUS_STYLES = {
+  approved: 'bg-green-100 text-green-700',
+  pending: 'bg-amber-100 text-amber-700',
+  suspended: 'bg-gray-200 text-gray-700',
+  rejected: 'bg-red-100 text-red-700'
+};
+
+function TeamModal({ team, onClose, onApprove, onReject, onSuspend, onUnsuspend, onDelete }) {
   const [notes, setNotes] = useState(team.admin_notes || '');
+  const [subscription, setSubscription] = useState(null);
+  const [loadingSub, setLoadingSub] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadSubscription = async () => {
+      try {
+        const rows = await base44.entities.Subscription.filter({ user_email: team.contact_email }, '-created_date', 1);
+        if (!cancelled) setSubscription(rows?.[0] || null);
+      } catch {
+        if (!cancelled) setSubscription(null);
+      } finally {
+        if (!cancelled) setLoadingSub(false);
+      }
+    };
+    loadSubscription();
+    return () => { cancelled = true; };
+  }, [team.contact_email]);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
       <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -14,37 +41,88 @@ function TeamModal({ team, onClose, onApprove, onReject }) {
           <h3 className="font-bold text-gray-900">{team.team_name || team.team_code}</h3>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-4 h-4" /></button>
         </div>
-        <div className="p-5 space-y-3">
+        <div className="p-5 space-y-4">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div><span className="text-gray-400 text-xs uppercase">Code</span><p className="font-medium text-gray-800">{team.team_code}</p></div>
             <div><span className="text-gray-400 text-xs uppercase">Email</span><p className="font-medium text-gray-800 break-all">{team.contact_email}</p></div>
             <div><span className="text-gray-400 text-xs uppercase">Location</span><p className="font-medium text-gray-800">{team.city}, {team.country}</p></div>
             <div><span className="text-gray-400 text-xs uppercase">Size</span><p className="font-medium text-gray-800">{team.team_size?.replace(/_/g, '-') || '—'}</p></div>
             <div><span className="text-gray-400 text-xs uppercase">Status</span>
-              <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-medium ${team.status === 'approved' ? 'bg-green-100 text-green-700' : team.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>{team.status}</span>
+              <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[team.status] || 'bg-gray-100 text-gray-700'}`}>{team.status}</span>
             </div>
           </div>
+
           {team.specialties?.length > 0 && (
-            <div><span className="text-xs text-gray-400 uppercase">Specialties</span>
+            <div><span className="text-xs text-gray-400 uppercase">Specialization</span>
               <div className="flex flex-wrap gap-1.5 mt-1">
                 {team.specialties.map(s => <span key={s} className="px-2 py-0.5 bg-gray-100 rounded-full text-xs text-gray-600">{s.replace(/_/g, ' ')}</span>)}
               </div>
             </div>
           )}
+
+          <div>
+            <span className="text-xs text-gray-400 uppercase flex items-center gap-1"><Users className="w-3 h-3" /> Members ({team.team_members?.length || 0})</span>
+            {team.team_members?.length > 0 ? (
+              <div className="mt-1.5 space-y-1.5 max-h-32 overflow-y-auto">
+                {team.team_members.map((m, i) => (
+                  <div key={i} className="flex items-center justify-between px-2.5 py-1.5 bg-gray-50 rounded-lg text-sm">
+                    <span className="font-medium text-gray-800">{m.name || m.email}</span>
+                    <span className="text-xs text-gray-500">{m.specialty}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 mt-1">No members added yet</p>
+            )}
+          </div>
+
+          <div>
+            <span className="text-xs text-gray-400 uppercase flex items-center gap-1"><CreditCard className="w-3 h-3" /> Subscription</span>
+            {loadingSub ? (
+              <p className="text-sm text-gray-400 mt-1">Loading...</p>
+            ) : subscription ? (
+              <div className="mt-1 flex items-center gap-2 text-sm">
+                <span className="font-medium text-gray-800">{subscription.package_name || 'Plan'}</span>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${subscription.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{subscription.status}</span>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 mt-1">No active subscription</p>
+            )}
+          </div>
+
           <div>
             <label className="text-xs text-gray-400 uppercase block mb-1">Admin Notes</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Add notes..."
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:border-black" />
           </div>
         </div>
-        <div className="flex gap-2 p-5 border-t border-gray-100">
-          <button onClick={() => onApprove(team.id, notes)}
-            className="flex-1 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center justify-center gap-2">
-            <CheckCircle className="w-4 h-4" /> Approve
-          </button>
-          <button onClick={() => onReject(team.id, notes)}
-            className="flex-1 py-2 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 flex items-center justify-center gap-2">
-            <XCircle className="w-4 h-4" /> Reject
+        <div className="flex flex-wrap gap-2 p-5 border-t border-gray-100">
+          {team.status !== 'approved' && (
+            <button onClick={() => onApprove(team.id, notes)}
+              className="flex-1 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center justify-center gap-2">
+              <CheckCircle className="w-4 h-4" /> Approve
+            </button>
+          )}
+          {team.status !== 'rejected' && (
+            <button onClick={() => onReject(team.id, notes)}
+              className="flex-1 py-2 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 flex items-center justify-center gap-2">
+              <XCircle className="w-4 h-4" /> Reject
+            </button>
+          )}
+          {team.status === 'suspended' ? (
+            <button onClick={() => onUnsuspend(team.id)}
+              className="flex-1 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center justify-center gap-2">
+              <RotateCcw className="w-4 h-4" /> Unsuspend
+            </button>
+          ) : (
+            <button onClick={() => onSuspend(team.id, notes)}
+              className="flex-1 py-2 border border-amber-200 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-50 flex items-center justify-center gap-2">
+              <Ban className="w-4 h-4" /> Suspend
+            </button>
+          )}
+          <button onClick={() => onDelete(team.id)}
+            className="py-2 px-3 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 flex items-center justify-center gap-2">
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -87,6 +165,28 @@ export default function TeamAdminPage() {
     notifySuccess('Team Rejected', 'The team application has been rejected');
   };
 
+  const handleSuspend = async (id, notes) => {
+    await adminApi.teams.suspend(id, notes);
+    setTeams(prev => prev.map(t => t.id === id ? { ...t, status: 'suspended', admin_notes: notes } : t));
+    setSelected(null);
+    notifySuccess('Team Suspended', 'The team has been suspended');
+  };
+
+  const handleUnsuspend = async (id) => {
+    await adminApi.teams.unsuspend(id);
+    setTeams(prev => prev.map(t => t.id === id ? { ...t, status: 'approved' } : t));
+    setSelected(null);
+    notifySuccess('Team Unsuspended', 'The team is active again');
+  };
+
+  const handleDelete = async (id) => {
+    if (!(await confirmDialog('Delete this team?', 'This permanently removes the team and cannot be undone'))) return;
+    await adminApi.teams.remove(id);
+    setTeams(prev => prev.filter(t => t.id !== id));
+    setSelected(null);
+    notifySuccess('Team Deleted', 'The team has been permanently removed');
+  };
+
   return (
     <div className="space-y-5">
       <div>
@@ -104,6 +204,7 @@ export default function TeamAdminPage() {
           <option value="all">All Statuses</option>
           <option value="pending">Pending</option>
           <option value="approved">Approved</option>
+          <option value="suspended">Suspended</option>
           <option value="rejected">Rejected</option>
         </select>
       </div>
@@ -144,7 +245,7 @@ export default function TeamAdminPage() {
                       <td className="px-4 py-3 text-gray-500 hidden sm:table-cell font-mono text-xs">{team.team_code}</td>
                       <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{team.city}, {team.country}</td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${team.status === 'approved' ? 'bg-green-100 text-green-700' : team.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[team.status] || 'bg-gray-100 text-gray-700'}`}>
                           {team.status}
                         </span>
                       </td>
@@ -180,7 +281,17 @@ export default function TeamAdminPage() {
           </>
         )}
       </div>
-      {selected && <TeamModal team={selected} onClose={() => setSelected(null)} onApprove={handleApprove} onReject={handleReject} />}
+      {selected && (
+        <TeamModal
+          team={selected}
+          onClose={() => setSelected(null)}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onSuspend={handleSuspend}
+          onUnsuspend={handleUnsuspend}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 }

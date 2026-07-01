@@ -54,6 +54,18 @@ export const adminApi = {
         status: 'rejected',
         admin_notes: adminNotes
       });
+    },
+    suspend: async (id, adminNotes) => {
+      return base44.entities.Team.update(id, {
+        status: 'suspended',
+        admin_notes: adminNotes
+      });
+    },
+    unsuspend: async (id) => {
+      return base44.entities.Team.update(id, { status: 'approved' });
+    },
+    remove: async (id) => {
+      return base44.entities.Team.delete(id);
     }
   },
   ticker: {

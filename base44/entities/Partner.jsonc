@@ -1,0 +1,53 @@
+{
+  "name": "Partner",
+  "type": "object",
+  "properties": {
+    "backer_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "backer_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "partnership_type": {
+      "type": "string",
+      "enum": [
+        "strategic",
+        "investment",
+        "collaboration"
+      ],
+      "default": "strategic"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "backer_email",
+    "name"
+  ]
+}

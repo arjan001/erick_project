@@ -1,0 +1,43 @@
+{
+  "name": "ProjectUpdate",
+  "type": "object",
+  "properties": {
+    "backer_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "backer_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "project_title": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "update_type": {
+      "type": "string",
+      "enum": [
+        "progress",
+        "milestone",
+        "announcement",
+        "financial"
+      ],
+      "default": "progress"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "backer_email",
+    "title"
+  ]
+}

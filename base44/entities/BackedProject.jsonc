@@ -1,0 +1,49 @@
+{
+  "name": "BackedProject",
+  "type": "object",
+  "properties": {
+    "backer_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "backer_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "project_title": {
+      "type": "string"
+    },
+    "project_category": {
+      "type": "string"
+    },
+    "investment_amount": {
+      "type": "number"
+    },
+    "expected_roi": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "withdrawn"
+      ],
+      "default": "active"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "investment_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "backer_email",
+    "project_title",
+    "investment_amount"
+  ]
+}

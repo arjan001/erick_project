@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 import DashboardStatCard from '@/components/DashboardStatCard';
-import { DollarSign, TrendingUp, Film, Calendar, Plus, Eye, Settings, LogOut, Edit2, X, ArrowUpRight, ArrowDownRight, Target, Zap, Users, Briefcase } from 'lucide-react';
+import { DollarSign, TrendingUp, Film, Plus, Eye, Edit2, X, ArrowUpRight, ArrowDownRight, Target, Zap, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
 import { confirmDialog } from '@/lib/sweetAlert';
 
-export default function BackerDashboard() {
+export default function BackerDashboardPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
   const [user, setUser] = useState(null);
@@ -33,69 +34,53 @@ export default function BackerDashboard() {
     }
     const parsedUser = JSON.parse(storedUser);
     setUser(parsedUser);
+    fetchData(parsedUser);
+  }, []);
 
-    const fetchData = async () => {
-      try {
-        // Mock backer data
-        const mockBacker = {
-          id: 'backer_1',
-          email: parsedUser.email,
-          full_name: parsedUser.full_name,
-          organization_name: 'Venture Capital Partners',
-          investment_focus: ['Film', 'Technology', 'Media'],
-          total_invested: 2500000,
-          investment_count: 15,
-          backed_projects: []
-        };
-        setBacker(mockBacker);
+  const fetchData = async (currentUser) => {
+    try {
+      const backers = await base44.entities.Backer.filter({ contact_email: currentUser.email });
+      const currentBacker = backers?.[0] || null;
+      setBacker(currentBacker);
 
-        // Mock backed projects
-        const mockProjects = [
-          { id: 1, project_title: 'Indie Film Project', investment_amount: 50000, status: 'active', notes: 'Promising director', investment_date: '2024-01-15' },
-          { id: 2, project_title: 'Documentary Series', investment_amount: 75000, status: 'completed', notes: 'Award-winning', investment_date: '2024-02-20' }
-        ];
-        setBackedProjects(mockProjects);
-
-        // Mock deals
-        const mockDeals = [
-          { id: 1, title: 'Film Fund Round A', amount: 1000000, status: 'pending' },
-          { id: 2, title: 'Media Tech Investment', amount: 500000, status: 'negotiating' }
-        ];
-        setDeals(mockDeals);
-      } catch (error) {
-        console.error('Error fetching backer data:', error);
-        toastError('Load Failed', 'Failed to load dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [navigate]);
+      const [projects, dealRows] = await Promise.all([
+        base44.entities.BackedProject.filter({ backer_email: currentUser.email }, '-investment_date'),
+        base44.entities.Deal.filter({ backer_email: currentUser.email })
+      ]);
+      setBackedProjects(projects || []);
+      setDeals(dealRows || []);
+    } catch (error) {
+      console.error('Error fetching backer data:', error);
+      toastError('Load Failed', 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCreateBackedProject = async () => {
-    if (!backer) return;
+    if (!projectForm.project_title || !projectForm.investment_amount) return;
     try {
-      const newBackedProject = {
-        id: Date.now(),
+      await base44.entities.BackedProject.create({
         backer_email: user.email,
+        backer_id: backer?.id,
         project_title: projectForm.project_title,
         investment_amount: parseFloat(projectForm.investment_amount) || 0,
         status: projectForm.status,
         notes: projectForm.notes,
         investment_date: new Date().toISOString()
-      };
-      setBackedProjects(prev => [...prev, newBackedProject]);
-      setBacker(prev => ({
-        ...prev,
-        total_invested: (prev.total_invested || 0) + (parseFloat(projectForm.investment_amount) || 0),
-        investment_count: (prev.investment_count || 0) + 1
-      }));
+      });
+      if (backer) {
+        await base44.entities.Backer.update(backer.id, {
+          total_invested: (backer.total_invested || 0) + (parseFloat(projectForm.investment_amount) || 0),
+          investment_count: (backer.investment_count || 0) + 1
+        });
+      }
       setShowModal(false);
       setProjectForm({ project_title: '', investment_amount: '', status: 'active', notes: '' });
       success('Project Backed', 'Project added to your portfolio');
-    } catch (error) {
-      console.error('Error creating backed project:', error);
+      fetchData(user);
+    } catch (err) {
+      console.error('Error creating backed project:', err);
       toastError('Creation Failed', 'Failed to back project');
     }
   };
@@ -103,33 +88,37 @@ export default function BackerDashboard() {
   const handleUpdateBackedProject = async () => {
     if (!editingProject) return;
     try {
-      const updatedProject = { ...editingProject, ...projectForm, investment_amount: parseFloat(projectForm.investment_amount) || 0 };
-      setBackedProjects(prev => prev.map(p => p.id === editingProject.id ? updatedProject : p));
+      await base44.entities.BackedProject.update(editingProject.id, {
+        project_title: projectForm.project_title,
+        investment_amount: parseFloat(projectForm.investment_amount) || 0,
+        status: projectForm.status,
+        notes: projectForm.notes
+      });
       setShowModal(false);
       setEditingProject(null);
       setProjectForm({ project_title: '', investment_amount: '', status: 'active', notes: '' });
       success('Project Updated', 'Investment details updated');
-    } catch (error) {
-      console.error('Error updating backed project:', error);
+      fetchData(user);
+    } catch (err) {
+      console.error('Error updating backed project:', err);
       toastError('Update Failed', 'Failed to update project');
     }
   };
 
-  const handleDeleteBackedProject = async (projectId) => {
+  const handleDeleteBackedProject = async (project) => {
     if (!(await confirmDialog('Remove this investment?', 'This action cannot be undone'))) return;
     try {
-      const deletedProject = backedProjects.find(p => p.id === projectId);
-      setBackedProjects(prev => prev.filter(p => p.id !== projectId));
-      if (deletedProject) {
-        setBacker(prev => ({
-          ...prev,
-          total_invested: (prev.total_invested || 0) - (deletedProject.investment_amount || 0),
-          investment_count: Math.max(0, (prev.investment_count || 0) - 1)
-        }));
+      await base44.entities.BackedProject.delete(project.id);
+      if (backer) {
+        await base44.entities.Backer.update(backer.id, {
+          total_invested: Math.max(0, (backer.total_invested || 0) - (project.investment_amount || 0)),
+          investment_count: Math.max(0, (backer.investment_count || 0) - 1)
+        });
       }
       success('Project Removed', 'Project removed from portfolio');
-    } catch (error) {
-      console.error('Error deleting backed project:', error);
+      fetchData(user);
+    } catch (err) {
+      console.error('Error deleting backed project:', err);
       toastError('Deletion Failed', 'Failed to remove project');
     }
   };
@@ -150,7 +139,7 @@ export default function BackerDashboard() {
     setShowModal(true);
   };
 
-  // Calculate dynamic stats
+  // Calculate dynamic stats — purely from real data, no placeholders
   const totalInvested = backedProjects.reduce((sum, p) => sum + (p.investment_amount || 0), 0);
   const totalExpectedROI = backedProjects.reduce((sum, p) => sum + (p.expected_roi || 0), 0);
   const totalROI = totalExpectedROI - totalInvested;
@@ -182,7 +171,7 @@ export default function BackerDashboard() {
           <DashboardStatCard icon={DollarSign} label={`${backedProjects.length} investments`} value={`$${totalInvested.toLocaleString()}`} iconBg="bg-green-50" iconColor="text-green-600" />
           <DashboardStatCard icon={totalROI >= 0 ? ArrowUpRight : ArrowDownRight} label={`${roiPercentage}% return`} value={`$${totalROI.toLocaleString()}`} iconBg={totalROI >= 0 ? 'bg-green-50' : 'bg-red-50'} iconColor={totalROI >= 0 ? 'text-green-600' : 'text-red-600'} />
           <DashboardStatCard icon={Target} label={`${completedInvestments} completed`} value={activeInvestments} iconBg="bg-blue-50" iconColor="text-blue-600" />
-          <DashboardStatCard icon={Zap} label="Per investment" value={`$${averageDealSize.toLocaleString()}`} iconBg="bg-purple-50" iconColor="text-purple-600" />
+          <DashboardStatCard icon={Zap} label="Per investment" value={`$${Number(averageDealSize).toLocaleString()}`} iconBg="bg-purple-50" iconColor="text-purple-600" />
         </div>
 
         {/* Quick Actions */}
@@ -266,13 +255,13 @@ export default function BackerDashboard() {
                     <div className="flex-1">
                       <h3 className="font-semibold">{project.project_title}</h3>
                       <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                        <span>${project.investment_amount?.toLocaleString()} invested</span>
+                        <span>${(project.investment_amount || 0).toLocaleString()} invested</span>
                         {project.expected_roi && (
                           <span className="text-green-600">
                             Expected: ${project.expected_roi?.toLocaleString()}
                           </span>
                         )}
-                        <span>{new Date(project.investment_date).toLocaleDateString()}</span>
+                        {project.investment_date && <span>{new Date(project.investment_date).toLocaleDateString()}</span>}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -286,7 +275,7 @@ export default function BackerDashboard() {
                       <Button variant="ghost" size="sm" onClick={() => openModal(project)}>
                         <Edit2 className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteBackedProject(project.id)}>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteBackedProject(project)}>
                         <X className="w-4 h-4" />
                       </Button>
                     </div>

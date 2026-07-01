@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast';
-import { Search, MapPin, ChevronDown, Users, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle } from 'lucide-react';
+import { Search, MapPin, ChevronDown, Users, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // Maps the app's user.role values to the Connection entity's requester/recipient type enum
@@ -195,6 +195,17 @@ export default function NetworkPage() {
     }
   };
 
+  const handleCancelRequest = async (connectionId) => {
+    try {
+      await base44.entities.Connection.delete(connectionId);
+      success('Cancelled', 'Connection request withdrawn');
+      await refreshConnections();
+    } catch (err) {
+      console.error('Error cancelling connection:', err);
+      error('Error', 'Failed to withdraw request');
+    }
+  };
+
   const handleMessage = (person) => {
     navigate(createPageUrl('Messages') + `?with=${encodeURIComponent(person.email)}`);
   };
@@ -211,6 +222,7 @@ export default function NetworkPage() {
 
   const myConnections = people.filter(p => getConnectionStatus(p) === 'accepted' && filterPerson(p));
   const notConnected = people.filter(p => getConnectionStatus(p) === 'not_connected' && filterPerson(p));
+  const sentRequests = connections.filter(c => c.requester_email === user.email && c.status === 'pending');
 
   // Score suggestions by skill/role overlap with my profile — "career/niche" matching
   const myskillSet = new Set([
@@ -277,6 +289,34 @@ export default function NetworkPage() {
           </div>
         )}
       </div>
+
+      {/* Requests you've sent — LinkedIn-style outgoing pending requests */}
+      {sentRequests.length > 0 && (
+        <div className="px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
+          <h2 className="text-base font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-gray-400" /> Requests sent ({sentRequests.length})
+          </h2>
+          <div className="space-y-2">
+            {sentRequests.map((request) => {
+              const recipient = people.find(p => p.email === request.recipient_email);
+              return (
+                <div key={request.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0 overflow-hidden">
+                    {recipient?.image ? <img src={recipient.image} alt={recipient.name} className="w-full h-full object-cover" /> : (recipient?.name?.[0] || request.recipient_email[0]).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm text-gray-900 truncate">{recipient?.name || request.recipient_email}</div>
+                    <div className="text-xs text-gray-500 truncate">Invitation pending</div>
+                  </div>
+                  <button onClick={() => handleCancelRequest(request.id)} className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-full text-gray-600 hover:bg-gray-100 flex-shrink-0">
+                    Cancel
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Search + filter */}
       <div className="p-4 border-b border-gray-200 bg-white flex-shrink-0 flex gap-3">

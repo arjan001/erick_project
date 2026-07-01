@@ -1,0 +1,58 @@
+{
+  "name": "Deal",
+  "type": "object",
+  "properties": {
+    "backer_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "backer_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "counterparty": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "signature": {
+      "type": "string"
+    },
+    "signed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "backer_email",
+    "title"
+  ]
+}

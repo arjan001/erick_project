@@ -15,7 +15,13 @@ const SIDEBAR_EXPANDED_WIDTH = 256;  // px  (w-64)
 
 export default function DashboardLayout({ children }) {
   const { user } = useAuth();
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  // Persisted so the sidebar doesn't flicker open/closed when navigating between pages
+  // (this layout remounts on every route change).
+  const [sidebarExpanded, setSidebarExpandedState] = useState(() => localStorage.getItem('studio22_sidebar_expanded') === 'true');
+  const setSidebarExpanded = (value) => {
+    setSidebarExpandedState(value);
+    localStorage.setItem('studio22_sidebar_expanded', String(value));
+  };
 
   const isArtist = user?.role === 'artist' || user?.role === 'artist_admin';
   const isTeam = user?.role === 'team' || user?.role === 'team_admin';

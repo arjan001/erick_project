@@ -46,7 +46,7 @@ export default function BackerDealsPage() {
       const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
       
       // Fetch backer profile
-      const backers = await base44.entities.Backer.filter({ email: storedUser.email });
+      const backers = await base44.entities.Backer.filter({ contact_email: storedUser.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }

@@ -1,0 +1,45 @@
+{
+  "name": "InvestmentTier",
+  "type": "object",
+  "properties": {
+    "backer_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "backer_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "min_investment": {
+      "type": "number"
+    },
+    "max_investment": {
+      "type": "number"
+    },
+    "roi_percentage": {
+      "type": "number"
+    },
+    "benefits": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "color": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "backer_email",
+    "name"
+  ]
+}
