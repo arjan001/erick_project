@@ -159,6 +159,24 @@
     "subscription_auto_renew": {
       "type": "boolean",
       "default": true
+    },
+    "email_provider": {
+      "type": "string",
+      "enum": [
+        "brevo",
+        "resend"
+      ],
+      "default": "brevo",
+      "description": "Which transactional email provider to send login/invite emails through"
+    },
+    "email_sender_address": {
+      "type": "string",
+      "description": "From address used when sending transactional emails (must be a verified sender with the chosen provider)"
+    },
+    "email_sender_name": {
+      "type": "string",
+      "description": "From name shown on transactional emails"
     }
-  }
+  },
+  "required": []
 }

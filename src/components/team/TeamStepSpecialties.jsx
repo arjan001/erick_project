@@ -28,7 +28,10 @@ export default function TeamStepSpecialties({ data, updateData }) {
     }
   };
 
+  const MAX_SPECIALTIES = 15;
+
   const addSkillFromDatabase = (skill) => {
+    if ((data.specialties || []).length >= MAX_SPECIALTIES) return;
     const skillValue = skill.toLowerCase().replace(/\s+/g, '_');
     if (!(data.specialties || []).includes(skillValue)) {
       updateData('specialties', [...(data.specialties || []), skillValue]);
@@ -100,8 +103,11 @@ export default function TeamStepSpecialties({ data, updateData }) {
 
       {/* Additional Specialties from Database */}
       <div className="mt-8 pt-8 border-t border-gray-200">
-        <h3 className="text-lg font-semibold mb-3 text-black">Add Additional Specialties</h3>
-        <p className="text-sm text-gray-600 mb-4">Search and select from our database of professional specialties</p>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-black">Add Additional Specialties</h3>
+          <span className="text-xs text-gray-500">{(data.specialties || []).length}/{MAX_SPECIALTIES}</span>
+        </div>
+        <p className="text-sm text-gray-600 mb-4">Search and select from our database of professional specialties (up to {MAX_SPECIALTIES} tags)</p>
         
         <div className="relative" ref={dropdownRef}>
           <div className="relative">
@@ -113,8 +119,9 @@ export default function TeamStepSpecialties({ data, updateData }) {
                 setShowSkillDropdown(true);
               }}
               onFocus={() => setShowSkillDropdown(true)}
-              placeholder="Search: Camera, Lighting, VFX, Editing, Sound..."
-              className="bg-white border-gray-300 text-black h-12 pl-11"
+              disabled={(data.specialties || []).length >= MAX_SPECIALTIES}
+              placeholder={(data.specialties || []).length >= MAX_SPECIALTIES ? 'Maximum specialties reached' : 'Search: Camera, Lighting, VFX, Editing, Sound...'}
+              className="bg-white border-gray-300 text-black h-12 pl-11 disabled:opacity-50"
             />
           </div>
 

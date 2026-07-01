@@ -80,6 +80,12 @@ const authRoutes = [
     component: () => import('@/pages/SignIn'),
     layout: AuthLayout,
     guard: GuestGuard
+  },
+  {
+    path: '/AcceptTeamInvite',
+    component: () => import('@/pages/AcceptTeamInvite'),
+    layout: AuthLayout,
+    guard: GuestGuard
   }
 ];
 

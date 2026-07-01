@@ -499,10 +499,20 @@ export default function TeamDashboard() {
       setTeamMembers(updatedMembers);
 
       if (memberForm.email) {
+        const invite = await b44.entities.Invite.create({
+          email: memberForm.email,
+          role: 'team',
+          status: 'pending',
+          invited_by_email: team.contact_email,
+          team_id: team.id,
+          team_name: team.team_name,
+          member_name: memberForm.name,
+          member_role: memberForm.role,
+        });
         await b44.integrations.Core.SendEmail({
           to: memberForm.email,
           subject: `You've been added to ${team.team_name} on Studio22`,
-          body: `Hi ${memberForm.name},\n\n${team.contact_name || team.team_name} added you as "${memberForm.role}" to the team "${team.team_name}" on Studio22.\n\nSign in or create an account with this email to get started: ${window.location.origin}/SignIn\n\n— Studio22`
+          body: `Hi ${memberForm.name},\n\n${team.contact_name || team.team_name} added you as "${memberForm.role}" to the team "${team.team_name}" on Studio22.\n\nSet up your login to join the team workspace: ${window.location.origin}/AcceptTeamInvite?invite=${invite.id}\n\n— Studio22`
         });
         notifySuccess('Member Added', `Invite email sent to ${memberForm.email}`);
       }

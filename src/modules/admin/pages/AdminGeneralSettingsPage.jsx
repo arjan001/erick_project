@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { Settings, Save, Globe, Bell, Shield, Clock, Users, Database, ToggleLeft, ToggleRight, Layers, ArrowRight } from 'lucide-react';
+import { Settings, Save, Globe, Bell, Shield, Clock, Users, Database, ToggleLeft, ToggleRight, Layers, ArrowRight, Mail, Send, CheckCircle2 } from 'lucide-react';
 
 const DEFAULT_SETTINGS = {
   site_name: 'Studio22',
@@ -44,6 +44,9 @@ const DEFAULT_SETTINGS = {
   subscription_grace_period_days: 7,
   subscription_prorate_upgrades: true,
   subscription_auto_renew: true,
+  email_provider: 'brevo',
+  email_sender_address: '',
+  email_sender_name: '',
 };
 
 const ToggleRow = ({ label, description, checked, onChange }) => (
@@ -114,14 +117,21 @@ export default function AdminGeneralSettingsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">General Settings</h1>
-        <p className="text-gray-600 mt-1">Configure system-wide settings and preferences</p>
+      <div className="mb-6 rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-black p-6 sm:p-8 text-white shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center">
+            <Settings className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">General Settings</h1>
+            <p className="text-gray-300 mt-0.5 text-sm">Configure system-wide settings and preferences</p>
+          </div>
+        </div>
       </div>
 
       <div className="max-w-4xl space-y-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center"><Globe className="w-5 h-5 mr-2" />Site Settings</h2>
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center"><span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mr-2"><Globe className="w-4 h-4" /></span>Site Settings</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Site Name</label>
@@ -269,9 +279,49 @@ export default function AdminGeneralSettingsPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-1 flex items-center"><span className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mr-2"><Mail className="w-4 h-4" /></span>Transactional Email</h2>
+          <p className="text-sm text-gray-500 mb-4">Choose which provider sends login and team invite emails. API keys are configured as server environment variables, never entered here.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            {[
+              { value: 'brevo', label: 'Brevo', desc: 'Formerly Sendinblue' },
+              { value: 'resend', label: 'Resend', desc: 'Developer-friendly email API' },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleChange('email_provider', opt.value)}
+                className={`text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between ${
+                  settings.email_provider === opt.value
+                    ? 'border-black bg-gray-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div>
+                  <div className="font-semibold text-gray-900 flex items-center gap-1.5">
+                    <Send className="w-4 h-4" /> {opt.label}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-0.5">{opt.desc}</div>
+                </div>
+                {settings.email_provider === opt.value && <CheckCircle2 className="w-5 h-5 text-black flex-shrink-0" />}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sender Email</label>
+              <input type="email" value={settings.email_sender_address} onChange={(e) => handleChange('email_sender_address', e.target.value)} placeholder="hello@studio22.com" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sender Name</label>
+              <input type="text" value={settings.email_sender_name} onChange={(e) => handleChange('email_sender_name', e.target.value)} placeholder="Studio22" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center"><Layers className="w-5 h-5 mr-2" />Subscription Settings</h2>
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center"><span className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mr-2"><Layers className="w-4 h-4" /></span>Subscription Settings</h2>
             <Link to="/Admin/Subscriptions" className="text-sm text-black font-medium flex items-center hover:underline">
               Manage Plans <ArrowRight className="w-4 h-4 ml-1" />
             </Link>
@@ -312,8 +362,8 @@ export default function AdminGeneralSettingsPage() {
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <Button onClick={handleSaveSettings} disabled={saving} className="bg-black text-white hover:bg-gray-800 px-8">
+        <div className="sticky bottom-4 flex justify-end">
+          <Button onClick={handleSaveSettings} disabled={saving} className="bg-black text-white hover:bg-gray-800 px-8 shadow-lg rounded-xl h-11">
             <Save className="w-4 h-4 mr-2" />
             {saving ? 'Saving...' : 'Save Settings'}
           </Button>

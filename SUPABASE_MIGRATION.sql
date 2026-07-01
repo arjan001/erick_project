@@ -109,3 +109,90 @@ CREATE POLICY "Public full access" ON projects FOR ALL USING (true) WITH CHECK (
 CREATE POLICY "Public full access" ON jobs FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access" ON applications FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access" ON job_invitations FOR ALL USING (true) WITH CHECK (true);
+
+-- ============================================
+-- TEAMS TABLE UPDATE (team registration + invited members)
+-- ============================================
+-- Aligns the `teams` table with the app's Team entity: city/country are no
+-- longer required at signup (collected later in the onboarding modal), and
+-- adds team_code/contact/specialty/size/language/equipment fields. Invited
+-- team members are linked to their team via a `team_id` claim on their own
+-- Supabase auth account (user_metadata.team_id) — NOT a separate row here —
+-- so there is no mixup between which team a member belongs to.
+
+CREATE TABLE IF NOT EXISTS teams (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    team_name VARCHAR(255) NOT NULL,
+    team_code VARCHAR(50),
+    contact_email VARCHAR(255) NOT NULL,
+    contact_name VARCHAR(255),
+    phone VARCHAR(50),
+    city VARCHAR(255),
+    country VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add any columns missing from an existing (older) teams table instead of
+-- failing — safe to re-run.
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS team_code VARCHAR(50);
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS contact_email VARCHAR(255);
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS contact_name VARCHAR(255);
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS phone VARCHAR(50);
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS city VARCHAR(255);
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS country VARCHAR(255);
+ALTER TABLE teams ALTER COLUMN city DROP NOT NULL;
+ALTER TABLE teams ALTER COLUMN country DROP NOT NULL;
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS specialties TEXT[] DEFAULT ARRAY[]::TEXT[];
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS team_size VARCHAR(20);
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS team_members JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS equipment_owned TEXT[] DEFAULT ARRAY[]::TEXT[];
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS portfolio_clips TEXT[] DEFAULT ARRAY[]::TEXT[];
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS availability VARCHAR(20) DEFAULT 'available';
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS languages_spoken TEXT[] DEFAULT ARRAY[]::TEXT[];
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS team_logo_url TEXT;
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pending';
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS admin_notes TEXT;
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS approved_date DATE;
+ALTER TABLE teams ADD COLUMN IF NOT EXISTS last_active TIMESTAMP WITH TIME ZONE;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_contact_email ON teams(contact_email);
+CREATE INDEX IF NOT EXISTS idx_teams_team_code ON teams(team_code);
+
+ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public full access" ON teams;
+CREATE POLICY "Public full access" ON teams FOR ALL USING (true) WITH CHECK (true);
+
+-- ============================================
+-- TEAM INVITES (invite a member to a specific team_id)
+-- ============================================
+CREATE TABLE IF NOT EXISTS invites (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) NOT NULL,
+    role VARCHAR(50) DEFAULT 'artist',
+    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'expired', 'revoked')),
+    expires_at TIMESTAMP WITH TIME ZONE,
+    invited_by_email VARCHAR(255),
+    team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
+    team_name VARCHAR(255),
+    member_name VARCHAR(255),
+    member_role VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_invites_team_id ON invites(team_id);
+CREATE INDEX IF NOT EXISTS idx_invites_email ON invites(email);
+
+ALTER TABLE invites ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public full access" ON invites;
+CREATE POLICY "Public full access" ON invites FOR ALL USING (true) WITH CHECK (true);
+
+-- ============================================
+-- ADMIN SETTINGS: TRANSACTIONAL EMAIL PROVIDER
+-- ============================================
+-- Toggle between Brevo and Resend for outbound emails (login/invite emails).
+-- Actual API keys are stored as server-side environment variables, never in
+-- this table — this only stores which provider + sender address to use.
+INSERT INTO admin_settings (setting_key, setting_value, setting_type, description) VALUES
+('email_provider', 'brevo', 'string', 'Transactional email provider: brevo or resend'),
+('email_sender_address', '', 'string', 'From address used when sending transactional emails')
+ON CONFLICT (setting_key) DO NOTHING;
