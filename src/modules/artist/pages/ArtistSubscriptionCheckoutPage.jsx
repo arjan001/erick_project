@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft, X } from 'lucide-react';
+import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft, X, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function CardPaymentModal({ pkg, onClose, onSuccess }) {
   const [cardForm, setCardForm] = useState({ cardNumber: '', expiryDate: '', cvv: '', cardholderName: '' });
   const [processing, setProcessing] = useState(false);
+  const [stage, setStage] = useState(null); // 'processing' | 'validating' | 'processed'
   const { success, error: toastError } = useToast();
 
   const formatCardNumber = (val) => {
@@ -27,13 +30,24 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
     if (!cardForm.cardNumber || !cardForm.expiryDate || !cardForm.cvv || !cardForm.cardholderName) return;
     setProcessing(true);
     try {
+      setStage('processing');
+      await sleep(1200);
+      setStage('validating');
+      await sleep(1600);
       await onSuccess(cardForm);
+      setStage('processed');
+      await sleep(900);
     } catch {
       toastError('Payment Failed', 'Could not process payment. Please try again.');
-    } finally {
       setProcessing(false);
+      setStage(null);
     }
   };
+
+  const stageLabel = stage === 'processing' ? 'Processing payment...'
+    : stage === 'validating' ? 'Validating with your bank...'
+    : stage === 'processed' ? 'Payment processed!'
+    : '';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}>
@@ -45,10 +59,12 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
             <div className="absolute top-4 right-4 w-32 h-32 rounded-full border border-white" />
             <div className="absolute top-8 right-8 w-20 h-20 rounded-full border border-white" />
           </div>
-          <button onClick={onClose}
-            className="absolute top-3 right-3 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
-            <X className="w-4 h-4" />
-          </button>
+          {!processing && (
+            <button onClick={onClose}
+              className="absolute top-3 right-3 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          )}
           <div className="p-5 h-full flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <div className="w-8 h-6 bg-amber-400 rounded" />
@@ -66,7 +82,20 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
           </div>
         </div>
 
-        {/* Form */}
+        {/* Processing overlay */}
+        {processing ? (
+          <div className="p-10 flex flex-col items-center justify-center text-center min-h-[280px]">
+            {stage === 'processed' ? (
+              <CheckCircle2 className="w-12 h-12 text-green-500 mb-4" />
+            ) : (
+              <Loader2 className="w-12 h-12 text-gray-800 animate-spin mb-4" />
+            )}
+            <p className="font-semibold text-gray-900">{stageLabel}</p>
+            <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5" /> Please don't close this window
+            </p>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-bold text-gray-900">Pay ${pkg.price}/{pkg.billing_cycle}</h3>
@@ -135,10 +164,10 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
             disabled={processing}
             className="w-full py-3 bg-black text-white rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:opacity-60 transition-all"
           >
-            {processing ? 'Processing...' : `Subscribe to ${pkg.name} — $${pkg.price}`}
+            Subscribe to {pkg.name} — ${pkg.price}
           </button>
-
-        </form>
+          </form>
+          )}
       </div>
     </div>
   );
