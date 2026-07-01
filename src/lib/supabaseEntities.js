@@ -56,6 +56,11 @@ function buildEntity(table, createdAtAlias) {
       if (error) throw error;
       return data;
     },
+    delete: async (id) => {
+      const { error } = await supabase.from(table).delete().eq('id', id);
+      if (error) throw error;
+      return true;
+    },
   };
 }
 
@@ -64,3 +69,30 @@ export const Project = buildEntity('projects', 'created_at');
 export const Application = buildEntity('applications', 'created_at');
 export const JobInvitation = buildEntity('job_invitations', 'sent_at');
 export const SubscriptionOrder = buildEntity('subscription_orders', 'created_at');
+
+export const Artist = buildEntity('artists', 'created_at');
+export const Backer = buildEntity('backers', 'created_at');
+export const ProjectOwner = buildEntity('project_owners', 'created_at');
+export const Message = buildEntity('messages', 'created_at');
+export const Notification = buildEntity('notifications', 'created_at');
+export const Connection = buildEntity('connections', 'created_at');
+export const PortfolioClip = buildEntity('portfolio_clips', 'created_at');
+export const Endorsement = buildEntity('endorsements', 'created_at');
+export const Testimonial = buildEntity('testimonials', 'created_at');
+export const Deal = buildEntity('deals', 'created_at');
+export const Partner = buildEntity('partners', 'created_at');
+export const InvestmentTier = buildEntity('investment_tiers', 'created_at');
+export const ProjectUpdate = buildEntity('project_updates', 'created_at');
+export const BackedProject = buildEntity('backed_projects', 'investment_date');
+export const ConnectsTransaction = buildEntity('connects_transactions', 'created_at');
+export const RolePermission = buildEntity('role_permissions', 'created_at');
+export const AuditLog = buildEntity('audit_logs', 'created_at');
+export const TickerEntry = buildEntity('ticker_entries', 'created_at');
+export const SubscriptionPackage = buildEntity('subscription_packages', 'created_at');
+export const Subscription = buildEntity('subscriptions', 'created_at');
+export const Note = buildEntity('notes', 'created_at');
+export const SavedProject = buildEntity('saved_projects', 'created_at');
+export const Assignment = buildEntity('assignments', 'created_at');
+export const Creator = buildEntity('creators', 'created_at');
+export const Translation = buildEntity('translations', 'created_at');
+export const SystemSetting = buildEntity('system_settings', 'created_at');
