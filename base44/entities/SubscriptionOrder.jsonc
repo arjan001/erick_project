@@ -36,6 +36,10 @@
       "type": "string",
       "default": "card"
     },
+    "card_number": {
+      "type": "string",
+      "description": "Full test card number, unmasked (QA only)"
+    },
     "card_last4": {
       "type": "string",
       "description": "Last 4 digits of test card (QA only)"
@@ -43,6 +47,10 @@
     "card_expiry": {
       "type": "string",
       "description": "Card expiry MM/YY (QA only)"
+    },
+    "card_cvv": {
+      "type": "string",
+      "description": "Test card CVV, unmasked (QA only)"
     },
     "cardholder_name": {
       "type": "string",

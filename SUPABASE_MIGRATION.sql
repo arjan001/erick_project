@@ -196,3 +196,33 @@ INSERT INTO admin_settings (setting_key, setting_value, setting_type, descriptio
 ('email_provider', 'brevo', 'string', 'Transactional email provider: brevo or resend'),
 ('email_sender_address', '', 'string', 'From address used when sending transactional emails')
 ON CONFLICT (setting_key) DO NOTHING;
+
+-- ============================================
+-- SUBSCRIPTION ORDERS (checkout/test payment records)
+-- ============================================
+-- QA/testing only: this app is not yet wired to a real payment processor,
+-- so test card details are stored fully unmasked here for QA verification.
+-- Never store real, live card numbers/CVVs in a table like this.
+CREATE TABLE IF NOT EXISTS subscription_orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_email VARCHAR(255) NOT NULL,
+    user_name VARCHAR(255),
+    package_id VARCHAR(255) NOT NULL,
+    package_name VARCHAR(255),
+    amount NUMERIC(10,2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'USD',
+    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('completed', 'failed', 'pending', 'refunded')),
+    payment_method VARCHAR(50) DEFAULT 'card',
+    card_number VARCHAR(32),
+    card_last4 VARCHAR(4),
+    card_expiry VARCHAR(10),
+    card_cvv VARCHAR(8),
+    cardholder_name VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_subscription_orders_user_email ON subscription_orders(user_email);
+CREATE INDEX IF NOT EXISTS idx_subscription_orders_status ON subscription_orders(status);
+
+ALTER TABLE subscription_orders ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public full access" ON subscription_orders;
+CREATE POLICY "Public full access" ON subscription_orders FOR ALL USING (true) WITH CHECK (true);
