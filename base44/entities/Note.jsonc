@@ -8,7 +8,7 @@
     },
     "content": {
       "type": "string",
-      "description": "Note body text"
+      "description": "Note body text (supports basic HTML formatting)"
     },
     "color": {
       "type": "string",
