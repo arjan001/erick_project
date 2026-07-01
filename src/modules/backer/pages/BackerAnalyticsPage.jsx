@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Backer, BackedProject } from '@/lib/supabaseEntities';
 import BackerSidebar from '@/components/BackerSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, DollarSign, BarChart3, PieChart, Calendar, ArrowUpRight, ArrowDownRight, Target, Zap } from 'lucide-react';
@@ -31,13 +31,13 @@ export default function BackerAnalyticsPage() {
       const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
       
       // Fetch backer profile
-      const backers = await base44.entities.Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: storedUser.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }
 
       // Fetch investments
-      const backedProjects = await base44.entities.BackedProject.filter({ backer_email: storedUser.email });
+      const backedProjects = await BackedProject.filter({ backer_email: storedUser.email });
       
       // Filter by time range
       const now = new Date();

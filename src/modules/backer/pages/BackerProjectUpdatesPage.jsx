@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Backer, BackedProject, ProjectUpdate } from '@/lib/supabaseEntities';
 import BackerSidebar from '@/components/BackerSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,17 +42,17 @@ export default function BackerProjectUpdatesPage() {
     try {
       const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
       
-      const backers = await base44.entities.Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: storedUser.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }
 
       // Fetch investments
-      const backedProjects = await base44.entities.BackedProject.filter({ backer_email: storedUser.email });
+      const backedProjects = await BackedProject.filter({ backer_email: storedUser.email });
       setInvestments(backedProjects);
 
       // Fetch project updates
-      const allUpdates = await base44.entities.ProjectUpdate.filter({ backer_email: storedUser.email });
+      const allUpdates = await ProjectUpdate.filter({ backer_email: storedUser.email });
       setUpdates(allUpdates);
     } catch (err) {
       console.error('Error fetching updates:', err);
@@ -65,7 +65,7 @@ export default function BackerProjectUpdatesPage() {
   const handleCreateUpdate = async () => {
     if (!backer) return;
     try {
-      await base44.entities.ProjectUpdate.create({
+      await ProjectUpdate.create({
         ...updateForm,
         backer_email: user.email,
         backer_id: backer.id,
@@ -90,7 +90,7 @@ export default function BackerProjectUpdatesPage() {
   const handleDeleteUpdate = async (updateId) => {
     if (!confirm('Are you sure you want to delete this update?')) return;
     try {
-      await base44.entities.ProjectUpdate.delete(updateId);
+      await ProjectUpdate.delete(updateId);
       success('Update Deleted', 'Project update has been deleted');
       fetchData();
     } catch (err) {

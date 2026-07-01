@@ -8,6 +8,8 @@ import { ArrowRight, Award, MapPin, User, Play, Bookmark, Sparkles, X, Grid3x3, 
 
 import { base44 } from '@/api/base44Client';
 
+import { Creator, SavedProject } from '@/lib/supabaseEntities';
+
 import { Button } from '@/components/ui/button';
 
 import EditableSection from '../components/EditableSection';
@@ -220,7 +222,7 @@ export default function Home({ editMode = false }) {
 
     try {
 
-      const creators = await base44.entities.Creator.list();
+      const creators = await Creator.list();
 
       setAllCreators(creators);
 
@@ -238,7 +240,7 @@ export default function Home({ editMode = false }) {
 
     try {
 
-      const projects = await base44.entities.SavedProject.list();
+      const projects = await SavedProject.list();
 
       const organized = {
 
@@ -282,7 +284,7 @@ export default function Home({ editMode = false }) {
 
     try {
 
-      await base44.entities.SavedProject.create({
+      await SavedProject.create({
 
         section,
 
@@ -612,7 +614,7 @@ export default function Home({ editMode = false }) {
 
                       if (!confirm('Delete this project permanently?')) return;
 
-                      await base44.entities.SavedProject.delete(viewingProject.id);
+                      await SavedProject.delete(viewingProject.id);
 
                       await loadSavedProjects();
 
@@ -636,7 +638,7 @@ export default function Home({ editMode = false }) {
 
                     onClick={async () => {
 
-                      await base44.entities.SavedProject.update(viewingProject.id, {
+                      await SavedProject.update(viewingProject.id, {
 
                         title: viewingProject.title,
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
+import { Artist } from '@/lib/supabaseEntities';
 import ArtistStepRole from '../components/artist/ArtistStepRole';
 import ArtistStepQuestions from '../components/artist/ArtistStepQuestions';
 import ArtistStepPortfolio from '../components/artist/ArtistStepPortfolio';
@@ -84,7 +85,7 @@ export default function ApplyArtist() {
 
     setIsSubmitting(true);
     try {
-      await base44.entities.Artist.create({
+      await Artist.create({
         ...artistData,
         status: 'pending'
       });

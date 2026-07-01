@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../api/admin.api';
-import { base44 } from '@/api/base44Client';
+import { Subscription } from '@/lib/supabaseEntities';
 import { Search, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, X, Ban, Trash2, RotateCcw, Users, CreditCard } from 'lucide-react';
 import { notifySuccess, confirmDialog } from '@/lib/sweetAlert';
 
@@ -22,7 +22,7 @@ function TeamModal({ team, onClose, onApprove, onReject, onSuspend, onUnsuspend,
     let cancelled = false;
     const loadSubscription = async () => {
       try {
-        const rows = await base44.entities.Subscription.filter({ user_email: team.contact_email }, '-created_date', 1);
+        const rows = await Subscription.filter({ user_email: team.contact_email }, '-created_date', 1);
         if (!cancelled) setSubscription(rows?.[0] || null);
       } catch {
         if (!cancelled) setSubscription(null);

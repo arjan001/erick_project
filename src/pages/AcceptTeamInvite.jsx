@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AlertCircle, Eye, EyeOff, Lock } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { Invite } from '@/lib/supabaseEntities';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -27,7 +27,7 @@ export default function AcceptTeamInvite() {
     const loadInvite = async () => {
       if (!inviteId) { setLoading(false); return; }
       try {
-        const rows = await base44.entities.Invite.filter({ id: inviteId });
+        const rows = await Invite.filter({ id: inviteId });
         setInvite(rows?.[0] || null);
       } catch (err) {
         console.error('Error loading invite:', err);
@@ -52,7 +52,7 @@ export default function AcceptTeamInvite() {
       });
       if (supaError) throw supaError;
 
-      await base44.entities.Invite.update(invite.id, { status: 'accepted' });
+      await Invite.update(invite.id, { status: 'accepted' });
 
       if (data.session) {
         login({ id: data.user.id, email: data.user.email, full_name: invite.member_name, role: 'team', team_id: invite.team_id });

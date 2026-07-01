@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Backer, Deal } from '@/lib/supabaseEntities';
 import BackerSidebar from '@/components/BackerSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,13 +46,13 @@ export default function BackerDealsPage() {
       const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
       
       // Fetch backer profile
-      const backers = await base44.entities.Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: storedUser.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }
 
       // Fetch deals
-      const allDeals = await base44.entities.Deal.filter({ backer_email: storedUser.email });
+      const allDeals = await Deal.filter({ backer_email: storedUser.email });
       setDeals(allDeals);
     } catch (err) {
       console.error('Error fetching deals:', err);
@@ -65,7 +65,7 @@ export default function BackerDealsPage() {
   const handleCreateDeal = async () => {
     if (!backer) return;
     try {
-      await base44.entities.Deal.create({
+      await Deal.create({
         ...dealForm,
         backer_email: user.email,
         backer_id: backer.id,
@@ -84,7 +84,7 @@ export default function BackerDealsPage() {
 
   const handleUpdateDealStatus = async (dealId, status) => {
     try {
-      await base44.entities.Deal.update(dealId, { status });
+      await Deal.update(dealId, { status });
       success('Status Updated', `Deal status updated to ${status}`);
       fetchData();
     } catch (err) {
@@ -100,7 +100,7 @@ export default function BackerDealsPage() {
 
   const handleSignatureSave = async (signatureData) => {
     try {
-      await base44.entities.Deal.update(signingDealId, { 
+      await Deal.update(signingDealId, { 
         signature: signatureData,
         signed_at: new Date().toISOString(),
         status: 'active'

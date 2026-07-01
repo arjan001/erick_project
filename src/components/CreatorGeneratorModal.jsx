@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, Sparkles, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { Creator } from '@/lib/supabaseEntities';
 
 const TYPES = ['freelance', 'studio', 'agency', 'team', 'collective'];
 const CATEGORIES = [
@@ -124,7 +125,7 @@ Return ONLY valid JSON array of companies.`;
       setProgress(`Found ${validCreators.length} creators with verified logos. Saving to database...`);
 
       // Save to database
-      await base44.entities.Creator.bulkCreate(validCreators);
+      await Promise.all(validCreators.map(c => Creator.create(c)));
 
       setProgress('Complete!');
       setTimeout(() => {

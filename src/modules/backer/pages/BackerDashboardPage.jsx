@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Backer, BackedProject, Deal } from '@/lib/supabaseEntities';
 import DashboardStatCard from '@/components/DashboardStatCard';
 import { DollarSign, TrendingUp, Film, Plus, Eye, Edit2, X, ArrowUpRight, ArrowDownRight, Target, Zap, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -39,13 +39,13 @@ export default function BackerDashboardPage() {
 
   const fetchData = async (currentUser) => {
     try {
-      const backers = await base44.entities.Backer.filter({ contact_email: currentUser.email });
+      const backers = await Backer.filter({ contact_email: currentUser.email });
       const currentBacker = backers?.[0] || null;
       setBacker(currentBacker);
 
       const [projects, dealRows] = await Promise.all([
-        base44.entities.BackedProject.filter({ backer_email: currentUser.email }, '-investment_date'),
-        base44.entities.Deal.filter({ backer_email: currentUser.email })
+        BackedProject.filter({ backer_email: currentUser.email }, '-investment_date'),
+        Deal.filter({ backer_email: currentUser.email })
       ]);
       setBackedProjects(projects || []);
       setDeals(dealRows || []);
@@ -60,7 +60,7 @@ export default function BackerDashboardPage() {
   const handleCreateBackedProject = async () => {
     if (!projectForm.project_title || !projectForm.investment_amount) return;
     try {
-      await base44.entities.BackedProject.create({
+      await BackedProject.create({
         backer_email: user.email,
         backer_id: backer?.id,
         project_title: projectForm.project_title,
@@ -70,7 +70,7 @@ export default function BackerDashboardPage() {
         investment_date: new Date().toISOString()
       });
       if (backer) {
-        await base44.entities.Backer.update(backer.id, {
+        await Backer.update(backer.id, {
           total_invested: (backer.total_invested || 0) + (parseFloat(projectForm.investment_amount) || 0),
           investment_count: (backer.investment_count || 0) + 1
         });
@@ -88,7 +88,7 @@ export default function BackerDashboardPage() {
   const handleUpdateBackedProject = async () => {
     if (!editingProject) return;
     try {
-      await base44.entities.BackedProject.update(editingProject.id, {
+      await BackedProject.update(editingProject.id, {
         project_title: projectForm.project_title,
         investment_amount: parseFloat(projectForm.investment_amount) || 0,
         status: projectForm.status,
@@ -108,9 +108,9 @@ export default function BackerDashboardPage() {
   const handleDeleteBackedProject = async (project) => {
     if (!(await confirmDialog('Remove this investment?', 'This action cannot be undone'))) return;
     try {
-      await base44.entities.BackedProject.delete(project.id);
+      await BackedProject.delete(project.id);
       if (backer) {
-        await base44.entities.Backer.update(backer.id, {
+        await Backer.update(backer.id, {
           total_invested: Math.max(0, (backer.total_invested || 0) - (project.investment_amount || 0)),
           investment_count: Math.max(0, (backer.investment_count || 0) - 1)
         });

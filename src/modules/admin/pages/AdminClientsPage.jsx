@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { ProjectOwner, AuditLog } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ export default function AdminClientsPage() {
   const fetchClients = async () => {
     try {
       setLoading(true);
-      const rows = await base44.entities.ProjectOwner.list('-created_date');
+      const rows = await ProjectOwner.list('-created_date');
       setClients(rows || []);
     } catch (err) {
       console.error('Error fetching clients:', err);
@@ -31,10 +31,10 @@ export default function AdminClientsPage() {
   const handleDeleteClient = async (clientId) => {
     if (!window.confirm('Delete this client? This cannot be undone.')) return;
     try {
-      await base44.entities.ProjectOwner.delete(clientId);
+      await ProjectOwner.delete(clientId);
       setClients(prev => prev.filter(c => c.id !== clientId));
       success('Deleted', 'Client deleted successfully');
-      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'client.delete', entity_type: 'ProjectOwner', entity_id: clientId, details: 'Deleted client' }).catch(() => {});
+      AuditLog.create({ actor_email: user?.email, action: 'client.delete', entity_type: 'ProjectOwner', entity_id: clientId, details: 'Deleted client' }).catch(() => {});
     } catch (err) {
       console.error('Error deleting client:', err);
       error('Failed', 'Failed to delete client');

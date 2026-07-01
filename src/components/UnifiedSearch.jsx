@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { Project, Artist, Team } from '@/lib/supabaseEntities';
 import { Search, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -22,9 +22,9 @@ export default function UnifiedSearch() {
         const lowerQuery = query.toLowerCase();
 
         const [projects, artists, teams] = await Promise.all([
-          base44.entities.Project.list(),
-          base44.entities.Artist.list(),
-          base44.entities.Team.list()
+          Project.list(),
+          Artist.list(),
+          Team.list()
         ]);
 
         const projectResults = projects

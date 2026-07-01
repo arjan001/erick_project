@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { SubscriptionPackage, SubscriptionOrder } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit2, Trash2, Check, X, Crown, Star, Zap } from 'lucide-react';
 
@@ -27,8 +27,8 @@ export default function AdminSubscriptionsPage() {
   const fetchData = async () => {
     try {
       const [pkgs, ords] = await Promise.all([
-        base44.entities.SubscriptionPackage.list('-display_order', 50),
-        base44.entities.SubscriptionOrder.list('-created_date', 100)
+        SubscriptionPackage.list('-display_order', 50),
+        SubscriptionOrder.list('-created_at', 100)
       ]);
       setPackages(pkgs || []);
       setOrders(ords || []);
@@ -50,9 +50,9 @@ export default function AdminSubscriptionsPage() {
         display_order: parseInt(form.display_order) || 0
       };
       if (editingPkg) {
-        await base44.entities.SubscriptionPackage.update(editingPkg.id, data);
+        await SubscriptionPackage.update(editingPkg.id, data);
       } else {
-        await base44.entities.SubscriptionPackage.create(data);
+        await SubscriptionPackage.create(data);
       }
       setShowForm(false);
       setEditingPkg(null);
@@ -71,12 +71,12 @@ export default function AdminSubscriptionsPage() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this plan?')) return;
-    await base44.entities.SubscriptionPackage.delete(id);
+    await SubscriptionPackage.delete(id);
     fetchData();
   };
 
   const handleToggleActive = async (pkg) => {
-    await base44.entities.SubscriptionPackage.update(pkg.id, { active: !pkg.active });
+    await SubscriptionPackage.update(pkg.id, { active: !pkg.active });
     fetchData();
   };
 

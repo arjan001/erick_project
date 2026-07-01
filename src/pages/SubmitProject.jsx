@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
+import { Project } from '@/lib/supabaseEntities';
 import StepProjectType from '../components/intake/StepProjectType';
 import StepUsage from '../components/intake/StepUsage';
 import StepVisualDirection from '../components/intake/StepVisualDirection';
@@ -143,7 +144,7 @@ export default function SubmitProject() {
         }
       }
 
-      await base44.entities.Project.create({
+      await Project.create({
         ...projectData,
         status: 'submitted',
         image_url: projectImage

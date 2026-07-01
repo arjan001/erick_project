@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { Message } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ export default function AdminMessagesPage() {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      const rows = await base44.entities.Message.list('-created_date', 500);
+      const rows = await Message.list('-created_date', 500);
       const grouped = {};
       (rows || []).forEach(m => {
         if (!grouped[m.conversation_id]) grouped[m.conversation_id] = [];
@@ -47,7 +47,7 @@ export default function AdminMessagesPage() {
     if (!newMessage.trim() || !selectedConversation) return;
     setSending(true);
     try {
-      const created = await base44.entities.Message.create({
+      const created = await Message.create({
         conversation_id: selectedConversation.id,
         sender_email: user?.email,
         recipient_email: selectedConversation.participant,
@@ -71,7 +71,7 @@ export default function AdminMessagesPage() {
     if (!window.confirm('Delete this entire conversation? This cannot be undone.')) return;
     try {
       const conv = conversations.find(c => c.id === conversationId);
-      await Promise.all(conv.messages.map(m => base44.entities.Message.delete(m.id)));
+      await Promise.all(conv.messages.map(m => Message.delete(m.id)));
       setConversations(prev => prev.filter(c => c.id !== conversationId));
       if (selectedId === conversationId) setSelectedId(null);
       success('Deleted', 'Conversation deleted successfully');

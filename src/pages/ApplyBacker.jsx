@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { base44 } from '@/api/base44Client';
+import { Backer } from '@/lib/supabaseEntities';
 import BackerStepInfo from '@/components/backer/BackerStepInfo';
 import BackerStepFocus from '@/components/backer/BackerStepFocus';
 import BackerStepPortfolio from '@/components/backer/BackerStepPortfolio';
@@ -60,7 +60,7 @@ export default function ApplyBacker() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await base44.entities.Backer.create({
+      await Backer.create({
         email: backerData.contact_email,
         full_name: backerData.contact_name,
         organization_name: backerData.organization_name,

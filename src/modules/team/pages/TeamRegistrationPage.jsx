@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Team } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Building2, Users, Mail, Phone, Globe, MapPin, Briefcase, ArrowLeft } from 'lucide-react';
@@ -38,7 +38,7 @@ export default function TeamRegistrationPage() {
       const randomNum = String(Math.floor(Math.random() * 100) + 1).padStart(2, '0');
       const teamCode = `${cityCode}${randomNum}`;
 
-      const team = await base44.entities.Team.create({
+      const team = await Team.create({
         ...formData,
         team_code: teamCode,
         location: `${formData.city}, ${formData.country}`,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { Team } from '@/lib/supabaseEntities';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,11 +13,11 @@ export default function TeamsQueue() {
 
   const { data: teams, isLoading } = useQuery({
     queryKey: ['admin-teams'],
-    queryFn: () => base44.entities.Team.list('-created_date'),
+    queryFn: () => Team.list('-created_date'),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Team.update(id, data),
+    mutationFn: ({ id, data }) => Team.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-teams'] });
       setSelectedTeam(null);

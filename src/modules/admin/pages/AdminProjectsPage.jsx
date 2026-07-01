@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { Project, AuditLog } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ export default function AdminProjectsPage() {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const rows = await base44.entities.Project.list('-created_date');
+      const rows = await Project.list('-created_date');
       setProjects(rows || []);
     } catch (err) {
       console.error('Error fetching projects:', err);
@@ -34,10 +34,10 @@ export default function AdminProjectsPage() {
   const handleDeleteProject = async (projectId) => {
     if (!window.confirm('Delete this project? This cannot be undone.')) return;
     try {
-      await base44.entities.Project.delete(projectId);
+      await Project.delete(projectId);
       setProjects(prev => prev.filter(p => p.id !== projectId));
       success('Deleted', 'Project deleted successfully');
-      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'project.delete', entity_type: 'Project', entity_id: projectId, details: 'Deleted project' }).catch(() => {});
+      AuditLog.create({ actor_email: user?.email, action: 'project.delete', entity_type: 'Project', entity_id: projectId, details: 'Deleted project' }).catch(() => {});
     } catch (err) {
       console.error('Error deleting project:', err);
       error('Failed', 'Failed to delete project');
@@ -47,10 +47,10 @@ export default function AdminProjectsPage() {
   const handleVerify = async (projectId, currentStatus) => {
     const newStatus = currentStatus === 'verified' ? 'submitted' : 'verified';
     try {
-      await base44.entities.Project.update(projectId, { status: newStatus });
+      await Project.update(projectId, { status: newStatus });
       setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: newStatus } : p));
       success('Updated', 'Project status updated successfully');
-      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'project.status_update', entity_type: 'Project', entity_id: projectId, details: `Changed status to ${newStatus}` }).catch(() => {});
+      AuditLog.create({ actor_email: user?.email, action: 'project.status_update', entity_type: 'Project', entity_id: projectId, details: `Changed status to ${newStatus}` }).catch(() => {});
     } catch (err) {
       console.error('Error updating project status:', err);
       error('Failed', 'Failed to update project status');

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { PortfolioClip } from '@/lib/supabaseEntities';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,11 +16,11 @@ export default function PortfolioQueue() {
 
   const { data: clips, isLoading } = useQuery({
     queryKey: ['admin-portfolio'],
-    queryFn: () => base44.entities.PortfolioClip.list('-created_date'),
+    queryFn: () => PortfolioClip.list('-created_date'),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.PortfolioClip.update(id, data),
+    mutationFn: ({ id, data }) => PortfolioClip.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-portfolio'] });
       setSelectedClip(null);

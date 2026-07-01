@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Backer, InvestmentTier } from '@/lib/supabaseEntities';
 import BackerSidebar from '@/components/BackerSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -84,13 +84,13 @@ export default function BackerInvestmentTiersPage() {
     try {
       const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
       
-      const backers = await base44.entities.Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: storedUser.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }
 
       // Fetch custom tiers if they exist
-      const customTiers = await base44.entities.InvestmentTier.filter({ backer_email: storedUser.email });
+      const customTiers = await InvestmentTier.filter({ backer_email: storedUser.email });
       if (customTiers.length > 0) {
         setTiers(customTiers);
       }
@@ -106,7 +106,7 @@ export default function BackerInvestmentTiersPage() {
     if (!backer) return;
     try {
       const benefitsArray = tierForm.benefits.split('\n').filter(b => b.trim());
-      await base44.entities.InvestmentTier.create({
+      await InvestmentTier.create({
         ...tierForm,
         backer_email: user.email,
         backer_id: backer.id,
@@ -137,7 +137,7 @@ export default function BackerInvestmentTiersPage() {
     if (!editingTier) return;
     try {
       const benefitsArray = tierForm.benefits.split('\n').filter(b => b.trim());
-      await base44.entities.InvestmentTier.update(editingTier.id, {
+      await InvestmentTier.update(editingTier.id, {
         ...tierForm,
         min_investment: parseFloat(tierForm.min_investment),
         max_investment: tierForm.max_investment ? parseFloat(tierForm.max_investment) : null,
@@ -165,7 +165,7 @@ export default function BackerInvestmentTiersPage() {
   const handleDeleteTier = async (tierId) => {
     if (!confirm('Are you sure you want to delete this investment tier?')) return;
     try {
-      await base44.entities.InvestmentTier.delete(tierId);
+      await InvestmentTier.delete(tierId);
       success('Tier Deleted', 'Investment tier has been deleted');
       fetchData();
     } catch (err) {

@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input';
 import { notifyError, notifySuccess, confirmDialog } from '@/lib/sweetAlert';
 
 import { base44 } from '@/api/base44Client';
+import { Team, PortfolioClip, Message, Invite } from '@/lib/supabaseEntities';
 
 
 
@@ -132,15 +133,13 @@ export default function TeamDashboard() {
 
     try {
 
-      const { base44: b44 } = await import('@/api/base44Client');
-
       // Load real team profile — invited members look up by team_id (their team's
       // workspace), the team admin looks up by their own contact_email.
       let teamData = null;
       if (currentUser.team_id) {
-        teamData = await b44.entities.Team.filter({ id: currentUser.team_id }, '-created_date', 1).then(r => r?.[0] || null);
+        teamData = await Team.filter({ id: currentUser.team_id }, '-created_date', 1).then(r => r?.[0] || null);
       } else {
-        const teams = await b44.entities.Team.filter({ contact_email: currentUser.email }, '-created_date', 1);
+        const teams = await Team.filter({ contact_email: currentUser.email }, '-created_date', 1);
         teamData = teams?.[0] || null;
       }
       setTeam(teamData);
@@ -157,14 +156,14 @@ export default function TeamDashboard() {
         setProfileSpecialties(Array.isArray(teamData.specialties) ? teamData.specialties.join(', ') : '');
 
         // Load real portfolio clips
-        const clips = await b44.entities.PortfolioClip.filter({ uploaded_by_id: teamData.id, uploaded_by_type: 'team' }, '-created_date', 20);
+        const clips = await PortfolioClip.filter({ uploaded_by_id: teamData.id, uploaded_by_type: 'team' }, '-created_date', 20);
         setPortfolioClips(clips || []);
 
         // Load real team members from the team's team_members array (embedded)
         setTeamMembers(teamData.team_members || []);
 
         // Load real messages
-        const msgs = await b44.entities.Message.filter({ recipient_email: teamData.contact_email }, '-created_date', 5);
+        const msgs = await Message.filter({ recipient_email: teamData.contact_email }, '-created_date', 5);
         setMessages(msgs || []);
       }
 
@@ -219,8 +218,7 @@ export default function TeamDashboard() {
     try {
 
       if (team?.id) {
-        const { base44: b44 } = await import('@/api/base44Client');
-        await b44.entities.Team.update(team.id, {
+        await Team.update(team.id, {
           team_name: team.team_name,
           contact_name: team.contact_name,
           contact_email: team.contact_email,
@@ -247,8 +245,7 @@ export default function TeamDashboard() {
 
     try {
 
-      const { base44: b44 } = await import('@/api/base44Client');
-      await b44.entities.Team.update(team.id, { admin_notes: profileBio });
+      await Team.update(team.id, { admin_notes: profileBio });
       setTeam(prev => ({ ...prev, bio: profileBio }));
 
       setEditingBio(false);
@@ -271,8 +268,7 @@ export default function TeamDashboard() {
 
     try {
 
-      const { base44: b44 } = await import('@/api/base44Client');
-      await b44.entities.Team.update(team.id, {
+      await Team.update(team.id, {
         website: profileWebsite,
         instagram: profileInstagram,
         linkedin: profileLinkedin,
@@ -335,8 +331,7 @@ export default function TeamDashboard() {
 
 
 
-      const { base44: b44 } = await import('@/api/base44Client');
-      const newClip = await b44.entities.PortfolioClip.create({
+      const newClip = await PortfolioClip.create({
         uploaded_by_type: 'team',
         uploaded_by_id: team.id,
         title: portfolioForm.title,
@@ -374,8 +369,7 @@ export default function TeamDashboard() {
 
     try {
 
-      const { base44: b44 } = await import('@/api/base44Client');
-      await b44.entities.PortfolioClip.delete(clipId);
+      await PortfolioClip.delete(clipId);
       setPortfolioClips(prev => prev.filter(clip => clip.id !== clipId));
 
     } catch (err) {
@@ -430,8 +424,7 @@ export default function TeamDashboard() {
 
       }
 
-      const { base44: b44 } = await import('@/api/base44Client');
-      await b44.entities.PortfolioClip.update(editingPortfolio.id, {
+      await PortfolioClip.update(editingPortfolio.id, {
         title: portfolioForm.title,
         project_type: portfolioForm.project_type,
         description: portfolioForm.description,
@@ -494,12 +487,11 @@ export default function TeamDashboard() {
         avatar_url: memberForm.avatar_url
       };
       const updatedMembers = [...teamMembers, newMember];
-      const { base44: b44 } = await import('@/api/base44Client');
-      await b44.entities.Team.update(team.id, { team_members: updatedMembers });
+      await Team.update(team.id, { team_members: updatedMembers });
       setTeamMembers(updatedMembers);
 
       if (memberForm.email) {
-        const invite = await b44.entities.Invite.create({
+        const invite = await Invite.create({
           email: memberForm.email,
           role: 'team',
           status: 'pending',
@@ -509,7 +501,7 @@ export default function TeamDashboard() {
           member_name: memberForm.name,
           member_role: memberForm.role,
         });
-        await b44.functions.invoke('sendTransactionalEmail', {
+        await base44.functions.invoke('sendTransactionalEmail', {
           to: memberForm.email,
           toName: memberForm.name,
           subject: `You've been added to ${team.team_name} on Studio22`,
@@ -541,8 +533,7 @@ export default function TeamDashboard() {
     try {
 
       const updatedMembers = teamMembers.filter(member => member.id !== memberId);
-      const { base44: b44 } = await import('@/api/base44Client');
-      await b44.entities.Team.update(team.id, { team_members: updatedMembers });
+      await Team.update(team.id, { team_members: updatedMembers });
       setTeamMembers(updatedMembers);
 
     } catch (err) {
@@ -598,8 +589,7 @@ export default function TeamDashboard() {
       const updatedMembers = teamMembers.map(member =>
         member.id === editingMember.id ? updatedMember : member
       );
-      const { base44: b44 } = await import('@/api/base44Client');
-      await b44.entities.Team.update(team.id, { team_members: updatedMembers });
+      await Team.update(team.id, { team_members: updatedMembers });
       setTeamMembers(updatedMembers);
 
       setShowMemberModal(false);

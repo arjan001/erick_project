@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { Artist, Team, ProjectOwner, Backer, AuditLog } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
@@ -30,16 +31,16 @@ export default function AdminUserManagementPage() {
           let roleData = null;
           try {
             if (u.role === 'artist' || u.role === 'artist_admin') {
-              const rows = await base44.entities.Artist.filter({ email: u.email });
+              const rows = await Artist.filter({ email: u.email });
               roleData = rows[0] || null;
             } else if (u.role === 'team' || u.role === 'team_admin') {
-              const rows = await base44.entities.Team.filter({ contact_email: u.email });
+              const rows = await Team.filter({ contact_email: u.email });
               roleData = rows[0] || null;
             } else if (u.role === 'client' || u.role === 'project_owner') {
-              const rows = await base44.entities.ProjectOwner.filter({ email: u.email });
+              const rows = await ProjectOwner.filter({ email: u.email });
               roleData = rows[0] || null;
             } else if (u.role === 'backer') {
-              const rows = await base44.entities.Backer.filter({ contact_email: u.email });
+              const rows = await Backer.filter({ contact_email: u.email });
               roleData = rows[0] || null;
             }
           } catch (err) {
@@ -85,7 +86,7 @@ export default function AdminUserManagementPage() {
       await base44.entities.User.update(userId, { role: newRole });
       success('Updated', 'User role updated');
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
-      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'user.role_update', entity_type: 'User', entity_id: userId, details: `Changed role to ${newRole}` }).catch(() => {});
+      AuditLog.create({ actor_email: user?.email, action: 'user.role_update', entity_type: 'User', entity_id: userId, details: `Changed role to ${newRole}` }).catch(() => {});
     } catch (err) {
       console.error('Error updating role:', err);
       error('Failed', 'Failed to update user role');
@@ -98,7 +99,7 @@ export default function AdminUserManagementPage() {
       await base44.entities.User.delete(userId);
       success('Deleted', 'User deleted successfully');
       setUsers(prev => prev.filter(u => u.id !== userId));
-      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'user.delete', entity_type: 'User', entity_id: userId, details: 'Deleted user' }).catch(() => {});
+      AuditLog.create({ actor_email: user?.email, action: 'user.delete', entity_type: 'User', entity_id: userId, details: 'Deleted user' }).catch(() => {});
     } catch (err) {
       console.error('Error deleting user:', err);
       error('Failed', 'Failed to delete user');

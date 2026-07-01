@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { PortfolioClip } from '@/lib/supabaseEntities';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Play, Filter } from 'lucide-react';
@@ -11,7 +11,7 @@ export default function Work() {
 
   const { data: clips, isLoading } = useQuery({
     queryKey: ['approved-clips'],
-    queryFn: () => base44.entities.PortfolioClip.filter({ 
+    queryFn: () => PortfolioClip.filter({ 
       status: 'approved',
       approved_for_visual_direction: true 
     }),

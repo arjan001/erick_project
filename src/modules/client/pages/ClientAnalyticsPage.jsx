@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Project, Job, Application } from '@/lib/supabaseEntities';
 import ClientSidebar from '@/components/ClientSidebar';
 import { BarChart3, TrendingUp, Users, Briefcase, Eye } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -30,12 +30,12 @@ export default function ClientAnalytics() {
       try {
         const userEmail = JSON.parse(storedUser).email;
         
-        const projects = await base44.entities.Project.filter({ project_owner_email: userEmail });
-        const jobs = await base44.entities.Job.filter({ client_email: userEmail });
+        const projects = await Project.filter({ project_owner_email: userEmail });
+        const jobs = await Job.filter({ client_email: userEmail });
         
         const jobIds = jobs.map(j => j.id);
         const allApplications = await Promise.all(
-          jobIds.map(jobId => base44.entities.Application.filter({ job_id: jobId }))
+          jobIds.map(jobId => Application.filter({ job_id: jobId }))
         );
         const applications = allApplications.flat();
 

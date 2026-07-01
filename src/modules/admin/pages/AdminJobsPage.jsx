@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { Job, AuditLog } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ export default function AdminJobsPage() {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const rows = await base44.entities.Job.list('-posted_at');
+      const rows = await Job.list('-posted_at');
       setJobs(rows || []);
     } catch (err) {
       console.error('Error fetching jobs:', err);
@@ -34,10 +34,10 @@ export default function AdminJobsPage() {
   const handleDeleteJob = async (jobId) => {
     if (!window.confirm('Delete this job? This cannot be undone.')) return;
     try {
-      await base44.entities.Job.delete(jobId);
+      await Job.delete(jobId);
       setJobs(prev => prev.filter(j => j.id !== jobId));
       success('Deleted', 'Job deleted successfully');
-      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'job.delete', entity_type: 'Job', entity_id: jobId, details: 'Deleted job' }).catch(() => {});
+      AuditLog.create({ actor_email: user?.email, action: 'job.delete', entity_type: 'Job', entity_id: jobId, details: 'Deleted job' }).catch(() => {});
     } catch (err) {
       console.error('Error deleting job:', err);
       error('Failed', 'Failed to delete job');
@@ -47,10 +47,10 @@ export default function AdminJobsPage() {
   const handleToggleStatus = async (jobId, currentStatus) => {
     const newStatus = currentStatus === 'open' ? 'closed' : 'open';
     try {
-      await base44.entities.Job.update(jobId, { status: newStatus });
+      await Job.update(jobId, { status: newStatus });
       setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: newStatus } : j));
       success('Updated', 'Job status updated successfully');
-      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'job.status_update', entity_type: 'Job', entity_id: jobId, details: `Changed status to ${newStatus}` }).catch(() => {});
+      AuditLog.create({ actor_email: user?.email, action: 'job.status_update', entity_type: 'Job', entity_id: jobId, details: `Changed status to ${newStatus}` }).catch(() => {});
     } catch (err) {
       console.error('Error updating job status:', err);
       error('Failed', 'Failed to update job status');

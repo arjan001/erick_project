@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { ProjectOwner } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Building2, Globe, Phone, Mail, Upload, Bell, Shield } from 'lucide-react';
@@ -51,7 +52,7 @@ export default function ClientProfilePage() {
 
     const fetchData = async () => {
       try {
-        const owners = await base44.entities.ProjectOwner.filter({ email: parsedUser.email });
+        const owners = await ProjectOwner.filter({ email: parsedUser.email });
         if (owners.length > 0) {
           const o = owners[0];
           setOwner(o);
@@ -77,7 +78,7 @@ export default function ClientProfilePage() {
     if (!owner) return;
     setSaving(true);
     try {
-      const updated = await base44.entities.ProjectOwner.update(owner.id, { company: companyName, phone, website, bio });
+      const updated = await ProjectOwner.update(owner.id, { company: companyName, phone, website, bio });
       setOwner(updated);
       success('Profile Updated', 'Your profile has been saved');
     } catch (err) {
@@ -91,7 +92,7 @@ export default function ClientProfilePage() {
   const handleSavePreferences = async () => {
     if (!owner) return;
     try {
-      const updated = await base44.entities.ProjectOwner.update(owner.id, {
+      const updated = await ProjectOwner.update(owner.id, {
         email_notifications: emailNotifications,
         project_updates: projectUpdates,
         profile_public: profilePublic
@@ -111,7 +112,7 @@ export default function ClientProfilePage() {
     try {
       const response = await base44.integrations.Core.UploadFile({ file });
       const fileUrl = response.file_url || response.url;
-      const updated = await base44.entities.ProjectOwner.update(owner.id, { profile_photo_url: fileUrl });
+      const updated = await ProjectOwner.update(owner.id, { profile_photo_url: fileUrl });
       setOwner(updated);
       success('Photo Updated', 'Your profile photo has been updated');
     } catch (err) {

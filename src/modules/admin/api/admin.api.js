@@ -1,5 +1,4 @@
-import { base44 } from '@/shared/api/base44.client';
-import { Project } from '@/lib/supabaseEntities';
+import { Project, Artist, Team, TickerEntry } from '@/lib/supabaseEntities';
 import { mapProjectFromEntity, mapArtistFromEntity, mapTeamFromEntity } from '@/shared/types/entities';
 
 export const adminApi = {
@@ -20,18 +19,18 @@ export const adminApi = {
   },
   artists: {
     list: async (sort = '-created_date') => {
-      const rows = await base44.entities.Artist.list(sort);
+      const rows = await Artist.list(sort);
       return rows.map(mapArtistFromEntity);
     },
     approve: async (id, adminNotes) => {
-      return base44.entities.Artist.update(id, {
+      return Artist.update(id, {
         status: 'approved',
         admin_notes: adminNotes,
         approved_date: new Date().toISOString()
       });
     },
     reject: async (id, adminNotes) => {
-      return base44.entities.Artist.update(id, {
+      return Artist.update(id, {
         status: 'rejected',
         admin_notes: adminNotes
       });
@@ -39,47 +38,47 @@ export const adminApi = {
   },
   teams: {
     list: async (sort = '-created_date') => {
-      const rows = await base44.entities.Team.list(sort);
+      const rows = await Team.list(sort);
       return rows.map(mapTeamFromEntity);
     },
     approve: async (id, adminNotes) => {
-      return base44.entities.Team.update(id, {
+      return Team.update(id, {
         status: 'approved',
         admin_notes: adminNotes,
         approved_date: new Date().toISOString()
       });
     },
     reject: async (id, adminNotes) => {
-      return base44.entities.Team.update(id, {
+      return Team.update(id, {
         status: 'rejected',
         admin_notes: adminNotes
       });
     },
     suspend: async (id, adminNotes) => {
-      return base44.entities.Team.update(id, {
+      return Team.update(id, {
         status: 'suspended',
         admin_notes: adminNotes
       });
     },
     unsuspend: async (id) => {
-      return base44.entities.Team.update(id, { status: 'approved' });
+      return Team.update(id, { status: 'approved' });
     },
     remove: async (id) => {
-      return base44.entities.Team.delete(id);
+      return Team.delete(id);
     }
   },
   ticker: {
     list: async () => {
-      return base44.entities.TickerEntry.list();
+      return TickerEntry.list();
     },
     create: async (data) => {
-      return base44.entities.TickerEntry.create(data);
+      return TickerEntry.create(data);
     },
     update: async (id, data) => {
-      return base44.entities.TickerEntry.update(id, data);
+      return TickerEntry.update(id, data);
     },
     delete: async (id) => {
-      return base44.entities.TickerEntry.delete(id);
+      return TickerEntry.delete(id);
     }
   }
 };

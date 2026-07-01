@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Artist, PortfolioClip, Endorsement, Testimonial, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
 import ArtistSidebar from '../components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
 import { MapPin, MessageCircle, Briefcase, MoreHorizontal, ChevronDown, Globe, Instagram, Linkedin, Star, ThumbsUp, Play, Users, Crown } from 'lucide-react';
@@ -35,11 +35,11 @@ export default function ArtistPublicProfile() {
 
     const fetchData = async () => {
       try {
-        const artistsData = await base44.entities.Artist.filter({ id: artistId });
+        const artistsData = await Artist.filter({ id: artistId });
         if (artistsData.length > 0) {
           setViewedArtist(artistsData[0]);
 
-          const clipsData = await base44.entities.PortfolioClip.filter({ 
+          const clipsData = await PortfolioClip.filter({ 
             uploaded_by_type: 'artist', 
             uploaded_by_id: artistId,
             status: 'approved'
@@ -47,25 +47,25 @@ export default function ArtistPublicProfile() {
           setPortfolioClips(clipsData);
         }
 
-        const endorsementsData = await base44.entities.Endorsement.filter({ 
+        const endorsementsData = await Endorsement.filter({ 
           recipient_email: artistsData[0]?.email 
         });
         setEndorsements(endorsementsData);
 
-        const testimonialsData = await base44.entities.Testimonial.filter({ 
+        const testimonialsData = await Testimonial.filter({ 
           recipient_email: artistsData[0]?.email 
         });
         setTestimonials(testimonialsData);
 
         // Fetch subscription
         try {
-          const subsData = await base44.entities.Subscription.filter({ 
+          const subsData = await Subscription.filter({ 
             user_email: artistsData[0]?.email, 
             status: 'active' 
           });
           if (subsData.length > 0) {
             setSubscription(subsData[0]);
-            const pkgData = await base44.entities.SubscriptionPackage.get(subsData[0].package_id);
+            const pkgData = await SubscriptionPackage.get(subsData[0].package_id);
             setSubscriptionPackage(pkgData);
           }
         } catch (subErr) {

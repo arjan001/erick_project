@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { RolePermission } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
@@ -68,9 +69,9 @@ export default function AdminRolesPermissionsPage() {
   const fetchRoles = async () => {
     try {
       setLoading(true);
-      let rows = await base44.entities.RolePermission.list();
+      let rows = await RolePermission.list();
       if (!rows || rows.length === 0) {
-        rows = await base44.entities.RolePermission.bulkCreate(DEFAULT_ROLES);
+        rows = await Promise.all(DEFAULT_ROLES.map(r => RolePermission.create(r)));
       }
       const allUsers = await base44.entities.User.list();
       const withCounts = rows.map(role => ({
@@ -91,7 +92,7 @@ export default function AdminRolesPermissionsPage() {
   const handleCreateRole = async () => {
     if (!newRoleName.trim()) return;
     try {
-      const created = await base44.entities.RolePermission.create({
+      const created = await RolePermission.create({
         role_id: newRoleName.toLowerCase().replace(/\s+/g, '_'),
         role_name: newRoleName,
         description: 'Custom role',
@@ -115,7 +116,7 @@ export default function AdminRolesPermissionsPage() {
     }
     if (!window.confirm(`Delete the "${role.role_name}" role?`)) return;
     try {
-      await base44.entities.RolePermission.delete(role.id);
+      await RolePermission.delete(role.id);
       setRoles(prev => prev.filter(r => r.id !== role.id));
       if (selectedRole?.id === role.id) setSelectedRole(null);
       success('Deleted', 'Role deleted successfully');
@@ -138,7 +139,7 @@ export default function AdminRolesPermissionsPage() {
   const handleSavePermissions = async () => {
     setSaving(true);
     try {
-      await base44.entities.RolePermission.update(selectedRole.id, { permissions: selectedRole.permissions });
+      await RolePermission.update(selectedRole.id, { permissions: selectedRole.permissions });
       setRoles(prev => prev.map(r => r.id === selectedRole.id ? { ...r, permissions: selectedRole.permissions } : r));
       success('Saved', `Permissions for ${selectedRole.role_name} saved successfully`);
     } catch (err) {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { Invite, AuditLog } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,7 @@ export default function AdminInvitesManagementPage() {
   const fetchInvites = async () => {
     try {
       setLoading(true);
-      const rows = await base44.entities.Invite.list('-created_date', 200);
+      const rows = await Invite.list('-created_date', 200);
       setInvites(rows || []);
     } catch (err) {
       console.error('Error fetching invites:', err);
@@ -32,7 +33,7 @@ export default function AdminInvitesManagementPage() {
   useEffect(() => { fetchInvites(); }, []);
 
   const logAction = (action, entityId, details) => {
-    base44.entities.AuditLog.create({ actor_email: user?.email, action, entity_type: 'Invite', entity_id: entityId, details }).catch(() => {});
+    AuditLog.create({ actor_email: user?.email, action, entity_type: 'Invite', entity_id: entityId, details }).catch(() => {});
   };
 
   const handleCreateInvite = async () => {
@@ -46,7 +47,7 @@ export default function AdminInvitesManagementPage() {
       expiresAt.setDate(expiresAt.getDate() + inviteForm.expiresIn);
 
       await base44.users.inviteUser(inviteForm.email, inviteForm.role === 'admin' ? 'admin' : 'user');
-      const created = await base44.entities.Invite.create({
+      const created = await Invite.create({
         email: inviteForm.email,
         role: inviteForm.role,
         status: 'pending',
@@ -80,7 +81,7 @@ export default function AdminInvitesManagementPage() {
 
   const handleDeleteInvite = async (inviteId) => {
     try {
-      await base44.entities.Invite.delete(inviteId);
+      await Invite.delete(inviteId);
       setInvites(prev => prev.filter(i => i.id !== inviteId));
       logAction('invite.delete', inviteId, 'Deleted invite');
       success('Deleted', 'Invite deleted successfully');

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { SystemSetting } from '@/lib/supabaseEntities';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { Settings, Save, Globe, Bell, Shield, Clock, Users, Database, ToggleLeft, ToggleRight, Layers, ArrowRight, Mail, Send, CheckCircle2 } from 'lucide-react';
@@ -71,7 +71,7 @@ export default function AdminGeneralSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const rows = await base44.entities.SystemSetting.list();
+        const rows = await SystemSetting.list();
         if (rows && rows.length > 0) {
           setSettingsId(rows[0].id);
           setSettings({ ...DEFAULT_SETTINGS, ...rows[0] });
@@ -90,9 +90,9 @@ export default function AdminGeneralSettingsPage() {
     setSaving(true);
     try {
       if (settingsId) {
-        await base44.entities.SystemSetting.update(settingsId, settings);
+        await SystemSetting.update(settingsId, settings);
       } else {
-        const created = await base44.entities.SystemSetting.create(settings);
+        const created = await SystemSetting.create(settings);
         setSettingsId(created.id);
       }
       success('Saved', 'Settings saved successfully');

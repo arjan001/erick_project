@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { SubscriptionOrder, Subscription } from '@/lib/supabaseEntities';
 import { DollarSign, TrendingUp, Users, CreditCard, BarChart3, PieChart, Activity } from 'lucide-react';
 
 export default function AdminFinanceDashboardPage() {
@@ -11,8 +11,8 @@ export default function AdminFinanceDashboardPage() {
     const fetchData = async () => {
       try {
         const [orderRows, subs] = await Promise.all([
-          base44.entities.SubscriptionOrder.list('-created_date', 500),
-          base44.entities.Subscription.filter({ status: 'active' })
+          SubscriptionOrder.list('-created_at', 500),
+          Subscription.filter({ status: 'active' })
         ]);
         setOrders(orderRows || []);
         setActiveSubscriptions(subs?.length || 0);

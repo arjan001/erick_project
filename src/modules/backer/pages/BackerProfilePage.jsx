@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { Backer } from '@/lib/supabaseEntities';
 import { Edit2, Save, X, Upload, Globe, Linkedin, Instagram, Twitter, Bell, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,7 +53,7 @@ export default function BackerProfile() {
 
     const fetchData = async () => {
       try {
-        const backers = await base44.entities.Backer.filter({ contact_email: parsedUser.email });
+        const backers = await Backer.filter({ contact_email: parsedUser.email });
         if (backers.length > 0) {
           const b = backers[0];
           setBacker(b);
@@ -77,7 +78,7 @@ export default function BackerProfile() {
 
   const handleSave = async () => {
     try {
-      const updated = await base44.entities.Backer.update(backer.id, {
+      const updated = await Backer.update(backer.id, {
         organization_name: formData.organization_name,
         bio: formData.bio,
         website: formData.website,
@@ -98,7 +99,7 @@ export default function BackerProfile() {
   const handleSavePreferences = async () => {
     if (!backer) return;
     try {
-      const updated = await base44.entities.Backer.update(backer.id, {
+      const updated = await Backer.update(backer.id, {
         email_notifications: emailNotifications,
         deal_alerts: dealAlerts,
         profile_public: profilePublic
@@ -120,7 +121,7 @@ export default function BackerProfile() {
       const response = await base44.integrations.Core.UploadFile({ file });
       const fileUrl = response.file_url || response.url;
 
-      const updated = await base44.entities.Backer.update(backer.id, { logo_url: fileUrl });
+      const updated = await Backer.update(backer.id, { logo_url: fileUrl });
       setBacker(updated);
       success('Logo Updated', 'Your logo has been uploaded successfully');
     } catch (error) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Backer } from '@/lib/supabaseEntities';
 import BackerSidebar from '@/components/BackerSidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,7 +41,7 @@ export default function BackerBankingPage() {
     try {
       const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
       
-      const backers = await base44.entities.Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: storedUser.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
         setBankAccounts(backers[0].bank_accounts || []);
@@ -75,7 +75,7 @@ export default function BackerBankingPage() {
         ? bankAccounts.map(acc => ({ ...acc, is_primary: false })).concat(newAccount)
         : [...bankAccounts, newAccount];
 
-      await base44.entities.Backer.update(backer.id, { bank_accounts: updatedAccounts });
+      await Backer.update(backer.id, { bank_accounts: updatedAccounts });
       setBankAccounts(updatedAccounts);
       setBankForm({
         bank_name: '',
@@ -98,7 +98,7 @@ export default function BackerBankingPage() {
     
     try {
       const updatedAccounts = bankAccounts.filter(acc => acc.id !== accountId);
-      await base44.entities.Backer.update(backer.id, { bank_accounts: updatedAccounts });
+      await Backer.update(backer.id, { bank_accounts: updatedAccounts });
       setBankAccounts(updatedAccounts);
       success('Account Removed', 'Bank account removed successfully');
     } catch (err) {
@@ -113,7 +113,7 @@ export default function BackerBankingPage() {
         ...acc,
         is_primary: acc.id === accountId
       }));
-      await base44.entities.Backer.update(backer.id, { bank_accounts: updatedAccounts });
+      await Backer.update(backer.id, { bank_accounts: updatedAccounts });
       setBankAccounts(updatedAccounts);
       success('Primary Updated', 'Primary bank account updated');
     } catch (err) {

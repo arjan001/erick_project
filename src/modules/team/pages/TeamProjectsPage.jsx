@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Project } from '@/lib/supabaseEntities';
 import TeamSidebar from '@/components/TeamSidebar';
 import { Button } from '@/components/ui/button';
 import { Briefcase, Plus, Filter, Calendar, DollarSign, MapPin, Check, X, Clock } from 'lucide-react';
@@ -27,7 +27,7 @@ export default function TeamProjectsPage() {
 
   const fetchProjects = async () => {
     try {
-      const allProjects = await base44.entities.Project.filter({ team_id: team?.id });
+      const allProjects = await Project.filter({ team_id: team?.id });
       setProjects(allProjects);
     } catch (err) {
       console.error('Error fetching projects:', err);
@@ -39,7 +39,7 @@ export default function TeamProjectsPage() {
 
   const handleAcceptProject = async (projectId) => {
     try {
-      await base44.entities.Project.update(projectId, { status: 'in_progress' });
+      await Project.update(projectId, { status: 'in_progress' });
       setProjects(projects.map(p => p.id === projectId ? { ...p, status: 'in_progress' } : p));
       success('Project Accepted', 'Project has been accepted');
     } catch (err) {
@@ -50,7 +50,7 @@ export default function TeamProjectsPage() {
 
   const handleDeclineProject = async (projectId) => {
     try {
-      await base44.entities.Project.update(projectId, { status: 'declined' });
+      await Project.update(projectId, { status: 'declined' });
       setProjects(projects.map(p => p.id === projectId ? { ...p, status: 'declined' } : p));
       success('Project Declined', 'Project has been declined');
     } catch (err) {

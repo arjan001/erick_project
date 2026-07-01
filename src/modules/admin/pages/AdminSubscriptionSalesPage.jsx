@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { SubscriptionOrder } from '@/lib/supabaseEntities';
+import { SubscriptionOrder, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
 import { DollarSign, TrendingUp, Users, CreditCard, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 export default function AdminSubscriptionSalesPage() {
@@ -18,8 +17,8 @@ export default function AdminSubscriptionSalesPage() {
     try {
       const [ordersData, subsData, pkgsData] = await Promise.all([
         SubscriptionOrder.list('-created_at'),
-        base44.entities.Subscription.list(),
-        base44.entities.SubscriptionPackage.list()
+        Subscription.list(),
+        SubscriptionPackage.list()
       ]);
       setOrders(ordersData);
       setSubscriptions(subsData);

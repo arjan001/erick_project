@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { AuditLog } from '@/lib/supabaseEntities';
 import { useToast } from '@/hooks/useToast';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
@@ -16,7 +16,7 @@ export default function AdminAuditLogsPage() {
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      const rows = await base44.entities.AuditLog.list('-created_date', 200);
+      const rows = await AuditLog.list('-created_date', 200);
       setLogs(rows || []);
     } catch (err) {
       console.error('Error fetching audit logs:', err);
@@ -30,7 +30,7 @@ export default function AdminAuditLogsPage() {
 
   const handleDelete = async (id) => {
     try {
-      await base44.entities.AuditLog.delete(id);
+      await AuditLog.delete(id);
       setLogs(prev => prev.filter(l => l.id !== id));
       success('Deleted', 'Log entry removed');
     } catch (err) {

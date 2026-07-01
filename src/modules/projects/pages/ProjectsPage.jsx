@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { Project } from '@/lib/supabaseEntities';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ export default function Projects() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const allProjects = await base44.entities.Project.list();
+        const allProjects = await Project.list();
         const verified = allProjects.filter(p => p.status === 'verified');
         setProjects(verified);
       } catch (error) {

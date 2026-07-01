@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { Project } from '@/lib/supabaseEntities';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ export default function BackedProjects() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const allProjects = await base44.entities.Project.list();
+        const allProjects = await Project.list();
         const backedProjects = allProjects.filter(p => p.open_to_backing === true);
         setProjects(backedProjects);
       } catch (error) {

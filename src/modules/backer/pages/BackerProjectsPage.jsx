@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Backer, BackedProject, Project } from '@/lib/supabaseEntities';
 import BackerSidebar from '@/components/BackerSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,13 +37,13 @@ export default function BackerProjectsPage() {
       const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
       
       // Fetch backer profile
-      const backers = await base44.entities.Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: storedUser.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }
 
       // Fetch all projects
-      const allProjects = await base44.entities.Project.list();
+      const allProjects = await Project.list();
       setProjects(allProjects);
       setFilteredProjects(allProjects);
     } catch (err) {
@@ -99,7 +99,7 @@ export default function BackerProjectsPage() {
 
     try {
       // Create backed project record
-      await base44.entities.BackedProject.create({
+      await BackedProject.create({
         backer_email: user.email,
         project_id: project.id,
         project_title: project.title,
@@ -110,13 +110,13 @@ export default function BackerProjectsPage() {
       });
 
       // Update backer totals
-      await base44.entities.Backer.update(backer.id, {
+      await Backer.update(backer.id, {
         total_invested: (backer.total_invested || 0) + parseFloat(investmentAmount),
         investment_count: (backer.investment_count || 0) + 1
       });
 
       // Update project funding
-      await base44.entities.Project.update(project.id, {
+      await Project.update(project.id, {
         current_funding: (project.current_funding || 0) + parseFloat(investmentAmount),
         backers_count: (project.backers_count || 0) + 1
       });

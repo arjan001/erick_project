@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
 import { ExternalLink, Trash2 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { Creator } from '@/lib/supabaseEntities';
 
 export default function CreatorGrid({ creators, view = 'list', onDelete }) {
   if (view === 'list') {
@@ -55,7 +55,7 @@ export default function CreatorGrid({ creators, view = 'list', onDelete }) {
                   <button 
                     onClick={async () => {
                       if (confirm(`Delete ${creator.name}?`)) {
-                        await base44.entities.Creator.delete(creator.id);
+                        await Creator.delete(creator.id);
                         onDelete();
                       }
                     }}

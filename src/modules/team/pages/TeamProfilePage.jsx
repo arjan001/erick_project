@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { Team } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Building2, MapPin, Globe, Phone, Mail, Edit2, Save, Upload, X, Users, Briefcase, Bell, Shield } from 'lucide-react';
@@ -49,7 +50,7 @@ export default function TeamProfilePage() {
     const fetchTeam = async () => {
       try {
         const { email } = JSON.parse(storedUser);
-        const teams = await base44.entities.Team.filter({ contact_email: email });
+        const teams = await Team.filter({ contact_email: email });
         if (teams.length > 0) {
           const t = teams[0];
           setTeam(t);
@@ -76,7 +77,7 @@ export default function TeamProfilePage() {
   const handleSave = async () => {
     if (!team) return;
     try {
-      const updated = await base44.entities.Team.update(team.id, {
+      const updated = await Team.update(team.id, {
         ...formData,
         location: `${formData.city}, ${formData.country}`,
       });
@@ -92,7 +93,7 @@ export default function TeamProfilePage() {
   const handleSavePreferences = async () => {
     if (!team) return;
     try {
-      const updated = await base44.entities.Team.update(team.id, {
+      const updated = await Team.update(team.id, {
         email_notifications: emailNotifications,
         task_notifications: taskNotifications,
         profile_public: profilePublic
@@ -112,7 +113,7 @@ export default function TeamProfilePage() {
     try {
       const response = await base44.integrations.Core.UploadFile({ file });
       const fileUrl = response.file_url || response.url;
-      const updated = await base44.entities.Team.update(team.id, { logo: fileUrl });
+      const updated = await Team.update(team.id, { logo: fileUrl });
       setTeam(updated);
       success('Logo Updated', 'Team logo updated successfully');
     } catch (err) {

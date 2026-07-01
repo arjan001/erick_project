@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Backer, Partner } from '@/lib/supabaseEntities';
 import BackerSidebar from '@/components/BackerSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,13 +41,13 @@ export default function BackerPartnersPage() {
     try {
       const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
       
-      const backers = await base44.entities.Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: storedUser.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }
 
       // Fetch partners
-      const allPartners = await base44.entities.Partner.filter({ backer_email: storedUser.email });
+      const allPartners = await Partner.filter({ backer_email: storedUser.email });
       setPartners(allPartners);
     } catch (err) {
       console.error('Error fetching partners:', err);
@@ -60,7 +60,7 @@ export default function BackerPartnersPage() {
   const handleCreatePartner = async () => {
     if (!backer) return;
     try {
-      await base44.entities.Partner.create({
+      await Partner.create({
         ...partnerForm,
         backer_email: user.email,
         backer_id: backer.id,
@@ -86,7 +86,7 @@ export default function BackerPartnersPage() {
   const handleDeletePartner = async (partnerId) => {
     if (!confirm('Are you sure you want to remove this partner?')) return;
     try {
-      await base44.entities.Partner.delete(partnerId);
+      await Partner.delete(partnerId);
       success('Partner Removed', 'Partner removed successfully');
       fetchData();
     } catch (err) {

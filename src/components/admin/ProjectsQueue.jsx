@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { Project } from '@/lib/supabaseEntities';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,11 +21,11 @@ export default function ProjectsQueue() {
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ['admin-projects'],
-    queryFn: () => base44.entities.Project.list('-created_date'),
+    queryFn: () => Project.list('-created_date'),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Project.update(id, data),
+    mutationFn: ({ id, data }) => Project.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
       setSelectedProject(null);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Backer, BackedProject } from '@/lib/supabaseEntities';
 import BackerSidebar from '@/components/BackerSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,13 +34,13 @@ export default function BackerInvestmentsPage() {
       const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
       
       // Fetch backer profile
-      const backers = await base44.entities.Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: storedUser.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }
 
       // Fetch backed projects
-      const backedProjects = await base44.entities.BackedProject.filter({ backer_email: storedUser.email });
+      const backedProjects = await BackedProject.filter({ backer_email: storedUser.email });
       setInvestments(backedProjects);
     } catch (err) {
       console.error('Error fetching investments:', err);
@@ -68,7 +68,7 @@ export default function BackerInvestmentsPage() {
   const handleWithdraw = async (investmentId) => {
     if (!(await confirmDialog('Withdraw this investment?', 'This action cannot be undone'))) return;
     try {
-      await base44.entities.BackedProject.update(investmentId, { status: 'withdrawn' });
+      await BackedProject.update(investmentId, { status: 'withdrawn' });
       success('Withdrawal Initiated', 'Your withdrawal request has been submitted');
       fetchData();
     } catch (err) {

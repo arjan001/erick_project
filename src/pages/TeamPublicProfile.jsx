@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Team, PortfolioClip } from '@/lib/supabaseEntities';
 import { MapPin, Users, Award, Globe, Mail, Wrench, Calendar, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -18,12 +18,12 @@ export default function TeamPublicProfile() {
 
   const loadTeam = async () => {
     try {
-      const teams = await base44.entities.Team.list();
+      const teams = await Team.list();
       const foundTeam = teams.find(t => t.id === teamId);
       setTeam(foundTeam);
 
       if (foundTeam?.portfolio_clips?.length > 0) {
-        const clips = await base44.entities.PortfolioClip.list();
+        const clips = await PortfolioClip.list();
         setPortfolioClips(clips.filter(c => foundTeam.portfolio_clips.includes(c.id)));
       }
     } catch (error) {

@@ -4,6 +4,8 @@ import { useNavigate, Link } from 'react-router-dom';
 
 import { useAuth } from '@/lib/AuthContext';
 
+import { ProjectOwner, Project, Job } from '@/lib/supabaseEntities';
+
 import DashboardStatCard from '@/components/DashboardStatCard';
 
 import { Plus, Briefcase, Users, MessageSquare, TrendingUp, Calendar, MapPin, Eye, Send, Edit2, X, Globe, Upload, Film } from 'lucide-react';
@@ -110,10 +112,8 @@ export default function ClientDashboard() {
 
       try {
 
-        const { base44: b44 } = await import('@/api/base44Client');
-
         // Load real ProjectOwner profile
-        const owners = await b44.entities.ProjectOwner.filter({ email: authUser.email }, '-created_date', 1);
+        const owners = await ProjectOwner.filter({ email: authUser.email }, '-created_date', 1);
         const owner = owners?.[0] || { email: authUser.email, full_name: authUser.full_name };
         setProjectOwner(owner);
         setProfileCompanyName(owner.company || '');
@@ -123,11 +123,11 @@ export default function ClientDashboard() {
         setProfileBio('');
 
         // Load real projects
-        const projectsData = await b44.entities.Project.filter({ project_owner_email: authUser.email }, '-created_date', 20);
+        const projectsData = await Project.filter({ project_owner_email: authUser.email }, '-created_date', 20);
         setProjects(projectsData || []);
 
         // Load real jobs
-        const jobsData = await b44.entities.Job.filter({ client_email: authUser.email }, '-created_date', 20);
+        const jobsData = await Job.filter({ client_email: authUser.email }, '-created_date', 20);
         setJobs(jobsData || []);
 
       } catch (err) {
@@ -261,8 +261,7 @@ export default function ClientDashboard() {
 
     try {
 
-      const { base44: b44 } = await import('@/api/base44Client');
-      await b44.entities.Project.delete(projectId);
+      await Project.delete(projectId);
       setProjects(prev => prev.filter(p => p.id !== projectId));
       success('Deleted', 'Project deleted');
 
@@ -284,8 +283,7 @@ export default function ClientDashboard() {
 
     try {
 
-      const { base44: b44 } = await import('@/api/base44Client');
-      const newProject = await b44.entities.Project.create({
+      const newProject = await Project.create({
         project_owner_email: user.email,
         project_owner_name: user.full_name,
         notes: projectForm.description,
@@ -320,8 +318,7 @@ export default function ClientDashboard() {
 
     try {
 
-      const { base44: b44 } = await import('@/api/base44Client');
-      const updatedProject = await b44.entities.Project.update(editingProject.id, {
+      const updatedProject = await Project.update(editingProject.id, {
         notes: projectForm.description,
         project_type: projectForm.project_type,
         location_city: projectForm.location,
@@ -355,8 +352,7 @@ export default function ClientDashboard() {
 
     try {
 
-      const { base44: b44 } = await import('@/api/base44Client');
-      await b44.entities.Job.delete(jobId);
+      await Job.delete(jobId);
       setJobs(prev => prev.filter(j => j.id !== jobId));
       success('Deleted', 'Job deleted');
 
@@ -378,8 +374,7 @@ export default function ClientDashboard() {
 
     try {
 
-      const { base44: b44 } = await import('@/api/base44Client');
-      const newJob = await b44.entities.Job.create({
+      const newJob = await Job.create({
 
         client_email: user.email,
 
@@ -427,8 +422,7 @@ export default function ClientDashboard() {
 
     try {
 
-      const { base44: b44b } = await import('@/api/base44Client');
-      const updatedJob = await b44b.entities.Job.update(editingJob.id, {
+      const updatedJob = await Job.update(editingJob.id, {
 
         title: jobForm.title,
 

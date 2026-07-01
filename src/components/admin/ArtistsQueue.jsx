@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { Artist } from '@/lib/supabaseEntities';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,11 +13,11 @@ export default function ArtistsQueue() {
 
   const { data: artists, isLoading } = useQuery({
     queryKey: ['admin-artists'],
-    queryFn: () => base44.entities.Artist.list('-created_date'),
+    queryFn: () => Artist.list('-created_date'),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Artist.update(id, data),
+    mutationFn: ({ id, data }) => Artist.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-artists'] });
       setSelectedArtist(null);
