@@ -72,7 +72,6 @@ import Pricing from './pages/Pricing';
 import ProjectAdmin from './pages/ProjectAdmin';
 import Projects from './pages/Projects';
 import Services from './pages/Services';
-import Settings from './pages/Settings';
 import SignIn from './pages/SignIn';
 import SubmitProject from './pages/SubmitProject';
 import TeamAdmin from './pages/TeamAdmin';
@@ -108,7 +107,6 @@ export const PAGES = {
     "ProjectAdmin": ProjectAdmin,
     "Projects": Projects,
     "Services": Services,
-    "Settings": Settings,
     "SignIn": SignIn,
     "SubmitProject": SubmitProject,
     "TeamAdmin": TeamAdmin,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  DollarSign, Film, TrendingUp, Settings, User, Briefcase, BarChart3,
+  DollarSign, Film, TrendingUp, User, Briefcase, BarChart3,
   CreditCard, Users, Layers, Bell, LogOut, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -17,8 +17,7 @@ const MENU_ITEMS = [
   { label: 'Partners', icon: Users, href: 'BackerPartners' },
   { label: 'Investment Tiers', icon: Layers, href: 'BackerInvestmentTiers' },
   { label: 'Project Updates', icon: Bell, href: 'BackerProjectUpdates' },
-  { label: 'My Profile', icon: User, href: 'BackerProfile' },
-  { label: 'Settings', icon: Settings, href: 'Settings' }
+  { label: 'Profile & Settings', icon: User, href: 'BackerProfile' }
 ];
 
 export default function BackerSidebar() {

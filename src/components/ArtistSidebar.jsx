@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  Search, Briefcase, FileText, Mail, Users, Bell, User, Settings,
+  Search, Briefcase, FileText, Mail, Users, Bell, User,
   Home as HomeIcon, Network, ChevronLeft, ChevronRight, LogOut
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -14,8 +14,7 @@ const MENU_ITEMS = [
   { label: 'Applications', icon: FileText, href: 'JobApplications' },
   { label: 'Messages', icon: Mail, href: 'Messages', showBadge: true },
   { label: 'Network', icon: Network, href: 'Network' },
-  { label: 'My Profile', icon: User, href: 'ArtistProfile' },
-  { label: 'Settings', icon: Settings, href: 'Settings' }
+  { label: 'My Profile & Settings', icon: User, href: 'ArtistProfile' }
 ];
 
 export default function ArtistSidebar() {

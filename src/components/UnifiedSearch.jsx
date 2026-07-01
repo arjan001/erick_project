@@ -40,6 +40,7 @@ export default function UnifiedSearch() {
         const artistResults = artists
           .filter(a =>
             a.full_name?.toLowerCase().includes(lowerQuery) ||
+            a.email?.toLowerCase().includes(lowerQuery) ||
             a.role?.toLowerCase().includes(lowerQuery) ||
             a.based_in_city?.toLowerCase().includes(lowerQuery)
           )

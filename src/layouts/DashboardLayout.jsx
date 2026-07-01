@@ -29,7 +29,7 @@ export default function DashboardLayout({ children }) {
       : SIDEBAR_COLLAPSED_WIDTH
     : 0;
 
-  const settingsPage = isTeam ? 'TeamSettings' : isClient ? 'ClientSettings' : 'Settings';
+  const settingsPage = isTeam ? 'TeamProfile' : isClient ? 'ClientProfile' : isBacker ? 'BackerProfile' : 'ArtistProfile';
 
   return (
     <SidebarContext.Provider value={{ sidebarExpanded, setSidebarExpanded }}>

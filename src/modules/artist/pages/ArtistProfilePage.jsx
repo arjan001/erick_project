@@ -16,6 +16,7 @@ import { MapPin, MessageCircle, Briefcase, MoreHorizontal, ChevronDown, Copy, Gl
 
 import { useToast } from '@/hooks/useToast';
 import { notifyError, confirmDialog } from '@/lib/sweetAlert';
+import ArtistAccountSettingsTab from '@/components/artist/ArtistAccountSettingsTab';
 
 
 
@@ -1127,6 +1128,28 @@ export default function ArtistProfile() {
 
               </button>
 
+              <button
+
+                onClick={() => setActiveTab('settings')}
+
+                className={`py-4 px-1 font-semibold transition-colors relative ${
+
+                  activeTab === 'settings'
+
+                    ? 'text-gray-900'
+
+                    : 'text-gray-500 hover:text-gray-900'
+
+                }`}
+
+              >
+
+                Account Settings
+
+                {activeTab === 'settings' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />}
+
+              </button>
+
             </div>
 
 
@@ -1500,6 +1523,14 @@ export default function ArtistProfile() {
           {activeTab === 'about' && (
 
             <AboutSection artist={artist} endorsements={endorsements} />
+
+          )}
+
+          {/* Account Settings Tab */}
+
+          {activeTab === 'settings' && (
+
+            <ArtistAccountSettingsTab artist={artist} userEmail={user?.email} onUpdate={setArtist} />
 
           )}
 

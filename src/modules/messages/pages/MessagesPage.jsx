@@ -3,6 +3,26 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Search, Send, Paperclip, Plus, X, Trash2, Archive, ArchiveRestore, Inbox } from 'lucide-react';
+import { confirmDialog } from '@/lib/sweetAlert';
+
+function playMessageTone() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.35);
+  } catch {
+    // audio not supported — ignore
+  }
+}
 
 const getConversationId = (a, b) => [a, b].sort().join('__');
 
@@ -85,6 +105,9 @@ export default function MessagesPage() {
     const unsubscribe = base44.entities.Message.subscribe((event) => {
       const m = event.data;
       if (!m || (m.sender_email !== user?.email && m.recipient_email !== user?.email)) return;
+      if (event.type === 'create' && m.sender_email !== user?.email) {
+        playMessageTone();
+      }
       fetchConversations();
     });
     return unsubscribe;
@@ -149,7 +172,8 @@ export default function MessagesPage() {
   };
 
   const handleDelete = async (conv) => {
-    if (!window.confirm(`Delete this conversation with ${conv.name}? This cannot be undone.`)) return;
+    const confirmed = await confirmDialog('Delete conversation?', `This will permanently delete your conversation with ${conv.name}.`, 'Yes, delete it');
+    if (!confirmed) return;
     try {
       await Promise.all(conv.messages.map(m => base44.entities.Message.delete(m.id)));
       success('Deleted', 'Conversation deleted');
@@ -165,8 +189,8 @@ export default function MessagesPage() {
     setShowNewChatModal(true);
     try {
       const [artists, teams, owners] = await Promise.all([
-        base44.entities.Artist.filter({ status: 'approved' }),
-        base44.entities.Team.filter({ status: 'approved' }),
+        base44.entities.Artist.list(),
+        base44.entities.Team.list(),
         base44.entities.ProjectOwner.list(),
       ]);
       const people = [

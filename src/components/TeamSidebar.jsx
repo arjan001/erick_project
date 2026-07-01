@@ -14,7 +14,7 @@ const MENU_ITEMS = [
   { icon: FolderKanban, label: 'Tasks', path: 'TeamTasks' },
   { icon: MessageSquare, label: 'Messages', path: 'TeamMessages' },
   { icon: CreditCard, label: 'Payments', path: 'TeamPayments' },
-  { icon: Settings, label: 'Settings', path: 'TeamSettings' },
+  { icon: Settings, label: 'Profile & Settings', path: 'TeamProfile' },
 ];
 
 export default function TeamSidebar() {

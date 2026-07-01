@@ -304,12 +304,6 @@ const artistRoutes = [
     component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
     layout: DashboardLayout,
     guard: ArtistGuard
-  },
-  {
-    path: '/Settings',
-    component: () => import('@/pages/Settings'),
-    layout: DashboardLayout,
-    guard: ArtistGuard
   }
 ];
 
@@ -320,6 +314,12 @@ const clientRoutes = [
     component: () => import('@/modules/client/pages/ClientDashboardPage'),
     layout: DashboardLayout,
     guard: ClientGuard
+  },
+  {
+    path: '/ClientProfile',
+    component: () => import('@/modules/client/pages/ClientProfilePage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
   }
 ];
 
@@ -328,6 +328,12 @@ const teamRoutes = [
   {
     path: '/teamdashboard',
     component: () => import('@/modules/team/pages/TeamDashboardPage'),
+    layout: DashboardLayout,
+    guard: TeamGuard
+  },
+  {
+    path: '/TeamProfile',
+    component: () => import('@/modules/team/pages/TeamProfilePage'),
     layout: DashboardLayout,
     guard: TeamGuard
   }

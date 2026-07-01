@@ -10,7 +10,7 @@ const MENU_ITEMS = [
   { label: 'Applications', icon: FileText, href: 'ClientApplications' },
   { label: 'Messages', icon: Mail, href: 'ClientMessages' },
   { label: 'Analytics', icon: BarChart3, href: 'ClientAnalytics' },
-  { label: 'Settings', icon: Settings, href: 'ClientSettings' }
+  { label: 'Profile & Settings', icon: Settings, href: 'ClientProfile' }
 ];
 
 export default function ClientSidebar() {

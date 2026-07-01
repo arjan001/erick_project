@@ -62,9 +62,9 @@ export default function NetworkPage() {
     const fetchData = async () => {
       try {
         const [artists, teams, backers, connectionsData, myArtist] = await Promise.all([
-          base44.entities.Artist.filter({ status: 'approved' }),
-          base44.entities.Team.filter({ status: 'approved' }),
-          base44.entities.Backer.filter({ status: 'approved' }),
+          base44.entities.Artist.list(),
+          base44.entities.Team.list(),
+          base44.entities.Backer.list(),
           base44.entities.Connection.list(),
           base44.entities.Artist.filter({ email: user.email }),
         ]);

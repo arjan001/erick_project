@@ -351,13 +351,13 @@ export default function ArtistDashboard() {
 
               <div className="border border-gray-200 rounded-lg p-6">
 
-                <Link to={createPageUrl('Settings')} className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors">
+                <Link to={createPageUrl('ArtistProfile')} className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors">
 
                   <div className="flex items-center gap-2">
 
                     <Settings className="w-5 h-5 text-gray-600" />
 
-                    <span className="font-semibold text-gray-900">Profile Settings</span>
+                    <span className="font-semibold text-gray-900">Profile & Settings</span>
 
                   </div>
 
