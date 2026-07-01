@@ -25,9 +25,9 @@ const navItems = [
 const navGroups = [
   { label: 'Overview', items: ['/Admin', '/ArtistAdmin', '/TeamAdmin', '/ProjectAdmin'] },
   { label: 'Users', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
-  { label: 'System', items: ['/Admin/AuditLogs', '/Admin/GeneralSettings', '/Admin/SEOCMS', '/Admin/ImageStorage'] },
-  { label: 'Integrations', items: ['/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
   { label: 'Finance', items: ['/Admin/FinanceDashboard', '/Admin/Subscriptions'] },
+  { label: 'Integrations', items: ['/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
+  { label: 'System (Rarely Used)', items: ['/Admin/GeneralSettings', '/Admin/SEOCMS', '/Admin/ImageStorage', '/Admin/AuditLogs'] },
 ];
 
 export default function AdminLayout({ children }) {

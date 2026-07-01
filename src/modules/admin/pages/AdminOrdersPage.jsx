@@ -1,37 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import AdminSidebar from '@/components/AdminSidebar';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Search, Filter, Eye, Package, Truck, CheckCircle, XCircle, Clock, DollarSign, User, Calendar, MoreVertical } from 'lucide-react';
 
 export default function AdminOrdersPage() {
-  const navigate = useNavigate();
   const { success, error } = useToast();
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
-      window.location.href = '/signin';
-      return;
-    }
-    const parsedUser = JSON.parse(storedUser);
-    if (parsedUser.role !== 'admin' && parsedUser.role !== 'artist_admin') {
-      window.location.href = '/';
-      return;
-    }
-    setUser(parsedUser);
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
-
     const fetchOrders = async () => {
       try {
         const mockOrders = [
@@ -52,7 +31,7 @@ export default function AdminOrdersPage() {
     };
 
     fetchOrders();
-  }, [user]);
+  }, []);
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
@@ -116,24 +95,22 @@ export default function AdminOrdersPage() {
     return matchesSearch && matchesStatus;
   });
 
-  if (!user || loading) {
+  if (loading) {
     return (
-      <div className="h-screen bg-white flex items-center justify-center">
+      <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-white">
-      <AdminSidebar />
-      <main className="fixed inset-0 flex flex-col bg-white pl-20">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">Orders Management</h1>
-          <p className="text-gray-600 mt-1">View and manage shop orders</p>
-        </div>
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Orders Management</h1>
+        <p className="text-gray-600 mt-1">View and manage shop orders</p>
+      </div>
 
-        <div className="flex-1 overflow-auto p-6">
+      <div>
           {/* Stats Cards */}
           <div className="grid grid-cols-5 gap-4 mb-6">
             <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -292,8 +269,7 @@ export default function AdminOrdersPage() {
               </table>
             </div>
           </div>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }

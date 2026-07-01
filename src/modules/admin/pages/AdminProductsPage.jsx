@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import AdminSidebar from '@/components/AdminSidebar';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { Package, Search, Plus, Edit, Trash2, DollarSign, Box, Eye, ToggleLeft, ToggleRight, Image as ImageIcon, Tag, MoreVertical, ShoppingCart } from 'lucide-react';
 
 export default function AdminProductsPage() {
-  const navigate = useNavigate();
   const { success, error } = useToast();
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,22 +27,6 @@ export default function AdminProductsPage() {
   const categories = ['Video Equipment', 'Lighting', 'Audio', 'Accessories', 'Software', 'Studio Gear', 'Merchandise'];
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
-      window.location.href = '/signin';
-      return;
-    }
-    const parsedUser = JSON.parse(storedUser);
-    if (parsedUser.role !== 'admin' && parsedUser.role !== 'artist_admin') {
-      window.location.href = '/';
-      return;
-    }
-    setUser(parsedUser);
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
-
     const fetchProducts = async () => {
       try {
         const mockProducts = [
@@ -70,7 +49,7 @@ export default function AdminProductsPage() {
     };
 
     fetchProducts();
-  }, [user]);
+  }, []);
 
   const handleCreateProduct = async () => {
     try {
@@ -142,24 +121,22 @@ export default function AdminProductsPage() {
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
-  if (!user || loading) {
+  if (loading) {
     return (
-      <div className="h-screen bg-white flex items-center justify-center">
+      <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-white">
-      <AdminSidebar />
-      <main className="fixed inset-0 flex flex-col bg-white pl-20">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">Products Management</h1>
-          <p className="text-gray-600 mt-1">Manage shop products and inventory</p>
-        </div>
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Products Management</h1>
+        <p className="text-gray-600 mt-1">Manage shop products and inventory</p>
+      </div>
 
-        <div className="flex-1 overflow-auto p-6">
+      <div>
           {/* Stats Cards */}
           <div className="grid grid-cols-4 gap-4 mb-6">
             <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -315,8 +292,7 @@ export default function AdminProductsPage() {
               </table>
             </div>
           </div>
-        </div>
-      </main>
+      </div>
 
       {/* Add Product Modal */}
       {showModal && (

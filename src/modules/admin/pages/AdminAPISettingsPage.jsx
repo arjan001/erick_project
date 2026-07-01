@@ -1,16 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import AdminSidebar from '@/components/AdminSidebar';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { Key, Save, Plus, Trash2, Copy, RefreshCw, Shield, Clock, AlertTriangle, CheckCircle, ToggleLeft, ToggleRight, Code, Eye, EyeOff } from 'lucide-react';
 
 export default function AdminAPISettingsPage() {
-  const navigate = useNavigate();
   const { success, error } = useToast();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showSecrets, setShowSecrets] = useState({});
   
@@ -46,25 +40,6 @@ export default function AdminAPISettingsPage() {
     name: '',
     scopes: ['read', 'write']
   });
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
-      window.location.href = '/signin';
-      return;
-    }
-    const parsedUser = JSON.parse(storedUser);
-    if (parsedUser.role !== 'admin' && parsedUser.role !== 'artist_admin') {
-      window.location.href = '/';
-      return;
-    }
-    setUser(parsedUser);
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
-    setLoading(false);
-  }, [user]);
 
   const handleSaveSettings = async () => {
     setSaving(true);
@@ -129,24 +104,14 @@ export default function AdminAPISettingsPage() {
     setShowSecrets(prev => ({ ...prev, [keyId]: !prev[keyId] }));
   };
 
-  if (!user || loading) {
-    return (
-      <div className="h-screen bg-white flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="h-screen bg-white">
-      <AdminSidebar />
-      <main className="fixed inset-0 flex flex-col bg-white pl-20">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">API Settings</h1>
-          <p className="text-gray-600 mt-1">Manage API keys, rate limiting, and authentication</p>
-        </div>
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">API Settings</h1>
+        <p className="text-gray-600 mt-1">Manage API keys, rate limiting, and authentication</p>
+      </div>
 
-        <div className="flex-1 overflow-auto p-6">
+      <div>
           <div className="max-w-4xl space-y-6">
             {/* API Keys */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -419,8 +384,7 @@ export default function AdminAPISettingsPage() {
               </Button>
             </div>
           </div>
-        </div>
-      </main>
+      </div>
 
       {showAddKeyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

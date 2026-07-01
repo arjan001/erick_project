@@ -1,16 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import AdminSidebar from '@/components/AdminSidebar';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { Search, Globe, Code, Save, Plus, Trash2, Copy, RefreshCw, Zap, Layout, FileText, Image, Link, ToggleLeft, ToggleRight, Edit } from 'lucide-react';
 
 export default function AdminSEOCMSPage() {
-  const navigate = useNavigate();
   const { success, error } = useToast();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('pages');
   
@@ -205,25 +199,6 @@ export default function AdminSEOCMSPage() {
     status: 'draft'
   });
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
-      window.location.href = '/signin';
-      return;
-    }
-    const parsedUser = JSON.parse(storedUser);
-    if (parsedUser.role !== 'admin' && parsedUser.role !== 'artist_admin') {
-      window.location.href = '/';
-      return;
-    }
-    setUser(parsedUser);
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
-    setLoading(false);
-  }, [user]);
-
   const handleSaveSeoSettings = async () => {
     setSaving(true);
     try {
@@ -283,24 +258,14 @@ export default function AdminSEOCMSPage() {
     setRedirects(redirects.map(r => r.id === redirectId ? { ...r, [field]: value } : r));
   };
 
-  if (!user || loading) {
-    return (
-      <div className="h-screen bg-white flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="h-screen bg-white">
-      <AdminSidebar />
-      <main className="fixed inset-0 flex flex-col bg-white pl-20">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">SEO & CMS</h1>
-          <p className="text-gray-600 mt-1">Manage SEO settings, CMS pages, and auto-generated rules</p>
-        </div>
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">SEO & CMS</h1>
+        <p className="text-gray-600 mt-1">Manage SEO settings, CMS pages, and auto-generated rules</p>
+      </div>
 
-        <div className="flex-1 overflow-auto p-6">
+      <div>
           {/* Tabs */}
           <div className="flex gap-4 mb-6 border-b border-gray-200 overflow-x-auto">
             <button
@@ -896,8 +861,7 @@ export default function AdminSEOCMSPage() {
               </div>
             </div>
           )}
-        </div>
-      </main>
+      </div>
 
       {showPageModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
