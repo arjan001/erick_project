@@ -1,0 +1,164 @@
+{
+  "name": "SystemSetting",
+  "type": "object",
+  "properties": {
+    "site_name": {
+      "type": "string"
+    },
+    "site_description": {
+      "type": "string"
+    },
+    "site_url": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "support_email": {
+      "type": "string"
+    },
+    "allow_registration": {
+      "type": "boolean",
+      "default": true
+    },
+    "require_email_verification": {
+      "type": "boolean",
+      "default": true
+    },
+    "default_user_role": {
+      "type": "string",
+      "enum": [
+        "artist",
+        "client",
+        "team",
+        "backer"
+      ],
+      "default": "artist"
+    },
+    "max_portfolio_clips": {
+      "type": "number",
+      "default": 20
+    },
+    "max_team_members": {
+      "type": "number",
+      "default": 50
+    },
+    "auto_moderate_content": {
+      "type": "boolean",
+      "default": true
+    },
+    "require_approval_for_projects": {
+      "type": "boolean",
+      "default": false
+    },
+    "allow_guest_viewing": {
+      "type": "boolean",
+      "default": true
+    },
+    "max_file_size_mb": {
+      "type": "number",
+      "default": 50
+    },
+    "allowed_file_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "email_notifications": {
+      "type": "boolean",
+      "default": true
+    },
+    "push_notifications": {
+      "type": "boolean",
+      "default": true
+    },
+    "notification_retention_days": {
+      "type": "number",
+      "default": 90
+    },
+    "session_timeout_minutes": {
+      "type": "number",
+      "default": 30
+    },
+    "max_login_attempts": {
+      "type": "number",
+      "default": 5
+    },
+    "lockout_duration_minutes": {
+      "type": "number",
+      "default": 15
+    },
+    "two_factor_auth": {
+      "type": "boolean",
+      "default": false
+    },
+    "password_min_length": {
+      "type": "number",
+      "default": 8
+    },
+    "password_require_special": {
+      "type": "boolean",
+      "default": true
+    },
+    "password_require_number": {
+      "type": "boolean",
+      "default": true
+    },
+    "api_rate_limit": {
+      "type": "number",
+      "default": 100
+    },
+    "upload_rate_limit": {
+      "type": "number",
+      "default": 10
+    },
+    "maintenance_mode": {
+      "type": "boolean",
+      "default": false
+    },
+    "maintenance_message": {
+      "type": "string"
+    },
+    "enable_analytics": {
+      "type": "boolean",
+      "default": true
+    },
+    "analytics_retention_days": {
+      "type": "number",
+      "default": 365
+    },
+    "enable_subscriptions": {
+      "type": "boolean",
+      "default": true
+    },
+    "free_trial_days": {
+      "type": "number",
+      "default": 14
+    },
+    "subscription_currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "subscription_billing_cycle": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "yearly"
+      ],
+      "default": "monthly"
+    },
+    "subscription_grace_period_days": {
+      "type": "number",
+      "default": 7
+    },
+    "subscription_prorate_upgrades": {
+      "type": "boolean",
+      "default": true
+    },
+    "subscription_auto_renew": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { FolderKanban, Search, Eye, Trash2, DollarSign, CheckCircle, XCircle, TrendingUp, X } from 'lucide-react';
@@ -7,6 +8,7 @@ import { FolderKanban, Search, Eye, Trash2, DollarSign, CheckCircle, XCircle, Tr
 const STATUSES = ['submitted', 'verified', 'in_progress', 'delivered', 'rejected'];
 
 export default function AdminProjectsPage() {
+  const { user } = useAuth();
   const { success, error } = useToast();
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState([]);
@@ -35,6 +37,7 @@ export default function AdminProjectsPage() {
       await base44.entities.Project.delete(projectId);
       setProjects(prev => prev.filter(p => p.id !== projectId));
       success('Deleted', 'Project deleted successfully');
+      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'project.delete', entity_type: 'Project', entity_id: projectId, details: 'Deleted project' }).catch(() => {});
     } catch (err) {
       console.error('Error deleting project:', err);
       error('Failed', 'Failed to delete project');
@@ -47,6 +50,7 @@ export default function AdminProjectsPage() {
       await base44.entities.Project.update(projectId, { status: newStatus });
       setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: newStatus } : p));
       success('Updated', 'Project status updated successfully');
+      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'project.status_update', entity_type: 'Project', entity_id: projectId, details: `Changed status to ${newStatus}` }).catch(() => {});
     } catch (err) {
       console.error('Error updating project status:', err);
       error('Failed', 'Failed to update project status');

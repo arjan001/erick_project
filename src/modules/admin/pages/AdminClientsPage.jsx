@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { Building, Search, Eye, Trash2, Mail, Phone, Briefcase, X } from 'lucide-react';
 
 export default function AdminClientsPage() {
+  const { user } = useAuth();
   const { success, error } = useToast();
   const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState([]);
@@ -32,6 +34,7 @@ export default function AdminClientsPage() {
       await base44.entities.ProjectOwner.delete(clientId);
       setClients(prev => prev.filter(c => c.id !== clientId));
       success('Deleted', 'Client deleted successfully');
+      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'client.delete', entity_type: 'ProjectOwner', entity_id: clientId, details: 'Deleted client' }).catch(() => {});
     } catch (err) {
       console.error('Error deleting client:', err);
       error('Failed', 'Failed to delete client');

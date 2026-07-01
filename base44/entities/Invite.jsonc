@@ -1,0 +1,44 @@
+{
+  "name": "Invite",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "artist",
+        "team",
+        "client",
+        "project_owner",
+        "backer"
+      ],
+      "default": "artist"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "expired",
+        "revoked"
+      ],
+      "default": "pending"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "invited_by_email": {
+      "type": "string",
+      "format": "email"
+    }
+  },
+  "required": [
+    "email",
+    "role"
+  ]
+}

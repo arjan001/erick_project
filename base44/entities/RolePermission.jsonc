@@ -1,0 +1,33 @@
+{
+  "name": "RolePermission",
+  "type": "object",
+  "properties": {
+    "role_id": {
+      "type": "string",
+      "description": "Unique role identifier, e.g. admin, artist, client"
+    },
+    "role_name": {
+      "type": "string",
+      "description": "Display name for the role"
+    },
+    "description": {
+      "type": "string"
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of permission ids granted to this role"
+    },
+    "is_system_role": {
+      "type": "boolean",
+      "default": false,
+      "description": "System roles cannot be deleted"
+    }
+  },
+  "required": [
+    "role_id",
+    "role_name"
+  ]
+}

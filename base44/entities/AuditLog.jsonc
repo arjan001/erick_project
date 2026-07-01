@@ -1,0 +1,29 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "actor_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Admin who performed the action"
+    },
+    "action": {
+      "type": "string",
+      "description": "e.g. user.delete, job.status_update, project.verify"
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "e.g. User, Job, Project, Client, Invite"
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "details": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "action",
+    "entity_type"
+  ]
+}

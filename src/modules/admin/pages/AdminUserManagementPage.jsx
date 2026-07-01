@@ -85,6 +85,7 @@ export default function AdminUserManagementPage() {
       await base44.entities.User.update(userId, { role: newRole });
       success('Updated', 'User role updated');
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'user.role_update', entity_type: 'User', entity_id: userId, details: `Changed role to ${newRole}` }).catch(() => {});
     } catch (err) {
       console.error('Error updating role:', err);
       error('Failed', 'Failed to update user role');
@@ -97,6 +98,7 @@ export default function AdminUserManagementPage() {
       await base44.entities.User.delete(userId);
       success('Deleted', 'User deleted successfully');
       setUsers(prev => prev.filter(u => u.id !== userId));
+      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'user.delete', entity_type: 'User', entity_id: userId, details: 'Deleted user' }).catch(() => {});
     } catch (err) {
       console.error('Error deleting user:', err);
       error('Failed', 'Failed to delete user');

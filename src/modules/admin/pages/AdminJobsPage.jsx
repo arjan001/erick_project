@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { Briefcase, Search, Eye, Trash2, Calendar, MapPin, CheckCircle, XCircle, X } from 'lucide-react';
@@ -7,6 +8,7 @@ import { Briefcase, Search, Eye, Trash2, Calendar, MapPin, CheckCircle, XCircle,
 const STATUSES = ['open', 'closed', 'filled'];
 
 export default function AdminJobsPage() {
+  const { user } = useAuth();
   const { success, error } = useToast();
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState([]);
@@ -35,6 +37,7 @@ export default function AdminJobsPage() {
       await base44.entities.Job.delete(jobId);
       setJobs(prev => prev.filter(j => j.id !== jobId));
       success('Deleted', 'Job deleted successfully');
+      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'job.delete', entity_type: 'Job', entity_id: jobId, details: 'Deleted job' }).catch(() => {});
     } catch (err) {
       console.error('Error deleting job:', err);
       error('Failed', 'Failed to delete job');
@@ -47,6 +50,7 @@ export default function AdminJobsPage() {
       await base44.entities.Job.update(jobId, { status: newStatus });
       setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: newStatus } : j));
       success('Updated', 'Job status updated successfully');
+      base44.entities.AuditLog.create({ actor_email: user?.email, action: 'job.status_update', entity_type: 'Job', entity_id: jobId, details: `Changed status to ${newStatus}` }).catch(() => {});
     } catch (err) {
       console.error('Error updating job status:', err);
       error('Failed', 'Failed to update job status');
