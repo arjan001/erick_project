@@ -209,6 +209,21 @@ export default function MessagesPage() {
 
   const selectedConversation = conversations.find(c => c.id === selectedId);
 
+  const getUnreadCount = (conv) => conv.messages.filter(m => m.recipient_email === user.email && !m.is_read).length;
+
+  // Mark all unread messages in the opened conversation as read — mirrors WhatsApp: badge clears the moment you open the chat
+  useEffect(() => {
+    if (!selectedConversation) return;
+    const unread = selectedConversation.messages.filter(m => m.recipient_email === user.email && !m.is_read);
+    if (unread.length === 0) return;
+    setConversations(prev => prev.map(c => c.id === selectedConversation.id
+      ? { ...c, messages: c.messages.map(m => (m.recipient_email === user.email && !m.is_read) ? { ...m, is_read: true } : m) }
+      : c));
+    Promise.all(unread.map(m => base44.entities.Message.update(m.id, { is_read: true }))).catch(err => {
+      console.error('Error marking messages as read:', err);
+    });
+  }, [selectedId]);
+
   const handleSend = async () => {
     if (!messageInput.trim() || !selectedConversation) return;
     const text = messageInput;
@@ -422,11 +437,18 @@ export default function MessagesPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
-                    <span className="font-semibold text-sm text-gray-900 truncate">{conv.name}</span>
+                    <span className={`text-sm text-gray-900 truncate ${getUnreadCount(conv) > 0 ? 'font-bold' : 'font-semibold'}`}>{conv.name}</span>
                     <span className="text-xs text-gray-400 flex-shrink-0">{conv.lastMessageTime ? new Date(conv.lastMessageTime).toLocaleDateString() : ''}</span>
                   </div>
                   <ParticipantTags type={conv.type} tags={conv.tags} />
-                  <p className="text-sm text-gray-600 truncate mt-1">{conv.lastMessage || 'No messages yet'}</p>
+                  <div className="flex items-center justify-between mt-1">
+                    <p className={`text-sm truncate ${getUnreadCount(conv) > 0 ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>{conv.lastMessage || 'No messages yet'}</p>
+                    {getUnreadCount(conv) > 0 && (
+                      <span className="ml-2 flex-shrink-0 bg-green-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center">
+                        {getUnreadCount(conv) > 9 ? '9+' : getUnreadCount(conv)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="absolute top-4 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">

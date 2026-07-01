@@ -32,6 +32,11 @@
       "type": "boolean",
       "default": false,
       "description": "Whether this message's conversation is archived"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the recipient has read this message"
     }
   },
   "required": [
