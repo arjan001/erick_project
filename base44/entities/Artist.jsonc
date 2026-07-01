@@ -109,6 +109,11 @@
     "approved_date": {
       "type": "string",
       "format": "date"
+    },
+    "connects_balance": {
+      "type": "number",
+      "default": 5,
+      "description": "Available connects to apply for jobs, like Fiverr/Upwork connects"
     }
   },
   "required": [

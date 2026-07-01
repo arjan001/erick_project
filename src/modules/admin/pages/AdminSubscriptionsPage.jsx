@@ -14,7 +14,7 @@ export default function AdminSubscriptionsPage() {
   const defaultForm = {
     name: '', description: '', price: '', currency: 'USD',
     billing_cycle: 'monthly', job_applications_limit: 10,
-    message_limit: 50, featured_listing: false,
+    message_limit: 50, connects_included: 10, featured_listing: false,
     priority_support: false, analytics_access: false,
     active: true, display_order: 0
   };
@@ -46,6 +46,7 @@ export default function AdminSubscriptionsPage() {
         price: parseFloat(form.price) || 0,
         job_applications_limit: parseInt(form.job_applications_limit),
         message_limit: parseInt(form.message_limit),
+        connects_included: parseInt(form.connects_included) || 0,
         display_order: parseInt(form.display_order) || 0
       };
       if (editingPkg) {
@@ -138,6 +139,11 @@ export default function AdminSubscriptionsPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium mb-1">Connects Included (like Fiverr/Upwork connects)</label>
+                  <input type="number" value={form.connects_included} onChange={e => setForm({...form, connects_included: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
                   <label className="block text-sm font-medium mb-1">Display Order</label>
                   <input type="number" value={form.display_order} onChange={e => setForm({...form, display_order: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
@@ -179,6 +185,7 @@ export default function AdminSubscriptionsPage() {
                 </div>
                 <p className="text-sm text-gray-600 mb-3">{pkg.description}</p>
                 <div className="space-y-1 text-xs text-gray-600 mb-4">
+                  <div className="flex items-center gap-1"><Check className="w-3 h-3 text-green-500" />{pkg.connects_included || 0} connects included</div>
                   <div className="flex items-center gap-1"><Check className="w-3 h-3 text-green-500" />{pkg.job_applications_limit === -1 ? 'Unlimited' : pkg.job_applications_limit} applications/mo</div>
                   <div className="flex items-center gap-1"><Check className="w-3 h-3 text-green-500" />{pkg.message_limit === -1 ? 'Unlimited' : pkg.message_limit} messages/mo</div>
                   {pkg.featured_listing && <div className="flex items-center gap-1"><Check className="w-3 h-3 text-green-500" />Featured listing</div>}

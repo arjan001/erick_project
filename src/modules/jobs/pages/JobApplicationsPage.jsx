@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Job, Project, Application } from '@/lib/supabaseEntities';
-import ArtistSidebar from '@/components/ArtistSidebar';
 import { MapPin, Clock } from 'lucide-react';
 
 export default function JobApplications() {
@@ -79,10 +78,8 @@ export default function JobApplications() {
   if (!user || loading) return null;
 
   return (
-    <div className="h-screen bg-white">
-      <ArtistSidebar />
-      
-      <main className="w-full h-full flex flex-col overflow-hidden bg-white pl-20">
+    <div className="h-full bg-white">
+      <main className="w-full h-full flex flex-col overflow-hidden bg-white">
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-gray-900">My Applications</h1>
         </div>

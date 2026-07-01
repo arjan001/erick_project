@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Project, Application } from '@/lib/supabaseEntities';
-import ArtistSidebar from '@/components/ArtistSidebar';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, Users, MessageSquare, Search, Filter, CheckCircle, TrendingUp } from 'lucide-react';
@@ -130,10 +129,8 @@ export default function JobBoard() {
   if (!user || loading) return null;
 
   return (
-    <div className="fixed inset-0 bg-white overflow-hidden">
-      <ArtistSidebar />
-      
-      <main className="fixed inset-0 flex flex-col bg-white pl-20">
+    <div className="h-full bg-white overflow-hidden">
+      <main className="h-full flex flex-col bg-white">
         {/* Header with Search */}
         <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
           <div className="flex items-center justify-between mb-4">

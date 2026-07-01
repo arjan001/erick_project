@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import ArtistSidebar from '../components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
 import { Globe, Instagram, Linkedin, Check, User as UserIcon, Bell, Shield } from 'lucide-react';
 import { notifySuccess, notifyError } from '@/lib/sweetAlert';
@@ -120,11 +119,9 @@ export default function Settings() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <ArtistSidebar />
-
-      <main className="w-full pl-20">
-        <div className="max-w-4xl mx-auto px-6 py-10">
+    <div className="min-h-full bg-gray-50">
+      <main className="w-full">
+        <div className="w-full px-6 sm:px-10 py-10">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Settings</h1>
           <p className="text-gray-500 mb-8">Manage your account, notifications and privacy</p>
 
@@ -160,7 +157,7 @@ export default function Settings() {
 
           {/* Contact & Social Tab */}
           {activeTab === 'profile' && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5 max-w-2xl">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5 max-w-3xl">
               <div>
                 <label className="block text-sm font-semibold text-gray-900 mb-2">Email</label>
                 <input type="email" value={email} disabled className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-gray-500 bg-gray-50 cursor-not-allowed" />
@@ -217,7 +214,7 @@ export default function Settings() {
 
           {/* Notifications Tab */}
           {activeTab === 'notifications' && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-2xl space-y-6">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-3xl space-y-6">
               <div>
                 <ToggleRow title="Email Notifications" description="Receive email updates about activity" checked={emailNotifications} onChange={() => setEmailNotifications(!emailNotifications)} />
                 <ToggleRow title="Job Alerts" description="Get notified about new job opportunities" checked={jobAlerts} onChange={() => setJobAlerts(!jobAlerts)} />
@@ -231,7 +228,7 @@ export default function Settings() {
 
           {/* Privacy Tab */}
           {activeTab === 'privacy' && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-2xl space-y-6">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-3xl space-y-6">
               <div>
                 <ToggleRow title="Public Profile" description="Allow others to view your profile" checked={profilePublic} onChange={() => setProfilePublic(!profilePublic)} />
                 <ToggleRow title="Show Email Address" description="Display email on your public profile" checked={showEmail} onChange={() => setShowEmail(!showEmail)} />

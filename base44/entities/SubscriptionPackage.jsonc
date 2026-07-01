@@ -4,7 +4,7 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "Plan name e.g. Basic, Pro, Elite"
+      "description": "Plan name e.g. Free, Basic, Pro, Elite"
     },
     "description": {
       "type": "string"
@@ -32,6 +32,11 @@
     "message_limit": {
       "type": "number",
       "description": "-1 = unlimited"
+    },
+    "connects_included": {
+      "type": "number",
+      "default": 0,
+      "description": "Connects granted to the artist when this plan is purchased"
     },
     "featured_listing": {
       "type": "boolean",

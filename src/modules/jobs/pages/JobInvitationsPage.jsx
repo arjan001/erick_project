@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Job, JobInvitation, Application } from '@/lib/supabaseEntities';
-import ArtistSidebar from '@/components/ArtistSidebar';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, DollarSign, Clock, CheckCircle, X, MessageCircle, Briefcase, User } from 'lucide-react';
@@ -105,10 +104,8 @@ export default function JobInvitations() {
   }
 
   return (
-    <div className="h-screen bg-white">
-      <ArtistSidebar />
-      
-      <main className="w-full h-full flex flex-col overflow-hidden bg-white pl-20">
+    <div className="h-full bg-white">
+      <main className="w-full h-full flex flex-col overflow-hidden bg-white">
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-gray-900">Job Invitations</h1>
           <p className="text-sm text-gray-600 mt-1">

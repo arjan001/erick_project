@@ -1,0 +1,27 @@
+{
+  "name": "ConnectsTransaction",
+  "type": "object",
+  "properties": {
+    "artist_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Positive = credit/purchase, negative = spend"
+    },
+    "reason": {
+      "type": "string",
+      "description": "e.g. job_application, purchase, subscription_grant, signup_bonus"
+    },
+    "balance_after": {
+      "type": "number",
+      "description": "Connects balance after this transaction"
+    }
+  },
+  "required": [
+    "artist_email",
+    "amount",
+    "reason"
+  ]
+}

@@ -4,13 +4,17 @@ import { useNavigate, Link } from 'react-router-dom';
 
 import { createPageUrl } from '@/shared/utils/routing';
 
-import { Briefcase, MessageCircle, Lightbulb, ArrowRight, Calendar, MapPin, Bell, Settings, TrendingUp, Crown, Zap, FolderKanban } from 'lucide-react';
+import { Briefcase, MessageCircle, ArrowRight, Calendar, MapPin, Bell, Settings, TrendingUp, Crown, FolderKanban, Zap } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
 import DashboardStatCard from '@/components/DashboardStatCard';
 
 import ArtistOnboardingModal from '@/components/artist/ArtistOnboardingModal';
+
+import QuickNotesCard from '@/components/artist/QuickNotesCard';
+
+import UpgradeConnectsBanner from '@/components/artist/UpgradeConnectsBanner';
 
 import { useToast } from '@/hooks/useToast';
 
@@ -157,43 +161,31 @@ export default function ArtistDashboard() {
             <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome, {user.full_name}</h1>
             <p className="text-gray-500 text-sm">Your creative dashboard • {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
           </div>
-          {subscriptionPackage && (
+          <div className="flex items-center gap-3">
+            {subscriptionPackage && (
+              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-200">
+                <Crown className="w-5 h-5 text-amber-500" />
+                <div className="text-right">
+                  <div className="font-medium text-amber-600 text-sm">{subscriptionPackage.name}</div>
+                  <div className="text-xs text-gray-400">Active</div>
+                </div>
+              </div>
+            )}
             <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-200">
-              <Crown className="w-5 h-5 text-amber-500" />
+              <Zap className="w-5 h-5 text-indigo-500" />
               <div className="text-right">
-                <div className="font-medium text-amber-600 text-sm">{subscriptionPackage.name}</div>
-                <div className="text-xs text-gray-400">Active</div>
+                <div className="font-medium text-gray-900 text-sm">{artistProfile?.connects_balance ?? '—'}</div>
+                <div className="text-xs text-gray-400">Connects left</div>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
 
 
         <div className="p-6 sm:p-8 space-y-8">
 
-          {/* Subscription Banner */}
-          {!subscription && (
-            <div className="bg-gray-100 border border-gray-300 rounded-xl p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <Zap className="w-6 h-6 text-gray-700" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-1 text-gray-900">Upgrade to Pro</h3>
-                    <p className="text-gray-600">Get unlimited job applications, featured listings, and more</p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => navigate(createPageUrl('ArtistSubscriptionCheckout'))}
-                  className="bg-black text-white hover:bg-gray-800"
-                >
-                  View Plans
-                </Button>
-              </div>
-            </div>
-          )}
+          <UpgradeConnectsBanner />
 
           {/* Quick Stats */}
 
@@ -349,31 +341,9 @@ export default function ArtistDashboard() {
 
 
 
-              {/* Brainstorm & Ideas */}
+              {/* Quick Notes */}
 
-              <div className="border border-gray-200 rounded-lg p-6 bg-blue-50">
-
-                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-
-                  <Lightbulb className="w-5 h-5 text-blue-600" />
-
-                  Brainstorm Ideas
-
-                </h2>
-
-                <div className="space-y-3">
-
-                  <div className="p-3 bg-white rounded border border-blue-200">
-
-                    <p className="text-xs text-gray-600">💡 Pitch your unique creative idea or collaboration concept</p>
-
-                  </div>
-
-                  <Button className="w-full bg-black text-white hover:bg-gray-800 text-sm">Share an Idea</Button>
-
-                </div>
-
-              </div>
+              <QuickNotesCard />
 
 
 

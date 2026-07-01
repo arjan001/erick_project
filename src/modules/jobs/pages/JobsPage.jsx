@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Job, Application } from '@/lib/supabaseEntities';
-import ArtistSidebar from '@/components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Euro, ChevronDown } from 'lucide-react';
 import JobPostingModal from '@/components/JobPostingModal';
@@ -70,57 +69,36 @@ export default function Jobs() {
     fetchData();
   }, [user]);
 
-  const checkApplicationLimit = async () => {
-    if (!user) return { canApply: false, remaining: 0, limit: 0 };
-
-    try {
-      const subscription = await base44.entities.Subscription.filter({ user_email: user.email, status: 'active' });
-      
-      if (subscription.length === 0) {
-        return { canApply: true, remaining: 5, limit: 5 }; // Free tier: 5 applications/month
-      }
-
-      const pkg = await base44.entities.SubscriptionPackage.get(subscription[0].package_id);
-      const limit = pkg.job_applications_limit;
-
-      if (limit === -1) {
-        return { canApply: true, remaining: -1, limit: -1 }; // Unlimited
-      }
-
-      // Count applications this month
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const monthlyApplications = await Application.filter({
-        artist_email: user.email,
-        applied_at: { $gte: startOfMonth.toISOString() }
-      });
-
-      const remaining = limit - monthlyApplications.length;
-      return { canApply: remaining > 0, remaining, limit };
-    } catch (err) {
-      console.error('Error checking application limit:', err);
-      return { canApply: true, remaining: 5, limit: 5 };
-    }
-  };
-
   const handleApply = async () => {
     if (!selectedJob || !user) return;
-    
-    const limitCheck = await checkApplicationLimit();
-    
-    if (!limitCheck.canApply) {
-      toastError('Limit Reached', `You've reached your monthly application limit (${limitCheck.limit}). Upgrade your subscription to apply for more jobs.`);
-      return;
-    }
-    
+
     try {
+      const artists = await base44.entities.Artist.filter({ email: user.email });
+      const artist = artists?.[0];
+      const balance = artist?.connects_balance ?? 0;
+
+      if (balance <= 0) {
+        toastError('Out of Connects', 'You have no connects left. Buy more connects or upgrade your plan to keep applying for jobs.');
+        return;
+      }
+
       await Application.create({
         job_id: selectedJob.id,
         artist_email: user.email,
         status: 'applied',
         applied_at: new Date().toISOString()
       });
-      success('Application Submitted', `Application sent! ${limitCheck.remaining === -1 ? 'Unlimited' : limitCheck.remaining - 1} applications remaining this month.`);
+
+      const newBalance = balance - 1;
+      await base44.entities.Artist.update(artist.id, { connects_balance: newBalance });
+      await base44.entities.ConnectsTransaction.create({
+        artist_email: user.email,
+        amount: -1,
+        reason: 'job_application',
+        balance_after: newBalance
+      });
+
+      success('Application Submitted', `1 connect used. ${newBalance} connect${newBalance === 1 ? '' : 's'} remaining.`);
     } catch (err) {
       console.error('Error applying:', err);
       toastError('Application Failed', 'Failed to submit application');
@@ -306,10 +284,8 @@ export default function Jobs() {
   );
 
   return (
-    <div className="fixed inset-0 bg-white">
-      <ArtistSidebar />
-      
-      <main className="fixed top-0 left-20 right-0 bottom-0 flex flex-col bg-white">
+    <div className="h-full bg-white">
+      <main className="h-full flex flex-col bg-white">
         {/* Header with Tabs */}
         <div className="border-b border-gray-200 px-6 pt-6">
           <div className="flex items-center justify-between mb-6">

@@ -222,6 +222,22 @@ export default function ArtistSubscriptionCheckoutPage() {
       });
     }
 
+    // Grant connects included in the plan
+    if (selectedPackage.connects_included > 0) {
+      const artists = await base44.entities.Artist.filter({ email: user.email });
+      const artist = artists?.[0];
+      if (artist) {
+        const newBalance = (artist.connects_balance || 0) + selectedPackage.connects_included;
+        await base44.entities.Artist.update(artist.id, { connects_balance: newBalance });
+        await base44.entities.ConnectsTransaction.create({
+          artist_email: user.email,
+          amount: selectedPackage.connects_included,
+          reason: 'subscription_grant',
+          balance_after: newBalance
+        });
+      }
+    }
+
     setShowModal(false);
     success('Subscription Successful', `You are now on ${selectedPackage.name}`);
     navigate(createPageUrl('ArtistDashboard'));
@@ -291,6 +307,10 @@ export default function ArtistSubscriptionCheckoutPage() {
                 <p className="text-xs text-gray-500 mb-4">{pkg.description}</p>
 
                 <div className="space-y-2 mb-6">
+                  <div className="flex items-center text-xs text-gray-600 gap-2">
+                    <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                    {pkg.connects_included || 0} connects included
+                  </div>
                   <div className="flex items-center text-xs text-gray-600 gap-2">
                     <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
                     {pkg.job_applications_limit === -1 ? 'Unlimited' : pkg.job_applications_limit} applications/mo

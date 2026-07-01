@@ -6,8 +6,6 @@ import { base44 } from '@/api/base44Client';
 
 import { useAuth } from '@/lib/AuthContext';
 
-import ArtistSidebar from '@/components/ArtistSidebar';
-
 import AboutSection from '@/components/AboutSection';
 
 import { Button } from '@/components/ui/button';
@@ -651,13 +649,9 @@ export default function ArtistProfile() {
 
   return (
 
-    <div className="h-screen bg-white">
+    <div className="h-full bg-white">
 
-      <ArtistSidebar />
-
-      
-
-      <main className="w-full h-full overflow-auto pl-20">
+      <main className="w-full h-full overflow-auto">
 
         <div className="bg-white h-32" />
 
