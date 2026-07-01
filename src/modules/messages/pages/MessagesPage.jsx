@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import { Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { formatDistanceToNow } from 'date-fns';
@@ -33,23 +34,23 @@ const isOnline = (lastActive) => lastActive && (Date.now() - new Date(lastActive
 // Look up a participant's profile across all user types and return display info + tags + presence
 async function enrichParticipant(email) {
   try {
-    const artists = await base44.entities.Artist.filter({ email });
+    const artists = await Artist.filter({ email });
     if (artists.length > 0) {
       const a = artists[0];
       const tags = [a.role, ...(a.skills_experience || []).slice(0, 2).map(s => s.skill)].filter(Boolean).slice(0, 3);
       return { name: a.full_name, avatar: a.profile_photo_url, type: 'Artist', tags, lastActive: a.last_active };
     }
-    const teams = await base44.entities.Team.filter({ contact_email: email });
+    const teams = await Team.filter({ contact_email: email });
     if (teams.length > 0) {
       const t = teams[0];
       return { name: t.team_name, avatar: t.team_logo_url, type: 'Team', tags: (t.specialties || []).slice(0, 2), lastActive: t.last_active };
     }
-    const owners = await base44.entities.ProjectOwner.filter({ email });
+    const owners = await ProjectOwner.filter({ email });
     if (owners.length > 0) {
       const o = owners[0];
       return { name: o.full_name, avatar: o.profile_photo_url, type: 'Client', tags: [], lastActive: o.last_active };
     }
-    const backers = await base44.entities.Backer.filter({ contact_email: email });
+    const backers = await Backer.filter({ contact_email: email });
     if (backers.length > 0) {
       const b = backers[0];
       return { name: b.organization_name, avatar: b.logo_url, type: 'Backer', tags: (b.interests || []).slice(0, 2), lastActive: b.last_active };
@@ -125,8 +126,8 @@ export default function MessagesPage() {
   const fetchConversations = async () => {
     try {
       const [sent, received] = await Promise.all([
-        base44.entities.Message.filter({ sender_email: user.email }, '-created_date', 500),
-        base44.entities.Message.filter({ recipient_email: user.email }, '-created_date', 500),
+        Message.filter({ sender_email: user.email }, '-created_date', 500),
+        Message.filter({ recipient_email: user.email }, '-created_date', 500),
       ]);
       const convs = buildConversations([...sent, ...received]);
 
@@ -191,7 +192,7 @@ export default function MessagesPage() {
   };
 
   useEffect(() => {
-    const unsubscribe = base44.entities.Message.subscribe((event) => {
+    const unsubscribe = Message.subscribe((event) => {
       const m = event.data;
       if (!m || (m.sender_email !== user?.email && m.recipient_email !== user?.email)) return;
       if (event.type === 'create') {
@@ -219,7 +220,7 @@ export default function MessagesPage() {
     setConversations(prev => prev.map(c => c.id === selectedConversation.id
       ? { ...c, messages: c.messages.map(m => (m.recipient_email === user.email && !m.is_read) ? { ...m, is_read: true } : m) }
       : c));
-    Promise.all(unread.map(m => base44.entities.Message.update(m.id, { is_read: true }))).catch(err => {
+    Promise.all(unread.map(m => Message.update(m.id, { is_read: true }))).catch(err => {
       console.error('Error marking messages as read:', err);
     });
   }, [selectedId]);
@@ -242,7 +243,7 @@ export default function MessagesPage() {
       ? { ...c, messages: [...c.messages, optimisticMsg], lastMessage: text, lastMessageTime: optimisticMsg.created_date }
       : c));
     try {
-      const created = await base44.entities.Message.create({
+      const created = await Message.create({
         conversation_id: selectedConversation.id,
         sender_email: user.email,
         recipient_email: selectedConversation.otherEmail,
@@ -266,7 +267,7 @@ export default function MessagesPage() {
     if (!file || !selectedConversation) return;
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const created = await base44.entities.Message.create({
+      const created = await Message.create({
         conversation_id: selectedConversation.id,
         sender_email: user.email,
         recipient_email: selectedConversation.otherEmail,
@@ -287,7 +288,7 @@ export default function MessagesPage() {
 
   const handleArchive = async (conv, archive) => {
     try {
-      await Promise.all(conv.messages.map(m => base44.entities.Message.update(m.id, { is_archived: archive })));
+      await Promise.all(conv.messages.map(m => Message.update(m.id, { is_archived: archive })));
       setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, isArchived: archive } : c));
       success(archive ? 'Archived' : 'Unarchived', archive ? 'Conversation archived' : 'Conversation restored');
       if (selectedId === conv.id) setSelectedId(null);
@@ -301,7 +302,7 @@ export default function MessagesPage() {
     const confirmed = await confirmDialog('Delete conversation?', `This will permanently delete your conversation with ${conv.name}.`, 'Yes, delete it');
     if (!confirmed) return;
     try {
-      await Promise.all(conv.messages.map(m => base44.entities.Message.delete(m.id)));
+      await Promise.all(conv.messages.map(m => Message.delete(m.id)));
       success('Deleted', 'Conversation deleted');
       if (selectedId === conv.id) setSelectedId(null);
       setConversations(prev => prev.filter(c => c.id !== conv.id));
@@ -315,10 +316,10 @@ export default function MessagesPage() {
     setShowNewChatModal(true);
     try {
       const [artists, teams, owners, backers] = await Promise.all([
-        base44.entities.Artist.list(),
-        base44.entities.Team.list(),
-        base44.entities.ProjectOwner.list(),
-        base44.entities.Backer.list(),
+        Artist.list(),
+        Team.list(),
+        ProjectOwner.list(),
+        Backer.list(),
       ]);
       const people = [
         ...artists.filter(a => a.email !== user.email).map(a => ({

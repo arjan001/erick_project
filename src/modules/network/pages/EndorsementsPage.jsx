@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Endorsement, Artist, Notification } from '@/lib/supabaseEntities';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,7 @@ export default function EndorsementsPage() {
 
     const fetchEndorsements = async () => {
       try {
-        const allEndorsements = await base44.entities.Endorsement.list();
+        const allEndorsements = await Endorsement.list();
         
         const given = allEndorsements.filter(e => e.endorser_email === user.email);
         const received = allEndorsements.filter(e => e.recipient_email === user.email);
@@ -49,7 +49,7 @@ export default function EndorsementsPage() {
         const enrichedGiven = await Promise.all(
           given.map(async (endorsement) => {
             try {
-              const artist = await base44.entities.Artist.filter({ email: endorsement.recipient_email });
+              const artist = await Artist.filter({ email: endorsement.recipient_email });
               return { ...endorsement, artist: artist[0] || null };
             } catch (err) {
               return { ...endorsement, artist: null };
@@ -60,7 +60,7 @@ export default function EndorsementsPage() {
         const enrichedReceived = await Promise.all(
           received.map(async (endorsement) => {
             try {
-              const endorser = await base44.entities.Artist.filter({ email: endorsement.endorser_email });
+              const endorser = await Artist.filter({ email: endorsement.endorser_email });
               return { ...endorsement, endorser: endorser[0] || null };
             } catch (err) {
               return { ...endorsement, endorser: null };
@@ -84,7 +84,7 @@ export default function EndorsementsPage() {
     if (!selectedPerson || !endorsementForm.skill) return;
 
     try {
-      await base44.entities.Endorsement.create({
+      await Endorsement.create({
         endorser_email: user.email,
         endorser_name: user.full_name,
         recipient_email: selectedPerson.email,
@@ -94,7 +94,7 @@ export default function EndorsementsPage() {
         rating: endorsementForm.rating,
       });
 
-      await base44.entities.Notification.create({
+      await Notification.create({
         recipient_email: selectedPerson.email,
         sender_email: user.email,
         sender_name: user.full_name,
@@ -110,7 +110,7 @@ export default function EndorsementsPage() {
 
       success('Endorsement Sent', `You endorsed ${selectedPerson.full_name} for ${endorsementForm.skill}`);
       // re-fetch after create
-      const allE = await base44.entities.Endorsement.list();
+      const allE = await Endorsement.list();
       setEndorsements(allE.filter(e => e.endorser_email === user.email));
       setReceivedEndorsements(allE.filter(e => e.endorsed_email === user.email));
     } catch (err) {
@@ -121,7 +121,7 @@ export default function EndorsementsPage() {
 
   const handleDeleteEndorsement = async (endorsementId) => {
     try {
-      await base44.entities.Endorsement.delete(endorsementId);
+      await Endorsement.delete(endorsementId);
       setEndorsements(prev => prev.filter(e => e.id !== endorsementId));
       success('Deleted', 'Endorsement deleted successfully');
     } catch (err) {

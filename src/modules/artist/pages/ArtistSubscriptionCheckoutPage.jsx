@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { SubscriptionOrder } from '@/lib/supabaseEntities';
+import { SubscriptionOrder, SubscriptionPackage, Subscription, Artist, ConnectsTransaction } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft, X, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -195,8 +194,8 @@ export default function ArtistSubscriptionCheckoutPage() {
   const fetchData = async (userData) => {
     try {
       const [pkgsData, subsData] = await Promise.all([
-        base44.entities.SubscriptionPackage.filter({ active: true }),
-        base44.entities.Subscription.filter({ user_email: userData.email })
+        SubscriptionPackage.filter({ active: true }),
+        Subscription.filter({ user_email: userData.email })
       ]);
       setPackages(pkgsData);
       if (subsData.length > 0) setCurrentSubscription(subsData[0]);
@@ -230,7 +229,7 @@ export default function ArtistSubscriptionCheckoutPage() {
     });
 
     if (currentSubscription) {
-      await base44.entities.Subscription.update(currentSubscription.id, {
+      await Subscription.update(currentSubscription.id, {
         package_id: selectedPackage.id,
         package_name: selectedPackage.name,
         status: 'active',
@@ -238,7 +237,7 @@ export default function ArtistSubscriptionCheckoutPage() {
         renews_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       });
     } else {
-      await base44.entities.Subscription.create({
+      await Subscription.create({
         user_email: user.email,
         user_name: user.full_name,
         package_id: selectedPackage.id,
@@ -251,12 +250,12 @@ export default function ArtistSubscriptionCheckoutPage() {
 
     // Grant connects included in the plan
     if (selectedPackage.connects_included > 0) {
-      const artists = await base44.entities.Artist.filter({ email: user.email });
+      const artists = await Artist.filter({ email: user.email });
       const artist = artists?.[0];
       if (artist) {
         const newBalance = (artist.connects_balance || 0) + selectedPackage.connects_included;
-        await base44.entities.Artist.update(artist.id, { connects_balance: newBalance });
-        await base44.entities.ConnectsTransaction.create({
+        await Artist.update(artist.id, { connects_balance: newBalance });
+        await ConnectsTransaction.create({
           artist_email: user.email,
           amount: selectedPackage.connects_included,
           reason: 'subscription_grant',

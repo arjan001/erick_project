@@ -494,6 +494,25 @@ CREATE TABLE IF NOT EXISTS system_settings (
 );
 
 -- ============================================
+-- REALTIME (so Messages/Notifications/Connections live-update in the app)
+-- ============================================
+DO $$
+BEGIN
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE messages;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE connections;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+END $$;
+
+-- ============================================
 -- ROW LEVEL SECURITY (app handles its own auth; allow public full access
 -- to match the pattern already used for jobs/projects/applications/teams)
 -- ============================================

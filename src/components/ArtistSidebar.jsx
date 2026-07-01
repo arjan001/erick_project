@@ -34,8 +34,8 @@ export default function ArtistSidebar() {
     let unsubscribe;
     const fetchUnread = async () => {
       try {
-        const { base44: b44 } = await import('@/api/base44Client');
-        const msgs = await b44.entities.Message.filter({ recipient_email: user.email, is_read: false }, '-created_date', 50);
+        const { Message } = await import('@/lib/supabaseEntities');
+        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_date', 50);
         setUnreadCount((msgs || []).length);
       } catch {
         setUnreadCount(0);
@@ -45,8 +45,8 @@ export default function ArtistSidebar() {
 
     // Live updates: badge appears on new messages and disappears the moment they're read
     (async () => {
-      const { base44: b44 } = await import('@/api/base44Client');
-      unsubscribe = b44.entities.Message.subscribe((event) => {
+      const { Message } = await import('@/lib/supabaseEntities');
+      unsubscribe = Message.subscribe((event) => {
         if (event.data?.recipient_email === user.email) fetchUnread();
       });
     })();

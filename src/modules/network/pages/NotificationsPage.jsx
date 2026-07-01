@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Notification } from '@/lib/supabaseEntities';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,7 @@ export default function NotificationsPage() {
 
     const fetchNotifications = async () => {
       try {
-        const allNotifications = await base44.entities.Notification.filter({ 
+        const allNotifications = await Notification.filter({ 
           recipient_email: user.email 
         });
         
@@ -50,7 +50,7 @@ export default function NotificationsPage() {
 
   const handleMarkAsRead = async (notificationId) => {
     try {
-      await base44.entities.Notification.update(notificationId, { read: true });
+      await Notification.update(notificationId, { read: true });
       setNotifications(prev => 
         prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
       );
@@ -64,7 +64,7 @@ export default function NotificationsPage() {
     try {
       const unread = notifications.filter(n => !n.read);
       await Promise.all(
-        unread.map(n => base44.entities.Notification.update(n.id, { read: true }))
+        unread.map(n => Notification.update(n.id, { read: true }))
       );
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       success('Success', 'All notifications marked as read');
@@ -76,7 +76,7 @@ export default function NotificationsPage() {
 
   const handleDeleteNotification = async (notificationId) => {
     try {
-      await base44.entities.Notification.delete(notificationId);
+      await Notification.delete(notificationId);
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       success('Deleted', 'Notification deleted');
     } catch (err) {

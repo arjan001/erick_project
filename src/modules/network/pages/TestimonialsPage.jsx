@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Testimonial, Artist, Notification } from '@/lib/supabaseEntities';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,7 @@ export default function TestimonialsPage() {
 
     const fetchTestimonials = async () => {
       try {
-        const allTestimonials = await base44.entities.Testimonial.list();
+        const allTestimonials = await Testimonial.list();
         
         const given = allTestimonials.filter(t => t.author_email === user.email);
         const received = allTestimonials.filter(t => t.recipient_email === user.email);
@@ -44,7 +44,7 @@ export default function TestimonialsPage() {
         const enrichedGiven = await Promise.all(
           given.map(async (testimonial) => {
             try {
-              const artist = await base44.entities.Artist.filter({ email: testimonial.recipient_email });
+              const artist = await Artist.filter({ email: testimonial.recipient_email });
               return { ...testimonial, recipient: artist[0] || null };
             } catch (err) {
               return { ...testimonial, recipient: null };
@@ -55,7 +55,7 @@ export default function TestimonialsPage() {
         const enrichedReceived = await Promise.all(
           received.map(async (testimonial) => {
             try {
-              const author = await base44.entities.Artist.filter({ email: testimonial.author_email });
+              const author = await Artist.filter({ email: testimonial.author_email });
               return { ...testimonial, author: author[0] || null };
             } catch (err) {
               return { ...testimonial, author: null };
@@ -79,7 +79,7 @@ export default function TestimonialsPage() {
     if (!selectedPerson || !testimonialForm.project_title || !testimonialForm.content) return;
 
     try {
-      await base44.entities.Testimonial.create({
+      await Testimonial.create({
         author_email: user.email,
         author_name: user.full_name,
         recipient_email: selectedPerson.email,
@@ -90,7 +90,7 @@ export default function TestimonialsPage() {
         collaboration_type: testimonialForm.collaboration_type,
       });
 
-      await base44.entities.Notification.create({
+      await Notification.create({
         recipient_email: selectedPerson.email,
         sender_email: user.email,
         sender_name: user.full_name,
@@ -105,7 +105,7 @@ export default function TestimonialsPage() {
       setTestimonialForm({ project_title: '', content: '', rating: 5, collaboration_type: 'worked_together' });
 
       success('Testimonial Sent', `You wrote a testimonial for ${selectedPerson.full_name}`);
-      const allT = await base44.entities.Testimonial.list();
+      const allT = await Testimonial.list();
       setTestimonials(allT.filter(t => t.author_email === user.email));
       setReceivedTestimonials(allT.filter(t => t.recipient_email === user.email));
     } catch (err) {
@@ -116,7 +116,7 @@ export default function TestimonialsPage() {
 
   const handleDeleteTestimonial = async (testimonialId) => {
     try {
-      await base44.entities.Testimonial.delete(testimonialId);
+      await Testimonial.delete(testimonialId);
       setTestimonials(prev => prev.filter(t => t.id !== testimonialId));
       success('Deleted', 'Testimonial deleted successfully');
     } catch (err) {

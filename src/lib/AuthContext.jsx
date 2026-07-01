@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { supabase } from '@/lib/supabase';
+import { Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities';
 
 const AuthContext = createContext();
 
@@ -25,9 +26,9 @@ async function ensureProfile(supaUser) {
   const full_name = supaUser.user_metadata?.full_name || supaUser.email?.split('@')[0] || 'User';
   try {
     if (role === 'artist') {
-      const existing = await base44.entities.Artist.filter({ email: supaUser.email });
+      const existing = await Artist.filter({ email: supaUser.email });
       if (!existing || existing.length === 0) {
-        await base44.entities.Artist.create({
+        await Artist.create({
           email: supaUser.email,
           full_name,
           role: 'director', // default specialty
@@ -38,9 +39,9 @@ async function ensureProfile(supaUser) {
       // Invited team members carry a team_id and join an existing team — never
       // create a blank team for them, or they'd land on their own empty workspace.
       if (supaUser.user_metadata?.team_id) return;
-      const existing = await base44.entities.Team.filter({ contact_email: supaUser.email });
+      const existing = await Team.filter({ contact_email: supaUser.email });
       if (!existing || existing.length === 0) {
-        await base44.entities.Team.create({
+        await Team.create({
           team_name: supaUser.user_metadata?.team_name || full_name,
           team_code: 'TM' + Date.now().toString().slice(-4),
           contact_email: supaUser.email,
@@ -52,9 +53,9 @@ async function ensureProfile(supaUser) {
         });
       }
     } else if (role === 'client' || role === 'project_owner') {
-      const existing = await base44.entities.ProjectOwner.filter({ email: supaUser.email });
+      const existing = await ProjectOwner.filter({ email: supaUser.email });
       if (!existing || existing.length === 0) {
-        await base44.entities.ProjectOwner.create({
+        await ProjectOwner.create({
           email: supaUser.email,
           full_name,
         });
@@ -72,20 +73,20 @@ async function updatePresence(u) {
   try {
     if (u.role === 'team') {
       if (u.team_id) {
-        await base44.entities.Team.update(u.team_id, { last_active: now });
+        await Team.update(u.team_id, { last_active: now });
       } else {
-        const teams = await base44.entities.Team.filter({ contact_email: u.email });
-        if (teams[0]) await base44.entities.Team.update(teams[0].id, { last_active: now });
+        const teams = await Team.filter({ contact_email: u.email });
+        if (teams[0]) await Team.update(teams[0].id, { last_active: now });
       }
     } else if (u.role === 'client' || u.role === 'project_owner') {
-      const owners = await base44.entities.ProjectOwner.filter({ email: u.email });
-      if (owners[0]) await base44.entities.ProjectOwner.update(owners[0].id, { last_active: now });
+      const owners = await ProjectOwner.filter({ email: u.email });
+      if (owners[0]) await ProjectOwner.update(owners[0].id, { last_active: now });
     } else if (u.role === 'backer') {
-      const backers = await base44.entities.Backer.filter({ contact_email: u.email });
-      if (backers[0]) await base44.entities.Backer.update(backers[0].id, { last_active: now });
+      const backers = await Backer.filter({ contact_email: u.email });
+      if (backers[0]) await Backer.update(backers[0].id, { last_active: now });
     } else {
-      const artists = await base44.entities.Artist.filter({ email: u.email });
-      if (artists[0]) await base44.entities.Artist.update(artists[0].id, { last_active: now });
+      const artists = await Artist.filter({ email: u.email });
+      if (artists[0]) await Artist.update(artists[0].id, { last_active: now });
     }
   } catch (err) {
     console.error('presence update error:', err);

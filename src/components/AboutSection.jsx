@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { Artist } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Plus, X, Sparkles, ThumbsUp, Edit2, Check, Globe, Instagram, Linkedin } from 'lucide-react';
 
@@ -239,7 +240,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 <Button
                     onClick={async () => {
                       if (artist) {
-                        await base44.entities.Artist.update(artist.id, { bio });
+                        await Artist.update(artist.id, { bio });
                       }
                       setEditingBio(false);
                     }}
@@ -335,7 +336,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 onClick={async () => {
                   if (artist) {
                     const skillsData = skills.map(s => ({ skill: s, years: 0 }));
-                    await base44.entities.Artist.update(artist.id, { skills_experience: skillsData });
+                    await Artist.update(artist.id, { skills_experience: skillsData });
                   }
                   setEditingSkills(false);
                 }}
@@ -444,7 +445,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               <Button
                 onClick={async () => {
                   if (artist) {
-                    await base44.entities.Artist.update(artist.id, { past_clients: clients });
+                    await Artist.update(artist.id, { past_clients: clients });
                   }
                   setEditingClients(false);
                 }}
@@ -535,7 +536,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               <Button
                 onClick={async () => {
                   if (artist) {
-                    await base44.entities.Artist.update(artist.id, { project_specialties: projectTypes });
+                    await Artist.update(artist.id, { project_specialties: projectTypes });
                   }
                   setEditingProjects(false);
                 }}
@@ -624,7 +625,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
 
               <Button onClick={async () => {
                 if (artist) {
-                  await base44.entities.Artist.update(artist.id, { languages_spoken: languages });
+                  await Artist.update(artist.id, { languages_spoken: languages });
                 }
                 setEditingLanguages(false);
               }} className="w-full bg-black text-white hover:bg-gray-800">
@@ -705,7 +706,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
 
               <Button onClick={async () => {
                 if (artist) {
-                  await base44.entities.Artist.update(artist.id, { countries_worked: countries });
+                  await Artist.update(artist.id, { countries_worked: countries });
                 }
                 setEditingCountries(false);
               }} className="w-full bg-black text-white hover:bg-gray-800">
@@ -786,7 +787,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
 
               <Button onClick={async () => {
                 if (artist) {
-                  await base44.entities.Artist.update(artist.id, { visited_countries: visitedCountries });
+                  await Artist.update(artist.id, { visited_countries: visitedCountries });
                 }
                 setEditingVisited(false);
               }} className="w-full bg-black text-white hover:bg-gray-800">

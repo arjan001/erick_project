@@ -18,7 +18,7 @@ import UpgradeConnectsBanner from '@/components/artist/UpgradeConnectsBanner';
 
 import { useToast } from '@/hooks/useToast';
 
-import { base44 } from '@/api/base44Client';
+import { Job, Application, Message, Notification, Artist } from '@/lib/supabaseEntities';
 
 import { useAuth } from '@/lib/AuthContext';
 
@@ -69,9 +69,9 @@ export default function ArtistDashboard() {
       try {
 
         const [jobsData, appsData, msgsData] = await Promise.all([
-          base44.entities.Job.filter({ status: 'open' }, '-created_date', 5),
-          base44.entities.Application.filter({ artist_email: user.email }, '-created_date', 10),
-          base44.entities.Message.filter({ recipient_email: user.email }, '-created_date', 5),
+          Job.filter({ status: 'open' }, '-created_date', 5),
+          Application.filter({ artist_email: user.email }, '-created_date', 10),
+          Message.filter({ recipient_email: user.email }, '-created_date', 5),
         ]);
 
         setJobs(jobsData || []);
@@ -87,13 +87,13 @@ export default function ArtistDashboard() {
         setMessages(formatted);
 
         // Invitations = notifications of type job_invitation
-        const notifs = await base44.entities.Notification.filter({
+        const notifs = await Notification.filter({
           recipient_email: user.email,
           type: 'job_invitation'
         }, '-created_date', 10);
         setInvitations(notifs || []);
 
-        const artists = await base44.entities.Artist.filter({ email: user.email }, '-created_date', 1);
+        const artists = await Artist.filter({ email: user.email }, '-created_date', 1);
         const artist = artists?.[0] || null;
         setArtistProfile(artist);
 

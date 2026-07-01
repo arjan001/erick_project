@@ -61,6 +61,18 @@ function buildEntity(table, createdAtAlias) {
       if (error) throw error;
       return true;
     },
+    subscribe: (callback) => {
+      const channel = supabase
+        .channel(`realtime:${table}:${Math.random().toString(36).slice(2)}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
+          const type = payload.eventType === 'INSERT' ? 'create' : payload.eventType === 'DELETE' ? 'delete' : 'update';
+          const row = payload.new && Object.keys(payload.new).length ? { ...payload.new } : { ...payload.old };
+          if (createdAtAlias && row[createdAtAlias] && !row.created_date) row.created_date = row[createdAtAlias];
+          callback({ id: row.id, type, data: row });
+        })
+        .subscribe();
+      return () => supabase.removeChannel(channel);
+    },
   };
 }
 
@@ -96,3 +108,5 @@ export const Assignment = buildEntity('assignments', 'created_at');
 export const Creator = buildEntity('creators', 'created_at');
 export const Translation = buildEntity('translations', 'created_at');
 export const SystemSetting = buildEntity('system_settings', 'created_at');
+export const Team = buildEntity('teams', 'created_at');
+export const Invite = buildEntity('invites', 'created_at');

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { Artist } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Globe, Instagram, Linkedin, Check, Bell, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
@@ -44,7 +44,7 @@ export default function ArtistAccountSettingsTab({ artist, userEmail, onUpdate }
   const handleSaveContact = async () => {
     if (!artist) return;
     try {
-      const updated = await base44.entities.Artist.update(artist.id, { phone, website, instagram, linkedin, vimeo, imdb });
+      const updated = await Artist.update(artist.id, { phone, website, instagram, linkedin, vimeo, imdb });
       onUpdate(updated);
       success('Profile Updated', 'Your contact info has been saved');
     } catch (err) {
@@ -56,7 +56,7 @@ export default function ArtistAccountSettingsTab({ artist, userEmail, onUpdate }
   const handleSavePreferences = async () => {
     if (!artist) return;
     try {
-      const updated = await base44.entities.Artist.update(artist.id, {
+      const updated = await Artist.update(artist.id, {
         email_notifications: emailNotifications,
         job_alerts: jobAlerts,
         message_notifications: messageNotifications,

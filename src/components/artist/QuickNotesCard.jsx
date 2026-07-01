@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { Note } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { StickyNote, Plus, X, Pin, Pencil } from 'lucide-react';
 import NoteEditor from './NoteEditor';
@@ -21,7 +21,7 @@ export default function QuickNotesCard() {
 
   const fetchNotes = async () => {
     try {
-      const rows = await base44.entities.Note.filter({ created_by_id: user.id }, '-created_date', 20);
+      const rows = await Note.filter({ owner_email: user.email }, '-created_date', 20);
       setNotes(rows || []);
     } catch (err) {
       console.error('Error fetching notes:', err);
@@ -34,7 +34,7 @@ export default function QuickNotesCard() {
 
   const handleCreate = async (data) => {
     try {
-      const created = await base44.entities.Note.create(data);
+      const created = await Note.create({ ...data, owner_email: user.email });
       setNotes(prev => [created, ...prev]);
       setAdding(false);
     } catch (err) {
@@ -44,7 +44,7 @@ export default function QuickNotesCard() {
 
   const handleUpdate = async (id, data) => {
     try {
-      const updated = await base44.entities.Note.update(id, data);
+      const updated = await Note.update(id, data);
       setNotes(prev => prev.map(n => (n.id === id ? updated : n)));
       setEditingId(null);
     } catch (err) {
@@ -54,7 +54,7 @@ export default function QuickNotesCard() {
 
   const handleDeleteNote = async (id) => {
     try {
-      await base44.entities.Note.delete(id);
+      await Note.delete(id);
       setNotes(prev => prev.filter(n => n.id !== id));
     } catch (err) {
       console.error('Error deleting note:', err);

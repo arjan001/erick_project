@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { Job, Application } from '@/lib/supabaseEntities';
+import { Job, Application, Artist, ConnectsTransaction } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Euro, ChevronDown } from 'lucide-react';
 import JobPostingModal from '@/components/JobPostingModal';
@@ -73,7 +72,7 @@ export default function Jobs() {
     if (!selectedJob || !user) return;
 
     try {
-      const artists = await base44.entities.Artist.filter({ email: user.email });
+      const artists = await Artist.filter({ email: user.email });
       const artist = artists?.[0];
       const balance = artist?.connects_balance ?? 0;
 
@@ -90,8 +89,8 @@ export default function Jobs() {
       });
 
       const newBalance = balance - 1;
-      await base44.entities.Artist.update(artist.id, { connects_balance: newBalance });
-      await base44.entities.ConnectsTransaction.create({
+      await Artist.update(artist.id, { connects_balance: newBalance });
+      await ConnectsTransaction.create({
         artist_email: user.email,
         amount: -1,
         reason: 'job_application',

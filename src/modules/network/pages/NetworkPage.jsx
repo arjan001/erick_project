@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Artist, Team, Backer, ProjectOwner, Connection, Notification } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast';
@@ -82,11 +82,11 @@ export default function NetworkPage() {
     const fetchData = async () => {
       try {
         const [artists, teams, backers, clients, connectionsData] = await Promise.all([
-          base44.entities.Artist.list(),
-          base44.entities.Team.list(),
-          base44.entities.Backer.list(),
-          base44.entities.ProjectOwner.list(),
-          base44.entities.Connection.list(),
+          Artist.list(),
+          Team.list(),
+          Backer.list(),
+          ProjectOwner.list(),
+          Connection.list(),
         ]);
 
         const allPeople = [
@@ -100,16 +100,16 @@ export default function NetworkPage() {
 
         // My own profile (used to score suggestions by skill/career niche overlap)
         if (myType === 'artist') {
-          const mine = await base44.entities.Artist.filter({ email: user.email });
+          const mine = await Artist.filter({ email: user.email });
           setMyProfile(mine?.[0] || null);
         } else if (myType === 'team') {
-          const mine = await base44.entities.Team.filter({ contact_email: user.email });
+          const mine = await Team.filter({ contact_email: user.email });
           setMyProfile(mine?.[0] || null);
         } else if (myType === 'backer') {
-          const mine = await base44.entities.Backer.filter({ contact_email: user.email });
+          const mine = await Backer.filter({ contact_email: user.email });
           setMyProfile(mine?.[0] || null);
         } else {
-          const mine = await base44.entities.ProjectOwner.filter({ email: user.email });
+          const mine = await ProjectOwner.filter({ email: user.email });
           setMyProfile(mine?.[0] || null);
         }
 
@@ -137,7 +137,7 @@ export default function NetworkPage() {
   };
 
   const refreshConnections = async () => {
-    const connectionsData = await base44.entities.Connection.list();
+    const connectionsData = await Connection.list();
     const mine = connectionsData.filter(c => c.requester_email === user.email || c.recipient_email === user.email);
     setConnections(mine);
     setPendingRequests(mine.filter(c => c.recipient_email === user.email && c.status === 'pending'));
@@ -146,7 +146,7 @@ export default function NetworkPage() {
   const handleConnect = async () => {
     if (!selectedPerson) return;
     try {
-      await base44.entities.Connection.create({
+      await Connection.create({
         requester_email: user.email,
         requester_type: myType,
         recipient_email: selectedPerson.email,
@@ -154,7 +154,7 @@ export default function NetworkPage() {
         status: 'pending',
         message: connectionMessage,
       });
-      await base44.entities.Notification.create({
+      await Notification.create({
         recipient_email: selectedPerson.email,
         sender_email: user.email,
         sender_name: user.full_name,
@@ -175,7 +175,7 @@ export default function NetworkPage() {
 
   const handleAcceptConnection = async (connectionId) => {
     try {
-      await base44.entities.Connection.update(connectionId, { status: 'accepted' });
+      await Connection.update(connectionId, { status: 'accepted' });
       success('Accepted', 'You are now connected');
       await refreshConnections();
     } catch (err) {
@@ -186,7 +186,7 @@ export default function NetworkPage() {
 
   const handleDeclineConnection = async (connectionId) => {
     try {
-      await base44.entities.Connection.update(connectionId, { status: 'declined' });
+      await Connection.update(connectionId, { status: 'declined' });
       success('Declined', 'Connection request declined');
       await refreshConnections();
     } catch (err) {
@@ -197,7 +197,7 @@ export default function NetworkPage() {
 
   const handleCancelRequest = async (connectionId) => {
     try {
-      await base44.entities.Connection.delete(connectionId);
+      await Connection.delete(connectionId);
       success('Cancelled', 'Connection request withdrawn');
       await refreshConnections();
     } catch (err) {

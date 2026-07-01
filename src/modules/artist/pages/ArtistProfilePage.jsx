@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { base44 } from '@/api/base44Client';
 
+import { Artist, PortfolioClip, Endorsement, Testimonial } from '@/lib/supabaseEntities';
+
 import { useAuth } from '@/lib/AuthContext';
 
 import AboutSection from '@/components/AboutSection';
@@ -128,7 +130,7 @@ export default function ArtistProfile() {
 
         // Fetch artist data
 
-        const artistData = await base44.entities.Artist.filter({ email: user.email });
+        const artistData = await Artist.filter({ email: user.email });
 
         if (artistData.length > 0) {
 
@@ -138,7 +140,7 @@ export default function ArtistProfile() {
 
           // Fetch portfolio clips
 
-          const clipsData = await base44.entities.PortfolioClip.filter({ 
+          const clipsData = await PortfolioClip.filter({ 
 
             uploaded_by_type: 'artist', 
 
@@ -156,7 +158,7 @@ export default function ArtistProfile() {
 
         // Fetch endorsements
 
-        const endorsementsData = await base44.entities.Endorsement.filter({ 
+        const endorsementsData = await Endorsement.filter({ 
 
           recipient_email: user.email 
 
@@ -168,7 +170,7 @@ export default function ArtistProfile() {
 
         // Fetch testimonials
 
-        const testimonialsData = await base44.entities.Testimonial.filter({ 
+        const testimonialsData = await Testimonial.filter({ 
 
           recipient_email: user.email 
 
@@ -314,7 +316,7 @@ export default function ArtistProfile() {
 
       console.log('Saving to artist:', artist.id, fileUrl);
 
-      await base44.entities.Artist.update(artist.id, { profile_photo_url: fileUrl });
+      await Artist.update(artist.id, { profile_photo_url: fileUrl });
 
       
 
@@ -352,7 +354,7 @@ export default function ArtistProfile() {
 
     try {
 
-      await base44.entities.Artist.update(artist.id, { based_in_city: profileLocation });
+      await Artist.update(artist.id, { based_in_city: profileLocation });
 
       setArtist(prev => ({ ...prev, based_in_city: profileLocation }));
 
@@ -376,7 +378,7 @@ export default function ArtistProfile() {
 
     try {
 
-      await base44.entities.Artist.update(artist.id, { bio: profileBio });
+      await Artist.update(artist.id, { bio: profileBio });
 
       setArtist(prev => ({ ...prev, bio: profileBio }));
 
@@ -400,7 +402,7 @@ export default function ArtistProfile() {
 
     try {
 
-      await base44.entities.Artist.update(artist.id, {
+      await Artist.update(artist.id, {
 
         website: profileWebsite,
 
@@ -470,7 +472,7 @@ export default function ArtistProfile() {
 
 
 
-      const newClip = await base44.entities.PortfolioClip.create({
+      const newClip = await PortfolioClip.create({
 
         uploaded_by_type: 'artist',
 
@@ -534,7 +536,7 @@ export default function ArtistProfile() {
 
     try {
 
-      await base44.entities.PortfolioClip.delete(clipId);
+      await PortfolioClip.delete(clipId);
 
       setPortfolioClips(prev => prev.filter(clip => clip.id !== clipId));
 
@@ -598,7 +600,7 @@ export default function ArtistProfile() {
 
 
 
-      const updatedClip = await base44.entities.PortfolioClip.update(editingPortfolio.id, {
+      const updatedClip = await PortfolioClip.update(editingPortfolio.id, {
 
         title: portfolioForm.title,
 
@@ -732,7 +734,7 @@ export default function ArtistProfile() {
 
                     if (artist && profileName) {
 
-                      await base44.entities.Artist.update(artist.id, { full_name: profileName });
+                      await Artist.update(artist.id, { full_name: profileName });
 
                       setEditingName(false);
 
@@ -784,7 +786,7 @@ export default function ArtistProfile() {
 
                     if (artist && profileRole) {
 
-                      await base44.entities.Artist.update(artist.id, { role: profileRole });
+                      await Artist.update(artist.id, { role: profileRole });
 
                       setEditingRole(false);
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { Job, JobInvitation, Application } from '@/lib/supabaseEntities';
+import { Job, JobInvitation, Application, ProjectOwner } from '@/lib/supabaseEntities';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, DollarSign, Clock, CheckCircle, X, MessageCircle, Briefcase, User } from 'lucide-react';
@@ -37,7 +36,7 @@ export default function JobInvitations() {
           allInvitations.map(async (invitation) => {
             try {
               const job = await Job.get(invitation.job_id);
-              const client = await base44.entities.ProjectOwner.filter({ email: invitation.client_email });
+              const client = await ProjectOwner.filter({ email: invitation.client_email });
               return { 
                 ...invitation, 
                 job, 

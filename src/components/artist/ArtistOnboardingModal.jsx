@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { base44 } from '@/api/base44Client';
+import { Artist } from '@/lib/supabaseEntities';
 import ArtistStepRole from './ArtistStepRole';
 import ArtistStepQuestions from './ArtistStepQuestions';
 import ArtistStepPortfolio from './ArtistStepPortfolio';
@@ -58,7 +58,7 @@ export default function ArtistOnboardingModal({ artist, onClose, onComplete }) {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await base44.entities.Artist.update(artist.id, { ...data });
+      await Artist.update(artist.id, { ...data });
       onComplete({ ...artist, ...data });
     } catch (err) {
       console.error('Error completing profile:', err);

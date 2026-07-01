@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Job, Connection, Endorsement, Testimonial } from '@/lib/supabaseEntities';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
 import { Briefcase, Users, Award, ThumbsUp, MessageCircle, TrendingUp, Clock, Filter, RefreshCw } from 'lucide-react';
@@ -29,7 +29,7 @@ export default function ActivityFeedPage() {
         const allActivities = [];
         
         // Fetch jobs posted by connections
-        const jobs = await base44.entities.Job.filter({ status: 'open' });
+        const jobs = await Job.filter({ status: 'open' });
         jobs.forEach(job => {
           allActivities.push({
             id: `job-${job.id}`,
@@ -45,7 +45,7 @@ export default function ActivityFeedPage() {
         });
 
         // Fetch new connections
-        const connections = await base44.entities.Connection.filter({ status: 'accepted' });
+        const connections = await Connection.filter({ status: 'accepted' });
         connections.forEach(conn => {
           if (conn.recipient_email === user.email || conn.requester_email === user.email) {
             const otherEmail = conn.recipient_email === user.email ? conn.requester_email : conn.recipient_email;
@@ -64,7 +64,7 @@ export default function ActivityFeedPage() {
         });
 
         // Fetch endorsements
-        const endorsements = await base44.entities.Endorsement.list();
+        const endorsements = await Endorsement.list();
         endorsements.forEach(endorsement => {
           if (endorsement.endorsed_email === user.email || endorsement.endorser_email === user.email) {
             const isReceived = endorsement.endorsed_email === user.email;
@@ -85,7 +85,7 @@ export default function ActivityFeedPage() {
         });
 
         // Fetch testimonials
-        const testimonials = await base44.entities.Testimonial.list();
+        const testimonials = await Testimonial.list();
         testimonials.forEach(testimonial => {
           if (testimonial.recipient_email === user.email || testimonial.author_email === user.email) {
             const isReceived = testimonial.recipient_email === user.email;
@@ -128,7 +128,7 @@ export default function ActivityFeedPage() {
       try {
         const allActivities = [];
         
-        const jobs = await base44.entities.Job.filter({ status: 'open' });
+        const jobs = await Job.filter({ status: 'open' });
         jobs.forEach(job => {
           allActivities.push({
             id: `job-${job.id}`,
@@ -143,7 +143,7 @@ export default function ActivityFeedPage() {
           });
         });
 
-        const connections = await base44.entities.Connection.filter({ status: 'accepted' });
+        const connections = await Connection.filter({ status: 'accepted' });
         connections.forEach(conn => {
           if (conn.recipient_email === user.email || conn.requester_email === user.email) {
             const otherEmail = conn.recipient_email === user.email ? conn.requester_email : conn.recipient_email;
@@ -161,7 +161,7 @@ export default function ActivityFeedPage() {
           }
         });
 
-        const endorsements = await base44.entities.Endorsement.list();
+        const endorsements = await Endorsement.list();
         endorsements.forEach(endorsement => {
           if (endorsement.endorsed_email === user.email || endorsement.endorser_email === user.email) {
             const isReceived = endorsement.endorsed_email === user.email;
@@ -181,7 +181,7 @@ export default function ActivityFeedPage() {
           }
         });
 
-        const testimonials = await base44.entities.Testimonial.list();
+        const testimonials = await Testimonial.list();
         testimonials.forEach(testimonial => {
           if (testimonial.recipient_email === user.email || testimonial.author_email === user.email) {
             const isReceived = testimonial.recipient_email === user.email;
