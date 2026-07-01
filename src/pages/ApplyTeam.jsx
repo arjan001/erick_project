@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/AuthContext';
 import TeamStepInfo from '../components/team/TeamStepInfo';
 import TeamStepSpecialties from '../components/team/TeamStepSpecialties';
 import TeamStepPortfolio from '../components/team/TeamStepPortfolio';
@@ -14,11 +17,16 @@ const STEPS = [
 ];
 
 export default function ApplyTeam() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [teamData, setTeamData] = useState({
     contact_email: '',
     contact_name: '',
+    password: '',
+    confirmPassword: '',
     city: '',
     country: '',
     specialties: [],
@@ -28,6 +36,7 @@ export default function ApplyTeam() {
     languages_spoken: [],
   });
   const [submitted, setSubmitted] = useState(false);
+  const [needsEmailConfirm, setNeedsEmailConfirm] = useState(false);
 
   const updateData = (field, value) => {
     setTeamData(prev => ({ ...prev, [field]: value }));
@@ -35,7 +44,8 @@ export default function ApplyTeam() {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return teamData.team_name && teamData.contact_name && teamData.contact_email && teamData.phone && teamData.city && teamData.country;
+      case 1: return teamData.team_name && teamData.contact_name && teamData.contact_email && teamData.phone && teamData.city && teamData.country
+        && teamData.password && teamData.password.length >= 6 && teamData.password === teamData.confirmPassword;
       case 2: return teamData.specialties && teamData.specialties.length > 0;
       case 3: return true; // Portfolio optional, allow draft save
       default: return true;
@@ -79,18 +89,51 @@ export default function ApplyTeam() {
       alert('Please fill in all required fields to submit.');
       return;
     }
+    if (!teamData.password || teamData.password.length < 6) {
+      alert('Please set a password (min 6 characters) so you can log in as team admin.');
+      return;
+    }
+    if (teamData.password !== teamData.confirmPassword) {
+      alert('Passwords do not match.');
+      return;
+    }
 
     setIsSubmitting(true);
+    setSubmitError('');
     try {
+      // Create the login account first — this is what lets the team admin sign in later.
+      const { password, confirmPassword, ...teamFields } = teamData;
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: teamData.contact_email,
+        password: teamData.password,
+        options: { data: { full_name: teamData.contact_name, role: 'team' } },
+      });
+      if (signUpError) throw signUpError;
+
       await base44.entities.Team.create({
-        ...teamData,
+        ...teamFields,
         team_code: generateTeamCode(),
         status: 'pending',
         availability: 'available'
       });
+
+      if (signUpData.user && !signUpData.session) {
+        // Email confirmation required before they can sign in
+        setNeedsEmailConfirm(true);
+      } else if (signUpData.session) {
+        login({
+          id: signUpData.user.id,
+          email: signUpData.user.email,
+          full_name: teamData.contact_name,
+          role: 'team',
+        });
+        navigate('/teamdashboard');
+        return;
+      }
       setSubmitted(true);
     } catch (error) {
-      alert('Error submitting application. Please try again.');
+      setSubmitError(error.message || 'Error submitting application. Please try again.');
+      alert(error.message || 'Error submitting application. Please try again.');
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -98,7 +141,13 @@ export default function ApplyTeam() {
   };
 
   if (submitted) {
-    return <ApplicationSuccess type="team" name={teamData.contact_name} />;
+    return (
+      <ApplicationSuccess
+        type="team"
+        name={teamData.contact_name}
+        message={needsEmailConfirm ? 'Check your email to confirm your account, then sign in as your team.' : undefined}
+      />
+    );
   }
 
   const CurrentStepComponent = STEPS[currentStep - 1].component;

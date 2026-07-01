@@ -12,6 +12,9 @@ function buildUserFromSupabase(supaUser) {
     email: supaUser.email,
     full_name: meta.full_name || meta.name || supaUser.email?.split('@')[0] || 'User',
     role: meta.role || 'artist',
+    // Present only for invited team members — links them to their team's workspace
+    // instead of the team owner's own account (matched by contact_email).
+    team_id: meta.team_id || null,
   };
 }
 
@@ -32,6 +35,9 @@ async function ensureProfile(supaUser) {
         });
       }
     } else if (role === 'team') {
+      // Invited team members carry a team_id and join an existing team — never
+      // create a blank team for them, or they'd land on their own empty workspace.
+      if (supaUser.user_metadata?.team_id) return;
       const existing = await base44.entities.Team.filter({ contact_email: supaUser.email });
       if (!existing || existing.length === 0) {
         await base44.entities.Team.create({
@@ -64,8 +70,12 @@ async function updatePresence(u) {
   const now = new Date().toISOString();
   try {
     if (u.role === 'team') {
-      const teams = await base44.entities.Team.filter({ contact_email: u.email });
-      if (teams[0]) await base44.entities.Team.update(teams[0].id, { last_active: now });
+      if (u.team_id) {
+        await base44.entities.Team.update(u.team_id, { last_active: now });
+      } else {
+        const teams = await base44.entities.Team.filter({ contact_email: u.email });
+        if (teams[0]) await base44.entities.Team.update(teams[0].id, { last_active: now });
+      }
     } else if (u.role === 'client' || u.role === 'project_owner') {
       const owners = await base44.entities.ProjectOwner.filter({ email: u.email });
       if (owners[0]) await base44.entities.ProjectOwner.update(owners[0].id, { last_active: now });

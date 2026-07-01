@@ -4,7 +4,7 @@ import { createPageUrl } from '@/shared/utils/routing';
 import { CheckCircle, ArrowRight, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export default function ApplicationSuccess({ type, name }) {
+export default function ApplicationSuccess({ type, name, message }) {
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
       <div className="max-w-2xl w-full text-center">
@@ -16,7 +16,7 @@ export default function ApplicationSuccess({ type, name }) {
 
         <h1 className="text-4xl sm:text-5xl font-bold mb-4">Application Submitted</h1>
         <p className="text-xl text-gray-400 mb-12 max-w-lg mx-auto">
-          Thank you, {name}. Your {type} application is now under review.
+          {message || `Thank you, ${name}. Your ${type} application is now under review.`}
         </p>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 mb-8 text-left">

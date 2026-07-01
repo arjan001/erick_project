@@ -35,6 +35,22 @@
     "invited_by_email": {
       "type": "string",
       "format": "email"
+    },
+    "team_id": {
+      "type": "string",
+      "description": "Team entity ID this invite joins the member to (team invites only)"
+    },
+    "team_name": {
+      "type": "string",
+      "description": "Team name, for display in the invite/email"
+    },
+    "member_name": {
+      "type": "string",
+      "description": "Name of the invited team member"
+    },
+    "member_role": {
+      "type": "string",
+      "description": "Role/specialty of the invited team member within the team"
     }
   },
   "required": [

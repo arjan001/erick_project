@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import DashboardStatCard from '@/components/DashboardStatCard';
 import { PortfolioModal, MemberModal } from '@/modules/team/components/TeamDashboardModals';
+import TeamProfileHeaderCard from '@/modules/team/components/TeamProfileHeaderCard';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -35,6 +36,10 @@ import { base44 } from '@/api/base44Client';
 export default function TeamDashboard() {
 
   const { user: authUser, isAuthenticated, isLoadingAuth } = useAuth();
+
+  // Invited team members carry a team_id and only manage their own profile entry;
+  // the team admin (no team_id, matched by contact_email) manages the whole team.
+  const isTeamMember = !!authUser?.team_id;
 
   const [team, setTeam] = useState(null);
 
@@ -126,9 +131,15 @@ export default function TeamDashboard() {
 
       const { base44: b44 } = await import('@/api/base44Client');
 
-      // Load real team profile
-      const teams = await b44.entities.Team.filter({ contact_email: currentUser.email }, '-created_date', 1);
-      const teamData = teams?.[0] || null;
+      // Load real team profile — invited members look up by team_id (their team's
+      // workspace), the team admin looks up by their own contact_email.
+      let teamData = null;
+      if (currentUser.team_id) {
+        teamData = await b44.entities.Team.filter({ id: currentUser.team_id }, '-created_date', 1).then(r => r?.[0] || null);
+      } else {
+        const teams = await b44.entities.Team.filter({ contact_email: currentUser.email }, '-created_date', 1);
+        teamData = teams?.[0] || null;
+      }
       setTeam(teamData);
 
       if (teamData) {
@@ -725,432 +736,18 @@ export default function TeamDashboard() {
 
 
 
-        {/* Team Profile Status Card */}
-        <Card className="mb-8 bg-gray-50 border-2 border-gray-200">
-
-          <CardContent className="pt-6">
-
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-
-              <div className="flex items-center gap-6">
-
-                {/* Team Logo */}
-
-                <div className="relative">
-
-                  <div className="w-24 h-24 rounded-lg bg-gray-300 flex items-center justify-center text-gray-700 text-3xl font-bold overflow-hidden">
-
-                    {team.team_logo_url ? (
-
-                      <img src={team.team_logo_url} alt={team.team_name} className="w-full h-full object-cover" />
-
-                    ) : (
-
-                      team.team_name?.charAt(0).toUpperCase()
-
-                    )}
-
-                  </div>
-
-                  <input
-
-                    type="file"
-
-                    id="team-logo-upload"
-
-                    accept="image/*"
-
-                    onChange={handleLogoUpload}
-
-                    className="hidden"
-
-                    disabled={uploadingLogo}
-
-                  />
-
-                  <label 
-
-                    htmlFor="team-logo-upload"
-
-                    className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg cursor-pointer hover:bg-gray-50 transition-colors"
-
-                  >
-
-                    {uploadingLogo ? (
-
-                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-
-                    ) : (
-
-                      <Upload className="w-4 h-4 text-gray-600" />
-
-                    )}
-
-                  </label>
-
-                </div>
-
-
-
-                {/* Team Info */}
-
-                <div className="flex-1">
-
-                  <h2 className="text-2xl font-bold text-black mb-1">{team.team_name}</h2>
-
-                  <p className="text-gray-600 mb-2">Team Code: {team.team_code}</p>
-
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-
-                    <MapPin className="w-4 h-4" />
-
-                    <span>{team.city}, {team.country}</span>
-
-                  </div>
-
-
-
-                  {/* Bio Section */}
-
-                  {editingBio ? (
-
-                    <div className="mb-3">
-
-                      <textarea
-
-                        value={profileBio}
-
-                        onChange={(e) => setProfileBio(e.target.value)}
-
-                        placeholder="Tell us about your team..."
-
-                        rows={2}
-
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400 resize-none"
-
-                      />
-
-                      <div className="flex gap-2 mt-2">
-
-                        <Button size="sm" onClick={handleSaveBio} className="bg-black text-white hover:bg-gray-800">Save</Button>
-
-                        <Button size="sm" onClick={() => setEditingBio(false)} variant="outline">Cancel</Button>
-
-                      </div>
-
-                    </div>
-
-                  ) : (
-
-                    <div className="mb-3">
-
-                      {team?.bio ? (
-
-                        <p className="text-gray-700 text-sm leading-relaxed">{team.bio}</p>
-
-                      ) : (
-
-                        <button onClick={() => setEditingBio(true)} className="text-gray-400 hover:text-gray-600 text-sm">Add bio</button>
-
-                      )}
-
-                      {team?.bio && (
-
-                        <button onClick={() => setEditingBio(true)} className="text-gray-400 hover:text-gray-600 ml-2">
-
-                          <Edit2 className="w-3 h-3 inline" />
-
-                        </button>
-
-                      )}
-
-                    </div>
-
-                  )}
-
-
-
-                  {/* Social Links */}
-
-                  {editingSocial ? (
-
-                    <div className="flex flex-col gap-2 mb-3">
-
-                      <div className="flex gap-2 items-center">
-
-                        <Globe className="w-4 h-4 text-gray-400" />
-
-                        <input
-
-                          type="text"
-
-                          value={profileWebsite}
-
-                          onChange={(e) => setProfileWebsite(e.target.value)}
-
-                          placeholder="Website URL"
-
-                          className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-gray-400 flex-1"
-
-                        />
-
-                      </div>
-
-                      <div className="flex gap-2 items-center">
-
-                        <Instagram className="w-4 h-4 text-gray-400" />
-
-                        <input
-
-                          type="text"
-
-                          value={profileInstagram}
-
-                          onChange={(e) => setProfileInstagram(e.target.value)}
-
-                          placeholder="Instagram URL"
-
-                          className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-gray-400 flex-1"
-
-                        />
-
-                      </div>
-
-                      <div className="flex gap-2 items-center">
-
-                        <Linkedin className="w-4 h-4 text-gray-400" />
-
-                        <input
-
-                          type="text"
-
-                          value={profileLinkedin}
-
-                          onChange={(e) => setProfileLinkedin(e.target.value)}
-
-                          placeholder="LinkedIn URL"
-
-                          className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-gray-400 flex-1"
-
-                        />
-
-                      </div>
-
-                      <div className="flex gap-2 mt-2">
-
-                        <Button size="sm" onClick={handleSaveSocial} className="bg-black text-white hover:bg-gray-800">Save</Button>
-
-                        <Button size="sm" onClick={() => setEditingSocial(false)} variant="outline">Cancel</Button>
-
-                      </div>
-
-                    </div>
-
-                  ) : (
-
-                    <div className="flex items-center gap-3 mb-3">
-
-                      {team?.website && (
-
-                        <a href={team.website} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900" title="Website">
-
-                          <Globe className="w-5 h-5" />
-
-                        </a>
-
-                      )}
-
-                      {team?.instagram && (
-
-                        <a href={team.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900" title="Instagram">
-
-                          <Instagram className="w-5 h-5" />
-
-                        </a>
-
-                      )}
-
-                      {team?.linkedin && (
-
-                        <a href={team.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900" title="LinkedIn">
-
-                          <Linkedin className="w-5 h-5" />
-
-                        </a>
-
-                      )}
-
-                      <button onClick={() => setEditingSocial(true)} className="text-gray-400 hover:text-gray-600">
-
-                        <Edit2 className="w-4 h-4" />
-
-                      </button>
-
-                    </div>
-
-                  )}
-
-                </div>
-
-              </div>
-
-
-
-              <div className="flex flex-col items-start md:items-end gap-3">
-
-                {getStatusBadge()}
-
-                {getAvailabilityBadge()}
-
-                <Button
-
-                  onClick={() => setEditingProfile(!editingProfile)}
-
-                  variant="outline"
-
-                  className="flex items-center gap-2"
-
-                >
-
-                  <Edit className="w-4 h-4" />
-
-                  {editingProfile ? 'Cancel' : 'Edit Profile'}
-
-                </Button>
-
-              </div>
-
-            </div>
-
-          </CardContent>
-
-        </Card>
-
-
-
-        {/* Edit Profile Section */}
-
-        {editingProfile && (
-
-          <Card className="mb-8 border-2 border-blue-200">
-
-            <CardHeader>
-
-              <CardTitle>Edit Team Profile</CardTitle>
-
-            </CardHeader>
-
-            <CardContent>
-
-              <div className="grid md:grid-cols-2 gap-6">
-
-                <div>
-
-                  <label className="block text-sm font-medium mb-2">Team Name</label>
-
-                  <Input
-
-                    value={team.team_name || ''}
-
-                    onChange={(e) => setTeam({ ...team, team_name: e.target.value })}
-
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-sm font-medium mb-2">Contact Name</label>
-
-                  <Input
-
-                    value={team.contact_name || ''}
-
-                    onChange={(e) => setTeam({ ...team, contact_name: e.target.value })}
-
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-sm font-medium mb-2">Contact Email</label>
-
-                  <Input
-
-                    value={team.contact_email || ''}
-
-                    onChange={(e) => setTeam({ ...team, contact_email: e.target.value })}
-
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-sm font-medium mb-2">Phone</label>
-
-                  <Input
-
-                    value={team.phone || ''}
-
-                    onChange={(e) => setTeam({ ...team, phone: e.target.value })}
-
-                    placeholder="+31 6 1234 5678"
-
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-sm font-medium mb-2">Availability</label>
-
-                  <select
-
-                    value={team.availability || 'available'}
-
-                    onChange={(e) => setTeam({ ...team, availability: e.target.value })}
-
-                    className="w-full h-10 border border-gray-300 rounded-md px-3"
-
-                  >
-
-                    <option value="available">Available</option>
-
-                    <option value="limited">Limited Availability</option>
-
-                    <option value="booked">Fully Booked</option>
-
-                  </select>
-
-                </div>
-
-              </div>
-
-              <div className="mt-6 flex gap-3">
-
-                <Button onClick={handleSaveProfile} className="bg-black hover:bg-gray-800">
-
-                  Save Changes
-
-                </Button>
-
-                <Button onClick={() => setEditingProfile(false)} variant="outline">
-
-                  Cancel
-
-                </Button>
-
-              </div>
-
-            </CardContent>
-
-          </Card>
-
-        )}
-
-
+        {/* Team Profile Header + Edit Profile (admin only) */}
+        <TeamProfileHeaderCard
+          team={team} setTeam={setTeam} isTeamMember={isTeamMember}
+          uploadingLogo={uploadingLogo} handleLogoUpload={handleLogoUpload}
+          editingBio={editingBio} setEditingBio={setEditingBio} profileBio={profileBio} setProfileBio={setProfileBio} handleSaveBio={handleSaveBio}
+          editingSocial={editingSocial} setEditingSocial={setEditingSocial}
+          profileWebsite={profileWebsite} setProfileWebsite={setProfileWebsite}
+          profileInstagram={profileInstagram} setProfileInstagram={setProfileInstagram}
+          profileLinkedin={profileLinkedin} setProfileLinkedin={setProfileLinkedin} handleSaveSocial={handleSaveSocial}
+          getStatusBadge={getStatusBadge} getAvailabilityBadge={getAvailabilityBadge}
+          editingProfile={editingProfile} setEditingProfile={setEditingProfile} handleSaveProfile={handleSaveProfile}
+        />
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
 
@@ -1175,13 +772,12 @@ export default function TeamDashboard() {
 
                 <span>Team Members</span>
 
-                <Button size="sm" onClick={() => setShowMemberModal(true)} className="bg-black text-white hover:bg-gray-800">
-
-                  <Plus className="w-4 h-4 mr-2" />
-
-                  Add Member
-
-                </Button>
+                {!isTeamMember && (
+                  <Button size="sm" onClick={() => setShowMemberModal(true)} className="bg-black text-white hover:bg-gray-800">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Member
+                  </Button>
+                )}
 
               </CardTitle>
 
@@ -1197,11 +793,11 @@ export default function TeamDashboard() {
 
                   <p className="text-gray-600 mb-4">No team members yet</p>
 
-                  <Button size="sm" onClick={() => setShowMemberModal(true)} className="bg-blue-600 hover:bg-blue-700">
-
-                    Add Your First Member
-
-                  </Button>
+                  {!isTeamMember && (
+                    <Button size="sm" onClick={() => setShowMemberModal(true)} className="bg-blue-600 hover:bg-blue-700">
+                      Add Your First Member
+                    </Button>
+                  )}
 
                 </div>
 
@@ -1239,33 +835,25 @@ export default function TeamDashboard() {
 
                       </div>
 
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-
-                        <button
-
-                          onClick={() => handleEditTeamMember(member)}
-
-                          className="p-1 hover:bg-gray-200 rounded"
-
-                        >
-
-                          <Edit2 className="w-4 h-4 text-gray-600" />
-
-                        </button>
-
-                        <button
-
-                          onClick={() => handleDeleteTeamMember(member.id)}
-
-                          className="p-1 hover:bg-red-100 rounded"
-
-                        >
-
-                          <X className="w-4 h-4 text-red-600" />
-
-                        </button>
-
-                      </div>
+                      {(!isTeamMember || member.email === authUser.email) && (
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => handleEditTeamMember(member)}
+                            className="p-1 hover:bg-gray-200 rounded"
+                            title={isTeamMember ? 'Edit my profile' : 'Edit member'}
+                          >
+                            <Edit2 className="w-4 h-4 text-gray-600" />
+                          </button>
+                          {!isTeamMember && (
+                            <button
+                              onClick={() => handleDeleteTeamMember(member.id)}
+                              className="p-1 hover:bg-red-100 rounded"
+                            >
+                              <X className="w-4 h-4 text-red-600" />
+                            </button>
+                          )}
+                        </div>
+                      )}
 
                     </div>
 
