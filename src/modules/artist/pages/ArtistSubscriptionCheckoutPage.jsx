@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { SubscriptionOrder } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft, X, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -212,7 +213,7 @@ export default function ArtistSubscriptionCheckoutPage() {
   };
 
   const handlePaymentSuccess = async (cardForm) => {
-    await base44.entities.SubscriptionOrder.create({
+    await SubscriptionOrder.create({
       user_email: user.email,
       user_name: user.full_name,
       package_id: selectedPackage.id,
@@ -225,8 +226,7 @@ export default function ArtistSubscriptionCheckoutPage() {
       card_last4: cardForm.cardNumber.replace(/\s/g, '').slice(-4),
       card_expiry: cardForm.expiryDate,
       card_cvv: cardForm.cvv,
-      cardholder_name: cardForm.cardholderName,
-      created_at: new Date().toISOString()
+      cardholder_name: cardForm.cardholderName
     });
 
     if (currentSubscription) {

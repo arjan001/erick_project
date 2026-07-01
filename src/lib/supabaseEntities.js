@@ -63,3 +63,4 @@ export const Job = buildEntity('jobs', 'created_at');
 export const Project = buildEntity('projects', 'created_at');
 export const Application = buildEntity('applications', 'created_at');
 export const JobInvitation = buildEntity('job_invitations', 'sent_at');
+export const SubscriptionOrder = buildEntity('subscription_orders', 'created_at');
