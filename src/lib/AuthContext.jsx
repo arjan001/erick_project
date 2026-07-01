@@ -41,10 +41,11 @@ async function ensureProfile(supaUser) {
       const existing = await base44.entities.Team.filter({ contact_email: supaUser.email });
       if (!existing || existing.length === 0) {
         await base44.entities.Team.create({
-          team_name: full_name,
+          team_name: supaUser.user_metadata?.team_name || full_name,
           team_code: 'TM' + Date.now().toString().slice(-4),
           contact_email: supaUser.email,
           contact_name: full_name,
+          phone: supaUser.user_metadata?.phone || '',
           city: '',
           country: '',
           status: 'pending',

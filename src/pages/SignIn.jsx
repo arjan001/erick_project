@@ -31,6 +31,9 @@ export default function SignIn() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [role, setRole] = useState('artist');
+  const [teamOrgName, setTeamOrgName] = useState('');
+  const [teamContactName, setTeamContactName] = useState('');
+  const [teamPhone, setTeamPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -106,11 +109,11 @@ export default function SignIn() {
     if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
     setLoading(true);
     try {
-      const fullName = `${firstName} ${lastName}`.trim();
+      const fullName = role === 'team' ? teamContactName.trim() : `${firstName} ${lastName}`.trim();
       const { data, error: supaError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName, role } },
+        options: { data: { full_name: fullName, role, ...(role === 'team' ? { team_name: teamOrgName.trim(), phone: teamPhone.trim() } : {}) } },
       });
       if (supaError) throw supaError;
       if (data.user && !data.session) {
@@ -235,20 +238,43 @@ export default function SignIn() {
           {/* Sign Up Form */}
           {mode === 'signup' && (
             <form onSubmit={handleSignUp} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">First name</label>
-                  <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required
-                    placeholder="John" disabled={loading}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+              {role === 'team' ? (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Team / Organization name</label>
+                    <input type="text" value={teamOrgName} onChange={e => setTeamOrgName(e.target.value)} required
+                      placeholder="e.g., Amsterdam Post House" disabled={loading}
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Your name (team admin)</label>
+                    <input type="text" value={teamContactName} onChange={e => setTeamContactName(e.target.value)} required
+                      placeholder="Jane Doe" disabled={loading}
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Phone number</label>
+                    <input type="tel" value={teamPhone} onChange={e => setTeamPhone(e.target.value)} required
+                      placeholder="+31 6 1234 5678" disabled={loading}
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                  </div>
+                </>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">First name</label>
+                    <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required
+                      placeholder="John" disabled={loading}
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Last name</label>
+                    <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} required
+                      placeholder="Doe" disabled={loading}
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Last name</label>
-                  <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} required
-                    placeholder="Doe" disabled={loading}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
-                </div>
-              </div>
+              )}
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
                 <div className="relative">

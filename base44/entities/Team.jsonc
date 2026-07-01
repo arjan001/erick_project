@@ -120,8 +120,6 @@
   "required": [
     "team_name",
     "team_code",
-    "contact_email",
-    "city",
-    "country"
+    "contact_email"
   ]
 }

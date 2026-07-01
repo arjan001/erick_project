@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import DashboardStatCard from '@/components/DashboardStatCard';
 import { PortfolioModal, MemberModal } from '@/modules/team/components/TeamDashboardModals';
 import TeamProfileHeaderCard from '@/modules/team/components/TeamProfileHeaderCard';
+import TeamOnboardingModal from '@/components/team/TeamOnboardingModal';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -93,6 +94,8 @@ export default function TeamDashboard() {
 
   });
 
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
   const [editingBio, setEditingBio] = useState(false);
 
   const [editingSocial, setEditingSocial] = useState(false);
@@ -141,6 +144,10 @@ export default function TeamDashboard() {
         teamData = teams?.[0] || null;
       }
       setTeam(teamData);
+
+      if (teamData && !currentUser.team_id && (!teamData.city || !teamData.team_size || !(teamData.specialties && teamData.specialties.length))) {
+        setShowOnboarding(true);
+      }
 
       if (teamData) {
         setProfileBio('');
@@ -1158,6 +1165,14 @@ export default function TeamDashboard() {
           onClose={() => { setShowMemberModal(false); setEditingMember(null); setMemberForm({ name: '', role: '', email: '', skills: '', avatar_url: '' }); }}
           onSave={editingMember ? handleUpdateTeamMember : handleAddTeamMember}
         />
+
+        {showOnboarding && team && (
+          <TeamOnboardingModal
+            team={team}
+            onClose={() => setShowOnboarding(false)}
+            onComplete={(updatedTeam) => { setTeam(updatedTeam); setShowOnboarding(false); }}
+          />
+        )}
 
       </div>
 
