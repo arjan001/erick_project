@@ -114,6 +114,11 @@
       "type": "number",
       "default": 5,
       "description": "Available connects to apply for jobs, like Fiverr/Upwork connects"
+    },
+    "last_active": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time this user was active, used for online/offline presence"
     }
   },
   "required": [

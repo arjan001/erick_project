@@ -58,10 +58,41 @@ async function ensureProfile(supaUser) {
   }
 }
 
+// Update the current user's own profile record with a fresh timestamp so others can see them as online
+async function updatePresence(u) {
+  if (!u?.email) return;
+  const now = new Date().toISOString();
+  try {
+    if (u.role === 'team') {
+      const teams = await base44.entities.Team.filter({ contact_email: u.email });
+      if (teams[0]) await base44.entities.Team.update(teams[0].id, { last_active: now });
+    } else if (u.role === 'client' || u.role === 'project_owner') {
+      const owners = await base44.entities.ProjectOwner.filter({ email: u.email });
+      if (owners[0]) await base44.entities.ProjectOwner.update(owners[0].id, { last_active: now });
+    } else if (u.role === 'backer') {
+      const backers = await base44.entities.Backer.filter({ contact_email: u.email });
+      if (backers[0]) await base44.entities.Backer.update(backers[0].id, { last_active: now });
+    } else {
+      const artists = await base44.entities.Artist.filter({ email: u.email });
+      if (artists[0]) await base44.entities.Artist.update(artists[0].id, { last_active: now });
+    }
+  } catch (err) {
+    console.error('presence update error:', err);
+  }
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+
+  // Heartbeat: mark this user active periodically so others see live online status
+  useEffect(() => {
+    if (!user?.email) return;
+    updatePresence(user);
+    const interval = setInterval(() => updatePresence(user), 30000);
+    return () => clearInterval(interval);
+  }, [user?.email]);
 
   const applySession = (supaUser) => {
     const u = buildUserFromSupabase(supaUser);

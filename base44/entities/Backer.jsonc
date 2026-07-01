@@ -74,6 +74,11 @@
     "admin_notes": {
       "type": "string",
       "description": "Internal admin notes"
+    },
+    "last_active": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time this user was active, used for online/offline presence"
     }
   },
   "required": [
