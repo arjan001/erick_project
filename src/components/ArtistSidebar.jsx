@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  Search, Briefcase, FileText, Mail, Users, Bell, User,
+  Search, Briefcase, FileText, Mail, User,
   Home as HomeIcon, Network, ChevronLeft, ChevronRight, LogOut
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';

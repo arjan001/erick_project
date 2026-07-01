@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
-import { Button } from '@/components/ui/button';
-import { ChevronDown, X, Instagram, Linkedin, Play, Menu, User, LogIn } from 'lucide-react';
+import { ChevronDown, X, Instagram, Linkedin, Play, Menu, LogIn } from 'lucide-react';
 import TopBanner from './components/home/TopBanner';
 import NewProjectForm from './components/NewProjectForm';
 import UnifiedSearch from './components/UnifiedSearch';

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Upload, Link as LinkIcon } from 'lucide-react';
+import { Sparkles, Upload } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function EditableSection({ title, onGenerate }) {
