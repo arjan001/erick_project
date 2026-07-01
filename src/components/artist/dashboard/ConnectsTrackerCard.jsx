@@ -18,7 +18,7 @@ export default function ConnectsTrackerCard({ connects }) {
         <div className="text-xs text-gray-400">Connects left</div>
       </div>
       <Link
-        to={createPageUrl('Pricing')}
+        to={createPageUrl('ArtistSubscriptionCheckout')}
         className="mt-4 text-center w-full bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-full py-2.5 transition-colors"
       >
         Get More Connects

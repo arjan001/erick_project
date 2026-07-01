@@ -19,7 +19,10 @@ import { MapPin, MessageCircle, Briefcase, MoreHorizontal, ChevronDown, Copy, Gl
 import { useToast } from '@/hooks/useToast';
 import { notifyError, confirmDialog } from '@/lib/sweetAlert';
 import ArtistAccountSettingsTab from '@/components/artist/ArtistAccountSettingsTab';
+
 import ShareProfileButton from '@/components/artist/ShareProfileButton';
+
+import PortfolioModal from '@/components/artist/PortfolioModal';
 
 
 
@@ -91,9 +94,13 @@ export default function ArtistProfile() {
 
   });
 
-  const fileInputRef = React.useRef(null);
+  const [selectedCoverImage, setSelectedCoverImage] = useState(null);
 
-  const videoInputRef = React.useRef(null);
+  const [selectedVideoFile, setSelectedVideoFile] = useState(null);
+
+  const MAX_VIDEO_SIZE_MB = 20;
+
+  const fileInputRef = React.useRef(null);
 
   const navigate = useNavigate();
 
@@ -449,6 +456,14 @@ export default function ArtistProfile() {
 
     }
 
+    if (selectedVideoFile && selectedVideoFile.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+
+      toastError('Video Too Large', `Trailer videos must be under ${MAX_VIDEO_SIZE_MB}MB. Please upload a shorter clip.`);
+
+      return;
+
+    }
+
 
 
     setUploadingVideo(true);
@@ -461,13 +476,21 @@ export default function ArtistProfile() {
 
 
 
-      if (videoInputRef.current?.files?.[0]) {
+      if (selectedVideoFile) {
 
-        const videoFile = videoInputRef.current.files[0];
-
-        const uploadResponse = await base44.integrations.Core.UploadFile({ file: videoFile });
+        const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedVideoFile });
 
         videoUrl = uploadResponse.file_url || uploadResponse.url;
+
+      }
+
+
+
+      if (selectedCoverImage) {
+
+        const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedCoverImage });
+
+        thumbnailUrl = uploadResponse.file_url || uploadResponse.url;
 
       }
 
@@ -487,7 +510,7 @@ export default function ArtistProfile() {
 
         role: portfolioForm.role,
 
-        video_url: videoUrl,
+        original_video_url: videoUrl,
 
         thumbnail_url: thumbnailUrl,
 
@@ -503,13 +526,9 @@ export default function ArtistProfile() {
 
       setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '' });
 
-      
+      setSelectedCoverImage(null);
 
-      if (videoInputRef.current) {
-
-        videoInputRef.current.value = '';
-
-      }
+      setSelectedVideoFile(null);
 
     } catch (err) {
 
@@ -569,6 +588,10 @@ export default function ArtistProfile() {
 
     });
 
+    setSelectedCoverImage(null);
+
+    setSelectedVideoFile(null);
+
     setShowPortfolioModal(true);
 
   };
@@ -579,23 +602,39 @@ export default function ArtistProfile() {
 
     if (!editingPortfolio) return;
 
+    if (selectedVideoFile && selectedVideoFile.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+
+      toastError('Video Too Large', `Trailer videos must be under ${MAX_VIDEO_SIZE_MB}MB. Please upload a shorter clip.`);
+
+      return;
+
+    }
+
 
 
     try {
 
-      let videoUrl = editingPortfolio.video_url;
+      let videoUrl = editingPortfolio.original_video_url;
 
       let thumbnailUrl = editingPortfolio.thumbnail_url;
 
 
 
-      if (videoInputRef.current?.files?.[0]) {
+      if (selectedVideoFile) {
 
-        const videoFile = videoInputRef.current.files[0];
-
-        const uploadResponse = await base44.integrations.Core.UploadFile({ file: videoFile });
+        const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedVideoFile });
 
         videoUrl = uploadResponse.file_url || uploadResponse.url;
+
+      }
+
+
+
+      if (selectedCoverImage) {
+
+        const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedCoverImage });
+
+        thumbnailUrl = uploadResponse.file_url || uploadResponse.url;
 
       }
 
@@ -611,7 +650,7 @@ export default function ArtistProfile() {
 
         role: portfolioForm.role,
 
-        video_url: videoUrl,
+        original_video_url: videoUrl,
 
         thumbnail_url: thumbnailUrl
 
@@ -631,13 +670,9 @@ export default function ArtistProfile() {
 
       setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '' });
 
-      
+      setSelectedCoverImage(null);
 
-      if (videoInputRef.current) {
-
-        videoInputRef.current.value = '';
-
-      }
+      setSelectedVideoFile(null);
 
     } catch (err) {
 
@@ -1549,213 +1584,43 @@ export default function ArtistProfile() {
 
       {showPortfolioModal && (
 
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <PortfolioModal
 
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
+          editingPortfolio={editingPortfolio}
 
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
+          portfolioForm={portfolioForm}
 
-              {editingPortfolio ? 'Edit Portfolio Item' : 'Add Work to Portfolio'}
+          setPortfolioForm={setPortfolioForm}
 
-            </h3>
+          uploading={uploadingVideo}
 
-            <p className="text-sm text-gray-600 mb-4">
+          selectedCoverImage={selectedCoverImage}
 
-              {editingPortfolio ? 'Update your portfolio item' : 'Upload a video clip to showcase your work'}
+          setSelectedCoverImage={setSelectedCoverImage}
 
-            </p>
+          selectedVideoFile={selectedVideoFile}
 
-            
+          setSelectedVideoFile={setSelectedVideoFile}
 
-            <div className="space-y-4">
+          maxVideoSizeMB={MAX_VIDEO_SIZE_MB}
 
-              <div>
+          onClose={() => {
 
-                <label className="block text-sm font-medium text-gray-700 mb-1">Project Title *</label>
+            setShowPortfolioModal(false);
 
-                <input
+            setEditingPortfolio(null);
 
-                  type="text"
+            setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '' });
 
-                  value={portfolioForm.title}
+            setSelectedCoverImage(null);
 
-                  onChange={(e) => setPortfolioForm(prev => ({ ...prev, title: e.target.value }))}
+            setSelectedVideoFile(null);
 
-                  placeholder="Enter project title"
+          }}
 
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+          onSubmit={editingPortfolio ? handleUpdatePortfolioClip : handleAddPortfolioClip}
 
-                />
-
-              </div>
-
-
-
-              <div>
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Project Type</label>
-
-                <select
-
-                  value={portfolioForm.project_type}
-
-                  onChange={(e) => setPortfolioForm(prev => ({ ...prev, project_type: e.target.value }))}
-
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-
-                >
-
-                  <option value="commercial">Commercial</option>
-
-                  <option value="music_video">Music Video</option>
-
-                  <option value="documentary">Documentary</option>
-
-                  <option value="short_film">Short Film</option>
-
-                  <option value="film">Film</option>
-
-                  <option value="other">Other</option>
-
-                </select>
-
-              </div>
-
-
-
-              <div>
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Your Role</label>
-
-                <input
-
-                  type="text"
-
-                  value={portfolioForm.role}
-
-                  onChange={(e) => setPortfolioForm(prev => ({ ...prev, role: e.target.value }))}
-
-                  placeholder="e.g., Director, Cinematographer"
-
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-
-                />
-
-              </div>
-
-
-
-              <div>
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-
-                <textarea
-
-                  value={portfolioForm.description}
-
-                  onChange={(e) => setPortfolioForm(prev => ({ ...prev, description: e.target.value }))}
-
-                  placeholder="Describe the project..."
-
-                  rows={3}
-
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400 resize-none"
-
-                />
-
-              </div>
-
-
-
-              <div>
-
-                <label className="block text-sm font-medium text-gray-700 mb-1">Video File</label>
-
-                <div 
-
-                  onClick={() => videoInputRef.current?.click()}
-
-                  className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors"
-
-                >
-
-                  <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-
-                  <p className="text-sm text-gray-600">Click to upload video</p>
-
-                  <p className="text-xs text-gray-500 mt-1">MP4, WebM up to 100MB</p>
-
-                  {videoInputRef.current?.files?.[0] && (
-
-                    <p className="text-xs text-gray-700 mt-2">{videoInputRef.current.files[0].name}</p>
-
-                  )}
-
-                </div>
-
-                <input
-
-                  ref={videoInputRef}
-
-                  type="file"
-
-                  accept="video/*"
-
-                  className="hidden"
-
-                  onChange={() => {}}
-
-                />
-
-              </div>
-
-            </div>
-
-
-
-            <div className="flex gap-2 mt-6">
-
-              <Button 
-
-                onClick={() => {
-
-                  setShowPortfolioModal(false);
-
-                  setEditingPortfolio(null);
-
-                  setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '' });
-
-                }} 
-
-                variant="outline" 
-
-                className="flex-1"
-
-              >
-
-                Cancel
-
-              </Button>
-
-              <Button 
-
-                onClick={editingPortfolio ? handleUpdatePortfolioClip : handleAddPortfolioClip}
-
-                disabled={uploadingVideo}
-
-                className="flex-1 bg-black text-white hover:bg-gray-800"
-
-              >
-
-                {uploadingVideo ? 'Uploading...' : (editingPortfolio ? 'Update' : 'Add')}
-
-              </Button>
-
-            </div>
-
-          </div>
-
-        </div>
+        />
 
       )}
 

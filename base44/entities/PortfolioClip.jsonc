@@ -31,13 +31,18 @@
       "description": "Duration in seconds (max 30)"
     },
     "thumbnail_url": {
-      "type": "string"
+      "type": "string",
+      "description": "Cover image URL (uploaded image or video thumbnail)"
     },
     "title": {
       "type": "string"
     },
     "description": {
       "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "description": "Artist's role on this project, e.g. Director, Cinematographer"
     },
     "project_type": {
       "type": "string",
@@ -92,7 +97,6 @@
   },
   "required": [
     "uploaded_by_type",
-    "uploaded_by_id",
-    "original_video_url"
+    "uploaded_by_id"
   ]
 }

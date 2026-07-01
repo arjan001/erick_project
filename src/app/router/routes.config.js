@@ -75,6 +75,11 @@ const publicRoutes = [
     path: '/ProjectPublic',
     component: () => import('@/pages/ProjectPublic'),
     layout: MainLayout
+  },
+  {
+    path: '/ArtistPublicProfile',
+    component: () => import('@/pages/ArtistPublicProfile'),
+    layout: MainLayout
   }
 ];
 
