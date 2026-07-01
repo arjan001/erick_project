@@ -8,6 +8,10 @@ import { Briefcase, MessageCircle, Lightbulb, ArrowRight, Calendar, MapPin, Bell
 
 import { Button } from '@/components/ui/button';
 
+import DashboardStatCard from '@/components/DashboardStatCard';
+
+import ArtistOnboardingModal from '@/components/artist/ArtistOnboardingModal';
+
 import { useToast } from '@/hooks/useToast';
 
 import { base44 } from '@/api/base44Client';
@@ -27,6 +31,10 @@ export default function ArtistDashboard() {
   const [applications, setApplications] = useState([]);
 
   const [invitations, setInvitations] = useState([]);
+
+  const [artistProfile, setArtistProfile] = useState(null);
+
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const navigate = useNavigate();
 
@@ -81,6 +89,16 @@ export default function ArtistDashboard() {
         }, '-created_date', 10);
         setInvitations(notifs || []);
 
+        const artists = await base44.entities.Artist.filter({ email: user.email }, '-created_date', 1);
+        const artist = artists?.[0] || null;
+        setArtistProfile(artist);
+
+        const alreadySeen = sessionStorage.getItem('studio22_onboarding_seen');
+        const isIncomplete = artist && !artist.based_in_country;
+        if (artist && isIncomplete && !alreadySeen) {
+          setShowOnboarding(true);
+        }
+
       } catch (err) {
 
         console.error('Error fetching dashboard data:', err);
@@ -129,32 +147,30 @@ export default function ArtistDashboard() {
 
   return (
 
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
 
       <main className="w-full min-h-screen overflow-auto">
 
         {/* Header */}
-        <div className="bg-gray-900 text-white py-12 px-12">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">Welcome, {user.full_name}</h1>
-              <p className="text-gray-300">Your creative dashboard • {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-            </div>
-            {subscriptionPackage && (
-              <div className="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg border border-gray-700">
-                <Crown className="w-5 h-5 text-yellow-400" />
-                <div className="text-right">
-                  <div className="font-medium text-yellow-400">{subscriptionPackage.name}</div>
-                  <div className="text-xs text-gray-400">Active</div>
-                </div>
-              </div>
-            )}
+        <div className="px-6 sm:px-8 pt-8 pb-2 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome, {user.full_name}</h1>
+            <p className="text-gray-500 text-sm">Your creative dashboard • {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
           </div>
+          {subscriptionPackage && (
+            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-200">
+              <Crown className="w-5 h-5 text-amber-500" />
+              <div className="text-right">
+                <div className="font-medium text-amber-600 text-sm">{subscriptionPackage.name}</div>
+                <div className="text-xs text-gray-400">Active</div>
+              </div>
+            </div>
+          )}
         </div>
 
 
 
-        <div className="p-12 space-y-8">
+        <div className="p-6 sm:p-8 space-y-8">
 
           {/* Subscription Banner */}
           {!subscription && (
@@ -181,35 +197,11 @@ export default function ArtistDashboard() {
 
           {/* Quick Stats */}
 
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
 
-            {stats.map((stat, idx) => {
-
-              const Icon = stat.icon;
-
-              return (
-
-                <div key={idx} className={`${stat.color} border border-gray-200 rounded-lg p-6`}>
-
-                  <div className="flex items-start justify-between">
-
-                    <div>
-
-                      <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-
-                      <div className="text-sm text-gray-600">{stat.label}</div>
-
-                    </div>
-
-                    <Icon className="w-8 h-8 text-gray-400" />
-
-                  </div>
-
-                </div>
-
-              );
-
-            })}
+            {stats.map((stat, idx) => (
+              <DashboardStatCard key={idx} icon={stat.icon} label={stat.label} value={stat.value} iconBg={stat.color} iconColor="text-indigo-600" />
+            ))}
 
           </div>
 
@@ -428,6 +420,14 @@ export default function ArtistDashboard() {
         </div>
 
       </main>
+
+      {showOnboarding && artistProfile && (
+        <ArtistOnboardingModal
+          artist={artistProfile}
+          onClose={() => { sessionStorage.setItem('studio22_onboarding_seen', 'true'); setShowOnboarding(false); }}
+          onComplete={(updated) => { setArtistProfile(updated); sessionStorage.setItem('studio22_onboarding_seen', 'true'); setShowOnboarding(false); }}
+        />
+      )}
 
     </div>
 

@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 
 import { useAuth } from '@/lib/AuthContext';
 
-import ClientSidebar from '@/components/ClientSidebar';
+import DashboardStatCard from '@/components/DashboardStatCard';
 
 import { Plus, Briefcase, Users, MessageSquare, TrendingUp, Calendar, MapPin, Eye, Send, Edit2, X, Globe, Upload, Film } from 'lucide-react';
 
@@ -548,13 +548,13 @@ export default function ClientDashboard() {
 
   const stats = [
 
-    { label: 'Active Projects', value: projects.filter(p => p.status === 'verified' || p.status === 'in_progress').length, icon: Briefcase, color: 'bg-blue-500' },
+    { label: 'Active Projects', value: projects.filter(p => p.status === 'verified' || p.status === 'in_progress').length, icon: Briefcase, iconBg: 'bg-blue-50', iconColor: 'text-blue-600' },
 
-    { label: 'Open Jobs', value: jobs.filter(j => j.status === 'open').length, icon: Users, color: 'bg-green-500' },
+    { label: 'Open Jobs', value: jobs.filter(j => j.status === 'open').length, icon: Users, iconBg: 'bg-green-50', iconColor: 'text-green-600' },
 
-    { label: 'Applications', value: 0, icon: Send, color: 'bg-purple-500' },
+    { label: 'Applications', value: 0, icon: Send, iconBg: 'bg-purple-50', iconColor: 'text-purple-600' },
 
-    { label: 'Messages', value: 0, icon: MessageSquare, color: 'bg-orange-500' }
+    { label: 'Messages', value: 0, icon: MessageSquare, iconBg: 'bg-orange-50', iconColor: 'text-orange-600' }
 
   ];
 
@@ -578,17 +578,13 @@ export default function ClientDashboard() {
 
   return (
 
-    <div className="h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
 
-      <ClientSidebar />
-
-      
-
-      <main className="w-full h-full flex flex-col overflow-y-auto bg-white pl-20 transition-all duration-300">
+      <main className="w-full flex flex-col">
 
         {/* Header with Profile */}
 
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 bg-white border-b border-gray-100">
 
           <div className="flex items-start gap-6">
 
@@ -911,25 +907,7 @@ export default function ClientDashboard() {
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
           {stats.map((stat) => (
-
-            <div key={stat.label} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-
-              <div className="flex items-center justify-between mb-3">
-
-                <div className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center`}>
-
-                  <stat.icon className="w-6 h-6 text-white" />
-
-                </div>
-
-                <span className="text-3xl font-bold text-gray-900">{stat.value}</span>
-
-              </div>
-
-              <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-
-            </div>
-
+            <DashboardStatCard key={stat.label} icon={stat.icon} label={stat.label} value={stat.value} iconBg={stat.iconBg} iconColor={stat.iconColor} />
           ))}
 
         </div>

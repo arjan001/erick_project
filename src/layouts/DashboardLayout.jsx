@@ -4,6 +4,7 @@ import ArtistSidebar from '@/components/ArtistSidebar';
 import BackerSidebar from '@/components/BackerSidebar';
 import ClientSidebar from '@/components/ClientSidebar';
 import TeamSidebar from '@/components/TeamSidebar';
+import DashboardTopbar from '@/components/DashboardTopbar';
 
 const SidebarContext = createContext();
 
@@ -28,18 +29,21 @@ export default function DashboardLayout({ children }) {
       : SIDEBAR_COLLAPSED_WIDTH
     : 0;
 
+  const settingsPage = isTeam ? 'TeamSettings' : isClient ? 'ClientSettings' : 'Settings';
+
   return (
     <SidebarContext.Provider value={{ sidebarExpanded, setSidebarExpanded }}>
-      <div className="min-h-screen bg-white flex">
+      <div className="min-h-screen bg-gray-50 flex">
         {isArtist && <ArtistSidebar />}
         {isTeam && <TeamSidebar />}
         {isClient && <ClientSidebar />}
         {isBacker && <BackerSidebar />}
         <main
-          className="flex-1 transition-all duration-300 min-w-0"
+          className="flex-1 transition-all duration-300 min-w-0 flex flex-col"
           style={{ marginLeft }}
         >
-          {children}
+          {hasSidebar && <DashboardTopbar settingsPage={settingsPage} />}
+          <div className="flex-1 min-w-0">{children}</div>
         </main>
       </div>
     </SidebarContext.Provider>

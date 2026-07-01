@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import BackerSidebar from '@/components/BackerSidebar';
+import DashboardStatCard from '@/components/DashboardStatCard';
 import { DollarSign, TrendingUp, Film, Calendar, Plus, Eye, Settings, LogOut, Edit2, X, ArrowUpRight, ArrowDownRight, Target, Zap, Users, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -169,70 +169,20 @@ export default function BackerDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <BackerSidebar />
-      <div className="ml-20 p-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Investor Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Investor Dashboard</h1>
           <p className="text-gray-600">Welcome back, {backer?.organization_name || user?.full_name || 'Investor'}</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Invested</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-green-600" />
-                <div className="text-2xl font-bold">${totalInvested.toLocaleString()}</div>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">{backedProjects.length} investments</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total ROI</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`flex items-center gap-2 ${totalROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {totalROI >= 0 ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
-                <div className="text-2xl font-bold">${totalROI.toLocaleString()}</div>
-              </div>
-              <p className={`text-xs mt-2 ${parseFloat(roiPercentage) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {roiPercentage}% return
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Active Investments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-blue-600" />
-                <div className="text-2xl font-bold">{activeInvestments}</div>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">{completedInvestments} completed</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Avg Deal Size</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-purple-600" />
-                <div className="text-2xl font-bold">${averageDealSize.toLocaleString()}</div>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">Per investment</p>
-            </CardContent>
-          </Card>
+          <DashboardStatCard icon={DollarSign} label={`${backedProjects.length} investments`} value={`$${totalInvested.toLocaleString()}`} iconBg="bg-green-50" iconColor="text-green-600" />
+          <DashboardStatCard icon={totalROI >= 0 ? ArrowUpRight : ArrowDownRight} label={`${roiPercentage}% return`} value={`$${totalROI.toLocaleString()}`} iconBg={totalROI >= 0 ? 'bg-green-50' : 'bg-red-50'} iconColor={totalROI >= 0 ? 'text-green-600' : 'text-red-600'} />
+          <DashboardStatCard icon={Target} label={`${completedInvestments} completed`} value={activeInvestments} iconBg="bg-blue-50" iconColor="text-blue-600" />
+          <DashboardStatCard icon={Zap} label="Per investment" value={`$${averageDealSize.toLocaleString()}`} iconBg="bg-purple-50" iconColor="text-purple-600" />
         </div>
 
         {/* Quick Actions */}

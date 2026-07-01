@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import DashboardStatCard from '@/components/DashboardStatCard';
 import { PortfolioModal, MemberModal } from '@/modules/team/components/TeamDashboardModals';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -708,17 +709,17 @@ export default function TeamDashboard() {
 
   return (
 
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-6">
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
 
-        <div className="mb-8">
+        <div className="mb-6">
 
-          <h1 className="text-4xl font-bold text-black mb-2">Team Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Team Dashboard</h1>
 
-          <p className="text-gray-600">Manage your team profile, track projects, and showcase your work</p>
+          <p className="text-gray-500 text-sm">Manage your team profile, track projects, and showcase your work</p>
 
         </div>
 
@@ -1151,111 +1152,12 @@ export default function TeamDashboard() {
 
 
 
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
 
-          {/* Quick Stats */}
-
-          <Card className="hover:shadow-lg transition-shadow">
-
-            <CardContent className="pt-6">
-
-              <div className="flex items-center justify-between">
-
-                <div>
-
-                  <p className="text-sm text-gray-600 mb-1">Active Projects</p>
-
-                  <p className="text-3xl font-bold text-black">0</p>
-
-                  <p className="text-xs text-gray-500 mt-1">In progress</p>
-
-                </div>
-
-                <Briefcase className="w-10 h-10 text-blue-600" />
-
-              </div>
-
-            </CardContent>
-
-          </Card>
-
-
-
-          <Card className="hover:shadow-lg transition-shadow">
-
-            <CardContent className="pt-6">
-
-              <div className="flex items-center justify-between">
-
-                <div>
-
-                  <p className="text-sm text-gray-600 mb-1">Team Members</p>
-
-                  <p className="text-3xl font-bold text-black">{teamMembers.length}</p>
-
-                  <p className="text-xs text-gray-500 mt-1">Active crew</p>
-
-                </div>
-
-                <Users className="w-10 h-10 text-amber-600" />
-
-              </div>
-
-            </CardContent>
-
-          </Card>
-
-
-
-          <Card className="hover:shadow-lg transition-shadow">
-
-            <CardContent className="pt-6">
-
-              <div className="flex items-center justify-between">
-
-                <div>
-
-                  <p className="text-sm text-gray-600 mb-1">Profile Views</p>
-
-                  <p className="text-3xl font-bold text-black">{portfolioClips.reduce((sum, clip) => sum + (clip.view_count || 0), 0)}</p>
-
-                  <p className="text-xs text-gray-500 mt-1">This month</p>
-
-                </div>
-
-                <Eye className="w-10 h-10 text-green-600" />
-
-              </div>
-
-            </CardContent>
-
-          </Card>
-
-
-
-          <Card className="hover:shadow-lg transition-shadow">
-
-            <CardContent className="pt-6">
-
-              <div className="flex items-center justify-between">
-
-                <div>
-
-                  <p className="text-sm text-gray-600 mb-1">Portfolio</p>
-
-                  <p className="text-3xl font-bold text-black">{portfolioClips.length}</p>
-
-                  <p className="text-xs text-gray-500 mt-1">Work samples</p>
-
-                </div>
-
-                <Film className="w-10 h-10 text-purple-600" />
-
-              </div>
-
-            </CardContent>
-
-          </Card>
+          <DashboardStatCard icon={Briefcase} label="In progress" value={0} iconBg="bg-blue-50" iconColor="text-blue-600" />
+          <DashboardStatCard icon={Users} label="Active crew" value={teamMembers.length} iconBg="bg-amber-50" iconColor="text-amber-600" />
+          <DashboardStatCard icon={Eye} label="This month" value={portfolioClips.reduce((sum, clip) => sum + (clip.view_count || 0), 0)} iconBg="bg-green-50" iconColor="text-green-600" />
+          <DashboardStatCard icon={Film} label="Work samples" value={portfolioClips.length} iconBg="bg-purple-50" iconColor="text-purple-600" />
 
         </div>
 
