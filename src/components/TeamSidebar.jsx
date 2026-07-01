@@ -4,7 +4,7 @@ import { createPageUrl } from '@/shared/utils/routing';
 import { useSidebar } from '@/layouts/DashboardLayout';
 import { 
   LayoutDashboard, Users, Briefcase, FolderKanban, MessageSquare,
-  CreditCard, Settings, LogOut, ChevronLeft, ChevronRight, Building2
+  CreditCard, Settings, LogOut, ChevronLeft, ChevronRight, Building2, Share2
 } from 'lucide-react';
 
 const MENU_ITEMS = [
@@ -13,6 +13,7 @@ const MENU_ITEMS = [
   { icon: Briefcase, label: 'Projects', path: 'TeamProjects' },
   { icon: FolderKanban, label: 'Tasks', path: 'TeamTasks' },
   { icon: MessageSquare, label: 'Messages', path: 'TeamMessages' },
+  { icon: Share2, label: 'Network', path: 'Network' },
   { icon: CreditCard, label: 'Payments', path: 'TeamPayments' },
   { icon: Settings, label: 'Profile & Settings', path: 'TeamProfile' },
 ];

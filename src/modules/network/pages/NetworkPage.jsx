@@ -4,8 +4,16 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast';
-import { Search, MapPin, ChevronDown, Users, Building2, TrendingUp, X, UserCheck, UserX, MessageCircle } from 'lucide-react';
+import { Search, MapPin, ChevronDown, Users, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// Maps the app's user.role values to the Connection entity's requester/recipient type enum
+const ROLE_TO_TYPE = {
+  artist: 'artist', artist_admin: 'artist',
+  team: 'team', team_admin: 'team',
+  backer: 'backer',
+  client: 'client', project_owner: 'client',
+};
 
 const toDisplay = (person) => {
   if (person.type === 'artist') {
@@ -26,6 +34,16 @@ const toDisplay = (person) => {
       image: person.team_logo_url,
       email: person.contact_email,
       skills: person.specialties || [],
+    };
+  }
+  if (person.type === 'client') {
+    return {
+      id: person.id, type: 'client', name: person.full_name,
+      role: person.company || 'Project Owner',
+      location: '',
+      image: person.profile_photo_url,
+      email: person.email,
+      skills: person.company ? [person.company] : [],
     };
   }
   return {
@@ -56,27 +74,44 @@ export default function NetworkPage() {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [connectionMessage, setConnectionMessage] = useState('');
 
+  const myType = ROLE_TO_TYPE[user?.role] || 'artist';
+
   useEffect(() => {
     if (!user) return;
 
     const fetchData = async () => {
       try {
-        const [artists, teams, backers, connectionsData, myArtist] = await Promise.all([
+        const [artists, teams, backers, clients, connectionsData] = await Promise.all([
           base44.entities.Artist.list(),
           base44.entities.Team.list(),
           base44.entities.Backer.list(),
+          base44.entities.ProjectOwner.list(),
           base44.entities.Connection.list(),
-          base44.entities.Artist.filter({ email: user.email }),
         ]);
 
         const allPeople = [
-          ...artists.filter(a => a.email !== user.email).map(a => ({ ...a, type: 'artist' })),
+          ...artists.map(a => ({ ...a, type: 'artist' })),
           ...teams.map(t => ({ ...t, type: 'team' })),
           ...backers.map(b => ({ ...b, type: 'backer' })),
-        ].map(toDisplay);
+          ...clients.map(c => ({ ...c, type: 'client' })),
+        ].map(toDisplay).filter(p => p.email !== user.email);
 
         setPeople(allPeople);
-        setMyProfile(myArtist?.[0] || null);
+
+        // My own profile (used to score suggestions by skill/career niche overlap)
+        if (myType === 'artist') {
+          const mine = await base44.entities.Artist.filter({ email: user.email });
+          setMyProfile(mine?.[0] || null);
+        } else if (myType === 'team') {
+          const mine = await base44.entities.Team.filter({ contact_email: user.email });
+          setMyProfile(mine?.[0] || null);
+        } else if (myType === 'backer') {
+          const mine = await base44.entities.Backer.filter({ contact_email: user.email });
+          setMyProfile(mine?.[0] || null);
+        } else {
+          const mine = await base44.entities.ProjectOwner.filter({ email: user.email });
+          setMyProfile(mine?.[0] || null);
+        }
 
         const myConnections = connectionsData.filter(c =>
           c.requester_email === user.email || c.recipient_email === user.email
@@ -91,7 +126,7 @@ export default function NetworkPage() {
     };
 
     fetchData();
-  }, [user]);
+  }, [user, myType]);
 
   const getConnectionStatus = (person) => {
     const connection = connections.find(c =>
@@ -101,12 +136,19 @@ export default function NetworkPage() {
     return connection ? connection.status : 'not_connected';
   };
 
+  const refreshConnections = async () => {
+    const connectionsData = await base44.entities.Connection.list();
+    const mine = connectionsData.filter(c => c.requester_email === user.email || c.recipient_email === user.email);
+    setConnections(mine);
+    setPendingRequests(mine.filter(c => c.recipient_email === user.email && c.status === 'pending'));
+  };
+
   const handleConnect = async () => {
     if (!selectedPerson) return;
     try {
       await base44.entities.Connection.create({
         requester_email: user.email,
-        requester_type: 'artist',
+        requester_type: myType,
         recipient_email: selectedPerson.email,
         recipient_type: selectedPerson.type,
         status: 'pending',
@@ -124,8 +166,7 @@ export default function NetworkPage() {
       setShowConnectionModal(false);
       setConnectionMessage('');
       success('Sent', `Connection request sent to ${selectedPerson.name}`);
-      const connectionsData = await base44.entities.Connection.list();
-      setConnections(connectionsData.filter(c => c.requester_email === user.email || c.recipient_email === user.email));
+      await refreshConnections();
     } catch (err) {
       console.error('Error sending connection:', err);
       error('Failed', 'Failed to send connection request');
@@ -136,10 +177,7 @@ export default function NetworkPage() {
     try {
       await base44.entities.Connection.update(connectionId, { status: 'accepted' });
       success('Accepted', 'You are now connected');
-      const connectionsData = await base44.entities.Connection.list();
-      const mine = connectionsData.filter(c => c.requester_email === user.email || c.recipient_email === user.email);
-      setConnections(mine);
-      setPendingRequests(mine.filter(c => c.recipient_email === user.email && c.status === 'pending'));
+      await refreshConnections();
     } catch (err) {
       console.error('Error accepting connection:', err);
       error('Error', 'Failed to accept connection');
@@ -150,10 +188,7 @@ export default function NetworkPage() {
     try {
       await base44.entities.Connection.update(connectionId, { status: 'declined' });
       success('Declined', 'Connection request declined');
-      const connectionsData = await base44.entities.Connection.list();
-      const mine = connectionsData.filter(c => c.requester_email === user.email || c.recipient_email === user.email);
-      setConnections(mine);
-      setPendingRequests(mine.filter(c => c.recipient_email === user.email && c.status === 'pending'));
+      await refreshConnections();
     } catch (err) {
       console.error('Error declining connection:', err);
       error('Error', 'Failed to decline connection');
@@ -182,18 +217,25 @@ export default function NetworkPage() {
     myProfile?.role,
     ...(myProfile?.secondary_roles || []),
     ...((myProfile?.skills_experience || []).map(s => s.skill)),
+    ...(myProfile?.specialties || []),
+    ...(myProfile?.interests || []),
   ].filter(Boolean).map(s => s.toLowerCase()));
 
   const scorePerson = (person) => {
-    if (myskillSetSize() === 0) return 0;
-    return (person.skills || []).filter(s => mySkillSetHas(s)).length;
+    if (myskillSet.size === 0) return 0;
+    return (person.skills || []).filter(s => myskillSet.has((s || '').toLowerCase())).length;
   };
-  function myskillSetSize() { return myskillSet.size; }
-  function mySkillSetHas(skill) { return myskillSet.has((skill || '').toLowerCase()); }
 
   const suggestions = notConnected
     .map(p => ({ ...p, matchScore: scorePerson(p) }))
     .sort((a, b) => b.matchScore - a.matchScore);
+
+  const typeIcon = (type) => {
+    if (type === 'team') return Building2;
+    if (type === 'backer') return TrendingUp;
+    if (type === 'client') return Briefcase;
+    return Users;
+  };
 
   if (!user || loading) {
     return (
@@ -258,7 +300,7 @@ export default function NetworkPage() {
           </button>
           {showTypeFilter && (
             <div className="absolute z-50 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
-              {['all', 'artist', 'team', 'backer'].map(type => (
+              {['all', 'artist', 'team', 'backer', 'client'].map(type => (
                 <button key={type} onClick={() => { setSelectedType(type); setShowTypeFilter(false); }} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm capitalize">
                   {type === 'all' ? 'All Types' : type}
                 </button>
@@ -269,7 +311,7 @@ export default function NetworkPage() {
       </div>
 
       {/* Two column layout */}
-      <div className="flex-1 overflow-hidden grid grid-cols-2">
+      <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-2">
         <div className="overflow-y-auto border-r border-gray-200">
           <div className="p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
             <h2 className="text-sm font-semibold text-gray-900">Connections ({myConnections.length})</h2>
@@ -318,44 +360,45 @@ export default function NetworkPage() {
             {suggestions.length === 0 && (
               <div className="p-6 text-center text-sm text-gray-500">No suggestions available</div>
             )}
-            {suggestions.map((person) => (
-              <div key={`${person.type}-${person.id}`} className="p-4 hover:bg-gray-50">
-                <div className="flex items-start gap-3">
-                  <div className="relative flex-shrink-0">
-                    <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
-                      {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
-                    </div>
-                    {person.type === 'team' ? <Building2 className="w-3 h-3 absolute -bottom-1 -right-1 bg-black text-white rounded-full p-0.5" /> :
-                      person.type === 'backer' ? <TrendingUp className="w-3 h-3 absolute -bottom-1 -right-1 bg-black text-white rounded-full p-0.5" /> :
-                      <Users className="w-3 h-3 absolute -bottom-1 -right-1 bg-black text-white rounded-full p-0.5" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
-                        <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
+            {suggestions.map((person) => {
+              const TypeIcon = typeIcon(person.type);
+              return (
+                <div key={`${person.type}-${person.id}`} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-start gap-3">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
+                        {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
                       </div>
-                      {getConnectionStatus(person) === 'pending' ? (
-                        <Button size="sm" variant="outline" className="text-xs px-3 flex-shrink-0" disabled>Pending</Button>
-                      ) : (
-                        <Button onClick={() => { setSelectedPerson(person); setShowConnectionModal(true); }} size="sm" className="bg-black text-white hover:bg-gray-800 text-xs px-3 flex-shrink-0">Connect</Button>
+                      <TypeIcon className="w-3 h-3 absolute -bottom-1 -right-1 bg-black text-white rounded-full p-0.5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
+                          <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
+                        </div>
+                        {getConnectionStatus(person) === 'pending' ? (
+                          <Button size="sm" variant="outline" className="text-xs px-3 flex-shrink-0" disabled>Pending</Button>
+                        ) : (
+                          <Button onClick={() => { setSelectedPerson(person); setShowConnectionModal(true); }} size="sm" className="bg-black text-white hover:bg-gray-800 text-xs px-3 flex-shrink-0">Connect</Button>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-gray-500 mb-1">
+                        {person.matchScore > 0 && <span className="font-medium text-indigo-600">{person.matchScore} skill match{person.matchScore > 1 ? 'es' : ''}</span>}
+                        {person.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{person.location}</span>}
+                      </div>
+                      {person.skills?.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {person.skills.slice(0, 3).map((skill, idx) => (
+                            <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded">{skill}</span>
+                          ))}
+                        </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-500 mb-1">
-                      {person.matchScore > 0 && <span className="font-medium text-indigo-600">{person.matchScore} skill match{person.matchScore > 1 ? 'es' : ''}</span>}
-                      {person.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{person.location}</span>}
-                    </div>
-                    {person.skills?.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {person.skills.slice(0, 3).map((skill, idx) => (
-                          <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded">{skill}</span>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

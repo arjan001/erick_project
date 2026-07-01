@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Briefcase, Plus, FileText, Mail, BarChart3, Settings, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { Briefcase, Plus, FileText, Mail, BarChart3, Settings, ChevronLeft, ChevronRight, LogOut, Share2 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useSidebar } from '@/layouts/DashboardLayout';
 
@@ -9,6 +9,7 @@ const MENU_ITEMS = [
   { label: 'Post Project', icon: Plus, href: 'ClientPostProject' },
   { label: 'Applications', icon: FileText, href: 'ClientApplications' },
   { label: 'Messages', icon: Mail, href: 'ClientMessages' },
+  { label: 'Network', icon: Share2, href: 'Network' },
   { label: 'Analytics', icon: BarChart3, href: 'ClientAnalytics' },
   { label: 'Profile & Settings', icon: Settings, href: 'ClientProfile' }
 ];

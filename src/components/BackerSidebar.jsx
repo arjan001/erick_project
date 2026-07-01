@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   DollarSign, Film, TrendingUp, User, Briefcase, BarChart3,
-  CreditCard, Users, Layers, Bell, LogOut, ChevronLeft, ChevronRight
+  CreditCard, Users, Layers, Bell, LogOut, ChevronLeft, ChevronRight, Share2
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useSidebar } from '@/layouts/DashboardLayout';
@@ -12,6 +12,7 @@ const MENU_ITEMS = [
   { label: 'Browse Projects', icon: Film, href: 'BackerProjects' },
   { label: 'Investments', icon: TrendingUp, href: 'BackerInvestments' },
   { label: 'Deals', icon: Briefcase, href: 'BackerDeals' },
+  { label: 'Network', icon: Share2, href: 'Network' },
   { label: 'Analytics', icon: BarChart3, href: 'BackerAnalytics' },
   { label: 'Banking', icon: CreditCard, href: 'BackerBanking' },
   { label: 'Partners', icon: Users, href: 'BackerPartners' },

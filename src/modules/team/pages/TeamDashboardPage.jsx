@@ -509,10 +509,11 @@ export default function TeamDashboard() {
           member_name: memberForm.name,
           member_role: memberForm.role,
         });
-        await b44.integrations.Core.SendEmail({
+        await b44.functions.invoke('sendTransactionalEmail', {
           to: memberForm.email,
+          toName: memberForm.name,
           subject: `You've been added to ${team.team_name} on Studio22`,
-          body: `Hi ${memberForm.name},\n\n${team.contact_name || team.team_name} added you as "${memberForm.role}" to the team "${team.team_name}" on Studio22.\n\nSet up your login to join the team workspace: ${window.location.origin}/AcceptTeamInvite?invite=${invite.id}\n\n— Studio22`
+          body: `<p>Hi ${memberForm.name},</p><p>${team.contact_name || team.team_name} added you as "${memberForm.role}" to the team "${team.team_name}" on Studio22.</p><p><a href="${window.location.origin}/AcceptTeamInvite?invite=${invite.id}">Set up your login to join the team workspace</a></p><p>— Studio22</p>`
         });
         notifySuccess('Member Added', `Invite email sent to ${memberForm.email}`);
       }
