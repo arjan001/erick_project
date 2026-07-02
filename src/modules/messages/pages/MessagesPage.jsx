@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
+import { useSearchParams } from 'react-router-dom';
 import { Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { formatDistanceToNow } from 'date-fns';
-import { Search, Send, Paperclip, Plus, X, Trash2, Archive, ArchiveRestore, Inbox, ArrowLeft, LogOut } from 'lucide-react';
+import { Search, Send, Plus, X, Trash2, Archive, ArchiveRestore, Inbox, ArrowLeft, LogOut } from 'lucide-react';
 import { confirmDialog } from '@/lib/sweetAlert';
 
 function playMessageTone() {
@@ -88,6 +88,7 @@ function ParticipantTags({ type, tags }) {
 export default function MessagesPage() {
   const { user } = useAuth();
   const { success, error } = useToast();
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -147,6 +148,36 @@ export default function MessagesPage() {
   };
 
   useEffect(() => { if (user) fetchConversations(); }, [user]);
+
+  // Handle ?with= query parameter to automatically open chat with specific person
+  useEffect(() => {
+    const withEmail = searchParams.get('with');
+    if (withEmail && user && conversations.length > 0) {
+      const conversationId = getConversationId(user.email, withEmail);
+      const existing = conversations.find(c => c.id === conversationId);
+      if (existing) {
+        setSelectedId(conversationId);
+      } else {
+        // Create new conversation and select it
+        enrichParticipant(withEmail).then(info => {
+          setConversations(prev => [{
+            id: conversationId,
+            otherEmail: withEmail,
+            name: info.name,
+            avatar: info.avatar,
+            type: info.type,
+            tags: info.tags,
+            lastActive: info.lastActive,
+            messages: [],
+            lastMessage: '',
+            lastMessageTime: new Date().toISOString(),
+            isArchived: false,
+          }, ...prev]);
+          setSelectedId(conversationId);
+        });
+      }
+    }
+  }, [searchParams, user, conversations]);
 
   // Keep "last seen" labels fresh without refetching anything
   useEffect(() => {
@@ -265,25 +296,9 @@ export default function MessagesPage() {
   const handleFileAttach = async (e) => {
     const file = e.target.files?.[0];
     if (!file || !selectedConversation) return;
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const created = await Message.create({
-        conversation_id: selectedConversation.id,
-        sender_email: user.email,
-        recipient_email: selectedConversation.otherEmail,
-        text: file.name,
-        file_url,
-        file_name: file.name,
-      });
-      setConversations(prev => prev.map(c => c.id === selectedConversation.id
-        ? { ...c, messages: [...c.messages, created], lastMessage: created.text || created.file_name, lastMessageTime: created.created_date }
-        : c));
-    } catch (err) {
-      console.error('Error uploading file:', err);
-      error('Failed', 'Failed to send file');
-    } finally {
-      e.target.value = null;
-    }
+    // File upload disabled - base44 removed
+    error('Not Available', 'File upload is currently disabled');
+    e.target.value = null;
   };
 
   const handleArchive = async (conv, archive) => {
@@ -508,9 +523,6 @@ export default function MessagesPage() {
                   <div key={msg.id} className={`flex ${msg.sender_email === user.email ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-md rounded-2xl px-4 py-2.5 ${msg.sender_email === user.email ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-900'}`}>
                       {msg.text && <p className="text-sm break-words">{msg.text}</p>}
-                      {msg.file_url && (
-                        <a href={msg.file_url} target="_blank" rel="noreferrer" className="text-xs underline mt-1 block opacity-80">{msg.file_name || 'Attachment'}</a>
-                      )}
                       <p className={`text-[10px] mt-1 ${msg.sender_email === user.email ? 'text-gray-300' : 'text-gray-400'}`}>
                         {new Date(msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
@@ -522,10 +534,6 @@ export default function MessagesPage() {
             </div>
 
             <div className="p-4 border-t border-gray-200 flex items-center gap-2">
-              <input type="file" id="msg-file" className="hidden" onChange={handleFileAttach} />
-              <label htmlFor="msg-file" className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer">
-                <Paperclip className="w-5 h-5" />
-              </label>
               <input
                 type="text"
                 value={messageInput}

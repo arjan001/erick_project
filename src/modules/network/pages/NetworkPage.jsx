@@ -76,9 +76,6 @@ export default function NetworkPage() {
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [connectionMessage, setConnectionMessage] = useState('');
-  const [showMessageModal, setShowMessageModal] = useState(false);
-  const [messageRecipient, setMessageRecipient] = useState(null);
-  const [newMessage, setNewMessage] = useState('');
 
   const myType = ROLE_TO_TYPE[user?.role] || 'artist';
 
@@ -245,18 +242,8 @@ export default function NetworkPage() {
   };
 
   const handleMessage = (person) => {
-    setMessageRecipient(person);
-    setNewMessage('');
-    setShowMessageModal(true);
-  };
-
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !messageRecipient) return;
-    // In production, this would send to a messages entity
-    success('Sent', 'Message sent successfully');
-    setShowMessageModal(false);
-    setNewMessage('');
-    setMessageRecipient(null);
+    // Navigate to MessagesPage with the recipient's email as a query parameter
+    navigate(createPageUrl('Messages') + `?with=${encodeURIComponent(person.email)}`);
   };
 
   const filterPerson = (person) => {
@@ -549,37 +536,6 @@ export default function NetworkPage() {
             <div className="flex gap-2">
               <Button onClick={() => setShowConnectionModal(false)} variant="outline" className="flex-1">Cancel</Button>
               <Button onClick={handleConnect} className="flex-1 bg-black text-white hover:bg-gray-800">Send Request</Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showMessageModal && messageRecipient && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
-                  {messageRecipient.image ? <img src={messageRecipient.image} alt={messageRecipient.name} className="w-full h-full object-cover" /> : messageRecipient.name?.[0]?.toUpperCase()}
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">Message {messageRecipient.name}</h3>
-                  <p className="text-xs text-gray-500">{messageRecipient.role}</p>
-                </div>
-              </div>
-              <button onClick={() => setShowMessageModal(false)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <textarea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type your message..."
-              className="w-full h-32 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400 resize-none mb-4"
-            />
-            <div className="flex gap-2">
-              <Button onClick={() => setShowMessageModal(false)} variant="outline" className="flex-1">Cancel</Button>
-              <Button onClick={handleSendMessage} className="flex-1 bg-black text-white hover:bg-gray-800">Send Message</Button>
             </div>
           </div>
         </div>
