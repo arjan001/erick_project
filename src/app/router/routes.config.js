@@ -326,6 +326,30 @@ const clientRoutes = [
     guard: ClientGuard
   },
   {
+    path: '/ClientPostProject',
+    component: () => import('@/modules/client/pages/ClientPostProjectPage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
+  },
+  {
+    path: '/ClientApplications',
+    component: () => import('@/modules/client/pages/ClientApplicationsPage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
+  },
+  {
+    path: '/ClientMessages',
+    component: () => import('@/modules/client/pages/ClientMessagesPage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
+  },
+  {
+    path: '/ClientAnalytics',
+    component: () => import('@/modules/client/pages/ClientAnalyticsPage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
+  },
+  {
     path: '/ClientProfile',
     component: () => import('@/modules/client/pages/ClientProfilePage'),
     layout: DashboardLayout,
