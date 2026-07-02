@@ -72,7 +72,7 @@ export default function RecentConversations({ userEmail }) {
           {conversations.map(c => (
             <Link key={c.conversation_id} to={createPageUrl('Messages')} className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-gray-50 transition-colors">
               <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {c.avatar ? <img src={c.avatar} alt={c.name} className="w-full h-full object-cover" /> : <span className="text-xs font-bold text-gray-600">{c.name?.[0]?.toUpperCase()}</span>}
+                {c.avatar ? <img src={c.avatar} alt={c.name} className="w-full h-full object-cover" loading="lazy" decoding="async" /> : <span className="text-xs font-bold text-gray-600">{c.name?.[0]?.toUpperCase()}</span>}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm text-gray-900 truncate">{c.name}</p>

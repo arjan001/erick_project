@@ -87,6 +87,8 @@ export default function FeaturedWork() {
                 className={`w-full h-full object-cover transition-all duration-500 ${
                   hoveredId === project.id ? 'scale-110 opacity-80' : 'scale-100 opacity-100'
                 }`}
+                loading="lazy"
+                decoding="async"
               />
 
               {/* Overlay */}

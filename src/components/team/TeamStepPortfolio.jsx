@@ -77,7 +77,7 @@ export default function TeamStepPortfolio({ data, updateData }) {
         
         {data.team_logo ? (
           <div className="flex items-center gap-4">
-            <img src={data.team_logo} alt="Team logo" className="w-20 h-20 object-contain rounded-lg border border-gray-300 bg-white p-2" />
+            <img src={data.team_logo} alt="Team logo" className="w-20 h-20 object-contain rounded-lg border border-gray-300 bg-white p-2" loading="lazy" decoding="async" />
             <button
               onClick={() => updateData('team_logo', null)}
               className="text-sm text-red-500 hover:text-red-700"

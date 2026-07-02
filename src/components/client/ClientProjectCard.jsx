@@ -15,7 +15,7 @@ export default function ClientProjectCard({ project, onEdit, onDelete }) {
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
       {project.image_url && (
         <div className="h-40 bg-gray-200 relative">
-          <img src={project.image_url} alt={project.project_type} className="w-full h-full object-cover" />
+          <img src={project.image_url} alt={project.project_type} className="w-full h-full object-cover" loading="lazy" decoding="async" />
           <button
             onClick={() => onDelete(project.id)}
             className="absolute top-2 right-2 p-2 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"

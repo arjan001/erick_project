@@ -19,7 +19,12 @@ function applyFilters(query, filters = {}) {
 }
 
 function buildEntity(table, createdAtAlias) {
-  const select = createdAtAlias ? `*, created_date:${createdAtAlias}` : '*';
+  const getSelect = (columns) => {
+    if (columns && typeof columns === 'string') {
+      return columns;
+    }
+    return createdAtAlias ? `*, created_date:${createdAtAlias}` : '*';
+  };
 
   const withOrder = (query, sort, limit) => {
     if (sort) {
@@ -31,27 +36,32 @@ function buildEntity(table, createdAtAlias) {
   };
 
   return {
-    list: async (sort, limit) => {
+    list: async (sort, limit, columns) => {
+      const select = getSelect(columns);
       const { data, error } = await withOrder(supabase.from(table).select(select), sort, limit);
       if (error) throw error;
       return data;
     },
-    filter: async (filters = {}, sort, limit) => {
+    filter: async (filters = {}, sort, limit, columns) => {
+      const select = getSelect(columns);
       const { data, error } = await withOrder(applyFilters(supabase.from(table).select(select), filters), sort, limit);
       if (error) throw error;
       return data;
     },
-    get: async (id) => {
+    get: async (id, columns) => {
+      const select = getSelect(columns);
       const { data, error } = await supabase.from(table).select(select).eq('id', id).single();
       if (error) throw error;
       return data;
     },
     create: async (record) => {
+      const select = getSelect();
       const { data, error } = await supabase.from(table).insert(record).select(select).single();
       if (error) throw error;
       return data;
     },
     update: async (id, record) => {
+      const select = getSelect();
       const { data, error } = await supabase.from(table).update(record).eq('id', id).select(select).single();
       if (error) throw error;
       return data;

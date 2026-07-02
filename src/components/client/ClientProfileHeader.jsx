@@ -16,7 +16,7 @@ export default function ClientProfileHeader({
         <div className="relative">
           <div className="w-20 h-20 rounded-lg bg-gray-300 flex items-center justify-center text-gray-700 text-2xl font-bold overflow-hidden">
             {projectOwner?.logo_url ? (
-              <img src={projectOwner.logo_url} alt="Company Logo" className="w-full h-full object-cover" />
+              <img src={projectOwner.logo_url} alt="Company Logo" className="w-full h-full object-cover" loading="lazy" decoding="async" />
             ) : (
               companyName?.charAt(0).toUpperCase() || user?.full_name?.charAt(0).toUpperCase()
             )}

@@ -1,22 +1,22 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
 import { ExternalLink, Trash2 } from 'lucide-react';
 import { Creator } from '@/lib/supabaseEntities';
 
-export default function CreatorGrid({ creators, view = 'list', onDelete }) {
+const CreatorGrid = memo(function CreatorGrid({ creators, view = 'list', onDelete }) {
   if (view === 'list') {
     return (
       <div className="space-y-2">
         {creators.map((creator, idx) => (
-          <div 
+          <div
             key={idx}
             className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-all flex items-center justify-between"
           >
             <div className="flex items-center gap-4 flex-1">
               <div className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center text-white font-bold text-sm overflow-hidden flex-shrink-0">
                 {creator.logo_url ? (
-                  <img src={creator.logo_url} alt={creator.name} className="w-full h-full object-cover" />
+                  <img src={creator.logo_url} alt={creator.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 ) : (
                   creator.name.substring(0, 2).toUpperCase()
                 )}
@@ -52,7 +52,7 @@ export default function CreatorGrid({ creators, view = 'list', onDelete }) {
                   </button>
                 </Link>
                 {onDelete && (
-                  <button 
+                  <button
                     onClick={async () => {
                       if (confirm(`Delete ${creator.name}?`)) {
                         await Creator.delete(creator.id);
@@ -75,17 +75,19 @@ export default function CreatorGrid({ creators, view = 'list', onDelete }) {
   return (
     <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
       {creators.map((creator, idx) => (
-        <Link 
+        <Link
           to={`${createPageUrl('ArtistPublicProfile')}?id=${creator.id}`}
           key={idx}
           className="group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 block"
         >
           <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900">
             {creator.profile_image_url ? (
-              <img 
+              <img
                 src={creator.profile_image_url}
                 alt={creator.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                loading="lazy"
+                decoding="async"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-white text-4xl font-black">
@@ -98,7 +100,7 @@ export default function CreatorGrid({ creators, view = 'list', onDelete }) {
             <div className="flex items-start justify-between mb-3">
               <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center text-white font-bold overflow-hidden flex-shrink-0">
                 {creator.logo_url ? (
-                  <img src={creator.logo_url} alt={creator.name} className="w-full h-full object-cover" />
+                  <img src={creator.logo_url} alt={creator.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 ) : (
                   creator.name.substring(0, 2).toUpperCase()
                 )}
@@ -109,7 +111,7 @@ export default function CreatorGrid({ creators, view = 'list', onDelete }) {
             </div>
 
             <h3 className="text-base font-bold mb-2 line-clamp-1">{creator.name}</h3>
-            
+
             <div className="space-y-2 mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">Location:</span>
@@ -118,7 +120,7 @@ export default function CreatorGrid({ creators, view = 'list', onDelete }) {
               {creator.website && (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500">Website:</span>
-                  <a 
+                  <a
                     href={creator.website.startsWith('http') ? creator.website : `https://${creator.website}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -156,4 +158,6 @@ export default function CreatorGrid({ creators, view = 'list', onDelete }) {
       ))}
     </div>
   );
-}
+});
+
+export default CreatorGrid;

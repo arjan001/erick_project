@@ -27,10 +27,12 @@ export default function HeroShowcase() {
 
         {/* Featured Project Preview */}
         <div className="relative max-w-5xl mx-auto rounded-2xl overflow-hidden shadow-2xl group cursor-pointer">
-          <img 
+          <img
             src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2000"
             alt="Featured Production"
             className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-700"
+            loading="eager"
+            decoding="async"
           />
           
           {/* Play Overlay */}

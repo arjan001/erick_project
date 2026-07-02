@@ -161,10 +161,12 @@ export default function EuropeanPresenceMap() {
                     {/* Hover Card */}
                     {hoveredCity?.name === city.name && (
                       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-72 bg-white rounded-lg shadow-2xl overflow-hidden z-50 animate-fadeInUp pointer-events-none">
-                        <img 
-                          src={city.image} 
+                        <img
+                          src={city.image}
                           alt={city.name}
                           className="w-full h-40 object-cover"
+                          loading="lazy"
+                          decoding="async"
                           onError={(e) => {
                             e.target.src = 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=400';
                           }}
@@ -197,10 +199,12 @@ export default function EuropeanPresenceMap() {
         <div className="lg:hidden grid grid-cols-2 gap-4">
           {CITIES.map((city, index) => (
             <div key={index} className="bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800">
-              <img 
-                src={city.image} 
+              <img
+                src={city.image}
                 alt={city.name}
                 className="w-full h-24 object-cover"
+                loading="lazy"
+                decoding="async"
                 onError={(e) => {
                   e.target.src = 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=400';
                 }}

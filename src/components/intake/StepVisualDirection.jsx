@@ -89,6 +89,8 @@ export default function StepVisualDirection({ data, updateData }) {
                 className={`w-full h-full object-cover transition-all duration-300 ${
                   hoveredId === clip.id ? 'scale-110' : 'scale-100'
                 }`}
+                loading="lazy"
+                decoding="async"
               />
 
               {/* Overlay */}

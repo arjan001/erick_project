@@ -62,10 +62,12 @@ export default function ProjectGrid() {
             >
               {/* Project Image */}
               <div className="relative aspect-[4/3] overflow-hidden">
-                <img 
+                <img
                   src={project.image}
                   alt={project.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute top-4 right-4">
                   <span className="px-3 py-1 bg-black/80 backdrop-blur-sm text-white text-xs font-bold rounded-full">
