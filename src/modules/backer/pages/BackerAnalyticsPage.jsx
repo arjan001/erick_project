@@ -96,9 +96,7 @@ export default function BackerAnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <BackerSidebar />
-      <div className="ml-20 p-8">
+    <div className="p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -319,6 +317,7 @@ export default function BackerAnalyticsPage() {
             )}
           </CardContent>
         </Card>
+        </div>
     </div>
   );
 }

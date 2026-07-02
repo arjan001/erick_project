@@ -131,9 +131,7 @@ export default function BackerBankingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <BackerSidebar />
-      <div className="ml-20 p-8">
+    <div className="p-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Banking & Payments</h1>
@@ -334,7 +332,6 @@ export default function BackerBankingPage() {
             </div>
           </CardContent>
         </Card>
-        </div>
     </div>
   );
 }

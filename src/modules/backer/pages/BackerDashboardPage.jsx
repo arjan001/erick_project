@@ -158,8 +158,7 @@ export default function BackerDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="p-8">
+    <div className="p-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Investor Dashboard</h1>
@@ -353,7 +352,6 @@ export default function BackerDashboardPage() {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

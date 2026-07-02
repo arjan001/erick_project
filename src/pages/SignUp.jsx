@@ -31,6 +31,7 @@ export default function SignUp() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -62,6 +63,7 @@ export default function SignUp() {
         id: formData.email,
         email: formData.email,
         full_name: `${formData.firstName} ${formData.lastName}`,
+        username: formData.username || `${formData.firstName}${formData.lastName}`.toLowerCase(),
         role: formData.role
       };
       localStorage.setItem('studio22_user', JSON.stringify(user));
@@ -157,6 +159,22 @@ export default function SignUp() {
                 />
               </div>
             </div>
+
+            {formData.role === 'artist' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Username <span className="text-gray-500">(for profile sharing)</span></label>
+                <Input
+                  type="text"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') })}
+                  placeholder="johndoe"
+                  className="w-full"
+                  disabled={loading}
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">Your profile will be accessible at studio22.com/username</p>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>

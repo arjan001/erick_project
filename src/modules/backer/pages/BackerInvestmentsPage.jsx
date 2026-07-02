@@ -85,7 +85,7 @@ export default function BackerInvestmentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-8">
+    <div className="p-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Investment Portfolio</h1>

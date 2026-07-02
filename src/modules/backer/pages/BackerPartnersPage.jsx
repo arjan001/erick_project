@@ -109,8 +109,8 @@ export default function BackerPartnersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <BackerSidebar />
+    <div className="p-8">
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Partners & Network</h1>
@@ -331,7 +331,7 @@ export default function BackerPartnersPage() {
             </div>
           </div>
         )}
-      </div>
+        </div>
     </div>
   );
 }

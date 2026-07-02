@@ -274,7 +274,6 @@ export default function BackerProfile() {
             </div>
           </div>
         )}
-        </div>
     </div>
   );
 }
