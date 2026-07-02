@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
@@ -100,6 +101,8 @@ export default function MessagesPage() {
   const [directorySearch, setDirectorySearch] = useState('');
   const [, setPresenceTick] = useState(0); // forces re-render so "last seen" text stays fresh
   const messagesEndRef = useRef(null);
+  const conversationsListRef = useRef(null);
+  const messagesListRef = useRef(null);
 
   const buildConversations = (all) => {
     const grouped = {};
@@ -388,6 +391,22 @@ export default function MessagesPage() {
     p.name?.toLowerCase().includes(directorySearch.toLowerCase()) || p.email?.toLowerCase().includes(directorySearch.toLowerCase())
   );
 
+  // Virtual scrolling for conversation list
+  const conversationsVirtualizer = useVirtualizer({
+    count: filteredConversations.length,
+    getScrollElement: () => conversationsListRef.current,
+    estimateSize: () => 100, // Estimated height of each conversation item
+    overscan: 5,
+  });
+
+  // Virtual scrolling for message history
+  const messagesVirtualizer = useVirtualizer({
+    count: selectedConversation?.messages.length || 0,
+    getScrollElement: () => messagesListRef.current,
+    estimateSize: () => 60, // Estimated height of each message
+    overscan: 5,
+  });
+
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -432,51 +451,65 @@ export default function MessagesPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div ref={conversationsListRef} className="flex-1 overflow-y-auto">
           {filteredConversations.length === 0 && (
             <div className="p-6 text-center text-sm text-gray-500">
               {filterTab === 'archived' ? 'No archived conversations' : 'No conversations yet — start a new chat'}
             </div>
           )}
-          {filteredConversations.map(conv => (
-            <div
-              key={conv.id}
-              onClick={() => setSelectedId(conv.id)}
-              className={`w-full p-4 hover:bg-gray-50 border-b border-gray-100 text-left cursor-pointer relative group ${selectedId === conv.id ? 'bg-gray-100' : ''}`}
-            >
-              <div className="flex items-start gap-3 pr-14">
-                <div className="relative flex-shrink-0">
-                  <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                    {conv.avatar ? <img src={conv.avatar} alt={conv.name} className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-gray-600">{conv.name?.[0]?.toUpperCase()}</span>}
+          <div style={{ height: `${conversationsVirtualizer.getTotalSize()}px`, position: 'relative' }}>
+            {conversationsVirtualizer.getVirtualItems().map((virtualItem) => {
+              const conv = filteredConversations[virtualItem.index];
+              return (
+                <div
+                  key={conv.id}
+                  ref={conversationsVirtualizer.measureElement}
+                  data-index={virtualItem.index}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtualItem.start}px)`,
+                  }}
+                  onClick={() => setSelectedId(conv.id)}
+                  className={`w-full p-4 hover:bg-gray-50 border-b border-gray-100 text-left cursor-pointer relative group ${selectedId === conv.id ? 'bg-gray-100' : ''}`}
+                >
+                  <div className="flex items-start gap-3 pr-14">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                        {conv.avatar ? <img src={conv.avatar} alt={conv.name} className="w-full h-full object-cover" /> : <span className="text-sm font-bold text-gray-600">{conv.name?.[0]?.toUpperCase()}</span>}
+                      </div>
+                      <PresenceDot online={isOnline(conv.lastActive)} className="-bottom-0.5 -right-0.5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <span className={`text-sm text-gray-900 truncate ${getUnreadCount(conv) > 0 ? 'font-bold' : 'font-semibold'}`}>{conv.name}</span>
+                        <span className="text-xs text-gray-400 flex-shrink-0">{conv.lastMessageTime ? new Date(conv.lastMessageTime).toLocaleDateString() : ''}</span>
+                      </div>
+                      <ParticipantTags type={conv.type} tags={conv.tags} />
+                      <div className="flex items-center justify-between mt-1">
+                        <p className={`text-sm truncate ${getUnreadCount(conv) > 0 ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>{conv.lastMessage || 'No messages yet'}</p>
+                        {getUnreadCount(conv) > 0 && (
+                          <span className="ml-2 flex-shrink-0 bg-green-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center">
+                            {getUnreadCount(conv) > 9 ? '9+' : getUnreadCount(conv)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <PresenceDot online={isOnline(conv.lastActive)} className="-bottom-0.5 -right-0.5" />
+                  <div className="absolute top-4 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                    <button onClick={(e) => { e.stopPropagation(); handleArchive(conv, !conv.isArchived); }} title={conv.isArchived ? 'Unarchive' : 'Archive'} className="p-1.5 hover:bg-gray-200 rounded">
+                      {conv.isArchived ? <ArchiveRestore className="w-3.5 h-3.5 text-gray-600" /> : <Archive className="w-3.5 h-3.5 text-gray-600" />}
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); handleDelete(conv); }} title="Delete" className="p-1.5 hover:bg-red-50 rounded">
+                      <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <span className={`text-sm text-gray-900 truncate ${getUnreadCount(conv) > 0 ? 'font-bold' : 'font-semibold'}`}>{conv.name}</span>
-                    <span className="text-xs text-gray-400 flex-shrink-0">{conv.lastMessageTime ? new Date(conv.lastMessageTime).toLocaleDateString() : ''}</span>
-                  </div>
-                  <ParticipantTags type={conv.type} tags={conv.tags} />
-                  <div className="flex items-center justify-between mt-1">
-                    <p className={`text-sm truncate ${getUnreadCount(conv) > 0 ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>{conv.lastMessage || 'No messages yet'}</p>
-                    {getUnreadCount(conv) > 0 && (
-                      <span className="ml-2 flex-shrink-0 bg-green-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center">
-                        {getUnreadCount(conv) > 9 ? '9+' : getUnreadCount(conv)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="absolute top-4 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                <button onClick={(e) => { e.stopPropagation(); handleArchive(conv, !conv.isArchived); }} title={conv.isArchived ? 'Unarchive' : 'Archive'} className="p-1.5 hover:bg-gray-200 rounded">
-                  {conv.isArchived ? <ArchiveRestore className="w-3.5 h-3.5 text-gray-600" /> : <Archive className="w-3.5 h-3.5 text-gray-600" />}
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); handleDelete(conv); }} title="Delete" className="p-1.5 hover:bg-red-50 rounded">
-                  <Trash2 className="w-3.5 h-3.5 text-red-600" />
-                </button>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -514,21 +547,38 @@ export default function MessagesPage() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
-              <div className="space-y-3 max-w-2xl mx-auto">
+            <div ref={messagesListRef} className="flex-1 overflow-y-auto p-6 bg-gray-50">
+              <div className="max-w-2xl mx-auto">
                 {selectedConversation.messages.length === 0 && (
                   <div className="text-center text-sm text-gray-400 py-10">Send a message to start the conversation</div>
                 )}
-                {selectedConversation.messages.map(msg => (
-                  <div key={msg.id} className={`flex ${msg.sender_email === user.email ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-md rounded-2xl px-4 py-2.5 ${msg.sender_email === user.email ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-900'}`}>
-                      {msg.text && <p className="text-sm break-words">{msg.text}</p>}
-                      <p className={`text-[10px] mt-1 ${msg.sender_email === user.email ? 'text-gray-300' : 'text-gray-400'}`}>
-                        {new Date(msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                <div style={{ height: `${messagesVirtualizer.getTotalSize()}px`, position: 'relative' }}>
+                  {messagesVirtualizer.getVirtualItems().map((virtualItem) => {
+                    const msg = selectedConversation.messages[virtualItem.index];
+                    return (
+                      <div
+                        key={msg.id}
+                        ref={messagesVirtualizer.measureElement}
+                        data-index={virtualItem.index}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          transform: `translateY(${virtualItem.start}px)`,
+                        }}
+                        className={`flex ${msg.sender_email === user.email ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className={`max-w-md rounded-2xl px-4 py-2.5 ${msg.sender_email === user.email ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-900'}`}>
+                          {msg.text && <p className="text-sm break-words">{msg.text}</p>}
+                          <p className={`text-[10px] mt-1 ${msg.sender_email === user.email ? 'text-gray-300' : 'text-gray-400'}`}>
+                            {new Date(msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
                 <div ref={messagesEndRef} />
               </div>
             </div>

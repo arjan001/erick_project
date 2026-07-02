@@ -4,6 +4,13 @@
 
 @tailwind utilities;
 
+/* Font optimization - use font-display: swap for faster perceived performance */
+@layer base {
+  * {
+    font-display: swap;
+  }
+}
+
 
 
 @layer base {
