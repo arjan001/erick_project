@@ -3,7 +3,7 @@ import { Search, Bell, ChevronDown, LogOut, Settings } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/shared/utils/routing';
-import { base44 } from '@/api/base44Client';
+import { Notification } from '@/lib/supabaseEntities';
 
 // Modern TailAdmin-style top bar shared across all dashboard roles.
 export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
@@ -16,7 +16,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   const fetchNotifications = async () => {
     if (!user?.email) return;
     try {
-      const notifs = await base44.entities.Notification.filter({ recipient_email: user.email }, '-created_date', 20);
+      const notifs = await Notification.filter({ recipient_email: user.email });
       setNotifications(notifs || []);
     } catch (err) {
       console.error('Error fetching notifications:', err);
@@ -27,10 +27,10 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
 
   useEffect(() => {
     if (!user?.email) return;
-    const unsubscribe = base44.entities.Notification.subscribe((event) => {
-      if (event.data?.recipient_email === user.email) fetchNotifications();
-    });
-    return unsubscribe;
+    // Supabase realtime subscription would go here
+    // For now, refresh notifications periodically
+    const interval = setInterval(fetchNotifications, 30000); // every 30 seconds
+    return () => clearInterval(interval);
   }, [user]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -43,7 +43,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   const handleNotificationClick = async (notif) => {
     if (!notif.read) {
       try {
-        await base44.entities.Notification.update(notif.id, { read: true });
+        await Notification.update(notif.id, { read: true });
         setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n));
       } catch (err) {
         console.error('Error marking notification read:', err);
@@ -57,7 +57,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
     const unread = notifications.filter(n => !n.read);
     if (unread.length === 0) return;
     try {
-      await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { read: true })));
+      await Promise.all(unread.map(n => Notification.update(n.id, { read: true })));
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     } catch (err) {
       console.error('Error marking all read:', err);

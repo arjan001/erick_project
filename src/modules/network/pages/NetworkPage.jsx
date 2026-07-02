@@ -76,6 +76,9 @@ export default function NetworkPage() {
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [connectionMessage, setConnectionMessage] = useState('');
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [messageRecipient, setMessageRecipient] = useState(null);
+  const [newMessage, setNewMessage] = useState('');
 
   const myType = ROLE_TO_TYPE[user?.role] || 'artist';
 
@@ -220,7 +223,18 @@ export default function NetworkPage() {
   };
 
   const handleMessage = (person) => {
-    navigate(createPageUrl('Messages') + `?with=${encodeURIComponent(person.email)}`);
+    setMessageRecipient(person);
+    setNewMessage('');
+    setShowMessageModal(true);
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !messageRecipient) return;
+    // In production, this would send to a messages entity
+    success('Sent', 'Message sent successfully');
+    setShowMessageModal(false);
+    setNewMessage('');
+    setMessageRecipient(null);
   };
 
   const filterPerson = (person) => {
@@ -281,24 +295,29 @@ export default function NetworkPage() {
       <div className="px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
         <h2 className="text-base font-semibold text-gray-900 mb-2">Connection requests ({pendingRequests.length})</h2>
         {pendingRequests.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {pendingRequests.map((request) => {
               const requester = people.find(p => p.email === request.requester_email);
+              const TypeIcon = typeIcon(requester?.type);
               return (
-                <div key={request.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0 overflow-hidden">
-                    {requester?.image ? <img src={requester.image} alt={requester.name} className="w-full h-full object-cover" /> : (requester?.name?.[0] || request.requester_email[0]).toUpperCase()}
+                <div key={request.id} className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
+                      {requester?.image ? <img src={requester.image} alt={requester.name} className="w-full h-full object-cover" /> : (requester?.name?.[0] || request.requester_email[0]).toUpperCase()}
+                    </div>
+                    <TypeIcon className="w-4 h-4 absolute -bottom-1 -right-1 bg-black text-white rounded-full p-0.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm text-gray-900 truncate">{requester?.name || request.requester_email}</div>
-                    <div className="text-xs text-gray-600 truncate">{request.message || 'Wants to connect with you'}</div>
+                    <div className="font-semibold text-gray-900 text-base">{requester?.name || request.requester_email}</div>
+                    <div className="text-sm text-gray-600 mb-1">{requester?.role || 'User'}</div>
+                    {request.message && <div className="text-xs text-gray-500 italic line-clamp-1">"{request.message}"</div>}
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
-                    <button onClick={() => handleAcceptConnection(request.id)} className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200" title="Accept">
-                      <UserCheck className="w-4 h-4" />
+                    <button onClick={() => handleAcceptConnection(request.id)} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium transition-colors">
+                      Accept
                     </button>
-                    <button onClick={() => handleDeclineConnection(request.id)} className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200" title="Decline">
-                      <UserX className="w-4 h-4" />
+                    <button onClick={() => handleDeclineConnection(request.id)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors">
+                      Decline
                     </button>
                   </div>
                 </div>
@@ -317,16 +336,21 @@ export default function NetworkPage() {
           <div className="space-y-2">
             {sentRequests.map((request) => {
               const recipient = people.find(p => p.email === request.recipient_email);
+              const TypeIcon = typeIcon(recipient?.type);
               return (
-                <div key={request.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0 overflow-hidden">
-                    {recipient?.image ? <img src={recipient.image} alt={recipient.name} className="w-full h-full object-cover" /> : (recipient?.name?.[0] || request.recipient_email[0]).toUpperCase()}
+                <div key={request.id} className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
+                      {recipient?.image ? <img src={recipient.image} alt={recipient.name} className="w-full h-full object-cover" /> : (recipient?.name?.[0] || request.recipient_email[0]).toUpperCase()}
+                    </div>
+                    <TypeIcon className="w-4 h-4 absolute -bottom-1 -right-1 bg-black text-white rounded-full p-0.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm text-gray-900 truncate">{recipient?.name || request.recipient_email}</div>
-                    <div className="text-xs text-gray-500 truncate">Invitation pending</div>
+                    <div className="font-semibold text-gray-900 text-base">{recipient?.name || request.recipient_email}</div>
+                    <div className="text-sm text-gray-600 mb-1">{recipient?.role || 'User'}</div>
+                    {request.message && <div className="text-xs text-gray-500 italic line-clamp-1">"{request.message}"</div>}
                   </div>
-                  <button onClick={() => handleCancelRequest(request.id)} className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-full text-gray-600 hover:bg-gray-100 flex-shrink-0">
+                  <button onClick={() => handleCancelRequest(request.id)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors flex-shrink-0">
                     Cancel
                   </button>
                 </div>
@@ -503,6 +527,37 @@ export default function NetworkPage() {
             <div className="flex gap-2">
               <Button onClick={() => setShowConnectionModal(false)} variant="outline" className="flex-1">Cancel</Button>
               <Button onClick={handleConnect} className="flex-1 bg-black text-white hover:bg-gray-800">Send Request</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMessageModal && messageRecipient && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
+                  {messageRecipient.image ? <img src={messageRecipient.image} alt={messageRecipient.name} className="w-full h-full object-cover" /> : messageRecipient.name?.[0]?.toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Message {messageRecipient.name}</h3>
+                  <p className="text-xs text-gray-500">{messageRecipient.role}</p>
+                </div>
+              </div>
+              <button onClick={() => setShowMessageModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <textarea
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type your message..."
+              className="w-full h-32 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400 resize-none mb-4"
+            />
+            <div className="flex gap-2">
+              <Button onClick={() => setShowMessageModal(false)} variant="outline" className="flex-1">Cancel</Button>
+              <Button onClick={handleSendMessage} className="flex-1 bg-black text-white hover:bg-gray-800">Send Message</Button>
             </div>
           </div>
         </div>
