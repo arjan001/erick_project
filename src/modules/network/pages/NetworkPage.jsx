@@ -95,6 +95,9 @@ export default function NetworkPage() {
           Connection.list(),
         ]);
 
+        console.log('Fetched connections from Supabase:', connectionsData);
+        console.log('Current user email:', user.email);
+
         const allPeople = [
           ...artists.map(a => ({ ...a, type: 'artist' })),
           ...teams.map(t => ({ ...t, type: 'team' })),
@@ -122,6 +125,10 @@ export default function NetworkPage() {
         const myConnections = connectionsData.filter(c =>
           c.requester_email === user.email || c.recipient_email === user.email
         );
+        console.log('My connections after filtering:', myConnections);
+        console.log('Accepted connections:', myConnections.filter(c => c.status === 'accepted'));
+        console.log('Pending connections:', myConnections.filter(c => c.status === 'pending'));
+        
         setConnections(myConnections);
         setPendingRequests(myConnections.filter(c => c.recipient_email === user.email && c.status === 'pending'));
 
@@ -157,6 +164,7 @@ export default function NetworkPage() {
     const mine = connectionsData.filter(c => c.requester_email === user.email || c.recipient_email === user.email);
     setConnections(mine);
     setPendingRequests(mine.filter(c => c.recipient_email === user.email && c.status === 'pending'));
+    console.log('Refreshed connections:', mine.length, 'Pending:', mine.filter(c => c.status === 'pending').length, 'Accepted:', mine.filter(c => c.status === 'accepted').length);
   };
 
   const handleConnect = async () => {
@@ -194,6 +202,20 @@ export default function NetworkPage() {
       await Connection.update(connectionId, { status: 'accepted' });
       success('Accepted', 'You are now connected');
       await refreshConnections();
+      // Also create a notification to the requester
+      const connection = connections.find(c => c.id === connectionId);
+      if (connection) {
+        await Notification.create({
+          recipient_email: connection.requester_email,
+          sender_email: user.email,
+          sender_name: user.full_name,
+          type: 'connection_accepted',
+          title: 'Connection Accepted',
+          message: `${user.full_name} accepted your connection request`,
+          action_required: false,
+          read: false,
+        });
+      }
     } catch (err) {
       console.error('Error accepting connection:', err);
       error('Error', 'Failed to accept connection');
