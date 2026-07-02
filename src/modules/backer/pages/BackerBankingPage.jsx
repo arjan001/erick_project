@@ -334,7 +334,7 @@ export default function BackerBankingPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+        </div>
     </div>
   );
 }

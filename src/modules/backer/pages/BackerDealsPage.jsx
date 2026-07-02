@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Backer, Deal } from '@/lib/supabaseEntities';
-import BackerSidebar from '@/components/BackerSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -136,9 +135,7 @@ export default function BackerDealsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <BackerSidebar />
-      <div className="ml-20 p-8">
+    <div className="min-h-screen bg-white p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -343,7 +340,6 @@ export default function BackerDealsPage() {
           onSign={handleSignatureSave}
           title="Sign Investment Deal"
         />
-      </div>
     </div>
   );
 }

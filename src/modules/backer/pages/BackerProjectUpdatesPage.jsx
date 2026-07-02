@@ -117,9 +117,7 @@ export default function BackerProjectUpdatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <BackerSidebar />
-      <div className="ml-20 p-8">
+    <div className="min-h-screen bg-white p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -332,7 +330,7 @@ export default function BackerProjectUpdatesPage() {
             </div>
           </div>
         )}
-      </div>
+        </div>
     </div>
   );
 }

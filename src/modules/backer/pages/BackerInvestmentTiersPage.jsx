@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Backer, InvestmentTier } from '@/lib/supabaseEntities';
-import BackerSidebar from '@/components/BackerSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -220,8 +219,6 @@ export default function BackerInvestmentTiersPage() {
   return (
     <div className="min-h-screen bg-white">
       <BackerSidebar />
-      <div className="ml-20 p-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Investment Tiers</h1>
@@ -377,7 +374,6 @@ export default function BackerInvestmentTiersPage() {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

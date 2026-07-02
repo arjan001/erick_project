@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Backer, BackedProject } from '@/lib/supabaseEntities';
-import BackerSidebar from '@/components/BackerSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, Filter, Download } from 'lucide-react';
@@ -86,9 +85,7 @@ export default function BackerInvestmentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <BackerSidebar />
-      <div className="ml-20 p-8">
+    <div className="min-h-screen bg-white p-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Investment Portfolio</h1>
@@ -236,7 +233,6 @@ export default function BackerInvestmentsPage() {
             )}
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Backer, BackedProject, Project } from '@/lib/supabaseEntities';
-import BackerSidebar from '@/components/BackerSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -147,9 +146,7 @@ export default function BackerProjectsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <BackerSidebar />
-      <div className="ml-20 p-8">
+    <div className="min-h-screen bg-white p-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Browse Projects</h1>

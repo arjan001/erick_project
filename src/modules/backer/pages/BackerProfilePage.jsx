@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
 import { Backer } from '@/lib/supabaseEntities';
 import { Edit2, Save, X, Upload, Globe, Linkedin, Instagram, Twitter, Bell, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -143,8 +142,8 @@ export default function BackerProfile() {
   const inputClass = "rounded-xl border-gray-200 focus-visible:ring-indigo-500";
 
   return (
-    <div className="min-h-full bg-gray-50">
-      <div className="w-full px-6 sm:px-10 py-10">
+    <div className="min-h-screen bg-gray-50 p-8">
+        <div className="w-full">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Investor Profile & Settings</h1>
         <p className="text-gray-500 mb-8">Manage your public profile, investment preferences and account settings</p>
 
@@ -275,7 +274,7 @@ export default function BackerProfile() {
             </div>
           </div>
         )}
-      </div>
+        </div>
     </div>
   );
 }

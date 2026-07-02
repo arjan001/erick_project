@@ -319,7 +319,6 @@ export default function BackerAnalyticsPage() {
             )}
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }

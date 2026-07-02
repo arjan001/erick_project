@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Backer, Partner } from '@/lib/supabaseEntities';
-import BackerSidebar from '@/components/BackerSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -112,8 +111,6 @@ export default function BackerPartnersPage() {
   return (
     <div className="min-h-screen bg-white">
       <BackerSidebar />
-      <div className="ml-20 p-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Partners & Network</h1>
