@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Upload, X, CheckCircle, Image } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { base44 } from '@/api/base44Client';

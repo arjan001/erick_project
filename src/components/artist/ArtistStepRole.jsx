@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Video, Camera, Scissors, Briefcase, Box, Wand2, Palette, Music, Mic, User, Plus, X, Search } from 'lucide-react';
+import { Video, Camera, Scissors, Briefcase, Box, Wand2, Palette, Music, Mic, User, X, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SKILLS_DATABASE } from '../SkillsDatabase';

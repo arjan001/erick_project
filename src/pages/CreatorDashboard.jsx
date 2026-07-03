@@ -4,8 +4,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
 import { 
   CheckCircle, Clock, AlertCircle, Briefcase, MessageSquare, 
-  Eye, TrendingUp, Upload, Edit, User, Mail, Phone, MapPin,
-  Globe, Instagram, Film, Award, Calendar
+  Eye, Upload, Edit, MapPin, Film
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

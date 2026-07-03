@@ -62,7 +62,7 @@ export default function ArtistSidebar() {
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen bg-white shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-40 ${
+      className={`h-screen bg-white shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-40 flex-shrink-0 ${
         expanded ? 'w-64' : 'w-20'
       }`}
     >

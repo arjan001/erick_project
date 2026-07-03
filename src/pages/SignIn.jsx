@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { AlertCircle, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
+import { AlertCircle, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 

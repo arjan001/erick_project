@@ -130,7 +130,7 @@ export default function BackerBankingPage() {
   }
 
   return (
-    <div>
+    <div className="p-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Banking & Payments</h1>

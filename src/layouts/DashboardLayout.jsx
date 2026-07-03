@@ -44,12 +44,9 @@ export default function DashboardLayout({ children }) {
         {isTeam && <TeamSidebar />}
         {isClient && <ClientSidebar />}
         {isBacker && <BackerSidebar />}
-        <main
-          className="flex-1 transition-all duration-300 min-w-0 flex flex-col"
-          style={{ marginLeft }}
-        >
+        <main className="flex-1 transition-all duration-300 min-w-0 flex flex-col bg-gray-50">
           {hasSidebar && <DashboardTopbar settingsPage={settingsPage} />}
-          <div className="flex-1 min-w-0 p-8">{children}</div>
+          <div className="flex-1 min-w-0">{children}</div>
         </main>
       </div>
     </SidebarContext.Provider>

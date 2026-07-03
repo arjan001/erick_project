@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Image as ImageIcon, Video } from 'lucide-react';
+import { Image as ImageIcon, Video } from 'lucide-react';
 
 const PROJECT_TYPES = [
   { value: 'commercial', label: 'Commercial' },

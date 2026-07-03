@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ArtistSidebar from '../components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
-import { Briefcase, MessageSquare, Brain, ArrowRight, Clock, MapPin, Euro, CheckCircle, TrendingUp } from 'lucide-react';
+import { Briefcase, MessageSquare, Brain, ArrowRight, Clock, MapPin, CheckCircle, TrendingUp } from 'lucide-react';
 
 export default function ArtistHome() {
   const navigate = useNavigate();

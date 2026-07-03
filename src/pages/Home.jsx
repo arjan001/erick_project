@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { createPageUrl } from '@/shared/utils/routing';
 
-import { ArrowRight, Award, MapPin, User, Play, Bookmark, Sparkles, X, Grid3x3, List, Plus } from 'lucide-react';
+import { ArrowRight, Play, Bookmark, Sparkles, X, Plus } from 'lucide-react';
 
 import { base44 } from '@/api/base44Client';
 

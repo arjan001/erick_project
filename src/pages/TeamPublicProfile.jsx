@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Team, PortfolioClip } from '@/lib/supabaseEntities';
-import { MapPin, Users, Award, Globe, Mail, Wrench, Calendar, Play } from 'lucide-react';
+import { MapPin, Users, Wrench, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createPageUrl } from '@/shared/utils/routing';
 

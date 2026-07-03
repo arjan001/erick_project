@@ -116,7 +116,7 @@ export default function BackerProjectUpdatesPage() {
   }
 
   return (
-    <div>
+    <div className="p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
