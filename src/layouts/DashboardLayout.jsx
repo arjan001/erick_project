@@ -49,7 +49,7 @@ export default function DashboardLayout({ children }) {
           style={{ marginLeft }}
         >
           {hasSidebar && <DashboardTopbar settingsPage={settingsPage} />}
-          <div className="flex-1 min-w-0">{children}</div>
+          <div className="flex-1 min-w-0 p-8">{children}</div>
         </main>
       </div>
     </SidebarContext.Provider>

@@ -96,7 +96,7 @@ export default function BackerAnalyticsPage() {
   }
 
   return (
-    <div className="p-8">
+    <div>
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -317,7 +317,6 @@ export default function BackerAnalyticsPage() {
             )}
           </CardContent>
         </Card>
-        </div>
     </div>
   );
 }

@@ -109,7 +109,7 @@ export default function BackerPartnersPage() {
   }
 
   return (
-    <div className="p-8">
+    <div>
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -331,7 +331,6 @@ export default function BackerPartnersPage() {
             </div>
           </div>
         )}
-        </div>
     </div>
   );
 }

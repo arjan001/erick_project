@@ -146,7 +146,7 @@ export default function BackerProjectsPage() {
   }
 
   return (
-    <div className="p-8">
+    <div>
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Browse Projects</h1>
@@ -284,7 +284,6 @@ export default function BackerProjectsPage() {
             ))}
           </div>
         )}
-      </div>
     </div>
   );
 }
