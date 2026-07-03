@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
 import { 
   CheckCircle, Clock, AlertCircle, Briefcase, MessageSquare, 
-  Eye, Upload, Edit, MapPin, Film
+  Eye, Upload, Edit, MapPin, Film, Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

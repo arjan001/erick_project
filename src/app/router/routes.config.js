@@ -80,6 +80,11 @@ const publicRoutes = [
     path: '/ArtistPublicProfile',
     component: () => import('@/pages/ArtistPublicProfile'),
     layout: MainLayout
+  },
+  {
+    path: '/Categories',
+    component: () => import('@/pages/CategoriesPage'),
+    layout: MainLayout
   }
 ];
 
@@ -236,6 +241,18 @@ const adminRoutes = [
   {
     path: '/Admin/Subscriptions',
     component: () => import('@/modules/admin/pages/AdminSubscriptionsPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
+  },
+  {
+    path: '/Admin/Ticker',
+    component: () => import('@/modules/admin/pages/AdminTickerPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
+  },
+  {
+    path: '/Admin/Categories',
+    component: () => import('@/modules/admin/pages/AdminCategoriesPage'),
     layout: AdminLayout,
     guard: AdminGuard
   }

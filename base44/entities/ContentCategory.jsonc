@@ -1,0 +1,56 @@
+{
+  "name": "ContentCategory",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Category name e.g. Cinema Cameras, Lighting, Commercial"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-safe slug"
+    },
+    "description": {
+      "type": "string",
+      "description": "Category description shown on the categories page"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Category image/thumbnail URL"
+    },
+    "item_count": {
+      "type": "string",
+      "description": "Display count e.g. '127 items' or '34 facilities'"
+    },
+    "parent_category": {
+      "type": "string",
+      "description": "Optional parent category for sub-categories"
+    },
+    "display_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Sort order (lower appears first)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "hidden"
+      ],
+      "default": "active",
+      "description": "Whether this category is visible on the frontend"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Show on landing page featured section"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

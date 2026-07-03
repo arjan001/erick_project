@@ -19,11 +19,20 @@ function buildUserFromSupabase(supaUser) {
   };
 }
 
+// Generate a unique invite/referral code for each new user
+function generateInviteCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = 'S22-';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
 // Ensure an entity profile exists for new Supabase users
 async function ensureProfile(supaUser) {
   if (!supaUser) return;
   const role = supaUser.user_metadata?.role || 'artist';
   const full_name = supaUser.user_metadata?.full_name || supaUser.email?.split('@')[0] || 'User';
+  const referredBy = supaUser.user_metadata?.referred_by || null;
   try {
     if (role === 'artist') {
       const existing = await Artist.filter({ email: supaUser.email });
@@ -31,13 +40,14 @@ async function ensureProfile(supaUser) {
         await Artist.create({
           email: supaUser.email,
           full_name,
-          role: 'director', // default specialty
+          role: 'director',
           status: 'pending',
+          invite_code: generateInviteCode(),
+          referred_by: referredBy,
+          onboarding_completed: false,
         });
       }
     } else if (role === 'team') {
-      // Invited team members carry a team_id and join an existing team — never
-      // create a blank team for them, or they'd land on their own empty workspace.
       if (supaUser.user_metadata?.team_id) return;
       const existing = await Team.filter({ contact_email: supaUser.email });
       if (!existing || existing.length === 0) {
@@ -50,6 +60,19 @@ async function ensureProfile(supaUser) {
           city: '',
           country: '',
           status: 'pending',
+          invite_code: generateInviteCode(),
+          referred_by: referredBy,
+          onboarding_completed: false,
+        });
+      }
+    } else if (role === 'backer') {
+      const existing = await Backer.filter({ contact_email: supaUser.email });
+      if (!existing || existing.length === 0) {
+        await Backer.create({
+          organization_name: full_name,
+          contact_email: supaUser.email,
+          invite_code: generateInviteCode(),
+          referred_by: referredBy,
         });
       }
     } else if (role === 'client' || role === 'project_owner') {
@@ -58,6 +81,8 @@ async function ensureProfile(supaUser) {
         await ProjectOwner.create({
           email: supaUser.email,
           full_name,
+          invite_code: generateInviteCode(),
+          referred_by: referredBy,
         });
       }
     }
@@ -167,7 +192,7 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     localStorage.removeItem('studio22_user');
     localStorage.removeItem('studio22_team');
-    if (shouldRedirect) window.location.href = '/SignIn';
+    if (shouldRedirect) window.location.href = '/';
   };
 
   const navigateToLogin = () => { window.location.href = '/SignIn'; };

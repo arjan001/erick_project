@@ -8,6 +8,7 @@ import NewProjectForm from '@/components/NewProjectForm';
 import UnifiedSearch from '@/components/UnifiedSearch';
 import ArtistSidebar from '@/components/ArtistSidebar';
 import ClientSidebar from '@/components/ClientSidebar';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function MainLayout({ children, currentPageName: currentPageNameProp }) {
   const location = useLocation();
@@ -23,6 +24,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
     return storedUser ? JSON.parse(storedUser) : null;
   });
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
+  const { logout } = useAuth();
 
   React.useEffect(() => {
     const justLoggedIn = sessionStorage.getItem('studio22_just_logged_in');
@@ -106,7 +108,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             <div className="flex items-center gap-8">
               {/* Logo */}
               <Link 
-                to={createPageUrl('ArtistDashboard')} 
+                to="/" 
                 className="hover:opacity-70 transition-opacity"
               >
                 <span className="text-2xl font-black tracking-tighter text-[#1a1a1a]">22.</span>
@@ -169,10 +171,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                   variant="ghost" 
                   size="sm" 
                   className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent"
-                  onClick={() => {
-                    localStorage.removeItem('studio22_user');
-                    window.location.href = createPageUrl('Home');
-                  }}
+                  onClick={() => logout(true)}
                 >
                   Logout
                 </Button>
@@ -296,7 +295,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
               </button>
             ) : (
               <Link 
-                to={user ? (isArtistPage ? createPageUrl('ArtistDashboard') : createPageUrl('TeamDashboard')) : createPageUrl('Home')}
+                to="/"
                 className="flex items-center justify-center px-2 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-all mr-1 md:mr-2 flex-shrink-0"
               >
                 <span className="text-base md:text-lg font-black text-white tracking-tighter">22.</span>
@@ -340,14 +339,6 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
               Backed
             </Link>
 
-            <div className="h-6 w-px bg-gray-600 mx-1 md:mx-2 flex-shrink-0" />
-
-            <Link
-              to={createPageUrl('Admin')}
-              className="px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 text-gray-400 hover:text-white hover:bg-white/5"
-            >
-              Admin
-            </Link>
           </div>
         </div>
       </nav>

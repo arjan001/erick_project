@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useSidebar } from '@/layouts/DashboardLayout';
+import { useAuth } from '@/lib/AuthContext';
 import { 
   LayoutDashboard, Users, Briefcase, FolderKanban, MessageSquare,
   CreditCard, Settings, LogOut, ChevronLeft, ChevronRight, Building2, Share2
@@ -23,6 +24,7 @@ export default function TeamSidebar() {
   const location = useLocation();
   const [team, setTeam] = useState(null);
   const { sidebarExpanded: expanded, setSidebarExpanded } = useSidebar();
+  const { logout } = useAuth();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
@@ -42,21 +44,17 @@ export default function TeamSidebar() {
 
   const toggle = () => setSidebarExpanded(!expanded);
 
-  const handleLogout = () => {
-    localStorage.removeItem('studio22_user');
-    localStorage.removeItem('studio22_team');
-    window.location.href = '/';
-  };
+  const handleLogout = () => { logout(true); };
 
   return (
     <aside
-      className={`h-screen bg-white shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-40 flex-shrink-0 ${
+      className={`h-full bg-white shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-40 flex-shrink-0 ${
         expanded ? 'w-64' : 'w-20'
       }`}
     >
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
             <Building2 className="w-4 h-4 text-white" />
           </div>
@@ -66,7 +64,7 @@ export default function TeamSidebar() {
               <div className="text-xs text-gray-500">Team Portal</div>
             </div>
           )}
-        </div>
+        </Link>
         <button
           onClick={toggle}
           className="p-1.5 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-colors text-gray-400"

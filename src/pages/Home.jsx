@@ -1852,13 +1852,23 @@ export default function Home({ editMode = false }) {
 
 
 
-          <div className="text-center">
+          <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-4">
 
             <Link to={createPageUrl('ApplyTeam')}>
 
               <button className="px-10 py-4 bg-[#1a1a1a] text-white font-bold uppercase text-sm tracking-wider hover:bg-black transition-all duration-300 rounded-lg">
 
                 Browse Market <ArrowRight className="inline-block ml-2 w-4 h-4" />
+
+              </button>
+
+            </Link>
+
+            <Link to={createPageUrl('Categories')}>
+
+              <button className="px-10 py-4 bg-white text-[#1a1a1a] border-2 border-gray-300 font-bold uppercase text-sm tracking-wider hover:bg-gray-50 transition-all duration-300 rounded-lg">
+
+                Load More Categories <ArrowRight className="inline-block ml-2 w-4 h-4" />
 
               </button>
 

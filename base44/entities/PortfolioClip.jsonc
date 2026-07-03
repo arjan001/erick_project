@@ -16,7 +16,7 @@
     },
     "original_video_url": {
       "type": "string",
-      "description": "Full uploaded video URL"
+      "description": "Full uploaded video URL or external link (Vimeo, YouTube, TikTok)"
     },
     "trimmed_video_url": {
       "type": "string",
@@ -43,6 +43,29 @@
     "role": {
       "type": "string",
       "description": "Artist's role on this project, e.g. Director, Cinematographer"
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Multiple roles selected as tags from the film roles database"
+    },
+    "video_source": {
+      "type": "string",
+      "enum": [
+        "upload",
+        "vimeo",
+        "youtube",
+        "tiktok",
+        "google_drive"
+      ],
+      "default": "upload",
+      "description": "Where the video is hosted"
+    },
+    "video_embed_url": {
+      "type": "string",
+      "description": "Embeddable URL for external video (Vimeo/YouTube/TikTok embed)"
     },
     "project_type": {
       "type": "string",

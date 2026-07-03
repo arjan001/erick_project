@@ -14,7 +14,7 @@ export default function TopBanner() {
         const liveEntries = allEntries
           .filter(e => e.status === 'live')
           .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-        setEntries(liveEntries);
+        setEntries(liveEntries.filter(e => e.text));
       } catch (error) {
         console.error('Error fetching ticker entries:', error);
       } finally {
@@ -58,6 +58,20 @@ export default function TopBanner() {
         >
           {item.text}
         </Link>
+      );
+    }
+
+    if ((item.link_type === 'url' || item.link_type === 'article') && item.link_url) {
+      return (
+        <a
+          key={idx}
+          href={item.link_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-8 text-sm font-medium flex items-center h-full border-r border-gray-300 last:border-r-0 hover:bg-gray-50 transition-colors cursor-pointer"
+        >
+          {item.text}
+        </a>
       );
     }
 

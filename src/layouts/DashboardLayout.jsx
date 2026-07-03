@@ -39,14 +39,14 @@ export default function DashboardLayout({ children }) {
 
   return (
     <SidebarContext.Provider value={{ sidebarExpanded, setSidebarExpanded }}>
-      <div className="min-h-screen bg-gray-50 flex">
+      <div className="h-screen bg-gray-50 flex overflow-hidden">
         {isArtist && <ArtistSidebar />}
         {isTeam && <TeamSidebar />}
         {isClient && <ClientSidebar />}
         {isBacker && <BackerSidebar />}
-        <main className="flex-1 transition-all duration-300 min-w-0 flex flex-col bg-gray-50">
+        <main className="flex-1 transition-all duration-300 min-w-0 flex flex-col bg-gray-50 overflow-hidden">
           {hasSidebar && <DashboardTopbar settingsPage={settingsPage} />}
-          <div className="flex-1 min-w-0">{children}</div>
+          <div className="flex-1 min-w-0 overflow-y-auto">{children}</div>
         </main>
       </div>
     </SidebarContext.Provider>

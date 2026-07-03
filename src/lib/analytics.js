@@ -1,16 +1,21 @@
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
-
+// Web Vitals reporting — compatible with web-vitals v5 API
+// (v5 replaced getCLS/getFID/etc with onCLS/onINP/etc)
 export function reportWebVitals(onPerfEntry) {
   if (onPerfEntry && onPerfEntry instanceof Function) {
-    getCLS(onPerfEntry);
-    getFID(onPerfEntry);
-    getFCP(onPerfEntry);
-    getLCP(onPerfEntry);
-    getTTFB(onPerfEntry);
+    try {
+      import('web-vitals').then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
+        onCLS?.(onPerfEntry);
+        onFCP?.(onPerfEntry);
+ onLCP?.(onPerfEntry);
+        onTTFB?.(onPerfEntry);
+        onINP?.(onPerfEntry);
+      }).catch(() => {});
+    } catch {
+      // web-vitals not available — silently skip
+    }
   }
 }
 
-// Log Web Vitals to console in development
 export function logWebVitals() {
   if (import.meta.env.DEV) {
     reportWebVitals((metric) => {

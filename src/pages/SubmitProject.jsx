@@ -145,7 +145,26 @@ export default function SubmitProject() {
       }
 
       await Project.create({
-        ...projectData,
+        project_type: projectData.project_type,
+        usage: projectData.usage,
+        visual_direction_clips: projectData.visual_direction_clips,
+        location_country: projectData.location_country,
+        location_city: projectData.location_city,
+        is_remote: projectData.is_remote,
+        departments_needed: projectData.departments_needed,
+        timeline_start: projectData.timeline_start,
+        timeline_deadline: projectData.timeline_deadline,
+        budget_range: projectData.budget_range,
+        notes: projectData.notes,
+        project_owner_email: projectData.project_owner_email,
+        project_owner_name: projectData.project_owner_name,
+        project_owner_company: projectData.project_owner_company,
+        funding_stage: projectData.funding_stage,
+        seeking_partners: projectData.seeking_partners,
+        rights_collaboration_notes: projectData.rights_collaboration_notes,
+        open_to_backing: projectData.open_to_backing,
+        backing_types: projectData.backing_types,
+        backing_notes: projectData.backing_notes,
         status: 'submitted',
         image_url: projectImage
       });

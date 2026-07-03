@@ -61,6 +61,20 @@
       "type": "string",
       "description": "Logo or profile image"
     },
+    "total_invested": {
+      "type": "number",
+      "default": 0
+    },
+    "investment_count": {
+      "type": "number",
+      "default": 0
+    },
+    "bank_accounts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
     "status": {
       "type": "string",
       "enum": [
@@ -79,6 +93,14 @@
       "type": "string",
       "format": "date-time",
       "description": "Last time this user was active, used for online/offline presence"
+    },
+    "invite_code": {
+      "type": "string",
+      "description": "Unique auto-generated invite/referral code"
+    },
+    "referred_by": {
+      "type": "string",
+      "description": "Invite code of the user who referred this backer"
     }
   },
   "required": [

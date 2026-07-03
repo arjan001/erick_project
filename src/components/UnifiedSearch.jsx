@@ -141,6 +141,16 @@ export default function UnifiedSearch() {
                       >
                         <div className="font-medium">{a.full_name}</div>
                         <div className="text-xs text-gray-500">{a.role} • {a.based_in_city || 'Europe'}</div>
+                        {((a.secondary_roles && a.secondary_roles.length > 0) || (a.skills_experience && a.skills_experience.length > 0)) && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {(a.secondary_roles || []).slice(0, 2).map((r, i) => (
+                              <span key={`r${i}`} className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded capitalize">{String(r).replace(/_/g, ' ')}</span>
+                            ))}
+                            {(a.skills_experience || []).slice(0, 2).map((s, i) => (
+                              <span key={`s${i}`} className="text-[10px] px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded">{s.skill}</span>
+                            ))}
+                          </div>
+                        )}
                       </Link>
                     ))}
                   </div>

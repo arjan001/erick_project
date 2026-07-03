@@ -116,6 +116,19 @@
       "type": "string",
       "format": "date-time",
       "description": "Last time this user was active, used for online/offline presence"
+    },
+    "invite_code": {
+      "type": "string",
+      "description": "Unique auto-generated invite/referral code"
+    },
+    "referred_by": {
+      "type": "string",
+      "description": "Invite code of the user who referred this team"
+    },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the team has completed the onboarding modal"
     }
   },
   "required": [

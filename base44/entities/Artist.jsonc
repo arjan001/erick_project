@@ -15,27 +15,21 @@
     },
     "role": {
       "type": "string",
-      "enum": [
-        "director",
-        "cinematographer",
-        "editor",
-        "producer",
-        "3d_artist",
-        "vfx_artist",
-        "motion_designer",
-        "sound_designer",
-        "music_composer",
-        "voice_artist",
-        "actor"
-      ],
-      "description": "Primary specialty"
+      "description": "Primary specialty (free text from film roles database)"
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Multiple roles selected as tags from the film roles database"
     },
     "secondary_roles": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Additional capabilities"
+      "description": "Additional capabilities (legacy field, superseded by roles)"
     },
     "skills_experience": {
       "type": "array",
@@ -119,6 +113,19 @@
       "type": "string",
       "format": "date-time",
       "description": "Last time this user was active, used for online/offline presence"
+    },
+    "invite_code": {
+      "type": "string",
+      "description": "Unique auto-generated invite/referral code for this user"
+    },
+    "referred_by": {
+      "type": "string",
+      "description": "Invite code of the user who referred this person"
+    },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the artist has completed the onboarding modal"
     }
   },
   "required": [

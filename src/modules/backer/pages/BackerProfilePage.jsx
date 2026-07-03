@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Backer } from '@/lib/supabaseEntities';
+import { base44 } from '@/api/base44Client';
 import { Edit2, Save, X, Upload, Globe, Linkedin, Instagram, Twitter, Bell, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

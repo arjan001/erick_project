@@ -17,19 +17,28 @@
         "cultural_support",
         "co_production",
         "partnership",
-        "institutional"
+        "institutional",
+        "news",
+        "article",
+        "announcement"
       ],
-      "description": "Type of backing activity"
+      "description": "Type of ticker activity"
     },
     "link_type": {
       "type": "string",
       "enum": [
         "none",
         "project",
-        "backed_discovery"
+        "backed_discovery",
+        "article",
+        "url"
       ],
       "default": "none",
-      "description": "Where the ticker item links to"
+      "description": "Where the ticker item links to when clicked"
+    },
+    "link_url": {
+      "type": "string",
+      "description": "Full URL for external/article links (used when link_type is 'url' or 'article')"
     },
     "link_target_id": {
       "type": "string",
@@ -42,7 +51,7 @@
         "live"
       ],
       "default": "draft",
-      "description": "Whether ticker entry is published"
+      "description": "Whether ticker entry is published and visible in the marquee"
     },
     "display_order": {
       "type": "number",

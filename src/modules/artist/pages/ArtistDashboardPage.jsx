@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, Bell, FolderKanban, MessageCircle } from 'lucide-react';
-import ArtistOnboardingModal from '@/components/artist/ArtistOnboardingModal';
+import ArtistOnboardingFullModal from '@/components/artist/ArtistOnboardingFullModal';
 import UpgradeConnectsBanner from '@/components/artist/UpgradeConnectsBanner';
 import StatCard from '@/components/artist/dashboard/StatCard';
 import ActivityChart from '@/components/artist/dashboard/ActivityChart';
@@ -10,6 +10,7 @@ import JobOpportunitiesCard from '@/components/artist/dashboard/JobOpportunities
 import RecentConversations from '@/components/artist/dashboard/RecentConversations';
 import ProfileCompletionRing from '@/components/artist/dashboard/ProfileCompletionRing';
 import ConnectsTrackerCard from '@/components/artist/dashboard/ConnectsTrackerCard';
+import InviteCodeCard from '@/components/InviteCodeCard';
 import { Job, Application, Message, Notification, Artist } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -55,7 +56,7 @@ export default function ArtistDashboard() {
         setArtistProfile(artist);
 
         const alreadySeen = sessionStorage.getItem('studio22_onboarding_seen');
-        const isIncomplete = artist && !artist.based_in_country;
+        const isIncomplete = artist && (!artist.based_in_country || artist.onboarding_completed === false);
         if (artist && isIncomplete && !alreadySeen) {
           setShowOnboarding(true);
         }
@@ -117,14 +118,16 @@ export default function ArtistDashboard() {
             <ProfileCompletionRing artist={artistProfile} portfolioCount={artistProfile?.portfolio_clips?.length || 0} />
             <ConnectsTrackerCard connects={artistProfile?.connects_balance} />
           </div>
+
+          {/* Invite Code */}
+          <InviteCodeCard />
         </div>
       </main>
 
       {showOnboarding && artistProfile && (
-        <ArtistOnboardingModal
-          artist={artistProfile}
+        <ArtistOnboardingFullModal
+          user={user}
           onClose={() => { sessionStorage.setItem('studio22_onboarding_seen', 'true'); setShowOnboarding(false); }}
-          onComplete={(updated) => { setArtistProfile(updated); sessionStorage.setItem('studio22_onboarding_seen', 'true'); setShowOnboarding(false); }}
         />
       )}
     </div>

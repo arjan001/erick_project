@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useSidebar } from '@/layouts/DashboardLayout';
+import { useAuth } from '@/lib/AuthContext';
 
 const MENU_ITEMS = [
   { label: 'Dashboard', icon: DollarSign, href: 'BackerDashboard' },
@@ -25,6 +26,7 @@ export default function BackerSidebar() {
   const location = useLocation();
   const [user, setUser] = useState(null);
   const { sidebarExpanded: expanded, setSidebarExpanded } = useSidebar();
+  const { logout } = useAuth();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
@@ -33,20 +35,17 @@ export default function BackerSidebar() {
 
   const toggle = () => setSidebarExpanded(!expanded);
 
-  const handleLogout = () => {
-    localStorage.removeItem('studio22_user');
-    window.location.href = '/';
-  };
+  const handleLogout = () => { logout(true); };
 
   return (
     <aside
-      className={`h-screen bg-white shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-40 flex-shrink-0 ${
+      className={`h-full bg-white shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-40 flex-shrink-0 ${
         expanded ? 'w-64' : 'w-20'
       }`}
     >
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100">
-        <Link to={createPageUrl('backerdashboard')} className="font-black text-xl bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+        <Link to="/" className="font-black text-xl bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">
           22.
         </Link>
         <button

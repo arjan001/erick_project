@@ -206,7 +206,7 @@ export default function MessagesPage() {
       return [updatedConv, ...rest];
     });
 
-    const exists = conversations.some(c => c.id === m.conversation_id);
+    const exists = conversationsRef.current.some(c => c.id === m.conversation_id);
     if (!exists) {
       const otherEmail = m.sender_email === user.email ? m.recipient_email : m.sender_email;
       const info = await enrichParticipant(otherEmail);
@@ -225,6 +225,11 @@ export default function MessagesPage() {
     }
   };
 
+  // Keep a ref of conversations so the subscription callback always sees the latest state
+  // without needing conversations in the dependency array (which causes constant resubscriptions).
+  const conversationsRef = useRef([]);
+  useEffect(() => { conversationsRef.current = conversations; }, [conversations]);
+
   useEffect(() => {
     const unsubscribe = Message.subscribe((event) => {
       const m = event.data;
@@ -236,7 +241,7 @@ export default function MessagesPage() {
     });
     return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, conversations]);
+  }, [user]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -287,6 +292,8 @@ export default function MessagesPage() {
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
         ? { ...c, messages: c.messages.map(msg => msg.id === tempId ? created : msg) }
         : c));
+      // Refetch from DB to guarantee the message is persisted and visible after reload
+      fetchConversations();
     } catch (err) {
       console.error('Error sending message:', err);
       error('Failed', 'Failed to send message');

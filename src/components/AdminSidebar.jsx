@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Shield, Settings, Search, HardDrive, Mail, Lock, Key, CreditCard, DollarSign, Activity, ChevronRight, LogOut, Briefcase, FolderKanban, Building, MessageSquare, Package, ShoppingCart, Store } from 'lucide-react';
+import { LayoutDashboard, Users, Shield, Settings, Search, HardDrive, Mail, Lock, Key, CreditCard, DollarSign, Activity, ChevronRight, LogOut, Briefcase, FolderKanban, Building, MessageSquare, Package, ShoppingCart, Store, Radio, LayoutGrid } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function AdminSidebar() {
   const navigate = useNavigate();
@@ -27,6 +28,8 @@ export default function AdminSidebar() {
         { path: '/Admin/Jobs', label: 'Jobs', icon: Briefcase },
         { path: '/Admin/Projects', label: 'Projects', icon: FolderKanban },
         { path: '/Admin/Clients', label: 'Clients', icon: Building },
+        { path: '/Admin/Categories', label: 'Categories', icon: LayoutGrid },
+        { path: '/Admin/Ticker', label: 'Marquee / Ticker', icon: Radio },
       ]
     },
     {
@@ -70,10 +73,9 @@ export default function AdminSidebar() {
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
-  const handleLogout = () => {
-    localStorage.removeItem('studio22_user');
-    navigate('/signin');
-  };
+  const { logout } = useAuth();
+
+  const handleLogout = () => { logout(true); };
 
   return (
     <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col">
