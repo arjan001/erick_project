@@ -78,8 +78,6 @@ import TeamAdmin from './pages/TeamAdmin';
 import TeamDashboard from './pages/TeamDashboard';
 import TeamPublicProfile from './pages/TeamPublicProfile';
 import Work from './pages/Work';
-import __Layout from './Layout.jsx';
-
 
 export const PAGES = {
     "Admin": Admin,
@@ -118,5 +116,4 @@ export const PAGES = {
 export const pagesConfig = {
     mainPage: "Home",
     Pages: PAGES,
-    Layout: __Layout,
 };

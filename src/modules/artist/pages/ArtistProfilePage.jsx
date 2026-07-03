@@ -51,6 +51,7 @@ export default function ArtistProfile() {
 
   const [subscription, setSubscription] = useState(null);
   const [subPackage, setSubPackage] = useState(null);
+  const [activeClip, setActiveClip] = useState(null);
 
   const [showProjectTypesDropdown, setShowProjectTypesDropdown] = useState(false);
 
@@ -1410,7 +1411,7 @@ export default function ArtistProfile() {
 
                   filteredClips.map((clip) => (
 
-                    <div key={clip.id} className="group cursor-pointer relative">
+                    <div key={clip.id} className="group cursor-pointer relative" onClick={() => (clip.original_video_url || clip.video_embed_url) && setActiveClip(clip)}>
 
                       <div className="relative bg-gray-900 aspect-video rounded-lg mb-3 overflow-hidden">
 
@@ -1640,6 +1641,50 @@ export default function ArtistProfile() {
 
         />
 
+      )}
+
+      {/* Video Lightbox */}
+      {activeClip && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setActiveClip(null)}
+        >
+          <button
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors z-10"
+            onClick={(e) => { e.stopPropagation(); setActiveClip(null); }}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <div className="w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
+            {activeClip.video_embed_url ? (
+              <div className="relative aspect-video rounded-lg overflow-hidden bg-black">
+                <iframe
+                  src={activeClip.video_embed_url}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                  title={activeClip.title || 'Portfolio Video'}
+                />
+              </div>
+            ) : (
+              <video
+                src={activeClip.original_video_url}
+                controls
+                autoPlay
+                className="w-full max-h-[80vh] rounded-lg bg-black"
+              >
+                <source src={activeClip.original_video_url} />
+              </video>
+            )}
+            {activeClip.title && (
+              <h3 className="text-white text-lg font-medium mt-4 text-center">{activeClip.title}</h3>
+            )}
+            {activeClip.description && (
+              <p className="text-gray-400 text-sm mt-1 text-center">{activeClip.description}</p>
+            )}
+          </div>
+        </div>
       )}
 
     </div>

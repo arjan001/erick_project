@@ -1,0 +1,155 @@
+{
+  "film_roles_by_category": {
+    "Pre-Production": [
+      "Director", "Producer", "Executive Producer", "Writer / Screenwriter",
+      "Storyboard Artist", "Concept Artist", "Art Director", "Production Designer",
+      "Location Scout", "Casting Director"
+    ],
+    "Production": [
+      "Director of Photography (Cinematographer)", "Camera Operator", "1st AC (Focus Puller)",
+      "2nd AC", "Drone Pilot", "FPV Pilot", "Gaffer", "Best Boy Electric",
+      "Lighting Technician", "Grip", "Key Grip", "Dolly Grip", "Sound Recordist",
+      "Boom Operator", "Production Assistant", "Set Designer", "Set Decorator",
+      "Prop Master", "Hair Artist", "Makeup Artist", "Costume Designer"
+    ],
+    "3D & CGI": [
+      "3D Generalist", "Hard Surface Modeler", "Character Artist", "Environment Artist",
+      "Texture Artist", "Material Artist", "Look Development Artist", "Lighting Artist",
+      "Rendering Artist", "Animator", "Character Animator", "Motion Designer",
+      "VFX Artist", "FX Artist (Fire, Smoke, Water, Destruction)", "Houdini Artist",
+      "Cloth Artist", "Groom Artist (Hair/Fur)", "Rigger", "Technical Artist",
+      "Unreal Engine Artist", "Virtual Production Artist"
+    ],
+    "Post-Production": [
+      "Video Editor", "Assistant Editor", "Colorist", "Online Editor", "Compositor",
+      "Matchmove Artist", "Rotoscope Artist", "Paint Artist", "Cleanup Artist",
+      "Motion Graphics Designer", "Title Designer", "Sound Designer", "Foley Artist",
+      "Dialogue Editor", "Re-Recording Mixer", "Music Composer", "Music Producer",
+      "Voice Over Artist"
+    ],
+    "Photography & Product": [
+      "Product Photographer", "Automotive Photographer", "Retoucher", "CGI Product Artist"
+    ],
+    "Marketing & Social Media": [
+      "Creative Director", "Content Creator", "Social Media Manager", "Thumbnail Designer",
+      "Graphic Designer", "Copywriter", "Community Manager", "SEO Specialist"
+    ],
+    "Technical": [
+      "Pipeline TD", "Render Wrangler", "Render Farm Manager", "Software Developer",
+      "AI Artist", "Prompt Engineer"
+    ]
+  },
+  "skills_by_category": {
+    "Pre-Production": [
+      "Executive Producer", "Storyboard Artist", "Concept Artist", "Art Director",
+      "Production Designer", "Location Scout", "Casting Director", "Scriptwriter", "Screenwriter"
+    ],
+    "Camera & Cinematography": [
+      "Director of Photography", "Camera Operator", "ARRI Alexa", "RED Camera", "Sony FX Series",
+      "Canon Cinema", "Blackmagic", "Steadicam Operator", "Gimbal Operation", "Crane Operation",
+      "Dolly Grip", "Focus Pulling", "1st AC", "2nd AC", "DIT", "Camera Assistant",
+      "Drone Pilot", "FPV Pilot"
+    ],
+    "Lighting": [
+      "Gaffer", "Best Boy Electric", "Lighting Technician", "LED Lighting",
+      "HMI Lighting", "Tungsten Lighting", "Practical Lighting", "Natural Light"
+    ],
+    "Grip": [
+      "Key Grip", "Best Boy Grip", "Grip", "Rigging", "Dolly Operator"
+    ],
+    "Production": [
+      "Line Producer", "Production Manager", "Production Coordinator", "Sound Recordist",
+      "Location Manager", "Production Assistant", "Set Designer", "Set Decorator"
+    ],
+    "Directing": [
+      "Commercial Director", "Music Video Director", "Documentary Director",
+      "Film Director", "Assistant Director", "1st AD", "2nd AD"
+    ],
+    "3D & CGI": [
+      "3D Generalist", "Hard Surface Modeler", "Character Artist", "Environment Artist",
+      "Texture Artist", "Material Artist", "Look Development Artist", "Lighting Artist",
+      "Rendering Artist", "Animator", "Character Animator", "Motion Designer", "VFX Artist",
+      "FX Artist", "Houdini Artist", "Cloth Artist", "Groom Artist", "Rigger", "Technical Artist",
+      "Unreal Engine Artist", "Virtual Production Artist", "Blender", "Maya", "Cinema 4D", "3ds Max", "Houdini"
+    ],
+    "Post-Production": [
+      "Video Editor", "Assistant Editor", "Colorist", "Online Editor", "Offline Editor",
+      "Compositor", "Matchmove Artist", "Rotoscope Artist", "Paint Artist", "Cleanup Artist",
+      "Motion Graphics Designer", "Title Designer", "Premiere Pro", "Final Cut Pro",
+      "DaVinci Resolve", "Avid Media Composer", "Conform", "Finishing"
+    ],
+    "Sound & Music": [
+      "Sound Designer", "Sound Mixer", "Boom Operator", "Sound Editor", "Foley Artist",
+      "ADR", "Dialogue Editor", "Re-Recording Mixer", "Music Composer", "Music Producer",
+      "Music Supervisor", "Scoring", "Voice Over Artist", "Pro Tools", "Logic Pro", "Ableton Live"
+    ],
+    "Photography & Product": [
+      "Product Photographer", "Automotive Photographer", "Retoucher", "CGI Product Artist",
+      "Aerial Photography", "Product Photography"
+    ],
+    "Marketing & Social Media": [
+      "Creative Director", "Content Creator", "Social Media Manager", "Thumbnail Designer",
+      "Graphic Designer", "Copywriter", "Community Manager", "SEO Specialist"
+    ],
+    "Art Department": [
+      "Art Director", "Production Designer", "Set Designer", "Set Decorator",
+      "Props Master", "Prop Maker", "Scenic Artist", "Construction Coordinator"
+    ],
+    "Costume & Makeup": [
+      "Costume Designer", "Wardrobe Stylist", "Makeup Artist", "Hair Stylist",
+      "Special Effects Makeup", "Prosthetics"
+    ],
+    "Technical": [
+      "Pipeline TD", "Render Wrangler", "Render Farm Manager", "Software Developer",
+      "AI Artist", "Prompt Engineer"
+    ],
+    "Other": [
+      "Talent Coordinator", "Previsualization", "Stunt Coordinator", "Choreographer"
+    ]
+  },
+  "equipment_categories": {
+    "Cameras": [
+      "Cinema Camera", "Mirrorless Camera", "Action Camera", "Drone", "FPV Drone", "360 Camera"
+    ],
+    "Lenses": [
+      "Prime Lenses", "Zoom Lenses", "Anamorphic Lenses", "Macro Lenses",
+      "Tilt Shift Lenses", "Vintage Lenses"
+    ],
+    "Camera Support": [
+      "Tripod", "Monopod", "Gimbal", "Slider", "Dolly", "Crane / Jib",
+      "Suction Mount", "Car Rig"
+    ],
+    "Lighting": [
+      "COB Lights", "LED Panels", "Tube Lights", "Fresnel Lights", "Practical Lights",
+      "Softboxes", "Diffusion", "Reflectors", "Flags", "C Stands", "Light Stands"
+    ],
+    "Audio": [
+      "Shotgun Microphone", "Lavalier Microphone", "Wireless Microphone",
+      "Audio Recorder", "Boom Pole"
+    ],
+    "Grip": [
+      "Clamps", "Sandbags", "Apple Boxes", "Magic Arms", "Monitor Mounts"
+    ]
+  },
+  "software_categories": {
+    "3D": ["Blender", "Autodesk Maya", "Cinema 4D", "Houdini", "3ds Max", "ZBrush"],
+    "Texturing": ["Substance 3D Painter", "Substance 3D Designer", "Quixel Mixer", "Mari"],
+    "Rendering": ["Cycles", "Octane", "Redshift", "Arnold", "V-Ray", "Unreal Engine"],
+    "Compositing": ["After Effects", "Nuke", "Fusion"],
+    "Editing": ["Premiere Pro", "DaVinci Resolve", "Final Cut Pro"],
+    "Color Grading": ["DaVinci Resolve", "Baselight"],
+    "Motion Graphics": ["After Effects", "Cavalry"],
+    "Audio": ["Audition", "Pro Tools", "Reaper", "Logic Pro"],
+    "Music": ["Suno", "Udio", "Ableton Live", "FL Studio"],
+    "AI": ["ChatGPT", "Midjourney", "Runway", "Kling AI", "Veo", "ElevenLabs", "Topaz Video AI"]
+  },
+  "delivery_types": [
+    "3D Animation", "CGI", "VFX", "Motion Graphics", "Product Visualization",
+    "Commercial", "Social Media Video", "Short Film", "Feature Film",
+    "Virtual Production", "Interactive Experience", "VR", "AR"
+  ],
+  "file_formats": [
+    ".blend", ".fbx", ".obj", ".usd", ".usdz", ".abc (Alembic)", ".exr", ".hdr",
+    ".png", ".tif", ".psd", ".mp4", ".mov", ".wav"
+  ]
+}

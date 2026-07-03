@@ -44,7 +44,7 @@ export default function DashboardLayout({ children }) {
         {isTeam && <TeamSidebar />}
         {isClient && <ClientSidebar />}
         {isBacker && <BackerSidebar />}
-        <main className="flex-1 transition-all duration-300 min-w-0 flex flex-col bg-gray-50 overflow-hidden">
+        <main className="flex-1 min-w-0 flex flex-col bg-gray-50 overflow-hidden">
           {hasSidebar && <DashboardTopbar settingsPage={settingsPage} />}
           <div className="flex-1 min-w-0 overflow-y-auto">{children}</div>
         </main>

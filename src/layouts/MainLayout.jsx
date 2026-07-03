@@ -6,8 +6,6 @@ import { ChevronDown, X, Instagram, Linkedin, Play } from 'lucide-react';
 import TopBanner from '@/components/home/TopBanner';
 import NewProjectForm from '@/components/NewProjectForm';
 import UnifiedSearch from '@/components/UnifiedSearch';
-import ArtistSidebar from '@/components/ArtistSidebar';
-import ClientSidebar from '@/components/ClientSidebar';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function MainLayout({ children, currentPageName: currentPageNameProp }) {
@@ -46,9 +44,8 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const isArtistPage = ['Jobs', 'ArtistDashboard', 'ArtistProfile', 'Messages', 'JobApplications', 'JobBoard', 'JobInvitations', 'Network'].includes(currentPageName);
-  const isClientPage = ['ClientDashboard', 'ClientPostProject', 'ClientApplications', 'ClientMessages', 'ClientAnalytics', 'ClientSettings'].includes(currentPageName);
-  const shouldHideMenus = user && (isArtistPage || isClientPage);
+  // MainLayout is only used for public pages — dashboard pages use DashboardLayout
+  const shouldHideMenus = false;
 
   const categoryInfo = {
     commercial: {
@@ -90,12 +87,6 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
           </div>
         </div>
       )}
-
-      {/* Artist Sidebar (when logged in on artist pages) */}
-      {user && isArtistPage && <ArtistSidebar />}
-      
-      {/* Client Sidebar (when logged in on client pages) */}
-      {user && isClientPage && <ClientSidebar />}
 
       {/* Top Banner */}
       {!shouldHideMenus && <TopBanner />}
