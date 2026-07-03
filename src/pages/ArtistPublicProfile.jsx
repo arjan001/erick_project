@@ -239,7 +239,7 @@ export default function ArtistPublicProfile() {
               {portfolioClips.map((clip) => (
                 <button
                   key={clip.id}
-                  onClick={() => clip.original_video_url && setActiveClip(clip)}
+                  onClick={() => (clip.original_video_url || clip.video_embed_url) && setActiveClip(clip)}
                   className="group text-left bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <div className="relative bg-gray-900 aspect-video overflow-hidden">
@@ -250,7 +250,7 @@ export default function ArtistPublicProfile() {
                         <Sparkles className="w-10 h-10 text-white/50" />
                       </div>
                     )}
-                    {clip.original_video_url && (
+                    {(clip.original_video_url || clip.video_embed_url) && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
                         <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                           <Play className="w-6 h-6 text-gray-900 ml-0.5" />
@@ -315,7 +315,11 @@ export default function ArtistPublicProfile() {
       {activeClip && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setActiveClip(null)}>
           <div className="max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
-            <video src={activeClip.original_video_url} controls autoPlay className="w-full rounded-lg" />
+            {activeClip.video_embed_url ? (
+              <iframe src={activeClip.video_embed_url} className="w-full aspect-video rounded-lg bg-black" frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title={activeClip.title} />
+            ) : (
+              <video src={activeClip.original_video_url} controls autoPlay className="w-full rounded-lg" />
+            )}
             <p className="text-white text-sm mt-3">{activeClip.title}</p>
           </div>
         </div>

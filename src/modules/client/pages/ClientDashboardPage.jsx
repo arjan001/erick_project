@@ -13,6 +13,7 @@ import ClientProjectModal from '@/components/client/ClientProjectModal';
 import ClientJobModal from '@/components/client/ClientJobModal';
 import { Plus, Briefcase, Send, MessageSquare, FolderKanban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import InviteCodeCard from '@/components/InviteCodeCard';
 import { useToast } from '@/hooks/useToast.jsx';
 
 export default function ClientDashboard() {
@@ -270,7 +271,7 @@ export default function ClientDashboard() {
 
   if (isLoadingAuth || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
       </div>
     );
@@ -304,7 +305,7 @@ export default function ClientDashboard() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-gray-50">
       <main className="w-full flex flex-col">
         <ClientProfileHeader
           user={user}
@@ -407,6 +408,8 @@ export default function ClientDashboard() {
             </div>
           )}
         </div>
+
+        <InviteCodeCard />
       </main>
 
       <ClientProjectModal

@@ -187,12 +187,21 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async (shouldRedirect = true) => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut({ scope: 'global' });
+    } catch (e) {
+      console.error('signOut error:', e);
+    }
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('studio22_user');
     localStorage.removeItem('studio22_team');
-    if (shouldRedirect) window.location.href = '/';
+    localStorage.removeItem('studio22_sidebar_expanded');
+    sessionStorage.removeItem('studio22_just_logged_in');
+    sessionStorage.removeItem('studio22_onboarding_seen');
+    if (shouldRedirect) {
+      window.location.href = '/';
+    }
   };
 
   const navigateToLogin = () => { window.location.href = '/SignIn'; };

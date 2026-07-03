@@ -69,8 +69,8 @@ export default function ArtistDashboard() {
   }, [user]);
 
   if (isLoadingAuth) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
+    <div className="h-full flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
     </div>
   );
 
@@ -87,8 +87,8 @@ export default function ArtistDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="w-full min-h-screen overflow-auto">
+    <div className="bg-gray-50">
+      <main className="w-full">
         {/* Header */}
         <div className="px-6 sm:px-8 pt-8 pb-2">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Dashboard</h1>

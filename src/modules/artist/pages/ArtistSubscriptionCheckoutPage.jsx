@@ -290,7 +290,7 @@ export default function ArtistSubscriptionCheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="h-full bg-white p-6">
       <Button variant="ghost" onClick={() => navigate(createPageUrl('ArtistDashboard'))} className="mb-6">
         <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
       </Button>

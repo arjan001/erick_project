@@ -293,7 +293,7 @@ export default function MessagesPage() {
         ? { ...c, messages: c.messages.map(msg => msg.id === tempId ? created : msg) }
         : c));
       // Refetch from DB to guarantee the message is persisted and visible after reload
-      fetchConversations();
+      await fetchConversations();
     } catch (err) {
       console.error('Error sending message:', err);
       error('Failed', 'Failed to send message');

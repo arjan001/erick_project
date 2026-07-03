@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 
 import { createPageUrl } from '@/shared/utils/routing';
+import InviteCodeCard from '@/components/InviteCodeCard';
 
 import { 
 
@@ -13,6 +14,7 @@ import {
   Eye, TrendingUp, Upload, Edit, Users, Mail, Phone, MapPin,
 
   Globe, Award, Film, Calendar, Plus, X, Edit2, Play, Instagram, Linkedin
+
 
 } from 'lucide-react';
 
@@ -614,7 +616,7 @@ export default function TeamDashboard() {
 
     return (
 
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-full flex items-center justify-center bg-gray-50">
 
         <div className="text-center">
 
@@ -636,7 +638,7 @@ export default function TeamDashboard() {
 
     return (
 
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-full flex items-center justify-center bg-gray-50">
 
         <Card className="max-w-md">
 
@@ -728,7 +730,7 @@ export default function TeamDashboard() {
 
   return (
 
-    <div className="min-h-screen bg-gray-50 py-6">
+    <div className="bg-gray-50 py-6">
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -1166,6 +1168,8 @@ export default function TeamDashboard() {
           onClose={() => { setShowMemberModal(false); setEditingMember(null); setMemberForm({ name: '', role: '', email: '', skills: '', avatar_url: '' }); }}
           onSave={editingMember ? handleUpdateTeamMember : handleAddTeamMember}
         />
+
+        <InviteCodeCard />
 
         {showOnboarding && team && (
           <TeamOnboardingModal

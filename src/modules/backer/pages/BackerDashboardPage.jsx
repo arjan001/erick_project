@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
 import { confirmDialog } from '@/lib/sweetAlert';
+import InviteCodeCard from '@/components/InviteCodeCard';
 
 export default function BackerDashboardPage() {
   const navigate = useNavigate();
@@ -289,6 +290,9 @@ export default function BackerDashboardPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Invite Code */}
+        <InviteCodeCard />
 
         {/* Backed Project Modal */}
         {showModal && (

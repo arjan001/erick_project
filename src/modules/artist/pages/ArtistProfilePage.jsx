@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { base44 } from '@/api/base44Client';
 
-import { Artist, PortfolioClip, Endorsement, Testimonial } from '@/lib/supabaseEntities';
+import { Artist, PortfolioClip, Endorsement, Testimonial, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
 
 import { useAuth } from '@/lib/AuthContext';
 
@@ -23,6 +23,7 @@ import ArtistAccountSettingsTab from '@/components/artist/ArtistAccountSettingsT
 import ShareProfileButton from '@/components/artist/ShareProfileButton';
 
 import PortfolioModal from '@/components/artist/PortfolioModal';
+import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge';
 
 
 
@@ -47,6 +48,9 @@ export default function ArtistProfile() {
   const [selectedProjectTypeFilter, setSelectedProjectTypeFilter] = useState('all');
 
   const [showRolesDropdown, setShowRolesDropdown] = useState(false);
+
+  const [subscription, setSubscription] = useState(null);
+  const [subPackage, setSubPackage] = useState(null);
 
   const [showProjectTypesDropdown, setShowProjectTypesDropdown] = useState(false);
 
@@ -186,6 +190,16 @@ export default function ArtistProfile() {
 
         setTestimonials(testimonialsData);
 
+        // Fetch active subscription for crown badge
+        try {
+          const subs = await Subscription.filter({ user_email: user.email, status: 'active' });
+          if (subs?.[0]) {
+            setSubscription(subs[0]);
+            const pkgs = await SubscriptionPackage.filter({ id: subs[0].package_id });
+            if (pkgs?.[0]) setSubPackage(pkgs[0]);
+          }
+        } catch (e) { /* no subscription */ }
+
         setProfileRole(artistData[0]?.role || '');
 
         setProfileName(artistData[0]?.full_name || user?.full_name || '');
@@ -217,7 +231,7 @@ export default function ArtistProfile() {
 
 
   if (isLoadingAuth) return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="h-full flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
     </div>
   );
@@ -785,6 +799,10 @@ export default function ArtistProfile() {
                 <div className="flex items-center gap-3 mb-1">
 
                   <h1 className="text-3xl font-bold text-gray-900">{profileName || artist?.full_name}</h1>
+
+                  {subscription && subPackage && (
+                    <SubscriptionBadge subscription={subscription} package={subPackage} />
+                  )}
 
                   <button onClick={() => setEditingName(true)} className="text-gray-400 hover:text-gray-600">
 

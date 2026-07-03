@@ -66,7 +66,10 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between gap-4">
-      <div className="min-w-0">
+      <div className="flex items-center gap-3 min-w-0">
+        <Link to="/" className="font-black text-xl text-gray-900 hover:opacity-70 transition-opacity flex-shrink-0">
+          22.
+        </Link>
         {title && <h1 className="text-lg font-bold text-gray-900 truncate">{title}</h1>}
       </div>
 
