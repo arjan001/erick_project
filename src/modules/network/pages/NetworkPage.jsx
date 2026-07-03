@@ -299,7 +299,7 @@ export default function NetworkPage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white overflow-hidden">
+    <div className="flex flex-col h-full">
       {/* Connection requests header */}
       <div className="px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
         <h2 className="text-base font-semibold text-gray-900 mb-2">Connection requests ({pendingRequests.length})</h2>

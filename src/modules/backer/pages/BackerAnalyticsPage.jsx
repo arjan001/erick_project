@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Backer, BackedProject } from '@/lib/supabaseEntities';
-import BackerSidebar from '@/components/BackerSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, DollarSign, BarChart3, PieChart, Calendar, ArrowUpRight, ArrowDownRight, Target, Zap } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';

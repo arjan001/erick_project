@@ -142,7 +142,7 @@ export default function BackerProfile() {
   const inputClass = "rounded-xl border-gray-200 focus-visible:ring-indigo-500";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
         <div className="w-full">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Investor Profile & Settings</h1>
         <p className="text-gray-500 mb-8">Manage your public profile, investment preferences and account settings</p>
