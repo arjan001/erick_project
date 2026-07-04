@@ -213,18 +213,37 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async (shouldRedirect = true) => {
+    // 1. Sign out from Supabase (both local + global to kill all sessions/tokens)
     try {
       await supabase.auth.signOut({ scope: 'global' });
     } catch (e) {
       console.error('signOut error:', e);
     }
+    try {
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch (e) {
+      // ignore
+    }
+    // 2. Clear all React state
     setUser(null);
     setIsAuthenticated(false);
+    // 3. Clear every piece of stored auth/session data
     localStorage.removeItem('studio22_user');
     localStorage.removeItem('studio22_team');
     localStorage.removeItem('studio22_sidebar_expanded');
     sessionStorage.removeItem('studio22_just_logged_in');
     sessionStorage.removeItem('studio22_onboarding_seen');
+    // Nuke any lingering Supabase keys in localStorage/sessionStorage
+    Object.keys(localStorage).forEach(k => { if (k.startsWith('sb-')) localStorage.removeItem(k); });
+    Object.keys(sessionStorage).forEach(k => { if (k.startsWith('sb-')) sessionStorage.removeItem(k); });
+    // 4. Expire cookies we can reach
+    document.cookie.split(';').forEach(c => {
+      const eq = c.indexOf('=');
+      const name = eq > -1 ? c.slice(0, eq).trim() : c.trim();
+      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + window.location.hostname;
+    });
+    // 5. Redirect to landing page
     if (shouldRedirect) {
       window.location.href = '/';
     }

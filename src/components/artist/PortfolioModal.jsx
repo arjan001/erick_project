@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Image as ImageIcon, Video, Link2, Film } from 'lucide-react';
+import RolesTagInput from './RolesTagInput';
 
 const PROJECT_TYPES = [
   { value: 'commercial', label: 'Commercial' },
@@ -151,13 +152,14 @@ export default function PortfolioModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Your Role(s)</label>
-            <input
-              type="text"
-              value={portfolioForm.role}
-              onChange={(e) => setPortfolioForm(prev => ({ ...prev, role: e.target.value }))}
-              placeholder="e.g., Director, Cinematographer"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+            <label className="block text-sm font-medium text-gray-700 mb-1">Your Role(s) <span className="text-xs text-gray-400">— select all that apply</span></label>
+            <RolesTagInput
+              selected={portfolioForm.roles || []}
+              onChange={(roles) => setPortfolioForm(prev => ({
+                ...prev,
+                roles,
+                role: roles[0] || prev.role || '',
+              }))}
             />
           </div>
 

@@ -1356,6 +1356,13 @@ export default function Home({ editMode = false }) {
 
           </div>
 
+          {/* Load More Categories */}
+          <div className="mt-8 text-center">
+            <Link to={createPageUrl('Categories')} className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm font-bold rounded-lg hover:bg-gray-800 transition-colors">
+              Load More Categories <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
         </div>
 
       </section>

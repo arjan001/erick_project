@@ -29,7 +29,11 @@ function buildEntity(table, createdAtAlias) {
   const withOrder = (query, sort, limit) => {
     if (sort) {
       const desc = sort.startsWith('-');
-      query = query.order(desc ? sort.slice(1) : sort, { ascending: !desc });
+      let field = desc ? sort.slice(1) : sort;
+      // Translate the aliased "created_date" back to the real DB column name
+      // so ORDER BY works (PostgREST can't order by a select alias).
+      if (field === 'created_date' && createdAtAlias) field = createdAtAlias;
+      query = query.order(field, { ascending: !desc });
     }
     if (limit) query = query.limit(limit);
     return query;

@@ -84,16 +84,28 @@ export default function NetworkPage() {
 
     const fetchData = async () => {
       try {
-        const [artists, teams, backers, clients, connectionsData] = await Promise.all([
+        // Fetch connections where I'm the requester OR the recipient (two queries
+        // because Supabase RLS may restrict list-all, and .or() isn't supported
+        // in the simple filter builder).
+        const [sentConns, receivedConns] = await Promise.all([
+          Connection.filter({ requester_email: user.email }),
+          Connection.filter({ recipient_email: user.email }),
+        ]);
+        const connectionsData = [...(sentConns || []), ...(receivedConns || [])];
+        // Deduplicate by id (in case both queries return the same row)
+        const seenIds = new Set();
+        const uniqueConns = connectionsData.filter(c => {
+          if (seenIds.has(c.id)) return false;
+          seenIds.add(c.id);
+          return true;
+        });
+
+        const [artists, teams, backers, clients] = await Promise.all([
           Artist.list(),
           Team.list(),
           Backer.list(),
           ProjectOwner.list(),
-          Connection.list(),
         ]);
-
-        console.log('Fetched connections from Supabase:', connectionsData);
-        console.log('Current user email:', user.email);
 
         const allPeople = [
           ...artists.map(a => ({ ...a, type: 'artist' })),
@@ -157,11 +169,15 @@ export default function NetworkPage() {
   };
 
   const refreshConnections = async () => {
-    const connectionsData = await Connection.list();
-    const mine = connectionsData.filter(c => c.requester_email === user.email || c.recipient_email === user.email);
+    const [sent, received] = await Promise.all([
+      Connection.filter({ requester_email: user.email }),
+      Connection.filter({ recipient_email: user.email }),
+    ]);
+    const all = [...(sent || []), ...(received || [])];
+    const seen = new Set();
+    const mine = all.filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; });
     setConnections(mine);
     setPendingRequests(mine.filter(c => c.recipient_email === user.email && c.status === 'pending'));
-    console.log('Refreshed connections:', mine.length, 'Pending:', mine.filter(c => c.status === 'pending').length, 'Accepted:', mine.filter(c => c.status === 'accepted').length);
   };
 
   const handleConnect = async () => {
