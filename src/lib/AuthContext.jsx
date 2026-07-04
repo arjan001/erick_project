@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { supabase } from '@/lib/supabase';
-import { Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities';
+import { Artist, Team, ProjectOwner, Backer, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
 
 const AuthContext = createContext();
 
@@ -25,6 +25,27 @@ function generateInviteCode() {
   let code = 'S22-';
   for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
   return code;
+}
+
+// Grant free Pro subscription to users who were referred by an invite code
+async function grantProSubscription(email) {
+  if (!email) return;
+  try {
+    const pkgs = await SubscriptionPackage.filter({ name: 'Pro' });
+    if (!pkgs || pkgs.length === 0) return;
+    const proPkg = pkgs[0];
+    const existing = await Subscription.filter({ user_email: email, status: 'active' });
+    if (existing && existing.length > 0) return;
+    await Subscription.create({
+      user_email: email,
+      package_id: proPkg.id,
+      package_name: proPkg.name,
+      status: 'active',
+      started_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('grantProSubscription error:', err);
+  }
 }
 
 // Ensure an entity profile exists for new Supabase users
@@ -85,6 +106,11 @@ async function ensureProfile(supaUser) {
           referred_by: referredBy,
         });
       }
+    }
+
+    // Grant free Pro subscription if user was referred by an invite code
+    if (referredBy) {
+      await grantProSubscription(supaUser.email);
     }
   } catch (err) {
     console.error('ensureProfile error:', err);

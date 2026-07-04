@@ -62,7 +62,7 @@ export default function InviteCodeCard() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const referralLink = `${window.location.origin}/SignIn?ref=${inviteCode}`;
+  const referralLink = `${window.location.origin}/invite/${inviteCode}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(referralLink);

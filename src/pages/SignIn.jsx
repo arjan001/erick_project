@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { AlertCircle, Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { AlertCircle, Eye, EyeOff, Mail, Lock, Gift, Sparkles, X } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { Artist, Team, Backer, ProjectOwner, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
 
 const ROLE_REDIRECTS = {
   artist: '/artistdashboard',
@@ -37,8 +38,20 @@ export default function SignIn() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [inviteCode, setInviteCode] = useState('');
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [modalInviteCode, setModalInviteCode] = useState('');
+  const [claimingInvite, setClaimingInvite] = useState(false);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  // Capture invite/referral code from URL (?ref=CODE)
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref) setInviteCode(ref);
+    if (searchParams.get('mode') === 'signup') setMode('signup');
+  }, [searchParams]);
 
   // If the user arrived via a "reset password" email link, Supabase fires a
   // PASSWORD_RECOVERY event — switch to the "set a new password" form.
@@ -112,12 +125,15 @@ export default function SignIn() {
       const { data, error: supaError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName, role, ...(role === 'team' ? { team_name: teamOrgName.trim(), phone: teamPhone.trim() } : {}) } },
+        options: { data: { full_name: fullName, role, referred_by: inviteCode || undefined, ...(role === 'team' ? { team_name: teamOrgName.trim(), phone: teamPhone.trim() } : {}) } },
       });
       if (supaError) throw supaError;
       if (data.user && !data.session) {
         setMessage('Check your email to confirm your account, then sign in.');
         setMode('login');
+      } else if (!inviteCode) {
+        // No invite code used — ask after registration
+        setShowInviteModal(true);
       } else {
         navigate(ROLE_REDIRECTS[role] || '/');
       }
@@ -125,6 +141,32 @@ export default function SignIn() {
       setError(err.message || 'Sign up failed. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const claimInvite = async () => {
+    if (!modalInviteCode.trim()) { navigate(ROLE_REDIRECTS[role] || '/'); return; }
+    setClaimingInvite(true);
+    try {
+      // Save referred_by to Supabase user metadata
+      await supabase.auth.updateUser({ data: { referred_by: modalInviteCode.trim() } });
+      // Update profile entity
+      const entity = role === 'artist' ? Artist : role === 'team' ? Team : role === 'backer' ? Backer : ProjectOwner;
+      const filterKey = (role === 'artist' || role === 'client') ? { email } : { contact_email: email };
+      const profiles = await entity.filter(filterKey);
+      if (profiles?.[0]) await entity.update(profiles[0].id, { referred_by: modalInviteCode.trim() });
+      // Grant Pro subscription
+      const pkgs = await SubscriptionPackage.filter({ name: 'Pro' });
+      if (pkgs?.[0]) {
+        const existing = await Subscription.filter({ user_email: email, status: 'active' });
+        if (!existing?.length) {
+          await Subscription.create({ user_email: email, package_id: pkgs[0].id, package_name: pkgs[0].name, status: 'active', started_at: new Date().toISOString() });
+        }
+      }
+      navigate(ROLE_REDIRECTS[role] || '/');
+    } catch (err) {
+      setError(err.message || 'Failed to apply invite code');
+      setClaimingInvite(false);
     }
   };
 
@@ -306,6 +348,12 @@ export default function SignIn() {
                   <option value="backer">Backer / Investor</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">Invite code {inviteCode && <span className="text-green-600 font-medium">✓ Free Pro unlocked</span>}</label>
+                <input type="text" value={inviteCode} onChange={e => setInviteCode(e.target.value)} placeholder="Enter invite code for free Pro access"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                {inviteCode && <p className="text-xs text-green-600 mt-1 flex items-center gap-1"><Sparkles className="w-3 h-3" /> Pro Beta Release plan — free!</p>}
+              </div>
               <button type="submit" disabled={loading}
                 className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
                 {loading ? 'Creating account...' : 'Create account'}
@@ -399,6 +447,34 @@ export default function SignIn() {
           </div>
         </div>
       </div>
+
+      {/* Post-registration Invite Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 relative shadow-2xl">
+            <button onClick={() => navigate(ROLE_REDIRECTS[role] || '/')} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+              <X className="w-5 h-5" />
+            </button>
+            <div className="text-center mb-5">
+              <div className="w-14 h-14 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Gift className="w-7 h-7 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Have an invite code?</h2>
+              <p className="text-sm text-gray-500 mt-1">Unlock the <span className="font-semibold text-yellow-600">Pro Beta Release</span> plan at no cost — more messages, more projects, priority access.</p>
+            </div>
+            <input type="text" value={modalInviteCode} onChange={e => setModalInviteCode(e.target.value)} placeholder="Enter your invite code"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/30 focus:border-yellow-500 transition-all bg-white mb-4" />
+            <button onClick={claimInvite} disabled={claimingInvite}
+              className="w-full py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg text-sm font-semibold hover:from-yellow-600 hover:to-yellow-700 disabled:opacity-50 transition-all mb-2">
+              {claimingInvite ? 'Activating Pro...' : 'Claim Free Pro Access'}
+            </button>
+            <button onClick={() => navigate(ROLE_REDIRECTS[role] || '/')}
+              className="w-full py-2.5 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Visual Side — hidden on mobile */}
       <div className="hidden lg:flex lg:w-2/5 items-center justify-center relative overflow-hidden bg-gradient-to-br from-black via-[#2a2a2a] to-[#B8860B]">

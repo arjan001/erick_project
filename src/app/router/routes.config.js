@@ -85,6 +85,11 @@ const publicRoutes = [
     path: '/Categories',
     component: () => import('@/pages/CategoriesPage'),
     layout: MainLayout
+  },
+  {
+    path: '/invite/:code',
+    component: () => import('@/pages/InviteLanding'),
+    layout: MainLayout
   }
 ];
 
