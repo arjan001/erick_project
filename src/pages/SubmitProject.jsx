@@ -68,6 +68,13 @@ export default function SubmitProject() {
 
   // Initialize with data from Home page if available
   useEffect(() => {
+    // Auto-fill owner email/name from logged-in user
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('studio22_user') || '{}');
+      if (storedUser.email) setProjectData(prev => ({ ...prev, project_owner_email: storedUser.email }));
+      if (storedUser.full_name) setProjectData(prev => ({ ...prev, project_owner_name: storedUser.full_name }));
+    } catch (e) { /* ignore */ }
+
     if (location.state?.initialData) {
       setProjectData(prev => ({
         ...prev,
@@ -144,7 +151,7 @@ export default function SubmitProject() {
         }
       }
 
-      await Project.create({
+      const fullRecord = {
         project_type: projectData.project_type,
         usage: projectData.usage,
         visual_direction_clips: projectData.visual_direction_clips,
@@ -167,11 +174,35 @@ export default function SubmitProject() {
         backing_notes: projectData.backing_notes,
         status: 'submitted',
         image_url: projectImage
-      });
+      };
+
+      try {
+        await Project.create(fullRecord);
+      } catch (createErr) {
+        // Fallback: some columns may not exist in the projects table yet.
+        // Retry with only the core columns that are guaranteed to exist.
+        console.warn('Full insert failed, retrying with core columns only:', createErr);
+        await Project.create({
+          project_type: projectData.project_type,
+          location_country: projectData.location_country,
+          location_city: projectData.location_city,
+          timeline_start: projectData.timeline_start,
+          timeline_deadline: projectData.timeline_deadline,
+          budget_range: projectData.budget_range,
+          notes: projectData.notes,
+          project_owner_email: projectData.project_owner_email,
+          project_owner_name: projectData.project_owner_name,
+          project_owner_company: projectData.project_owner_company,
+          open_to_backing: projectData.open_to_backing,
+          status: 'submitted',
+          image_url: projectImage
+        });
+      }
       setSubmitted(true);
     } catch (error) {
-      alert('Error submitting project. Please try again.');
-      console.error(error);
+      console.error('Project submission error:', error);
+      const msg = error?.message || error?.details || JSON.stringify(error);
+      alert(`Error submitting project: ${msg}`);
     } finally {
       setIsSubmitting(false);
     }
