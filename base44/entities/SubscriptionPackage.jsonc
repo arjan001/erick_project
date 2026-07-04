@@ -4,18 +4,18 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "Plan name e.g. Free, Basic, Pro, Elite"
+      "description": "Plan name e.g. Free, Plus, Pro"
     },
     "description": {
       "type": "string"
     },
     "price": {
       "type": "number",
-      "description": "Price in USD"
+      "description": "Price in EUR"
     },
     "currency": {
       "type": "string",
-      "default": "USD"
+      "default": "EUR"
     },
     "billing_cycle": {
       "type": "string",
@@ -36,7 +36,7 @@
     "connects_included": {
       "type": "number",
       "default": 0,
-      "description": "Connects granted to the artist when this plan is purchased"
+      "description": "Connects granted to the artist when this plan is purchased or granted"
     },
     "featured_listing": {
       "type": "boolean",
@@ -57,6 +57,11 @@
     "display_order": {
       "type": "number",
       "default": 0
+    },
+    "invitation_only": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, this plan can only be accessed via an invite code (e.g. Pro Beta Release)"
     }
   },
   "required": [

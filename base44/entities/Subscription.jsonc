@@ -41,6 +41,10 @@
     "upgraded_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "referred_by": {
+      "type": "string",
+      "description": "Invite code used to claim this subscription (for Pro Beta Release)"
     }
   },
   "required": [
