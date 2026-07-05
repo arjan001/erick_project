@@ -1777,7 +1777,13 @@ export default function Home({ editMode = false }) {
 
 
 
-      {/* Studio22 Market Section — hidden */}
+      {/* ── STUDIO22 MARKET SECTION — intentionally hidden, do not render ──
+      <section className="py-12 md:py-20 px-4 md:px-6 bg-white">
+        <div className="max-w-[1800px] mx-auto">
+          <h2>Studio22 Market</h2>
+        </div>
+      </section>
+      ── END HIDDEN SECTION ── */}
 
 
 

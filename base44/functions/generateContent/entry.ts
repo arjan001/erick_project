@@ -1,20 +1,15 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import OpenAI from 'npm:openai';
-
-const openai = new OpenAI({
-    apiKey: Deno.env.get("OPENAI_API_KEY"),
-});
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import OpenAI from 'npm:openai@4.77.0';
 
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
-
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
         const { section } = await req.json();
+
+        // Initialize inside the handler — module-top-level init throws on missing secrets and crashes boot
+        const openai = new OpenAI({
+            apiKey: Deno.env.get("OPENAI_API_KEY"),
+        });
 
         let prompt = '';
         
