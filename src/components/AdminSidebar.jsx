@@ -25,9 +25,12 @@ export default function AdminSidebar() {
     {
       section: 'Content Management',
       items: [
+        { path: '/Admin/Artists', label: 'Artists/Creators', icon: Users },
+        { path: '/Admin/Teams', label: 'Teams', icon: Building },
+        { path: '/Admin/Backers', label: 'Backers', icon: DollarSign },
+        { path: '/Admin/Clients', label: 'Clients', icon: Building },
         { path: '/Admin/Jobs', label: 'Jobs', icon: Briefcase },
         { path: '/Admin/Projects', label: 'Projects', icon: FolderKanban },
-        { path: '/Admin/Clients', label: 'Clients', icon: Building },
         { path: '/Admin/Categories', label: 'Categories', icon: LayoutGrid },
         { path: '/Admin/Ticker', label: 'Marquee / Ticker', icon: Radio },
       ]

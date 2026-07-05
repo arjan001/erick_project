@@ -24,6 +24,7 @@ import ShareProfileButton from '@/components/artist/ShareProfileButton';
 
 import PortfolioModal from '@/components/artist/PortfolioModal';
 import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge';
+import CountrySelector from '@/components/CountrySelector';
 
 
 
@@ -74,6 +75,10 @@ export default function ArtistProfile() {
   const [profileRole, setProfileRole] = useState('');
 
   const [profileLocation, setProfileLocation] = useState('');
+
+  const [profileCity, setProfileCity] = useState('');
+
+  const [profileCountry, setProfileCountry] = useState('');
 
   const [profileBio, setProfileBio] = useState('');
 
@@ -206,6 +211,10 @@ export default function ArtistProfile() {
         setProfileName(artistData[0]?.full_name || user?.full_name || '');
 
         setProfileLocation(artistData[0]?.based_in_city || '');
+
+        setProfileCity(artistData[0]?.based_in_city || '');
+
+        setProfileCountry(artistData[0]?.based_in_country || '');
 
         setProfileBio(artistData[0]?.bio || '');
 
@@ -377,9 +386,14 @@ export default function ArtistProfile() {
 
     try {
 
-      await Artist.update(artist.id, { based_in_city: profileLocation });
+      await Artist.update(artist.id, { 
+        based_in_city: profileCity,
+        based_in_country: profileCountry
+      });
 
-      setArtist(prev => ({ ...prev, based_in_city: profileLocation }));
+      setArtist(prev => ({ ...prev, based_in_city: profileCity, based_in_country: profileCountry }));
+
+      setProfileLocation(`${profileCity}, ${profileCountry}`);
 
       setEditingLocation(false);
 
@@ -879,7 +893,7 @@ export default function ArtistProfile() {
 
                 {editingLocation ? (
 
-                  <div className="flex gap-2 items-center">
+                  <div className="flex gap-2 items-center flex-wrap">
 
                     <MapPin className="w-4 h-4" />
 
@@ -887,13 +901,23 @@ export default function ArtistProfile() {
 
                       type="text"
 
-                      value={profileLocation}
+                      value={profileCity}
 
-                      onChange={(e) => setProfileLocation(e.target.value)}
+                      onChange={(e) => setProfileCity(e.target.value)}
 
-                      placeholder="City, Country"
+                      placeholder="City"
 
-                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-gray-400"
+                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-gray-400 w-32"
+
+                    />
+
+                    <CountrySelector
+
+                      value={profileCountry}
+
+                      onChange={setProfileCountry}
+
+                      className="w-48"
 
                     />
 

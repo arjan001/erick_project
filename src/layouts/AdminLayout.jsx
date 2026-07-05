@@ -62,8 +62,7 @@ export default function AdminLayout({ children }) {
   return (
     <div className="min-h-screen bg-[#f5f6fa] flex">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-60' : 'w-0'} bg-white flex-shrink-0 transition-all duration-300 overflow-hidden flex flex-col h-screen sticky top-0`}
-        style={{ boxShadow: '2px 0 8px 0 rgba(60,72,100,0.06)' }}>
+      <aside className={`${sidebarOpen ? 'w-60' : 'w-0'} bg-white flex-shrink-0 transition-all duration-300 overflow-hidden flex flex-col h-screen sticky top-0`}>
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-100 flex-shrink-0">
           <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
@@ -178,7 +177,7 @@ export default function AdminLayout({ children }) {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>

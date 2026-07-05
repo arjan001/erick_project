@@ -87,6 +87,11 @@ const publicRoutes = [
     layout: MainLayout
   },
   {
+    path: '/Category/:slug',
+    component: () => import('@/pages/CategorySinglePage'),
+    layout: MainLayout
+  },
+  {
     path: '/invite/:code',
     component: () => import('@/pages/InviteLanding'),
     layout: MainLayout
@@ -270,6 +275,18 @@ const adminRoutes = [
   {
     path: '/Admin/Artists',
     component: () => import('@/modules/admin/pages/AdminArtistsPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
+  },
+  {
+    path: '/Admin/Backers',
+    component: () => import('@/modules/admin/pages/AdminBackersPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
+  },
+  {
+    path: '/Admin/Teams',
+    component: () => import('@/modules/admin/pages/AdminTeamsPage'),
     layout: AdminLayout,
     guard: AdminGuard
   },

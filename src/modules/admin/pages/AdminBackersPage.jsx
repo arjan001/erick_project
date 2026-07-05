@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Artist } from '@/lib/supabaseEntities';
+import { Backer } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Edit2, Trash2, X, Eye, Ban, CheckCircle, AlertCircle, Search, User, Mail, Calendar, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Edit2, Trash2, X, Eye, Ban, CheckCircle, AlertCircle, Search, User, Mail, Calendar, MapPin, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/useToast.jsx';
 
 const STATUS_STYLES = {
@@ -13,27 +13,27 @@ const STATUS_STYLES = {
 
 const PAGE_SIZE = 10;
 
-export default function AdminArtistsPage() {
+export default function AdminBackersPage() {
   const { success, error: toastError } = useToast();
-  const [artists, setArtists] = useState([]);
+  const [backers, setBackers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
-  const [viewingArtist, setViewingArtist] = useState(null);
-  const [editingArtist, setEditingArtist] = useState(null);
+  const [viewingBacker, setViewingBacker] = useState(null);
+  const [editingBacker, setEditingBacker] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [form, setForm] = useState({
-    full_name: '', email: '', bio: '', location: '', skills: '', status: 'active', is_suspended: false, is_disabled: false
+    full_name: '', email: '', bio: '', location: '', investment_focus: '', status: 'active', is_suspended: false, is_disabled: false
   });
 
   const fetchData = async () => {
     try {
-      const all = await Artist.list('-created_at', 100);
-      setArtists(all || []);
+      const all = await Backer.list('-created_at', 100);
+      setBackers(all || []);
     } catch (err) {
-      console.error('Error fetching artists:', err);
-      toastError('Load Failed', 'Failed to load artists');
+      console.error('Error fetching backers:', err);
+      toastError('Load Failed', 'Failed to load backers');
     } finally {
       setLoading(false);
     }
@@ -41,96 +41,96 @@ export default function AdminArtistsPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const filteredArtists = artists.filter(artist => {
-    const matchesSearch = artist.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         artist.email?.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredBackers = backers.filter(backer => {
+    const matchesSearch = backer.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         backer.email?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || 
-                          (statusFilter === 'active' && !artist.is_suspended && !artist.is_disabled) ||
-                          (statusFilter === 'suspended' && artist.is_suspended) ||
-                          (statusFilter === 'disabled' && artist.is_disabled);
+                          (statusFilter === 'active' && !backer.is_suspended && !backer.is_disabled) ||
+                          (statusFilter === 'suspended' && backer.is_suspended) ||
+                          (statusFilter === 'disabled' && backer.is_disabled);
     return matchesSearch && matchesStatus;
   });
 
-  const paginatedArtists = filteredArtists.slice(
+  const paginatedBackers = filteredBackers.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
 
-  const totalPages = Math.ceil(filteredArtists.length / PAGE_SIZE);
+  const totalPages = Math.ceil(filteredBackers.length / PAGE_SIZE);
 
-  const getStatus = (artist) => {
-    if (artist.is_suspended) return 'suspended';
-    if (artist.is_disabled) return 'disabled';
+  const getStatus = (backer) => {
+    if (backer.is_suspended) return 'suspended';
+    if (backer.is_disabled) return 'disabled';
     return 'active';
   };
 
-  const openModal = (artist = null) => {
-    if (artist) {
-      setEditingArtist(artist);
+  const openModal = (backer = null) => {
+    if (backer) {
+      setEditingBacker(backer);
       setForm({
-        full_name: artist.full_name || '',
-        email: artist.email || '',
-        bio: artist.bio || '',
-        location: artist.location || '',
-        skills: artist.skills || '',
-        status: artist.status || 'active',
-        is_suspended: artist.is_suspended || false,
-        is_disabled: artist.is_disabled || false
+        full_name: backer.full_name || '',
+        email: backer.email || '',
+        bio: backer.bio || '',
+        location: backer.location || '',
+        investment_focus: backer.investment_focus || '',
+        status: backer.status || 'active',
+        is_suspended: backer.is_suspended || false,
+        is_disabled: backer.is_disabled || false
       });
     } else {
-      setEditingArtist(null);
-      setForm({ full_name: '', email: '', bio: '', location: '', skills: '', status: 'active', is_suspended: false, is_disabled: false });
+      setEditingBacker(null);
+      setForm({ full_name: '', email: '', bio: '', location: '', investment_focus: '', status: 'active', is_suspended: false, is_disabled: false });
     }
     setShowModal(true);
   };
 
-  const openViewModal = (artist) => {
-    setViewingArtist(artist);
+  const openViewModal = (backer) => {
+    setViewingBacker(backer);
   };
 
   const handleSave = async () => {
     if (!form.full_name.trim()) { toastError('Validation', 'Name is required'); return; }
     try {
-      if (editingArtist) {
-        await Artist.update(editingArtist.id, form);
-        success('Updated', 'Artist updated');
+      if (editingBacker) {
+        await Backer.update(editingBacker.id, form);
+        success('Updated', 'Backer updated');
       } else {
-        await Artist.create(form);
-        success('Created', 'Artist created');
+        await Backer.create(form);
+        success('Created', 'Backer created');
       }
       setShowModal(false);
       fetchData();
     } catch (err) {
-      console.error('Error saving artist:', err);
-      toastError('Save Failed', `Failed to save artist: ${err.message || 'Unknown error'}`);
+      console.error('Error saving backer:', err);
+      toastError('Save Failed', `Failed to save backer: ${err.message || 'Unknown error'}`);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this artist? This action cannot be undone.')) return;
+    if (!confirm('Delete this backer? This action cannot be undone.')) return;
     try {
-      await Artist.delete(id);
-      success('Deleted', 'Artist deleted');
+      await Backer.delete(id);
+      success('Deleted', 'Backer deleted');
       fetchData();
     } catch (err) {
-      toastError('Delete Failed', 'Failed to delete artist');
+      toastError('Delete Failed', 'Failed to delete backer');
     }
   };
 
-  const toggleSuspend = async (artist) => {
+  const toggleSuspend = async (backer) => {
     try {
-      await Artist.update(artist.id, { is_suspended: !artist.is_suspended });
-      success(!artist.is_suspended ? 'Suspended' : 'Unsuspended', `Artist ${!artist.is_suspended ? 'suspended' : 'unsuspended'}`);
+      await Backer.update(backer.id, { is_suspended: !backer.is_suspended });
+      success(!backer.is_suspended ? 'Suspended' : 'Unsuspended', `Backer ${!backer.is_suspended ? 'suspended' : 'unsuspended'}`);
       fetchData();
     } catch (err) {
       toastError('Failed', 'Failed to update suspension status');
     }
   };
 
-  const toggleDisable = async (artist) => {
+  const toggleDisable = async (backer) => {
     try {
-      await Artist.update(artist.id, { is_disabled: !artist.is_disabled });
-      success(!artist.is_disabled ? 'Disabled' : 'Enabled', `Artist ${!artist.is_disabled ? 'disabled' : 'enabled'}`);
+      await Backer.update(backer.id, { is_disabled: !backer.is_disabled });
+      success(!backer.is_disabled ? 'Disabled' : 'Enabled', `Backer ${!backer.is_disabled ? 'disabled' : 'enabled'}`);
       fetchData();
     } catch (err) {
       toastError('Failed', 'Failed to update disabled status');
@@ -145,11 +145,11 @@ export default function AdminArtistsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Artists/Creators Management</h1>
-          <p className="text-gray-600">Manage all artists and creators on the platform</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Backers Management</h1>
+          <p className="text-gray-600">Manage all backers and investors on the platform</p>
         </div>
         <Button onClick={() => openModal()} className="bg-black text-white hover:bg-gray-800">
-          <User className="w-4 h-4 mr-2" /> Add Artist
+          <User className="w-4 h-4 mr-2" /> Add Backer
         </Button>
       </div>
 
@@ -183,71 +183,71 @@ export default function AdminArtistsPage() {
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Artist</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Backer</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Investment Focus</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
               <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {paginatedArtists.map((artist) => (
-              <tr key={artist.id} className="hover:bg-gray-50">
+            {paginatedBackers.map((backer) => (
+              <tr key={backer.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    {artist.profile_image ? (
-                      <img src={artist.profile_image} alt={artist.full_name} className="w-10 h-10 rounded-full object-cover" />
+                    {backer.profile_image ? (
+                      <img src={backer.profile_image} alt={backer.full_name} className="w-10 h-10 rounded-full object-cover" />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-600">
-                        {artist.full_name?.[0]?.toUpperCase() || 'A'}
+                        {backer.full_name?.[0]?.toUpperCase() || 'B'}
                       </div>
                     )}
                     <div>
-                      <div className="font-medium text-gray-900">{artist.full_name || 'Unknown'}</div>
-                      <div className="text-sm text-gray-500">{artist.role || 'No role'}</div>
+                      <div className="font-medium text-gray-900">{backer.full_name || 'Unknown'}</div>
+                      <div className="text-sm text-gray-500">{backer.role || 'Backer'}</div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-gray-400" />
-                    {artist.email || 'No email'}
+                    {backer.email || 'No email'}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
-                  {artist.based_in_city || artist.location ? (
+                  {backer.investment_focus ? (
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-400" />
-                      {artist.based_in_city || artist.location}
+                      <DollarSign className="w-4 h-4 text-gray-400" />
+                      {backer.investment_focus}
                     </div>
                   ) : (
-                    <span className="text-gray-400">No location</span>
+                    <span className="text-gray-400">No focus</span>
                   )}
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full border ${STATUS_STYLES[getStatus(artist)]}`}>
-                    {getStatus(artist).charAt(0).toUpperCase() + getStatus(artist).slice(1)}
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full border ${STATUS_STYLES[getStatus(backer)]}`}>
+                    {getStatus(backer).charAt(0).toUpperCase() + getStatus(backer).slice(1)}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
-                  {artist.created_at ? new Date(artist.created_at).toLocaleDateString() : 'N/A'}
+                  {backer.created_at ? new Date(backer.created_at).toLocaleDateString() : 'N/A'}
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-1">
-                    <Button onClick={() => openViewModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                    <Button onClick={() => openViewModal(backer)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
                       <Eye className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => openModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                    <Button onClick={() => openModal(backer)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => toggleSuspend(artist)} variant="ghost" size="sm" className={artist.is_suspended ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'}>
+                    <Button onClick={() => toggleSuspend(backer)} variant="ghost" size="sm" className={backer.is_suspended ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'}>
                       <Ban className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => toggleDisable(artist)} variant="ghost" size="sm" className={artist.is_disabled ? 'text-green-600 hover:text-green-700' : 'text-red-600 hover:text-red-700'}>
+                    <Button onClick={() => toggleDisable(backer)} variant="ghost" size="sm" className={backer.is_disabled ? 'text-green-600 hover:text-green-700' : 'text-red-600 hover:text-red-700'}>
                       <AlertCircle className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => handleDelete(artist.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                    <Button onClick={() => handleDelete(backer.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -257,11 +257,11 @@ export default function AdminArtistsPage() {
           </tbody>
         </table>
 
-        {paginatedArtists.length === 0 && (
+        {paginatedBackers.length === 0 && (
           <div className="p-12 text-center text-gray-500">
-            <p className="mb-4">No artists found</p>
+            <p className="mb-4">No backers found</p>
             <Button onClick={() => openModal()} className="bg-black text-white hover:bg-gray-800">
-              <User className="w-4 h-4 mr-2" /> Add First Artist
+              <User className="w-4 h-4 mr-2" /> Add First Backer
             </Button>
           </div>
         )}
@@ -270,7 +270,7 @@ export default function AdminArtistsPage() {
         {totalPages > 1 && (
           <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              Showing {((currentPage - 1) * PAGE_SIZE) + 1} to {Math.min(currentPage * PAGE_SIZE, filteredArtists.length)} of {filteredArtists.length} artists
+              Showing {((currentPage - 1) * PAGE_SIZE) + 1} to {Math.min(currentPage * PAGE_SIZE, filteredBackers.length)} of {filteredBackers.length} backers
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -298,60 +298,57 @@ export default function AdminArtistsPage() {
       </div>
 
       {/* View Modal */}
-      {viewingArtist && (
+      {viewingBacker && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">Artist Details</h2>
-              <button onClick={() => setViewingArtist(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+              <h2 className="text-xl font-bold text-gray-900">Backer Details</h2>
+              <button onClick={() => setViewingBacker(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-600">
-                  {viewingArtist.full_name?.[0]?.toUpperCase() || 'A'}
-                </div>
+                {viewingBacker.profile_image ? (
+                  <img src={viewingBacker.profile_image} alt={viewingBacker.full_name} className="w-16 h-16 rounded-full object-cover" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-600">
+                    {viewingBacker.full_name?.[0]?.toUpperCase() || 'B'}
+                  </div>
+                )}
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900">{viewingArtist.full_name || 'Unknown'}</h3>
-                  <p className="text-gray-600">{viewingArtist.email || 'No email'}</p>
+                  <h3 className="text-2xl font-bold text-gray-900">{viewingBacker.full_name || 'Unknown'}</h3>
+                  <p className="text-gray-600">{viewingBacker.email || 'No email'}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Status</label>
-                  <p className="font-medium">{viewingArtist.is_suspended ? 'Suspended' : viewingArtist.is_disabled ? 'Disabled' : 'Active'}</p>
+                  <p className="font-medium">{viewingBacker.is_suspended ? 'Suspended' : viewingBacker.is_disabled ? 'Disabled' : 'Active'}</p>
                 </div>
-                {viewingArtist.location && (
+                {viewingBacker.investment_focus && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Location</label>
-                    <p className="font-medium flex items-center gap-2"><MapPin className="w-4 h-4" /> {viewingArtist.location}</p>
+                    <label className="text-sm font-medium text-gray-500">Investment Focus</label>
+                    <p className="font-medium flex items-center gap-2"><DollarSign className="w-4 h-4" /> {viewingBacker.investment_focus}</p>
                   </div>
                 )}
-                {viewingArtist.created_at && (
+                {viewingBacker.created_at && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Joined</label>
-                    <p className="font-medium flex items-center gap-2"><Calendar className="w-4 h-4" /> {new Date(viewingArtist.created_at).toLocaleDateString()}</p>
+                    <p className="font-medium flex items-center gap-2"><Calendar className="w-4 h-4" /> {new Date(viewingBacker.created_at).toLocaleDateString()}</p>
                   </div>
                 )}
               </div>
 
-              {viewingArtist.bio && (
+              {viewingBacker.bio && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Bio</label>
-                  <p className="mt-1 text-gray-700">{viewingArtist.bio}</p>
-                </div>
-              )}
-
-              {viewingArtist.skills && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Skills</label>
-                  <p className="mt-1 text-gray-700">{viewingArtist.skills}</p>
+                  <p className="mt-1 text-gray-700">{viewingBacker.bio}</p>
                 </div>
               )}
             </div>
             <div className="p-6 border-t border-gray-200 flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setViewingArtist(null)}>Close</Button>
-              <Button onClick={() => { setViewingArtist(null); openModal(viewingArtist); }} className="bg-black text-white hover:bg-gray-800">Edit Artist</Button>
+              <Button variant="outline" onClick={() => setViewingBacker(null)}>Close</Button>
+              <Button onClick={() => { setViewingBacker(null); openModal(viewingBacker); }} className="bg-black text-white hover:bg-gray-800">Edit Backer</Button>
             </div>
           </div>
         </div>
@@ -362,15 +359,14 @@ export default function AdminArtistsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">{editingArtist ? 'Edit Artist' : 'Add Artist'}</h2>
+              <h2 className="text-xl font-bold text-gray-900">{editingBacker ? 'Edit Backer' : 'Add Backer'}</h2>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
               <div><label className="block text-sm font-medium mb-2">Full Name</label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></div>
               <div><label className="block text-sm font-medium mb-2">Email</label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-              <div><label className="block text-sm font-medium mb-2">Location</label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
+              <div><label className="block text-sm font-medium mb-2">Investment Focus</label><Input value={form.investment_focus} onChange={(e) => setForm({ ...form, investment_focus: e.target.value })} placeholder="e.g., Film, Tech, Startups" /></div>
               <div><label className="block text-sm font-medium mb-2">Bio</label><textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
-              <div><label className="block text-sm font-medium mb-2">Skills</label><Input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="Comma-separated skills" /></div>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_suspended} onChange={(e) => setForm({ ...form, is_suspended: e.target.checked })} className="w-4 h-4" /> Suspended</label>
                 <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_disabled} onChange={(e) => setForm({ ...form, is_disabled: e.target.checked })} className="w-4 h-4" /> Disabled</label>
@@ -378,7 +374,7 @@ export default function AdminArtistsPage() {
             </div>
             <div className="p-6 border-t border-gray-200 flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-              <Button onClick={handleSave} className="bg-black text-white hover:bg-gray-800">{editingArtist ? 'Update' : 'Create'}</Button>
+              <Button onClick={handleSave} className="bg-black text-white hover:bg-gray-800">{editingBacker ? 'Update' : 'Create'}</Button>
             </div>
           </div>
         </div>

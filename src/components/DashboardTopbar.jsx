@@ -64,6 +64,16 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
     }
   };
 
+  const handleClearAll = async () => {
+    if (notifications.length === 0) return;
+    try {
+      await Promise.all(notifications.map(n => Notification.delete(n.id)));
+      setNotifications([]);
+    } catch (err) {
+      console.error('Error clearing notifications:', err);
+    }
+  };
+
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between gap-4">
       <div className="flex items-center gap-3 min-w-0">
@@ -101,9 +111,14 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
               <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-lg z-20 max-h-96 flex flex-col">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
                   <span className="font-semibold text-gray-900 text-sm">Notifications</span>
-                  {unreadCount > 0 && (
-                    <button onClick={handleMarkAllRead} className="text-xs text-indigo-600 hover:underline">Mark all read</button>
-                  )}
+                  <div className="flex gap-2">
+                    {unreadCount > 0 && (
+                      <button onClick={handleMarkAllRead} className="text-xs text-indigo-600 hover:underline">Mark all read</button>
+                    )}
+                    {notifications.length > 0 && (
+                      <button onClick={handleClearAll} className="text-xs text-red-600 hover:underline">Clear all</button>
+                    )}
+                  </div>
                 </div>
                 <div className="overflow-y-auto flex-1">
                   {notifications.length === 0 ? (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { ContentCategory } from '@/lib/supabaseEntities';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
 import { ArrowRight } from 'lucide-react';
@@ -12,7 +12,7 @@ export default function CategoriesPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const all = await base44.entities.ContentCategory.filter({ status: 'active' }, 'display_order', 100);
+        const all = await ContentCategory.filter({ status: 'active' }, 'display_order', 100);
         setCategories(all || []);
       } catch (err) {
         console.error('Error fetching categories:', err);

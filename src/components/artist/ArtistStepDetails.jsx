@@ -2,18 +2,11 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import CountrySelector from '../CountrySelector';
-
-const LANGUAGES = ['English', 'Dutch', 'Spanish', 'French', 'German', 'Italian', 'Portuguese'];
+import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete';
+import languages from '@/data/languages.json';
 
 export default function ArtistStepDetails({ data, updateData }) {
-  const toggleLanguage = (lang) => {
-    const current = data.languages_spoken || [];
-    if (current.includes(lang)) {
-      updateData('languages_spoken', current.filter(l => l !== lang));
-    } else {
-      updateData('languages_spoken', [...current, lang]);
-    }
-  };
+  const selectedLanguages = data.languages_spoken || [];
 
   return (
     <div>
@@ -80,21 +73,15 @@ export default function ArtistStepDetails({ data, updateData }) {
 
         <div>
           <Label className="text-base mb-3 block">Languages Spoken</Label>
-          <div className="flex flex-wrap gap-2">
-            {LANGUAGES.map(lang => (
-              <button
-                key={lang}
-                onClick={() => toggleLanguage(lang)}
-                className={`px-4 py-2 rounded-lg text-sm transition-all ${
-                  (data.languages_spoken || []).includes(lang)
-                    ? 'bg-amber-600 text-white'
-                    : 'bg-white border border-gray-300 text-black hover:bg-gray-50'
-                }`}
-              >
-                {lang}
-              </button>
-            ))}
-          </div>
+          <MultiSelectAutocomplete
+            options={languages}
+            selected={selectedLanguages}
+            onChange={(newLanguages) => updateData('languages_spoken', newLanguages)}
+            label="Select languages"
+            placeholder="Search and select languages..."
+            maxDisplay={8}
+            className="mb-4"
+          />
         </div>
 
         <div className="pt-4 border-t border-gray-200">
