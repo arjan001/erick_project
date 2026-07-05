@@ -35,11 +35,53 @@ export default function SignUp() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'artist'
+    role: 'artist',
+    inviteCode: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [inviteCodeValid, setInviteCodeValid] = useState(null);
   const navigate = useNavigate();
+
+  // Check for invite code in URL query params
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('ref');
+    if (code) {
+      setFormData(prev => ({ ...prev, inviteCode: code }));
+      validateInviteCode(code);
+    }
+  }, []);
+
+  const validateInviteCode = async (code) => {
+    if (!code) {
+      setInviteCodeValid(null);
+      return;
+    }
+    try {
+      const { Artist, Team, Backer, ProjectOwner } = await import('@/lib/supabaseEntities');
+      const [artists, teams, backers, owners] = await Promise.all([
+        Artist.filter({ invite_code: code }),
+        Team.filter({ invite_code: code }),
+        Backer.filter({ invite_code: code }),
+        ProjectOwner.filter({ invite_code: code })
+      ]);
+      const isValid = (artists?.length > 0) || (teams?.length > 0) || (backers?.length > 0) || (owners?.length > 0);
+      setInviteCodeValid(isValid);
+    } catch (err) {
+      setInviteCodeValid(false);
+    }
+  };
+
+  const handleInviteCodeChange = (e) => {
+    const code = e.target.value.toUpperCase();
+    setFormData(prev => ({ ...prev, inviteCode: code }));
+    if (code) {
+      validateInviteCode(code);
+    } else {
+      setInviteCodeValid(null);
+    }
+  };
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -64,7 +106,8 @@ export default function SignUp() {
         email: formData.email,
         full_name: `${formData.firstName} ${formData.lastName}`,
         username: formData.username || `${formData.firstName}${formData.lastName}`.toLowerCase(),
-        role: formData.role
+        role: formData.role,
+        referred_by: formData.inviteCode || null
       };
       localStorage.setItem('studio22_user', JSON.stringify(user));
       sessionStorage.setItem('studio22_just_logged_in', 'true');
@@ -228,6 +271,25 @@ export default function SignUp() {
                 <option value="client">Client</option>
                 <option value="backer">Backer</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">Invite Code (optional)</label>
+              <Input
+                type="text"
+                value={formData.inviteCode}
+                onChange={handleInviteCodeChange}
+                placeholder="e.g., S22-ABC123"
+                className="w-full uppercase"
+                disabled={loading}
+                maxLength={10}
+              />
+              {inviteCodeValid === true && (
+                <p className="text-xs text-green-600 mt-1">✓ Valid invite code - you'll get a free Pro subscription!</p>
+              )}
+              {inviteCodeValid === false && (
+                <p className="text-xs text-red-600 mt-1">✗ Invalid invite code</p>
+              )}
             </div>
 
             <Button

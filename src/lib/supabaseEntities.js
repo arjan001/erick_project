@@ -114,6 +114,7 @@ export const ConnectsTransaction = buildEntity('connects_transactions', 'created
 export const RolePermission = buildEntity('role_permissions', 'created_at');
 export const AuditLog = buildEntity('audit_logs', 'created_at');
 export const TickerEntry = buildEntity('ticker_entries', 'created_at');
+export const ContentCategory = buildEntity('content_categories', 'created_at');
 export const SubscriptionPackage = buildEntity('subscription_packages', 'created_at');
 export const Subscription = buildEntity('subscriptions', 'created_at');
 export const Note = buildEntity('notes', 'created_at');

@@ -1,0 +1,241 @@
+{
+  "pre_production": [
+    "Director",
+    "Producer",
+    "Executive Producer",
+    "Writer",
+    "Screenwriter",
+    "Storyboard Artist",
+    "Concept Artist",
+    "Art Director",
+    "Production Designer",
+    "Location Scout",
+    "Casting Director"
+  ],
+  "production": [
+    "Director of Photography",
+    "Cinematographer",
+    "Camera Operator",
+    "1st AC",
+    "Focus Puller",
+    "2nd AC",
+    "Drone Pilot",
+    "FPV Pilot",
+    "Gaffer",
+    "Best Boy Electric",
+    "Lighting Technician",
+    "Grip",
+    "Key Grip",
+    "Dolly Grip",
+    "Sound Recordist",
+    "Boom Operator",
+    "Production Assistant",
+    "Set Designer",
+    "Set Decorator",
+    "Prop Master",
+    "Hair Artist",
+    "Makeup Artist",
+    "Costume Designer"
+  ],
+  "3d_cgi": [
+    "3D Generalist",
+    "Hard Surface Modeler",
+    "Character Artist",
+    "Environment Artist",
+    "Texture Artist",
+    "Material Artist",
+    "Look Development Artist",
+    "Lighting Artist",
+    "Rendering Artist",
+    "Animator",
+    "Character Animator",
+    "Motion Designer",
+    "VFX Artist",
+    "FX Artist",
+    "Houdini Artist",
+    "Cloth Artist",
+    "Groom Artist",
+    "Rigger",
+    "Technical Artist",
+    "Unreal Engine Artist",
+    "Virtual Production Artist"
+  ],
+  "post_production": [
+    "Video Editor",
+    "Assistant Editor",
+    "Colorist",
+    "Online Editor",
+    "Compositor",
+    "Matchmove Artist",
+    "Rotoscope Artist",
+    "Paint Artist",
+    "Cleanup Artist",
+    "Motion Graphics Designer",
+    "Title Designer",
+    "Sound Designer",
+    "Foley Artist",
+    "Dialogue Editor",
+    "Re Recording Mixer",
+    "Music Composer",
+    "Music Producer",
+    "Voice Over Artist"
+  ],
+  "photography_product": [
+    "Product Photographer",
+    "Automotive Photographer",
+    "Retoucher",
+    "CGI Product Artist"
+  ],
+  "marketing_social_media": [
+    "Creative Director",
+    "Content Creator",
+    "Social Media Manager",
+    "Thumbnail Designer",
+    "Graphic Designer",
+    "Copywriter",
+    "Community Manager",
+    "SEO Specialist"
+  ],
+  "technical": [
+    "Pipeline TD",
+    "Render Wrangler",
+    "Render Farm Manager",
+    "Software Developer",
+    "AI Artist",
+    "Prompt Engineer"
+  ],
+  "equipment": {
+    "cameras": [
+      "Cinema Camera",
+      "Mirrorless Camera",
+      "Action Camera",
+      "Drone",
+      "FPV Drone",
+      "360 Camera"
+    ],
+    "lenses": [
+      "Prime Lenses",
+      "Zoom Lenses",
+      "Anamorphic Lenses",
+      "Macro Lenses",
+      "Tilt Shift Lenses",
+      "Vintage Lenses"
+    ],
+    "camera_support": [
+      "Tripod",
+      "Monopod",
+      "Gimbal",
+      "Slider",
+      "Dolly",
+      "Crane",
+      "Jib",
+      "Suction Mount",
+      "Car Rig"
+    ],
+    "lighting": [
+      "COB Lights",
+      "LED Panels",
+      "Tube Lights",
+      "Fresnel Lights",
+      "Practical Lights",
+      "Softboxes",
+      "Diffusion",
+      "Reflectors",
+      "Flags",
+      "C Stands",
+      "Light Stands"
+    ],
+    "audio": [
+      "Shotgun Microphone",
+      "Lavalier Microphone",
+      "Wireless Microphone",
+      "Audio Recorder",
+      "Boom Pole"
+    ],
+    "grip": [
+      "Clamps",
+      "Sandbags",
+      "Apple Boxes",
+      "Magic Arms",
+      "Monitor Mounts"
+    ]
+  },
+  "software": {
+    "3d": [
+      "Blender",
+      "Autodesk Maya",
+      "Cinema 4D",
+      "Houdini",
+      "3ds Max",
+      "ZBrush"
+    ],
+    "texturing": [
+      "Substance 3D Painter",
+      "Substance 3D Designer",
+      "Quixel Mixer",
+      "Mari"
+    ],
+    "rendering": [
+      "Cycles",
+      "Octane",
+      "Redshift",
+      "Arnold",
+      "V Ray",
+      "Unreal Engine"
+    ],
+    "compositing": [
+      "After Effects",
+      "Nuke",
+      "Fusion"
+    ],
+    "editing": [
+      "Premiere Pro",
+      "DaVinci Resolve",
+      "Final Cut Pro"
+    ],
+    "color_grading": [
+      "DaVinci Resolve",
+      "Baselight"
+    ],
+    "motion_graphics": [
+      "After Effects",
+      "Cavalry"
+    ],
+    "audio": [
+      "Audition",
+      "Pro Tools",
+      "Reaper",
+      "Logic Pro"
+    ],
+    "music": [
+      "Suno",
+      "Udio",
+      "Ableton Live",
+      "FL Studio"
+    ],
+    "ai": [
+      "ChatGPT",
+      "Midjourney",
+      "Runway",
+      "Kling AI",
+      "Veo",
+      "ElevenLabs",
+      "Topaz Video AI"
+    ]
+  },
+  "delivery_types": [
+    "3D Animation",
+    "CGI",
+    "VFX",
+    "Motion Graphics",
+    "Product Visualization",
+    "Commercial",
+    "Social Media Video",
+    "Short Film",
+    "Feature Film",
+    "Virtual Production",
+    "Interactive Experience",
+    "VR",
+    "AR"
+  ]
+}

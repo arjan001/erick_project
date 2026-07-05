@@ -44,7 +44,7 @@ export default function TeamProfilePage() {
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
     if (!storedUser) {
-      window.location.href = '/SignIn';
+      window.location.href = '/';
       return;
     }
     const fetchTeam = async () => {

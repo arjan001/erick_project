@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { TickerEntry } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +19,7 @@ export default function AdminTickerPage() {
 
   const fetchData = async () => {
     try {
-      const all = await base44.entities.TickerEntry.list('-display_order', 100);
+      const all = await TickerEntry.list('-display_order', 100);
       setEntries(all || []);
     } catch (err) {
       console.error('Error fetching ticker entries:', err);
@@ -51,24 +51,24 @@ export default function AdminTickerPage() {
     if (!form.text.trim()) { toastError('Validation', 'Text is required'); return; }
     try {
       if (editingEntry) {
-        await base44.entities.TickerEntry.update(editingEntry.id, form);
+        await TickerEntry.update(editingEntry.id, form);
         success('Updated', 'Ticker entry updated');
       } else {
-        await base44.entities.TickerEntry.create({ ...form, published_date: new Date().toISOString() });
+        await TickerEntry.create({ ...form, published_date: new Date().toISOString() });
         success('Created', 'Ticker entry created');
       }
       setShowModal(false);
       fetchData();
     } catch (err) {
       console.error('Error saving ticker entry:', err);
-      toastError('Save Failed', 'Failed to save ticker entry');
+      toastError('Save Failed', `Failed to save ticker entry: ${err.message || 'Unknown error'}`);
     }
   };
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this ticker entry?')) return;
     try {
-      await base44.entities.TickerEntry.delete(id);
+      await TickerEntry.delete(id);
       success('Deleted', 'Ticker entry deleted');
       fetchData();
     } catch (err) {
@@ -80,7 +80,7 @@ export default function AdminTickerPage() {
   const toggleStatus = async (entry) => {
     try {
       const newStatus = entry.status === 'live' ? 'draft' : 'live';
-      await base44.entities.TickerEntry.update(entry.id, { status: newStatus, published_date: newStatus === 'live' ? new Date().toISOString() : entry.published_date });
+      await TickerEntry.update(entry.id, { status: newStatus, published_date: newStatus === 'live' ? new Date().toISOString() : entry.published_date });
       success(newStatus === 'live' ? 'Published' : 'Unpublished', `Entry is now ${newStatus}`);
       fetchData();
     } catch (err) {
@@ -91,7 +91,7 @@ export default function AdminTickerPage() {
   const moveOrder = async (entry, direction) => {
     const newOrder = (entry.display_order || 0) + direction;
     try {
-      await base44.entities.TickerEntry.update(entry.id, { display_order: newOrder });
+      await TickerEntry.update(entry.id, { display_order: newOrder });
       fetchData();
     } catch (err) {
       toastError('Failed', 'Failed to reorder');

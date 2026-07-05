@@ -15,7 +15,7 @@ export default function ActivityFeedPage() {
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
     if (!storedUser) {
-      window.location.href = '/signin';
+      window.location.href = '/';
       return;
     }
     setUser(JSON.parse(storedUser));

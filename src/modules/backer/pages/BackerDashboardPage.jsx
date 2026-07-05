@@ -30,7 +30,7 @@ export default function BackerDashboardPage() {
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
     if (!storedUser) {
-      window.location.href = '/signin';
+      window.location.href = '/';
       return;
     }
     const parsedUser = JSON.parse(storedUser);

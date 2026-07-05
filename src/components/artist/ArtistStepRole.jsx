@@ -4,6 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FILM_ROLES_BY_CATEGORY, ALL_FILM_ROLES } from '@/lib/filmRoles';
 import { SKILLS_DATABASE } from '../SkillsDatabase';
+import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete';
+import filmIndustryRoles from '@/data/filmIndustryRoles.json';
+import filmIndustrySkills from '@/data/filmIndustrySkills.json';
 
 export default function ArtistStepRole({ data, updateData }) {
   const [roleSearch, setRoleSearch] = useState('');
@@ -12,6 +15,12 @@ export default function ArtistStepRole({ data, updateData }) {
   const dropdownRef = useRef(null);
 
   const selectedRoles = data.roles || data.secondary_roles || [];
+  
+  // Flatten all roles from JSON for autocomplete
+  const allRolesList = Object.values(filmIndustryRoles).flat();
+  
+  // Flatten all skills from JSON for autocomplete
+  const allSkillsList = Object.values(filmIndustrySkills).flat();
 
   const toggleRole = (role) => {
     const current = selectedRoles;
@@ -90,77 +99,42 @@ export default function ArtistStepRole({ data, updateData }) {
       <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What are your roles?</h2>
       <p className="text-gray-600 mb-6">Select all roles that apply to you — you can choose multiple. Your first selection becomes your primary role.</p>
 
-      {/* Role search */}
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-        <Input
-          value={roleSearch}
-          onChange={(e) => setRoleSearch(e.target.value)}
-          placeholder="Search roles... (e.g., Director, Colorist, Drone Pilot)"
-          className="bg-white border-gray-300 text-black h-12 pl-11"
-        />
-      </div>
+      {/* Multi-select autocomplete for roles */}
+      <MultiSelectAutocomplete
+        options={allRolesList}
+        selected={selectedRoles}
+        onChange={(newRoles) => {
+          updateData('roles', newRoles);
+          updateData('secondary_roles', newRoles);
+          if (!data.role || !newRoles.includes(data.role)) {
+            updateData('role', newRoles[0] || '');
+          }
+        }}
+        label="Your Roles"
+        placeholder="Search and select roles..."
+        maxDisplay={10}
+        className="mb-6"
+      />
 
-      {/* Selected roles as tags */}
+      {/* Primary role selector */}
       {selectedRoles.length > 0 && (
-        <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-          <div className="flex items-center justify-between mb-2">
-            <Label className="text-sm font-medium text-gray-700">Selected Roles ({selectedRoles.length})</Label>
-            <span className="text-xs text-gray-500">Click a role to set as primary</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <Label className="text-sm font-medium text-gray-700 mb-2 block">Primary Role</Label>
+          <select
+            value={data.role || ''}
+            onChange={(e) => updateData('role', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+          >
+            <option value="">Select primary role...</option>
             {selectedRoles.map(role => (
-              <button
-                key={role}
-                onClick={() => setPrimaryRole(role)}
-                className={`px-3 py-1.5 text-xs rounded-full flex items-center gap-1.5 transition-colors ${
-                  data.role === role
-                    ? 'bg-amber-600 text-white font-bold'
-                    : 'bg-white border border-amber-300 text-gray-700 hover:bg-amber-100'
-                }`}
-              >
-                {data.role === role && <Check className="w-3 h-3" />}
-                {role}
-                <X
-                  className="w-3 h-3 ml-1 opacity-60 hover:opacity-100"
-                  onClick={(e) => { e.stopPropagation(); toggleRole(role); }}
-                />
-              </button>
+              <option key={role} value={role}>{role}</option>
             ))}
-          </div>
+          </select>
           {data.role && (
             <p className="text-xs text-amber-700 mt-2">★ Primary role: {data.role}</p>
           )}
         </div>
       )}
-
-      {/* Role categories */}
-      <div className="max-h-80 overflow-y-auto border border-gray-200 rounded-xl p-4 space-y-4 bg-gray-50">
-        {Object.entries(FILM_ROLES_BY_CATEGORY).map(([category, roles]) => {
-          const visible = roles.filter(r => !roleSearch || r.toLowerCase().includes(roleSearch.toLowerCase()));
-          if (visible.length === 0) return null;
-          return (
-            <div key={category}>
-              <h4 className="text-xs font-bold uppercase text-gray-500 mb-2 tracking-wider">{category}</h4>
-              <div className="flex flex-wrap gap-1.5">
-                {visible.map(role => (
-                  <button
-                    key={role}
-                    onClick={() => toggleRole(role)}
-                    className={`px-2.5 py-1.5 text-xs rounded-full transition-all ${
-                      selectedRoles.includes(role)
-                        ? 'bg-black text-white font-medium'
-                        : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-100'
-                    }`}
-                  >
-                    {role}
-                  </button>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
 
       {/* Skills & Experience */}
       {selectedRoles.length > 0 && (
@@ -187,48 +161,35 @@ export default function ArtistStepRole({ data, updateData }) {
 
           <div className="mt-4 pt-4 border-t border-gray-100">
             <h4 className="text-base font-semibold mb-3 text-black">Add Additional Skills</h4>
-            <div className="relative" ref={dropdownRef}>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  value={skillSearch}
-                  onChange={(e) => { setSkillSearch(e.target.value); setShowSkillDropdown(true); }}
-                  onFocus={() => setShowSkillDropdown(true)}
-                  placeholder="Search skills: Camera, Lighting, VFX, Editing..."
-                  className="bg-white border-gray-300 text-black h-12 pl-11"
-                />
-              </div>
-              {showSkillDropdown && skillSearch && (
-                <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-h-64 overflow-y-auto">
-                  {filteredSkills.length > 0 ? (
-                    filteredSkills.map(skill => (
-                      <button
-                        key={skill}
-                        type="button"
-                        onClick={() => addSkillFromDatabase(skill)}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm transition-colors"
-                      >
-                        {skill}
-                      </button>
-                    ))
-                  ) : (
-                    <div className="px-4 py-3 text-sm text-gray-500 text-center">No skills found</div>
-                  )}
-                </div>
-              )}
-            </div>
+            
+            {/* Multi-select autocomplete for skills */}
+            <MultiSelectAutocomplete
+              options={allSkillsList}
+              selected={(data.skills_experience || []).filter(s => !selectedRoles.includes(s.skill)).map(s => s.skill)}
+              onChange={(newSkills) => {
+                // Keep existing skills from roles, add/remove additional skills
+                const roleSkills = selectedRoles.map(role => ({
+                  skill: role,
+                  years: getSkillExperience(role)
+                }));
+                const additionalSkills = newSkills.map(skill => ({
+                  skill,
+                  years: getSkillExperience(skill) || 0
+                }));
+                updateData('skills_experience', [...roleSkills, ...additionalSkills]);
+              }}
+              label="Additional Skills"
+              placeholder="Search and select skills..."
+              maxDisplay={8}
+              className="mb-4"
+            />
 
             {(data.skills_experience || []).filter(s => !selectedRoles.includes(s.skill)).length > 0 && (
               <div className="space-y-2 mt-4">
-                <p className="text-sm font-medium text-gray-700">Additional Skills:</p>
+                <p className="text-sm font-medium text-gray-700">Additional Skills Experience:</p>
                 {(data.skills_experience || []).filter(s => !selectedRoles.includes(s.skill)).map(s => (
                   <div key={s.skill} className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-sm flex-1">
-                      <span className="text-black">{s.skill}</span>
-                      <button onClick={() => removeSkill(s.skill)} className="text-gray-500 hover:text-red-500 transition-colors ml-auto">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <span className="text-sm text-gray-700 flex-1">{s.skill}</span>
                     <Input
                       type="number"
                       min="0"

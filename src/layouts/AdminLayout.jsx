@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronRight, Menu, X, Bell, Settings } from 'lucide-react';
+import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 const navItems = [
@@ -12,7 +12,9 @@ const navItems = [
   { path: '/Admin/RolesPermissions', label: 'Roles & Permissions', icon: Shield },
   { path: '/Admin/Invites', label: 'Invites', icon: Mail },
   { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: FileText },
-  { path: '/Admin/GeneralSettings', label: 'Settings', icon: Settings },
+  { path: '/Admin/Settings', label: 'Settings', icon: Settings },
+  { path: '/Admin/Ticker', label: 'Marquee/Ticker', icon: ScrollText },
+  { path: '/Admin/Categories', label: 'Categories', icon: Grid3x3 },
   { path: '/Admin/SEOCMS', label: 'SEO & CMS', icon: FileText },
   { path: '/Admin/ImageStorage', label: 'Image Storage', icon: Image },
   { path: '/Admin/LoginProviders', label: 'Login Providers', icon: Shield },
@@ -24,16 +26,18 @@ const navItems = [
 
 const navGroups = [
   { label: 'Overview', items: ['/Admin', '/ArtistAdmin', '/TeamAdmin', '/ProjectAdmin'] },
+  { label: 'Content', items: ['/Admin/Ticker', '/Admin/Categories', '/Admin/SEOCMS'] },
   { label: 'Users', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
   { label: 'Finance', items: ['/Admin/FinanceDashboard', '/Admin/Subscriptions'] },
   { label: 'Integrations', items: ['/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
-  { label: 'System (Rarely Used)', items: ['/Admin/GeneralSettings', '/Admin/SEOCMS', '/Admin/ImageStorage', '/Admin/AuditLogs'] },
+  { label: 'System', items: ['/Admin/Settings', '/Admin/ImageStorage', '/Admin/AuditLogs'] },
 ];
 
 export default function AdminLayout({ children }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const isActive = (path, exact) => exact
     ? location.pathname === path
@@ -41,13 +45,23 @@ export default function AdminLayout({ children }) {
 
   const getNavItem = (path) => navItems.find(n => n.path === path);
 
+  // Filter nav items based on search
+  const filteredNavGroups = navGroups.map(group => ({
+    ...group,
+    items: group.items.filter(path => {
+      const item = getNavItem(path);
+      if (!item) return false;
+      return item.label.toLowerCase().includes(searchQuery.toLowerCase());
+    })
+  })).filter(group => group.items.length > 0);
+
   return (
     <div className="min-h-screen bg-[#f5f6fa] flex">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-60' : 'w-0'} bg-white flex-shrink-0 transition-all duration-300 overflow-hidden flex flex-col`}
+      <aside className={`${sidebarOpen ? 'w-60' : 'w-0'} bg-white flex-shrink-0 transition-all duration-300 overflow-hidden flex flex-col h-screen sticky top-0`}
         style={{ boxShadow: '2px 0 8px 0 rgba(60,72,100,0.06)' }}>
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-100">
+        <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-100 flex-shrink-0">
           <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
             <span className="text-white font-black text-sm tracking-tighter">22</span>
           </div>
@@ -58,7 +72,7 @@ export default function AdminLayout({ children }) {
         </div>
 
         {/* User */}
-        <div className="px-4 py-3 border-b border-gray-100">
+        <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
               {user?.email?.[0]?.toUpperCase() || 'A'}
@@ -70,9 +84,23 @@ export default function AdminLayout({ children }) {
           </div>
         </div>
 
+        {/* Search Bar */}
+        <div className="px-3 py-3 border-b border-gray-100 flex-shrink-0">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search modules..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+            />
+          </div>
+        </div>
+
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-3 px-2">
-          {navGroups.map((group) => (
+          {filteredNavGroups.map((group) => (
             <div key={group.label} className="mb-4">
               <div className="px-3 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{group.label}</div>
               {group.items.map((path) => {
@@ -98,12 +126,17 @@ export default function AdminLayout({ children }) {
               })}
             </div>
           ))}
+          {filteredNavGroups.length === 0 && (
+            <div className="px-3 py-4 text-sm text-gray-500 text-center">
+              No modules found
+            </div>
+          )}
         </nav>
 
         {/* Logout */}
-        <div className="p-3 border-t border-gray-100">
+        <div className="p-3 border-t border-gray-100 flex-shrink-0">
           <button
-            onClick={() => { logout(false); window.location.href = '/SignIn'; }}
+            onClick={() => logout(true)}
             className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all"
           >
             <LogOut className="w-4 h-4" />
@@ -113,9 +146,9 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top Bar */}
-        <header className="bg-white border-b border-gray-100 sticky top-0 z-40"
+        <header className="bg-white border-b border-gray-100 flex-shrink-0"
           style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>
           <div className="flex items-center justify-between h-14 px-6">
             <div className="flex items-center gap-4">

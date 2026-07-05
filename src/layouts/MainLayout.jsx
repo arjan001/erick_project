@@ -137,6 +137,9 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                         </div>
                       )}
                     </div>
+                    <Link to={createPageUrl('Categories')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
+                      Categories
+                    </Link>
                   </>
                 )}
               </nav>

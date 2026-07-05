@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { ContentCategory } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,7 +16,7 @@ export default function AdminCategoriesPage() {
 
   const fetchData = async () => {
     try {
-      const all = await base44.entities.ContentCategory.list('-display_order', 100);
+      const all = await ContentCategory.list('-display_order', 100);
       setCategories(all || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
@@ -44,10 +44,10 @@ export default function AdminCategoriesPage() {
     try {
       const slug = form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       if (editing) {
-        await base44.entities.ContentCategory.update(editing.id, { ...form, slug });
+        await ContentCategory.update(editing.id, { ...form, slug });
         success('Updated', 'Category updated');
       } else {
-        await base44.entities.ContentCategory.create({ ...form, slug, created_at: new Date().toISOString() });
+        await ContentCategory.create({ ...form, slug, created_at: new Date().toISOString() });
         success('Created', 'Category created');
       }
       setShowModal(false);
@@ -61,7 +61,7 @@ export default function AdminCategoriesPage() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this category?')) return;
     try {
-      await base44.entities.ContentCategory.delete(id);
+      await ContentCategory.delete(id);
       success('Deleted', 'Category deleted');
       fetchData();
     } catch (err) {
@@ -71,21 +71,21 @@ export default function AdminCategoriesPage() {
 
   const toggleFeatured = async (cat) => {
     try {
-      await base44.entities.ContentCategory.update(cat.id, { is_featured: !cat.is_featured });
+      await ContentCategory.update(cat.id, { is_featured: !cat.is_featured });
       fetchData();
     } catch (err) { toastError('Failed', 'Failed to update'); }
   };
 
   const toggleStatus = async (cat) => {
     try {
-      await base44.entities.ContentCategory.update(cat.id, { status: cat.status === 'active' ? 'hidden' : 'active' });
+      await ContentCategory.update(cat.id, { status: cat.status === 'active' ? 'hidden' : 'active' });
       fetchData();
     } catch (err) { toastError('Failed', 'Failed to update status'); }
   };
 
   const moveOrder = async (cat, dir) => {
     try {
-      await base44.entities.ContentCategory.update(cat.id, { display_order: (cat.display_order || 0) + dir });
+      await ContentCategory.update(cat.id, { display_order: (cat.display_order || 0) + dir });
       fetchData();
     } catch (err) { toastError('Failed', 'Failed to reorder'); }
   };

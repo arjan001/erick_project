@@ -122,7 +122,7 @@ export default function TeamDashboard() {
     if (!isLoadingAuth && isAuthenticated && authUser) {
       loadDashboardData(authUser);
     } else if (!isLoadingAuth && !isAuthenticated) {
-      window.location.href = '/SignIn';
+      window.location.href = '/';
     }
 
   }, [isLoadingAuth, isAuthenticated, authUser]);

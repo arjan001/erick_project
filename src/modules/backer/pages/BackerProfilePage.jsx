@@ -45,7 +45,7 @@ export default function BackerProfile() {
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
     if (!storedUser) {
-      window.location.href = '/SignIn';
+      window.location.href = '/';
       return;
     }
     const parsedUser = JSON.parse(storedUser);

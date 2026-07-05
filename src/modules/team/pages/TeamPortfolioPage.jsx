@@ -28,7 +28,7 @@ export default function TeamPortfolioPage() {
   useEffect(() => {
     const storedTeam = localStorage.getItem('studio22_team');
     if (!storedTeam) {
-      window.location.href = '/signin';
+      window.location.href = '/';
       return;
     }
     setTeam(JSON.parse(storedTeam));
