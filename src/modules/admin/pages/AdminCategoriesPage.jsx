@@ -16,7 +16,9 @@ export default function AdminCategoriesPage() {
 
   const fetchData = async () => {
     try {
-      const all = await ContentCategory.list('-display_order', 100);
+      console.log('Fetching categories from Supabase...');
+      const all = await ContentCategory.filter({ status: 'active' }, 'display_order', 100);
+      console.log('Categories fetched:', all);
       setCategories(all || []);
     } catch (err) {
       console.error('Error fetching categories:', err);

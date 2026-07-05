@@ -87,33 +87,43 @@ export default function ArtistDashboard() {
   ];
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50 min-h-screen">
       <main className="w-full">
         {/* Header */}
-        <div className="px-6 sm:px-8 pt-8 pb-2">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Dashboard</h1>
-          <p className="text-gray-500 text-sm">Welcome back, {user.full_name}</p>
+        <div className="bg-white px-6 sm:px-8 pt-10 pb-6 border-b border-gray-200">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user.full_name}</h1>
+          <p className="text-gray-500">Here's what's happening with your creative career</p>
         </div>
 
-        <div className="p-6 sm:p-8 space-y-6">
+        <div className="px-6 sm:px-8 pb-8 space-y-8">
           <UpgradeConnectsBanner />
 
           {/* Stat Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((stat, idx) => (
-              <StatCard key={idx} icon={stat.icon} label={stat.label} value={stat.value} accent={stat.accent} />
+              <div key={idx} className="bg-white rounded-xl p-5 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    idx === 0 ? 'bg-gray-100' : idx === 1 ? 'bg-gray-100' : idx === 2 ? 'bg-gray-100' : 'bg-gray-100'
+                  }`}>
+                    <stat.icon className={`w-5 h-5 text-gray-600`} />
+                  </div>
+                  <span className="text-sm text-gray-500 font-medium">{stat.label}</span>
+                </div>
+                <div className={`text-2xl font-bold ${stat.accent ? 'text-gray-900' : 'text-gray-700'}`}>{stat.value}</div>
+              </div>
             ))}
           </div>
 
           {/* Row: Chart | Reminders | Jobs */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <ActivityChart applications={applications} />
             <RemindersCard invitations={invitations} />
             <JobOpportunitiesCard jobs={jobs} />
           </div>
 
           {/* Row: Conversations | Profile Progress | Connects */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <RecentConversations userEmail={user.email} />
             <ProfileCompletionRing artist={artistProfile} portfolioCount={artistProfile?.portfolio_clips?.length || 0} />
             <ConnectsTrackerCard connects={artistProfile?.connects_balance} />

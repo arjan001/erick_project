@@ -306,6 +306,8 @@ export default function Home({ editMode = false }) {
 
   const loadContent = async () => {
     try {
+      console.log('Loading content from Supabase...');
+      
       // Fetch from Supabase entities
       const [featuredWorks, successStories, recentProjectsData, categoriesData] = await Promise.all([
         FeaturedWork.filter({ status: 'active' }, 'display_order', 9),
@@ -313,6 +315,11 @@ export default function Home({ editMode = false }) {
         RecentProject.filter({ is_active: true }, 'display_order', 4),
         ContentCategory.filter({ status: 'active' }, 'display_order', 100)
       ]);
+
+      console.log('Categories data:', categoriesData);
+      console.log('Featured works:', featuredWorks);
+      console.log('Success stories:', successStories);
+      console.log('Recent projects:', recentProjectsData);
 
       // Map featured works to in production format
       setInProduction(featuredWorks.map(work => ({

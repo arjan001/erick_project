@@ -144,31 +144,28 @@ export default function BackerProfile() {
 
   return (
     <div className="p-8">
-        <div className="w-full">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Investor Profile & Settings</h1>
-        <p className="text-gray-500 mb-8">Manage your public profile, investment preferences and account settings</p>
+      <div className="w-full max-w-5xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile & Settings</h1>
+        <p className="text-gray-500 mb-8">Manage your investor profile and account preferences</p>
 
-        <div className="flex gap-2 mb-6 bg-white border border-gray-100 rounded-xl p-1.5 shadow-sm w-fit">
-          <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'profile' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}>Profile</button>
-          <button onClick={() => setActiveTab('settings')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'settings' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}>Account Settings</button>
+        <div className="flex gap-1 mb-8 bg-gray-100 rounded-xl p-1 w-fit">
+          <button onClick={() => setActiveTab('profile')} className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === 'profile' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>Profile</button>
+          <button onClick={() => setActiveTab('settings')} className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === 'settings' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>Account Settings</button>
         </div>
 
         {activeTab === 'profile' && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-3xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-gray-900">Profile Information</h2>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-xl font-semibold text-gray-900">Profile Information</h2>
               {!editing ? (
-                <Button onClick={() => setEditing(true)} className="bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl">
+                <Button onClick={() => setEditing(true)} className="bg-black text-white hover:bg-gray-800 rounded-lg px-5">
                   <Edit2 className="w-4 h-4 mr-2" />
                   Edit Profile
                 </Button>
               ) : (
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setEditing(false)} className="rounded-xl">
-                    <X className="w-4 h-4 mr-2" />
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave} className="bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl">
+                  <Button variant="outline" onClick={() => setEditing(false)} className="rounded-lg px-5">Cancel</Button>
+                  <Button onClick={handleSave} className="bg-black text-white hover:bg-gray-800 rounded-lg px-5">
                     <Save className="w-4 h-4 mr-2" />
                     Save
                   </Button>
@@ -176,84 +173,85 @@ export default function BackerProfile() {
               )}
             </div>
 
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Organization Logo</label>
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 bg-indigo-50 ring-2 ring-indigo-100 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {backer?.logo_url ? (
-                      <img src={backer.logo_url} alt="Logo" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-2xl font-black text-indigo-300">22.</span>
-                    )}
-                  </div>
-                  <div>
-                    <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                    <Button variant="outline" className="rounded-xl" onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}>
-                      <Upload className="w-4 h-4 mr-2" />
-                      {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
-                    </Button>
-                  </div>
+            <div className="space-y-8">
+              <div className="flex items-center gap-6 pb-8 border-b border-gray-100">
+                <div className="w-24 h-24 bg-gray-50 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 border border-gray-200">
+                  {backer?.logo_url ? (
+                    <img src={backer.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-3xl font-black text-gray-300">22.</span>
+                  )}
+                </div>
+                <div>
+                  <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                  <Button variant="outline" className="rounded-lg" onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}>
+                    <Upload className="w-4 h-4 mr-2" />
+                    {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                  </Button>
+                  <p className="text-xs text-gray-500 mt-2">Recommended: 400x400px PNG or JPG</p>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Organization Name</label>
-                {editing ? (
-                  <Input className={inputClass} value={formData.organization_name} onChange={(e) => setFormData({ ...formData, organization_name: e.target.value })} placeholder="Enter organization name" />
-                ) : (
-                  <p className="text-gray-900">{backer?.organization_name || 'Not set'}</p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Organization Name</label>
+                  {editing ? (
+                    <Input className="rounded-lg border-gray-200" value={formData.organization_name} onChange={(e) => setFormData({ ...formData, organization_name: e.target.value })} placeholder="Enter organization name" />
+                  ) : (
+                    <p className="text-gray-900 text-lg">{backer?.organization_name || 'Not set'}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-gray-400" /> Website
+                  </label>
+                  {editing ? (
+                    <Input className="rounded-lg border-gray-200" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} placeholder="https://example.com" />
+                  ) : (
+                    <p className="text-gray-900">{backer?.website || 'Not set'}</p>
+                  )}
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">Bio</label>
                 {editing ? (
-                  <textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} placeholder="Tell us about your organization" className="w-full min-h-[100px] px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} placeholder="Tell us about your organization" className="w-full min-h-[120px] px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none" />
                 ) : (
-                  <p className="text-gray-900">{backer?.bio || 'Not set'}</p>
+                  <p className="text-gray-900 leading-relaxed">{backer?.bio || 'Not set'}</p>
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-indigo-500" /> Website
-                </label>
-                {editing ? (
-                  <Input className={inputClass} value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} placeholder="https://example.com" />
-                ) : (
-                  <p className="text-gray-900">{backer?.website || 'Not set'}</p>
-                )}
-              </div>
+              <div className="pt-6 border-t border-gray-100">
+                <label className="block text-sm font-medium text-gray-900 mb-4">Social Links</label>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Linkedin className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                    {editing ? (
+                      <Input className="rounded-lg border-gray-200 flex-1" value={formData.linkedin} onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })} placeholder="LinkedIn URL" />
+                    ) : (
+                      <p className="text-gray-900 flex-1">{backer?.linkedin || 'Not set'}</p>
+                    )}
+                  </div>
 
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-900">Social Links</label>
+                  <div className="flex items-center gap-3">
+                    <Instagram className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                    {editing ? (
+                      <Input className="rounded-lg border-gray-200 flex-1" value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} placeholder="Instagram URL" />
+                    ) : (
+                      <p className="text-gray-900 flex-1">{backer?.instagram || 'Not set'}</p>
+                    )}
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <Linkedin className="w-5 h-5 text-indigo-500 flex-shrink-0" />
-                  {editing ? (
-                    <Input className={inputClass} value={formData.linkedin} onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })} placeholder="LinkedIn URL" />
-                  ) : (
-                    <p className="text-gray-900">{backer?.linkedin || 'Not set'}</p>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Instagram className="w-5 h-5 text-indigo-500 flex-shrink-0" />
-                  {editing ? (
-                    <Input className={inputClass} value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} placeholder="Instagram URL" />
-                  ) : (
-                    <p className="text-gray-900">{backer?.instagram || 'Not set'}</p>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Twitter className="w-5 h-5 text-indigo-500 flex-shrink-0" />
-                  {editing ? (
-                    <Input className={inputClass} value={formData.twitter} onChange={(e) => setFormData({ ...formData, twitter: e.target.value })} placeholder="Twitter URL" />
-                  ) : (
-                    <p className="text-gray-900">{backer?.twitter || 'Not set'}</p>
-                  )}
+                  <div className="flex items-center gap-3">
+                    <Twitter className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                    {editing ? (
+                      <Input className="rounded-lg border-gray-200 flex-1" value={formData.twitter} onChange={(e) => setFormData({ ...formData, twitter: e.target.value })} placeholder="Twitter URL" />
+                    ) : (
+                      <p className="text-gray-900 flex-1">{backer?.twitter || 'Not set'}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -261,21 +259,25 @@ export default function BackerProfile() {
         )}
 
         {activeTab === 'settings' && (
-          <div className="max-w-3xl space-y-6">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <h3 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2"><Bell className="w-4 h-4 text-indigo-500" /> Notifications</h3>
-              <ToggleRow title="Email Notifications" description="Get emailed about activity on your investments" checked={emailNotifications} onChange={() => setEmailNotifications(!emailNotifications)} />
-              <ToggleRow title="Deal Alerts" description="Get notified about new investment opportunities" checked={dealAlerts} onChange={() => setDealAlerts(!dealAlerts)} isLast />
-              <Button onClick={handleSavePreferences} className="w-full bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl py-2.5 mt-4">Save Notification Preferences</Button>
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2"><Bell className="w-5 h-5 text-gray-400" /> Notifications</h3>
+              <div className="space-y-4">
+                <ToggleRow title="Email Notifications" description="Get emailed about activity on your investments" checked={emailNotifications} onChange={() => setEmailNotifications(!emailNotifications)} />
+                <ToggleRow title="Deal Alerts" description="Get notified about new investment opportunities" checked={dealAlerts} onChange={() => setDealAlerts(!dealAlerts)} isLast />
+              </div>
+              <Button onClick={handleSavePreferences} className="w-full bg-black text-white hover:bg-gray-800 rounded-lg py-3 mt-6">Save Notification Preferences</Button>
             </div>
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <h3 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2"><Shield className="w-4 h-4 text-indigo-500" /> Privacy</h3>
-              <ToggleRow title="Public Profile" description="Allow project owners to view your investor profile" checked={profilePublic} onChange={() => setProfilePublic(!profilePublic)} isLast />
-              <Button onClick={handleSavePreferences} className="w-full bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl py-2.5 mt-4">Save Privacy Settings</Button>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2"><Shield className="w-5 h-5 text-gray-400" /> Privacy</h3>
+              <div className="space-y-4">
+                <ToggleRow title="Public Profile" description="Allow project owners to view your investor profile" checked={profilePublic} onChange={() => setProfilePublic(!profilePublic)} isLast />
+              </div>
+              <Button onClick={handleSavePreferences} className="w-full bg-black text-white hover:bg-gray-800 rounded-lg py-3 mt-6">Save Privacy Settings</Button>
             </div>
           </div>
         )}
-    </div>
+      </div>
     </div>
   );
 }

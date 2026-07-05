@@ -223,16 +223,16 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
       )}
 
       <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="sticky top-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-lg font-semibold text-white">
               {step === 1 && 'Step 1 of 3: Create a job post'}
               {step === 2 && 'Step 2 of 3: Provide job details'}
               {step === 3 && 'Step 3/3: Review your job'}
             </h2>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -779,11 +779,11 @@ Write in a professional, direct tone.`
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-between rounded-b-2xl">
           <Button
             onClick={step === 1 ? onClose : handleBack}
             variant="ghost"
-            className="text-gray-600"
+            className="text-gray-600 hover:text-gray-900"
           >
             {step === 1 ? 'Cancel' : 'Back'}
           </Button>
@@ -791,7 +791,7 @@ Write in a professional, direct tone.`
             <Button
               onClick={handleSaveDraft}
               variant="outline"
-              className="border-gray-300"
+              className="border-gray-300 rounded-lg"
             >
               Save draft
             </Button>
@@ -799,14 +799,14 @@ Write in a professional, direct tone.`
               <Button
                 onClick={handleNext}
                 disabled={!formData.position || !formData.location || !formData.dates || !formData.project_type}
-                className="bg-black text-white hover:bg-gray-800"
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg"
               >
                 Next
               </Button>
             ) : (
               <Button
                 onClick={handleSubmit}
-                className="bg-black text-white hover:bg-gray-800"
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg shadow-lg"
               >
                 Post job
               </Button>

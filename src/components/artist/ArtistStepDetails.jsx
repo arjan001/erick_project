@@ -1,12 +1,18 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import CountrySelector from '../CountrySelector';
+import LocationMapSelector from '../LocationMapSelector';
 import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete';
 import languages from '@/data/languages.json';
 
 export default function ArtistStepDetails({ data, updateData }) {
   const selectedLanguages = data.languages_spoken || [];
+
+  const handleLocationSelect = (location) => {
+    updateData('based_in_city', location.city);
+    updateData('based_in_country', location.country);
+    updateData('coordinates', { lat: location.lat, lng: location.lng });
+  };
 
   return (
     <div>
@@ -38,25 +44,13 @@ export default function ArtistStepDetails({ data, updateData }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
-            <Label htmlFor="city" className="text-base mb-3 block">Based in City</Label>
-            <Input
-              id="city"
-              value={data.based_in_city}
-              onChange={(e) => updateData('based_in_city', e.target.value)}
-              placeholder="e.g., Amsterdam"
-              className="bg-white border-gray-300 text-black h-12"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="country" className="text-base mb-3 block">Country</Label>
-            <CountrySelector
-              value={data.based_in_country}
-              onChange={(country) => updateData('based_in_country', country)}
-            />
-          </div>
+        <div>
+          <Label className="text-base mb-3 block">Location</Label>
+          <LocationMapSelector
+            initialCity={data.based_in_city}
+            initialCountry={data.based_in_country}
+            onLocationSelect={handleLocationSelect}
+          />
         </div>
 
         <div>

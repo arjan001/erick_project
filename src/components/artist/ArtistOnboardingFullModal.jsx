@@ -130,25 +130,25 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto my-8">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between z-10">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto my-8 shadow-2xl">
+        {/* Header with gradient */}
+        <div className="sticky top-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-6 flex items-center justify-between z-10">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Complete Your Artist Profile</h2>
-            <p className="text-sm text-gray-500 mt-1">Step {step} of {steps.length} — {steps[step - 1]}</p>
+            <h2 className="text-xl font-bold text-white">Complete Your Artist Profile</h2>
+            <p className="text-sm text-indigo-100 mt-1">Step {step} of {steps.length} — {steps[step - 1]}</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
         </div>
 
         {/* Progress */}
-        <div className="px-6 pt-4">
+        <div className="px-6 pt-6">
           <div className="flex items-center gap-2 mb-6">
             {steps.map((s, i) => (
               <div key={i} className="flex items-center flex-1">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${i + 1 < step ? 'bg-green-500 text-white' : i + 1 === step ? 'bg-black text-white' : 'bg-gray-200 text-gray-500'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${i + 1 < step ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg' : i + 1 === step ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg' : 'bg-gray-200 text-gray-500'}`}>
                   {i + 1 < step ? <Check className="w-4 h-4" /> : i + 1}
                 </div>
-                {i < steps.length - 1 && <div className={`flex-1 h-1 mx-1 rounded ${i + 1 < step ? 'bg-green-500' : 'bg-gray-200'}'`} />}
+                {i < steps.length - 1 && <div className={`flex-1 h-1.5 mx-2 rounded-full transition-all ${i + 1 < step ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gray-200'}`} />}
               </div>
             ))}
           </div>
@@ -255,16 +255,16 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
         </div>
 
         {/* Navigation */}
-        <div className="border-t border-gray-200 p-6 flex justify-between">
-          <Button variant="outline" onClick={() => step > 1 ? setStep(step - 1) : onClose()} disabled={saving}>
+        <div className="border-t border-gray-200 p-6 flex justify-between bg-gray-50 rounded-b-2xl">
+          <Button variant="outline" onClick={() => step > 1 ? setStep(step - 1) : onClose()} disabled={saving} className="rounded-lg">
             {step > 1 ? <><ArrowLeft className="w-4 h-4 mr-2" /> Back</> : 'Skip for now'}
           </Button>
           {step < 4 ? (
-            <Button onClick={() => canProceed() && setStep(step + 1)} disabled={!canProceed()} className="bg-black text-white hover:bg-gray-800">
+            <Button onClick={() => canProceed() && setStep(step + 1)} disabled={!canProceed()} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg">
               Next <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
-            <Button onClick={handleSave} disabled={saving} className="bg-green-600 hover:bg-green-700 text-white">
+            <Button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg shadow-lg">
               {saving ? 'Saving...' : <><Check className="w-4 h-4 mr-2" /> Complete Profile</>}
             </Button>
           )}

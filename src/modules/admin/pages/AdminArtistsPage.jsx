@@ -6,9 +6,9 @@ import { Edit2, Trash2, X, Eye, Ban, CheckCircle, AlertCircle, Search, User, Mai
 import { useToast } from '@/hooks/useToast.jsx';
 
 const STATUS_STYLES = {
-  active: 'bg-green-100 text-green-700 border-green-200',
-  suspended: 'bg-orange-100 text-orange-700 border-orange-200',
-  disabled: 'bg-red-100 text-red-700 border-red-200',
+  active: 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200',
+  suspended: 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 border-orange-200',
+  disabled: 'bg-gradient-to-r from-red-100 to-rose-100 text-red-700 border-red-200',
 };
 
 const PAGE_SIZE = 10;
@@ -142,19 +142,19 @@ export default function AdminArtistsPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Artists/Creators Management</h1>
-          <p className="text-gray-600">Manage all artists and creators on the platform</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Artists Management</h1>
+          <p className="text-gray-600">Manage all artists on the platform</p>
         </div>
-        <Button onClick={() => openModal()} className="bg-black text-white hover:bg-gray-800">
+        <Button onClick={() => openModal()} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg">
           <User className="w-4 h-4 mr-2" /> Add Artist
         </Button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg border border-gray-200 mb-6 p-4">
+      <div className="bg-white rounded-2xl border border-white/50 shadow-lg shadow-indigo-100/50 mb-6 p-6">
         <div className="flex gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -162,13 +162,13 @@ export default function AdminArtistsPage() {
               placeholder="Search by name or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 rounded-lg border-gray-200 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg"
+            className="px-4 py-2 border border-gray-200 rounded-lg focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 outline-none"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -179,27 +179,27 @@ export default function AdminArtistsPage() {
       </div>
 
       {/* Datatable */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-white/50 shadow-lg shadow-indigo-100/50 overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-gradient-to-r from-gray-50 to-indigo-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Artist</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
-              <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Artist</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
+              <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-100">
             {paginatedArtists.map((artist) => (
-              <tr key={artist.id} className="hover:bg-gray-50">
+              <tr key={artist.id} className="hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    {artist.profile_image ? (
-                      <img src={artist.profile_image} alt={artist.full_name} className="w-10 h-10 rounded-full object-cover" />
+                    {artist.profile_photo_url ? (
+                      <img src={artist.profile_photo_url} alt={artist.full_name} className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-100" />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-600">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-sm font-bold text-indigo-600 ring-2 ring-indigo-100">
                         {artist.full_name?.[0]?.toUpperCase() || 'A'}
                       </div>
                     )}
@@ -211,14 +211,14 @@ export default function AdminArtistsPage() {
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-gray-400" />
+                    <Mail className="w-4 h-4 text-indigo-400" />
                     {artist.email || 'No email'}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
                   {artist.based_in_city || artist.location ? (
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <MapPin className="w-4 h-4 text-indigo-400" />
                       {artist.based_in_city || artist.location}
                     </div>
                   ) : (
@@ -226,7 +226,7 @@ export default function AdminArtistsPage() {
                   )}
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full border ${STATUS_STYLES[getStatus(artist)]}`}>
+                  <span className={`px-3 py-1.5 text-xs font-medium rounded-full border shadow-sm ${STATUS_STYLES[getStatus(artist)]}`}>
                     {getStatus(artist).charAt(0).toUpperCase() + getStatus(artist).slice(1)}
                   </span>
                 </td>
@@ -235,19 +235,19 @@ export default function AdminArtistsPage() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-1">
-                    <Button onClick={() => openViewModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                    <Button onClick={() => openViewModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg">
                       <Eye className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => openModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                    <Button onClick={() => openModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg">
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => toggleSuspend(artist)} variant="ghost" size="sm" className={artist.is_suspended ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'}>
+                    <Button onClick={() => toggleSuspend(artist)} variant="ghost" size="sm" className={artist.is_suspended ? 'text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg' : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg'}>
                       <Ban className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => toggleDisable(artist)} variant="ghost" size="sm" className={artist.is_disabled ? 'text-green-600 hover:text-green-700' : 'text-red-600 hover:text-red-700'}>
+                    <Button onClick={() => toggleDisable(artist)} variant="ghost" size="sm" className={artist.is_disabled ? 'text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg' : 'text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg'}>
                       <AlertCircle className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => handleDelete(artist.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                    <Button onClick={() => handleDelete(artist.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -260,7 +260,7 @@ export default function AdminArtistsPage() {
         {paginatedArtists.length === 0 && (
           <div className="p-12 text-center text-gray-500">
             <p className="mb-4">No artists found</p>
-            <Button onClick={() => openModal()} className="bg-black text-white hover:bg-gray-800">
+            <Button onClick={() => openModal()} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg">
               <User className="w-4 h-4 mr-2" /> Add First Artist
             </Button>
           </div>
@@ -299,15 +299,15 @@ export default function AdminArtistsPage() {
 
       {/* View Modal */}
       {viewingArtist && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">Artist Details</h2>
-              <button onClick={() => setViewingArtist(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Artist Details</h2>
+              <button onClick={() => setViewingArtist(null)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-600">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-2xl font-bold text-indigo-600 ring-2 ring-indigo-100">
                   {viewingArtist.full_name?.[0]?.toUpperCase() || 'A'}
                 </div>
                 <div>
@@ -324,13 +324,13 @@ export default function AdminArtistsPage() {
                 {viewingArtist.location && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Location</label>
-                    <p className="font-medium flex items-center gap-2"><MapPin className="w-4 h-4" /> {viewingArtist.location}</p>
+                    <p className="font-medium flex items-center gap-2"><MapPin className="w-4 h-4 text-indigo-500" /> {viewingArtist.location}</p>
                   </div>
                 )}
                 {viewingArtist.created_at && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Joined</label>
-                    <p className="font-medium flex items-center gap-2"><Calendar className="w-4 h-4" /> {new Date(viewingArtist.created_at).toLocaleDateString()}</p>
+                    <p className="font-medium flex items-center gap-2"><Calendar className="w-4 h-4 text-indigo-500" /> {new Date(viewingArtist.created_at).toLocaleDateString()}</p>
                   </div>
                 )}
               </div>
@@ -349,9 +349,9 @@ export default function AdminArtistsPage() {
                 </div>
               )}
             </div>
-            <div className="p-6 border-t border-gray-200 flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setViewingArtist(null)}>Close</Button>
-              <Button onClick={() => { setViewingArtist(null); openModal(viewingArtist); }} className="bg-black text-white hover:bg-gray-800">Edit Artist</Button>
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setViewingArtist(null)} className="rounded-lg">Close</Button>
+              <Button onClick={() => { setViewingArtist(null); openModal(viewingArtist); }} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg">Edit Artist</Button>
             </div>
           </div>
         </div>
@@ -359,26 +359,26 @@ export default function AdminArtistsPage() {
 
       {/* Edit/Create Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">{editingArtist ? 'Edit Artist' : 'Add Artist'}</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">{editingArtist ? 'Edit Artist' : 'Add Artist'}</h2>
+              <button onClick={() => setShowModal(false)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
-              <div><label className="block text-sm font-medium mb-2">Full Name</label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></div>
-              <div><label className="block text-sm font-medium mb-2">Email</label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-              <div><label className="block text-sm font-medium mb-2">Location</label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
-              <div><label className="block text-sm font-medium mb-2">Bio</label><textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
-              <div><label className="block text-sm font-medium mb-2">Skills</label><Input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="Comma-separated skills" /></div>
+              <div><label className="block text-sm font-medium mb-2">Full Name</label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-2">Email</label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-2">Location</label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-2">Bio</label><textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-2">Skills</label><Input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="Comma-separated skills" className="rounded-lg" /></div>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_suspended} onChange={(e) => setForm({ ...form, is_suspended: e.target.checked })} className="w-4 h-4" /> Suspended</label>
                 <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_disabled} onChange={(e) => setForm({ ...form, is_disabled: e.target.checked })} className="w-4 h-4" /> Disabled</label>
               </div>
             </div>
-            <div className="p-6 border-t border-gray-200 flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-              <Button onClick={handleSave} className="bg-black text-white hover:bg-gray-800">{editingArtist ? 'Update' : 'Create'}</Button>
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setShowModal(false)} className="rounded-lg">Cancel</Button>
+              <Button onClick={handleSave} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg">{editingArtist ? 'Update' : 'Create'}</Button>
             </div>
           </div>
         </div>

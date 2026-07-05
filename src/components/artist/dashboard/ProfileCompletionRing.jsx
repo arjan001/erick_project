@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
 
-// Circular progress ring showing how complete the artist's profile is
 export default function ProfileCompletionRing({ artist, portfolioCount = 0 }) {
   const fields = [
     artist?.full_name,
@@ -20,13 +19,13 @@ export default function ProfileCompletionRing({ artist, portfolioCount = 0 }) {
   const offset = circumference - (percent / 100) * circumference;
 
   return (
-    <div className="border border-gray-200 rounded-lg p-6 flex flex-col items-center text-center">
-      <h2 className="text-lg font-bold text-gray-900 mb-4 self-start">Profile Strength</h2>
+    <div className="rounded-xl border border-gray-200 shadow-sm p-6 bg-white flex flex-col items-center text-center h-full">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4 self-start">Profile Strength</h2>
       <div className="relative w-28 h-28">
         <svg className="w-28 h-28 -rotate-90">
           <circle cx="56" cy="56" r={radius} fill="none" stroke="#f3f4f6" strokeWidth="10" />
           <circle
-            cx="56" cy="56" r={radius} fill="none" stroke="#4f46e5" strokeWidth="10"
+            cx="56" cy="56" r={radius} fill="none" stroke="#374151" strokeWidth="10"
             strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
           />
         </svg>
@@ -35,7 +34,7 @@ export default function ProfileCompletionRing({ artist, portfolioCount = 0 }) {
         </div>
       </div>
       {percent < 100 && (
-        <Link to={createPageUrl('ArtistProfile')} className="text-sm text-indigo-600 font-medium hover:underline mt-4">
+        <Link to={createPageUrl('ArtistProfile')} className="text-sm text-gray-600 font-medium hover:text-gray-900 mt-4">
           Complete your profile
         </Link>
       )}

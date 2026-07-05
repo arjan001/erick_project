@@ -21,7 +21,8 @@ export default function MultiSelectAutocomplete({
   const filteredOptions = options.filter(option => {
     if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
-    return option.toLowerCase().includes(searchLower);
+    const optionName = typeof option === 'string' ? option : option.name || option;
+    return optionName.toLowerCase().includes(searchLower);
   });
 
   // Get selected items

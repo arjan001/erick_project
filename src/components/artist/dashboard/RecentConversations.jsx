@@ -56,10 +56,10 @@ export default function RecentConversations({ userEmail }) {
   }, [userEmail]);
 
   return (
-    <div className="border border-gray-200 rounded-lg p-6">
+    <div className="rounded-xl border border-gray-200 shadow-sm p-6 bg-white h-full">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-gray-900">Recent Conversations</h2>
-        <Link to={createPageUrl('Messages')} className="text-sm text-gray-600 hover:text-gray-900">
+        <h2 className="text-lg font-semibold text-gray-900">Recent Conversations</h2>
+        <Link to={createPageUrl('Messages')} className="text-sm text-gray-400 hover:text-gray-900">
           <MessageCircle className="w-4 h-4" />
         </Link>
       </div>
@@ -71,11 +71,11 @@ export default function RecentConversations({ userEmail }) {
         <div className="space-y-3">
           {conversations.map(c => (
             <Link key={c.conversation_id} to={createPageUrl('Messages')} className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {c.avatar ? <img src={c.avatar} alt={c.name} className="w-full h-full object-cover" loading="lazy" decoding="async" /> : <span className="text-xs font-bold text-gray-600">{c.name?.[0]?.toUpperCase()}</span>}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-gray-900 truncate">{c.name}</p>
+                <p className="font-medium text-sm text-gray-900 truncate">{c.name}</p>
                 <p className="text-xs text-gray-500 truncate">{c.text || c.file_name || 'Attachment'}</p>
               </div>
             </Link>

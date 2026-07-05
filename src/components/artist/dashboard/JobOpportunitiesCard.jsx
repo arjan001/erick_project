@@ -3,17 +3,16 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
 import { Plus, Briefcase } from 'lucide-react';
 
-const DOT_COLORS = ['bg-indigo-500', 'bg-emerald-500', 'bg-amber-500', 'bg-pink-500', 'bg-blue-500'];
+const DOT_COLORS = ['#374151', '#4b5563', '#6b7280', '#9ca3af', '#d1d5db'];
 
-// "Project" list style card — latest open job opportunities
 export default function JobOpportunitiesCard({ jobs = [] }) {
   return (
-    <div className="border border-gray-200 rounded-2xl p-6 bg-white h-full flex flex-col">
+    <div className="rounded-xl border border-gray-200 shadow-sm p-6 bg-white h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-gray-900">Latest Jobs</h2>
+        <h2 className="text-lg font-semibold text-gray-900">Latest Jobs</h2>
         <Link
           to={createPageUrl('Jobs')}
-          className="flex items-center gap-1 text-xs font-medium bg-gray-900 hover:bg-black text-white rounded-full px-3 py-1.5 transition-colors"
+          className="flex items-center gap-1 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white rounded-lg px-3 py-1.5 transition-colors"
         >
           <Plus className="w-3 h-3" /> View All
         </Link>

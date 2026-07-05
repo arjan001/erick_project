@@ -41,12 +41,13 @@ export default function SignUp() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [inviteCodeValid, setInviteCodeValid] = useState(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const navigate = useNavigate();
 
-  // Check for invite code in URL query params
+  // Check for invite code in URL query params or from invite landing
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('ref');
+    const code = urlParams.get('ref') || urlParams.get('code');
     if (code) {
       setFormData(prev => ({ ...prev, inviteCode: code }));
       validateInviteCode(code);
@@ -112,6 +113,12 @@ export default function SignUp() {
       localStorage.setItem('studio22_user', JSON.stringify(user));
       sessionStorage.setItem('studio22_just_logged_in', 'true');
 
+      // Show invite acceptance modal if valid code was used
+      if (formData.inviteCode && inviteCodeValid) {
+        setShowInviteModal(true);
+        return;
+      }
+
       // Redirect based on role
       const redirects = {
         artist: '/artistdashboard',
@@ -127,6 +134,18 @@ export default function SignUp() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleInviteModalClose = () => {
+    setShowInviteModal(false);
+    const redirects = {
+      artist: '/artistdashboard',
+      team: '/teamdashboard',
+      client: '/clientdashboard',
+      backer: '/backerdashboard',
+      admin: '/admin'
+    };
+    window.location.href = createPageUrl(redirects[formData.role]?.replace('/', '') || 'Home');
   };
 
   return (
@@ -322,6 +341,27 @@ export default function SignUp() {
         <div className="absolute top-20 right-20 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 left-20 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
       </div>
+
+      {/* Invite Acceptance Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Invite Code Accepted!</h2>
+            <p className="text-gray-600 mb-6">Your Pro plan begins now. Welcome to Studio22!</p>
+            <button
+              onClick={handleInviteModalClose}
+              className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3 rounded-xl transition-colors"
+            >
+              Get Started
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

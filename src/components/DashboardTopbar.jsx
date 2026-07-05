@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, ChevronDown, LogOut, Settings } from 'lucide-react';
+import { Search, Bell, ChevronDown, LogOut, Settings, MessageCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/shared/utils/routing';
-import { Notification } from '@/lib/supabaseEntities';
+import { Notification, Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities';
 
 // Modern TailAdmin-style top bar shared across all dashboard roles.
 export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
@@ -11,7 +11,10 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [messagesOpen, setMessagesOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [recentSenders, setRecentSenders] = useState([]);
 
   const fetchNotifications = async () => {
     if (!user?.email) return;
@@ -23,21 +26,71 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
     }
   };
 
-  useEffect(() => { fetchNotifications(); }, [user]);
+  const fetchMessages = async () => {
+    if (!user?.email) return;
+    try {
+      const msgs = await Message.filter({ recipient_email: user.email, read: false }, '-created_date', 10);
+      setMessages(msgs || []);
+      
+      // Get unique senders
+      const senderEmails = [...new Set(msgs.map(m => m.sender_email))];
+      const sendersData = await Promise.all(
+        senderEmails.map(async (email) => {
+          try {
+            const [artists, teams, owners, backers] = await Promise.all([
+              Artist.filter({ email }),
+              Team.filter({ contact_email: email }),
+              ProjectOwner.filter({ email }),
+              Backer.filter({ contact_email: email })
+            ]);
+            const artist = artists?.[0];
+            const team = teams?.[0];
+            const owner = owners?.[0];
+            const backer = backers?.[0];
+            
+            return {
+              email,
+              name: artist?.full_name || team?.team_name || owner?.full_name || backer?.organization_name || email,
+              avatar: artist?.profile_photo_url || team?.team_logo_url || owner?.profile_photo_url || backer?.logo_url || null
+            };
+          } catch {
+            return { email, name: email, avatar: null };
+          }
+        })
+      );
+      setRecentSenders(sendersData.slice(0, 5));
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+    }
+  };
+
+  useEffect(() => { 
+    fetchNotifications(); 
+    fetchMessages();
+  }, [user]);
 
   useEffect(() => {
     if (!user?.email) return;
-    // Supabase realtime subscription would go here
-    // For now, refresh notifications periodically
-    const interval = setInterval(fetchNotifications, 30000); // every 30 seconds
+    const interval = setInterval(() => {
+      fetchNotifications();
+      fetchMessages();
+    }, 30000);
     return () => clearInterval(interval);
   }, [user]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadMessagesCount = messages.length;
 
   const handleOpenNotifications = () => {
     setNotifOpen(!notifOpen);
     setMenuOpen(false);
+    setMessagesOpen(false);
+  };
+
+  const handleOpenMessages = () => {
+    setMessagesOpen(!messagesOpen);
+    setMenuOpen(false);
+    setNotifOpen(false);
   };
 
   const handleNotificationClick = async (notif) => {
@@ -95,6 +148,57 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Messages Button */}
+        <div className="relative">
+          <button onClick={handleOpenMessages} className="relative p-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-500">
+            <MessageCircle className="w-5 h-5" />
+            {unreadMessagesCount > 0 && (
+              <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full text-white text-[10px] font-bold flex items-center justify-center">
+                {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
+              </span>
+            )}
+          </button>
+
+          {messagesOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setMessagesOpen(false)} />
+              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-lg z-20 max-h-96 flex flex-col">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
+                  <span className="font-semibold text-gray-900 text-sm">Messages</span>
+                  <Link to={createPageUrl('Messages')} onClick={() => setMessagesOpen(false)} className="text-xs text-indigo-600 hover:underline">View all</Link>
+                </div>
+                <div className="overflow-y-auto flex-1">
+                  {recentSenders.length === 0 ? (
+                    <div className="p-6 text-center text-sm text-gray-400">No new messages</div>
+                  ) : (
+                    recentSenders.map((sender, idx) => (
+                      <Link
+                        key={idx}
+                        to={createPageUrl('Messages')}
+                        onClick={() => setMessagesOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {sender.avatar ? (
+                            <img src={sender.avatar} alt={sender.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-xs font-bold text-indigo-600">{sender.name?.[0]?.toUpperCase()}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{sender.name}</p>
+                          <p className="text-xs text-gray-500 truncate">New message</p>
+                        </div>
+                      </Link>
+                    ))
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Notifications Button */}
         <div className="relative">
           <button onClick={handleOpenNotifications} className="relative p-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-500">
             <Bell className="w-5 h-5" />
