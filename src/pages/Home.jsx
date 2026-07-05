@@ -8,7 +8,7 @@ import { ArrowRight, Play, Bookmark, Sparkles, X, Plus } from 'lucide-react';
 
 import { base44 } from '@/api/base44Client';
 
-import { Creator, SavedProject } from '@/lib/supabaseEntities';
+import { Creator, SavedProject, FeaturedWork, SuccessStory, RecentProject, ContentCategory } from '@/lib/supabaseEntities';
 
 import { Button } from '@/components/ui/button';
 
@@ -305,11 +305,53 @@ export default function Home({ editMode = false }) {
 
 
   const loadContent = async () => {
-
     try {
+      // Fetch from Supabase entities
+      const [featuredWorks, successStories, recentProjectsData, categoriesData] = await Promise.all([
+        FeaturedWork.filter({ status: 'active' }, 'display_order', 9),
+        SuccessStory.filter({ status: 'published' }, 'display_order', 6),
+        RecentProject.filter({ is_active: true }, 'display_order', 4),
+        ContentCategory.filter({ status: 'active' }, 'display_order', 100)
+      ]);
 
-      // Skip base44 calls to prevent white screen issues
-      // Use fallback data instead
+      // Map featured works to in production format
+      setInProduction(featuredWorks.map(work => ({
+        title: work.title,
+        studio: work.artist_id || 'Studio22',
+        type: work.featured_type || 'Featured',
+        description: work.description || '',
+        score: 9.0,
+        images: work.images || []
+      })));
+
+      // Map success stories to released format
+      setReleased(successStories.map(story => ({
+        title: story.title,
+        studio: story.user_type === 'artist' ? 'Artist' : 'Client',
+        type: story.category || 'Success Story',
+        description: story.story || '',
+        score: story.score || 9.0,
+        images: story.images || []
+      })));
+
+      // Map recent projects
+      setRecent(recentProjectsData.map(project => ({
+        title: project.title,
+        studio: project.studio || 'Studio22',
+        type: project.type || 'Project',
+        description: project.description || '',
+        images: project.images || []
+      })));
+
+      // Map categories from Supabase
+      setCollections(categoriesData.map(cat => ({
+        title: cat.name,
+        description: cat.description,
+        image: cat.image_url
+      })));
+    } catch (error) {
+      console.error('Failed to load content from Supabase:', error);
+      // Fallback to dummy data if Supabase fails
       setInProduction([
         { title: 'Documentary Project', studio: 'Studio22', type: 'Documentary', description: 'A compelling documentary exploring cultural heritage.', score: 9.2 },
         { title: 'Commercial Campaign', studio: 'Creative Agency', type: 'Commercial', description: 'High-end commercial production for global brand.', score: 8.7 },
@@ -326,18 +368,11 @@ export default function Home({ editMode = false }) {
         { title: 'Food & Beverage', description: 'Culinary content and brand storytelling', image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600' },
       ]);
       setRecent([
-        { title: 'Latest Project', studio: 'New Studio', type: 'Project', description: 'Recently added project to the network.', score: 8.5 },
+        { title: 'Latest Project', studio: 'New Studio', type: 'Project', description: 'Recently added project to the network.', images: [] },
       ]);
-    } catch (error) {
-
-      console.error('Failed to load content:', error);
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
   return (

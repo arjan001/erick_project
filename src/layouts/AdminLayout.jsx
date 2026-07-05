@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3 } from 'lucide-react';
+import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 const navItems = [
   { path: '/Admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { path: '/Admin/Artists', label: 'Artists', icon: Users },
   { path: '/ArtistAdmin', label: 'Creators', icon: Users },
   { path: '/TeamAdmin', label: 'Teams', icon: FolderKanban },
   { path: '/ProjectAdmin', label: 'Projects', icon: FolderKanban },
@@ -15,6 +16,9 @@ const navItems = [
   { path: '/Admin/Settings', label: 'Settings', icon: Settings },
   { path: '/Admin/Ticker', label: 'Marquee/Ticker', icon: ScrollText },
   { path: '/Admin/Categories', label: 'Categories', icon: Grid3x3 },
+  { path: '/Admin/FeaturedWork', label: 'Featured Work', icon: Star },
+  { path: '/Admin/SuccessStories', label: 'Success Stories', icon: Trophy },
+  { path: '/Admin/RecentProjects', label: 'Recent Projects', icon: Clock },
   { path: '/Admin/SEOCMS', label: 'SEO & CMS', icon: FileText },
   { path: '/Admin/ImageStorage', label: 'Image Storage', icon: Image },
   { path: '/Admin/LoginProviders', label: 'Login Providers', icon: Shield },
@@ -25,8 +29,8 @@ const navItems = [
 ];
 
 const navGroups = [
-  { label: 'Overview', items: ['/Admin', '/ArtistAdmin', '/TeamAdmin', '/ProjectAdmin'] },
-  { label: 'Content', items: ['/Admin/Ticker', '/Admin/Categories', '/Admin/SEOCMS'] },
+  { label: 'Overview', items: ['/Admin', '/Admin/Artists', '/ArtistAdmin', '/TeamAdmin', '/ProjectAdmin'] },
+  { label: 'Content', items: ['/Admin/Ticker', '/Admin/Categories', '/Admin/FeaturedWork', '/Admin/SuccessStories', '/Admin/RecentProjects', '/Admin/SEOCMS'] },
   { label: 'Users', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
   { label: 'Finance', items: ['/Admin/FinanceDashboard', '/Admin/Subscriptions'] },
   { label: 'Integrations', items: ['/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },

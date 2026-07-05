@@ -266,6 +266,30 @@ const adminRoutes = [
     component: () => import('@/modules/admin/pages/AdminCategoriesPage'),
     layout: AdminLayout,
     guard: AdminGuard
+  },
+  {
+    path: '/Admin/Artists',
+    component: () => import('@/modules/admin/pages/AdminArtistsPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
+  },
+  {
+    path: '/Admin/FeaturedWork',
+    component: () => import('@/modules/admin/pages/AdminFeaturedWorkPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
+  },
+  {
+    path: '/Admin/SuccessStories',
+    component: () => import('@/modules/admin/pages/AdminSuccessStoriesPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
+  },
+  {
+    path: '/Admin/RecentProjects',
+    component: () => import('@/modules/admin/pages/AdminRecentProjectsPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
   }
 ];
 
