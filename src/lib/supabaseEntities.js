@@ -118,6 +118,7 @@ export const ContentCategory = buildEntity('content_categories', 'created_at');
 export const FeaturedWork = buildEntity('featured_work', 'created_at');
 export const SuccessStory = buildEntity('success_stories', 'created_at');
 export const RecentProject = buildEntity('recent_projects', 'created_at');
+export const Article = buildEntity('articles', 'created_at');
 export const SubscriptionPackage = buildEntity('subscription_packages', 'created_at');
 export const Subscription = buildEntity('subscriptions', 'created_at');
 export const Note = buildEntity('notes', 'created_at');

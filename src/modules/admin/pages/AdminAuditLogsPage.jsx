@@ -5,18 +5,19 @@ import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Input } from '@/shared/components/ui/input';
-import { Search, User, Settings, FileText, Shield, Trash2 } from 'lucide-react';
+import { Search, User, Settings, FileText, Shield, X, Eye } from 'lucide-react';
 
 export default function AdminAuditLogsPage() {
   const { success, error } = useToast();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewLog, setViewLog] = useState(null);
 
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      const rows = await AuditLog.list('-created_date', 200);
+      const rows = await AuditLog.list('-created_at', 200);
       setLogs(rows || []);
     } catch (err) {
       console.error('Error fetching audit logs:', err);
@@ -27,17 +28,6 @@ export default function AdminAuditLogsPage() {
   };
 
   useEffect(() => { fetchLogs(); }, []);
-
-  const handleDelete = async (id) => {
-    try {
-      await AuditLog.delete(id);
-      setLogs(prev => prev.filter(l => l.id !== id));
-      success('Deleted', 'Log entry removed');
-    } catch (err) {
-      console.error('Error deleting log:', err);
-      error('Failed', 'Failed to delete log entry');
-    }
-  };
 
   const getActionIcon = (action) => {
     if (action?.startsWith('user') || action?.startsWith('invite')) return User;
@@ -81,7 +71,7 @@ export default function AdminAuditLogsPage() {
               placeholder="Search logs..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 rounded-lg"
             />
           </div>
         </CardHeader>
@@ -107,11 +97,11 @@ export default function AdminAuditLogsPage() {
                     </div>
                     <p className="text-sm text-gray-900 mt-1">{log.details}</p>
                     <p className="text-xs text-gray-500 mt-1">
-                      {log.created_date ? new Date(log.created_date).toLocaleString() : ''} • {log.entity_type}{log.entity_id ? ` #${log.entity_id.slice(-6)}` : ''}
+                      {log.created_at ? new Date(log.created_at).toLocaleString() : ''} • {log.entity_type}{log.entity_id ? ` #${log.entity_id.slice(-6)}` : ''}
                     </p>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(log.id)} title="Delete">
-                    <Trash2 className="w-4 h-4 text-red-600" />
+                  <Button variant="ghost" size="sm" onClick={() => setViewLog(log)} title="View Details">
+                    <Eye className="w-4 h-4" />
                   </Button>
                 </div>
               );
@@ -119,6 +109,39 @@ export default function AdminAuditLogsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {viewLog && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-gray-900 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Audit Log Details</h2>
+              <button onClick={() => setViewLog(null)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="p-6 space-y-4 text-sm">
+              <div className="grid grid-cols-2 gap-4">
+                <div><span className="font-medium text-gray-500">Action:</span> <Badge className={getActionColor(viewLog.action)}>{viewLog.action}</Badge></div>
+                <div><span className="font-medium text-gray-500">Actor:</span> {viewLog.actor_email || 'system'}</div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div><span className="font-medium text-gray-500">Actor Role:</span> {viewLog.actor_role || 'N/A'}</div>
+                <div><span className="font-medium text-gray-500">Entity Type:</span> {viewLog.entity_type || 'N/A'}</div>
+              </div>
+              <div><span className="font-medium text-gray-500">Entity ID:</span> {viewLog.entity_id ? viewLog.entity_id : 'N/A'}</div>
+              <div><span className="font-medium text-gray-500">Details:</span> {viewLog.details || 'No details'}</div>
+              <div className="grid grid-cols-2 gap-4">
+                <div><span className="font-medium text-gray-500">IP Address:</span> {viewLog.ip_address || 'N/A'}</div>
+                <div><span className="font-medium text-gray-500">Timestamp:</span> {viewLog.created_at ? new Date(viewLog.created_at).toLocaleString() : 'N/A'}</div>
+              </div>
+              {viewLog.user_agent && (
+                <div><span className="font-medium text-gray-500">User Agent:</span> <div className="mt-1 p-2 bg-gray-100 rounded text-xs break-all">{viewLog.user_agent}</div></div>
+              )}
+            </div>
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setViewLog(null)} className="rounded-lg">Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

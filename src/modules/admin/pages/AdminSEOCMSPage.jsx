@@ -864,17 +864,20 @@ export default function AdminSEOCMSPage() {
       </div>
 
       {showPageModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-auto">
-            <h2 className="text-xl font-bold mb-4">{editingPage ? 'Edit Page' : 'Add New Page'}</h2>
-            <div className="space-y-4">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="bg-gray-900 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">{editingPage ? 'Edit Page' : 'Add New Page'}</h2>
+              <button onClick={() => setShowPageModal(false)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                 <input
                   type="text"
                   value={pageForm.title}
                   onChange={(e) => setPageForm({ ...pageForm, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
               </div>
               <div>
@@ -883,7 +886,7 @@ export default function AdminSEOCMSPage() {
                   type="text"
                   value={pageForm.slug}
                   onChange={(e) => setPageForm({ ...pageForm, slug: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
               </div>
               <div>
@@ -892,7 +895,7 @@ export default function AdminSEOCMSPage() {
                   type="text"
                   value={pageForm.metaTitle}
                   onChange={(e) => setPageForm({ ...pageForm, metaTitle: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
               </div>
               <div>
@@ -901,7 +904,7 @@ export default function AdminSEOCMSPage() {
                   value={pageForm.metaDescription}
                   onChange={(e) => setPageForm({ ...pageForm, metaDescription: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
               </div>
               <div>
@@ -910,7 +913,7 @@ export default function AdminSEOCMSPage() {
                   type="text"
                   value={pageForm.metaKeywords}
                   onChange={(e) => setPageForm({ ...pageForm, metaKeywords: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
               </div>
               <div>
@@ -919,7 +922,7 @@ export default function AdminSEOCMSPage() {
                   type="text"
                   value={pageForm.ogImage}
                   onChange={(e) => setPageForm({ ...pageForm, ogImage: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
               </div>
               <div>
@@ -928,7 +931,7 @@ export default function AdminSEOCMSPage() {
                   value={pageForm.customHead}
                   onChange={(e) => setPageForm({ ...pageForm, customHead: e.target.value })}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent font-mono text-sm"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent font-mono text-sm"
                 />
               </div>
               <div>
@@ -936,16 +939,16 @@ export default function AdminSEOCMSPage() {
                 <select
                   value={pageForm.status}
                   onChange={(e) => setPageForm({ ...pageForm, status: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 >
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
                 </select>
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
-              <Button variant="outline" onClick={() => setShowPageModal(false)}>Cancel</Button>
-              <Button onClick={handleSavePage} className="bg-black text-white hover:bg-gray-800">Save Page</Button>
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setShowPageModal(false)} className="rounded-lg">Cancel</Button>
+              <Button onClick={handleSavePage} className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg">Save Page</Button>
             </div>
           </div>
         </div>

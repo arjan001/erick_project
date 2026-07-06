@@ -4,7 +4,7 @@ import { RolePermission } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { Shield, Plus, Save, Trash2 } from 'lucide-react';
+import { Shield, Plus, Save, Trash2, X } from 'lucide-react';
 
 const PERMISSION_CATEGORIES = {
   'User Management': [
@@ -256,22 +256,27 @@ export default function AdminRolesPermissionsPage() {
       </div>
 
       {showAddRoleModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Add New Role</h2>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Role Name</label>
-              <input
-                type="text"
-                value={newRoleName}
-                onChange={(e) => setNewRoleName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                placeholder="e.g., Content Moderator"
-              />
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+            <div className="bg-gray-900 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Add New Role</h2>
+              <button onClick={() => setShowAddRoleModal(false)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
-            <div className="flex gap-3 mt-6">
-              <Button variant="outline" onClick={() => setShowAddRoleModal(false)}>Cancel</Button>
-              <Button onClick={handleCreateRole} className="bg-black text-white hover:bg-gray-800">Create Role</Button>
+            <div className="p-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role Name</label>
+                <input
+                  type="text"
+                  value={newRoleName}
+                  onChange={(e) => setNewRoleName(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  placeholder="e.g., Content Moderator"
+                />
+              </div>
+            </div>
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setShowAddRoleModal(false)} className="rounded-lg">Cancel</Button>
+              <Button onClick={handleCreateRole} className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg">Create Role</Button>
             </div>
           </div>
         </div>

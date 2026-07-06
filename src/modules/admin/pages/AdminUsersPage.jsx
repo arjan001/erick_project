@@ -202,14 +202,14 @@ export default function AdminUsersPage() {
       </div>
 
       {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">User Details</h2>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedUser(null)}><X className="w-4 h-4" /></Button>
+            <div className="bg-gray-900 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">User Details</h2>
+              <button onClick={() => setSelectedUser(null)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
-            <div className="p-5 space-y-4 text-sm">
-              <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+            <div className="p-6 space-y-4 text-sm">
+              <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
                   <User className="w-8 h-8 text-gray-600" />
                 </div>
@@ -227,14 +227,14 @@ export default function AdminUsersPage() {
               </div>
               {selectedUser.role === 'artist' && (
                 <>
-                  <div><span className="font-medium text-gray-500">Specialty:</span> {selectedUser.role || 'N/A'}</div>
+                  <div><span className="font-medium text-gray-500">Specialty:</span> {selectedUser.skills || 'N/A'}</div>
                   <div><span className="font-medium text-gray-500">Location:</span> {[selectedUser.based_in_city, selectedUser.based_in_country].filter(Boolean).join(', ') || 'N/A'}</div>
                 </>
               )}
               {selectedUser.role === 'team' && (
                 <>
                   <div><span className="font-medium text-gray-500">Team Size:</span> {selectedUser.team_size || 'N/A'}</div>
-                  <div><span className="font-medium text-gray-500">Location:</span> {[selectedUser.city, selectedUser.country].filter(Boolean).join(', ') || 'N/A'}</div>
+                  <div><span className="font-medium text-gray-500">Location:</span> {[selectedUser.location, selectedUser.country].filter(Boolean).join(', ') || 'N/A'}</div>
                 </>
               )}
               {selectedUser.role === 'project_owner' && (
@@ -243,9 +243,15 @@ export default function AdminUsersPage() {
                   <div><span className="font-medium text-gray-500">Phone:</span> {selectedUser.phone || 'N/A'}</div>
                 </>
               )}
+              {selectedUser.role === 'backer' && (
+                <>
+                  <div><span className="font-medium text-gray-500">Organization:</span> {selectedUser.organization_name || 'N/A'}</div>
+                  <div><span className="font-medium text-gray-500">Budget Range:</span> {selectedUser.budget_range || 'N/A'}</div>
+                </>
+              )}
             </div>
-            <div className="flex gap-3 p-5 border-t border-gray-100 justify-end">
-              <Button variant="outline" onClick={() => setSelectedUser(null)}>Close</Button>
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setSelectedUser(null)} className="rounded-lg">Close</Button>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TickerEntry } from '@/lib/supabaseEntities';
+import { TickerEntry, Article } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,21 +9,26 @@ import { useToast } from '@/hooks/useToast.jsx';
 export default function AdminTickerPage() {
   const { success, error: toastError } = useToast();
   const [entries, setEntries] = useState([]);
+  const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState(null);
   const [form, setForm] = useState({
-    text: '', amount: '', category: 'news', link_type: 'none',
-    link_url: '', link_target_id: '', status: 'draft', display_order: 0,
+    text: '', category: 'news', link_type: 'none',
+    link_url: '', link_target_id: null, status: 'draft', display_order: 0,
   });
 
   const fetchData = async () => {
     try {
-      const all = await TickerEntry.list('-display_order', 100);
-      setEntries(all || []);
+      const [tickerData, articlesData] = await Promise.all([
+        TickerEntry.list('-display_order', 100),
+        Article.list('-published_date', 100)
+      ]);
+      setEntries(tickerData || []);
+      setArticles(articlesData || []);
     } catch (err) {
-      console.error('Error fetching ticker entries:', err);
-      toastError('Load Failed', 'Failed to load ticker entries');
+      console.error('Error fetching data:', err);
+      toastError('Load Failed', 'Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -35,14 +40,14 @@ export default function AdminTickerPage() {
     if (entry) {
       setEditingEntry(entry);
       setForm({
-        text: entry.text || '', amount: entry.amount || '',
+        text: entry.text || '',
         category: entry.category || 'news', link_type: entry.link_type || 'none',
-        link_url: entry.link_url || '', link_target_id: entry.link_target_id || '',
+        link_url: entry.link_url || '', link_target_id: entry.link_target_id || null,
         status: entry.status || 'draft', display_order: entry.display_order || 0,
       });
     } else {
       setEditingEntry(null);
-      setForm({ text: '', amount: '', category: 'news', link_type: 'none', link_url: '', link_target_id: '', status: 'draft', display_order: 0 });
+      setForm({ text: '', category: 'news', link_type: 'none', link_url: '', link_target_id: null, status: 'draft', display_order: 0 });
     }
     setShowModal(true);
   };
@@ -50,11 +55,15 @@ export default function AdminTickerPage() {
   const handleSave = async () => {
     if (!form.text.trim()) { toastError('Validation', 'Text is required'); return; }
     try {
+      const dataToSave = {
+        ...form,
+        link_target_id: form.link_target_id || null
+      };
       if (editingEntry) {
-        await TickerEntry.update(editingEntry.id, form);
+        await TickerEntry.update(editingEntry.id, dataToSave);
         success('Updated', 'Ticker entry updated');
       } else {
-        await TickerEntry.create({ ...form, published_date: new Date().toISOString() });
+        await TickerEntry.create({ ...dataToSave, published_date: new Date().toISOString() });
         success('Created', 'Ticker entry created');
       }
       setShowModal(false);
@@ -138,7 +147,6 @@ export default function AdminTickerPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-900 truncate">{entry.text}</span>
-                      {entry.amount && <span className="text-xs font-bold text-green-600">{entry.amount}</span>}
                       {entry.link_type !== 'none' && entry.link_url && (
                         <a href={entry.link_url} target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-700">
                           <ExternalLink className="w-3 h-3" />
@@ -177,10 +185,6 @@ export default function AdminTickerPage() {
                 <label className="block text-sm font-medium text-gray-900 mb-2">Text (shown in marquee)</label>
                 <Input value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} placeholder="e.g., New documentary project seeking cultural backing" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Amount (optional)</label>
-                <Input value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="e.g., €120k" />
-              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">Category</label>
@@ -205,23 +209,31 @@ export default function AdminTickerPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">Link Type (what happens when clicked)</label>
-                <select value={form.link_type} onChange={(e) => setForm({ ...form, link_type: e.target.value, link_url: '', link_target_id: '' })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <select value={form.link_type} onChange={(e) => setForm({ ...form, link_type: e.target.value, link_url: '', link_target_id: null })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
                   <option value="none">No link (plain text)</option>
-                  <option value="url">External URL / Article link</option>
-                  <option value="project">Internal project page</option>
+                  <option value="url">External URL</option>
                   <option value="article">Article page</option>
                 </select>
               </div>
-              {(form.link_type === 'url' || form.link_type === 'article') && (
+              {form.link_type === 'url' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">Link URL</label>
                   <Input value={form.link_url} onChange={(e) => setForm({ ...form, link_url: e.target.value })} placeholder="https://..." />
                 </div>
               )}
-              {form.link_type === 'project' && (
+              {form.link_type === 'article' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Project ID</label>
-                  <Input value={form.link_target_id} onChange={(e) => setForm({ ...form, link_target_id: e.target.value })} placeholder="Project ID" />
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Select Article</label>
+                  <select 
+                    value={form.link_target_id || ''} 
+                    onChange={(e) => setForm({ ...form, link_target_id: e.target.value || null })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">-- Select an article --</option>
+                    {articles.filter(a => a.status === 'published').map(article => (
+                      <option key={article.id} value={article.id}>{article.title}</option>
+                    ))}
+                  </select>
                 </div>
               )}
               <div>

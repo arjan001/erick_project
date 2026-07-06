@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS content_categories (
   slug VARCHAR(255) UNIQUE NOT NULL,
   description TEXT,
   image_url TEXT,
+  parent_id UUID REFERENCES content_categories(id) ON DELETE SET NULL,
   status VARCHAR(50) DEFAULT 'active',
   display_order INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -67,22 +68,17 @@ ON CONFLICT (slug) DO NOTHING;
 -- ============================================
 -- INVITES TABLE (for tracking invite usage)
 -- ============================================
--- Create invites table if it doesn't exist
-CREATE TABLE IF NOT EXISTS invites (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  code VARCHAR(20) UNIQUE NOT NULL,
-  creator_email VARCHAR(255) NOT NULL,
-  creator_type VARCHAR(50) NOT NULL, -- 'artist', 'team', 'backer', 'client'
-  uses_count INTEGER DEFAULT 0,
-  max_uses INTEGER DEFAULT 100,
-  status VARCHAR(50) DEFAULT 'active',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- Note: This table already exists in SUPABASE_MIGRATION.sql with different structure
+-- We're adding missing columns if needed
+ALTER TABLE invites 
+ADD COLUMN IF NOT EXISTS uses_count INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS max_uses INTEGER DEFAULT 100,
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
 -- Create indexes for invites (only after table exists)
-CREATE INDEX IF NOT EXISTS idx_invites_code ON invites(code);
-CREATE INDEX IF NOT EXISTS idx_invites_creator ON invites(creator_email);
+CREATE INDEX IF NOT EXISTS idx_invites_email ON invites(email);
+CREATE INDEX IF NOT EXISTS idx_invites_status ON invites(status);
+CREATE INDEX IF NOT EXISTS idx_invites_expires ON invites(expires_at);
 
 -- ============================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
@@ -94,61 +90,67 @@ ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE backers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_owners ENABLE ROW LEVEL SECURITY;
 ALTER TABLE content_categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE invites ENABLE ROW LEVEL SECURITY;
+-- Note: invites table RLS is already set in SUPABASE_MIGRATION.sql
 
 -- Artists table policies
-CREATE POLICY IF NOT EXISTS "Artists can view own profile" ON artists
+DROP POLICY IF EXISTS "Artists can view own profile" ON artists;
+CREATE POLICY "Artists can view own profile" ON artists
   FOR SELECT USING (email = auth.email());
 
-CREATE POLICY IF NOT EXISTS "Artists can update own profile" ON artists
+DROP POLICY IF EXISTS "Artists can update own profile" ON artists;
+CREATE POLICY "Artists can update own profile" ON artists
   FOR UPDATE USING (email = auth.email());
 
-CREATE POLICY IF NOT EXISTS "Public can view artists" ON artists
+DROP POLICY IF EXISTS "Public can view artists" ON artists;
+CREATE POLICY "Public can view artists" ON artists
   FOR SELECT USING (true);
 
 -- Teams table policies
-CREATE POLICY IF NOT EXISTS "Teams can view own profile" ON teams
+DROP POLICY IF EXISTS "Teams can view own profile" ON teams;
+CREATE POLICY "Teams can view own profile" ON teams
   FOR SELECT USING (contact_email = auth.email());
 
-CREATE POLICY IF NOT EXISTS "Teams can update own profile" ON teams
+DROP POLICY IF EXISTS "Teams can update own profile" ON teams;
+CREATE POLICY "Teams can update own profile" ON teams
   FOR UPDATE USING (contact_email = auth.email());
 
-CREATE POLICY IF NOT EXISTS "Public can view teams" ON teams
+DROP POLICY IF EXISTS "Public can view teams" ON teams;
+CREATE POLICY "Public can view teams" ON teams
   FOR SELECT USING (true);
 
 -- Backers table policies
-CREATE POLICY IF NOT EXISTS "Backers can view own profile" ON backers
+DROP POLICY IF EXISTS "Backers can view own profile" ON backers;
+CREATE POLICY "Backers can view own profile" ON backers
   FOR SELECT USING (contact_email = auth.email());
 
-CREATE POLICY IF NOT EXISTS "Backers can update own profile" ON backers
+DROP POLICY IF EXISTS "Backers can update own profile" ON backers;
+CREATE POLICY "Backers can update own profile" ON backers
   FOR UPDATE USING (contact_email = auth.email());
 
-CREATE POLICY IF NOT EXISTS "Public can view backers" ON backers
+DROP POLICY IF EXISTS "Public can view backers" ON backers;
+CREATE POLICY "Public can view backers" ON backers
   FOR SELECT USING (true);
 
 -- Project owners table policies
-CREATE POLICY IF NOT EXISTS "Project owners can view own profile" ON project_owners
+DROP POLICY IF EXISTS "Project owners can view own profile" ON project_owners;
+CREATE POLICY "Project owners can view own profile" ON project_owners
   FOR SELECT USING (email = auth.email());
 
-CREATE POLICY IF NOT EXISTS "Project owners can update own profile" ON project_owners
+DROP POLICY IF EXISTS "Project owners can update own profile" ON project_owners;
+CREATE POLICY "Project owners can update own profile" ON project_owners
   FOR UPDATE USING (email = auth.email());
 
-CREATE POLICY IF NOT EXISTS "Public can view project owners" ON project_owners
+DROP POLICY IF EXISTS "Public can view project owners" ON project_owners;
+CREATE POLICY "Public can view project owners" ON project_owners
   FOR SELECT USING (true);
 
 -- Content categories policies (public read)
-CREATE POLICY IF NOT EXISTS "Public can view categories" ON content_categories
+DROP POLICY IF EXISTS "Public can view categories" ON content_categories;
+CREATE POLICY "Public can view categories" ON content_categories
   FOR SELECT USING (status = 'active');
 
 -- Invites policies
-CREATE POLICY IF NOT EXISTS "Users can view invites" ON invites
-  FOR SELECT USING (true);
-
-CREATE POLICY IF NOT EXISTS "Users can create invites" ON invites
-  FOR INSERT WITH CHECK (true);
-
-CREATE POLICY IF NOT EXISTS "Users can update invites" ON invites
-  FOR UPDATE USING (true);
+-- Note: invites table policies are already set in SUPABASE_MIGRATION.sql
 
 -- ============================================
 -- FUNCTIONS FOR AUTO-UPDATING UPDATED_AT
@@ -169,7 +171,128 @@ CREATE TRIGGER update_content_categories_updated_at
   BEFORE UPDATE ON content_categories
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-DROP TRIGGER IF EXISTS update_invites_updated_at ON invites;
-CREATE TRIGGER update_invites_updated_at
-  BEFORE UPDATE ON invites
+-- Note: invites trigger is handled in SUPABASE_MIGRATION.sql
+
+-- ============================================
+-- AUDIT LOGS TABLE (for tracking all admin activity)
+-- ============================================
+-- Create audit_logs table if it doesn't exist
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  actor_email VARCHAR(255),
+  actor_role VARCHAR(50),
+  action VARCHAR(100) NOT NULL,
+  entity_type VARCHAR(100),
+  entity_id UUID,
+  details TEXT,
+  ip_address VARCHAR(50),
+  user_agent TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for audit_logs (only after table exists)
+CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs(actor_email);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at DESC);
+
+-- Enable RLS on audit_logs
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+
+-- Audit logs policies (admin only access)
+DROP POLICY IF EXISTS "Admins can view audit logs" ON audit_logs;
+CREATE POLICY "Admins can view audit logs" ON audit_logs
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Admins can create audit logs" ON audit_logs;
+CREATE POLICY "Admins can create audit logs" ON audit_logs
+  FOR INSERT WITH CHECK (true);
+
+-- ============================================
+-- TICKER ENTRIES TABLE UPDATE
+-- ============================================
+-- Add missing columns to ticker_entries table for full functionality
+ALTER TABLE ticker_entries 
+ADD COLUMN IF NOT EXISTS category VARCHAR(50) DEFAULT 'news',
+ADD COLUMN IF NOT EXISTS link_type VARCHAR(50) DEFAULT 'none',
+ADD COLUMN IF NOT EXISTS link_target_id UUID,
+ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'draft',
+ADD COLUMN IF NOT EXISTS published_date TIMESTAMP WITH TIME ZONE;
+
+-- Create indexes for new ticker columns
+CREATE INDEX IF NOT EXISTS idx_ticker_entries_category ON ticker_entries(category);
+CREATE INDEX IF NOT EXISTS idx_ticker_entries_status ON ticker_entries(status);
+
+-- ============================================
+-- ARTICLES TABLE (for blog posts and content)
+-- ============================================
+-- Create articles table if it doesn't exist
+CREATE TABLE IF NOT EXISTS articles (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) UNIQUE NOT NULL,
+  excerpt TEXT,
+  content TEXT NOT NULL,
+  featured_image_url TEXT,
+  author_id UUID,
+  author_name VARCHAR(255),
+  category VARCHAR(100),
+  tags TEXT[],
+  status VARCHAR(50) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
+  published_date TIMESTAMP WITH TIME ZONE,
+  display_order INTEGER DEFAULT 0,
+  is_featured BOOLEAN DEFAULT FALSE,
+  meta_title VARCHAR(255),
+  meta_description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for articles
+CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug);
+CREATE INDEX IF NOT EXISTS idx_articles_status ON articles(status);
+CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category);
+CREATE INDEX IF NOT EXISTS idx_articles_published ON articles(published_date DESC);
+CREATE INDEX IF NOT EXISTS idx_articles_featured ON articles(is_featured);
+
+-- Enable RLS on articles
+ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
+
+-- Articles policies
+DROP POLICY IF EXISTS "Public can view published articles" ON articles;
+CREATE POLICY "Public can view published articles" ON articles
+  FOR SELECT USING (status = 'published');
+
+DROP POLICY IF EXISTS "Admins can manage articles" ON articles;
+CREATE POLICY "Admins can manage articles" ON articles
+  FOR ALL USING (true);
+
+-- Create trigger for updated_at
+DROP TRIGGER IF EXISTS update_articles_updated_at ON articles;
+CREATE TRIGGER update_articles_updated_at
+  BEFORE UPDATE ON articles
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- SEED SAMPLE ARTICLES
+-- ============================================
+-- Insert sample articles if table is empty
+INSERT INTO articles (title, slug, excerpt, content, featured_image_url, author_name, category, tags, status, published_date, display_order, is_featured, meta_title, meta_description)
+VALUES 
+  ('New Documentary Project Announced', 'new-documentary-project-announced', 'Studio22 announces a groundbreaking new documentary project exploring cultural heritage.', '<p>We are thrilled to announce our latest documentary project that will explore the rich cultural heritage of our region. This film will feature interviews with local artists, historians, and community leaders.</p>', 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800', 'Studio22 Team', 'documentary', ARRAY['documentary', 'culture', 'heritage'], 'published', NOW(), 1, true, 'New Documentary Project - Studio22', 'Studio22 announces a groundbreaking new documentary project exploring cultural heritage.'),
+  ('Cultural Funding Initiative Launched', 'cultural-funding-initiative-launched', 'New funding opportunities for cultural projects and artistic endeavors.', '<p>We have launched a new funding initiative to support cultural projects and artistic endeavors. This program will provide grants to artists and organizations working to preserve and promote cultural heritage.</p>', 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=800', 'Studio22 Team', 'funding', ARRAY['funding', 'culture', 'grants'], 'published', NOW(), 2, false, 'Cultural Funding Initiative - Studio22', 'New funding opportunities for cultural projects and artistic endeavors.'),
+  ('Production Workshop Series', 'production-workshop-series', 'Join our upcoming workshop series on film production techniques.', '<p>We are organizing a series of workshops on film production techniques. These workshops will cover everything from pre-production planning to post-production editing.</p>', 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800', 'Studio22 Team', 'production', ARRAY['workshop', 'production', 'education'], 'published', NOW(), 3, false, 'Production Workshop Series - Studio22', 'Join our upcoming workshop series on film production techniques.')
+ON CONFLICT (slug) DO NOTHING;
+
+-- ============================================
+-- SEED SAMPLE TICKER ENTRIES
+-- ============================================
+-- Insert sample ticker entries if table is empty
+INSERT INTO ticker_entries (text, category, link_type, link_url, status, display_order, published_date)
+VALUES 
+  ('🎬 New documentary project announced - Learn more', 'news', 'article', null, 'live', 1, NOW()),
+  ('💰 Cultural funding initiative now accepting applications', 'announcement', 'article', null, 'live', 2, NOW()),
+  ('🎥 Production workshop series starting next month', 'news', 'article', null, 'live', 3, NOW()),
+  ('🌍 Join our global network of cultural creators', 'cultural_support', 'url', 'https://studio22.com/join', 'live', 4, NOW()),
+  ('📢 Studio22 partnership opportunities available', 'partnership', 'url', 'https://studio22.com/partners', 'live', 5, NOW())
+ON CONFLICT DO NOTHING;

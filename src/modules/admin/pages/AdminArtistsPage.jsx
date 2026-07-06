@@ -216,10 +216,10 @@ export default function AdminArtistsPage() {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
-                  {artist.based_in_city || artist.location ? (
+                  {artist.based_in_city || artist.based_in_country ? (
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-indigo-400" />
-                      {artist.based_in_city || artist.location}
+                      {artist.based_in_city || artist.based_in_country}
                     </div>
                   ) : (
                     <span className="text-gray-400">No location</span>
@@ -243,9 +243,6 @@ export default function AdminArtistsPage() {
                     </Button>
                     <Button onClick={() => toggleSuspend(artist)} variant="ghost" size="sm" className={artist.is_suspended ? 'text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg' : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg'}>
                       <Ban className="w-4 h-4" />
-                    </Button>
-                    <Button onClick={() => toggleDisable(artist)} variant="ghost" size="sm" className={artist.is_disabled ? 'text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg' : 'text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg'}>
-                      <AlertCircle className="w-4 h-4" />
                     </Button>
                     <Button onClick={() => handleDelete(artist.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg">
                       <Trash2 className="w-4 h-4" />
@@ -301,13 +298,13 @@ export default function AdminArtistsPage() {
       {viewingArtist && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-6 flex items-center justify-between">
+            <div className="bg-gray-900 p-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">Artist Details</h2>
               <button onClick={() => setViewingArtist(null)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-2xl font-bold text-indigo-600 ring-2 ring-indigo-100">
+                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-600 ring-2 ring-gray-200">
                   {viewingArtist.full_name?.[0]?.toUpperCase() || 'A'}
                 </div>
                 <div>
@@ -321,16 +318,16 @@ export default function AdminArtistsPage() {
                   <label className="text-sm font-medium text-gray-500">Status</label>
                   <p className="font-medium">{viewingArtist.is_suspended ? 'Suspended' : viewingArtist.is_disabled ? 'Disabled' : 'Active'}</p>
                 </div>
-                {viewingArtist.location && (
+                {viewingArtist.based_in_city && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Location</label>
-                    <p className="font-medium flex items-center gap-2"><MapPin className="w-4 h-4 text-indigo-500" /> {viewingArtist.location}</p>
+                    <p className="font-medium flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-500" /> {viewingArtist.based_in_city}</p>
                   </div>
                 )}
                 {viewingArtist.created_at && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Joined</label>
-                    <p className="font-medium flex items-center gap-2"><Calendar className="w-4 h-4 text-indigo-500" /> {new Date(viewingArtist.created_at).toLocaleDateString()}</p>
+                    <p className="font-medium flex items-center gap-2"><Calendar className="w-4 h-4 text-gray-500" /> {new Date(viewingArtist.created_at).toLocaleDateString()}</p>
                   </div>
                 )}
               </div>
@@ -351,7 +348,7 @@ export default function AdminArtistsPage() {
             </div>
             <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setViewingArtist(null)} className="rounded-lg">Close</Button>
-              <Button onClick={() => { setViewingArtist(null); openModal(viewingArtist); }} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg">Edit Artist</Button>
+              <Button onClick={() => { setViewingArtist(null); openModal(viewingArtist); }} className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg">Edit Artist</Button>
             </div>
           </div>
         </div>
@@ -361,24 +358,24 @@ export default function AdminArtistsPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-6 flex items-center justify-between">
+            <div className="bg-gray-900 p-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">{editingArtist ? 'Edit Artist' : 'Add Artist'}</h2>
               <button onClick={() => setShowModal(false)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
               <div><label className="block text-sm font-medium mb-2">Full Name</label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="rounded-lg" /></div>
               <div><label className="block text-sm font-medium mb-2">Email</label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="rounded-lg" /></div>
-              <div><label className="block text-sm font-medium mb-2">Location</label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-2">City</label><Input value={form.based_in_city} onChange={(e) => setForm({ ...form, based_in_city: e.target.value })} className="rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-2">Country</label><Input value={form.based_in_country} onChange={(e) => setForm({ ...form, based_in_country: e.target.value })} className="rounded-lg" /></div>
               <div><label className="block text-sm font-medium mb-2">Bio</label><textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
               <div><label className="block text-sm font-medium mb-2">Skills</label><Input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="Comma-separated skills" className="rounded-lg" /></div>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_suspended} onChange={(e) => setForm({ ...form, is_suspended: e.target.checked })} className="w-4 h-4" /> Suspended</label>
-                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_disabled} onChange={(e) => setForm({ ...form, is_disabled: e.target.checked })} className="w-4 h-4" /> Disabled</label>
               </div>
             </div>
             <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setShowModal(false)} className="rounded-lg">Cancel</Button>
-              <Button onClick={handleSave} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg">{editingArtist ? 'Update' : 'Create'}</Button>
+              <Button onClick={handleSave} className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg">{editingArtist ? 'Update' : 'Create'}</Button>
             </div>
           </div>
         </div>

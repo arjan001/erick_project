@@ -180,41 +180,41 @@ export default function AdminSuccessStoriesPage() {
       </Tabs>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">{editing ? 'Edit Success Story' : 'Add Success Story'}</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="bg-gray-900 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">{editing ? 'Edit Success Story' : 'Add Success Story'}</h2>
+              <button onClick={() => setShowModal(false)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
-              <div><label className="block text-sm font-medium mb-2">Title</label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Story title" /></div>
-              <div><label className="block text-sm font-medium mb-2">Story</label><textarea value={form.story} onChange={(e) => setForm({ ...form, story: e.target.value })} placeholder="Success story content" rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
-              <div><label className="block text-sm font-medium mb-2">Testimonial</label><textarea value={form.testimonial} onChange={(e) => setForm({ ...form, testimonial: e.target.value })} placeholder="Client testimonial" rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
-              <div><label className="block text-sm font-medium mb-2">Images (comma-separated URLs)</label><Input value={form.images.join(',')} onChange={(e) => setForm({ ...form, images: e.target.value.split(',').filter(Boolean) })} placeholder="https://..." /></div>
-              <div><label className="block text-sm font-medium mb-2">Video URL</label><Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="https://..." /></div>
+              <div><label className="block text-sm font-medium mb-2">Title</label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Story title" className="rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-2">Story</label><textarea value={form.story} onChange={(e) => setForm({ ...form, story: e.target.value })} placeholder="Success story content" rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-2">Testimonial</label><textarea value={form.testimonial} onChange={(e) => setForm({ ...form, testimonial: e.target.value })} placeholder="Client testimonial" rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-2">Images (comma-separated URLs)</label><Input value={form.images.join(',')} onChange={(e) => setForm({ ...form, images: e.target.value.split(',').filter(Boolean) })} placeholder="https://..." className="rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-2">Video URL</label><Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="https://..." className="rounded-lg" /></div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium mb-2">Category</label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="e.g., Film, Commercial" /></div>
-                <div><label className="block text-sm font-medium mb-2">Score (0-10)</label><Input type="number" min="0" max="10" step="0.1" value={form.score} onChange={(e) => setForm({ ...form, score: parseFloat(e.target.value) || 0 })} /></div>
+                <div><label className="block text-sm font-medium mb-2">Category</label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="e.g., Film, Commercial" className="rounded-lg" /></div>
+                <div><label className="block text-sm font-medium mb-2">Score (0-10)</label><Input type="number" min="0" max="10" step="0.1" value={form.score} onChange={(e) => setForm({ ...form, score: parseFloat(e.target.value) || 0 })} className="rounded-lg" /></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Status</label>
-                  <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                  <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
                     <option value="draft">Draft</option>
                     <option value="published">Published</option>
                     <option value="archived">Archived</option>
                   </select>
                 </div>
-                <div><label className="block text-sm font-medium mb-2">Display Order</label><Input type="number" value={form.display_order} onChange={(e) => setForm({ ...form, display_order: parseInt(e.target.value) || 0 })} /></div>
+                <div><label className="block text-sm font-medium mb-2">Display Order</label><Input type="number" value={form.display_order} onChange={(e) => setForm({ ...form, display_order: parseInt(e.target.value) || 0 })} className="rounded-lg" /></div>
               </div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="w-4 h-4" />
                 <label className="text-sm">Featured on homepage</label>
               </div>
             </div>
-            <div className="p-6 border-t border-gray-200 flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-              <Button onClick={handleSave} className="bg-black text-white hover:bg-gray-800">{editing ? 'Update' : 'Create'}</Button>
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setShowModal(false)} className="rounded-lg">Cancel</Button>
+              <Button onClick={handleSave} className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg">{editing ? 'Update' : 'Create'}</Button>
             </div>
           </div>
         </div>

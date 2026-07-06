@@ -9,8 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui
 import { Save, Globe, Mail, Bell, Shield, Users, CreditCard, Store, Settings as SettingsIcon, Layout, FileText, Link as LinkIcon, ScrollText, Grid3x3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
+import { SystemSetting } from '@/lib/supabaseEntities';
+import { useToast } from '@/hooks/useToast.jsx';
 
 export default function AdminSettingsPage() {
+  const { success, error: toastError } = useToast();
   const [settings, setSettings] = useState({
     siteName: 'Studio22',
     siteUrl: 'https://studio22.com',
@@ -38,14 +41,68 @@ export default function AdminSettingsPage() {
     referralBonus: '10'
   });
 
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const loadSettings = async () => {
+    try {
+      const settingsData = await SystemSetting.filter({}, 'key', 100);
+      if (settingsData && settingsData.length > 0) {
+        const settingsMap = {};
+        settingsData.forEach(setting => {
+          settingsMap[setting.key] = setting.value;
+        });
+        setSettings(prev => ({
+          ...prev,
+          ...settingsMap,
+          maintenanceMode: settingsMap.maintenanceMode === 'true',
+          enableRegistration: settingsMap.enableRegistration === 'true',
+          requireEmailVerification: settingsMap.requireEmailVerification === 'true',
+          notificationEmail: settingsMap.notificationEmail === 'true',
+          notificationPush: settingsMap.notificationPush === 'true',
+          twoFactorAuth: settingsMap.twoFactorAuth === 'true',
+          enableMarquee: settingsMap.enableMarquee === 'true',
+          enableCategories: settingsMap.enableCategories === 'true',
+          enableSubscriptions: settingsMap.enableSubscriptions === 'true',
+          enableMarketplace: settingsMap.enableMarketplace === 'true',
+          enableReferrals: settingsMap.enableReferrals === 'true'
+        }));
+      }
+    } catch (err) {
+      console.error('Error loading settings:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
-    // Simulate save
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('Saving settings:', settings);
-    setSaving(false);
+    try {
+      const settingsToSave = Object.entries(settings).map(([key, value]) => ({
+        key,
+        value: typeof value === 'boolean' ? value.toString() : value
+      }));
+
+      for (const setting of settingsToSave) {
+        const existing = await SystemSetting.filter({ key: setting.key });
+        if (existing && existing.length > 0) {
+          await SystemSetting.update(existing[0].id, { value: setting.value });
+        } else {
+          await SystemSetting.create({ key: setting.key, value: setting.value });
+        }
+      }
+
+      success('Settings Saved', 'Your settings have been updated successfully');
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      toastError('Save Failed', 'Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const quickLinks = [
@@ -59,6 +116,10 @@ export default function AdminSettingsPage() {
     { icon: LinkIcon, label: 'API', href: 'AdminAPISettings' },
   ];
 
+  if (loading) {
+    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" /></div>;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -66,7 +127,7 @@ export default function AdminSettingsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Admin Settings</h1>
           <p className="text-gray-600">Configure all aspects of your Studio22 platform</p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="bg-black text-white hover:bg-gray-800">
+        <Button onClick={handleSave} disabled={saving} className="bg-gray-900 text-white hover:bg-gray-800">
           <Save className="w-4 h-4 mr-2" />
           {saving ? 'Saving...' : 'Save Changes'}
         </Button>

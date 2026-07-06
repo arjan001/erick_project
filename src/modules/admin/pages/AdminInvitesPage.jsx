@@ -1,39 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Invite } from '@/lib/supabaseEntities';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Badge } from '@/shared/components/ui/badge';
-import { Copy, Mail, Plus, Trash2, Send } from 'lucide-react';
+import { Copy, Mail, Plus, Trash2, Send, X, Eye } from 'lucide-react';
+import { useToast } from '@/hooks/useToast.jsx';
 
 export default function AdminInvitesPage() {
-  const [invites, setInvites] = useState([
-    { id: 1, email: 'john@example.com', role: 'artist', status: 'pending', expires: '2024-02-15' },
-    { id: 2, email: 'jane@example.com', role: 'team', status: 'accepted', expires: '2024-02-10' },
-    { id: 3, email: 'mike@example.com', role: 'project_owner', status: 'expired', expires: '2024-01-10' },
-  ]);
-
+  const { success, error: toastError } = useToast();
+  const [invites, setInvites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [viewInvite, setViewInvite] = useState(null);
   const [newInvite, setNewInvite] = useState({ email: '', role: 'artist' });
 
-  const handleCreateInvite = () => {
-    if (!newInvite.email) return;
-    const invite = {
-      id: Date.now(),
-      email: newInvite.email,
-      role: newInvite.role,
-      status: 'pending',
-      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    };
-    setInvites([...invites, invite]);
-    setNewInvite({ email: '', role: 'artist' });
+  const fetchInvites = async () => {
+    try {
+      const all = await Invite.list('-created_at', 100);
+      setInvites(all || []);
+    } catch (err) {
+      console.error('Error fetching invites:', err);
+      toastError('Load Failed', 'Failed to load invites');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleResend = (id) => {
-    console.log('Resending invite:', id);
+  useEffect(() => { fetchInvites(); }, []);
+
+  const handleCreateInvite = async () => {
+    if (!newInvite.email) { toastError('Validation', 'Email is required'); return; }
+    try {
+      const invite = {
+        email: newInvite.email,
+        role: newInvite.role,
+        status: 'pending',
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      };
+      await Invite.create(invite);
+      success('Sent', 'Invite sent successfully');
+      setNewInvite({ email: '', role: 'artist' });
+      setShowModal(false);
+      fetchInvites();
+    } catch (err) {
+      console.error('Error creating invite:', err);
+      toastError('Failed', 'Failed to create invite');
+    }
   };
 
-  const handleDelete = (id) => {
-    setInvites(invites.filter(i => i.id !== id));
+  const handleResend = async (invite) => {
+    try {
+      await Invite.update(invite.id, { status: 'pending', expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() });
+      success('Resent', 'Invite resent successfully');
+      fetchInvites();
+    } catch (err) {
+      toastError('Failed', 'Failed to resend invite');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Delete this invite?')) return;
+    try {
+      await Invite.delete(id);
+      success('Deleted', 'Invite deleted');
+      fetchInvites();
+    } catch (err) {
+      toastError('Failed', 'Failed to delete invite');
+    }
   };
 
   const getStatusColor = (status) => {
@@ -45,6 +80,10 @@ export default function AdminInvitesPage() {
     }
   };
 
+  if (loading) {
+    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -52,47 +91,13 @@ export default function AdminInvitesPage() {
           <h1 className="text-2xl font-bold text-gray-900">Invites</h1>
           <p className="text-gray-600">Manage user invitations and access</p>
         </div>
+        <Button onClick={() => setShowModal(true)} className="bg-gray-900 text-white hover:bg-gray-800">
+          <Plus className="w-4 h-4 mr-2" />
+          Create Invite
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Create Invite */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="w-5 h-5" />
-              Create Invite
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Email Address</Label>
-              <Input
-                type="email"
-                placeholder="user@example.com"
-                value={newInvite.email}
-                onChange={(e) => setNewInvite({ ...newInvite, email: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Role</Label>
-              <select
-                value={newInvite.role}
-                onChange={(e) => setNewInvite({ ...newInvite, role: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              >
-                <option value="artist">Artist</option>
-                <option value="team">Team</option>
-                <option value="project_owner">Project Owner</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            <Button onClick={handleCreateInvite} className="w-full bg-black text-white hover:bg-gray-800">
-              <Send className="w-4 h-4 mr-2" />
-              Send Invite
-            </Button>
-          </CardContent>
-        </Card>
-
         {/* Invite Link */}
         <Card>
           <CardHeader>
@@ -108,8 +113,9 @@ export default function AdminInvitesPage() {
                 <Input
                   value="https://studio22.com/invite/abc123"
                   readOnly
+                  className="rounded-lg"
                 />
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" className="rounded-lg">
                   <Copy className="w-4 h-4" />
                 </Button>
               </div>
@@ -119,15 +125,39 @@ export default function AdminInvitesPage() {
             </p>
           </CardContent>
         </Card>
+
+        {/* Stats */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Invite Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">{invites.filter(i => i.status === 'pending').length}</div>
+                <div className="text-sm text-gray-600">Pending</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{invites.filter(i => i.status === 'accepted').length}</div>
+                <div className="text-sm text-gray-600">Accepted</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-600">{invites.filter(i => i.status === 'expired').length}</div>
+                <div className="text-sm text-gray-600">Expired</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Invites List */}
       <Card>
         <CardHeader>
-          <CardTitle>Active Invites</CardTitle>
+          <CardTitle>All Invites</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
+            {invites.length === 0 && <div className="text-center py-8 text-gray-500">No invites yet</div>}
             {invites.map((invite) => (
               <div
                 key={invite.id}
@@ -140,7 +170,7 @@ export default function AdminInvitesPage() {
                   <div>
                     <p className="font-medium">{invite.email}</p>
                     <p className="text-sm text-gray-600">
-                      Role: {invite.role} • Expires: {invite.expires}
+                      Role: {invite.role} • Expires: {invite.expires_at ? new Date(invite.expires_at).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                 </div>
@@ -148,8 +178,11 @@ export default function AdminInvitesPage() {
                   <Badge className={getStatusColor(invite.status)}>
                     {invite.status}
                   </Badge>
+                  <Button variant="ghost" size="sm" onClick={() => setViewInvite(invite)}>
+                    <Eye className="w-4 h-4" />
+                  </Button>
                   {invite.status === 'pending' && (
-                    <Button variant="ghost" size="sm" onClick={() => handleResend(invite.id)}>
+                    <Button variant="ghost" size="sm" onClick={() => handleResend(invite)}>
                       <Send className="w-4 h-4" />
                     </Button>
                   )}
@@ -162,6 +195,70 @@ export default function AdminInvitesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+            <div className="bg-gray-900 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Create Invite</h2>
+              <button onClick={() => setShowModal(false)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <Label>Email Address</Label>
+                <Input
+                  type="email"
+                  placeholder="user@example.com"
+                  value={newInvite.email}
+                  onChange={(e) => setNewInvite({ ...newInvite, email: e.target.value })}
+                  className="rounded-lg"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Role</Label>
+                <select
+                  value={newInvite.role}
+                  onChange={(e) => setNewInvite({ ...newInvite, role: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="artist">Artist</option>
+                  <option value="team">Team</option>
+                  <option value="project_owner">Project Owner</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            </div>
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setShowModal(false)} className="rounded-lg">Cancel</Button>
+              <Button onClick={handleCreateInvite} className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg">
+                <Send className="w-4 h-4 mr-2" />
+                Send Invite
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {viewInvite && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+            <div className="bg-gray-900 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Invite Details</h2>
+              <button onClick={() => setViewInvite(null)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div><span className="font-medium text-gray-500">Email:</span> {viewInvite.email}</div>
+              <div><span className="font-medium text-gray-500">Role:</span> {viewInvite.role}</div>
+              <div><span className="font-medium text-gray-500">Status:</span> <Badge className={getStatusColor(viewInvite.status)}>{viewInvite.status}</Badge></div>
+              <div><span className="font-medium text-gray-500">Expires:</span> {viewInvite.expires_at ? new Date(viewInvite.expires_at).toLocaleDateString() : 'N/A'}</div>
+              <div><span className="font-medium text-gray-500">Created:</span> {viewInvite.created_at ? new Date(viewInvite.created_at).toLocaleDateString() : 'N/A'}</div>
+            </div>
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setViewInvite(null)} className="rounded-lg">Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

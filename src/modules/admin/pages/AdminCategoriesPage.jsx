@@ -12,12 +12,12 @@ export default function AdminCategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', slug: '', description: '', image_url: '', item_count: '', display_order: 0, status: 'active', is_featured: false });
+  const [form, setForm] = useState({ name: '', slug: '', description: '', image_url: '', item_count: '', display_order: 0, status: 'active', is_featured: false, parent_id: '' });
 
   const fetchData = async () => {
     try {
       console.log('Fetching categories from Supabase...');
-      const all = await ContentCategory.filter({ status: 'active' }, 'display_order', 100);
+      const all = await ContentCategory.list('display_order', 100);
       console.log('Categories fetched:', all);
       setCategories(all || []);
     } catch (err) {
@@ -33,10 +33,10 @@ export default function AdminCategoriesPage() {
   const openModal = (cat = null) => {
     if (cat) {
       setEditing(cat);
-      setForm({ name: cat.name || '', slug: cat.slug || '', description: cat.description || '', image_url: cat.image_url || '', item_count: cat.item_count || '', display_order: cat.display_order || 0, status: cat.status || 'active', is_featured: cat.is_featured || false });
+      setForm({ name: cat.name || '', slug: cat.slug || '', description: cat.description || '', image_url: cat.image_url || '', item_count: cat.item_count || '', display_order: cat.display_order || 0, status: cat.status || 'active', is_featured: cat.is_featured || false, parent_id: cat.parent_id || '' });
     } else {
       setEditing(null);
-      setForm({ name: '', slug: '', description: '', image_url: '', item_count: '', display_order: 0, status: 'active', is_featured: false });
+      setForm({ name: '', slug: '', description: '', image_url: '', item_count: '', display_order: 0, status: 'active', is_featured: false, parent_id: '' });
     }
     setShowModal(true);
   };
@@ -151,15 +151,24 @@ export default function AdminCategoriesPage() {
             </div>
             <div className="p-6 space-y-4">
               <div><label className="block text-sm font-medium mb-2">Name</label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g., Cinema Cameras" /></div>
-              <div><label className="block text-sm font-medium mb-2">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Category description" rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+              <div><label className="block text-sm font-medium mb-2">Slug</label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="auto-generated if empty" /></div>
+              <div><label className="block text-sm font-medium mb-2">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Category description" rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
               <div><label className="block text-sm font-medium mb-2">Image URL</label><Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." /></div>
+              <div><label className="block text-sm font-medium mb-2">Parent Category (for subcategories)</label>
+                <select value={form.parent_id} onChange={(e) => setForm({ ...form, parent_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                  <option value="">None (Top-level category)</option>
+                  {categories.filter(c => c.id !== editing?.id).map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-sm font-medium mb-2">Item Count Display</label><Input value={form.item_count} onChange={(e) => setForm({ ...form, item_count: e.target.value })} placeholder="e.g., 127 items" /></div>
                 <div><label className="block text-sm font-medium mb-2">Display Order</label><Input type="number" value={form.display_order} onChange={(e) => setForm({ ...form, display_order: parseInt(e.target.value) || 0 })} /></div>
               </div>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="w-4 h-4" /> Featured on landing page</label>
-                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="px-3 py-2 border border-gray-300 rounded-lg text-sm">
                   <option value="active">Active</option>
                   <option value="hidden">Hidden</option>
                 </select>
@@ -167,7 +176,7 @@ export default function AdminCategoriesPage() {
             </div>
             <div className="p-6 border-t border-gray-200 flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-              <Button onClick={handleSave} className="bg-black text-white hover:bg-gray-800">{editing ? 'Update' : 'Create'}</Button>
+              <Button onClick={handleSave} className="bg-gray-900 hover:bg-gray-800 text-white">{editing ? 'Update' : 'Create'}</Button>
             </div>
           </div>
         </div>
