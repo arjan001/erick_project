@@ -144,7 +144,11 @@ DROP POLICY IF EXISTS "Public can view project owners" ON project_owners;
 CREATE POLICY "Public can view project owners" ON project_owners
   FOR SELECT USING (true);
 
--- Content categories policies (public read)
+-- Content categories policies (admin full access + public read)
+DROP POLICY IF EXISTS "Admins can manage categories" ON content_categories;
+CREATE POLICY "Admins can manage categories" ON content_categories
+  FOR ALL USING (true);
+
 DROP POLICY IF EXISTS "Public can view categories" ON content_categories;
 CREATE POLICY "Public can view categories" ON content_categories
   FOR SELECT USING (status = 'active');

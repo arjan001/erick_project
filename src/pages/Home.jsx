@@ -350,19 +350,35 @@ export default function Home({ editMode = false }) {
         images: project.images || []
       })));
 
-      // Map categories from Supabase
-      setCollections(categoriesData.map(cat => ({
+      // Map categories from Supabase - use fallback if empty
+      const categories = categoriesData && categoriesData.length > 0 ? categoriesData : [
+        { name: 'Documentary', description: 'Professional documentary filmmaking and production services', image_url: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600' },
+        { name: 'Commercial', description: 'High-end commercial and advertising production', image_url: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600' },
+        { name: 'Music Video', description: 'Creative music video production and direction', image_url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600' },
+        { name: 'Film Production', description: 'Full-scale film production services', image_url: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600' },
+        { name: 'Photography', description: 'Professional photography services', image_url: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=600' },
+        { name: 'Animation', description: '2D and 3D animation services', image_url: 'https://images.unsplash.com/photo-1531297461136-82af022f5b80?w=600' }
+      ];
+      
+      setCollections(categories.map(cat => ({
         title: cat.name,
         description: cat.description,
         image: cat.image_url
       })));
     } catch (error) {
       console.error('Failed to load content from Supabase:', error);
-      // Set empty arrays if Supabase fails - no dummy data
+      // Use fallback data if Supabase fails
       setInProduction([]);
       setReleased([]);
-      setCollections([]);
       setRecent([]);
+      setCollections([
+        { title: 'Documentary', description: 'Professional documentary filmmaking and production services', image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600' },
+        { title: 'Commercial', description: 'High-end commercial and advertising production', image: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600' },
+        { title: 'Music Video', description: 'Creative music video production and direction', image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600' },
+        { title: 'Film Production', description: 'Full-scale film production services', image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600' },
+        { title: 'Photography', description: 'Professional photography services', image: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=600' },
+        { title: 'Animation', description: '2D and 3D animation services', image: 'https://images.unsplash.com/photo-1531297461136-82af022f5b80?w=600' }
+      ]);
     } finally {
       setLoading(false);
     }
