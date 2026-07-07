@@ -476,7 +476,7 @@ export default function ArtistProfile() {
           )}
 
           {activeTab === 'about' && (
-            <AboutSection artist={artist} setArtist={setArtist} />
+            <AboutSection artist={artist} endorsements={endorsements} onUpdate={setArtist} />
           )}
 
           {activeTab === 'settings' && (
