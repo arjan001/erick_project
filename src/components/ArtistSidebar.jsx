@@ -14,7 +14,7 @@ const MENU_ITEMS = [
   { label: 'Projects from Clients', icon: Briefcase, href: 'JobBoard' },
   { label: 'Applications', icon: FileText, href: 'JobApplications' },
   { label: 'Messages', icon: Mail, href: 'Messages', showBadge: true },
-  { label: 'Network', icon: Network, href: 'Network' },
+  { label: 'Network', icon: Network, href: 'Network', showConnectionBadge: true },
   { label: 'My Profile & Settings', icon: User, href: 'ArtistProfile' }
 ];
 
@@ -22,6 +22,7 @@ export default function ArtistSidebar() {
   const location = useLocation();
   const [user, setUser] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pendingConnections, setPendingConnections] = useState(0);
   const { sidebarExpanded: expanded, setSidebarExpanded } = useSidebar();
   const { logout } = useAuth();
 
@@ -48,6 +49,33 @@ export default function ArtistSidebar() {
       const { Message } = await import('@/lib/supabaseEntities');
       unsubscribe = Message.subscribe((event) => {
         if (event.data?.recipient_email === user.email) fetchUnread();
+      });
+    })();
+
+    return () => unsubscribe && unsubscribe();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    let unsubscribe;
+    const fetchPendingConnections = async () => {
+      try {
+        const { Connection } = await import('@/lib/supabaseEntities');
+        const connections = await Connection.filter({ 
+          recipient_email: user.email, 
+          status: 'pending' 
+        }, '-created_date', 50);
+        setPendingConnections((connections || []).length);
+      } catch {
+        setPendingConnections(0);
+      }
+    };
+    fetchPendingConnections();
+
+    (async () => {
+      const { Connection } = await import('@/lib/supabaseEntities');
+      unsubscribe = Connection.subscribe((event) => {
+        if (event.data?.recipient_email === user.email) fetchPendingConnections();
       });
     })();
 
@@ -96,6 +124,11 @@ export default function ArtistSidebar() {
               {item.showBadge && unreadCount > 0 && (
                 <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
                   {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+              {item.showConnectionBadge && pendingConnections > 0 && (
+                <span className="ml-auto bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 animate-pulse">
+                  {pendingConnections > 9 ? '9+' : pendingConnections}
                 </span>
               )}
             </Link>

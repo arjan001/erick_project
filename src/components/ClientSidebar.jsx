@@ -10,7 +10,7 @@ const MENU_ITEMS = [
   { label: 'Post Project', icon: Plus, href: 'ClientPostProject' },
   { label: 'Applications', icon: FileText, href: 'ClientApplications' },
   { label: 'Messages', icon: Mail, href: 'ClientMessages' },
-  { label: 'Network', icon: Share2, href: 'Network' },
+  { label: 'Network', icon: Share2, href: 'Network', showConnectionBadge: true },
   { label: 'Analytics', icon: BarChart3, href: 'ClientAnalytics' },
   { label: 'Profile & Settings', icon: Settings, href: 'ClientProfile' }
 ];
