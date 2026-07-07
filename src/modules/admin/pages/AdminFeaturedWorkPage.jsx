@@ -1,30 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { FeaturedWork } from '@/lib/supabaseEntities';
+import { FeaturedWork, Artist, Project } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Edit2, Trash2, X, Eye, EyeOff, Star, Calendar, DollarSign } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Eye, EyeOff, Star, Calendar, DollarSign, User, FolderKanban } from 'lucide-react';
 import { useToast } from '@/hooks/useToast.jsx';
 
 export default function AdminFeaturedWorkPage() {
   const { success, error: toastError } = useToast();
   const [works, setWorks] = useState([]);
+  const [artists, setArtists] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
-    title: '', description: '', images: [], video_url: '',
+    artist_id: '', project_id: '', title: '', description: '', images: [], video_url: '',
     featured_type: 'paid', featured_until: '', display_order: 0, status: 'active'
   });
 
   const fetchData = async () => {
     try {
-      const all = await FeaturedWork.list('display_order', 100);
-      setWorks(all || []);
+      const [worksData, artistsData, projectsData] = await Promise.all([
+        FeaturedWork.list('display_order', 100),
+        Artist.list('full_name', 100),
+        Project.filter({ status: 'open' }, '-created_at', 100)
+      ]);
+      setWorks(worksData || []);
+      setArtists(artistsData || []);
+      setProjects(projectsData || []);
     } catch (err) {
-      console.error('Error fetching featured works:', err);
+      console.error('Error fetching data:', err);
       // Don't show error toast - table might not exist yet
       setWorks([]);
+      setArtists([]);
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -36,6 +46,8 @@ export default function AdminFeaturedWorkPage() {
     if (work) {
       setEditing(work);
       setForm({
+        artist_id: work.artist_id || '',
+        project_id: work.project_id || '',
         title: work.title || '', description: work.description || '',
         images: work.images || [], video_url: work.video_url || '',
         featured_type: work.featured_type || 'paid',
@@ -45,7 +57,7 @@ export default function AdminFeaturedWorkPage() {
       });
     } else {
       setEditing(null);
-      setForm({ title: '', description: '', images: [], video_url: '', featured_type: 'paid', featured_until: '', display_order: 0, status: 'active' });
+      setForm({ artist_id: '', project_id: '', title: '', description: '', images: [], video_url: '', featured_type: 'paid', featured_until: '', display_order: 0, status: 'active' });
     }
     setShowModal(true);
   };
@@ -54,6 +66,8 @@ export default function AdminFeaturedWorkPage() {
     if (!form.title.trim()) { toastError('Validation', 'Title is required'); return; }
     try {
       const dataToSave = {
+        artist_id: form.artist_id || null,
+        project_id: form.project_id || null,
         title: form.title,
         description: form.description,
         images: form.images,
@@ -174,6 +188,36 @@ export default function AdminFeaturedWorkPage() {
               <button onClick={() => setShowModal(false)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">
+                  <User className="w-4 h-4 text-gray-500" /> Select Artist (Optional)
+                </label>
+                <select 
+                  value={form.artist_id} 
+                  onChange={(e) => setForm({ ...form, artist_id: e.target.value })} 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">No artist selected</option>
+                  {artists.map(artist => (
+                    <option key={artist.id} value={artist.id}>{artist.full_name || 'Unknown Artist'}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">
+                  <FolderKanban className="w-4 h-4 text-gray-500" /> Select Project (Optional)
+                </label>
+                <select 
+                  value={form.project_id} 
+                  onChange={(e) => setForm({ ...form, project_id: e.target.value })} 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">No project selected</option>
+                  {projects.map(project => (
+                    <option key={project.id} value={project.id}>{project.title || 'Unknown Project'}</option>
+                  ))}
+                </select>
+              </div>
               <div><label className="block text-sm font-medium mb-2">Title</label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Work title" className="rounded-lg" /></div>
               <div><label className="block text-sm font-medium mb-2">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
               <div><label className="block text-sm font-medium mb-2">Images (comma-separated URLs)</label><Input value={form.images.join(',')} onChange={(e) => setForm({ ...form, images: e.target.value.split(',').filter(Boolean) })} placeholder="https://..." className="rounded-lg" /></div>

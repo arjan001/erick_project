@@ -6,12 +6,14 @@ import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CountrySelector from '@/components/CountrySelector';
+import RolesTagInput from '@/components/artist/RolesTagInput';
 import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { confirmDialog } from '@/lib/sweetAlert';
 import ShareProfileButton from '@/components/artist/ShareProfileButton';
 import PortfolioModal from '@/components/artist/PortfolioModal';
 import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge';
+import AboutSection from '@/components/AboutSection';
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
   return (
@@ -48,7 +50,7 @@ export default function ArtistProfile() {
   const [uploadingImage, setUploadingImage] = useState(false);
   
   const [formData, setFormData] = useState({
-    full_name: '', role: '', based_in_city: '', based_in_country: '', bio: '',
+    full_name: '', roles: [], based_in_city: '', based_in_country: '', bio: '',
     website: '', instagram: '', linkedin: '', twitter: '', youtube: ''
   });
   
@@ -84,7 +86,7 @@ export default function ArtistProfile() {
           const a = artistData[0];
           setArtist(a);
           setFormData({
-            full_name: a.full_name || '', role: a.role || '', based_in_city: a.based_in_city || '',
+            full_name: a.full_name || '', roles: a.roles || [], based_in_city: a.based_in_city || '',
             based_in_country: a.based_in_country || '', bio: a.bio || '',
             website: a.website || '', instagram: a.instagram || '', linkedin: a.linkedin || '',
             twitter: a.twitter || '', youtube: a.youtube || ''
@@ -150,7 +152,7 @@ export default function ArtistProfile() {
     if (!artist) return;
     try {
       const updated = await Artist.update(artist.id, { 
-        full_name: formData.full_name, role: formData.role, based_in_city: formData.based_in_city,
+        full_name: formData.full_name, roles: formData.roles, based_in_city: formData.based_in_city,
         based_in_country: formData.based_in_country, bio: formData.bio,
         website: formData.website, instagram: formData.instagram, linkedin: formData.linkedin,
         twitter: formData.twitter, youtube: formData.youtube
@@ -316,6 +318,13 @@ export default function ArtistProfile() {
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold text-gray-900">{formData.full_name || user?.full_name}</h2>
                   <p className="text-sm text-gray-500 mt-1">{user?.email}</p>
+                  {formData.roles && formData.roles.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {formData.roles.map((role, i) => (
+                        <span key={i} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">{role}</span>
+                      ))}
+                    </div>
+                  )}
                   <div className="mt-4 flex gap-3">
                     <Button onClick={() => setEditing(!editing)} variant={editing ? 'outline' : 'default'} className={editing ? '' : 'bg-black text-white hover:bg-gray-800'}>
                       {editing ? <X className="w-4 h-4 mr-2" /> : <Edit2 className="w-4 h-4 mr-2" />}
@@ -338,8 +347,8 @@ export default function ArtistProfile() {
                       <Input value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} placeholder="Your full name" className="rounded-lg" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">Role/Title</label>
-                      <Input value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} placeholder="e.g. Video Editor, Director" className="rounded-lg" />
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Roles/Title</label>
+                      <RolesTagInput selected={formData.roles} onChange={(roles) => setFormData({ ...formData, roles })} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" />City</label>
@@ -467,32 +476,7 @@ export default function ArtistProfile() {
           )}
 
           {activeTab === 'about' && (
-            <div className="max-w-3xl space-y-6">
-              <div className="bg-gray-50 rounded-2xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Skills & Expertise</h3>
-                <div className="flex flex-wrap gap-2">
-                  {artist?.skills_experience?.length > 0 ? artist.skills_experience.map((s, i) => (
-                    <span key={i} className="px-3 py-1 bg-white text-gray-700 rounded-full text-sm border">{s.skill}</span>
-                  )) : <p className="text-gray-500 text-sm">No skills added yet</p>}
-                </div>
-              </div>
-              <div className="bg-gray-50 rounded-2xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Past Clients</h3>
-                <div className="flex flex-wrap gap-2">
-                  {artist?.past_clients?.length > 0 ? artist.past_clients.map((c, i) => (
-                    <span key={i} className="px-3 py-1 bg-white text-gray-700 rounded-full text-sm border">{c}</span>
-                  )) : <p className="text-gray-500 text-sm">No clients added yet</p>}
-                </div>
-              </div>
-              <div className="bg-gray-50 rounded-2xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Specialties</h3>
-                <div className="flex flex-wrap gap-2">
-                  {artist?.project_specialties?.length > 0 ? artist.project_specialties.map((s, i) => (
-                    <span key={i} className="px-3 py-1 bg-white text-gray-700 rounded-full text-sm border">{s}</span>
-                  )) : <p className="text-gray-500 text-sm">No specialties added yet</p>}
-                </div>
-              </div>
-            </div>
+            <AboutSection artist={artist} setArtist={setArtist} />
           )}
 
           {activeTab === 'settings' && (

@@ -1,30 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { RecentProject } from '@/lib/supabaseEntities';
+import { RecentProject, Project } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Edit2, Trash2, X, Eye, EyeOff, Clock, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Eye, EyeOff, Clock, ArrowUp, ArrowDown, FolderKanban } from 'lucide-react';
 import { useToast } from '@/hooks/useToast.jsx';
 
 export default function AdminRecentProjectsPage() {
   const { success, error: toastError } = useToast();
   const [projects, setProjects] = useState([]);
+  const [availableProjects, setAvailableProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
-    title: '', description: '', studio: '', type: '',
+    project_id: '', title: '', description: '', studio: '', type: '',
     images: [], display_order: 0, is_active: true
   });
 
   const fetchData = async () => {
     try {
-      const all = await RecentProject.list('display_order', 100);
-      setProjects(all || []);
+      const [recentProjectsData, allProjectsData] = await Promise.all([
+        RecentProject.list('display_order', 100),
+        Project.filter({ status: 'open' }, '-created_at', 100)
+      ]);
+      setProjects(recentProjectsData || []);
+      setAvailableProjects(allProjectsData || []);
     } catch (err) {
-      console.error('Error fetching recent projects:', err);
+      console.error('Error fetching data:', err);
       // Don't show error toast - table might not exist yet
       setProjects([]);
+      setAvailableProjects([]);
     } finally {
       setLoading(false);
     }
@@ -36,6 +42,7 @@ export default function AdminRecentProjectsPage() {
     if (project) {
       setEditing(project);
       setForm({
+        project_id: project.project_id || '',
         title: project.title || '', description: project.description || '',
         studio: project.studio || '', type: project.type || '',
         images: project.images || [], display_order: project.display_order || 0,
@@ -43,7 +50,7 @@ export default function AdminRecentProjectsPage() {
       });
     } else {
       setEditing(null);
-      setForm({ title: '', description: '', studio: '', type: '', images: [], display_order: 0, is_active: true });
+      setForm({ project_id: '', title: '', description: '', studio: '', type: '', images: [], display_order: 0, is_active: true });
     }
     setShowModal(true);
   };
@@ -52,6 +59,7 @@ export default function AdminRecentProjectsPage() {
     if (!form.title.trim()) { toastError('Validation', 'Title is required'); return; }
     try {
       const dataToSave = {
+        project_id: form.project_id || null,
         title: form.title,
         description: form.description,
         studio: form.studio,
@@ -182,6 +190,30 @@ export default function AdminRecentProjectsPage() {
               <button onClick={() => setShowModal(false)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">
+                  <FolderKanban className="w-4 h-4 text-gray-500" /> Select Project (Optional)
+                </label>
+                <select 
+                  value={form.project_id} 
+                  onChange={(e) => {
+                    const selectedProject = availableProjects.find(p => p.id === e.target.value);
+                    setForm({ 
+                      ...form, 
+                      project_id: e.target.value,
+                      title: selectedProject?.title || form.title,
+                      description: selectedProject?.description || form.description,
+                      type: selectedProject?.type || form.type
+                    });
+                  }} 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">Manual entry (no project selected)</option>
+                  {availableProjects.map(project => (
+                    <option key={project.id} value={project.id}>{project.title || 'Unknown Project'}</option>
+                  ))}
+                </select>
+              </div>
               <div><label className="block text-sm font-medium mb-2">Title</label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Project title" className="rounded-lg" /></div>
               <div><label className="block text-sm font-medium mb-2">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Project description" rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
               <div className="grid grid-cols-2 gap-4">

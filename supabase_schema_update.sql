@@ -65,6 +65,43 @@ ADD COLUMN IF NOT EXISTS role VARCHAR(255);
 -- Create index for video_source for filtering
 CREATE INDEX IF NOT EXISTS idx_portfolio_clips_video_source ON portfolio_clips(video_source);
 
+-- ============================================
+-- FEATURED WORKS DYNAMIC SELECTION
+-- ============================================
+-- Add artist_id and project_id columns to featured_work table for dynamic selection
+-- Note: Table name is singular 'featured_work' to match existing schema
+
+ALTER TABLE featured_work
+ADD COLUMN IF NOT EXISTS artist_id UUID REFERENCES artists(id) ON DELETE SET NULL,
+ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES projects(id) ON DELETE SET NULL;
+
+-- Create indexes for foreign keys
+CREATE INDEX IF NOT EXISTS idx_featured_work_artist_id ON featured_work(artist_id);
+CREATE INDEX IF NOT EXISTS idx_featured_work_project_id ON featured_work(project_id);
+
+-- ============================================
+-- RECENT PROJECTS DYNAMIC SELECTION
+-- ============================================
+-- Add project_id column to recent_projects table for dynamic selection
+
+ALTER TABLE recent_projects
+ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES projects(id) ON DELETE SET NULL;
+
+-- Create index for foreign key
+CREATE INDEX IF NOT EXISTS idx_recent_projects_project_id ON recent_projects(project_id);
+
+-- ============================================
+-- ARTIST ROLES ARRAY SUPPORT
+-- ============================================
+-- Add roles column to artists table to support multiple roles as array
+
+ALTER TABLE artists
+ADD COLUMN IF NOT EXISTS roles TEXT[] DEFAULT '{}';
+
+-- Create index for roles array for better querying
+CREATE INDEX IF NOT EXISTS idx_artists_roles ON artists USING GIN(roles);
+
+-- ============================================
 -- Insert sample categories if table is empty
 INSERT INTO content_categories (name, slug, description, image_url, status, display_order)
 VALUES 
