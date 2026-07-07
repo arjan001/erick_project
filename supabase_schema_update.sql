@@ -213,6 +213,13 @@ CREATE POLICY "Admins can create audit logs" ON audit_logs
   FOR INSERT WITH CHECK (true);
 
 -- ============================================
+-- ARTISTS TABLE UPDATE
+-- ============================================
+-- Add missing bio column to artists table
+ALTER TABLE artists 
+ADD COLUMN IF NOT EXISTS bio TEXT;
+
+-- ============================================
 -- TICKER ENTRIES TABLE UPDATE
 -- ============================================
 -- Add missing columns to ticker_entries table for full functionality
@@ -226,6 +233,18 @@ ADD COLUMN IF NOT EXISTS published_date TIMESTAMP WITH TIME ZONE;
 -- Create indexes for new ticker columns
 CREATE INDEX IF NOT EXISTS idx_ticker_entries_category ON ticker_entries(category);
 CREATE INDEX IF NOT EXISTS idx_ticker_entries_status ON ticker_entries(status);
+
+-- Enable RLS on ticker_entries if not already enabled
+ALTER TABLE ticker_entries ENABLE ROW LEVEL SECURITY;
+
+-- Ticker entries policies
+DROP POLICY IF EXISTS "Public can view live ticker entries" ON ticker_entries;
+CREATE POLICY "Public can view live ticker entries" ON ticker_entries
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Admins can manage ticker entries" ON ticker_entries;
+CREATE POLICY "Admins can manage ticker entries" ON ticker_entries
+  FOR ALL USING (true);
 
 -- ============================================
 -- ARTICLES TABLE (for blog posts and content)
@@ -265,7 +284,7 @@ ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
 -- Articles policies
 DROP POLICY IF EXISTS "Public can view published articles" ON articles;
 CREATE POLICY "Public can view published articles" ON articles
-  FOR SELECT USING (status = 'published');
+  FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Admins can manage articles" ON articles;
 CREATE POLICY "Admins can manage articles" ON articles

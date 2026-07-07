@@ -6,7 +6,6 @@ import { useAuth } from '@/lib/AuthContext';
 const navItems = [
   { path: '/Admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { path: '/Admin/Artists', label: 'Artists', icon: Users },
-  { path: '/ArtistAdmin', label: 'Creators', icon: Users },
   { path: '/TeamAdmin', label: 'Teams', icon: FolderKanban },
   { path: '/ProjectAdmin', label: 'Projects', icon: FolderKanban },
   { path: '/Admin/UserManagement', label: 'Users', icon: Users },
@@ -29,7 +28,7 @@ const navItems = [
 ];
 
 const navGroups = [
-  { label: 'Overview', items: ['/Admin', '/Admin/Artists', '/ArtistAdmin', '/TeamAdmin', '/ProjectAdmin'] },
+  { label: 'Overview', items: ['/Admin', '/Admin/Artists', '/TeamAdmin', '/ProjectAdmin'] },
   { label: 'Content', items: ['/Admin/Ticker', '/Admin/Categories', '/Admin/FeaturedWork', '/Admin/SuccessStories', '/Admin/RecentProjects', '/Admin/SEOCMS'] },
   { label: 'Users', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
   { label: 'Finance', items: ['/Admin/FinanceDashboard', '/Admin/Subscriptions'] },
