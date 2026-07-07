@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Project, Job, Application } from '@/lib/supabaseEntities';
-import ClientSidebar from '@/components/ClientSidebar';
 import { BarChart3, TrendingUp, Users, Briefcase, Eye } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 
@@ -59,11 +58,8 @@ export default function ClientAnalytics() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-white">
-        <ClientSidebar />
-        <main className="w-full h-full flex items-center justify-center pl-20">
-          <div className="text-gray-600">Loading analytics...</div>
-        </main>
+      <div className="flex items-center justify-center p-12">
+        <div className="text-gray-600">Loading analytics...</div>
       </div>
     );
   }
@@ -78,52 +74,47 @@ export default function ClientAnalytics() {
   ];
 
   return (
-    <div className="h-screen bg-white">
-      <ClientSidebar />
-      <main className="w-full h-full flex flex-col overflow-y-auto bg-white pl-20">
-        <div className="p-6 max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics</h1>
-          <p className="text-gray-600 mb-8">Track your project and job performance</p>
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics</h1>
+      <p className="text-gray-600 mb-8">Track your project and job performance</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {statCards.map((stat) => (
-              <div key={stat.label} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center`}>
-                    <stat.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-3xl font-bold text-gray-900">{stat.value}</span>
-                </div>
-                <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {statCards.map((stat) => (
+          <div key={stat.label} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center`}>
+                <stat.icon className="w-6 h-6 text-white" />
               </div>
-            ))}
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Performance Overview</h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Application Acceptance Rate</span>
-                <span className="font-bold text-gray-900">
-                  {stats.totalApplications > 0 
-                    ? Math.round((stats.acceptedApplications / stats.totalApplications) * 100) 
-                    : 0}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-green-500 h-2 rounded-full"
-                  style={{
-                    width: `${stats.totalApplications > 0 
-                      ? (stats.acceptedApplications / stats.totalApplications) * 100 
-                      : 0}%`
-                  }}
-                />
-              </div>
+              <span className="text-3xl font-bold text-gray-900">{stat.value}</span>
             </div>
+            <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Performance Overview</h2>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-gray-600">Application Acceptance Rate</span>
+            <span className="font-bold text-gray-900">
+              {stats.totalApplications > 0 
+                ? Math.round((stats.acceptedApplications / stats.totalApplications) * 100) 
+                : 0}%
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-green-500 h-2 rounded-full"
+              style={{
+                width: `${stats.totalApplications > 0 
+                  ? (stats.acceptedApplications / stats.totalApplications) * 100 
+                  : 0}%`
+              }}
+            />
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

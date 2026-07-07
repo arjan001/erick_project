@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Job, Project, Application } from '@/lib/supabaseEntities';
-import ClientSidebar from '@/components/ClientSidebar';
 import { Button } from '@/components/ui/button';
 import { FileText, User, Calendar, MapPin, Check, X, Crown, Star, Briefcase, Eye, Bookmark, BookmarkCheck, Play } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -148,22 +147,16 @@ export default function ClientApplications() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-white">
-        <ClientSidebar />
-        <main className="w-full h-full flex items-center justify-center pl-20">
-          <div className="text-gray-600">Loading...</div>
-        </main>
+      <div className="flex items-center justify-center p-12">
+        <div className="text-gray-600">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-white">
-      <ClientSidebar />
-      <main className="w-full h-full flex flex-col overflow-y-auto bg-white pl-20">
-        <div className="p-6 max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Applications</h1>
-          <p className="text-gray-600 mb-8">Review applications for your job postings</p>
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">Applications</h1>
+      <p className="text-gray-600 mb-8">Review applications for your job postings</p>
 
           {applications.length === 0 ? (
             <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
@@ -249,8 +242,6 @@ export default function ClientApplications() {
               ))}
             </div>
           )}
-        </div>
-      </main>
 
       {/* Review Modal */}
       {showReviewModal && selectedApplication && (

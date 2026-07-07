@@ -140,13 +140,16 @@ export default function ClientProfilePage() {
     setUploadingLogo(true);
     try {
       const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url;
+      const fileUrl = response.file_url || response.url || response.data?.url;
+      if (!fileUrl) {
+        throw new Error('No file URL returned from upload service');
+      }
       const updated = await ProjectOwner.update(owner.id, { profile_photo_url: fileUrl });
       setOwner(updated);
       success('Photo Updated', 'Your profile photo has been updated');
     } catch (err) {
       console.error('Error uploading photo:', err);
-      toastError('Upload Failed', 'Failed to upload photo');
+      toastError('Upload Failed', `Failed to upload photo: ${err.message || 'Unknown error'}`);
     } finally {
       setUploadingLogo(false);
     }

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import ClientSidebar from '@/components/ClientSidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MessageSquare, Send, Search } from 'lucide-react';
@@ -86,117 +85,109 @@ export default function ClientMessages() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-white">
-        <ClientSidebar />
-        <main className="w-full h-full flex items-center justify-center pl-20">
-          <div className="text-gray-600">Loading...</div>
-        </main>
+      <div className="flex items-center justify-center p-12">
+        <div className="text-gray-600">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-white">
-      <ClientSidebar />
-      <main className="w-full h-full flex flex-col overflow-hidden bg-white pl-20">
-        <div className="flex h-full">
-          {/* Conversations List */}
-          <div className="w-80 border-r border-gray-200 flex flex-col">
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Messages</h2>
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search conversations..."
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              {conversations.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">
-                  <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                  <p>No conversations yet</p>
-                </div>
-              ) : (
-                conversations.map((conv) => (
-                  <button
-                    key={conv.id}
-                    onClick={() => setSelectedChat(conv)}
-                    className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
-                      selectedChat?.id === conv.id ? 'bg-gray-100' : ''
-                    }`}
-                  >
-                    <div className="font-medium text-gray-900">
-                      {conv.participant_1_email === user?.email 
-                        ? conv.participant_2_email 
-                        : conv.participant_1_email}
-                    </div>
-                    <div className="text-sm text-gray-500 truncate">
-                      {conv.id}
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Chat Area */}
-          <div className="flex-1 flex flex-col">
-            {selectedChat ? (
-              <>
-                <div className="p-4 border-b border-gray-200">
-                  <h3 className="font-bold text-gray-900">
-                    {selectedChat.participant_1_email === user?.email 
-                      ? selectedChat.participant_2_email 
-                      : selectedChat.participant_1_email}
-                  </h3>
-                </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.sender_email === user?.email ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-xs px-4 py-2 rounded-lg ${
-                          msg.sender_email === user?.email
-                            ? 'bg-black text-white'
-                            : 'bg-gray-200 text-gray-900'
-                        }`}
-                      >
-                        {msg.text}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200">
-                  <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Type a message..."
-                      className="flex-1"
-                    />
-                    <Button type="submit" className="bg-black text-white hover:bg-gray-800">
-                      <Send className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </form>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <p>Select a conversation to start messaging</p>
-                </div>
-              </div>
-            )}
+    <div className="flex h-full">
+      {/* Conversations List */}
+      <div className="w-80 border-r border-gray-200 flex flex-col">
+        <div className="p-4 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Messages</h2>
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search conversations..."
+              className="pl-10"
+            />
           </div>
         </div>
-      </main>
+        <div className="flex-1 overflow-y-auto">
+          {conversations.length === 0 ? (
+            <div className="p-4 text-center text-gray-500">
+              <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+              <p>No conversations yet</p>
+            </div>
+          ) : (
+            conversations.map((conv) => (
+              <button
+                key={conv.id}
+                onClick={() => setSelectedChat(conv)}
+                className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
+                  selectedChat?.id === conv.id ? 'bg-gray-100' : ''
+                }`}
+              >
+                <div className="font-medium text-gray-900">
+                  {conv.participant_1_email === user?.email 
+                    ? conv.participant_2_email 
+                    : conv.participant_1_email}
+                </div>
+                <div className="text-sm text-gray-500 truncate">
+                  {conv.id}
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {selectedChat ? (
+          <>
+            <div className="p-4 border-b border-gray-200">
+              <h3 className="font-bold text-gray-900">
+                {selectedChat.participant_1_email === user?.email 
+                  ? selectedChat.participant_2_email 
+                  : selectedChat.participant_1_email}
+              </h3>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.sender_email === user?.email ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-xs px-4 py-2 rounded-lg ${
+                      msg.sender_email === user?.email
+                        ? 'bg-black text-white'
+                        : 'bg-gray-200 text-gray-900'
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200">
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Type a message..."
+                  className="flex-1"
+                />
+                <Button type="submit" className="bg-black text-white hover:bg-gray-800">
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </form>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center text-gray-500">
+              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p>Select a conversation to start messaging</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
