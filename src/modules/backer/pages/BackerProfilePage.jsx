@@ -92,14 +92,14 @@ export default function BackerProfile() {
         youtube: formData.youtube,
         city: formData.city,
         country: formData.country,
-        investment_focus: formData.investment_focus
+        backing_types: formData.investment_focus
       });
       setBacker(updated);
       setEditing(false);
       success('Profile Updated', 'Your profile has been updated successfully');
     } catch (error) {
       console.error('Error saving profile:', error);
-      toastError('Save Failed', 'Failed to save profile. Please try again.');
+      toastError('Save Failed', `Failed to save profile: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -133,20 +133,22 @@ export default function BackerProfile() {
   };
 
   const handleLogoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const file = e.target.files?.[0];
+    if (!file || !backer) return;
 
     setUploadingLogo(true);
     try {
       const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url;
-
+      const fileUrl = response.file_url || response.url || response.data?.url;
+      if (!fileUrl) {
+        throw new Error('No file URL returned from upload service');
+      }
       const updated = await Backer.update(backer.id, { logo_url: fileUrl });
       setBacker(updated);
       success('Logo Updated', 'Your logo has been uploaded successfully');
     } catch (error) {
       console.error('Error uploading logo:', error);
-      toastError('Upload Failed', 'Failed to upload logo. Please try again.');
+      toastError('Upload Failed', `Failed to upload logo: ${error.message || 'Unknown error'}`);
     } finally {
       setUploadingLogo(false);
     }
