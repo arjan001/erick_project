@@ -25,7 +25,7 @@ export default function AdminFeaturedWorkPage() {
     try {
       const [worksData, artistsData] = await Promise.all([
         FeaturedWork.list('display_order', 100),
-        Artist.list('full_name', 100)
+        Artist.list('-created_at', 100)
       ]);
       setWorks(worksData || []);
       setArtists(artistsData || []);
