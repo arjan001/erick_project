@@ -51,12 +51,16 @@ ALTER TABLE project_owners ADD COLUMN IF NOT EXISTS last_active TIMESTAMP WITH T
 
 -- Add similar fields to backers table
 ALTER TABLE backers ADD COLUMN IF NOT EXISTS locations TEXT[] DEFAULT ARRAY[]::TEXT[];
+ALTER TABLE backers ADD COLUMN IF NOT EXISTS city VARCHAR(100);
+ALTER TABLE backers ADD COLUMN IF NOT EXISTS country VARCHAR(100);
 ALTER TABLE backers ADD COLUMN IF NOT EXISTS last_active TIMESTAMP WITH TIME ZONE;
 
 -- Create indexes for new fields
 CREATE INDEX IF NOT EXISTS idx_artists_role ON artists(role);
 CREATE INDEX IF NOT EXISTS idx_artists_city ON artists(based_in_city);
 CREATE INDEX IF NOT EXISTS idx_artists_country ON artists(based_in_country);
+CREATE INDEX IF NOT EXISTS idx_backers_city ON backers(city);
+CREATE INDEX IF NOT EXISTS idx_backers_country ON backers(country);
 CREATE INDEX IF NOT EXISTS idx_users_invite_code ON users(invite_code);
 CREATE INDEX IF NOT EXISTS idx_users_referred_by ON users(referred_by);
 

@@ -65,6 +65,8 @@ CREATE TABLE backers (
     backing_types TEXT[] DEFAULT ARRAY[]::TEXT[],
     interests TEXT[] DEFAULT ARRAY[]::TEXT[],
     locations TEXT[] DEFAULT ARRAY[]::TEXT[],
+    city VARCHAR(100),
+    country VARCHAR(100),
     bio TEXT,
     logo_url TEXT,
     status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
@@ -75,6 +77,8 @@ CREATE TABLE backers (
 );
 CREATE INDEX idx_backers_contact_email ON backers(contact_email);
 CREATE INDEX idx_backers_status ON backers(status);
+CREATE INDEX idx_backers_city ON backers(city);
+CREATE INDEX idx_backers_country ON backers(country);
 
 -- ============================================
 -- PROJECT OWNERS

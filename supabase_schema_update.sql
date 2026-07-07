@@ -18,7 +18,12 @@ ALTER TABLE backers
 ADD COLUMN IF NOT EXISTS invite_code VARCHAR(20) UNIQUE,
 ADD COLUMN IF NOT EXISTS referred_by VARCHAR(20);
 
--- 4. Add invite_code column to project_owners table
+-- 4. Add city and country columns to backers table
+ALTER TABLE backers
+ADD COLUMN IF NOT EXISTS city VARCHAR(100),
+ADD COLUMN IF NOT EXISTS country VARCHAR(100);
+
+-- 5. Add invite_code column to project_owners table
 ALTER TABLE project_owners 
 ADD COLUMN IF NOT EXISTS invite_code VARCHAR(20) UNIQUE,
 ADD COLUMN IF NOT EXISTS referred_by VARCHAR(20);
@@ -28,6 +33,10 @@ CREATE INDEX IF NOT EXISTS idx_artists_invite_code ON artists(invite_code);
 CREATE INDEX IF NOT EXISTS idx_teams_invite_code ON teams(invite_code);
 CREATE INDEX IF NOT EXISTS idx_backers_invite_code ON backers(invite_code);
 CREATE INDEX IF NOT EXISTS idx_project_owners_invite_code ON project_owners(invite_code);
+
+-- 6. Create indexes for backers city and country
+CREATE INDEX IF NOT EXISTS idx_backers_city ON backers(city);
+CREATE INDEX IF NOT EXISTS idx_backers_country ON backers(country);
 
 -- 6. Create indexes for referred_by for tracking referrals
 CREATE INDEX IF NOT EXISTS idx_artists_referred_by ON artists(referred_by);
