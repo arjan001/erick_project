@@ -48,6 +48,7 @@ export default function ArtistProfile() {
   const [editing, setEditing] = useState(false);
   const [showBioModal, setShowBioModal] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
   
   const [formData, setFormData] = useState({
     full_name: '', roles: [], based_in_city: '', based_in_country: '', bio: '',
@@ -59,7 +60,7 @@ export default function ArtistProfile() {
   const [profilePublic, setProfilePublic] = useState(true);
   
   const [portfolioForm, setPortfolioForm] = useState({
-    title: '', project_type: 'commercial', description: '', role: '', video_source: 'upload', original_video_url: ''
+    title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: ''
   });
   const [selectedCoverImage, setSelectedCoverImage] = useState(null);
   const [selectedVideoFile, setSelectedVideoFile] = useState(null);
@@ -96,9 +97,32 @@ export default function ArtistProfile() {
           setProfilePublic(a.profile_public ?? true);
           
           const clipsData = await PortfolioClip.filter({ 
-            uploaded_by_type: 'artist', uploaded_by_id: a.id, status: 'approved'
+            uploaded_by_type: 'artist', uploaded_by_id: a.id
           });
           setPortfolioClips(clipsData);
+        } else {
+          // Create artist record if it doesn't exist
+          console.warn('No artist record found for email:', user.email, 'Creating one...');
+          try {
+            const newArtist = await Artist.create({
+              email: user.email,
+              full_name: user.full_name || user.email.split('@')[0],
+              status: 'pending'
+            });
+            setArtist(newArtist);
+            setFormData({
+              full_name: newArtist.full_name || '', roles: newArtist.roles || [], based_in_city: newArtist.based_in_city || '',
+              based_in_country: newArtist.based_in_country || '', bio: newArtist.bio || '',
+              website: newArtist.website || '', instagram: newArtist.instagram || '', linkedin: newArtist.linkedin || '',
+              twitter: newArtist.twitter || '', youtube: newArtist.youtube || ''
+            });
+            setEmailNotifications(newArtist.email_notifications ?? true);
+            setProjectAlerts(newArtist.project_alerts ?? true);
+            setProfilePublic(newArtist.profile_public ?? true);
+            setPortfolioClips([]);
+          } catch (createErr) {
+            console.error('Error creating artist record:', createErr);
+          }
         }
         
         const endorsementsData = await Endorsement.filter({ recipient_email: user.email });
@@ -133,16 +157,26 @@ export default function ArtistProfile() {
   const handleProfileImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file || !artist) return;
+    
+    // Show preview immediately
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+    
     setUploadingImage(true);
     try {
       const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url;
+      const fileUrl = response.file_url || response.url || response.data?.url;
+      if (!fileUrl) {
+        throw new Error('No file URL returned from upload service');
+      }
       await Artist.update(artist.id, { profile_photo_url: fileUrl });
       setArtist(prev => ({ ...prev, profile_photo_url: fileUrl }));
+      setPreviewUrl(null); // Clear preview after successful upload
       success('Photo Updated', 'Your profile photo has been updated');
     } catch (err) {
       console.error('Error uploading image:', err);
-      toastError('Upload Failed', 'Failed to upload photo');
+      toastError('Upload Failed', `Failed to upload photo: ${err.message || 'Unknown error'}`);
+      setPreviewUrl(null); // Clear preview on error
     } finally {
       setUploadingImage(false);
     }
@@ -196,8 +230,12 @@ export default function ArtistProfile() {
   };
 
   const handleAddPortfolioClip = async () => {
-    if (!artist || !portfolioForm.title) {
-      toastError('Validation Error', 'Please fill in the required fields');
+    if (!artist) {
+      toastError('Error', 'Artist profile not found. Please complete your profile first.');
+      return;
+    }
+    if (!portfolioForm.title || portfolioForm.title.trim() === '') {
+      toastError('Validation Error', 'Please fill in the required fields (title)');
       return;
     }
     try {
@@ -308,10 +346,20 @@ export default function ArtistProfile() {
               <div className="flex items-start gap-8">
                 <div className="relative">
                   <div className="w-32 h-32 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden">
-                    {artist?.profile_photo_url ? <img src={artist.profile_photo_url} alt="Profile" className="w-full h-full object-cover" /> : <Users className="w-16 h-16 text-gray-400" />}
+                    {previewUrl ? (
+                      <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                    ) : artist?.profile_photo_url ? (
+                      <img src={artist.profile_photo_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <Users className="w-16 h-16 text-gray-400" />
+                    )}
                   </div>
                   <label className="absolute bottom-2 right-2 w-8 h-8 bg-black rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-800">
-                    <Upload className="w-4 h-4 text-white" />
+                    {uploadingImage ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 text-white" />
+                    )}
                     <input type="file" accept="image/*,.gif,.jpg,.jpeg,.png,.jfif,.webp,.bmp,.tiff" onChange={handleProfileImageUpload} disabled={uploadingImage} className="hidden" />
                   </label>
                 </div>
