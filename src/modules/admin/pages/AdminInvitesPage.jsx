@@ -33,14 +33,25 @@ export default function AdminInvitesPage() {
   const handleCreateInvite = async () => {
     if (!newInvite.email) { toastError('Validation', 'Email is required'); return; }
     try {
+      const generateInviteCode = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 8; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+      };
+      
+      const inviteCode = generateInviteCode();
       const invite = {
         email: newInvite.email,
         role: newInvite.role,
         status: 'pending',
+        invite_code: inviteCode,
         expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       };
       await Invite.create(invite);
-      success('Sent', 'Invite sent successfully');
+      success('Sent', `Invite sent successfully. Code: ${inviteCode}`);
       setNewInvite({ email: '', role: 'artist' });
       setShowModal(false);
       fetchInvites();

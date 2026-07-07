@@ -151,7 +151,8 @@ export default function AdminProjectsPage() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget Range</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -159,16 +160,19 @@ export default function AdminProjectsPage() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredProjects.length === 0 && (
-                <tr><td colSpan={6} className="px-6 py-10 text-center text-sm text-gray-500">No projects found</td></tr>
+                <tr><td colSpan={7} className="px-6 py-10 text-center text-sm text-gray-500">No projects found</td></tr>
               )}
               {filteredProjects.map(project => (
                 <tr key={project.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900 capitalize">{project.project_type?.replace('_', ' ')}</div>
-                    <div className="text-sm text-gray-500 truncate max-w-xs">{project.notes}</div>
+                    <div className="text-sm font-medium text-gray-900">{project.title || 'Untitled'}</div>
+                    <div className="text-sm text-gray-500 capitalize">{project.project_type?.replace('_', ' ')}</div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">{project.project_owner_name}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900 capitalize">{project.budget_range?.replace(/_/g, ' ') || 'N/A'}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    {project.budget_amount ? `$${project.budget_amount.toLocaleString()}` : project.budget_range?.replace(/_/g, ' ') || 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{project.location_city || 'N/A'}</td>
                   <td className="px-6 py-4">{getStatusBadge(project.status)}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{project.created_date ? new Date(project.created_date).toLocaleDateString() : 'N/A'}</td>
                   <td className="px-6 py-4">
@@ -200,10 +204,13 @@ export default function AdminProjectsPage() {
             </div>
             <div className="space-y-3 text-sm">
               <div><span className="font-medium text-gray-500">Owner:</span> {selectedProject.project_owner_name} ({selectedProject.project_owner_email})</div>
+              <div><span className="font-medium text-gray-500">Title:</span> {selectedProject.title || 'N/A'}</div>
               <div><span className="font-medium text-gray-500">Type:</span> <span className="capitalize">{selectedProject.project_type?.replace('_', ' ')}</span></div>
+              <div><span className="font-medium text-gray-500">Description:</span> {selectedProject.description || 'N/A'}</div>
               <div><span className="font-medium text-gray-500">Location:</span> {[selectedProject.location_city, selectedProject.location_country].filter(Boolean).join(', ') || 'N/A'}</div>
-              <div><span className="font-medium text-gray-500">Budget:</span> <span className="capitalize">{selectedProject.budget_range?.replace(/_/g, ' ') || 'N/A'}</span></div>
-              <div><span className="font-medium text-gray-500">Notes:</span> {selectedProject.notes || 'N/A'}</div>
+              <div><span className="font-medium text-gray-500">Budget:</span> {selectedProject.budget_amount ? `$${selectedProject.budget_amount.toLocaleString()}` : selectedProject.budget_range?.replace(/_/g, ' ') || 'N/A'}</div>
+              <div><span className="font-medium text-gray-500">Requirements:</span> {selectedProject.requirements || 'N/A'}</div>
+              <div><span className="font-medium text-gray-500">Timeline:</span> {[selectedProject.timeline_start, selectedProject.timeline_deadline].filter(Boolean).join(' - ') || 'N/A'}</div>
               <div><span className="font-medium text-gray-500">Open to Backing:</span> {selectedProject.open_to_backing ? 'Yes' : 'No'}</div>
               <div><span className="font-medium text-gray-500">Status:</span> <span className="capitalize">{selectedProject.status?.replace('_', ' ')}</span></div>
             </div>

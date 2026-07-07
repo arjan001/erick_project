@@ -148,18 +148,15 @@ export default function AdminArtistsPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Artists Management</h1>
           <p className="text-gray-600">Manage all artists on the platform</p>
         </div>
-        <Button onClick={() => openModal()} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg">
-          <User className="w-4 h-4 mr-2" /> Add Artist
-        </Button>
       </div>
 
       {/* Filters */}
       <div className="bg-white rounded-2xl border border-white/50 shadow-lg shadow-indigo-100/50 mb-6 p-6">
-        <div className="flex gap-4">
-          <div className="flex-1 relative">
+        <div className="flex gap-4 items-center">
+          <div className="relative w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Search by name or email..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 rounded-lg border-gray-200 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
@@ -175,6 +172,7 @@ export default function AdminArtistsPage() {
             <option value="suspended">Suspended</option>
             <option value="disabled">Disabled</option>
           </select>
+          <div className="text-sm text-gray-500 ml-auto">{filteredArtists.length} artists</div>
         </div>
       </div>
 
@@ -256,10 +254,7 @@ export default function AdminArtistsPage() {
 
         {paginatedArtists.length === 0 && (
           <div className="p-12 text-center text-gray-500">
-            <p className="mb-4">No artists found</p>
-            <Button onClick={() => openModal()} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg">
-              <User className="w-4 h-4 mr-2" /> Add First Artist
-            </Button>
+            <p>No artists found</p>
           </div>
         )}
 

@@ -192,6 +192,28 @@ class EmailService {
 
     return this.sendEmail({ to: userEmail, subject, html, text });
   }
+
+  // Login credentials email for new users
+  async sendLoginCredentialsEmail(userEmail, userName, tempPassword = null) {
+    const subject = 'Your Studio22 Account Credentials';
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #000;">Welcome to Studio22!</h1>
+        <p>Hi ${userName},</p>
+        <p>Your account has been successfully created. Here are your login credentials:</p>
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <p><strong>Email:</strong> ${userEmail}</p>
+          ${tempPassword ? `<p><strong>Password:</strong> ${tempPassword}</p>` : '<p><strong>Password:</strong> Use the password you created during signup</p>'}
+        </div>
+        <p>You can now log in to your account and complete your profile.</p>
+        <a href="${window.location.origin}/signin" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px;">Log In to Studio22</a>
+        <p style="margin-top: 20px; color: #666; font-size: 12px;">If you didn't create this account, please ignore this email.</p>
+      </div>
+    `;
+    const text = `Welcome to Studio22! Hi ${userName}, Your account has been successfully created. Email: ${userEmail}${tempPassword ? `, Password: ${tempPassword}` : '. Use the password you created during signup'}. Log in at ${window.location.origin}/signin to complete your profile. If you didn't create this account, please ignore this email.`;
+
+    return this.sendEmail({ to: userEmail, subject, html, text });
+  }
 }
 
 export default new EmailService();

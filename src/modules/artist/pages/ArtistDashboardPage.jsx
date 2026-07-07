@@ -90,7 +90,7 @@ export default function ArtistDashboard() {
     <div className="bg-gray-50 min-h-screen">
       <main className="w-full">
         {/* Header */}
-        <div className="bg-white px-6 sm:px-8 pt-10 pb-6 border-b border-gray-200">
+        <div className="bg-white px-6 sm:px-8 pt-10 pb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user.full_name}</h1>
           <p className="text-gray-500">Here's what's happening with your creative career</p>
         </div>
@@ -101,7 +101,7 @@ export default function ArtistDashboard() {
           {/* Stat Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((stat, idx) => (
-              <div key={idx} className="bg-white rounded-xl p-5 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
+              <div key={idx} className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300">
                 <div className="flex items-center gap-2 mb-3">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                     idx === 0 ? 'bg-gray-100' : idx === 1 ? 'bg-gray-100' : idx === 2 ? 'bg-gray-100' : 'bg-gray-100'

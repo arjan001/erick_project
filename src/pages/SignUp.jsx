@@ -60,16 +60,20 @@ export default function SignUp() {
       return;
     }
     try {
-      const { Artist, Team, Backer, ProjectOwner } = await import('@/lib/supabaseEntities');
-      const [artists, teams, backers, owners] = await Promise.all([
-        Artist.filter({ invite_code: code }),
-        Team.filter({ invite_code: code }),
-        Backer.filter({ invite_code: code }),
-        ProjectOwner.filter({ invite_code: code })
-      ]);
-      const isValid = (artists?.length > 0) || (teams?.length > 0) || (backers?.length > 0) || (owners?.length > 0);
-      setInviteCodeValid(isValid);
+      const { Invite } = await import('@/lib/supabaseEntities');
+      const invites = await Invite.filter({ invite_code: code });
+      const validInvite = invites?.find(i => 
+        i.status === 'pending' && 
+        new Date(i.expires_at) > new Date()
+      );
+      if (validInvite) {
+        setInviteCodeValid(true);
+        setFormData(prev => ({ ...prev, role: validInvite.role }));
+      } else {
+        setInviteCodeValid(false);
+      }
     } catch (err) {
+      console.error('Error validating invite code:', err);
       setInviteCodeValid(false);
     }
   };
@@ -101,9 +105,102 @@ export default function SignUp() {
     setLoading(true);
 
     try {
+      // Import Supabase entities and email service
+      const { Artist, Team, Backer, ProjectOwner } = await import('@/lib/supabaseEntities');
+      const { supabase } = await import('@/lib/supabase');
+      const emailService = await import('@/shared/services/emailService');
+
+      // Create Supabase auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            username: formData.username,
+            role: formData.role,
+            referred_by: formData.inviteCode || null
+          }
+        }
+      });
+
+      if (authError) {
+        setError(authError.message);
+        return;
+      }
+
+      // Create role-specific record in database
+      const userData = {
+        email: formData.email,
+        full_name: `${formData.firstName} ${formData.lastName}`,
+        invite_code: formData.inviteCode || null,
+        referred_by: formData.inviteCode || null
+      };
+
+      // Mark invite as used if valid
+      if (formData.inviteCode && inviteCodeValid) {
+        try {
+          const { Invite } = await import('@/lib/supabaseEntities');
+          const invites = await Invite.filter({ invite_code: formData.inviteCode });
+          const validInvite = invites?.find(i => 
+            i.status === 'pending' && 
+            new Date(i.expires_at) > new Date()
+          );
+          if (validInvite) {
+            await Invite.update(validInvite.id, { status: 'accepted' });
+          }
+        } catch (err) {
+          console.error('Error marking invite as used:', err);
+        }
+      }
+
+      switch (formData.role) {
+        case 'artist':
+          await Artist.create({
+            ...userData,
+            username: formData.username,
+            role: 'artist'
+          });
+          break;
+        case 'team':
+          await Team.create({
+            ...userData,
+            contact_email: formData.email,
+            team_name: `${formData.firstName} ${formData.lastName}`,
+            specialties: []
+          });
+          break;
+        case 'client':
+          await ProjectOwner.create({
+            ...userData,
+            company_name: `${formData.firstName} ${formData.lastName}`
+          });
+          break;
+        case 'backer':
+          await Backer.create({
+            ...userData,
+            contact_email: formData.email,
+            organization_name: `${formData.firstName} ${formData.lastName}`,
+            interests: []
+          });
+          break;
+      }
+
+      // Send login credentials email
+      try {
+        await emailService.default.sendLoginCredentialsEmail(
+          formData.email,
+          `${formData.firstName} ${formData.lastName}`
+        );
+      } catch (emailError) {
+        console.error('Failed to send email:', emailError);
+        // Don't block signup if email fails
+      }
+
       // Store user in localStorage for demo
       const user = {
-        id: formData.email,
+        id: authData.user?.id || formData.email,
         email: formData.email,
         full_name: `${formData.firstName} ${formData.lastName}`,
         username: formData.username || `${formData.firstName}${formData.lastName}`.toLowerCase(),
@@ -130,6 +227,7 @@ export default function SignUp() {
 
       window.location.href = createPageUrl(redirects[formData.role]?.replace('/', '') || 'Home');
     } catch (err) {
+      console.error('Sign up error:', err);
       setError('Sign up error. Please try again.');
     } finally {
       setLoading(false);

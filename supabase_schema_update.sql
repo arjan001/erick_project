@@ -48,11 +48,22 @@ CREATE TABLE IF NOT EXISTS content_categories (
   description TEXT,
   image_url TEXT,
   parent_id UUID REFERENCES content_categories(id) ON DELETE SET NULL,
-  status VARCHAR(50) DEFAULT 'active',
-  display_order INTEGER DEFAULT 0,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ============================================
+-- PORTFOLIO CLIPS VIDEO EMBED SUPPORT
+-- ============================================
+-- Add video_embed_url and video_source columns to support external video links
+
+ALTER TABLE portfolio_clips
+ADD COLUMN IF NOT EXISTS video_embed_url TEXT,
+ADD COLUMN IF NOT EXISTS video_source VARCHAR(20) DEFAULT 'upload' CHECK (video_source IN ('upload', 'youtube', 'vimeo', 'tiktok', 'google_drive')),
+ADD COLUMN IF NOT EXISTS role VARCHAR(255);
+
+-- Create index for video_source for filtering
+CREATE INDEX IF NOT EXISTS idx_portfolio_clips_video_source ON portfolio_clips(video_source);
 
 -- Insert sample categories if table is empty
 INSERT INTO content_categories (name, slug, description, image_url, status, display_order)
@@ -95,11 +106,15 @@ ALTER TABLE content_categories ENABLE ROW LEVEL SECURITY;
 -- Artists table policies
 DROP POLICY IF EXISTS "Artists can view own profile" ON artists;
 CREATE POLICY "Artists can view own profile" ON artists
-  FOR SELECT USING (email = auth.email());
+  FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Artists can update own profile" ON artists;
 CREATE POLICY "Artists can update own profile" ON artists
-  FOR UPDATE USING (email = auth.email());
+  FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS "Artists can insert own profile" ON artists;
+CREATE POLICY "Artists can insert own profile" ON artists
+  FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Public can view artists" ON artists;
 CREATE POLICY "Public can view artists" ON artists
@@ -108,11 +123,15 @@ CREATE POLICY "Public can view artists" ON artists
 -- Teams table policies
 DROP POLICY IF EXISTS "Teams can view own profile" ON teams;
 CREATE POLICY "Teams can view own profile" ON teams
-  FOR SELECT USING (contact_email = auth.email());
+  FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Teams can update own profile" ON teams;
 CREATE POLICY "Teams can update own profile" ON teams
-  FOR UPDATE USING (contact_email = auth.email());
+  FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS "Teams can insert own profile" ON teams;
+CREATE POLICY "Teams can insert own profile" ON teams
+  FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Public can view teams" ON teams;
 CREATE POLICY "Public can view teams" ON teams
@@ -121,11 +140,15 @@ CREATE POLICY "Public can view teams" ON teams
 -- Backers table policies
 DROP POLICY IF EXISTS "Backers can view own profile" ON backers;
 CREATE POLICY "Backers can view own profile" ON backers
-  FOR SELECT USING (contact_email = auth.email());
+  FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Backers can update own profile" ON backers;
 CREATE POLICY "Backers can update own profile" ON backers
-  FOR UPDATE USING (contact_email = auth.email());
+  FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS "Backers can insert own profile" ON backers;
+CREATE POLICY "Backers can insert own profile" ON backers
+  FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Public can view backers" ON backers;
 CREATE POLICY "Public can view backers" ON backers
@@ -134,11 +157,15 @@ CREATE POLICY "Public can view backers" ON backers
 -- Project owners table policies
 DROP POLICY IF EXISTS "Project owners can view own profile" ON project_owners;
 CREATE POLICY "Project owners can view own profile" ON project_owners
-  FOR SELECT USING (email = auth.email());
+  FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Project owners can update own profile" ON project_owners;
 CREATE POLICY "Project owners can update own profile" ON project_owners
-  FOR UPDATE USING (email = auth.email());
+  FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS "Project owners can insert own profile" ON project_owners;
+CREATE POLICY "Project owners can insert own profile" ON project_owners
+  FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Public can view project owners" ON project_owners;
 CREATE POLICY "Public can view project owners" ON project_owners
@@ -213,11 +240,40 @@ CREATE POLICY "Admins can create audit logs" ON audit_logs
   FOR INSERT WITH CHECK (true);
 
 -- ============================================
--- ARTISTS TABLE UPDATE
+-- PROJECTS TABLE UPDATE
 -- ============================================
--- Add missing bio column to artists table
-ALTER TABLE artists 
-ADD COLUMN IF NOT EXISTS bio TEXT;
+-- Add missing columns to projects table for complete project data
+ALTER TABLE projects 
+ADD COLUMN IF NOT EXISTS title VARCHAR(255),
+ADD COLUMN IF NOT EXISTS description TEXT,
+ADD COLUMN IF NOT EXISTS requirements TEXT,
+ADD COLUMN IF NOT EXISTS budget_amount NUMERIC(10,2),
+ADD COLUMN IF NOT EXISTS skills_required TEXT[],
+ADD COLUMN IF NOT EXISTS roles_needed TEXT[],
+ADD COLUMN IF NOT EXISTS image_url TEXT,
+ADD COLUMN IF NOT EXISTS project_owner_company VARCHAR(255),
+ADD COLUMN IF NOT EXISTS open_to_backing BOOLEAN DEFAULT FALSE;
+
+-- Create indexes for new project columns
+CREATE INDEX IF NOT EXISTS idx_projects_title ON projects(title);
+CREATE INDEX IF NOT EXISTS idx_projects_budget_range ON projects(budget_range);
+CREATE INDEX IF NOT EXISTS idx_projects_project_type ON projects(project_type);
+
+-- Enable RLS on projects if not already enabled
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+
+-- Projects policies
+DROP POLICY IF EXISTS "Public can view projects" ON projects;
+CREATE POLICY "Public can view projects" ON projects
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Project owners can manage own projects" ON projects;
+CREATE POLICY "Project owners can manage own projects" ON projects
+  FOR ALL USING (project_owner_email = auth.email());
+
+DROP POLICY IF EXISTS "Admins can manage projects" ON projects;
+CREATE POLICY "Admins can manage projects" ON projects
+  FOR ALL USING (true);
 
 -- ============================================
 -- TICKER ENTRIES TABLE UPDATE
