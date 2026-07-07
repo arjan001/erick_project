@@ -1,4 +1,4 @@
--- Studio22 Database Schema
+-- Studio22 Database Schemaaa
 -- PostgreSQL Schema for Production Deployment
 -- Version: 1.1
 -- Last Updated: June 29, 2026
