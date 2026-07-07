@@ -68,16 +68,18 @@ CREATE INDEX IF NOT EXISTS idx_portfolio_clips_video_source ON portfolio_clips(v
 -- ============================================
 -- FEATURED WORKS DYNAMIC SELECTION
 -- ============================================
--- Add artist_id and project_id columns to featured_work table for dynamic selection
+-- Add artist_id, project_id, and portfolio_clip_id columns to featured_work table for dynamic selection
 -- Note: Table name is singular 'featured_work' to match existing schema
 
 ALTER TABLE featured_work
 ADD COLUMN IF NOT EXISTS artist_id UUID REFERENCES artists(id) ON DELETE SET NULL,
-ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES projects(id) ON DELETE SET NULL;
+ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES projects(id) ON DELETE SET NULL,
+ADD COLUMN IF NOT EXISTS portfolio_clip_id UUID REFERENCES portfolio_clips(id) ON DELETE SET NULL;
 
 -- Create indexes for foreign keys
 CREATE INDEX IF NOT EXISTS idx_featured_work_artist_id ON featured_work(artist_id);
 CREATE INDEX IF NOT EXISTS idx_featured_work_project_id ON featured_work(project_id);
+CREATE INDEX IF NOT EXISTS idx_featured_work_portfolio_clip_id ON featured_work(portfolio_clip_id);
 
 -- ============================================
 -- RECENT PROJECTS DYNAMIC SELECTION
@@ -100,6 +102,23 @@ ADD COLUMN IF NOT EXISTS roles TEXT[] DEFAULT '{}';
 
 -- Create index for roles array for better querying
 CREATE INDEX IF NOT EXISTS idx_artists_roles ON artists USING GIN(roles);
+
+-- ============================================
+-- ARTIST ABOUT SECTION COLUMNS
+-- ============================================
+-- Add missing columns for about section (countries worked, visited countries, past clients, project specialties)
+
+ALTER TABLE artists
+ADD COLUMN IF NOT EXISTS countries_worked TEXT[] DEFAULT '{}',
+ADD COLUMN IF NOT EXISTS visited_countries TEXT[] DEFAULT '{}',
+ADD COLUMN IF NOT EXISTS past_clients TEXT[] DEFAULT '{}',
+ADD COLUMN IF NOT EXISTS project_specialties TEXT[] DEFAULT '{}';
+
+-- Create indexes for array columns
+CREATE INDEX IF NOT EXISTS idx_artists_countries_worked ON artists USING GIN(countries_worked);
+CREATE INDEX IF NOT EXISTS idx_artists_visited_countries ON artists USING GIN(visited_countries);
+CREATE INDEX IF NOT EXISTS idx_artists_past_clients ON artists USING GIN(past_clients);
+CREATE INDEX IF NOT EXISTS idx_artists_project_specialties ON artists USING GIN(project_specialties);
 
 -- ============================================
 -- Insert sample categories if table is empty

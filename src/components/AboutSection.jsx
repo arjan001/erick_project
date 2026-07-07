@@ -41,11 +41,34 @@ const LANGUAGE_SUGGESTIONS = [
 ];
 
 const COUNTRY_SUGGESTIONS = [
-  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Spain',
-  'Italy', 'Netherlands', 'Belgium', 'Switzerland', 'Sweden', 'Norway', 'Denmark', 'Poland',
-  'Japan', 'South Korea', 'China', 'Hong Kong', 'Singapore', 'India', 'Brazil', 'Mexico',
-  'Argentina', 'Chile', 'Colombia', 'Thailand', 'Vietnam', 'Indonesia', 'Philippines',
-  'Malaysia', 'UAE', 'Saudi Arabia', 'Turkey', 'Greece', 'Portugal', 'Austria', 'Czech Republic'
+  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
+  'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia',
+  'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi',
+  'Cambodia', 'Cameroon', 'Canada', 'Cape Verde', 'Central African Republic', 'Chad', 'Chile', 'China',
+  'Colombia', 'Comoros', 'Congo', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czech Republic',
+  'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'East Timor', 'Ecuador', 'Egypt', 'El Salvador',
+  'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia',
+  'Fiji', 'Finland', 'France',
+  'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana',
+  'Haiti', 'Honduras', 'Hungary',
+  'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Ivory Coast',
+  'Jamaica', 'Japan', 'Jordan',
+  'Kazakhstan', 'Kenya', 'Kiribati', 'Kosovo', 'Kuwait', 'Kyrgyzstan',
+  'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg',
+  'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico',
+  'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar',
+  'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway',
+  'Oman', 'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal',
+  'Qatar',
+  'Romania', 'Russia', 'Rwanda',
+  'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe',
+  'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands',
+  'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria',
+  'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu',
+  'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan',
+  'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam',
+  'Yemen',
+  'Zambia', 'Zimbabwe'
 ];
 
 export default function AboutSection({ artist, endorsements, onUpdate }) {
@@ -240,7 +263,8 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 <Button
                     onClick={async () => {
                       if (artist) {
-                        await Artist.update(artist.id, { bio });
+                        const updated = await Artist.update(artist.id, { bio });
+                        if (onUpdate) onUpdate(updated);
                       }
                       setEditingBio(false);
                     }}
@@ -336,7 +360,8 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 onClick={async () => {
                   if (artist) {
                     const skillsData = skills.map(s => ({ skill: s, years: 0 }));
-                    await Artist.update(artist.id, { skills_experience: skillsData });
+                    const updated = await Artist.update(artist.id, { skills_experience: skillsData });
+                    if (onUpdate) onUpdate(updated);
                   }
                   setEditingSkills(false);
                 }}
@@ -445,7 +470,8 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               <Button
                 onClick={async () => {
                   if (artist) {
-                    await Artist.update(artist.id, { past_clients: clients });
+                    const updated = await Artist.update(artist.id, { past_clients: clients });
+                    if (onUpdate) onUpdate(updated);
                   }
                   setEditingClients(false);
                 }}
@@ -536,7 +562,8 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               <Button
                 onClick={async () => {
                   if (artist) {
-                    await Artist.update(artist.id, { project_specialties: projectTypes });
+                    const updated = await Artist.update(artist.id, { project_specialties: projectTypes });
+                    if (onUpdate) onUpdate(updated);
                   }
                   setEditingProjects(false);
                 }}
@@ -625,7 +652,8 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
 
               <Button onClick={async () => {
                 if (artist) {
-                  await Artist.update(artist.id, { languages_spoken: languages });
+                  const updated = await Artist.update(artist.id, { languages_spoken: languages });
+                  if (onUpdate) onUpdate(updated);
                 }
                 setEditingLanguages(false);
               }} className="w-full bg-black text-white hover:bg-gray-800">
@@ -706,7 +734,8 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
 
               <Button onClick={async () => {
                 if (artist) {
-                  await Artist.update(artist.id, { countries_worked: countries });
+                  const updated = await Artist.update(artist.id, { countries_worked: countries });
+                  if (onUpdate) onUpdate(updated);
                 }
                 setEditingCountries(false);
               }} className="w-full bg-black text-white hover:bg-gray-800">
@@ -787,7 +816,8 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
 
               <Button onClick={async () => {
                 if (artist) {
-                  await Artist.update(artist.id, { visited_countries: visitedCountries });
+                  const updated = await Artist.update(artist.id, { visited_countries: visitedCountries });
+                  if (onUpdate) onUpdate(updated);
                 }
                 setEditingVisited(false);
               }} className="w-full bg-black text-white hover:bg-gray-800">

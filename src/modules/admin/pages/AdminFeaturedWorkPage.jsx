@@ -1,42 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import { FeaturedWork, Artist, Project } from '@/lib/supabaseEntities';
+import { FeaturedWork, Artist, PortfolioClip } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Edit2, Trash2, X, Eye, EyeOff, Star, Calendar, DollarSign, User, FolderKanban } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Eye, EyeOff, Star, Calendar, DollarSign, User, Search, Check, Play } from 'lucide-react';
 import { useToast } from '@/hooks/useToast.jsx';
 
 export default function AdminFeaturedWorkPage() {
   const { success, error: toastError } = useToast();
   const [works, setWorks] = useState([]);
   const [artists, setArtists] = useState([]);
-  const [projects, setProjects] = useState([]);
+  const [artistPortfolioClips, setArtistPortfolioClips] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingClips, setLoadingClips] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [selectedPortfolioClip, setSelectedPortfolioClip] = useState(null);
   const [form, setForm] = useState({
-    artist_id: '', project_id: '', title: '', description: '', images: [], video_url: '',
+    artist_id: '', portfolio_clip_id: '', title: '', description: '', images: [], video_url: '',
     featured_type: 'paid', featured_until: '', display_order: 0, status: 'active'
   });
 
   const fetchData = async () => {
     try {
-      const [worksData, artistsData, projectsData] = await Promise.all([
+      const [worksData, artistsData] = await Promise.all([
         FeaturedWork.list('display_order', 100),
-        Artist.list('full_name', 100),
-        Project.filter({ status: 'open' }, '-created_at', 100)
+        Artist.list('full_name', 100)
       ]);
       setWorks(worksData || []);
       setArtists(artistsData || []);
-      setProjects(projectsData || []);
     } catch (err) {
       console.error('Error fetching data:', err);
-      // Don't show error toast - table might not exist yet
       setWorks([]);
       setArtists([]);
-      setProjects([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchArtistPortfolioClips = async (artistId) => {
+    if (!artistId) {
+      setArtistPortfolioClips([]);
+      return;
+    }
+    setLoadingClips(true);
+    try {
+      const clips = await PortfolioClip.filter({ 
+        uploaded_by_type: 'artist', 
+        uploaded_by_id: artistId,
+        status: 'approved'
+      });
+      setArtistPortfolioClips(clips || []);
+    } catch (err) {
+      console.error('Error fetching portfolio clips:', err);
+      setArtistPortfolioClips([]);
+    } finally {
+      setLoadingClips(false);
     }
   };
 
@@ -47,7 +66,7 @@ export default function AdminFeaturedWorkPage() {
       setEditing(work);
       setForm({
         artist_id: work.artist_id || '',
-        project_id: work.project_id || '',
+        portfolio_clip_id: work.portfolio_clip_id || '',
         title: work.title || '', description: work.description || '',
         images: work.images || [], video_url: work.video_url || '',
         featured_type: work.featured_type || 'paid',
@@ -55,9 +74,14 @@ export default function AdminFeaturedWorkPage() {
         display_order: work.display_order || 0,
         status: work.status || 'active'
       });
+      if (work.artist_id) {
+        fetchArtistPortfolioClips(work.artist_id);
+      }
     } else {
       setEditing(null);
-      setForm({ artist_id: '', project_id: '', title: '', description: '', images: [], video_url: '', featured_type: 'paid', featured_until: '', display_order: 0, status: 'active' });
+      setForm({ artist_id: '', portfolio_clip_id: '', title: '', description: '', images: [], video_url: '', featured_type: 'paid', featured_until: '', display_order: 0, status: 'active' });
+      setArtistPortfolioClips([]);
+      setSelectedPortfolioClip(null);
     }
     setShowModal(true);
   };
@@ -67,7 +91,7 @@ export default function AdminFeaturedWorkPage() {
     try {
       const dataToSave = {
         artist_id: form.artist_id || null,
-        project_id: form.project_id || null,
+        portfolio_clip_id: form.portfolio_clip_id || null,
         title: form.title,
         description: form.description,
         images: form.images,
@@ -190,34 +214,73 @@ export default function AdminFeaturedWorkPage() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">
-                  <User className="w-4 h-4 text-gray-500" /> Select Artist (Optional)
+                  <User className="w-4 h-4 text-gray-500" /> Search Artist
                 </label>
                 <select 
                   value={form.artist_id} 
-                  onChange={(e) => setForm({ ...form, artist_id: e.target.value })} 
+                  onChange={(e) => {
+                    setForm({ ...form, artist_id: e.target.value, portfolio_clip_id: '' });
+                    setSelectedPortfolioClip(null);
+                    fetchArtistPortfolioClips(e.target.value);
+                  }} 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 >
-                  <option value="">No artist selected</option>
+                  <option value="">Select an artist...</option>
                   {artists.map(artist => (
                     <option key={artist.id} value={artist.id}>{artist.full_name || 'Unknown Artist'}</option>
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">
-                  <FolderKanban className="w-4 h-4 text-gray-500" /> Select Project (Optional)
-                </label>
-                <select 
-                  value={form.project_id} 
-                  onChange={(e) => setForm({ ...form, project_id: e.target.value })} 
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                >
-                  <option value="">No project selected</option>
-                  {projects.map(project => (
-                    <option key={project.id} value={project.id}>{project.title || 'Unknown Project'}</option>
-                  ))}
-                </select>
-              </div>
+              
+              {form.artist_id && (
+                <div>
+                  <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">
+                    <Play className="w-4 h-4 text-gray-500" /> Select Portfolio Clip
+                  </label>
+                  {loadingClips ? (
+                    <div className="text-sm text-gray-500">Loading portfolio clips...</div>
+                  ) : artistPortfolioClips.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto">
+                      {artistPortfolioClips.map(clip => (
+                        <div 
+                          key={clip.id}
+                          onClick={() => {
+                            setSelectedPortfolioClip(clip);
+                            setForm({ 
+                              ...form, 
+                              portfolio_clip_id: clip.id,
+                              title: clip.title,
+                              description: clip.description,
+                              images: clip.cover_image_url ? [clip.cover_image_url] : [],
+                              video_url: clip.video_embed_url || clip.video_url || ''
+                            });
+                          }}
+                          className={`cursor-pointer border-2 rounded-lg p-2 transition-all ${
+                            selectedPortfolioClip?.id === clip.id 
+                              ? 'border-black bg-gray-50' 
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="aspect-video bg-gray-100 rounded mb-2 overflow-hidden">
+                            {clip.thumbnail_url || clip.cover_image_url ? (
+                              <img src={clip.thumbnail_url || clip.cover_image_url} alt={clip.title} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                <Play className="w-8 h-8" />
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs font-medium text-gray-900 truncate">{clip.title}</p>
+                          <p className="text-xs text-gray-500 truncate">{clip.project_type}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No approved portfolio clips found for this artist.</p>
+                  )}
+                </div>
+              )}
+              
               <div><label className="block text-sm font-medium mb-2">Title</label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Work title" className="rounded-lg" /></div>
               <div><label className="block text-sm font-medium mb-2">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
               <div><label className="block text-sm font-medium mb-2">Images (comma-separated URLs)</label><Input value={form.images.join(',')} onChange={(e) => setForm({ ...form, images: e.target.value.split(',').filter(Boolean) })} placeholder="https://..." className="rounded-lg" /></div>
