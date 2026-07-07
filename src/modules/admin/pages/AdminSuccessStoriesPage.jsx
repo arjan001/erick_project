@@ -25,7 +25,8 @@ export default function AdminSuccessStoriesPage() {
       setStories(all || []);
     } catch (err) {
       console.error('Error fetching success stories:', err);
-      toastError('Load Failed', 'Failed to load success stories');
+      // Don't show error toast - table might not exist yet
+      setStories([]);
     } finally {
       setLoading(false);
     }
@@ -53,18 +54,30 @@ export default function AdminSuccessStoriesPage() {
   const handleSave = async () => {
     if (!form.title.trim() || !form.story.trim()) { toastError('Validation', 'Title and story are required'); return; }
     try {
+      const dataToSave = {
+        title: form.title,
+        story: form.story,
+        images: form.images,
+        video_url: form.video_url,
+        testimonial: form.testimonial,
+        score: form.score,
+        category: form.category,
+        display_order: form.display_order,
+        status: form.status,
+        is_featured: form.is_featured
+      };
       if (editing) {
-        await SuccessStory.update(editing.id, form);
+        await SuccessStory.update(editing.id, dataToSave);
         success('Updated', 'Success story updated');
       } else {
-        await SuccessStory.create({ ...form });
+        await SuccessStory.create(dataToSave);
         success('Created', 'Success story created');
       }
       setShowModal(false);
       fetchData();
     } catch (err) {
       console.error('Error saving success story:', err);
-      toastError('Save Failed', 'Failed to save success story');
+      toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`);
     }
   };
 

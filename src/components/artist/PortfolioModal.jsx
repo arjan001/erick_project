@@ -66,6 +66,22 @@ export default function PortfolioModal({
   const [videoSource, setVideoSource] = useState(portfolioForm?.video_source || 'upload');
   const [videoLink, setVideoLink] = useState(portfolioForm?.original_video_url || '');
 
+  // Populate form when editing
+  React.useEffect(() => {
+    if (editingPortfolio) {
+      setVideoSource(editingPortfolio.video_source || 'upload');
+      setVideoLink(editingPortfolio.original_video_url || '');
+      setPortfolioForm({
+        title: editingPortfolio.title || '',
+        project_type: editingPortfolio.project_type || 'commercial',
+        description: editingPortfolio.description || '',
+        role: editingPortfolio.role || '',
+        video_source: editingPortfolio.video_source || 'upload',
+        original_video_url: editingPortfolio.original_video_url || ''
+      });
+    }
+  }, [editingPortfolio, setPortfolioForm]);
+
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) setSelectedCoverImage(file);

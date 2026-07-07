@@ -23,7 +23,8 @@ export default function AdminFeaturedWorkPage() {
       setWorks(all || []);
     } catch (err) {
       console.error('Error fetching featured works:', err);
-      toastError('Load Failed', 'Failed to load featured works');
+      // Don't show error toast - table might not exist yet
+      setWorks([]);
     } finally {
       setLoading(false);
     }
@@ -52,18 +53,28 @@ export default function AdminFeaturedWorkPage() {
   const handleSave = async () => {
     if (!form.title.trim()) { toastError('Validation', 'Title is required'); return; }
     try {
+      const dataToSave = {
+        title: form.title,
+        description: form.description,
+        images: form.images,
+        video_url: form.video_url,
+        featured_type: form.featured_type,
+        featured_until: form.featured_until,
+        display_order: form.display_order,
+        status: form.status
+      };
       if (editing) {
-        await FeaturedWork.update(editing.id, form);
+        await FeaturedWork.update(editing.id, dataToSave);
         success('Updated', 'Featured work updated');
       } else {
-        await FeaturedWork.create({ ...form });
+        await FeaturedWork.create(dataToSave);
         success('Created', 'Featured work created');
       }
       setShowModal(false);
       fetchData();
     } catch (err) {
       console.error('Error saving featured work:', err);
-      toastError('Save Failed', 'Failed to save featured work');
+      toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`);
     }
   };
 

@@ -203,6 +203,12 @@ export default function ArtistProfile() {
       let videoEmbedUrl = '';
       let thumbnailUrl = '';
       
+      // Function to get YouTube thumbnail
+      const getYouTubeThumbnail = (url) => {
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
+        return match ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` : null;
+      };
+      
       if (portfolioForm.video_source === 'upload' && selectedVideoFile) {
         const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedVideoFile });
         videoUrl = uploadResponse.file_url || uploadResponse.url;
@@ -211,6 +217,10 @@ export default function ArtistProfile() {
         // Generate embed URL based on source
         const { getEmbedUrl } = await import('@/components/artist/PortfolioModal');
         videoEmbedUrl = getEmbedUrl(portfolioForm.original_video_url, portfolioForm.video_source);
+        // Generate thumbnail for YouTube
+        if (portfolioForm.video_source === 'youtube') {
+          thumbnailUrl = getYouTubeThumbnail(portfolioForm.original_video_url);
+        }
       }
       
       if (selectedCoverImage) {
@@ -218,7 +228,7 @@ export default function ArtistProfile() {
         thumbnailUrl = uploadResponse.file_url || uploadResponse.url;
       }
       
-      const newClip = await PortfolioClip.create({
+      const clipData = {
         uploaded_by_type: 'artist',
         uploaded_by_id: artist.id,
         title: portfolioForm.title,
@@ -230,17 +240,26 @@ export default function ArtistProfile() {
         video_source: portfolioForm.video_source,
         thumbnail_url: thumbnailUrl,
         status: 'pending'
-      });
+      };
+
+      let newClip;
+      if (editingPortfolio) {
+        newClip = await PortfolioClip.update(editingPortfolio.id, clipData);
+        setPortfolioClips(prev => prev.map(c => c.id === editingPortfolio.id ? newClip : c));
+      } else {
+        newClip = await PortfolioClip.create(clipData);
+        setPortfolioClips([...portfolioClips, newClip]);
+      }
       
-      setPortfolioClips([...portfolioClips, newClip]);
       setShowPortfolioModal(false);
       setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '', video_source: 'upload', original_video_url: '' });
       setSelectedCoverImage(null);
       setSelectedVideoFile(null);
-      success('Portfolio Added', 'Your portfolio clip has been submitted for approval');
+      setEditingPortfolio(null);
+      success(editingPortfolio ? 'Portfolio Updated' : 'Portfolio Added', editingPortfolio ? 'Your portfolio clip has been updated' : 'Your portfolio clip has been submitted for approval');
     } catch (err) {
       console.error('Error adding portfolio clip:', err);
-      toastError('Add Failed', 'Failed to add portfolio clip');
+      toastError('Failed', 'Failed to save portfolio clip');
     }
   };
 
@@ -431,9 +450,14 @@ export default function ArtistProfile() {
                       <p className="text-sm text-gray-500 mt-1">{clip.description || clip.project_type}</p>
                       <div className="flex items-center justify-between mt-3">
                         <span className="text-xs px-2 py-1 bg-gray-200 rounded-full text-gray-700">{clip.status}</span>
-                        <Button size="sm" variant="ghost" onClick={() => handleDeletePortfolioClip(clip.id)} className="text-red-500 hover:text-red-700">
-                          Delete
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="ghost" onClick={() => { setEditingPortfolio(clip); setShowPortfolioModal(true); }} className="text-gray-600 hover:text-gray-900">
+                            Edit
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => handleDeletePortfolioClip(clip.id)} className="text-red-500 hover:text-red-700">
+                            Delete
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>

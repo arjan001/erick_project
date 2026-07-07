@@ -23,7 +23,8 @@ export default function AdminRecentProjectsPage() {
       setProjects(all || []);
     } catch (err) {
       console.error('Error fetching recent projects:', err);
-      toastError('Load Failed', 'Failed to load recent projects');
+      // Don't show error toast - table might not exist yet
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -50,18 +51,27 @@ export default function AdminRecentProjectsPage() {
   const handleSave = async () => {
     if (!form.title.trim()) { toastError('Validation', 'Title is required'); return; }
     try {
+      const dataToSave = {
+        title: form.title,
+        description: form.description,
+        studio: form.studio,
+        type: form.type,
+        images: form.images,
+        display_order: form.display_order,
+        is_active: form.is_active
+      };
       if (editing) {
-        await RecentProject.update(editing.id, form);
+        await RecentProject.update(editing.id, dataToSave);
         success('Updated', 'Recent project updated');
       } else {
-        await RecentProject.create({ ...form });
+        await RecentProject.create(dataToSave);
         success('Created', 'Recent project created');
       }
       setShowModal(false);
       fetchData();
     } catch (err) {
       console.error('Error saving recent project:', err);
-      toastError('Save Failed', `Failed to save recent project: ${err.message || 'Unknown error'}`);
+      toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`);
     }
   };
 

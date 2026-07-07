@@ -45,18 +45,29 @@ export default function AdminCategoriesPage() {
     if (!form.name.trim()) { toastError('Validation', 'Name is required'); return; }
     try {
       const slug = form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const dataToSave = {
+        name: form.name,
+        slug: slug,
+        description: form.description,
+        image_url: form.image_url,
+        item_count: form.item_count,
+        display_order: form.display_order,
+        status: form.status,
+        is_featured: form.is_featured,
+        parent_id: form.parent_id || null
+      };
       if (editing) {
-        await ContentCategory.update(editing.id, { ...form, slug });
+        await ContentCategory.update(editing.id, dataToSave);
         success('Updated', 'Category updated');
       } else {
-        await ContentCategory.create({ ...form, slug, created_at: new Date().toISOString() });
+        await ContentCategory.create(dataToSave);
         success('Created', 'Category created');
       }
       setShowModal(false);
       fetchData();
     } catch (err) {
       console.error('Error saving category:', err);
-      toastError('Save Failed', 'Failed to save category');
+      toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`);
     }
   };
 
