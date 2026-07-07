@@ -89,12 +89,6 @@ export default function ArtistDashboard() {
   return (
     <div className="bg-gray-50 min-h-screen">
       <main className="w-full">
-        {/* Header */}
-        <div className="bg-white px-6 sm:px-8 pt-10 pb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user.full_name}</h1>
-          <p className="text-gray-500">Here's what's happening with your creative career</p>
-        </div>
-
         <div className="px-6 sm:px-8 pb-8 space-y-8">
           <UpgradeConnectsBanner />
 
