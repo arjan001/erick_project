@@ -66,8 +66,8 @@ export default function ArtistSidebar() {
     >
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100">
-        <Link to="/" className="font-black text-xl bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">
-          22.
+        <Link to="/" className="font-black text-xl text-black">
+          22
         </Link>
         <button
           onClick={toggle}
