@@ -18,6 +18,7 @@ const MENU_ITEMS = [
 export default function ClientSidebar() {
   const location = useLocation();
   const [user, setUser] = useState(null);
+  const [pendingConnections, setPendingConnections] = useState(0);
   const { sidebarExpanded: expanded, setSidebarExpanded } = useSidebar();
   const { logout } = useAuth();
 
@@ -25,6 +26,33 @@ export default function ClientSidebar() {
     const storedUser = localStorage.getItem('studio22_user');
     setUser(storedUser ? JSON.parse(storedUser) : null);
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    let unsubscribe;
+    const fetchPendingConnections = async () => {
+      try {
+        const { Connection } = await import('@/lib/supabaseEntities');
+        const connections = await Connection.filter({ 
+          recipient_email: user.email, 
+          status: 'pending' 
+        }, '-created_date', 50);
+        setPendingConnections((connections || []).length);
+      } catch {
+        setPendingConnections(0);
+      }
+    };
+    fetchPendingConnections();
+
+    (async () => {
+      const { Connection } = await import('@/lib/supabaseEntities');
+      unsubscribe = Connection.subscribe((event) => {
+        if (event.data?.recipient_email === user.email) fetchPendingConnections();
+      });
+    })();
+
+    return () => unsubscribe && unsubscribe();
+  }, [user]);
 
   const toggle = () => setSidebarExpanded(!expanded);
 
@@ -65,6 +93,11 @@ export default function ClientSidebar() {
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               {expanded && <span className="text-sm whitespace-nowrap">{item.label}</span>}
+              {item.showConnectionBadge && pendingConnections > 0 && (
+                <span className="ml-auto bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 animate-pulse">
+                  {pendingConnections > 9 ? '9+' : pendingConnections}
+                </span>
+              )}
             </Link>
           );
         })}

@@ -31,6 +31,7 @@ export default function ClientProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
   const [editing, setEditing] = useState(false);
   const [showBioModal, setShowBioModal] = useState(false);
@@ -137,6 +138,11 @@ export default function ClientProfilePage() {
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file || !owner) return;
+    
+    // Show preview immediately
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+    
     setUploadingLogo(true);
     try {
       const response = await base44.integrations.Core.UploadFile({ file });
@@ -146,10 +152,12 @@ export default function ClientProfilePage() {
       }
       const updated = await ProjectOwner.update(owner.id, { profile_photo_url: fileUrl });
       setOwner(updated);
+      setPreviewUrl(null); // Clear preview after successful upload
       success('Photo Updated', 'Your profile photo has been updated');
     } catch (err) {
       console.error('Error uploading photo:', err);
       toastError('Upload Failed', `Failed to upload photo: ${err.message || 'Unknown error'}`);
+      setPreviewUrl(null); // Clear preview on error
     } finally {
       setUploadingLogo(false);
     }
@@ -192,10 +200,20 @@ export default function ClientProfilePage() {
               <div className="flex items-start gap-8">
                 <div className="relative">
                   <div className="w-32 h-32 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden">
-                    {owner?.profile_photo_url ? <img src={owner.profile_photo_url} alt="Profile" className="w-full h-full object-cover" /> : <Building2 className="w-16 h-16 text-gray-400" />}
+                    {previewUrl ? (
+                      <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                    ) : owner?.profile_photo_url ? (
+                      <img src={owner.profile_photo_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <Building2 className="w-16 h-16 text-gray-400" />
+                    )}
                   </div>
                   <label className="absolute bottom-2 right-2 w-8 h-8 bg-black rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-800">
-                    <Upload className="w-4 h-4 text-white" />
+                    {uploadingLogo ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 text-white" />
+                    )}
                     <input type="file" accept="image/*,.gif,.jpg,.jpeg,.png,.jfif,.webp,.bmp,.tiff" onChange={handleLogoUpload} disabled={uploadingLogo} className="hidden" />
                   </label>
                 </div>
