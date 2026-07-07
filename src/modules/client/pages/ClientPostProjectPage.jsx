@@ -50,17 +50,18 @@ export default function ClientPostProject() {
         budget < 100000 ? '50k_100k' :
         budget < 250000 ? '100k_250k' : '250k_plus';
 
-      const notes = [projectForm.title ? `${projectForm.title}\n` : '', projectForm.description, projectForm.requirements ? `\nRequirements: ${projectForm.requirements}` : ''].join('');
-
       await Project.create({
         project_owner_email: user.email,
         project_owner_name: user.full_name,
+        title: projectForm.title,
+        description: projectForm.description,
         project_type: projectForm.project_type,
         location_city: projectForm.location,
         timeline_start: projectForm.timeline_start || undefined,
         timeline_deadline: projectForm.timeline_end || undefined,
         budget_range,
-        notes,
+        budget_amount: budget,
+        requirements: projectForm.requirements,
         status: 'submitted'
       });
 

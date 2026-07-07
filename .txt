@@ -1,0 +1,4 @@
+function deploy-studio22 {
+    git push origin main
+    ssh root@83.229.83.91 "/var/www/studio22demo/studio22/deploy.sh"
+}
