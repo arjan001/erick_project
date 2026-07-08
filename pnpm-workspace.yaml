@@ -1,3 +1,6 @@
 allowBuilds:
-  core-js: set this to true or false
-  esbuild: set this to true or false
+  core-js: false
+  esbuild: false
+minimumReleaseAgeExclude:
+  - '@base44/sdk@0.8.36'
+  - '@base44/vite-plugin@1.0.28'

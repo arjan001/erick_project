@@ -13,24 +13,6 @@ export default function ClientProfileHeader({
   return (
     <div className="p-6 bg-white border-b border-gray-100">
       <div className="flex items-start gap-6">
-        <div className="relative">
-          <div className="w-20 h-20 rounded-lg bg-gray-300 flex items-center justify-center text-gray-700 text-2xl font-bold overflow-hidden">
-            {projectOwner?.logo_url ? (
-              <img src={projectOwner.logo_url} alt="Company Logo" className="w-full h-full object-cover" loading="lazy" decoding="async" />
-            ) : (
-              companyName?.charAt(0).toUpperCase() || user?.full_name?.charAt(0).toUpperCase()
-            )}
-          </div>
-          <input ref={logoInputRef} type="file" accept="image/*" onChange={onLogoUpload} className="hidden" disabled={uploadingLogo} />
-          <label onClick={() => logoInputRef.current?.click()} className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg cursor-pointer hover:bg-gray-50 transition-colors">
-            {uploadingLogo ? (
-              <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Upload className="w-4 h-4 text-gray-600" />
-            )}
-          </label>
-        </div>
-
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">{companyName || user.full_name}</h1>
           <p className="text-sm text-gray-600 mb-2">

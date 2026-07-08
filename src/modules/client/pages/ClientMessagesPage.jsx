@@ -92,9 +92,9 @@ export default function ClientMessages() {
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full overflow-hidden">
       {/* Conversations List */}
-      <div className="w-80 border-r border-gray-200 flex flex-col">
+      <div className="w-80 border-r border-gray-200 flex flex-col flex-shrink-0">
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Messages</h2>
           <div className="relative">

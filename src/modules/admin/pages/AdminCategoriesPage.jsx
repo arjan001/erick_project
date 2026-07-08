@@ -3,8 +3,9 @@ import { ContentCategory } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, Star } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, Star, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/useToast.jsx';
+import { base44 } from '@/api/base44Client';
 
 export default function AdminCategoriesPage() {
   const { success, error: toastError } = useToast();
@@ -12,6 +13,7 @@ export default function AdminCategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [form, setForm] = useState({ name: '', slug: '', description: '', image_url: '', item_count: '', display_order: 0, status: 'active', is_featured: false, parent_id: '' });
 
   const fetchData = async () => {
@@ -103,6 +105,26 @@ export default function AdminCategoriesPage() {
     } catch (err) { toastError('Failed', 'Failed to reorder'); }
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploadingImage(true);
+    try {
+      const response = await base44.integrations.Core.UploadFile({ file });
+      const fileUrl = response.file_url || response.url || response.data?.url;
+      if (!fileUrl) {
+        throw new Error('No file URL returned from upload service');
+      }
+      setForm({ ...form, image_url: fileUrl });
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      toastError('Upload Failed', `Failed to upload image: ${err.message || 'Unknown error'}`);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   if (loading) {
     return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>;
   }
@@ -164,7 +186,25 @@ export default function AdminCategoriesPage() {
               <div><label className="block text-sm font-medium mb-2">Name</label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g., Cinema Cameras" /></div>
               <div><label className="block text-sm font-medium mb-2">Slug</label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="auto-generated if empty" /></div>
               <div><label className="block text-sm font-medium mb-2">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Category description" rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-              <div><label className="block text-sm font-medium mb-2">Image URL</label><Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." /></div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Category Image</label>
+                <div className="flex gap-2">
+                  <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." className="flex-1" />
+                  <input type="file" id="category-image-upload" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploadingImage} />
+                  <label htmlFor="category-image-upload" className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer flex items-center gap-2 transition-colors" disabled={uploadingImage}>
+                    {uploadingImage ? (
+                      <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 text-gray-600" />
+                    )}
+                  </label>
+                </div>
+                {form.image_url && (
+                  <div className="mt-2">
+                    <img src={form.image_url} alt="Preview" className="w-full h-32 object-cover rounded-lg border border-gray-200" />
+                  </div>
+                )}
+              </div>
               <div><label className="block text-sm font-medium mb-2">Parent Category (for subcategories)</label>
                 <select value={form.parent_id} onChange={(e) => setForm({ ...form, parent_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
                   <option value="">None (Top-level category)</option>

@@ -61,20 +61,20 @@ export default function SignUp() {
     }
     try {
       const { Invite } = await import('@/lib/supabaseEntities');
-      const invites = await Invite.filter({ invite_code: code });
+      const invites = await Invite.filter({ code: code });
       const validInvite = invites?.find(i => 
-        i.status === 'pending' && 
-        new Date(i.expires_at) > new Date()
+        i.status === 'active' && 
+        (i.max_uses === null || i.uses_count < i.max_uses)
       );
       if (validInvite) {
         setInviteCodeValid(true);
-        setFormData(prev => ({ ...prev, role: validInvite.role }));
       } else {
         setInviteCodeValid(false);
       }
     } catch (err) {
       console.error('Error validating invite code:', err);
-      setInviteCodeValid(false);
+      // Don't show error for optional invite code
+      setInviteCodeValid(null);
     }
   };
 
@@ -142,13 +142,13 @@ export default function SignUp() {
       if (formData.inviteCode && inviteCodeValid) {
         try {
           const { Invite } = await import('@/lib/supabaseEntities');
-          const invites = await Invite.filter({ invite_code: formData.inviteCode });
-          const validInvite = invites?.find(i => 
-            i.status === 'pending' && 
-            new Date(i.expires_at) > new Date()
-          );
+          const invites = await Invite.filter({ code: formData.inviteCode });
+          const validInvite = invites?.[0];
           if (validInvite) {
-            await Invite.update(validInvite.id, { status: 'accepted' });
+            await Invite.update(validInvite.id, { 
+              used_by_email: formData.email,
+              uses_count: (validInvite.uses_count || 0) + 1
+            });
           }
         } catch (err) {
           console.error('Error marking invite as used:', err);

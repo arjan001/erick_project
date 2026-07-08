@@ -239,7 +239,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
         {/* Bio Section */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-500">About</h3>
+            <h3 className="text-sm font-semibold text-gray-900">About</h3>
             {!editingBio && (
               <button
                 onClick={() => setEditingBio(true)}
@@ -257,7 +257,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="Write your professional bio..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400 resize-none h-24"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400 resize-none h-24 bg-white"
               />
               <div className="flex gap-2">
                 <Button
@@ -285,7 +285,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               </div>
             </div>
           ) : (
-            <p className="text-gray-800 leading-relaxed">
+            <p className="text-gray-800 leading-relaxed bg-gray-50 p-4 rounded-lg">
               {bio || 'Add a professional bio to tell others about your work and expertise.'}
             </p>
           )}

@@ -349,12 +349,21 @@ CREATE INDEX idx_audit_logs_entity_type ON audit_logs(entity_type);
 CREATE TABLE IF NOT EXISTS ticker_entries (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     text VARCHAR(500) NOT NULL,
+    category VARCHAR(50) DEFAULT 'news',
+    link_type VARCHAR(50) DEFAULT 'none',
     link_url TEXT,
+    link_target_id UUID,
+    status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'live')),
     is_active BOOLEAN DEFAULT TRUE,
     display_order INTEGER DEFAULT 0,
+    published_date TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX idx_ticker_entries_active ON ticker_entries(is_active);
+CREATE INDEX idx_ticker_entries_status ON ticker_entries(status);
+CREATE INDEX idx_ticker_entries_category ON ticker_entries(category);
+CREATE INDEX idx_ticker_entries_order ON ticker_entries(display_order);
 
 -- ============================================
 -- SUBSCRIPTIONS & PACKAGES
