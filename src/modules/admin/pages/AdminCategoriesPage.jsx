@@ -14,7 +14,7 @@ export default function AdminCategoriesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [form, setForm] = useState({ name: '', slug: '', description: '', image_url: '', display_order: 0, status: 'active', is_featured: false, parent_id: '' });
+  const [form, setForm] = useState({ name: '', slug: '', description: '', image_url: '', display_order: 0, status: 'active', is_featured: false });
 
   const fetchData = async () => {
     try {
@@ -35,10 +35,10 @@ export default function AdminCategoriesPage() {
   const openModal = (cat = null) => {
     if (cat) {
       setEditing(cat);
-      setForm({ name: cat.name || '', slug: cat.slug || '', description: cat.description || '', image_url: cat.image_url || '', display_order: cat.display_order || 0, status: cat.status || 'active', is_featured: cat.is_featured || false, parent_id: cat.parent_id || '' });
+      setForm({ name: cat.name || '', slug: cat.slug || '', description: cat.description || '', image_url: cat.image_url || '', display_order: cat.display_order || 0, status: cat.status || 'active', is_featured: cat.is_featured || false });
     } else {
       setEditing(null);
-      setForm({ name: '', slug: '', description: '', image_url: '', display_order: 0, status: 'active', is_featured: false, parent_id: '' });
+      setForm({ name: '', slug: '', description: '', image_url: '', display_order: 0, status: 'active', is_featured: false });
     }
     setShowModal(true);
   };
@@ -54,8 +54,7 @@ export default function AdminCategoriesPage() {
         image_url: form.image_url,
         display_order: form.display_order,
         status: form.status,
-        is_featured: form.is_featured,
-        parent_id: form.parent_id || null
+        is_featured: form.is_featured
       };
       if (editing) {
         await ContentCategory.update(editing.id, dataToSave);
@@ -202,14 +201,6 @@ export default function AdminCategoriesPage() {
                     <img src={form.image_url} alt="Preview" className="w-full h-32 object-cover rounded-lg border border-gray-200" />
                   </div>
                 )}
-              </div>
-              <div><label className="block text-sm font-medium mb-2">Parent Category (for subcategories)</label>
-                <select value={form.parent_id} onChange={(e) => setForm({ ...form, parent_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                  <option value="">None (Top-level category)</option>
-                  {categories.filter(c => c.id !== editing?.id).map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Display Order</label>
