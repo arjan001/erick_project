@@ -56,21 +56,21 @@ export default function RecentConversations({ userEmail }) {
   }, [userEmail]);
 
   return (
-    <div className="rounded-xl border border-gray-200 shadow-sm p-6 bg-white h-full">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Recent Conversations</h2>
-        <Link to={createPageUrl('Messages')} className="text-sm text-gray-400 hover:text-gray-900">
-          <MessageCircle className="w-4 h-4" />
+    <div className="rounded-3xl bg-white border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-7 h-full">
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-base font-bold text-gray-900">Recent Conversations</h2>
+        <Link to={createPageUrl('Messages')} className="w-9 h-9 rounded-2xl bg-[#2A9D8F]/12 flex items-center justify-center hover:bg-[#2A9D8F]/20 transition-colors">
+          <MessageCircle className="w-4 h-4 text-[#2A9D8F]" />
         </Link>
       </div>
       {loading ? (
-        <p className="text-sm text-gray-400 text-center py-6">Loading...</p>
+        <p className="text-sm text-gray-400 text-center py-8">Loading...</p>
       ) : conversations.length === 0 ? (
-        <p className="text-sm text-gray-500 text-center py-6">No conversations yet</p>
+        <p className="text-sm text-gray-400 text-center py-8">No conversations yet</p>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-1">
           {conversations.map(c => (
-            <Link key={c.conversation_id} to={createPageUrl('Messages')} className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <Link key={c.conversation_id} to={createPageUrl('Messages')} className="flex items-center gap-3 p-2.5 -mx-1 rounded-2xl hover:bg-gray-50 transition-colors">
               <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {c.avatar ? <img src={c.avatar} alt={c.name} className="w-full h-full object-cover" loading="lazy" decoding="async" /> : <span className="text-xs font-bold text-gray-600">{c.name?.[0]?.toUpperCase()}</span>}
               </div>

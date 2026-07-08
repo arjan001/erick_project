@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Check, X, Eye, Shuffle, Edit2, Trash2, FileText, User } from 'lucide-react';
+import { Check, X, Eye, Shuffle, Edit2, Trash2, FileText, User, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/useToast.jsx';
 
 export default function AdminWorkApprovalPage() {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { Search, Globe, Code, Save, Plus, Trash2, Copy, RefreshCw, Zap, Layout, FileText, Image, Link, ToggleLeft, ToggleRight, Edit } from 'lucide-react';
+import { Search, Globe, Code, Save, Plus, Trash2, Copy, RefreshCw, Zap, Layout, FileText, Image, Link, ToggleLeft, ToggleRight, Edit, X } from 'lucide-react';
 
 export default function AdminSEOCMSPage() {
   const { success, error } = useToast();

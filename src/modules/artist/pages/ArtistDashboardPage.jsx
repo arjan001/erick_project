@@ -80,51 +80,62 @@ export default function ArtistDashboard() {
   const activeProjects = applications.filter(a => a.status === 'hired');
 
   const stats = [
-    { label: 'In Queue', value: queuedApplications.length, icon: Briefcase, accent: true },
-    { label: 'Working On', value: activeProjects.length, icon: FolderKanban },
-    { label: 'Invitations', value: invitations.length, icon: Bell },
-    { label: 'Messages', value: messages.length, icon: MessageCircle },
+    { label: 'In Queue', value: queuedApplications.length, icon: Briefcase, accent: '#2A9D8F' },
+    { label: 'Working On', value: activeProjects.length, icon: FolderKanban, accent: '#F4A261' },
+    { label: 'Invitations', value: invitations.length, icon: Bell, accent: '#E9C46A' },
+    { label: 'Messages', value: messages.length, icon: MessageCircle, accent: '#2A9D8F' },
   ];
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-[#FAFAFA] min-h-screen">
       <main className="w-full">
-        <div className="px-6 sm:px-8 pt-8 pb-8 space-y-8">
+        <div className="px-5 sm:px-7 lg:px-9 pt-7 pb-12">
           <UpgradeConnectsBanner />
 
-          {/* Stat Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map((stat, idx) => (
-              <div key={idx} className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    idx === 0 ? 'bg-gray-100' : idx === 1 ? 'bg-gray-100' : idx === 2 ? 'bg-gray-100' : 'bg-gray-100'
-                  }`}>
-                    <stat.icon className={`w-5 h-5 text-gray-600`} />
-                  </div>
-                  <span className="text-sm text-gray-500 font-medium">{stat.label}</span>
-                </div>
-                <div className={`text-2xl font-bold ${stat.accent ? 'text-gray-900' : 'text-gray-700'}`}>{stat.value}</div>
-              </div>
-            ))}
-          </div>
+          {/* Bento grid */}
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 auto-rows-min">
+            {/* Profile Strength — tall hero, spans 2 rows */}
+            <div className="md:col-span-2 lg:col-span-4 lg:row-span-2">
+              <ProfileCompletionRing artist={artistProfile} portfolioCount={artistProfile?.portfolio_clips?.length || 0} />
+            </div>
 
-          {/* Row: Chart | Reminders | Jobs */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <ActivityChart applications={applications} />
-            <RemindersCard invitations={invitations} />
-            <JobOpportunitiesCard jobs={jobs} />
-          </div>
+            {/* Activity chart — wide top */}
+            <div className="md:col-span-2 lg:col-span-8">
+              <ActivityChart applications={applications} />
+            </div>
 
-          {/* Row: Conversations | Profile Progress | Connects */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <RecentConversations userEmail={user.email} />
-            <ProfileCompletionRing artist={artistProfile} portfolioCount={artistProfile?.portfolio_clips?.length || 0} />
-            <ConnectsTrackerCard connects={artistProfile?.connects_balance} />
-          </div>
+            {/* Connects tracker */}
+            <div className="md:col-span-1 lg:col-span-4">
+              <ConnectsTrackerCard connects={artistProfile?.connects_balance} />
+            </div>
 
-          {/* Invite Code */}
-          <InviteCodeCard />
+            {/* Stats row — 4 chips */}
+            <div className="md:col-span-1 lg:col-span-4 grid grid-cols-2 gap-5">
+              {stats.map((stat, idx) => (
+                <StatCard key={idx} {...stat} />
+              ))}
+            </div>
+
+            {/* Reminders */}
+            <div className="md:col-span-1 lg:col-span-4">
+              <RemindersCard invitations={invitations} />
+            </div>
+
+            {/* Latest Jobs */}
+            <div className="md:col-span-1 lg:col-span-4">
+              <JobOpportunitiesCard jobs={jobs} />
+            </div>
+
+            {/* Recent Conversations */}
+            <div className="md:col-span-1 lg:col-span-4">
+              <RecentConversations userEmail={user.email} />
+            </div>
+
+            {/* Invite Code — full width */}
+            <div className="md:col-span-2 lg:col-span-12">
+              <InviteCodeCard />
+            </div>
+          </div>
         </div>
       </main>
 
