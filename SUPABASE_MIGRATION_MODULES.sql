@@ -58,8 +58,8 @@ CREATE TABLE artists (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_artists_email ON artists(email);
-CREATE INDEX idx_artists_status ON artists(status);
+CREATE INDEX IF NOT EXISTS idx_artists_email ON artists(email);
+CREATE INDEX IF NOT EXISTS idx_artists_status ON artists(status);
 
 -- ============================================
 -- BACKERS
@@ -89,10 +89,10 @@ CREATE TABLE backers (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_backers_contact_email ON backers(contact_email);
-CREATE INDEX idx_backers_status ON backers(status);
-CREATE INDEX idx_backers_city ON backers(city);
-CREATE INDEX idx_backers_country ON backers(country);
+CREATE INDEX IF NOT EXISTS idx_backers_contact_email ON backers(contact_email);
+CREATE INDEX IF NOT EXISTS idx_backers_status ON backers(status);
+CREATE INDEX IF NOT EXISTS idx_backers_city ON backers(city);
+CREATE INDEX IF NOT EXISTS idx_backers_country ON backers(country);
 
 -- ============================================
 -- PROJECT OWNERS
@@ -129,9 +129,9 @@ CREATE TABLE messages (
     is_read BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_messages_conversation_id ON messages(conversation_id);
-CREATE INDEX idx_messages_sender_email ON messages(sender_email);
-CREATE INDEX idx_messages_recipient_email ON messages(recipient_email);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_messages_sender_email ON messages(sender_email);
+CREATE INDEX IF NOT EXISTS idx_messages_recipient_email ON messages(recipient_email);
 
 -- ============================================
 -- NOTIFICATIONS
@@ -151,8 +151,8 @@ CREATE TABLE notifications (
     action_data JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_notifications_recipient_email ON notifications(recipient_email);
-CREATE INDEX idx_notifications_read ON notifications(read);
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient_email ON notifications(recipient_email);
+CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
 
 -- ============================================
 -- CONNECTIONS
@@ -168,9 +168,9 @@ CREATE TABLE connections (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_connections_requester_email ON connections(requester_email);
-CREATE INDEX idx_connections_recipient_email ON connections(recipient_email);
-CREATE INDEX idx_connections_status ON connections(status);
+CREATE INDEX IF NOT EXISTS idx_connections_requester_email ON connections(requester_email);
+CREATE INDEX IF NOT EXISTS idx_connections_recipient_email ON connections(recipient_email);
+CREATE INDEX IF NOT EXISTS idx_connections_status ON connections(status);
 
 -- ============================================
 -- PORTFOLIO CLIPS
@@ -197,8 +197,8 @@ CREATE TABLE portfolio_clips (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_portfolio_clips_uploaded_by_id ON portfolio_clips(uploaded_by_id);
-CREATE INDEX idx_portfolio_clips_status ON portfolio_clips(status);
+CREATE INDEX IF NOT EXISTS idx_portfolio_clips_uploaded_by_id ON portfolio_clips(uploaded_by_id);
+CREATE INDEX IF NOT EXISTS idx_portfolio_clips_status ON portfolio_clips(status);
 
 -- ============================================
 -- ENDORSEMENTS
@@ -214,7 +214,7 @@ CREATE TABLE endorsements (
     message TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_endorsements_recipient_email ON endorsements(recipient_email);
+CREATE INDEX IF NOT EXISTS idx_endorsements_recipient_email ON endorsements(recipient_email);
 
 -- ============================================
 -- TESTIMONIALS
@@ -231,7 +231,7 @@ CREATE TABLE testimonials (
     rating NUMERIC CHECK (rating >= 1 AND rating <= 5),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_testimonials_recipient_email ON testimonials(recipient_email);
+CREATE INDEX IF NOT EXISTS idx_testimonials_recipient_email ON testimonials(recipient_email);
 
 -- ============================================
 -- BACKER CRM: DEALS / PARTNERS / INVESTMENT TIERS / PROJECT UPDATES / BACKED PROJECTS
@@ -344,7 +344,7 @@ CREATE TABLE audit_logs (
     details TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_audit_logs_entity_type ON audit_logs(entity_type);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity_type ON audit_logs(entity_type);
 
 CREATE TABLE IF NOT EXISTS ticker_entries (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -360,10 +360,10 @@ CREATE TABLE IF NOT EXISTS ticker_entries (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_ticker_entries_active ON ticker_entries(is_active);
-CREATE INDEX idx_ticker_entries_status ON ticker_entries(status);
-CREATE INDEX idx_ticker_entries_category ON ticker_entries(category);
-CREATE INDEX idx_ticker_entries_order ON ticker_entries(display_order);
+CREATE INDEX IF NOT EXISTS idx_ticker_entries_active ON ticker_entries(is_active);
+CREATE INDEX IF NOT EXISTS idx_ticker_entries_status ON ticker_entries(status);
+CREATE INDEX IF NOT EXISTS idx_ticker_entries_category ON ticker_entries(category);
+CREATE INDEX IF NOT EXISTS idx_ticker_entries_order ON ticker_entries(display_order);
 
 -- ============================================
 -- SUBSCRIPTIONS & PACKAGES
