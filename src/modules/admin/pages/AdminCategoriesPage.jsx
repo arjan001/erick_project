@@ -35,10 +35,10 @@ export default function AdminCategoriesPage() {
   const openModal = (cat = null) => {
     if (cat) {
       setEditing(cat);
-      setForm({ name: cat.name || '', slug: cat.slug || '', description: cat.description || '', image_url: cat.image_url || '', item_count: cat.item_count || '', display_order: cat.display_order || 0, status: cat.status || 'active', is_featured: cat.is_featured || false, parent_id: cat.parent_id || '' });
+      setForm({ name: cat.name || '', slug: cat.slug || '', description: cat.description || '', image_url: cat.image_url || '', display_order: cat.display_order || 0, status: cat.status || 'active', is_featured: cat.is_featured || false, parent_id: cat.parent_id || '' });
     } else {
       setEditing(null);
-      setForm({ name: '', slug: '', description: '', image_url: '', item_count: '', display_order: 0, status: 'active', is_featured: false, parent_id: '' });
+      setForm({ name: '', slug: '', description: '', image_url: '', display_order: 0, status: 'active', is_featured: false, parent_id: '' });
     }
     setShowModal(true);
   };
@@ -52,7 +52,6 @@ export default function AdminCategoriesPage() {
         slug: slug,
         description: form.description,
         image_url: form.image_url,
-        item_count: form.item_count,
         display_order: form.display_order,
         status: form.status,
         is_featured: form.is_featured,
@@ -153,7 +152,6 @@ export default function AdminCategoriesPage() {
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="font-bold text-gray-900">{cat.name}</h3>
-                  {cat.item_count && <p className="text-xs text-gray-500">{cat.item_count}</p>}
                 </div>
                 <div className="flex gap-1">
                   <button onClick={() => moveOrder(cat, -1)} className="p-1 hover:bg-gray-100 rounded text-gray-400"><ArrowUp className="w-3 h-3" /></button>
