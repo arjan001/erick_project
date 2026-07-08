@@ -12,8 +12,8 @@ importers:
         specifier: ^0.8.36
         version: 0.8.36
       '@base44/vite-plugin':
-        specifier: ^1.0.28
-        version: 1.0.28
+        specifier: ^1.0.30
+        version: 1.0.30
       '@hello-pangea/dnd':
         specifier: ^17.0.0
         version: 17.0.0(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -811,8 +811,8 @@ packages:
   '@base44/sdk@0.8.36':
     resolution: {integrity: sha512-fKIat4e58WRc2VxqBjPG4NWT1kuamUzmQdGbomF2n2ZfLtiHe8ZwMm3zthKSTj/FXcnUwzIhY7ARN7YmPxybNg==}
 
-  '@base44/vite-plugin@1.0.28':
-    resolution: {integrity: sha512-T35UUdizM9vBbij5zDW56jxe8x17qstib9vqjpY+y7peTjGobz19a2+1weLNvo+7YsoClmmywA9G2wAudsuiwA==}
+  '@base44/vite-plugin@1.0.30':
+    resolution: {integrity: sha512-KFO+HP3TUf/2vg5cW0LFV7/nHHQyAYqXqPi6jq/hQB64JWhvZBXLlQIwQU0y5mu0JVliFOgLNcwHdwC8J+ekjg==}
 
   '@esbuild/aix-ppc64@0.25.12':
     resolution: {integrity: sha512-Hhmwd6CInZ3dwpuGTF8fJG6yoWmsToE+vYgD4nytZVxcu1ulHpUQRAB1UJ8+N1Am3Mz4+xOByoQoSZf4D+CpkA==}
@@ -5195,7 +5195,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@base44/vite-plugin@1.0.28':
+  '@base44/vite-plugin@1.0.30':
     dependencies:
       '@babel/generator': 7.29.7
       '@babel/parser': 7.29.7
