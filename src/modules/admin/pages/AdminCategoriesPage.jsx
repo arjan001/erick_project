@@ -14,7 +14,7 @@ export default function AdminCategoriesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [form, setForm] = useState({ name: '', slug: '', description: '', image_url: '', item_count: '', display_order: 0, status: 'active', is_featured: false, parent_id: '' });
+  const [form, setForm] = useState({ name: '', slug: '', description: '', image_url: '', display_order: 0, status: 'active', is_featured: false, parent_id: '' });
 
   const fetchData = async () => {
     try {
@@ -213,9 +213,9 @@ export default function AdminCategoriesPage() {
                   ))}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium mb-2">Item Count Display</label><Input value={form.item_count} onChange={(e) => setForm({ ...form, item_count: e.target.value })} placeholder="e.g., 127 items" /></div>
-                <div><label className="block text-sm font-medium mb-2">Display Order</label><Input type="number" value={form.display_order} onChange={(e) => setForm({ ...form, display_order: parseInt(e.target.value) || 0 })} /></div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Display Order</label>
+                <Input type="number" value={form.display_order} onChange={(e) => setForm({ ...form, display_order: parseInt(e.target.value) || 0 })} />
               </div>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="w-4 h-4" /> Featured on landing page</label>
