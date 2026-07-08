@@ -42,48 +42,8 @@ export default function InviteCodeCard() {
         if (profile?.invite_code) {
           setInviteCode(profile.invite_code);
         } else if (profile && entity) {
-          setGenerating(true);
-          // Generate unique invite code
-          const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-          let code = 'S22-';
-          for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-          
-          // Check if code already exists
-          let isUnique = false;
-          let attempts = 0;
-          while (!isUnique && attempts < 10) {
-            const existing = await Invite.filter({ code });
-            if (!existing || existing.length === 0) {
-              isUnique = true;
-            } else {
-              code = 'S22-';
-              for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-              attempts++;
-            }
-          }
-
-          setInviteCode(code);
-          
-          // Save to profile
-          await entity.update(profile.id, { invite_code: code });
-          
-          // Also save to invites table for tracking
-          try {
-            await Invite.create({
-              code: code,
-              creator_email: user.email,
-              creator_type: user.role,
-              uses_count: 0,
-              max_uses: 100,
-              status: 'active'
-            });
-          } catch (inviteErr) {
-            console.error('Error creating invite record:', inviteErr);
-            // Don't fail if invite table doesn't exist yet
-          }
-          
-          setGenerating(false);
-          success('Invite Code Generated', 'Your unique invite code has been created');
+          // Don't auto-generate - let user click button to generate
+          setInviteCode('');
         }
 
         // Fetch applicants who used this invite code
@@ -154,6 +114,85 @@ export default function InviteCodeCard() {
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
+  const handleGenerateCode = async () => {
+    if (!user?.email) return;
+    setGenerating(true);
+    try {
+      let profile = null;
+      let entity = null;
+      
+      if (user.role === 'artist' || user.role === 'artist_admin') {
+        const artists = await Artist.filter({ email: user.email });
+        profile = artists?.[0];
+        entity = Artist;
+      } else if (user.role === 'team' || user.role === 'team_admin') {
+        const teams = await Team.filter({ contact_email: user.email });
+        profile = teams?.[0];
+        entity = Team;
+      } else if (user.role === 'backer') {
+        const backers = await Backer.filter({ contact_email: user.email });
+        profile = backers?.[0];
+        entity = Backer;
+      } else {
+        const owners = await ProjectOwner.filter({ email: user.email });
+        profile = owners?.[0];
+        entity = ProjectOwner;
+      }
+
+      if (!profile || !entity) {
+        toastError('Error', 'Profile not found');
+        setGenerating(false);
+        return;
+      }
+
+      // Generate unique invite code
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = 'S22-';
+      for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+      
+      // Check if code already exists
+      let isUnique = false;
+      let attempts = 0;
+      while (!isUnique && attempts < 10) {
+        const existing = await Invite.filter({ code });
+        if (!existing || existing.length === 0) {
+          isUnique = true;
+        } else {
+          code = 'S22-';
+          for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+          attempts++;
+        }
+      }
+
+      setInviteCode(code);
+      
+      // Save to profile
+      await entity.update(profile.id, { invite_code: code });
+      
+      // Also save to invites table for tracking
+      try {
+        await Invite.create({
+          code: code,
+          creator_email: user.email,
+          creator_type: user.role,
+          uses_count: 0,
+          max_uses: 100,
+          status: 'active'
+        });
+      } catch (inviteErr) {
+        console.error('Error creating invite record:', inviteErr);
+        // Don't fail if invite table doesn't exist yet
+      }
+      
+      setGenerating(false);
+      success('Invite Code Generated', 'Your unique invite code has been created');
+    } catch (err) {
+      console.error('Error generating invite code:', err);
+      toastError('Error', 'Failed to generate invite code');
+      setGenerating(false);
+    }
+  };
+
   if (loading) return null;
 
   return (
@@ -173,32 +212,53 @@ export default function InviteCodeCard() {
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-2">Your Invite Code</label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-gray-50 rounded-lg px-4 py-3 font-mono font-bold text-gray-900 text-sm tracking-wider border border-gray-100">
-              {generating ? 'Generating...' : inviteCode || 'No code'}
+          {inviteCode ? (
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-gray-50 rounded-lg px-4 py-3 font-mono font-bold text-gray-900 text-sm tracking-wider border border-gray-100">
+                {inviteCode}
+              </div>
+              <button onClick={handleCopyCode} className="p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                {copiedCode ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-600" />}
+              </button>
             </div>
-            <button onClick={handleCopyCode} className="p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors" disabled={!inviteCode || generating}>
-              {copiedCode ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-600" />}
+          ) : (
+            <button 
+              onClick={handleGenerateCode} 
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+              disabled={generating}
+            >
+              {generating ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <Gift className="w-4 h-4" />
+                  Generate Your Invite Code
+                </>
+              )}
             </button>
-          </div>
+          )}
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-2">Referral Link</label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-gray-50 rounded-lg px-4 py-3 text-sm text-gray-600 border border-gray-100 truncate">
-              {inviteCode ? referralLink : 'Generate code first'}
+        {inviteCode && (
+          <>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-2">Referral Link</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-gray-50 rounded-lg px-4 py-3 text-sm text-gray-600 border border-gray-100 truncate">
+                  {referralLink}
+                </div>
+                <button onClick={handleCopyLink} className="p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  {copiedLink ? <Check className="w-4 h-4 text-green-600" /> : <LinkIcon className="w-4 h-4 text-gray-600" />}
+                </button>
+              </div>
             </div>
-            <button onClick={handleCopyLink} className="p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors" disabled={!inviteCode}>
-              {copiedLink ? <Check className="w-4 h-4 text-green-600" /> : <LinkIcon className="w-4 h-4 text-gray-600" />}
-            </button>
-          </div>
-        </div>
 
-        <button onClick={handleCopyLink} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors" disabled={!inviteCode}>
-          <Share2 className="w-4 h-4" />
-          Share Referral Link
-        </button>
+            <button onClick={handleCopyLink} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+              <Share2 className="w-4 h-4" />
+              Share Referral Link
+            </button>
+          </>
+        )}
 
         {applicants.length > 0 && (
           <div className="mt-6 pt-6 border-t border-gray-100">

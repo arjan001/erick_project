@@ -89,7 +89,7 @@ export default function ArtistDashboard() {
   return (
     <div className="bg-gray-50 min-h-screen">
       <main className="w-full">
-        <div className="px-6 sm:px-8 pb-8 space-y-8">
+        <div className="px-6 sm:px-8 pt-8 pb-8 space-y-8">
           <UpgradeConnectsBanner />
 
           {/* Stat Cards */}
