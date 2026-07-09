@@ -10,6 +10,7 @@ import JobOpportunitiesCard from '@/components/artist/dashboard/JobOpportunities
 import RecentConversations from '@/components/artist/dashboard/RecentConversations';
 import ProfileCompletionRing from '@/components/artist/dashboard/ProfileCompletionRing';
 import ConnectsTrackerCard from '@/components/artist/dashboard/ConnectsTrackerCard';
+import QuickNotesCard from '@/components/artist/QuickNotesCard';
 import InviteCodeCard from '@/components/InviteCodeCard';
 import { Job, Application, Message, Notification, Artist } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
@@ -92,49 +93,36 @@ export default function ArtistDashboard() {
         <div className="px-5 sm:px-7 lg:px-9 pt-7 pb-12">
           <UpgradeConnectsBanner />
 
-          {/* Bento grid */}
-          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 auto-rows-min">
-            {/* Profile Strength — tall hero, spans 2 rows */}
-            <div className="md:col-span-2 lg:col-span-4 lg:row-span-2">
-              <ProfileCompletionRing artist={artistProfile} portfolioCount={artistProfile?.portfolio_clips?.length || 0} />
-            </div>
+          {/* Stats row */}
+          <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-5">
+            {stats.map((stat, idx) => (
+              <StatCard key={idx} {...stat} />
+            ))}
+          </div>
 
-            {/* Activity chart — wide top */}
-            <div className="md:col-span-2 lg:col-span-8">
-              <ActivityChart applications={applications} />
-            </div>
-
-            {/* Connects tracker */}
-            <div className="md:col-span-1 lg:col-span-4">
-              <ConnectsTrackerCard connects={artistProfile?.connects_balance} />
-            </div>
-
-            {/* Stats row — 4 chips */}
-            <div className="md:col-span-1 lg:col-span-4 grid grid-cols-2 gap-5">
-              {stats.map((stat, idx) => (
-                <StatCard key={idx} {...stat} />
-              ))}
-            </div>
-
-            {/* Reminders */}
-            <div className="md:col-span-1 lg:col-span-4">
-              <RemindersCard invitations={invitations} />
-            </div>
-
-            {/* Latest Jobs */}
-            <div className="md:col-span-1 lg:col-span-4">
+          {/* Main content grid */}
+          <div className="mt-5 grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* Latest Jobs - larger, first */}
+            <div className="lg:col-span-2">
               <JobOpportunitiesCard jobs={jobs} />
             </div>
 
-            {/* Recent Conversations */}
-            <div className="md:col-span-1 lg:col-span-4">
-              <RecentConversations userEmail={user.email} />
+            {/* Connects card */}
+            <div>
+              <ConnectsTrackerCard connects={artistProfile?.connects_balance} />
             </div>
 
-            {/* Invite Code — full width */}
-            <div className="md:col-span-2 lg:col-span-12">
-              <InviteCodeCard />
+            {/* Bottom row */}
+            <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-3 gap-5">
+              <RemindersCard invitations={invitations} />
+              <RecentConversations userEmail={user.email} />
+              <QuickNotesCard />
             </div>
+          </div>
+
+          {/* Invite Code — full width */}
+          <div className="mt-5">
+            <InviteCodeCard />
           </div>
         </div>
       </main>

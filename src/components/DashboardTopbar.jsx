@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, ChevronDown, LogOut, Settings, MessageCircle } from 'lucide-react';
+import { Search, Bell, ChevronDown, LogOut, Settings, MessageCircle, Menu } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/shared/utils/routing';
 import { Notification, Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities';
+import { useSidebar } from '@/layouts/DashboardLayout';
 
 // Modern TailAdmin-style top bar shared across all dashboard roles.
 export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { setMobileSidebarOpen } = useSidebar();
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
@@ -128,8 +130,14 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-30 bg-white border-b border-gray-100 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
       <div className="flex items-center gap-3 min-w-0">
+        <button
+          onClick={() => setMobileSidebarOpen(true)}
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
         {title && <h1 className="text-lg font-bold text-gray-900 truncate">{title}</h1>}
       </div>
 

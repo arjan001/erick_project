@@ -129,15 +129,15 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
     : ALL_FILM_ROLES;
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto my-8 shadow-2xl">
-        {/* Header with gradient */}
-        <div className="sticky top-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-6 flex items-center justify-between z-10">
+    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[92vh] overflow-y-auto my-8 shadow-lg">
+        {/* Header */}
+        <div className="sticky top-0 bg-white border-b border-gray-100 p-6 flex items-center justify-between z-10">
           <div>
-            <h2 className="text-xl font-bold text-white">Complete Your Artist Profile</h2>
-            <p className="text-sm text-indigo-100 mt-1">Step {step} of {steps.length} — {steps[step - 1]}</p>
+            <h2 className="text-lg font-semibold text-gray-900">Complete Your Artist Profile</h2>
+            <p className="text-sm text-gray-500 mt-1">Step {step} of {steps.length} — {steps[step - 1]}</p>
           </div>
-          <button onClick={onClose} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
         </div>
 
         {/* Progress */}
@@ -145,10 +145,10 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
           <div className="flex items-center gap-2 mb-6">
             {steps.map((s, i) => (
               <div key={i} className="flex items-center flex-1">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${i + 1 < step ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg' : i + 1 === step ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg' : 'bg-gray-200 text-gray-500'}`}>
-                  {i + 1 < step ? <Check className="w-4 h-4" /> : i + 1}
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all ${i + 1 < step ? 'bg-gray-900 text-white' : i + 1 === step ? 'bg-gray-900 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                  {i + 1 < step ? <Check className="w-3.5 h-3.5" /> : i + 1}
                 </div>
-                {i < steps.length - 1 && <div className={`flex-1 h-1.5 mx-2 rounded-full transition-all ${i + 1 < step ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gray-200'}`} />}
+                {i < steps.length - 1 && <div className={`flex-1 h-0.5 mx-2 rounded-full transition-all ${i + 1 < step ? 'bg-gray-900' : 'bg-gray-200'}`} />}
               </div>
             ))}
           </div>
@@ -187,7 +187,7 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
                         <div className="text-xs font-bold uppercase text-gray-500 mb-1">{category}</div>
                         <div className="flex flex-wrap gap-1.5">
                           {visible.map(role => (
-                            <button key={role} onClick={() => toggleRole(role)} className={`px-2.5 py-1 text-xs rounded-full transition-colors ${formData.roles.includes(role) ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                            <button key={role} onClick={() => toggleRole(role)} className={`px-2.5 py-1 text-xs rounded-full transition-colors ${formData.roles.includes(role) ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                               {role} {formData.roles.includes(role) && <XIcon className="inline w-3 h-3 ml-1" />}
                             </button>
                           ))}
@@ -201,7 +201,7 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
                     <div className="text-xs text-gray-500 mb-1">Selected roles ({formData.roles.length}):</div>
                     <div className="flex flex-wrap gap-1.5">
                       {formData.roles.map(r => (
-                        <span key={r} className="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs rounded-full flex items-center gap-1">{r} <button onClick={() => toggleRole(r)}><XIcon className="w-3 h-3" /></button></span>
+                        <span key={r} className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs rounded-full flex items-center gap-1">{r} <button onClick={() => toggleRole(r)}><XIcon className="w-3 h-3" /></button></span>
                       ))}
                     </div>
                   </div>
@@ -215,7 +215,7 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-medium">Skills & Experience</label>
-                  <button onClick={addSkill} className="text-xs text-indigo-600 hover:underline flex items-center gap-1"><Plus className="w-3 h-3" /> Add Skill</button>
+                  <button onClick={addSkill} className="text-xs text-gray-600 hover:text-gray-900 flex items-center gap-1"><Plus className="w-3 h-3" /> Add Skill</button>
                 </div>
                 {formData.skills_experience.length === 0 && <p className="text-sm text-gray-400">No skills added yet</p>}
                 <div className="space-y-2">
@@ -244,7 +244,7 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
               <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
                 <div><span className="text-gray-500">Name:</span> {formData.full_name}</div>
                 <div><span className="text-gray-500">Location:</span> {formData.based_in_city}, {formData.based_in_country}</div>
-                <div><span className="text-gray-500">Roles:</span> <div className="flex flex-wrap gap-1 mt-1">{formData.roles.map(r => <span key={r} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded">{r}</span>)}</div></div>
+                <div><span className="text-gray-500">Roles:</span> <div className="flex flex-wrap gap-1 mt-1">{formData.roles.map(r => <span key={r} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">{r}</span>)}</div></div>
                 <div><span className="text-gray-500">Skills:</span> {formData.skills_experience.length} skills</div>
                 {formData.website && <div><span className="text-gray-500">Website:</span> {formData.website}</div>}
                 {formData.instagram && <div><span className="text-gray-500">Instagram:</span> {formData.instagram}</div>}
@@ -255,16 +255,16 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
         </div>
 
         {/* Navigation */}
-        <div className="border-t border-gray-200 p-6 flex justify-between bg-gray-50 rounded-b-2xl">
+        <div className="border-t border-gray-100 p-6 flex justify-between bg-gray-50 rounded-b-xl">
           <Button variant="outline" onClick={() => step > 1 ? setStep(step - 1) : onClose()} disabled={saving} className="rounded-lg">
             {step > 1 ? <><ArrowLeft className="w-4 h-4 mr-2" /> Back</> : 'Skip for now'}
           </Button>
           {step < 4 ? (
-            <Button onClick={() => canProceed() && setStep(step + 1)} disabled={!canProceed()} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg">
+            <Button onClick={() => canProceed() && setStep(step + 1)} disabled={!canProceed()} className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg">
               Next <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
-            <Button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg shadow-lg">
+            <Button onClick={handleSave} disabled={saving} className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg">
               {saving ? 'Saving...' : <><Check className="w-4 h-4 mr-2" /> Complete Profile</>}
             </Button>
           )}

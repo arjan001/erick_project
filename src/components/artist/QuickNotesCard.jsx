@@ -70,15 +70,15 @@ export default function QuickNotesCard() {
   }
 
   return (
-    <div className="border border-gray-200 rounded-lg p-6 bg-blue-50">
+    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-          <StickyNote className="w-5 h-5 text-blue-600" />
+        <h2 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+          <StickyNote className="w-4 h-4 text-blue-600" />
           Brainstorm Notes
         </h2>
         <button
           onClick={() => { setEditingId(null); setAdding(!adding); }}
-          className="p-1.5 rounded-lg hover:bg-blue-100 text-blue-700"
+          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-600"
         >
           {adding ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
         </button>
@@ -86,9 +86,9 @@ export default function QuickNotesCard() {
 
       {adding && <NoteEditor onSave={handleCreate} onCancel={() => setAdding(false)} />}
 
-      <div className="space-y-2 max-h-96 overflow-y-auto">
+      <div className="space-y-2 max-h-64 overflow-y-auto">
         {notes.length === 0 && !adding && (
-          <div className="text-center py-6 text-sm text-gray-500">
+          <div className="text-center py-4 text-xs text-gray-500">
             No notes yet. Click + to add a brainstorm note.
           </div>
         )}
@@ -104,7 +104,7 @@ export default function QuickNotesCard() {
             <div
               key={note.id}
               onClick={() => setEditingId(note.id)}
-              className={`p-3 rounded-lg border relative group cursor-pointer ${COLORS[note.color] || COLORS.yellow}`}
+              className={`p-2.5 rounded-lg border relative group cursor-pointer ${COLORS[note.color] || COLORS.yellow}`}
             >
               {note.pinned && <Pin className="w-3 h-3 absolute top-2 right-14 text-gray-500" />}
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">

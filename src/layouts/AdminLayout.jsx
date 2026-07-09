@@ -148,7 +148,7 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <div className={`flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-all duration-300 ${sidebarOpen ? 'ml-2' : 'ml-0'}`}>
         {/* Top Bar */}
         <header className="bg-white border-b border-gray-100 flex-shrink-0"
           style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>

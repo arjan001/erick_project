@@ -57,11 +57,11 @@ export default function TeamOnboardingModal({ team, onClose, onComplete }) {
   const CurrentStepComponent = STEPS[currentStep - 1].component;
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl">
+    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-lg">
         <div className="sticky top-0 bg-white z-10 px-6 sm:px-8 pt-6 pb-4 border-b border-gray-100 flex items-start justify-between">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Complete Your Team Profile</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Complete Your Team Profile</h2>
             <p className="text-sm text-gray-500 mt-1">A few quick details so clients can find and book your team.</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex-shrink-0">
@@ -75,12 +75,12 @@ export default function TeamOnboardingModal({ team, onClose, onComplete }) {
               <React.Fragment key={step.id}>
                 <div className="flex flex-col items-center">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
                       step.id < currentStep
-                        ? 'bg-amber-600 text-white'
+                        ? 'bg-gray-900 text-white'
                         : step.id === currentStep
-                        ? 'bg-amber-600 text-white ring-4 ring-amber-100'
-                        : 'bg-gray-100 text-gray-400'
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-gray-200 text-gray-500'
                     }`}
                   >
                     {step.id < currentStep ? <Check className="w-4 h-4" /> : step.id}
@@ -88,13 +88,13 @@ export default function TeamOnboardingModal({ team, onClose, onComplete }) {
                   <span className="hidden sm:block text-xs text-gray-500 mt-1.5">{step.name}</span>
                 </div>
                 {index < STEPS.length - 1 && (
-                  <div className={`flex-1 h-1 mx-2 rounded-full ${step.id < currentStep ? 'bg-amber-600' : 'bg-gray-100'}`} />
+                  <div className={`flex-1 h-0.5 mx-2 rounded-full ${step.id < currentStep ? 'bg-gray-900' : 'bg-gray-200'}`} />
                 )}
               </React.Fragment>
             ))}
           </div>
 
-          <div className="bg-gray-50 rounded-xl p-5 sm:p-6 mb-6 border border-gray-100 min-h-[320px]">
+          <div className="bg-gray-50 rounded-lg p-5 sm:p-6 mb-6 border border-gray-100 min-h-[320px]">
             <CurrentStepComponent data={data} updateData={updateData} />
           </div>
         </div>
@@ -110,11 +110,11 @@ export default function TeamOnboardingModal({ team, onClose, onComplete }) {
           </div>
 
           {currentStep < STEPS.length ? (
-            <Button onClick={handleNext} disabled={!canProceed()} className="bg-amber-600 text-white hover:bg-amber-700">
+            <Button onClick={handleNext} disabled={!canProceed()} className="bg-gray-900 hover:bg-gray-800 text-white">
               Next <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-amber-600 text-white hover:bg-amber-700">
+            <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-gray-900 hover:bg-gray-800 text-white">
               {isSubmitting ? 'Saving...' : 'Finish Profile'} <Check className="w-4 h-4 ml-1" />
             </Button>
           )}

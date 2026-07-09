@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Artist } from '@/lib/supabaseEntities';
+import { Artist, Application, Job } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Edit2, Trash2, X, Eye, Ban, CheckCircle, AlertCircle, Search, User, Mail, Calendar, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Edit2, Trash2, X, Eye, Ban, CheckCircle, AlertCircle, Search, User, Mail, Calendar, MapPin, ChevronLeft, ChevronRight, Phone, Globe, Star, Briefcase, Award, Clock, Link as LinkIcon, FileText, Users } from 'lucide-react';
 import { useToast } from '@/hooks/useToast.jsx';
 
 const STATUS_STYLES = {
@@ -84,8 +84,18 @@ export default function AdminArtistsPage() {
     setShowModal(true);
   };
 
-  const openViewModal = (artist) => {
+  const openViewModal = async (artist) => {
     setViewingArtist(artist);
+    // Fetch additional data for the artist
+    try {
+      const [applications, jobs] = await Promise.all([
+        Application.filter({ artist_email: artist.email }, '-created_date', 10),
+        Job.list('-created_date', 20)
+      ]);
+      setViewingArtist(prev => ({ ...prev, applications: applications || [], jobs: jobs || [] }));
+    } catch (err) {
+      console.error('Error fetching artist details:', err);
+    }
   };
 
   const handleSave = async () => {
@@ -292,54 +302,200 @@ export default function AdminArtistsPage() {
       {/* View Modal */}
       {viewingArtist && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="bg-gray-900 p-6 flex items-center justify-between">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">Artist Details</h2>
               <button onClick={() => setViewingArtist(null)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-600 ring-2 ring-gray-200">
-                  {viewingArtist.full_name?.[0]?.toUpperCase() || 'A'}
+            <div className="p-6 space-y-6">
+              {/* Header with profile */}
+              <div className="flex items-start gap-6 pb-6 border-b border-gray-200">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-3xl font-bold text-indigo-600 ring-4 ring-indigo-50 flex-shrink-0">
+                  {viewingArtist.profile_photo_url ? (
+                    <img src={viewingArtist.profile_photo_url} alt={viewingArtist.full_name} className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    viewingArtist.full_name?.[0]?.toUpperCase() || 'A'
+                  )}
                 </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900">{viewingArtist.full_name || 'Unknown'}</h3>
-                  <p className="text-gray-600">{viewingArtist.email || 'No email'}</p>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-1">{viewingArtist.full_name || 'Unknown'}</h3>
+                  <p className="text-gray-600 mb-3">{viewingArtist.email || 'No email'}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className={`px-3 py-1 text-xs font-medium rounded-full border shadow-sm ${STATUS_STYLES[getStatus(viewingArtist)]}`}>
+                      {getStatus(viewingArtist).charAt(0).toUpperCase() + getStatus(viewingArtist).slice(1)}
+                    </span>
+                    {viewingArtist.role && (
+                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">
+                        {viewingArtist.role}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Status</label>
-                  <p className="font-medium">{viewingArtist.is_suspended ? 'Suspended' : viewingArtist.is_disabled ? 'Disabled' : 'Active'}</p>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Briefcase className="w-4 h-4 text-blue-600" />
+                    <span className="text-xs font-medium text-blue-700">Applications</span>
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">{viewingArtist.applications?.length || 0}</div>
                 </div>
-                {viewingArtist.based_in_city && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Location</label>
-                    <p className="font-medium flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-500" /> {viewingArtist.based_in_city}</p>
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Star className="w-4 h-4 text-green-600" />
+                    <span className="text-xs font-medium text-green-700">Rating</span>
                   </div>
-                )}
-                {viewingArtist.created_at && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Joined</label>
-                    <p className="font-medium flex items-center gap-2"><Calendar className="w-4 h-4 text-gray-500" /> {new Date(viewingArtist.created_at).toLocaleDateString()}</p>
+                  <div className="text-2xl font-bold text-gray-900">{viewingArtist.rating || 'N/A'}</div>
+                </div>
+                <div className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-4 border border-purple-100">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FileText className="w-4 h-4 text-purple-600" />
+                    <span className="text-xs font-medium text-purple-700">Portfolio</span>
                   </div>
-                )}
+                  <div className="text-2xl font-bold text-gray-900">{viewingArtist.portfolio_clips?.length || 0}</div>
+                </div>
+                <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-100">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Users className="w-4 h-4 text-orange-600" />
+                    <span className="text-xs font-medium text-orange-700">Connections</span>
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">{viewingArtist.connections_count || 0}</div>
+                </div>
               </div>
 
-              {viewingArtist.bio && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Bio</label>
-                  <p className="mt-1 text-gray-700">{viewingArtist.bio}</p>
+              {/* Contact Information */}
+              <div className="bg-gray-50 rounded-xl p-5">
+                <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Contact Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-4 h-4 text-gray-500" />
+                    <div>
+                      <label className="text-xs text-gray-500">Email</label>
+                      <p className="text-sm font-medium text-gray-900">{viewingArtist.email || 'N/A'}</p>
+                    </div>
+                  </div>
+                  {viewingArtist.phone && (
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-4 h-4 text-gray-500" />
+                      <div>
+                        <label className="text-xs text-gray-500">Phone</label>
+                        <p className="text-sm font-medium text-gray-900">{viewingArtist.phone}</p>
+                      </div>
+                    </div>
+                  )}
+                  {(viewingArtist.based_in_city || viewingArtist.based_in_country) && (
+                    <div className="flex items-center gap-3">
+                      <MapPin className="w-4 h-4 text-gray-500" />
+                      <div>
+                        <label className="text-xs text-gray-500">Location</label>
+                        <p className="text-sm font-medium text-gray-900">
+                          {viewingArtist.based_in_city && viewingArtist.based_in_country
+                            ? `${viewingArtist.based_in_city}, ${viewingArtist.based_in_country}`
+                            : viewingArtist.based_in_city || viewingArtist.based_in_country || 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {viewingArtist.website_url && (
+                    <div className="flex items-center gap-3">
+                      <Globe className="w-4 h-4 text-gray-500" />
+                      <div>
+                        <label className="text-xs text-gray-500">Website</label>
+                        <a href={viewingArtist.website_url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-indigo-600 hover:underline">
+                          {viewingArtist.website_url}
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
 
+              {/* Skills & Expertise */}
               {viewingArtist.skills && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Skills</label>
-                  <p className="mt-1 text-gray-700">{viewingArtist.skills}</p>
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <Award className="w-4 h-4" />
+                    Skills & Expertise
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {viewingArtist.skills.split(',').map((skill, idx) => (
+                      <span key={idx} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-sm font-medium">
+                        {skill.trim()}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
+
+              {/* Bio */}
+              {viewingArtist.bio && (
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    About
+                  </h4>
+                  <p className="text-gray-700 leading-relaxed">{viewingArtist.bio}</p>
+                </div>
+              )}
+
+              {/* Recent Activity */}
+              {viewingArtist.applications && viewingArtist.applications.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    Recent Applications
+                  </h4>
+                  <div className="space-y-2">
+                    {viewingArtist.applications.slice(0, 5).map((app, idx) => (
+                      <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <Briefcase className="w-4 h-4 text-indigo-500" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">{app.job_title || 'Unknown Job'}</p>
+                          <p className="text-xs text-gray-500">Status: {app.status || 'Pending'}</p>
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Account Information */}
+              <div className="bg-gray-50 rounded-xl p-5">
+                <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Account Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs text-gray-500">Member Since</label>
+                    <p className="text-sm font-medium text-gray-900">
+                      {viewingArtist.created_at ? new Date(viewingArtist.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500">Connects Balance</label>
+                    <p className="text-sm font-medium text-gray-900">{viewingArtist.connects_balance || 0}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500">Profile Completion</label>
+                    <p className="text-sm font-medium text-gray-900">{viewingArtist.profile_completion || 0}%</p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500">Last Active</label>
+                    <p className="text-sm font-medium text-gray-900">
+                      {viewingArtist.last_active ? new Date(viewingArtist.last_active).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setViewingArtist(null)} className="rounded-lg">Close</Button>

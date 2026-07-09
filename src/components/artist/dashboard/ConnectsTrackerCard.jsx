@@ -5,22 +5,22 @@ import { Zap } from 'lucide-react';
 
 export default function ConnectsTrackerCard({ connects }) {
   return (
-    <div className="rounded-3xl bg-gray-900 text-white shadow-[0_8px_30px_rgba(0,0,0,0.12)] p-7 h-full flex flex-col">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-base font-bold">Connects</h2>
-        <span className="w-9 h-9 rounded-2xl bg-[#E9C46A]/20 flex items-center justify-center">
-          <Zap className="w-4 h-4 text-[#E9C46A]" />
+    <div className="rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 text-white shadow-sm p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-semibold">Connects</h2>
+        <span className="w-8 h-8 rounded-xl bg-[#E9C46A]/20 flex items-center justify-center">
+          <Zap className="w-3.5 h-3.5 text-[#E9C46A]" />
         </span>
       </div>
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="text-5xl font-extrabold tracking-tight mb-1">{connects ?? '—'}</div>
-        <div className="text-xs text-gray-400 font-medium">Connects available</div>
+      <div className="flex items-center justify-center py-2">
+        <div className="text-5xl font-extrabold tracking-tight">{connects ?? '—'}</div>
       </div>
+      <div className="text-center text-xs text-gray-400 font-medium mb-4">Connects available</div>
       <Link
         to={createPageUrl('ArtistSubscriptionCheckout')}
-        className="mt-6 text-center w-full bg-[#E9C46A] hover:bg-[#ddb94f] text-gray-900 text-sm font-semibold rounded-2xl py-3 transition-colors"
+        className="block w-full bg-[#E9C46A] hover:bg-[#ddb94f] text-gray-900 text-xs font-semibold rounded-xl py-3 transition-all hover:shadow-lg text-center"
       >
-        Get More Connects
+        Get Connects
       </Link>
     </div>
   );

@@ -25,7 +25,7 @@ const MENU_ITEMS = [
 export default function BackerSidebar() {
   const location = useLocation();
   const [user, setUser] = useState(null);
-  const { sidebarExpanded: expanded, setSidebarExpanded } = useSidebar();
+  const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
   const { logout } = useAuth();
 
   useEffect(() => {
@@ -33,15 +33,21 @@ export default function BackerSidebar() {
     setUser(storedUser ? JSON.parse(storedUser) : null);
   }, []);
 
-  const toggle = () => setSidebarExpanded(!expanded);
+  const toggle = () => {
+    if (window.innerWidth < 1024) {
+      setMobileSidebarOpen(!mobileSidebarOpen);
+    } else {
+      setSidebarExpanded(!expanded);
+    }
+  };
 
   const handleLogout = () => { logout(true); };
 
   return (
     <aside
-      className={`h-full bg-white shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-40 flex-shrink-0 ${
-        expanded ? 'w-64' : 'w-20'
-      }`}
+      className={`h-full bg-white shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative ${
+        mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      } ${expanded ? 'w-64' : 'w-20'}`}
     >
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100">
