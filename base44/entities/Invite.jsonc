@@ -2,6 +2,10 @@
   "name": "Invite",
   "type": "object",
   "properties": {
+    "code": {
+      "type": "string",
+      "description": "Unique invite code"
+    },
     "email": {
       "type": "string",
       "format": "email"
@@ -24,7 +28,8 @@
         "pending",
         "accepted",
         "expired",
-        "revoked"
+        "revoked",
+        "active"
       ],
       "default": "pending"
     },
@@ -35,6 +40,30 @@
     "invited_by_email": {
       "type": "string",
       "format": "email"
+    },
+    "creator_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email of the user who created this invite code"
+    },
+    "creator_type": {
+      "type": "string",
+      "description": "Role of the creator (artist, team, backer, etc.)"
+    },
+    "uses_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times this invite code has been used"
+    },
+    "max_uses": {
+      "type": "number",
+      "default": 100,
+      "description": "Maximum number of times this invite code can be used"
+    },
+    "used_by_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email of user who used this invite code"
     },
     "team_id": {
       "type": "string",
@@ -51,10 +80,19 @@
     "member_role": {
       "type": "string",
       "description": "Role/specialty of the invited team member within the team"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "default": "now()"
     }
   },
   "required": [
-    "email",
-    "role"
+    "code"
   ]
 }

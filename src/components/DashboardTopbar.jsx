@@ -141,7 +141,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
         {title && <h1 className="text-lg font-bold text-gray-900 truncate">{title}</h1>}
       </div>
 
-      <div className="flex-1 max-w-md hidden sm:block">
+      <div className="flex-1 max-w-md sm:block hidden">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -151,6 +151,11 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
           />
         </div>
       </div>
+
+      {/* Mobile search button */}
+      <button className="sm:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
+        <Search className="w-5 h-5" />
+      </button>
 
       <div className="flex items-center gap-2 flex-shrink-0">
         {/* Messages Button */}

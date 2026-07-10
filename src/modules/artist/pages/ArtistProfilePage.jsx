@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CountrySelector from '@/components/CountrySelector';
 import RolesTagInput from '@/components/artist/RolesTagInput';
-import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users } from 'lucide-react';
+import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { confirmDialog } from '@/lib/sweetAlert';
 import ShareProfileButton from '@/components/artist/ShareProfileButton';
@@ -33,7 +33,7 @@ function ToggleRow({ title, description, checked, onChange, isLast }) {
 }
 
 export default function ArtistProfile() {
-  const { user: authUser, isAuthenticated, isLoadingAuth } = useAuth();
+  const { user: authUser, isAuthenticated, isLoadingAuth, updateUser } = useAuth();
   const [user, setUser] = useState(null);
   const [artist, setArtist] = useState(null);
   const [portfolioClips, setPortfolioClips] = useState([]);
@@ -58,6 +58,7 @@ export default function ArtistProfile() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [projectAlerts, setProjectAlerts] = useState(true);
   const [profilePublic, setProfilePublic] = useState(true);
+  const [googleDriveFolderId, setGoogleDriveFolderId] = useState('');
   
   const [portfolioForm, setPortfolioForm] = useState({
     title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: ''
@@ -95,6 +96,7 @@ export default function ArtistProfile() {
           setEmailNotifications(a.email_notifications ?? true);
           setProjectAlerts(a.project_alerts ?? true);
           setProfilePublic(a.profile_public ?? true);
+          setGoogleDriveFolderId(a.google_drive_folder_id || '');
           
           const clipsData = await PortfolioClip.filter({ 
             uploaded_by_type: 'artist', uploaded_by_id: a.id
@@ -192,6 +194,10 @@ export default function ArtistProfile() {
         twitter: formData.twitter, youtube: formData.youtube
       });
       setArtist(updated);
+      
+      // Update the auth user name so it reflects in the dropdown
+      await updateUser(formData.full_name);
+      
       success('Profile Updated', 'Your profile has been saved');
       setEditing(false);
     } catch (err) {
@@ -219,13 +225,23 @@ export default function ArtistProfile() {
       const updated = await Artist.update(artist.id, {
         email_notifications: emailNotifications,
         project_alerts: projectAlerts,
-        profile_public: profilePublic
+        profile_public: profilePublic,
+        google_drive_folder_id: googleDriveFolderId
       });
       setArtist(updated);
       success('Preferences Updated', 'Your settings have been saved');
     } catch (err) {
       console.error('Error saving preferences:', err);
       toastError('Save Failed', 'Failed to update preferences');
+    }
+  };
+
+  const handleConnectGoogleDrive = () => {
+    // This would typically open Google OAuth flow
+    // For now, we'll allow manual input of folder ID
+    const folderId = prompt('Enter your Google Drive Folder ID:');
+    if (folderId) {
+      setGoogleDriveFolderId(folderId);
     }
   };
 
@@ -529,6 +545,29 @@ export default function ArtistProfile() {
 
           {activeTab === 'settings' && (
             <div className="max-w-3xl space-y-6">
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2"><HardDrive className="w-5 h-5 text-gray-400" /> Google Drive Integration</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Google Drive Folder ID</label>
+                    <div className="flex gap-2">
+                      <Input 
+                        value={googleDriveFolderId} 
+                        onChange={(e) => setGoogleDriveFolderId(e.target.value)} 
+                        placeholder="Enter your Google Drive folder ID" 
+                        className="rounded-lg flex-1" 
+                      />
+                      <Button onClick={handleConnectGoogleDrive} variant="outline" className="rounded-lg">
+                        <LinkIcon className="w-4 h-4 mr-2" />
+                        Connect
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Connect your Google Drive to easily import portfolio videos. Enter your folder ID or click Connect to authorize access.
+                    </p>
+                  </div>
+                </div>
+              </div>
               <div className="bg-gray-50 rounded-2xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2"><Bell className="w-5 h-5 text-gray-400" /> Notifications</h3>
                 <div className="space-y-4">

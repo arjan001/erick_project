@@ -212,6 +212,25 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('studio22_user', JSON.stringify(userData));
   };
 
+  const updateUser = async (newName) => {
+    if (!user) return;
+    const updatedUser = { ...user, full_name: newName };
+    setUser(updatedUser);
+    localStorage.setItem('studio22_user', JSON.stringify(updatedUser));
+    
+    // Also update Supabase metadata
+    try {
+      const { data: { user: supaUser } } = await supabase.auth.getUser();
+      if (supaUser) {
+        await supabase.auth.updateUser({
+          data: { full_name: newName }
+        });
+      }
+    } catch (err) {
+      console.error('Error updating Supabase metadata:', err);
+    }
+  };
+
   const logout = async (shouldRedirect = true) => {
     // 1. Sign out from Supabase (both local + global to kill all sessions/tokens)
     try {
@@ -252,7 +271,7 @@ export const AuthProvider = ({ children }) => {
   const navigateToLogin = () => { window.location.href = '/SignIn'; };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isLoadingAuth, login, logout, navigateToLogin }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoadingAuth, login, logout, navigateToLogin, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

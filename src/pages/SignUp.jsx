@@ -138,10 +138,10 @@ export default function SignUp() {
         referred_by: formData.inviteCode || null
       };
 
-      // Mark invite as used if valid
+      // Mark invite as used if valid and auto-connect users
       if (formData.inviteCode && inviteCodeValid) {
         try {
-          const { Invite } = await import('@/lib/supabaseEntities');
+          const { Invite, Connection } = await import('@/lib/supabaseEntities');
           const invites = await Invite.filter({ code: formData.inviteCode });
           const validInvite = invites?.[0];
           if (validInvite) {
@@ -149,9 +149,26 @@ export default function SignUp() {
               used_by_email: formData.email,
               uses_count: (validInvite.uses_count || 0) + 1
             });
+
+            // Auto-connect new user with invite creator
+            if (validInvite.creator_email) {
+              try {
+                await Connection.create({
+                  requester_email: validInvite.creator_email,
+                  requester_type: validInvite.creator_type || 'artist',
+                  recipient_email: formData.email,
+                  recipient_type: formData.role,
+                  status: 'accepted'
+                });
+                console.log('Auto-connected user with invite creator:', validInvite.creator_email);
+              } catch (connErr) {
+                console.error('Error creating auto-connection:', connErr);
+                // Don't block signup if connection fails
+              }
+            }
           }
         } catch (err) {
-          console.error('Error marking invite as used:', err);
+          console.error('Error processing invite:', err);
         }
       }
 

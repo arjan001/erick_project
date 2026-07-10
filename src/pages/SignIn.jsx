@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { AlertCircle, Eye, EyeOff, Mail, Lock, Gift, Sparkles, X } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, Mail, Lock, Gift, Sparkles, X, Phone, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Artist, Team, Backer, ProjectOwner, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
+import countryCodes from '@/data/countryCodes.json';
 
 const ROLE_REDIRECTS = {
   artist: '/artistdashboard',
@@ -23,7 +24,12 @@ const DEMO_ACCOUNTS = {
 };
 
 export default function SignIn() {
-  const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'reset' | 'update_password'
+  const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'update_password'
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [signupStep, setSignupStep] = useState(1); // 1: phone, 2: otp, 3: name, 4: email, 5: password, 6: role, 7: success
+  const [phone, setPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+1');
+  const [otp, setOtp] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -31,6 +37,7 @@ export default function SignIn() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [role, setRole] = useState('artist');
+  const [userType, setUserType] = useState('looking_for_job'); // 'looking_for_job', 'looking_for_job_and_hire', 'looking_to_hire', 'looking_to_back', 'team'
   const [teamOrgName, setTeamOrgName] = useState('');
   const [teamContactName, setTeamContactName] = useState('');
   const [teamPhone, setTeamPhone] = useState('');
@@ -63,6 +70,27 @@ export default function SignIn() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const { error: supaError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/SignIn`,
+      });
+      if (supaError) throw supaError;
+      setMessage('Password reset email sent! Check your inbox.');
+      setTimeout(() => {
+        setShowForgotPassword(false);
+        setMessage('');
+      }, 2000);
+    } catch (err) {
+      setError(err.message || 'Failed to send reset email');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
@@ -118,29 +146,79 @@ export default function SignIn() {
   const handleSignUp = async (e) => {
     e.preventDefault();
     setError('');
-    if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
-    setLoading(true);
-    try {
-      const fullName = role === 'team' ? teamContactName.trim() : `${firstName} ${lastName}`.trim();
-      const { data, error: supaError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: fullName, role, referred_by: inviteCode || undefined, ...(role === 'team' ? { team_name: teamOrgName.trim(), phone: teamPhone.trim() } : {}) } },
-      });
-      if (supaError) throw supaError;
-      if (data.user && !data.session) {
-        setMessage('Check your email to confirm your account, then sign in.');
-        setMode('login');
-      } else if (!inviteCode) {
-        // No invite code used — ask after registration
-        setShowInviteModal(true);
-      } else {
-        navigate(ROLE_REDIRECTS[role] || '/');
+    
+    if (signupStep === 1) {
+      if (!phone || phone.length < 5) { setError('Please enter a valid phone number'); return; }
+      // Simulate OTP sending
+      setSignupStep(2);
+      return;
+    }
+    
+    if (signupStep === 2) {
+      if (!otp || otp.length < 4) { setError('Please enter a valid OTP'); return; }
+      setSignupStep(3);
+      return;
+    }
+    
+    if (signupStep === 3) {
+      if (!firstName || !lastName) { setError('Please fill in your name'); return; }
+      setSignupStep(4);
+      return;
+    }
+    
+    if (signupStep === 4) {
+      if (!email || !email.includes('@')) { setError('Please enter a valid email'); return; }
+      setSignupStep(5);
+      return;
+    }
+    
+    if (signupStep === 5) {
+      if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
+      setSignupStep(6);
+      return;
+    }
+    
+    if (signupStep === 6) {
+      setLoading(true);
+      try {
+        // Map userType to role
+        let finalRole = 'artist';
+        if (userType === 'looking_for_job' || userType === 'looking_for_job_and_hire') {
+          finalRole = 'artist';
+        } else if (userType === 'looking_to_hire') {
+          finalRole = 'client';
+        } else if (userType === 'looking_to_back') {
+          finalRole = 'backer';
+        } else if (userType === 'team') {
+          finalRole = 'team';
+        }
+        
+        const fullName = `${firstName} ${lastName}`.trim();
+        const { data, error: supaError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { 
+            data: { 
+              full_name: fullName, 
+              role: finalRole, 
+              phone: `${countryCode}${phone}`,
+              referred_by: inviteCode || undefined,
+              ...(finalRole === 'team' ? { team_name: teamOrgName || fullName, phone: `${countryCode}${phone}` } : {}) 
+            } 
+          },
+        });
+        if (supaError) throw supaError;
+        if (data.user && !data.session) {
+          setMessage('Check your email to confirm your account, then sign in.');
+          setSignupStep(7);
+        } else {
+          setSignupStep(7);
+        }
+      } catch (err) {
+        setError(err.message || 'Sign up failed. Please try again.');
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError(err.message || 'Sign up failed. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -167,23 +245,6 @@ export default function SignIn() {
     } catch (err) {
       setError(err.message || 'Failed to apply invite code');
       setClaimingInvite(false);
-    }
-  };
-
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      const { error: supaError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/SignIn`,
-      });
-      if (supaError) throw supaError;
-      setMessage('Password reset email sent! Check your inbox.');
-    } catch (err) {
-      setError(err.message || 'Failed to send reset email');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -246,139 +307,214 @@ export default function SignIn() {
                 </div>
               </div>
               <div className="flex justify-end">
-                <button type="button" onClick={() => { setMode('reset'); setError(''); setMessage(''); }}
+                <button type="button" onClick={() => { setShowForgotPassword(true); setError(''); setMessage(''); }}
                   className="text-xs text-gray-500 hover:text-black transition-colors">Forgot password?</button>
               </div>
               <button type="submit" disabled={loading}
                 className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
-
-              <div className="flex items-center gap-3 my-1">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-xs text-gray-400 uppercase tracking-wide">or</span>
-                <div className="flex-1 h-px bg-gray-200" />
-              </div>
-
-              <button type="button" disabled
-                onClick={() => setMessage('Google sign-in is coming soon.')}
-                title="Google sign-in coming soon"
-                className="w-full py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.3h6.47c-.28 1.5-1.13 2.77-2.41 3.62v3h3.9c2.28-2.1 3.53-5.2 3.53-8.65z" />
-                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.93-2.9l-3.9-3c-1.08.73-2.46 1.16-4.03 1.16-3.1 0-5.73-2.09-6.67-4.9H1.3v3.09C3.27 21.3 7.31 24 12 24z" />
-                  <path fill="#FBBC05" d="M5.33 14.36c-.24-.73-.38-1.5-.38-2.36s.14-1.63.38-2.36V6.55H1.3A11.96 11.96 0 0 0 0 12c0 1.93.46 3.76 1.3 5.45l4.03-3.09z" />
-                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.45-3.45C17.94 1.18 15.24 0 12 0 7.31 0 3.27 2.7 1.3 6.55l4.03 3.09c.94-2.81 3.57-4.89 6.67-4.89z" />
-                </svg>
-                Continue with Google
-                <span className="text-[10px] text-gray-400 font-normal">(soon)</span>
-              </button>
             </form>
           )}
 
-          {/* Sign Up Form */}
+          {/* Sign Up Form - Step by Step Wizard */}
           {mode === 'signup' && (
             <form onSubmit={handleSignUp} className="space-y-4">
-              {role === 'team' ? (
+              {/* Step 1: Phone Number */}
+              {signupStep === 1 && (
                 <>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Team / Organization name</label>
-                    <input type="text" value={teamOrgName} onChange={e => setTeamOrgName(e.target.value)} required
-                      placeholder="e.g., Amsterdam Post House" disabled={loading}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Your name (team admin)</label>
-                    <input type="text" value={teamContactName} onChange={e => setTeamContactName(e.target.value)} required
-                      placeholder="Jane Doe" disabled={loading}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                  <div className="mb-6">
+                    <h2 className="text-xl font-bold text-gray-900">What's your phone number?</h2>
+                    <p className="text-sm text-gray-500 mt-1">We'll send you a verification code</p>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1.5">Phone number</label>
-                    <input type="tel" value={teamPhone} onChange={e => setTeamPhone(e.target.value)} required
-                      placeholder="+31 6 1234 5678" disabled={loading}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                    <div className="flex gap-2">
+                      <div className="relative">
+                        <select value={countryCode} onChange={e => setCountryCode(e.target.value)}
+                          className="appearance-none pl-3 pr-8 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white w-36">
+                          {countryCodes.map(country => (
+                            <option key={country.code} value={country.dial_code}>{country.flag} {country.dial_code} {country.code}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
+                      <div className="relative flex-1">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required
+                          placeholder="123 456 7890" disabled={loading}
+                          className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                      </div>
+                    </div>
+                  </div>
+                  <button type="submit" disabled={loading}
+                    className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
+                    Send verification code
+                  </button>
+                </>
+              )}
+
+              {/* Step 2: OTP Verification */}
+              {signupStep === 2 && (
+                <>
+                  <div className="mb-6">
+                    <h2 className="text-xl font-bold text-gray-900">Enter verification code</h2>
+                    <p className="text-sm text-gray-500 mt-1">We sent a code to {countryCode} {phone}</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Verification code</label>
+                    <input type="text" value={otp} onChange={e => setOtp(e.target.value)} required
+                      placeholder="Enter 6-digit code" maxLength={6}
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white text-center tracking-widest" />
+                  </div>
+                  <button type="button" onClick={() => setSignupStep(1)}
+                    className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                    Change phone number
+                  </button>
+                  <button type="submit" disabled={loading}
+                    className="w-full mt-4 py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
+                    Verify
+                  </button>
+                </>
+              )}
+
+              {/* Step 3: Name */}
+              {signupStep === 3 && (
+                <>
+                  <div className="mb-6">
+                    <h2 className="text-xl font-bold text-gray-900">What's your name?</h2>
+                    <p className="text-sm text-gray-500 mt-1">Let us know how to address you</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1.5">First name</label>
+                      <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required
+                        placeholder="John" disabled={loading}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1.5">Last name</label>
+                      <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} required
+                        placeholder="Doe" disabled={loading}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                    </div>
+                  </div>
+                  <button type="submit" disabled={loading}
+                    className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
+                    Continue
+                  </button>
+                </>
+              )}
+
+              {/* Step 4: Email */}
+              {signupStep === 4 && (
+                <>
+                  <div className="mb-6">
+                    <h2 className="text-xl font-bold text-gray-900">What's your email?</h2>
+                    <p className="text-sm text-gray-500 mt-1">We'll use this to contact you</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
+                        placeholder="you@example.com" disabled={loading}
+                        className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                    </div>
+                  </div>
+                  <button type="submit" disabled={loading}
+                    className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
+                    Continue
+                  </button>
+                </>
+              )}
+
+              {/* Step 5: Password */}
+              {signupStep === 5 && (
+                <>
+                  <div className="mb-6">
+                    <h2 className="text-xl font-bold text-gray-900">Create a password</h2>
+                    <p className="text-sm text-gray-500 mt-1">Min 6 characters</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
+                        placeholder="Min 6 characters" disabled={loading}
+                        className="w-full pl-9 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <button type="submit" disabled={loading}
+                    className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
+                    Continue
+                  </button>
+                </>
+              )}
+
+              {/* Step 6: Role Selection */}
+              {signupStep === 6 && (
+                <>
+                  <div className="mb-6">
+                    <h2 className="text-xl font-bold text-gray-900">Who are you?</h2>
+                    <p className="text-sm text-gray-500 mt-1">Select your role to get started</p>
+                  </div>
+                  <div className="space-y-3">
+                    <button type="button" onClick={() => setUserType('looking_for_job')}
+                      className={`w-full p-4 border-2 rounded-xl text-left transition-all ${userType === 'looking_for_job' ? 'border-black bg-black/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                      <div className="font-semibold text-gray-900">Artist looking for a job</div>
+                      <div className="text-xs text-gray-500 mt-1">Filmmakers, editors, designers, and creative professionals</div>
+                    </button>
+                    <button type="button" onClick={() => setUserType('looking_for_job_and_hire')}
+                      className={`w-full p-4 border-2 rounded-xl text-left transition-all ${userType === 'looking_for_job_and_hire' ? 'border-black bg-black/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                      <div className="font-semibold text-gray-900">Artist looking for a job & also want to hire</div>
+                      <div className="text-xs text-gray-500 mt-1">Creative professionals who also hire talent</div>
+                    </button>
+                    <button type="button" onClick={() => setUserType('looking_to_hire')}
+                      className={`w-full p-4 border-2 rounded-xl text-left transition-all ${userType === 'looking_to_hire' ? 'border-black bg-black/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                      <div className="font-semibold text-gray-900">Client looking to hire</div>
+                      <div className="text-xs text-gray-500 mt-1">Brands, agencies, and project commissioners</div>
+                    </button>
+                    <button type="button" onClick={() => setUserType('looking_to_back')}
+                      className={`w-full p-4 border-2 rounded-xl text-left transition-all ${userType === 'looking_to_back' ? 'border-black bg-black/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                      <div className="font-semibold text-gray-900">Backer looking to back</div>
+                      <div className="text-xs text-gray-500 mt-1">Investors and funding partners</div>
+                    </button>
+                    <button type="button" onClick={() => setUserType('team')}
+                      className={`w-full p-4 border-2 rounded-xl text-left transition-all ${userType === 'team' ? 'border-black bg-black/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                      <div className="font-semibold text-gray-900">Team / Studio</div>
+                      <div className="text-xs text-gray-500 mt-1">Production companies and creative studios</div>
+                    </button>
+                  </div>
+                  <button type="submit" disabled={loading}
+                    className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
+                    {loading ? 'Creating account...' : 'Create account'}
+                  </button>
+                </>
+              )}
+
+              {/* Step 7: Success */}
+              {signupStep === 7 && (
+                <>
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">Account created!</h2>
+                    <p className="text-sm text-gray-500 mb-6">Check your email to confirm your account, then sign in.</p>
+                    <button type="button" onClick={() => { setMode('login'); setSignupStep(1); setError(''); setMessage(''); }}
+                      className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-all">
+                      Go to sign in
+                    </button>
                   </div>
                 </>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">First name</label>
-                    <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required
-                      placeholder="John" disabled={loading}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Last name</label>
-                    <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} required
-                      placeholder="Doe" disabled={loading}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
-                  </div>
-                </div>
               )}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                    placeholder="you@example.com" disabled={loading}
-                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
-                    placeholder="Min 6 characters" disabled={loading}
-                    className="w-full pl-9 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">I am a...</label>
-                <select value={role} onChange={e => setRole(e.target.value)} disabled={loading}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white">
-                  <option value="artist">Artist / Creator</option>
-                  <option value="team">Team / Studio</option>
-                  <option value="client">Client / Project Owner</option>
-                  <option value="backer">Backer / Investor</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">Invite code {inviteCode && <span className="text-green-600 font-medium">✓ Free Pro unlocked</span>}</label>
-                <input type="text" value={inviteCode} onChange={e => setInviteCode(e.target.value)} placeholder="Enter invite code for free Pro access"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
-                {inviteCode && <p className="text-xs text-green-600 mt-1 flex items-center gap-1"><Sparkles className="w-3 h-3" /> Pro Beta Release plan — free!</p>}
-              </div>
-              <button type="submit" disabled={loading}
-                className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
-                {loading ? 'Creating account...' : 'Create account'}
-              </button>
-            </form>
-          )}
-
-          {/* Reset Password Form */}
-          {mode === 'reset' && (
-            <form onSubmit={handleResetPassword} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                    placeholder="you@example.com" disabled={loading}
-                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
-                </div>
-              </div>
-              <button type="submit" disabled={loading}
-                className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
-                {loading ? 'Sending...' : 'Send reset link'}
-              </button>
-              <button type="button" onClick={() => { setMode('login'); setError(''); setMessage(''); }}
-                className="w-full text-sm text-gray-500 hover:text-black transition-colors">← Back to sign in</button>
             </form>
           )}
 
@@ -415,10 +551,10 @@ export default function SignIn() {
           )}
 
           {/* Toggle */}
-          {mode !== 'reset' && mode !== 'update_password' && (
+          {mode !== 'update_password' && (
             <p className="mt-5 text-center text-sm text-gray-500">
               {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-              <button type="button" onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setMessage(''); }}
+              <button type="button" onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setSignupStep(1); setError(''); setMessage(''); }}
                 className="text-black font-semibold hover:underline">
                 {mode === 'login' ? 'Sign up' : 'Sign in'}
               </button>
@@ -447,6 +583,51 @@ export default function SignIn() {
           </div>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 relative shadow-2xl">
+            <button onClick={() => { setShowForgotPassword(false); setError(''); setMessage(''); }} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+              <X className="w-5 h-5" />
+            </button>
+            <div className="mb-5">
+              <h2 className="text-xl font-bold text-gray-900">Forgot Password</h2>
+              <p className="text-sm text-gray-500 mt-1">Enter your email address and we'll send you a link to reset your password.</p>
+            </div>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex gap-2 items-start">
+                <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
+            {message && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-700">{message}</p>
+              </div>
+            )}
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
+                    placeholder="you@example.com" disabled={loading}
+                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                </div>
+              </div>
+              <button type="submit" disabled={loading}
+                className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
+                {loading ? 'Sending...' : 'Send reset link'}
+              </button>
+            </form>
+            <button onClick={() => { setShowForgotPassword(false); setError(''); setMessage(''); }}
+              className="w-full mt-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+              Back to sign in
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Post-registration Invite Modal */}
       {showInviteModal && (
