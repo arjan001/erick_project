@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Project, Application, Job } from '@/lib/supabaseEntities';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, Users, MessageSquare, Search, Filter, CheckCircle, TrendingUp, X, Bookmark, BookmarkCheck, Eye, EyeOff } from 'lucide-react';
+import { MapPin, Calendar, Users, MessageSquare, Search, Filter, CheckCircle, TrendingUp, X, Bookmark, BookmarkCheck, Eye, EyeOff, Lock, Clock } from 'lucide-react';
 import ShareProjectButton from '@/components/projects/ShareProjectButton';
 
 export default function JobBoard() {
@@ -14,6 +14,11 @@ export default function JobBoard() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [filterRole, setFilterRole] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterLocation, setFilterLocation] = useState('all');
+  const [filterSkill, setFilterSkill] = useState('all');
+  const [filterPayment, setFilterPayment] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
   const [generatingImageFor, setGeneratingImageFor] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -61,7 +66,10 @@ export default function JobBoard() {
           status: job.status === 'open' ? 'verified' : job.status,
           departments_needed: job.required_skills || [],
           isJob: true,
-          job_id: job.id
+          job_id: job.id,
+          created_at: job.created_at,
+          duration: job.duration,
+          is_premium: job.is_premium
         }));
         
         // Combine projects and jobs
@@ -168,21 +176,47 @@ export default function JobBoard() {
     }
   };
 
+  const getTimeAgo = (date) => {
+    if (!date) return 'Recently';
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    if (seconds < 60) return 'Just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return new Date(date).toLocaleDateString();
+  };
+
   const filteredProjects = projects.filter(project => {
     if (hiddenProjects.includes(project.id)) return false;
     
     const matchesSearch = project.project_type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.location_city?.toLowerCase().includes(searchQuery.toLowerCase());
+                         project.location_city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         project.departments_needed?.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
     
     if (!matchesSearch) return false;
     
-    if (filterType === 'all') return true;
-    return project.project_type === filterType;
+    if (filterType !== 'all' && project.project_type !== filterType) return false;
+    if (filterRole !== 'all' && project.job_type !== filterRole) return false;
+    if (filterCategory !== 'all' && project.category !== filterCategory) return false;
+    if (filterLocation !== 'all' && project.location_city !== filterLocation) return false;
+    if (filterSkill !== 'all' && !project.departments_needed?.includes(filterSkill)) return false;
+    if (filterPayment !== 'all') {
+      if (filterPayment === 'paid' && !project.budget) return false;
+      if (filterPayment === 'unpaid' && project.budget) return false;
+    }
+    
+    return true;
   });
 
   const projectTypes = [...new Set(projects.map(p => p.project_type))].filter(Boolean);
+  const jobRoles = [...new Set(projects.map(p => p.job_type))].filter(Boolean);
+  const allSkills = [...new Set(projects.flatMap(p => p.departments_needed || []))].filter(Boolean);
+  const locations = [...new Set(projects.map(p => p.location_city))].filter(Boolean);
 
   if (!user || loading) return null;
 
@@ -218,22 +252,97 @@ export default function JobBoard() {
                   {filterType === 'all' ? 'All Types' : filterType}
                 </button>
                 {showFilters && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                    <button
-                      onClick={() => { setFilterType('all'); setShowFilters(false); }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100"
-                    >
-                      All Types
-                    </button>
-                    {projectTypes.map(type => (
-                      <button
-                        key={type}
-                        onClick={() => { setFilterType(type); setShowFilters(false); }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0 capitalize"
+                  <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10 p-4">
+                    <div className="space-y-4">
+                      {/* Project Type */}
+                      <div>
+                        <label className="text-xs font-semibold text-gray-700 mb-2 block">Project Type</label>
+                        <select
+                          value={filterType}
+                          onChange={(e) => setFilterType(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                        >
+                          <option value="all">All Types</option>
+                          {projectTypes.map(type => (
+                            <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Role */}
+                      <div>
+                        <label className="text-xs font-semibold text-gray-700 mb-2 block">Role</label>
+                        <select
+                          value={filterRole}
+                          onChange={(e) => setFilterRole(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                        >
+                          <option value="all">All Roles</option>
+                          {jobRoles.map(role => (
+                            <option key={role} value={role}>{role.replace(/_/g, ' ')}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Location */}
+                      <div>
+                        <label className="text-xs font-semibold text-gray-700 mb-2 block">Location</label>
+                        <select
+                          value={filterLocation}
+                          onChange={(e) => setFilterLocation(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                        >
+                          <option value="all">All Locations</option>
+                          {locations.map(loc => (
+                            <option key={loc} value={loc}>{loc}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Skill */}
+                      <div>
+                        <label className="text-xs font-semibold text-gray-700 mb-2 block">Skill</label>
+                        <select
+                          value={filterSkill}
+                          onChange={(e) => setFilterSkill(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                        >
+                          <option value="all">All Skills</option>
+                          {allSkills.map(skill => (
+                            <option key={skill} value={skill}>{skill.replace(/_/g, ' ')}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Payment Type */}
+                      <div>
+                        <label className="text-xs font-semibold text-gray-700 mb-2 block">Payment</label>
+                        <select
+                          value={filterPayment}
+                          onChange={(e) => setFilterPayment(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                        >
+                          <option value="all">All</option>
+                          <option value="paid">Paid</option>
+                          <option value="unpaid">Unpaid</option>
+                        </select>
+                      </div>
+
+                      <Button
+                        onClick={() => {
+                          setFilterType('all');
+                          setFilterRole('all');
+                          setFilterCategory('all');
+                          setFilterLocation('all');
+                          setFilterSkill('all');
+                          setFilterPayment('all');
+                        }}
+                        variant="outline"
+                        className="w-full text-sm"
                       >
-                        {type.replace(/_/g, ' ')}
-                      </button>
-                    ))}
+                        Clear All Filters
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -272,6 +381,12 @@ export default function JobBoard() {
                     <span>{project.location_city || 'Remote'}</span>
                   </div>
 
+                  {/* Time Posted */}
+                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                    <Clock className="w-3 h-3" />
+                    <span>{getTimeAgo(project.created_at)}</span>
+                  </div>
+
                   {/* Applicant Count */}
                   <div className="flex items-center gap-1 text-xs text-gray-600">
                     <Users className="w-3 h-3" />
@@ -301,6 +416,16 @@ export default function JobBoard() {
                     <EyeOff className="w-4 h-4 text-gray-400 mx-auto" />
                   </button>
                 </div>
+
+                {/* Premium Badge */}
+                {project.is_premium && (
+                  <div className="absolute top-2 left-2">
+                    <div className="flex items-center gap-1 px-2 py-1 bg-yellow-500 text-white text-xs font-bold rounded-full">
+                      <Lock className="w-3 h-3" />
+                      <span>Premium</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Applied Badge */}
                 {project.hasApplied && (

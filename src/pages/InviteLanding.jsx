@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Gift, Sparkles, MessageCircle, Briefcase, Star, ArrowRight, Share2, Copy, Check } from 'lucide-react';
 
 const OG_IMAGE = 'https://media.base44.com/images/public/6968a46f6ea94ba83cd1497c/ee5480676_generated_image.png';
@@ -16,22 +16,24 @@ function setMeta(attr, key, content) {
 
 export default function InviteLanding() {
   const { code } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const inviterName = searchParams.get('inviter') || 'Studio22';
 
   useEffect(() => {
     const url = `${window.location.origin}/invite/${code}`;
-    document.title = `You're Invited — Free Pro Beta Access | Studio22`;
-    setMeta('name', 'description', `You've been invited to Studio22 Pro Beta Release at no cost. Join the creative network connecting filmmakers, creators, and production teams worldwide.`);
-    setMeta('property', 'og:title', `You're Invited — Free Pro Beta Access`);
-    setMeta('property', 'og:description', `Join Studio22 with invite code ${code}. Get the Pro Beta Release plan at no cost — more messages, more projects, priority access.`);
+    document.title = `${inviterName} invited you — Free Pro Beta Access | Studio22`;
+    setMeta('name', 'description', `${inviterName} has invited you to Studio22 Pro Beta Release at no cost. Join the creative network connecting filmmakers, creators, and production teams worldwide.`);
+    setMeta('property', 'og:title', `${inviterName} invited you — Free Pro Beta Access`);
+    setMeta('property', 'og:description', `${inviterName} invites you to join Studio22 with invite code ${code}. Get the Pro Beta Release plan at no cost — more messages, more projects, priority access.`);
     setMeta('property', 'og:image', OG_IMAGE);
     setMeta('property', 'og:url', url);
     setMeta('property', 'og:type', 'website');
     setMeta('property', 'og:site_name', 'Studio22');
     setMeta('name', 'twitter:card', 'summary_large_image');
-    setMeta('name', 'twitter:title', `You're Invited — Free Pro Beta Access | Studio22`);
-    setMeta('name', 'twitter:description', `Join Studio22 with invite code ${code}. Get Pro Beta Release free.`);
+    setMeta('name', 'twitter:title', `${inviterName} invited you — Free Pro Beta Access | Studio22`);
+    setMeta('name', 'twitter:description', `${inviterName} invites you to join Studio22 with invite code ${code}. Get Pro Beta Release free.`);
     setMeta('name', 'twitter:image', OG_IMAGE);
 
     // Schema.org structured data for SEO
@@ -46,10 +48,14 @@ export default function InviteLanding() {
       '@context': 'https://schema.org',
       '@type': 'InviteAction',
       name: 'Studio22 Pro Beta Release Invite',
-      description: 'Free Pro Beta access to Studio22 creative network',
+      description: `Free Pro Beta access to Studio22 creative network, invited by ${inviterName}`,
       url: url,
+      agent: {
+        '@type': 'Person',
+        name: inviterName
+      }
     });
-  }, [code]);
+  }, [code, inviterName]);
 
   const inviteUrl = `${window.location.origin}/invite/${code}`;
   const signupUrl = `/SignIn?ref=${code}&mode=signup`;
@@ -96,7 +102,7 @@ export default function InviteLanding() {
           </div>
 
           <h1 className="text-5xl sm:text-7xl font-black tracking-tighter mb-4">
-            YOU'RE INVITED
+            {inviterName !== 'Studio22' ? `${inviterName} invited you` : "YOU'RE INVITED"}
           </h1>
           <p className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-3">
             Pro Beta Release

@@ -47,6 +47,10 @@ const DEFAULT_SETTINGS = {
   email_provider: 'brevo',
   email_sender_address: '',
   email_sender_name: '',
+  brevo_api_key: '',
+  brevo_sender_name: 'Studio22',
+  brevo_sms_enabled: false,
+  brevo_email_enabled: false,
 };
 
 const ToggleRow = ({ label, description, checked, onChange }) => (
@@ -315,6 +319,27 @@ export default function AdminGeneralSettingsPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Sender Name</label>
               <input type="text" value={settings.email_sender_name} onChange={(e) => handleChange('email_sender_name', e.target.value)} placeholder="Studio22" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-1 flex items-center"><span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mr-2"><Send className="w-4 h-4" /></span>Brevo Integration</h2>
+          <p className="text-sm text-gray-500 mb-4">Configure Brevo API for SMS OTP and email notifications. Get your API key from <a href="https://developers.brevo.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Brevo Dashboard</a>.</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Brevo API Key</label>
+              <input type="password" value={settings.brevo_api_key} onChange={(e) => handleChange('brevo_api_key', e.target.value)} placeholder="Enter your Brevo API key" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent" />
+              <p className="text-xs text-gray-500 mt-1">Your API key is stored securely in the database.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sender Name</label>
+              <input type="text" value={settings.brevo_sender_name} onChange={(e) => handleChange('brevo_sender_name', e.target.value)} placeholder="Studio22" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent" />
+              <p className="text-xs text-gray-500 mt-1">Max 11 characters for alphanumeric, 15 for numeric.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <ToggleRow label="Enable SMS" description="Send SMS OTP for phone verification" checked={settings.brevo_sms_enabled} onChange={() => handleToggle('brevo_sms_enabled')} />
+              <ToggleRow label="Enable Email" description="Send transactional emails via Brevo" checked={settings.brevo_email_enabled} onChange={() => handleToggle('brevo_email_enabled')} />
             </div>
           </div>
         </div>

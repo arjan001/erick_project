@@ -67,6 +67,19 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
             />
           </div>
           <div>
+            <label className="block text-sm font-medium text-gray-900 mb-2">Duration</label>
+            <select
+              value={form.duration}
+              onChange={(e) => setForm({ ...form, duration: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+            >
+              <option value="">Select duration</option>
+              <option value="short_term">Short-term</option>
+              <option value="long_term">Long-term</option>
+              <option value="ongoing">Ongoing</option>
+            </select>
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">Required Skills (comma separated)</label>
             <input
               type="text"

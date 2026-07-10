@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Artist } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
-import { Plus, X, Sparkles, ThumbsUp, Edit2, Check, Globe, Instagram, Linkedin } from 'lucide-react';
+import { Plus, X, Sparkles, ThumbsUp, Edit2, Check } from 'lucide-react';
+import SkillsExperienceTagInput from '@/components/SkillsExperienceTagInput';
+import worldLanguages from '@/data/languages.json';
 
 const SKILL_SUGGESTIONS = [
   'After Effects', 'Adobe Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'Concept Art', 'Creative Direction', 
@@ -34,11 +36,7 @@ const PROJECT_TYPE_SUGGESTIONS = [
   'Photo Retouching', 'Podcast Production', 'Video Podcast', 'Live Streaming', 'Virtual Events'
 ];
 
-const LANGUAGE_SUGGESTIONS = [
-  'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch', 'Swedish',
-  'Danish', 'Norwegian', 'Finnish', 'Polish', 'Russian', 'Japanese', 'Mandarin', 'Korean',
-  'Hindi', 'Arabic', 'Turkish', 'Greek', 'Hebrew', 'Thai', 'Vietnamese', 'Indonesian'
-];
+const LANGUAGE_SUGGESTIONS = worldLanguages;
 
 const COUNTRY_SUGGESTIONS = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
@@ -77,8 +75,6 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
   const [bioLoading, setBioLoading] = useState(false);
   
   const [skills, setSkills] = useState(artist?.skills_experience?.map(s => s.skill) || []);
-  const [newSkill, setNewSkill] = useState('');
-  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
   const [editingSkills, setEditingSkills] = useState(false);
   
   const [clients, setClients] = useState(artist?.past_clients || []);
@@ -101,10 +97,6 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
   const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
   const [editingCountries, setEditingCountries] = useState(false);
 
-  const [visitedCountries, setVisitedCountries] = useState(artist?.visited_countries || []);
-  const [newVisitedCountry, setNewVisitedCountry] = useState('');
-  const [showVisitedSuggestions, setShowVisitedSuggestions] = useState(false);
-  const [editingVisited, setEditingVisited] = useState(false);
 
   const groupedEndorsements = endorsements.reduce((acc, e) => {
     if (!acc[e.skill]) acc[e.skill] = [];
@@ -142,17 +134,6 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
     }
   };
 
-  const addSkill = (skill) => {
-    if (skill && !skills.includes(skill)) {
-      setSkills([...skills, skill]);
-      setNewSkill('');
-    }
-  };
-
-  const removeSkill = (skill) => {
-    setSkills(skills.filter(s => s !== skill));
-  };
-
   const addClient = (client) => {
     if (client && !clients.includes(client)) {
       setClients([...clients, client]);
@@ -175,10 +156,6 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
     setProjectTypes(projectTypes.filter(t => t !== type));
   };
 
-  const filteredSkillSuggestions = SKILL_SUGGESTIONS.filter(s => 
-    s.toLowerCase().includes(newSkill.toLowerCase()) && !skills.includes(s)
-  );
-
   const filteredClientSuggestions = CLIENT_SUGGESTIONS.filter(c =>
     c.toLowerCase().includes(newClient.toLowerCase()) && !clients.includes(c)
   );
@@ -195,9 +172,6 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
     c.toLowerCase().includes(newCountry.toLowerCase()) && !countries.includes(c)
   );
 
-  const filteredVisitedSuggestions = COUNTRY_SUGGESTIONS.filter(c =>
-    c.toLowerCase().includes(newVisitedCountry.toLowerCase()) && !visitedCountries.includes(c)
-  );
 
   const addLanguage = (lang) => {
     if (lang && !languages.includes(lang)) {
@@ -221,16 +195,6 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
     setCountries(countries.filter(c => c !== country));
   };
 
-  const addVisitedCountry = (country) => {
-    if (country && !visitedCountries.includes(country)) {
-      setVisitedCountries([...visitedCountries, country]);
-      setNewVisitedCountry('');
-    }
-  };
-
-  const removeVisitedCountry = (country) => {
-    setVisitedCountries(visitedCountries.filter(c => c !== country));
-  };
 
   return (
     <div className="grid grid-cols-3 gap-12">
@@ -291,10 +255,10 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
           )}
         </div>
 
-        {/* Skills with Endorsements - Editable */}
+        {/* Skills & Experience - Combined with Modal */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-500">Skills</h3>
+            <h3 className="text-sm font-semibold text-gray-500">Skills & Experience</h3>
             {!editingSkills && (
               <button
                 onClick={() => setEditingSkills(true)}
@@ -307,55 +271,12 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
           </div>
 
           {editingSkills ? (
-            <div className="space-y-3">
-              <div className="flex flex-wrap gap-2 mb-3">
-                {skills.map((skill) => (
-                  <div key={skill} className="flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-full text-sm">
-                    {skill}
-                    <button onClick={() => removeSkill(skill)} className="hover:opacity-70">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="relative">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onFocus={() => setShowSkillSuggestions(true)}
-                    placeholder="Add a skill..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-                  />
-                  <Button
-                    onClick={() => addSkill(newSkill)}
-                    size="sm"
-                    className="bg-black text-white hover:bg-gray-800"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {showSkillSuggestions && filteredSkillSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
-                    {filteredSkillSuggestions.map((skill) => (
-                      <button
-                        key={skill}
-                        onClick={() => {
-                          addSkill(skill);
-                          setShowSkillSuggestions(false);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
-                      >
-                        {skill}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
+            <div className="space-y-4">
+              <SkillsExperienceTagInput 
+                selected={skills} 
+                onChange={setSkills} 
+                placeholder="Search skills... (e.g. After Effects, Editing, VFX)"
+              />
               <Button
                 onClick={async () => {
                   if (artist) {
@@ -745,88 +666,6 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               ) : (
               <div className="flex flex-wrap gap-2">
               {countries.length > 0 ? countries.map((c) => (
-                <span key={c} className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800">
-                  {c}
-                </span>
-              )) : <p className="text-gray-500 text-sm">No countries added yet</p>}
-            </div>
-          )}
-        </div>
-
-        {/* Visited Countries - Editable */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-500">Visited Countries</h3>
-            {!editingVisited && (
-              <button
-                onClick={() => setEditingVisited(true)}
-                className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900"
-              >
-                <Edit2 className="w-3 h-3" />
-                Edit
-              </button>
-            )}
-          </div>
-
-          {editingVisited ? (
-            <div className="space-y-3">
-              <div className="flex flex-wrap gap-2 mb-3">
-                {visitedCountries.map((c) => (
-                  <div key={c} className="flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-full text-sm">
-                    {c}
-                    <button onClick={() => removeVisitedCountry(c)} className="hover:opacity-70">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="relative">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newVisitedCountry}
-                    onChange={(e) => setNewVisitedCountry(e.target.value)}
-                    onFocus={() => setShowVisitedSuggestions(true)}
-                    placeholder="Add a country..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-                  />
-                  <Button onClick={() => addVisitedCountry(newVisitedCountry)} size="sm" className="bg-black text-white hover:bg-gray-800">
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {showVisitedSuggestions && filteredVisitedSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
-                    {filteredVisitedSuggestions.map((country) => (
-                      <button
-                        key={country}
-                        onClick={() => {
-                          addVisitedCountry(country);
-                          setShowVisitedSuggestions(false);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
-                      >
-                        {country}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <Button onClick={async () => {
-                if (artist) {
-                  const updated = await Artist.update(artist.id, { visited_countries: visitedCountries });
-                  if (onUpdate) onUpdate(updated);
-                }
-                setEditingVisited(false);
-              }} className="w-full bg-black text-white hover:bg-gray-800">
-                <Check className="w-4 h-4 mr-1" /> Done
-              </Button>
-              </div>
-              ) : (
-              <div className="flex flex-wrap gap-2">
-              {visitedCountries.length > 0 ? visitedCountries.map((c) => (
                 <span key={c} className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800">
                   {c}
                 </span>

@@ -8,6 +8,7 @@ export default function InviteCodeCard() {
   const { user } = useAuth();
   const { success, error: toastError } = useToast();
   const [inviteCode, setInviteCode] = useState('');
+  const [trackingCode, setTrackingCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -41,6 +42,13 @@ export default function InviteCodeCard() {
 
         if (profile?.invite_code) {
           setInviteCode(profile.invite_code);
+          // Generate tracking code if not exists
+          if (!trackingCode) {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let trackCode = '';
+            for (let i = 0; i < 8; i++) trackCode += chars[Math.floor(Math.random() * chars.length)];
+            setTrackingCode(trackCode);
+          }
         } else if (profile && entity) {
           // Don't auto-generate - let user click button to generate
           setInviteCode('');
@@ -98,7 +106,7 @@ export default function InviteCodeCard() {
     fetchProfile();
   }, [user]);
 
-  const referralLink = `${window.location.origin}/invite/${inviteCode}`;
+  const referralLink = `${window.location.origin}/invite/${inviteCode}?inviter=${encodeURIComponent(user?.full_name || 'Studio22')}&track=${trackingCode}`;
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(inviteCode);
@@ -250,6 +258,15 @@ export default function InviteCodeCard() {
                 <button onClick={handleCopyLink} className="p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                   {copiedLink ? <Check className="w-4 h-4 text-green-600" /> : <LinkIcon className="w-4 h-4 text-gray-600" />}
                 </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-2">Tracking Code (for analytics)</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-gray-50 rounded-lg px-4 py-3 font-mono font-bold text-gray-900 text-sm tracking-wider border border-gray-100">
+                  {trackingCode || '---'}
+                </div>
               </div>
             </div>
 

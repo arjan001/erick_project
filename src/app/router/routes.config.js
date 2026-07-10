@@ -206,6 +206,12 @@ const adminRoutes = [
     guard: AdminGuard
   },
   {
+    path: '/Admin/Analytics',
+    component: () => import('@/modules/admin/pages/AdminAnalyticsPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
+  },
+  {
     path: '/Admin/FinanceDashboard',
     component: () => import('@/modules/admin/pages/AdminFinanceDashboardPage'),
     layout: AdminLayout,

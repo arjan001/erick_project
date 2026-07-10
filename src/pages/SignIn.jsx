@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { AlertCircle, Eye, EyeOff, Mail, Lock, Gift, Sparkles, X, Phone, ChevronDown } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, Mail, Lock, Gift, Sparkles, X } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Artist, Team, Backer, ProjectOwner, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
-import countryCodes from '@/data/countryCodes.json';
 
 const ROLE_REDIRECTS = {
   artist: '/artistdashboard',
@@ -26,10 +25,7 @@ const DEMO_ACCOUNTS = {
 export default function SignIn() {
   const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'update_password'
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [signupStep, setSignupStep] = useState(1); // 1: phone, 2: otp, 3: name, 4: email, 5: password, 6: role, 7: success
-  const [phone, setPhone] = useState('');
-  const [countryCode, setCountryCode] = useState('+1');
-  const [otp, setOtp] = useState('');
+  const [signupStep, setSignupStep] = useState(1); // 1: name, 2: email, 3: password, 4: role, 5: success
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -37,7 +33,7 @@ export default function SignIn() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [role, setRole] = useState('artist');
-  const [userType, setUserType] = useState('looking_for_job'); // 'looking_for_job', 'looking_for_job_and_hire', 'looking_to_hire', 'looking_to_back', 'team'
+  const [userType, setUserType] = useState('looking_for_job'); // 'looking_for_job', 'looking_to_hire', 'looking_to_back', 'team'
   const [teamOrgName, setTeamOrgName] = useState('');
   const [teamContactName, setTeamContactName] = useState('');
   const [teamPhone, setTeamPhone] = useState('');
@@ -148,42 +144,29 @@ export default function SignIn() {
     setError('');
     
     if (signupStep === 1) {
-      if (!phone || phone.length < 5) { setError('Please enter a valid phone number'); return; }
-      // Simulate OTP sending
+      if (!firstName || !lastName) { setError('Please fill in your name'); return; }
       setSignupStep(2);
       return;
     }
     
     if (signupStep === 2) {
-      if (!otp || otp.length < 4) { setError('Please enter a valid OTP'); return; }
+      if (!email || !email.includes('@')) { setError('Please enter a valid email'); return; }
       setSignupStep(3);
       return;
     }
     
     if (signupStep === 3) {
-      if (!firstName || !lastName) { setError('Please fill in your name'); return; }
+      if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
       setSignupStep(4);
       return;
     }
     
     if (signupStep === 4) {
-      if (!email || !email.includes('@')) { setError('Please enter a valid email'); return; }
-      setSignupStep(5);
-      return;
-    }
-    
-    if (signupStep === 5) {
-      if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
-      setSignupStep(6);
-      return;
-    }
-    
-    if (signupStep === 6) {
       setLoading(true);
       try {
         // Map userType to role
         let finalRole = 'artist';
-        if (userType === 'looking_for_job' || userType === 'looking_for_job_and_hire') {
+        if (userType === 'looking_for_job') {
           finalRole = 'artist';
         } else if (userType === 'looking_to_hire') {
           finalRole = 'client';
@@ -201,18 +184,57 @@ export default function SignIn() {
             data: { 
               full_name: fullName, 
               role: finalRole, 
-              phone: `${countryCode}${phone}`,
               referred_by: inviteCode || undefined,
-              ...(finalRole === 'team' ? { team_name: teamOrgName || fullName, phone: `${countryCode}${phone}` } : {}) 
+              ...(finalRole === 'team' ? { team_name: teamOrgName || fullName } : {}) 
             } 
           },
         });
         if (supaError) throw supaError;
+        
+        // Create role-specific record in database
+        const userData = {
+          email: email,
+          full_name: fullName,
+          invite_code: inviteCode || null,
+          referred_by: inviteCode || null
+        };
+
+        switch (finalRole) {
+          case 'artist':
+            await Artist.create({
+              ...userData,
+              role: 'artist'
+            });
+            break;
+          case 'team':
+            await Team.create({
+              ...userData,
+              contact_email: email,
+              team_name: teamOrgName || fullName,
+              specialties: []
+            });
+            break;
+          case 'client':
+            await ProjectOwner.create({
+              ...userData,
+              company_name: fullName
+            });
+            break;
+          case 'backer':
+            await Backer.create({
+              ...userData,
+              contact_email: email,
+              organization_name: fullName,
+              interests: []
+            });
+            break;
+        }
+
         if (data.user && !data.session) {
           setMessage('Check your email to confirm your account, then sign in.');
-          setSignupStep(7);
+          setSignupStep(5);
         } else {
-          setSignupStep(7);
+          setSignupStep(5);
         }
       } catch (err) {
         setError(err.message || 'Sign up failed. Please try again.');
@@ -320,66 +342,8 @@ export default function SignIn() {
           {/* Sign Up Form - Step by Step Wizard */}
           {mode === 'signup' && (
             <form onSubmit={handleSignUp} className="space-y-4">
-              {/* Step 1: Phone Number */}
+              {/* Step 1: Name */}
               {signupStep === 1 && (
-                <>
-                  <div className="mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">What's your phone number?</h2>
-                    <p className="text-sm text-gray-500 mt-1">We'll send you a verification code</p>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Phone number</label>
-                    <div className="flex gap-2">
-                      <div className="relative">
-                        <select value={countryCode} onChange={e => setCountryCode(e.target.value)}
-                          className="appearance-none pl-3 pr-8 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white w-36">
-                          {countryCodes.map(country => (
-                            <option key={country.code} value={country.dial_code}>{country.flag} {country.dial_code} {country.code}</option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                      </div>
-                      <div className="relative flex-1">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required
-                          placeholder="123 456 7890" disabled={loading}
-                          className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
-                      </div>
-                    </div>
-                  </div>
-                  <button type="submit" disabled={loading}
-                    className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
-                    Send verification code
-                  </button>
-                </>
-              )}
-
-              {/* Step 2: OTP Verification */}
-              {signupStep === 2 && (
-                <>
-                  <div className="mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">Enter verification code</h2>
-                    <p className="text-sm text-gray-500 mt-1">We sent a code to {countryCode} {phone}</p>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Verification code</label>
-                    <input type="text" value={otp} onChange={e => setOtp(e.target.value)} required
-                      placeholder="Enter 6-digit code" maxLength={6}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white text-center tracking-widest" />
-                  </div>
-                  <button type="button" onClick={() => setSignupStep(1)}
-                    className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
-                    Change phone number
-                  </button>
-                  <button type="submit" disabled={loading}
-                    className="w-full mt-4 py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
-                    Verify
-                  </button>
-                </>
-              )}
-
-              {/* Step 3: Name */}
-              {signupStep === 3 && (
                 <>
                   <div className="mb-6">
                     <h2 className="text-xl font-bold text-gray-900">What's your name?</h2>
@@ -406,8 +370,8 @@ export default function SignIn() {
                 </>
               )}
 
-              {/* Step 4: Email */}
-              {signupStep === 4 && (
+              {/* Step 2: Email */}
+              {signupStep === 2 && (
                 <>
                   <div className="mb-6">
                     <h2 className="text-xl font-bold text-gray-900">What's your email?</h2>
@@ -429,8 +393,8 @@ export default function SignIn() {
                 </>
               )}
 
-              {/* Step 5: Password */}
-              {signupStep === 5 && (
+              {/* Step 3: Password */}
+              {signupStep === 3 && (
                 <>
                   <div className="mb-6">
                     <h2 className="text-xl font-bold text-gray-900">Create a password</h2>
@@ -456,8 +420,8 @@ export default function SignIn() {
                 </>
               )}
 
-              {/* Step 6: Role Selection */}
-              {signupStep === 6 && (
+              {/* Step 4: Role Selection */}
+              {signupStep === 4 && (
                 <>
                   <div className="mb-6">
                     <h2 className="text-xl font-bold text-gray-900">Who are you?</h2>
@@ -468,11 +432,6 @@ export default function SignIn() {
                       className={`w-full p-4 border-2 rounded-xl text-left transition-all ${userType === 'looking_for_job' ? 'border-black bg-black/5' : 'border-gray-200 hover:border-gray-300'}`}>
                       <div className="font-semibold text-gray-900">Artist looking for a job</div>
                       <div className="text-xs text-gray-500 mt-1">Filmmakers, editors, designers, and creative professionals</div>
-                    </button>
-                    <button type="button" onClick={() => setUserType('looking_for_job_and_hire')}
-                      className={`w-full p-4 border-2 rounded-xl text-left transition-all ${userType === 'looking_for_job_and_hire' ? 'border-black bg-black/5' : 'border-gray-200 hover:border-gray-300'}`}>
-                      <div className="font-semibold text-gray-900">Artist looking for a job & also want to hire</div>
-                      <div className="text-xs text-gray-500 mt-1">Creative professionals who also hire talent</div>
                     </button>
                     <button type="button" onClick={() => setUserType('looking_to_hire')}
                       className={`w-full p-4 border-2 rounded-xl text-left transition-all ${userType === 'looking_to_hire' ? 'border-black bg-black/5' : 'border-gray-200 hover:border-gray-300'}`}>
@@ -497,8 +456,8 @@ export default function SignIn() {
                 </>
               )}
 
-              {/* Step 7: Success */}
-              {signupStep === 7 && (
+              {/* Step 5: Success */}
+              {signupStep === 5 && (
                 <>
                   <div className="text-center py-8">
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
