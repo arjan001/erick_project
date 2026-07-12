@@ -29,15 +29,17 @@ const GEOLOCATION_APIS = [
 ];
 
 class LocationService {
-  private cache: Map<string, any> = new Map();
-  private cacheTimeout: number = 24 * 60 * 60 * 1000; // 24 hours
+  constructor() {
+    this.cache = new Map();
+    this.cacheTimeout = 24 * 60 * 60 * 1000; // 24 hours
+  }
 
   /**
    * Get location data for an IP address
    * @param ip - IP address to lookup
    * @returns Location data or null if failed
    */
-  async getLocation(ip: string): Promise<any> {
+  async getLocation(ip) {
     if (!ip || ip === '127.0.0.1' || ip === '::1') {
       return null;
     }
@@ -78,7 +80,7 @@ class LocationService {
    * Get location from browser's geolocation API (client-side only)
    * @returns Promise with latitude and longitude
    */
-  async getBrowserLocation(): Promise<{ latitude: number; longitude: number } | null> {
+  async getBrowserLocation() {
     if (typeof window === 'undefined' || !navigator.geolocation) {
       return null;
     }
@@ -105,11 +107,7 @@ class LocationService {
    * @param userAgent - User agent string
    * @returns Device information
    */
-  parseUserAgent(userAgent: string): {
-    deviceType: string;
-    browser: string;
-    os: string;
-  } {
+  parseUserAgent(userAgent) {
     const ua = userAgent.toLowerCase();
 
     // Device type
@@ -140,7 +138,7 @@ class LocationService {
   /**
    * Clear the cache
    */
-  clearCache(): void {
+  clearCache() {
     this.cache.clear();
   }
 }

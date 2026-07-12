@@ -58,37 +58,29 @@ function buildEntity(table, createdAtAlias) {
       if (error) throw error;
       return data;
     },
-    create: async (record) => {
-      const select = getSelect();
-      const { data, error } = await supabase.from(table).insert(record).select(select).single();
+    create: async (data) => {
+      const { data: result, error } = await supabase.from(table).insert(data).select().single();
       if (error) throw error;
-      return data;
+      return result;
     },
-    update: async (id, record) => {
-      const select = getSelect();
-      const { data, error } = await supabase.from(table).update(record).eq('id', id).select(select).single();
+    update: async (id, data) => {
+      const { data: result, error } = await supabase.from(table).update(data).eq('id', id).select().single();
       if (error) throw error;
-      return data;
+      return result;
     },
     delete: async (id) => {
       const { error } = await supabase.from(table).delete().eq('id', id);
       if (error) throw error;
       return true;
-    },
-    subscribe: (callback) => {
-      const channel = supabase
-        .channel(`realtime:${table}:${Math.random().toString(36).slice(2)}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
-          const type = payload.eventType === 'INSERT' ? 'create' : payload.eventType === 'DELETE' ? 'delete' : 'update';
-          const row = payload.new && Object.keys(payload.new).length ? { ...payload.new } : { ...payload.old };
-          if (createdAtAlias && row[createdAtAlias] && !row.created_date) row.created_date = row[createdAtAlias];
-          callback({ id: row.id, type, data: row });
-        })
-        .subscribe();
-      return () => supabase.removeChannel(channel);
-    },
+    }
   };
 }
+
+// Roles & Permissions Entities
+export const Permission = buildEntity('permissions', 'created_at');
+export const Role = buildEntity('roles', 'created_at');
+export const RolePermission = buildEntity('role_permissions', 'granted_at');
+export const UserRole = buildEntity('user_roles', 'assigned_at');
 
 export const Job = buildEntity('jobs', 'created_at');
 export const Project = buildEntity('projects', 'created_at');
@@ -111,7 +103,6 @@ export const InvestmentTier = buildEntity('investment_tiers', 'created_at');
 export const ProjectUpdate = buildEntity('project_updates', 'created_at');
 export const BackedProject = buildEntity('backed_projects', 'investment_date');
 export const ConnectsTransaction = buildEntity('connects_transactions', 'created_at');
-export const RolePermission = buildEntity('role_permissions', 'created_at');
 export const AuditLog = buildEntity('audit_logs', 'created_at');
 export const TickerEntry = buildEntity('ticker_entries', 'created_at');
 export const ContentCategory = buildEntity('content_categories', 'created_at');
@@ -126,6 +117,6 @@ export const SavedProject = buildEntity('saved_projects', 'created_at');
 export const Assignment = buildEntity('assignments', 'created_at');
 export const Creator = buildEntity('creators', 'created_at');
 export const Translation = buildEntity('translations', 'created_at');
-export const SystemSetting = buildEntity('system_settings', 'created_at');
+export const SystemSetting = buildEntity('admin_settings', 'updated_at');
 export const Team = buildEntity('teams', 'created_at');
 export const Invite = buildEntity('invites', 'created_at');

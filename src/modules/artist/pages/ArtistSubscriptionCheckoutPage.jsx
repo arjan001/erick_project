@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft, X, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
+import notificationService from '@/shared/services/notificationService';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -208,7 +209,75 @@ export default function ArtistSubscriptionCheckoutPage() {
 
   const handlePlanSelect = (pkg) => {
     setSelectedPackage(pkg);
-    setShowModal(true);
+    // If plan is free, auto-subscribe without payment modal
+    if (pkg.price === 0 || pkg.price === '0') {
+      handleFreeSubscription(pkg);
+    } else {
+      setShowModal(true);
+    }
+  };
+
+  const handleFreeSubscription = async (pkg) => {
+    try {
+      // Create subscription order with zero amount
+      await SubscriptionOrder.create({
+        user_email: user.email,
+        user_name: user.full_name,
+        package_id: pkg.id,
+        package_name: pkg.name,
+        amount: 0,
+        currency: pkg.currency || 'USD',
+        status: 'completed',
+        payment_method: 'free'
+      });
+
+      if (currentSubscription) {
+        await Subscription.update(currentSubscription.id, {
+          package_id: pkg.id,
+          package_name: pkg.name,
+          status: 'active',
+          upgraded_at: new Date().toISOString(),
+          renews_at: pkg.duration_days ? new Date(Date.now() + pkg.duration_days * 24 * 60 * 60 * 1000).toISOString() : null
+        });
+      } else {
+        await Subscription.create({
+          user_email: user.email,
+          user_name: user.full_name,
+          package_id: pkg.id,
+          package_name: pkg.name,
+          status: 'active',
+          started_at: new Date().toISOString(),
+          renews_at: pkg.duration_days ? new Date(Date.now() + pkg.duration_days * 24 * 60 * 60 * 1000).toISOString() : null
+        });
+      }
+
+      // Grant connects included in the plan
+      if (pkg.connects_included > 0) {
+        const artists = await Artist.filter({ email: user.email });
+        const artist = artists?.[0];
+        if (artist) {
+          const newBalance = (artist.connects_balance || 0) + pkg.connects_included;
+          await Artist.update(artist.id, { connects_balance: newBalance });
+          await ConnectsTransaction.create({
+            artist_email: user.email,
+            amount: pkg.connects_included,
+            reason: 'subscription_grant',
+            balance_after: newBalance
+          });
+          // Notify user about connects received
+          notificationService.notifyConnectsReceived(user.email, pkg.connects_included, 'subscription activation');
+        }
+      }
+
+      // Notify user about subscription activation
+      notificationService.notifySubscriptionActivated(user.email, pkg.name);
+
+      success('Subscription Successful', `You are now on ${pkg.name}`);
+      navigate(createPageUrl('ArtistDashboard'));
+    } catch (err) {
+      console.error('Error subscribing to free plan:', err);
+      toastError('Subscription Failed', 'Could not activate free plan. Please try again.');
+    }
   };
 
   const handlePaymentSuccess = async (cardForm) => {

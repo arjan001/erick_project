@@ -7,6 +7,8 @@ import { useToast } from '@/hooks/useToast';
 import { formatDistanceToNow } from 'date-fns';
 import { Search, Send, Plus, X, Trash2, Archive, ArchiveRestore, Inbox, ArrowLeft, LogOut } from 'lucide-react';
 import { confirmDialog } from '@/lib/sweetAlert';
+import notificationService from '@/shared/services/notificationService';
+import subscriptionService from '@/shared/services/subscriptionService';
 
 function playMessageTone() {
   try {
@@ -235,7 +237,12 @@ export default function MessagesPage() {
       const m = event.data;
       if (!m || (m.sender_email !== user?.email && m.recipient_email !== user?.email)) return;
       if (event.type === 'create') {
-        if (m.sender_email !== user?.email) playMessageTone();
+        if (m.sender_email !== user?.email) {
+          playMessageTone();
+          // Notify user about new message
+          const senderName = conversations.find(c => c.id === m.conversation_id)?.name || m.sender_email;
+          notificationService.notifyNewMessage(user.email, senderName, m.conversation_id);
+        }
         applyIncomingMessage(m);
       }
     });
@@ -266,6 +273,16 @@ export default function MessagesPage() {
 
   const handleSend = async () => {
     if (!messageInput.trim() || !selectedConversation) return;
+    
+    // Check subscription limits before sending
+    const limitCheck = await subscriptionService.checkLimit(user.email, 'message');
+    if (!limitCheck.allowed) {
+      error('Limit Reached', limitCheck.expired 
+        ? 'Your subscription has expired. Please renew to continue sending messages.'
+        : 'You have reached your monthly message limit. Upgrade to send more messages.');
+      return;
+    }
+
     const text = messageInput;
     setMessageInput('');
     const tempId = `temp-${Date.now()}`;
@@ -294,6 +311,9 @@ export default function MessagesPage() {
         : c));
       // Refetch from DB to guarantee the message is persisted and visible after reload
       await fetchConversations();
+      
+      // Track usage and notify if approaching limit
+      await subscriptionService.trackUsage(user.email, 'message');
     } catch (err) {
       console.error('Error sending message:', err);
       error('Failed', 'Failed to send message');

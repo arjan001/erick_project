@@ -213,39 +213,25 @@ export default function Home({ editMode = false }) {
 
 
   const loadCreators = async () => {
-
     try {
-
       const creators = await Creator.list();
-
       setAllCreators(creators);
-
     } catch (error) {
-
-      console.error('Failed to load creators:', error);
-
+      console.log('Failed to load creators:', error);
+      setAllCreators([]);
     }
-
   };
 
 
 
   const loadSavedProjects = async () => {
-
     try {
-
       const projects = await SavedProject.list();
-
       const organized = {
-
         inproduction: [],
-
         released: [],
-
         collections: [],
-
         creators: [],
-
         recent: [],
 
         services: []
@@ -265,9 +251,16 @@ export default function Home({ editMode = false }) {
       setSavedProjects(organized);
 
     } catch (error) {
-
-      console.error('Failed to load saved projects:', error);
-
+      console.log('Failed to load saved projects:', error);
+      // Set empty state if table doesn't exist
+      setSavedProjects({
+        inproduction: [],
+        released: [],
+        collections: [],
+        creators: [],
+        recent: [],
+        services: []
+      });
     }
 
   };
@@ -308,13 +301,35 @@ export default function Home({ editMode = false }) {
     try {
       console.log('Loading content from Supabase...');
       
-      // Fetch from Supabase entities
-      const [featuredWorks, successStories, recentProjectsData, categoriesData] = await Promise.all([
-        FeaturedWork.filter({ status: 'active' }, 'display_order', 9),
-        SuccessStory.filter({ status: 'published' }, 'display_order', 6),
-        RecentProject.filter({ is_active: true }, 'display_order', 4),
-        ContentCategory.filter({ status: 'active' }, 'display_order', 100)
-      ]);
+      // Fetch from Supabase entities with error handling for each
+      let featuredWorks = [];
+      let successStories = [];
+      let recentProjectsData = [];
+      let categoriesData = [];
+
+      try {
+        featuredWorks = await FeaturedWork.filter({ status: 'active' }, 'display_order', 9);
+      } catch (err) {
+        console.log('FeaturedWork table not available, using fallback');
+      }
+
+      try {
+        successStories = await SuccessStory.filter({ status: 'published' }, 'display_order', 6);
+      } catch (err) {
+        console.log('SuccessStory table not available, using fallback');
+      }
+
+      try {
+        recentProjectsData = await RecentProject.filter({ is_active: true }, 'display_order', 4);
+      } catch (err) {
+        console.log('RecentProject table not available, using fallback');
+      }
+
+      try {
+        categoriesData = await ContentCategory.filter({ status: 'active' }, 'display_order', 100);
+      } catch (err) {
+        console.log('ContentCategory table not available, using fallback');
+      }
 
       console.log('Categories data:', categoriesData);
       console.log('Featured works:', featuredWorks);
@@ -368,9 +383,28 @@ export default function Home({ editMode = false }) {
     } catch (error) {
       console.error('Failed to load content from Supabase:', error);
       // Use fallback data if Supabase fails
-      setInProduction([]);
-      setReleased([]);
-      setRecent([]);
+      setInProduction([
+        { title: 'The Last Horizon', studio: 'Studio22', type: 'Documentary', description: 'An epic journey through uncharted territories', score: 9.0, images: ['https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800'] },
+        { title: 'Urban Dreams', studio: 'Night Vision', type: 'Commercial', description: 'Capturing the essence of city life', score: 8.5, images: ['https://images.unsplash.com/photo-1536240478700-b869070f9279?w=800'] },
+        { title: 'Echoes', studio: 'Soundwave', type: 'Music Video', description: 'A visual symphony in motion', score: 9.2, images: ['https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800'] },
+        { title: 'Beyond Limits', studio: 'Peak Productions', type: 'Film Production', description: 'Pushing the boundaries of storytelling', score: 8.8, images: ['https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800'] },
+        { title: 'Light & Shadow', studio: 'Studio22', type: 'Photography', description: 'Exploring the interplay of light', score: 9.5, images: ['https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800'] },
+        { title: 'Digital Dreams', studio: 'Future Frame', type: 'Animation', description: 'Where imagination meets technology', score: 9.0, images: ['https://images.unsplash.com/photo-1531297461136-82af022f5b80?w=800'] }
+      ]);
+      setReleased([
+        { title: 'Golden Hour', studio: 'Artist Collective', type: 'Success Story', description: 'Award-winning documentary that changed perspectives', score: 9.8, images: ['https://images.unsplash.com/photo-1579547621113-c130c5abfa72?w=800'] },
+        { title: 'City Lights', studio: 'Client Productions', type: 'Success Story', description: 'A commercial campaign that went viral', score: 9.3, images: ['https://images.unsplash.com/photo-1574267432553-c130c5abfa72?w=800'] },
+        { title: 'Rhythm of Life', studio: 'Music Vision', type: 'Success Story', description: 'Music video with 10M+ views', score: 9.1, images: ['https://images.unsplash.com/photo-1516035069371-c130c5abfa72?w=800'] },
+        { title: 'Frame by Frame', studio: 'Indie Studio', type: 'Success Story', description: 'Independent film festival winner', score: 9.4, images: ['https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800'] },
+        { title: 'Visual Poetry', studio: 'Creative Minds', type: 'Success Story', description: 'Art project featured in galleries worldwide', score: 9.6, images: ['https://images.unsplash.com/photo-1492691527719-c130c5abfa72?w=800'] },
+        { title: 'The Perfect Shot', studio: 'Studio22', type: 'Success Story', description: 'Photography series that defined a brand', score: 9.2, images: ['https://images.unsplash.com/photo-1536240478700-c130c5abfa72?w=800'] }
+      ]);
+      setRecent([
+        { title: 'New Beginnings', studio: 'Fresh Start', type: 'Project', description: 'A new chapter in visual storytelling', images: ['https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800'] },
+        { title: 'Summer Vibes', studio: 'Beach House', type: 'Project', description: 'Capturing the essence of summer', images: ['https://images.unsplash.com/photo-1536240478700-b869070f9279?w=800'] },
+        { title: 'Night Stories', studio: 'Midnight Crew', type: 'Project', description: 'Tales from the city after dark', images: ['https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800'] },
+        { title: 'Morning Light', studio: 'Dawn Productions', type: 'Project', description: 'The beauty of early hours', images: ['https://images.unsplash.com/photo-1579547621113-c130c5abfa72?w=800'] }
+      ]);
       setCollections([
         { title: 'Documentary', description: 'Professional documentary filmmaking and production services', image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600' },
         { title: 'Commercial', description: 'High-end commercial and advertising production', image: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600' },

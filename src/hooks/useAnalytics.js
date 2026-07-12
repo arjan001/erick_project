@@ -3,30 +3,38 @@ import { supabase } from '@/lib/supabase';
 import { locationService } from '@/lib/locationService';
 
 class AnalyticsService {
-  private sessionId: string | null = null;
-  private userId: string | null = null;
-  private initialized: boolean = false;
+  constructor() {
+    this.sessionId = null;
+    this.userId = null;
+    this.initialized = false;
+  }
 
   async initialize() {
     if (this.initialized) return;
 
-    // Get or create session ID
-    let sessionId = sessionStorage.getItem('analytics_session_id');
-    if (!sessionId) {
-      sessionId = crypto.randomUUID();
-      sessionStorage.setItem('analytics_session_id', sessionId);
-    }
-    this.sessionId = sessionId;
+    try {
+      // Get or create session ID
+      let sessionId = sessionStorage.getItem('analytics_session_id');
+      if (!sessionId) {
+        sessionId = crypto.randomUUID();
+        sessionStorage.setItem('analytics_session_id', sessionId);
+      }
+      this.sessionId = sessionId;
 
-    // Get user ID if logged in
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      this.userId = user.id;
-    }
+      // Get user ID if logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        this.userId = user.id;
+      }
 
-    // Start session tracking
-    await this.startSession();
-    this.initialized = true;
+      // Start session tracking
+      await this.startSession();
+      this.initialized = true;
+    } catch (error) {
+      console.error('Failed to initialize analytics:', error);
+      // Don't block app if analytics fails
+      this.initialized = true;
+    }
   }
 
   async startSession() {
@@ -80,7 +88,7 @@ class AnalyticsService {
     }
   }
 
-  async trackPageView(pagePath: string, pageTitle?: string) {
+  async trackPageView(pagePath, pageTitle) {
     if (!this.sessionId) await this.initialize();
 
     try {
@@ -111,7 +119,7 @@ class AnalyticsService {
     }
   }
 
-  async trackEvent(eventType: string, eventName: string, properties: Record<string, any> = {}) {
+  async trackEvent(eventType, eventName, properties = {}) {
     if (!this.sessionId) await this.initialize();
 
     try {
@@ -129,7 +137,7 @@ class AnalyticsService {
     }
   }
 
-  async trackError(error: Error, component?: string, severity: 'info' | 'warning' | 'error' | 'critical' = 'error') {
+  async trackError(error, component, severity = 'error') {
     if (!this.sessionId) await this.initialize();
 
     try {
@@ -214,14 +222,21 @@ export function useAnalytics() {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    analytics.initialize();
+    // Initialize analytics in background - don't await
+    analytics.initialize().catch(err => {
+      console.error('Analytics initialization failed:', err);
+    });
 
-    // Track page view on mount
-    analytics.trackPageView(window.location.pathname, document.title);
+    // Track page view on mount - don't await
+    analytics.trackPageView(window.location.pathname, document.title).catch(err => {
+      console.error('Initial page view tracking failed:', err);
+    });
 
     // Update activity every 30 seconds
     const activityInterval = setInterval(() => {
-      analytics.updateActivity();
+      analytics.updateActivity().catch(err => {
+        console.error('Activity update failed:', err);
+      });
     }, 30000);
 
     // Track page changes (for SPA)
@@ -231,20 +246,26 @@ export function useAnalytics() {
     window.history.pushState = function (...args) {
       originalPushState.apply(window.history, args);
       setTimeout(() => {
-        analytics.trackPageView(window.location.pathname, document.title);
+        analytics.trackPageView(window.location.pathname, document.title).catch(err => {
+          console.error('Page view tracking failed:', err);
+        });
       }, 0);
     };
 
     window.history.replaceState = function (...args) {
       originalReplaceState.apply(window.history, args);
       setTimeout(() => {
-        analytics.trackPageView(window.location.pathname, document.title);
+        analytics.trackPageView(window.location.pathname, document.title).catch(err => {
+          console.error('Page view tracking failed:', err);
+        });
       }, 0);
     };
 
     // Handle page unload
     const handleUnload = () => {
-      analytics.endSession();
+      analytics.endSession().catch(err => {
+        console.error('Session end failed:', err);
+      });
     };
 
     window.addEventListener('beforeunload', handleUnload);
@@ -254,7 +275,9 @@ export function useAnalytics() {
       window.history.pushState = originalPushState;
       window.history.replaceState = originalReplaceState;
       window.removeEventListener('beforeunload', handleUnload);
-      analytics.endSession();
+      analytics.endSession().catch(err => {
+        console.error('Session end failed:', err);
+      });
     };
   }, []);
 
@@ -266,6 +289,6 @@ export function useAnalytics() {
 }
 
 // Error boundary integration
-export function trackReactError(error: Error, errorInfo: any) {
+export function trackReactError(error, errorInfo) {
   analytics.trackError(error, errorInfo.componentStack || 'React Error Boundary', 'critical');
 }

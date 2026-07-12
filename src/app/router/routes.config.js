@@ -6,15 +6,79 @@ import { AuthGuard } from '@/app/router/guards/AuthGuard';
 import { RoleGuard, createRoleGuard } from '@/app/router/guards/RoleGuard';
 import { GuestGuard } from '@/app/router/guards/GuestGuard';
 import { HomeGuard } from '@/app/router/guards/HomeGuard';
+// Temporarily disable permission guards until migration is complete
+// import { createRoutePermissionGuard } from '@/app/router/guards/PermissionGuard';
 
-// Create role-specific guard components
+// Create permission-based guards for admin routes (DISABLED TEMPORARILY)
+// const AdminDashboardGuard = createRoutePermissionGuard('/Admin');
+// const ArtistsGuard = createRoutePermissionGuard('/Admin/Artists');
+// const TeamsGuard = createRoutePermissionGuard('/Admin/Teams');
+// const ProjectsGuard = createRoutePermissionGuard('/Admin/Projects');
+// const UserManagementGuard = createRoutePermissionGuard('/Admin/UserManagement');
+// const RolesPermissionsGuard = createRoutePermissionGuard('/Admin/RolesPermissions');
+// const SettingsGuard = createRoutePermissionGuard('/Admin/Settings');
+// const SEOCMSGuard = createRoutePermissionGuard('/Admin/SEOCMS');
+// const ImageStorageGuard = createRoutePermissionGuard('/Admin/ImageStorage');
+// const InvitesGuard = createRoutePermissionGuard('/Admin/Invites');
+// const LoginProvidersGuard = createRoutePermissionGuard('/Admin/LoginProviders');
+// const APISettingsGuard = createRoutePermissionGuard('/Admin/APISettings');
+// const PaymentSettingsGuard = createRoutePermissionGuard('/Admin/PaymentSettings');
+// const AnalyticsGuard = createRoutePermissionGuard('/Admin/Analytics');
+// const FinanceDashboardGuard = createRoutePermissionGuard('/Admin/FinanceDashboard');
+// const JobsGuard = createRoutePermissionGuard('/Admin/Jobs');
+// const ClientsGuard = createRoutePermissionGuard('/Admin/Clients');
+// const MessagesGuard = createRoutePermissionGuard('/Admin/Messages');
+// const ProductsGuard = createRoutePermissionGuard('/Admin/Products');
+// const OrdersGuard = createRoutePermissionGuard('/Admin/Orders');
+// const ShopSettingsGuard = createRoutePermissionGuard('/Admin/ShopSettings');
+// const AuditLogsGuard = createRoutePermissionGuard('/Admin/AuditLogs');
+// const SubscriptionsGuard = createRoutePermissionGuard('/Admin/Subscriptions');
+// const TickerGuard = createRoutePermissionGuard('/Admin/Ticker');
+// const CategoriesGuard = createRoutePermissionGuard('/Admin/Categories');
+// const BackersGuard = createRoutePermissionGuard('/Admin/Backers');
+// const FeaturedWorkGuard = createRoutePermissionGuard('/Admin/FeaturedWork');
+// const SuccessStoriesGuard = createRoutePermissionGuard('/Admin/SuccessStories');
+// const RecentProjectsGuard = createRoutePermissionGuard('/Admin/RecentProjects');
+
+// Use role-based guards temporarily (only using existing roles from database)
+const AdminDashboardGuard = createRoleGuard(['admin']);
+const ArtistsGuard = createRoleGuard(['admin']);
+const TeamsGuard = createRoleGuard(['admin']);
+const ProjectsGuard = createRoleGuard(['admin']);
+const UserManagementGuard = createRoleGuard(['admin']);
+const RolesPermissionsGuard = createRoleGuard(['admin']);
+const SettingsGuard = createRoleGuard(['admin']);
+const SEOCMSGuard = createRoleGuard(['admin']);
+const ImageStorageGuard = createRoleGuard(['admin']);
+const InvitesGuard = createRoleGuard(['admin']);
+const LoginProvidersGuard = createRoleGuard(['admin']);
+const APISettingsGuard = createRoleGuard(['admin']);
+const PaymentSettingsGuard = createRoleGuard(['admin']);
+const AnalyticsGuard = createRoleGuard(['admin']);
+const FinanceDashboardGuard = createRoleGuard(['admin']);
+const JobsGuard = createRoleGuard(['admin']);
+const ClientsGuard = createRoleGuard(['admin']);
+const MessagesGuard = createRoleGuard(['admin']);
+const ProductsGuard = createRoleGuard(['admin']);
+const OrdersGuard = createRoleGuard(['admin']);
+const ShopSettingsGuard = createRoleGuard(['admin']);
+const AuditLogsGuard = createRoleGuard(['admin']);
+const SubscriptionsGuard = createRoleGuard(['admin']);
+const TickerGuard = createRoleGuard(['admin']);
+const CategoriesGuard = createRoleGuard(['admin']);
+const BackersGuard = createRoleGuard(['admin']);
+const FeaturedWorkGuard = createRoleGuard(['admin']);
+const SuccessStoriesGuard = createRoleGuard(['admin']);
+const RecentProjectsGuard = createRoleGuard(['admin']);
+
+// Keep role-based guards for non-admin routes (using existing roles from database)
 const AdminGuard = createRoleGuard(['admin']);
-const ArtistAdminGuard = createRoleGuard(['admin', 'artist_admin', 'artist']);
-const TeamAdminGuard = createRoleGuard(['admin', 'team_admin', 'team']);
-const ProjectAdminGuard = createRoleGuard(['admin', 'project_admin']);
-const ArtistGuard = createRoleGuard(['artist', 'artist_admin']);
+const ArtistAdminGuard = createRoleGuard(['admin', 'artist']);
+const TeamAdminGuard = createRoleGuard(['admin', 'team']);
+const ProjectAdminGuard = createRoleGuard(['admin', 'client', 'project_owner']);
+const ArtistGuard = createRoleGuard(['artist']);
 const ClientGuard = createRoleGuard(['client', 'project_owner']);
-const TeamGuard = createRoleGuard(['team', 'team_admin']);
+const TeamGuard = createRoleGuard(['team']);
 const BackerGuard = createRoleGuard(['backer']);
 
 // Public pages (no auth required)
@@ -64,6 +128,31 @@ const publicRoutes = [
   {
     path: '/Services',
     component: () => import('@/pages/Services'),
+    layout: MainLayout
+  },
+  {
+    path: '/legal/privacy',
+    component: () => import('@/pages/PrivacyPolicy'),
+    layout: MainLayout
+  },
+  {
+    path: '/legal/terms',
+    component: () => import('@/pages/TermsConditions'),
+    layout: MainLayout
+  },
+  {
+    path: '/legal/gdpr',
+    component: () => import('@/pages/GDPR'),
+    layout: MainLayout
+  },
+  {
+    path: '/legal/cookies',
+    component: () => import('@/pages/CookiePolicy'),
+    layout: MainLayout
+  },
+  {
+    path: '/legal/imprint',
+    component: () => import('@/pages/Imprint'),
     layout: MainLayout
   },
   {
@@ -119,205 +208,205 @@ const authRoutes = [
   }
 ];
 
-// Admin routes (admin role only)
+// Admin routes (permission-based access control)
 const adminRoutes = [
   {
     path: '/Admin',
     component: () => import('@/modules/admin/pages/AdminDashboardPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: AdminDashboardGuard
   },
   {
     path: '/ArtistAdmin',
     component: () => import('@/modules/admin/pages/ArtistAdminPage'),
     layout: AdminLayout,
-    guard: ArtistAdminGuard
+    guard: ArtistsGuard
   },
   {
     path: '/TeamAdmin',
     component: () => import('@/modules/admin/pages/TeamAdminPage'),
     layout: AdminLayout,
-    guard: TeamAdminGuard
+    guard: TeamsGuard
   },
   {
     path: '/ProjectAdmin',
     component: () => import('@/modules/admin/pages/ProjectAdminPage'),
     layout: AdminLayout,
-    guard: ProjectAdminGuard
+    guard: ProjectsGuard
   },
   {
     path: '/Admin/UserManagement',
     component: () => import('@/modules/admin/pages/AdminUserManagementPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: UserManagementGuard
   },
   {
     path: '/Admin/RolesPermissions',
     component: () => import('@/modules/admin/pages/AdminRolesPermissionsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: RolesPermissionsGuard
   },
   {
     path: '/Admin/GeneralSettings',
     component: () => import('@/modules/admin/pages/AdminGeneralSettingsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: SettingsGuard
   },
   {
     path: '/Admin/Settings',
     component: () => import('@/modules/admin/pages/AdminSettingsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: SettingsGuard
   },
   {
     path: '/Admin/SEOCMS',
     component: () => import('@/modules/admin/pages/AdminSEOCMSPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: SEOCMSGuard
   },
   {
     path: '/Admin/ImageStorage',
     component: () => import('@/modules/admin/pages/AdminImageStoragePage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: ImageStorageGuard
   },
   {
     path: '/Admin/Invites',
     component: () => import('@/modules/admin/pages/AdminInvitesManagementPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: InvitesGuard
   },
   {
     path: '/Admin/LoginProviders',
     component: () => import('@/modules/admin/pages/AdminLoginProvidersPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: LoginProvidersGuard
   },
   {
     path: '/Admin/APISettings',
     component: () => import('@/modules/admin/pages/AdminAPISettingsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: APISettingsGuard
   },
   {
     path: '/Admin/PaymentSettings',
     component: () => import('@/modules/admin/pages/AdminPaymentSettingsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: PaymentSettingsGuard
   },
   {
     path: '/Admin/Analytics',
     component: () => import('@/modules/admin/pages/AdminAnalyticsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: AnalyticsGuard
   },
   {
     path: '/Admin/FinanceDashboard',
     component: () => import('@/modules/admin/pages/AdminFinanceDashboardPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: FinanceDashboardGuard
   },
   {
     path: '/Admin/Jobs',
     component: () => import('@/modules/admin/pages/AdminJobsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: JobsGuard
   },
   {
     path: '/Admin/Projects',
     component: () => import('@/modules/admin/pages/AdminProjectsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: ProjectsGuard
   },
   {
     path: '/Admin/Clients',
     component: () => import('@/modules/admin/pages/AdminClientsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: ClientsGuard
   },
   {
     path: '/Admin/Messages',
     component: () => import('@/modules/admin/pages/AdminMessagesPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: MessagesGuard
   },
   {
     path: '/Admin/Products',
     component: () => import('@/modules/admin/pages/AdminProductsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: ProductsGuard
   },
   {
     path: '/Admin/Orders',
     component: () => import('@/modules/admin/pages/AdminOrdersPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: OrdersGuard
   },
   {
     path: '/Admin/ShopSettings',
     component: () => import('@/modules/admin/pages/AdminShopSettingsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: ShopSettingsGuard
   },
   {
     path: '/Admin/AuditLogs',
     component: () => import('@/modules/admin/pages/AdminAuditLogsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: AuditLogsGuard
   },
   {
     path: '/Admin/Subscriptions',
     component: () => import('@/modules/admin/pages/AdminSubscriptionsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: SubscriptionsGuard
   },
   {
     path: '/Admin/Ticker',
     component: () => import('@/modules/admin/pages/AdminTickerPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: TickerGuard
   },
   {
     path: '/Admin/Categories',
     component: () => import('@/modules/admin/pages/AdminCategoriesPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: CategoriesGuard
   },
   {
     path: '/Admin/Artists',
     component: () => import('@/modules/admin/pages/AdminArtistsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: ArtistsGuard
   },
   {
     path: '/Admin/Backers',
     component: () => import('@/modules/admin/pages/AdminBackersPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: BackersGuard
   },
   {
     path: '/Admin/Teams',
     component: () => import('@/modules/admin/pages/AdminTeamsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: TeamsGuard
   },
   {
     path: '/Admin/FeaturedWork',
     component: () => import('@/modules/admin/pages/AdminFeaturedWorkPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: FeaturedWorkGuard
   },
   {
     path: '/Admin/SuccessStories',
     component: () => import('@/modules/admin/pages/AdminSuccessStoriesPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: SuccessStoriesGuard
   },
   {
     path: '/Admin/RecentProjects',
     component: () => import('@/modules/admin/pages/AdminRecentProjectsPage'),
     layout: AdminLayout,
-    guard: AdminGuard
+    guard: RecentProjectsGuard
   }
 ];
 

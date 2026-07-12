@@ -1,13 +1,15 @@
 // Notification Service for system alerts
 // Handles in-app notifications, alerts, and activity feeds
 
+import { Notification } from '@/lib/supabaseEntities';
+
 class NotificationService {
   constructor() {
     this.notifications = new Map(); // In-memory storage (use database in production)
   }
 
   // Create a notification
-  createNotification({
+  async createNotification({
     userId,
     type,
     title,
@@ -18,7 +20,7 @@ class NotificationService {
     const notification = {
       id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       userId,
-      type, // 'approval', 'job', 'connection', 'investment', 'project_update', 'deal', 'system'
+      type, // 'approval', 'job', 'connection', 'investment', 'project_update', 'deal', 'system', 'subscription', 'connects', 'message'
       title,
       message,
       actionUrl,
@@ -27,7 +29,7 @@ class NotificationService {
       createdAt: new Date().toISOString()
     };
 
-    // Store notification
+    // Store in memory
     if (!this.notifications.has(userId)) {
       this.notifications.set(userId, []);
     }
@@ -37,6 +39,22 @@ class NotificationService {
     const userNotifs = this.notifications.get(userId);
     if (userNotifs.length > 50) {
       this.notifications.set(userId, userNotifs.slice(0, 50));
+    }
+
+    // Also save to database for persistence
+    try {
+      await Notification.create({
+        recipient_email: userId,
+        type,
+        title,
+        message,
+        link: actionUrl,
+        read: false,
+        created_date: notification.createdAt,
+        metadata: JSON.stringify(metadata)
+      });
+    } catch (err) {
+      console.error('Error saving notification to database:', err);
     }
 
     return notification;
@@ -212,6 +230,102 @@ class NotificationService {
       message: `You've been invited to join ${teamName}.`,
       actionUrl: `/teams/${teamId}`,
       metadata: { teamName, teamId }
+    });
+  }
+
+  // Subscription activated
+  notifySubscriptionActivated(userId, planName) {
+    return this.createNotification({
+      userId,
+      type: 'subscription',
+      title: 'Subscription Activated',
+      message: `You are now subscribed to ${planName}. Enjoy your benefits!`,
+      actionUrl: '/subscription',
+      metadata: { planName }
+    });
+  }
+
+  // Subscription renewal reminder
+  notifySubscriptionRenewal(userId, planName, renewalDate) {
+    return this.createNotification({
+      userId,
+      type: 'subscription',
+      title: 'Subscription Renewal',
+      message: `Your ${planName} subscription renews on ${new Date(renewalDate).toLocaleDateString()}.`,
+      actionUrl: '/subscription',
+      metadata: { planName, renewalDate }
+    });
+  }
+
+  // Job application submitted
+  notifyJobApplication(userId, jobTitle, companyName) {
+    return this.createNotification({
+      userId,
+      type: 'job',
+      title: 'Application Submitted',
+      message: `Your application for "${jobTitle}" at ${companyName} has been submitted.`,
+      actionUrl: '/my-applications',
+      metadata: { jobTitle, propertyName }
+    });
+  }
+
+  // Job application status update
+  notifyJobApplicationStatus(userId, jobTitle, status) {
+    return this.createNotification({
+      userId,
+      type: 'job',
+      title: 'Application Status Update',
+      message: `Your application for "${jobTitle}" is now: ${status}.`,
+      actionUrl: '/my-applications',
+      metadata: { jobTitle, status }
+    });
+  }
+
+  // Connects received
+  notifyConnectsReceived(userId, amount, reason) {
+    return this.createNotification({
+      userId,
+      type: 'connects',
+      title: 'Connects Received',
+      message: `You received ${amount} connects${reason ? ` for ${reason}` : ''}.`,
+      actionUrl: '/connects',
+      metadata: { amount, reason }
+    });
+  }
+
+  // New message received
+  notifyNewMessage(userId, senderName, conversationId) {
+    return this.createNotification({
+      userId,
+      type: 'message',
+      title: 'New Message',
+      message: `${senderName} sent you a message.`,
+      actionUrl: `/messages/${conversationId}`,
+      metadata: { senderName, conversationId }
+    });
+  }
+
+  // Message limit reached
+  notifyMessageLimitReached(userId) {
+    return this.createNotification({
+      userId,
+      type: 'system',
+      title: 'Message Limit Reached',
+      message: 'You have reached your monthly message limit. Upgrade to send more messages.',
+      actionUrl: '/subscription',
+      metadata: {}
+    });
+  }
+
+  // Job application limit reached
+  notifyJobLimitReached(userId) {
+    return this.createNotification({
+      userId,
+      type: 'system',
+      title: 'Application Limit Reached',
+      message: 'You have reached your monthly job application limit. Upgrade to apply to more jobs.',
+      actionUrl: '/subscription',
+      metadata: {}
     });
   }
 }

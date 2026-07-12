@@ -385,9 +385,11 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             <div>
               <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Legal</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white">Terms & Conditions</a></li>
-                <li><a href="#" className="hover:text-white">Imprint</a></li>
+                <li><Link to="/legal/privacy" className="hover:text-white">Privacy Policy</Link></li>
+                <li><Link to="/legal/terms" className="hover:text-white">Terms & Conditions</Link></li>
+                <li><Link to="/legal/gdpr" className="hover:text-white">GDPR</Link></li>
+                <li><Link to="/legal/cookies" className="hover:text-white">Cookie Policy</Link></li>
+                <li><Link to="/legal/imprint" className="hover:text-white">Imprint</Link></li>
               </ul>
             </div>
           </div>

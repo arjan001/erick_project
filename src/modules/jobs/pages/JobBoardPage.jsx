@@ -6,6 +6,8 @@ import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, Users, MessageSquare, Search, Filter, CheckCircle, TrendingUp, X, Bookmark, BookmarkCheck, Eye, EyeOff, Lock, Clock } from 'lucide-react';
 import ShareProjectButton from '@/components/projects/ShareProjectButton';
+import notificationService from '@/shared/services/notificationService';
+import subscriptionService from '@/shared/services/subscriptionService';
 
 export default function JobBoard() {
   const [projects, setProjects] = useState([]);
@@ -130,6 +132,15 @@ export default function JobBoard() {
   const handleApply = async () => {
     if (!selectedProject || !user) return;
     
+    // Check subscription limits before applying
+    const limitCheck = await subscriptionService.checkLimit(user.email, 'job_application');
+    if (!limitCheck.allowed) {
+      error('Limit Reached', limitCheck.expired 
+        ? 'Your subscription has expired. Please renew to continue applying to jobs.'
+        : 'You have reached your monthly job application limit. Upgrade to apply to more jobs.');
+      return;
+    }
+    
     try {
       await Application.create({
         project_id: selectedProject.isJob ? null : selectedProject.id,
@@ -146,6 +157,17 @@ export default function JobBoard() {
           : p
       ));
       setSelectedProject({ ...selectedProject, hasApplied: true, applicantCount: selectedProject.applicantCount + 1 });
+      
+      // Notify user about job application
+      notificationService.notifyJobApplication(
+        user.email, 
+        selectedProject.title || selectedProject.project_type,
+        selectedProject.project_owner_name || 'Client'
+      );
+      
+      // Track usage and notify if approaching limit
+      await subscriptionService.trackUsage(user.email, 'job_application');
+      
       success('Application Sent', `You've applied to ${selectedProject.title || selectedProject.project_type}`);
       setShowDetailModal(false);
     } catch (err) {

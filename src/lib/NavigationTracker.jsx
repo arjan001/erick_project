@@ -2,39 +2,48 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { pagesConfig } from '@/pages.config';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 export default function NavigationTracker() {
     const location = useLocation();
     const { isAuthenticated } = useAuth();
+    const { trackPageView } = useAnalytics();
     const { Pages, mainPage } = pagesConfig;
     const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 
-    // Log user activity when navigating to a page
+    // Track page views using analytics
     useEffect(() => {
-        // Extract page name from pathname
-        const pathname = location.pathname;
-        let pageName;
+        try {
+            const pathname = location.pathname;
+            const pageTitle = document.title;
 
-        if (pathname === '/' || pathname === '') {
-            pageName = mainPageKey;
-        } else {
-            // Remove leading slash and get the first segment
-            const pathSegment = pathname.replace(/^\//, '').split('/')[0];
+            // Track page view with analytics - don't let errors block the app
+            if (trackPageView) {
+                trackPageView(pathname, pageTitle).catch(err => {
+                    console.error('Analytics tracking failed:', err);
+                });
+            }
 
-            // Try case-insensitive lookup in Pages config
-            const pageKeys = Object.keys(Pages);
-            const matchedKey = pageKeys.find(
-                key => key.toLowerCase() === pathSegment.toLowerCase()
-            );
+            // Extract page name for logging
+            let pageName;
+            if (pathname === '/' || pathname === '') {
+                pageName = mainPageKey;
+            } else {
+                const pathSegment = pathname.replace(/^\//, '').split('/')[0];
+                const pageKeys = Object.keys(Pages);
+                const matchedKey = pageKeys.find(
+                    key => key.toLowerCase() === pathSegment.toLowerCase()
+                );
+                pageName = matchedKey || null;
+            }
 
-            pageName = matchedKey || null;
+            if (isAuthenticated && pageName) {
+                console.log('User navigated to:', pageName);
+            }
+        } catch (error) {
+            console.error('NavigationTracker error:', error);
         }
-
-        if (isAuthenticated && pageName) {
-            // Base44 logging removed - using localStorage only
-            console.log('User navigated to:', pageName);
-        }
-    }, [location, isAuthenticated, Pages, mainPageKey]);
+    }, [location, isAuthenticated, Pages, mainPageKey, trackPageView]);
 
     return null;
 }

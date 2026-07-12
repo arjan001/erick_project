@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock } from 'lucide-react';
+import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { path: '/Admin/UserManagement', label: 'Users', icon: Users },
   { path: '/Admin/RolesPermissions', label: 'Roles & Permissions', icon: Shield },
   { path: '/Admin/Invites', label: 'Invites', icon: Mail },
+  { path: '/Admin/Analytics', label: 'Analytics Dashboard', icon: BarChart3 },
   { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: FileText },
   { path: '/Admin/Settings', label: 'Settings', icon: Settings },
   { path: '/Admin/Ticker', label: 'Marquee/Ticker', icon: ScrollText },
@@ -31,9 +32,10 @@ const navGroups = [
   { label: 'Overview', items: ['/Admin', '/Admin/Artists', '/TeamAdmin', '/ProjectAdmin'] },
   { label: 'Content', items: ['/Admin/Ticker', '/Admin/Categories', '/Admin/FeaturedWork', '/Admin/SuccessStories', '/Admin/RecentProjects', '/Admin/SEOCMS'] },
   { label: 'Users', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
+  { label: 'Analytics', items: ['/Admin/Analytics', '/Admin/AuditLogs'] },
   { label: 'Finance', items: ['/Admin/FinanceDashboard', '/Admin/Subscriptions'] },
   { label: 'Integrations', items: ['/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
-  { label: 'System', items: ['/Admin/Settings', '/Admin/ImageStorage', '/Admin/AuditLogs'] },
+  { label: 'System', items: ['/Admin/Settings', '/Admin/ImageStorage'] },
 ];
 
 export default function AdminLayout({ children }) {
@@ -148,7 +150,7 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* Main */}
-      <div className={`flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-all duration-300 ${sidebarOpen ? 'ml-2' : 'ml-0'}`}>
+      <div className={`flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-all duration-300 ${sidebarOpen ? 'ml-4' : 'ml-6 mr-6'}`}>
         {/* Top Bar */}
         <header className="bg-white border-b border-gray-100 flex-shrink-0"
           style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>

@@ -234,7 +234,9 @@ export default function AdminAnalyticsPage() {
               </h3>
               <div className="text-center py-4">
                 <div className="text-3xl font-bold text-gray-900">
-                  {Math.floor(sessionStats?.avgDuration / 60)}m {sessionStats?.avgDuration % 60}s
+                  {sessionStats?.avgDuration && !isNaN(sessionStats.avgDuration)
+                    ? `${Math.floor(sessionStats.avgDuration / 60)}m ${Math.round(sessionStats.avgDuration % 60)}s`
+                    : '0m 0s'}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">Average time per session</div>
               </div>
