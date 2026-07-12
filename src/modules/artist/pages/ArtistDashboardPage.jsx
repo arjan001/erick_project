@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, Bell, FolderKanban, MessageCircle } from 'lucide-react';
+import { Briefcase, Bell, FolderKanban, MessageCircle, Crown, TrendingUp, Users, Zap, ArrowRight } from 'lucide-react';
 import ArtistOnboardingFullModal from '@/components/artist/ArtistOnboardingFullModal';
 import UpgradeConnectsBanner from '@/components/artist/UpgradeConnectsBanner';
 import StatCard from '@/components/artist/dashboard/StatCard';
@@ -12,7 +12,7 @@ import ProfileCompletionRing from '@/components/artist/dashboard/ProfileCompleti
 import ConnectsTrackerCard from '@/components/artist/dashboard/ConnectsTrackerCard';
 import QuickNotesCard from '@/components/artist/QuickNotesCard';
 import InviteCodeCard from '@/components/InviteCodeCard';
-import { Job, Application, Message, Notification, Artist } from '@/lib/supabaseEntities';
+import { Job, Application, Message, Notification, Artist, Subscription } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function ArtistDashboard() {
@@ -22,6 +22,7 @@ export default function ArtistDashboard() {
   const [applications, setApplications] = useState([]);
   const [invitations, setInvitations] = useState([]);
   const [artistProfile, setArtistProfile] = useState(null);
+  const [subscription, setSubscription] = useState(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
 
@@ -36,15 +37,17 @@ export default function ArtistDashboard() {
 
     const fetchData = async () => {
       try {
-        const [jobsData, appsData, msgsData] = await Promise.all([
+        const [jobsData, appsData, msgsData, subsData] = await Promise.all([
           Job.filter({ status: 'open' }, '-created_date', 5),
           Application.filter({ artist_email: user.email }, '-created_date', 10),
           Message.filter({ recipient_email: user.email }, '-created_date', 5),
+          Subscription.filter({ user_email: user.email }, '-created_date', 1)
         ]);
 
         setJobs(jobsData || []);
         setApplications(appsData || []);
         setMessages(msgsData || []);
+        setSubscription(subsData?.[0] || null);
 
         const notifs = await Notification.filter({
           recipient_email: user.email,
@@ -107,8 +110,64 @@ export default function ArtistDashboard() {
               <JobOpportunitiesCard jobs={jobs} />
             </div>
 
-            {/* Connects card */}
+            {/* Dynamic Subscription/Connects card */}
             <div>
+              {/* Commented out premium card - not needed for now */}
+              {/* {subscription ? (
+                <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl border-2 border-yellow-200 p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+                        <Crown className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-gray-900">Premium Member</div>
+                        <div className="text-xs text-gray-600">{subscription.package_name || 'Premium Plan'}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-gray-900">Level 1</div>
+                      <div className="text-xs text-gray-600">Upgrade for more</div>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <div className="flex justify-between text-xs mb-2">
+                      <span className="text-gray-600">Progress to Level 2</span>
+                      <span className="font-bold text-gray-900">35%</span>
+                    </div>
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full" style={{ width: '35%' }} />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Zap className="w-4 h-4 text-yellow-500" />
+                      <span className="text-gray-700">Unlimited job applications</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <TrendingUp className="w-4 h-4 text-green-500" />
+                      <span className="text-gray-700">Priority in search results</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Users className="w-4 h-4 text-blue-500" />
+                      <span className="text-gray-700">Direct client access</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => navigate('/ArtistSubscriptionCheckout')}
+                    className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold py-3 rounded-xl hover:from-yellow-500 hover:to-orange-600 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Crown className="w-4 h-4" />
+                    Unlock More Clients
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <ConnectsTrackerCard connects={artistProfile?.connects_balance} />
+              )} */}
               <ConnectsTrackerCard connects={artistProfile?.connects_balance} />
             </div>
 

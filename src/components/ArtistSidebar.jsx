@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Search, Briefcase, FileText, Mail, User,
-  Home as HomeIcon, Network, ChevronLeft, ChevronRight, LogOut
+  Home as HomeIcon, Network, ChevronLeft, ChevronRight, LogOut, Wallet
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useSidebar } from '@/layouts/DashboardLayout';
@@ -12,9 +12,10 @@ const MENU_ITEMS = [
   { label: 'Dashboard', icon: HomeIcon, href: 'artistdashboard' },
   { label: 'Find Work', icon: Search, href: 'Jobs' },
   { label: 'Projects from Clients', icon: Briefcase, href: 'JobBoard' },
-  { label: 'Applications', icon: FileText, href: 'JobApplications' },
+  // { label: 'Applications', icon: FileText, href: 'JobApplications' }, // Hidden for now
   { label: 'Messages', icon: Mail, href: 'Messages', showBadge: true },
   { label: 'Network', icon: Network, href: 'Network', showConnectionBadge: true },
+  { label: 'Finances', icon: Wallet, href: 'ArtistFinance' },
   { label: 'My Profile & Settings', icon: User, href: 'ArtistProfile' }
 ];
 

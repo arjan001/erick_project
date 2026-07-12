@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Project, Application, Job } from '@/lib/supabaseEntities';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, Users, MessageSquare, Search, Filter, CheckCircle, TrendingUp, X, Bookmark, BookmarkCheck, Eye, EyeOff, Lock, Clock } from 'lucide-react';
+import { MapPin, Calendar, Users, MessageSquare, Search, Filter, CheckCircle, TrendingUp, X, Bookmark, BookmarkCheck, Eye, EyeOff, Lock, Clock, Building2, Star, Crown } from 'lucide-react';
 import ShareProjectButton from '@/components/projects/ShareProjectButton';
 import notificationService from '@/shared/services/notificationService';
 import subscriptionService from '@/shared/services/subscriptionService';
@@ -62,6 +62,10 @@ export default function JobBoard() {
           location_country: '',
           timeline_start: job.application_deadline,
           budget_range: job.budget ? `${job.budget}_plus` : null,
+          budget_min: job.budget_min || 0,
+          budget_max: job.budget_max || 0,
+          budget_type: job.budget_type || 'Fixed',
+          payment_type: job.budget_type === 'Hourly' ? 'per hour' : job.budget_type === 'Daily' ? 'per day' : 'fixed price',
           project_owner_name: 'Client',
           project_owner_company: '',
           project_owner_email: job.client_email || '',
@@ -71,7 +75,8 @@ export default function JobBoard() {
           job_id: job.id,
           created_at: job.created_at,
           duration: job.duration,
-          is_premium: job.is_premium
+          is_premium: job.is_premium,
+          requires_subscription: job.is_premium || false
         }));
         
         // Combine projects and jobs
@@ -372,100 +377,105 @@ export default function JobBoard() {
           </div>
         </div>
 
-        {/* Content Area - Minimal Card Grid */}
+        {/* Content Area - Enhanced Card Grid */}
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-7xl">
-            {filteredProjects.map((project) => (
-              <div
-                key={project.id}
-                className="group relative bg-white border border-gray-200 rounded-lg hover:shadow-lg hover:border-gray-300 transition-all cursor-pointer"
-              >
-                {/* Minimal Card Content */}
-                <div 
-                  className="p-4"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProjects.length === 0 ? (
+              <div className="col-span-full flex items-center justify-center h-64 text-gray-500">
+                No projects match your filters
+              </div>
+            ) : (
+              filteredProjects.map((project) => (
+                <button
+                  key={project.id}
                   onClick={() => { setSelectedProject(project); setShowDetailModal(true); }}
+                  className={`w-full text-left bg-white rounded-2xl border-2 transition-all overflow-hidden shadow-sm hover:shadow-lg ${
+                    selectedProject?.id === project.id
+                      ? 'border-black shadow-md ring-2 ring-black/5'
+                      : 'border-gray-100 hover:border-gray-300'
+                  }`}
                 >
-                  {/* Type Badge */}
-                  <div className="mb-2">
-                    <span className="px-2 py-1 bg-black text-white text-xs font-bold rounded uppercase">
-                      {project.project_type?.replace(/_/g, ' ')}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-1">
-                    {project.title || project.project_type?.replace(/_/g, ' ')}
-                  </h3>
-
-                  {/* Location */}
-                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                    <MapPin className="w-3 h-3" />
-                    <span>{project.location_city || 'Remote'}</span>
-                  </div>
-
-                  {/* Time Posted */}
-                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                    <Clock className="w-3 h-3" />
-                    <span>{getTimeAgo(project.created_at)}</span>
-                  </div>
-
-                  {/* Applicant Count */}
-                  <div className="flex items-center gap-1 text-xs text-gray-600">
-                    <Users className="w-3 h-3" />
-                    <span className="font-semibold">{project.applicantCount}</span>
-                    <span>applicants</span>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="px-4 pb-4 flex gap-2">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleToggleWishlist(project); }}
-                    className="flex-1 p-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
-                    title={wishlist.includes(project.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                  >
-                    {wishlist.includes(project.id) ? (
-                      <BookmarkCheck className="w-4 h-4 text-black mx-auto" />
+                  {/* Project Card Image */}
+                  <div className="relative h-48 bg-gray-100">
+                    {project.image_url ? (
+                      <img 
+                        src={project.image_url} 
+                        alt={project.title || project.project_type}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
-                      <Bookmark className="w-4 h-4 text-gray-400 mx-auto" />
+                      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        <Building2 className="w-12 h-12 text-gray-300" />
+                      </div>
                     )}
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleHideProject(project); }}
-                    className="flex-1 p-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
-                    title="Hide from view"
-                  >
-                    <EyeOff className="w-4 h-4 text-gray-400 mx-auto" />
-                  </button>
-                </div>
+                    {project.isJob && (
+                      <div className="absolute top-3 left-3 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                        Job
+                      </div>
+                    )}
+                    <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
+                      {project.budget_type === 'Hourly' ? '€/hr' : project.budget_type === 'Daily' ? '€/day' : 'Fixed'}
+                    </div>
+                    {project.requires_subscription && (
+                      <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
+                        <Crown className="w-3 h-3" />
+                        Premium
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Project Card Content */}
+                  <div className="p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-gray-50">
+                        <Building2 className="w-5 h-5 text-gray-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-sm text-gray-900 truncate">{project.project_owner_name || 'Client'}</div>
+                        <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-3 h-3" />
+                          <span className="truncate">{[project.location_city, project.location_country].filter(Boolean).join(', ') || 'Remote'}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <h3 className="font-bold text-gray-900 mb-2 text-sm line-clamp-2 leading-tight">
+                      {project.title || project.project_type?.replace(/_/g, ' ')}
+                    </h3>
+                    
+                    {/* Skills/Departments Tags */}
+                    {project.departments_needed && project.departments_needed.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {project.departments_needed.slice(0, 3).map((dept) => (
+                          <span key={dept} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full truncate max-w-[100px]">
+                            {dept.replace(/_/g, ' ')}
+                          </span>
+                        ))}
+                        {project.departments_needed.length > 3 && (
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+                            +{project.departments_needed.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    )}
 
-                {/* Premium Badge */}
-                {project.is_premium && (
-                  <div className="absolute top-2 left-2">
-                    <div className="flex items-center gap-1 px-2 py-1 bg-yellow-500 text-white text-xs font-bold rounded-full">
-                      <Lock className="w-3 h-3" />
-                      <span>Premium</span>
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <div className="font-bold text-gray-900 text-base">
+                          {project.budget_type === 'Hourly' ? `€${project.budget_min}/hr` : project.budget_type === 'Daily' ? `€${project.budget_min}/day` : `€${project.budget_min}`}
+                        </div>
+                        {project.budget_max && project.budget_max > project.budget_min && project.budget_type !== 'Hourly' && project.budget_type !== 'Daily' && (
+                          <div className="text-xs text-gray-500">- €{project.budget_max}</div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                        <Clock className="w-3 h-3" />
+                        {getTimeAgo(project.created_at)}
+                      </div>
                     </div>
                   </div>
-                )}
-
-                {/* Applied Badge */}
-                {project.hasApplied && (
-                  <div className="absolute top-2 right-2">
-                    <span className="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
-                      Applied
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {filteredProjects.length === 0 && (
-              <div className="col-span-full text-center py-16 text-gray-500">
-                <div className="text-6xl mb-4">🔍</div>
-                <p className="text-lg font-semibold">No jobs found</p>
-                <p className="text-sm mt-2">Try adjusting your search or filters</p>
-              </div>
+                </button>
+              ))
             )}
           </div>
         </div>
@@ -473,121 +483,145 @@ export default function JobBoard() {
 
       {/* Detail Modal */}
       {showDetailModal && selectedProject && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="p-6 border-b border-gray-200 flex items-start justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">{selectedProject.title || selectedProject.project_type?.replace(/_/g, ' ')}</h2>
-                <p className="text-sm text-gray-600 mt-1">{selectedProject.project_owner_name || 'Client'}</p>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowDetailModal(false)}>
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Header with Image */}
+            <div className="relative h-48 bg-gray-100 rounded-xl mb-6 overflow-hidden">
+              {selectedProject.image_url ? (
+                <img 
+                  src={selectedProject.image_url} 
+                  alt={selectedProject.title || selectedProject.project_type}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                  <Building2 className="w-16 h-16 text-gray-400" />
+                </div>
+              )}
+              {selectedProject.isJob && (
+                <div className="absolute top-3 left-3 bg-black text-white text-sm font-bold px-3 py-1.5 rounded">
+                  Job
+                </div>
+              )}
+              <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur text-black text-sm font-bold px-3 py-1.5 rounded shadow">
+                {selectedProject.budget_type === 'Hourly' ? 'Hourly Rate' : selectedProject.budget_type === 'Daily' ? 'Daily Rate' : 'Fixed Price'}
               </div>
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
+              {selectedProject.requires_subscription && (
+                <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-sm font-bold px-3 py-1.5 rounded shadow flex items-center gap-1">
+                  <Crown className="w-4 h-4" />
+                  Premium
+                </div>
+              )}
             </div>
 
-            {/* Modal Content */}
-            <div className="p-6 space-y-6">
-              {/* Type Badge */}
-              <div>
-                <span className="px-3 py-1.5 bg-black text-white text-sm font-bold rounded uppercase">
-                  {selectedProject.project_type?.replace(/_/g, ' ')}
-                </span>
-              </div>
-
-              {/* Engagement Stats */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-gray-600 mb-1">
-                    <Users className="w-4 h-4" />
-                    <span className="text-xs font-semibold">Applicants</span>
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">{selectedProject.applicantCount}</div>
+            {/* Client Info */}
+            <div className="px-6 mb-6">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <Building2 className="w-6 h-6 text-gray-400" />
                 </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-gray-600 mb-1">
-                    <MessageSquare className="w-4 h-4" />
-                    <span className="text-xs font-semibold">Status</span>
-                  </div>
-                  <div className="text-sm font-bold text-gray-900">
-                    {selectedProject.inDiscussion ? 'Discussing' : 'Open'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Details */}
-              <div className="space-y-4">
                 <div>
-                  <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Description</h3>
-                  <p className="text-sm text-gray-800 leading-relaxed">
-                    {selectedProject.notes || 'This is an exciting opportunity for talented creatives.'}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Location</h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-800">
-                    <MapPin className="w-4 h-4" />
-                    {selectedProject.location_city || 'Remote'}, {selectedProject.location_country || 'Worldwide'}
+                  <h1 className="text-2xl font-bold text-black mb-1">{selectedProject.title || selectedProject.project_type?.replace(/_/g, ' ')}</h1>
+                  <p className="text-gray-600 text-sm font-medium">{selectedProject.project_owner_name || 'Client'}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                    <span className="text-xs text-gray-500">Verified Client</span>
                   </div>
                 </div>
-
-                {selectedProject.timeline_start && (
-                  <div>
-                    <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Timeline</h3>
-                    <div className="text-sm text-gray-800">
-                      Starts: {new Date(selectedProject.timeline_start).toLocaleDateString()}
-                    </div>
-                  </div>
-                )}
-
-                {selectedProject.budget_range && (
-                  <div>
-                    <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Budget</h3>
-                    <div className="text-lg font-bold text-gray-900 capitalize">
-                      {selectedProject.budget_range.replace(/_/g, ' - ').replace('k', 'K')}
-                    </div>
-                  </div>
-                )}
-
-                {selectedProject.departments_needed && selectedProject.departments_needed.length > 0 && (
-                  <div>
-                    <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Skills Needed</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedProject.departments_needed.map(dept => (
-                        <span key={dept} className="px-2 py-1 bg-gray-200 text-gray-800 text-xs rounded capitalize">
-                          {dept.replace(/_/g, ' ')}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
-            {/* Modal Footer */}
-            <div className="p-6 border-t border-gray-200 flex gap-3">
-              <Button
-                onClick={handleSkip}
-                variant="outline"
-                className="flex-1"
-              >
-                Skip / Hide
-              </Button>
-              <Button
-                onClick={handleApply}
-                disabled={selectedProject.hasApplied}
-                className={`flex-1 font-bold ${
-                  selectedProject.hasApplied
-                    ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                    : 'bg-black text-white hover:bg-gray-800'
-                }`}
-              >
-                {selectedProject.hasApplied ? 'Already Applied' : 'Apply Now'}
-              </Button>
+            {/* Quick Stats */}
+            <div className="px-6 mb-6">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                  <div className="text-xs text-gray-600 uppercase font-bold mb-1">Budget</div>
+                  <div className="text-lg font-bold text-black">
+                    {selectedProject.budget_min ? `€${selectedProject.budget_min}` : 'Competitive'}
+                  </div>
+                  {selectedProject.budget_max && selectedProject.budget_max > selectedProject.budget_min && (
+                    <div className="text-xs text-gray-500">up to €{selectedProject.budget_max}</div>
+                  )}
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                  <div className="text-xs text-gray-600 uppercase font-bold mb-1">Location</div>
+                  <div className="text-sm font-bold text-black truncate">{[selectedProject.location_city, selectedProject.location_country].filter(Boolean).join(', ') || 'Remote'}</div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                  <div className="text-xs text-gray-600 uppercase font-bold mb-1">Duration</div>
+                  <div className="text-sm font-bold text-black">{selectedProject.duration || 'Flexible'}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Full Description */}
+            <div className="px-6 mb-6">
+              <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
+                <span className="w-1 h-5 bg-black rounded"></span>
+                Description
+              </h2>
+              <div className="text-gray-700 leading-relaxed text-sm whitespace-pre-line bg-gray-50 rounded-lg p-4">
+                {selectedProject.notes || 'This is an exciting opportunity for talented creatives.'}
+              </div>
+            </div>
+
+            {/* Skills/Departments Needed */}
+            {selectedProject.departments_needed && selectedProject.departments_needed.length > 0 && (
+              <div className="px-6 mb-6">
+                <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
+                  <span className="w-1 h-5 bg-black rounded"></span>
+                  Skills Needed
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {selectedProject.departments_needed.map((dept) => (
+                    <span key={dept} className="px-3 py-1.5 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
+                      {dept.replace(/_/g, ' ')}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Timeline */}
+            {selectedProject.timeline_start && (
+              <div className="px-6 mb-6">
+                <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
+                  <span className="w-1 h-5 bg-black rounded"></span>
+                  Timeline
+                </h2>
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <Calendar className="w-4 h-4" />
+                  {new Date(selectedProject.timeline_start).toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Apply Button */}
+            <div className="px-6 pb-6">
+              {!selectedProject.hasApplied ? (
+                <Button
+                  onClick={handleApply}
+                  className="w-full bg-black text-white hover:bg-gray-800 font-bold py-4 text-lg rounded-xl"
+                >
+                  Apply Now
+                </Button>
+              ) : (
+                <Button
+                  disabled
+                  className="w-full bg-gray-300 text-gray-600 font-bold py-4 text-lg rounded-xl cursor-not-allowed"
+                >
+                  Already Applied
+                </Button>
+              )}
+              
+              <p className="text-center text-xs text-gray-500 mt-3">
+                1 connect will be used to apply
+              </p>
             </div>
           </div>
         </div>

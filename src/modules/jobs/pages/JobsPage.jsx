@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Job, Application, Artist, ConnectsTransaction } from '@/lib/supabaseEntities';
+import { Job, Application, Artist, ConnectsTransaction, Project } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, Euro, ChevronDown } from 'lucide-react';
+import { MapPin, Clock, Euro, ChevronDown, Calendar, Building2, Users, Star, ExternalLink, Crown, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
+import { base44 } from '@/api/base44Client';
+import skillsAndRoles from '@/lib/skillsAndRoles.json';
 
 export default function Jobs() {
   const [jobs, setJobs] = useState([]);
@@ -43,10 +45,41 @@ export default function Jobs() {
     
     const fetchData = async () => {
       try {
-        const allJobs = await Job.list();
+        // Fetch both Jobs and Projects for comprehensive job listings
+        const [allJobs, allProjects] = await Promise.all([
+          Job.list(),
+          Project.filter({ status: 'verified' })
+        ]);
+        
         const openJobs = allJobs.filter(j => j.status === 'open');
-        setJobs(openJobs);
-        if (openJobs.length > 0) setSelectedJob(openJobs[0]);
+        
+        // Convert projects to job-like format for unified display
+        const projectJobs = allProjects.map(project => ({
+          id: project.id,
+          title: project.project_type?.replace(/_/g, ' ') || 'Project',
+          description: project.notes || project.description || 'No description available',
+          short_description: project.notes?.substring(0, 150) + '...' || 'Project opportunity',
+          location: [project.location_city, project.location_country].filter(Boolean).join(', ') || 'Remote',
+          client_name: project.project_owner_name || 'Client',
+          client_avatar_url: null,
+          roles_needed: project.departments_needed || [],
+          budget_min: project.budget_min || 0,
+          budget_max: project.budget_max || 0,
+          budget_type: project.budget_range?.includes('hourly') ? 'Hourly' : project.budget_range?.includes('daily') ? 'Daily' : 'Fixed',
+          payment_type: project.budget_range?.includes('hourly') ? 'per hour' : project.budget_range?.includes('daily') ? 'per day' : 'fixed price',
+          skills_required: project.departments_needed || [],
+          posted_at: project.created_at,
+          application_deadline: project.timeline_start,
+          duration: project.duration,
+          isProject: true,
+          image_url: project.image_url,
+          requires_subscription: project.is_premium || false
+        }));
+
+        // Combine jobs and projects
+        const allListings = [...openJobs, ...projectJobs];
+        setJobs(allListings);
+        if (allListings.length > 0) setSelectedJob(allListings[0]);
 
         const userApplications = await Application.filter({ artist_email: user.email });
         const enrichedApplications = await Promise.all(
@@ -114,17 +147,26 @@ export default function Jobs() {
         if (filters.paid === '500-1000' && (job.budget_min < 500 || job.budget_min > 1000)) return false;
         if (filters.paid === 'above1000' && job.budget_min <= 1000) return false;
       }
+      if (filters.skills.length > 0 && !filters.skills.some(s => job.skills_required?.includes(s))) return false;
       return true;
     });
 
     const roles = {};
     const locations = {};
     const projectTypes = {};
+    const skills = {};
+
+    // Use all available roles from JSON, then count matches
+    Object.values(skillsAndRoles.film_roles_by_category).flat().forEach(role => {
+      roles[role] = filteredJobsForCounts.filter(job => job.roles_needed?.includes(role)).length;
+    });
+
+    // Use all available skills from JSON, then count matches
+    Object.values(skillsAndRoles.skills_by_category).flat().forEach(skill => {
+      skills[skill] = filteredJobsForCounts.filter(job => job.skills_required?.includes(skill)).length;
+    });
 
     filteredJobsForCounts.forEach(job => {
-      job.roles_needed?.forEach(role => {
-        roles[role] = (roles[role] || 0) + 1;
-      });
       if (job.location) {
         locations[job.location] = (locations[job.location] || 0) + 1;
       }
@@ -133,7 +175,7 @@ export default function Jobs() {
       });
     });
 
-    return { roles, locations, projectTypes };
+    return { roles, locations, projectTypes, skills };
   }, [jobs, filters]);
 
   const filteredJobs = useMemo(() => {
@@ -147,6 +189,7 @@ export default function Jobs() {
         if (filters.paid === '500-1000' && (job.budget_min < 500 || job.budget_min > 1000)) return false;
         if (filters.paid === 'above1000' && job.budget_min <= 1000) return false;
       }
+      if (filters.skills.length > 0 && !filters.skills.some(s => job.skills_required?.includes(s))) return false;
       return true;
     });
   }, [jobs, filters]);
@@ -170,7 +213,7 @@ export default function Jobs() {
     <div className="relative">
       <button
         onClick={() => setShowFilters(prev => {
-          const newState = { roles: false, location: false, project_types: false, paid: false };
+          const newState = { roles: false, location: false, project_types: false, skills: false, paid: false };
           newState[type] = !prev[type];
           return newState;
         })}
@@ -189,7 +232,10 @@ export default function Jobs() {
       </button>
       {showFilters[type] && (
         <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[200px] max-h-80 overflow-y-auto">
-          {type === 'roles' && Object.entries(filterCounts.roles).map(([role, count]) => (
+          {type === 'roles' && Object.entries(filterCounts.roles)
+            .filter(([_, count]) => count > 0)
+            .sort(([_, a], [__, b]) => b - a)
+            .map(([role, count]) => (
             <button
               key={role}
               onClick={() => toggleFilter('roles', role)}
@@ -197,7 +243,22 @@ export default function Jobs() {
                 filters.roles.includes(role) ? 'bg-gray-100' : ''
               }`}
             >
-              <span>{role}</span>
+              <span className="truncate">{role}</span>
+              <span className="text-gray-500">({count})</span>
+            </button>
+          ))}
+          {type === 'skills' && Object.entries(filterCounts.skills)
+            .filter(([_, count]) => count > 0)
+            .sort(([_, a], [__, b]) => b - a)
+            .map(([skill, count]) => (
+            <button
+              key={skill}
+              onClick={() => toggleFilter('skills', skill)}
+              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${
+                filters.skills.includes(skill) ? 'bg-gray-100' : ''
+              }`}
+            >
+              <span className="truncate">{skill}</span>
               <span className="text-gray-500">({count})</span>
             </button>
           ))}
@@ -308,8 +369,9 @@ export default function Jobs() {
 
           {/* Filters */}
           {activeTab === 'board' && (
-            <div className="flex gap-3 pb-6">
+            <div className="flex gap-3 pb-6 flex-wrap">
               <FilterDropdown type="roles" label="Roles" />
+              <FilterDropdown type="skills" label="Skills" />
               <FilterDropdown type="location" label="Location" />
               <FilterDropdown type="project_types" label="Project types" />
               <FilterDropdown type="paid" label="Paid" />
@@ -319,126 +381,296 @@ export default function Jobs() {
 
         {/* Content Area */}
         {activeTab === 'board' && (
-          <div className="flex-1 flex overflow-hidden">
-            {/* Job List */}
-            <div className="w-1/2 border-r border-gray-200 overflow-y-auto">
-              <div className="p-4 space-y-3">
-                {filteredJobs.length === 0 ? (
-                  <div className="flex items-center justify-center h-32 text-gray-500">
-                    No jobs match your filters
-                  </div>
-                ) : (
-                  filteredJobs.map((job) => (
-                    <button
-                      key={job.id}
-                      onClick={() => setSelectedJob(job)}
-                      className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
-                        selectedJob?.id === job.id
-                          ? 'border-gray-400 bg-gray-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3 mb-3">
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredJobs.length === 0 ? (
+                <div className="col-span-full flex items-center justify-center h-64 text-gray-500">
+                  No jobs match your filters
+                </div>
+              ) : (
+                filteredJobs.map((job) => (
+                  <button
+                    key={job.id}
+                    onClick={() => setSelectedJob(job)}
+                    className={`w-full text-left bg-white rounded-2xl border-2 transition-all overflow-hidden shadow-sm hover:shadow-lg ${
+                      selectedJob?.id === job.id
+                        ? 'border-black shadow-md ring-2 ring-black/5'
+                        : 'border-gray-100 hover:border-gray-300'
+                    }`}
+                  >
+                    {/* Job Card Image */}
+                    <div className="relative h-48 bg-gray-100">
+                      {job.image_url ? (
                         <img 
-                          src={job.client_avatar_url || 'https://via.placeholder.com/40'}
-                          alt={job.client_name}
-                          className="w-10 h-10 rounded-full object-cover"
+                          src={job.image_url} 
+                          alt={job.title}
+                          className="w-full h-full object-cover"
                         />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                          <Building2 className="w-12 h-12 text-gray-300" />
+                        </div>
+                      )}
+                      {job.isProject && (
+                        <div className="absolute top-3 left-3 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                          Project
+                        </div>
+                      )}
+                      <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
+                        {job.budget_type === 'Hourly' ? '€/hr' : job.budget_type === 'Daily' ? '€/day' : 'Fixed'}
+                      </div>
+                      {job.requires_subscription && (
+                        <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
+                          <Crown className="w-3 h-3" />
+                          Premium
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Job Card Content */}
+                    <div className="p-4">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-gray-50">
+                          {job.client_avatar_url ? (
+                            <img src={job.client_avatar_url} alt={job.client_name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Building2 className="w-5 h-5 text-gray-400" />
+                          )}
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-bold text-sm text-black">{job.client_name}</div>
-                          <div className="text-xs text-gray-600">{job.roles_needed?.join(', ') || 'Various roles'}</div>
+                          <div className="font-bold text-sm text-gray-900 truncate">{job.client_name}</div>
+                          <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                            <MapPin className="w-3 h-3" />
+                            <span className="truncate">{job.location || 'Remote'}</span>
+                          </div>
                         </div>
                       </div>
                       
-                      <h3 className="font-bold text-black mb-1 text-sm">{job.title}</h3>
-                      <p className="text-sm text-gray-700 mb-3 line-clamp-2">{job.short_description || job.description}</p>
+                      <h3 className="font-bold text-gray-900 mb-2 text-sm line-clamp-2 leading-tight">{job.title}</h3>
                       
-                      <div className="flex items-center gap-3 text-xs text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {job.location}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {job.posted_at ? 'Recently' : '4m ago'}
-                        </div>
-                        <div className="font-bold text-black">
-                          €{job.budget_min || 0}
-                        </div>
-                      </div>
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Job Detail */}
-            <div className="w-1/2 overflow-y-auto">
-              {selectedJob ? (
-                <div className="p-8">
-                  <div className="flex items-start gap-4 mb-8">
-                    <img
-                      src={selectedJob.client_avatar_url || 'https://via.placeholder.com/64'}
-                      alt={selectedJob.client_name}
-                      className="w-16 h-16 rounded-full object-cover"
-                    />
-                    <div>
-                      <h1 className="text-3xl font-bold text-black mb-2">{selectedJob.title}</h1>
-                      <p className="text-gray-600 text-sm">{selectedJob.roles_needed?.join(', ') || 'Various roles'}</p>
-                      <p className="text-gray-600 text-sm">{selectedJob.client_name}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div>
-                      <h2 className="text-xs font-bold text-gray-600 uppercase mb-2">Description</h2>
-                      <p className="text-gray-800 leading-relaxed text-sm">{selectedJob.description}</p>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4 py-6 border-t border-b border-gray-200">
-                      <div>
-                        <div className="text-xs text-gray-600 uppercase font-bold mb-2">Budget</div>
-                        <div className="text-lg font-bold text-black">
-                          €{selectedJob.budget_min || 0}
-                        </div>
-                        <div className="text-xs text-gray-600 mt-1">{selectedJob.budget_type || 'Fixed'}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-600 uppercase font-bold mb-2">Type</div>
-                        <div className="text-lg font-bold text-black">{selectedJob.budget_type || 'Gig'}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-600 uppercase font-bold mb-2">Location</div>
-                        <div className="text-lg font-bold text-black">{selectedJob.location}</div>
-                      </div>
-                    </div>
-
-                    {selectedJob.skills_required && selectedJob.skills_required.length > 0 && (
-                      <div>
-                        <h2 className="text-xs font-bold text-gray-600 uppercase mb-3">Skills Required</h2>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedJob.skills_required.map((skill) => (
-                            <span key={skill} className="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
-                              {skill}
+                      {/* Skills/Roles Tags */}
+                      {job.roles_needed && job.roles_needed.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {job.roles_needed.slice(0, 3).map((role) => (
+                            <span key={role} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full truncate max-w-[100px]">
+                              {role}
                             </span>
                           ))}
+                          {job.roles_needed.length > 3 && (
+                            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+                              +{job.roles_needed.length - 3}
+                            </span>
+                          )}
                         </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                        <div className="flex items-center gap-2">
+                          <div className="font-bold text-gray-900 text-base">
+                            {job.budget_type === 'Hourly' ? `€${job.budget_min}/hr` : job.budget_type === 'Daily' ? `€${job.budget_min}/day` : `€${job.budget_min}`}
+                          </div>
+                          {job.budget_max && job.budget_max > job.budget_min && job.budget_type !== 'Hourly' && job.budget_type !== 'Daily' && (
+                            <div className="text-xs text-gray-500">- €{job.budget_max}</div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                          <Clock className="w-3 h-3" />
+                          {job.posted_at ? new Date(job.posted_at).toLocaleDateString() : 'Recently'}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Job Detail Modal */}
+        {selectedJob && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedJob(null)}>
+            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              {selectedJob ? (
+                <div className="p-6">
+                  {/* Header with Image */}
+                  <div className="relative h-48 bg-gray-100 rounded-xl mb-6 overflow-hidden">
+                    {selectedJob.image_url ? (
+                      <img 
+                        src={selectedJob.image_url} 
+                        alt={selectedJob.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                        <Building2 className="w-16 h-16 text-gray-400" />
+                      </div>
+                    )}
+                    {selectedJob.isProject && (
+                      <div className="absolute top-3 left-3 bg-black text-white text-sm font-bold px-3 py-1.5 rounded">
+                        Project
+                      </div>
+                    )}
+                    <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur text-black text-sm font-bold px-3 py-1.5 rounded shadow">
+                      {selectedJob.budget_type === 'Hourly' ? 'Hourly Rate' : selectedJob.budget_type === 'Daily' ? 'Daily Rate' : 'Fixed Price'}
+                    </div>
+                    {selectedJob.requires_subscription && (
+                      <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-sm font-bold px-3 py-1.5 rounded shadow flex items-center gap-1">
+                        <Crown className="w-4 h-4" />
+                        Premium
                       </div>
                     )}
                   </div>
 
+                  {/* Client Info */}
+                  <div className="flex items-start gap-4 mb-6">
+                    <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {selectedJob.client_avatar_url ? (
+                        <img src={selectedJob.client_avatar_url} alt={selectedJob.client_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Building2 className="w-6 h-6 text-gray-400" />
+                      )}
+                    </div>
+                    <div>
+                      <h1 className="text-2xl font-bold text-black mb-1">{selectedJob.title}</h1>
+                      <p className="text-gray-600 text-sm font-medium">{selectedJob.client_name}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        <span className="text-xs text-gray-500">Verified Client</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-3 gap-3 mb-6">
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <div className="text-xs text-gray-600 uppercase font-bold mb-1">Budget</div>
+                      <div className="text-lg font-bold text-black">
+                        {selectedJob.budget_type === 'Hourly' ? `€${selectedJob.budget_min}/hr` : selectedJob.budget_type === 'Daily' ? `€${selectedJob.budget_min}/day` : `€${selectedJob.budget_min}`}
+                      </div>
+                      {selectedJob.budget_max && selectedJob.budget_max > selectedJob.budget_min && selectedJob.budget_type !== 'Hourly' && selectedJob.budget_type !== 'Daily' && (
+                        <div className="text-xs text-gray-500">up to €{selectedJob.budget_max}</div>
+                      )}
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <div className="text-xs text-gray-600 uppercase font-bold mb-1">Location</div>
+                      <div className="text-sm font-bold text-black truncate">{selectedJob.location}</div>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <div className="text-xs text-gray-600 uppercase font-bold mb-1">Duration</div>
+                      <div className="text-sm font-bold text-black">{selectedJob.duration || 'Flexible'}</div>
+                    </div>
+                  </div>
+
+                  {/* Full Description */}
+                  <div className="mb-6">
+                    <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
+                      <span className="w-1 h-5 bg-black rounded"></span>
+                      Job Description
+                    </h2>
+                    <div className="text-gray-700 leading-relaxed text-sm whitespace-pre-line bg-gray-50 rounded-lg p-4">
+                      {selectedJob.description}
+                    </div>
+                  </div>
+
+                  {/* Roles Needed */}
+                  {selectedJob.roles_needed && selectedJob.roles_needed.length > 0 && (
+                    <div className="mb-6">
+                      <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
+                        <span className="w-1 h-5 bg-black rounded"></span>
+                        Roles Needed
+                      </h2>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedJob.roles_needed.map((role) => (
+                          <span key={role} className="px-3 py-1.5 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
+                            {role}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Skills Required */}
+                  {selectedJob.skills_required && selectedJob.skills_required.length > 0 && (
+                    <div className="mb-6">
+                      <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
+                        <span className="w-1 h-5 bg-black rounded"></span>
+                        Skills Required
+                      </h2>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedJob.skills_required.map((skill) => (
+                          <span key={skill} className="px-3 py-1.5 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Deadline */}
+                  {selectedJob.application_deadline && (
+                    <div className="mb-6">
+                      <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
+                        <span className="w-1 h-5 bg-black rounded"></span>
+                        Application Deadline
+                      </h2>
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Calendar className="w-4 h-4" />
+                        {new Date(selectedJob.application_deadline).toLocaleDateString('en-US', { 
+                          weekday: 'long', 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pricing Details */}
+                  <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                    <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
+                      <span className="w-1 h-5 bg-black rounded"></span>
+                      Pricing Details
+                    </h2>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Payment Type</span>
+                        <span className="text-sm font-bold text-black">{selectedJob.payment_type || selectedJob.budget_type || 'Fixed'}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Budget Range</span>
+                        <span className="text-sm font-bold text-black">
+                          {selectedJob.budget_type === 'Hourly' 
+                            ? `€${selectedJob.budget_min}/hr` 
+                            : selectedJob.budget_type === 'Daily'
+                            ? `€${selectedJob.budget_min}/day`
+                            : `€${selectedJob.budget_min}${selectedJob.budget_max ? ` - €${selectedJob.budget_max}` : ''}`}
+                        </span>
+                      </div>
+                      {selectedJob.requires_subscription && (
+                        <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                          <span className="text-sm text-gray-600">Subscription Required</span>
+                          <span className="text-sm font-bold text-yellow-600 flex items-center gap-1">
+                            <Crown className="w-4 h-4" />
+                            Premium
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Apply Button */}
                   <Button
                     onClick={handleApply}
-                    className="w-full bg-black text-white hover:bg-gray-800 font-bold py-3 mt-8"
+                    className="w-full bg-black text-white hover:bg-gray-800 font-bold py-4 text-lg rounded-xl"
                   >
-                    Apply
+                    Apply Now
                   </Button>
+                  
+                  <p className="text-center text-xs text-gray-500 mt-3">
+                    1 connect will be used to apply
+                  </p>
                 </div>
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-600">
-                  Select a job to view details
-                </div>
-              )}
+              ) : null}
             </div>
           </div>
         )}

@@ -7,12 +7,78 @@ import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
 import notificationService from '@/shared/services/notificationService';
 
+// Simple confetti component
+function Confetti({ active }) {
+  const [particles, setParticles] = useState([]);
+
+  useEffect(() => {
+    if (!active) {
+      setParticles([]);
+      return;
+    }
+
+    const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+    const newParticles = [];
+
+    for (let i = 0; i < 150; i++) {
+      newParticles.push({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100 - 100,
+        rotation: Math.random() * 360,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: Math.random() * 10 + 5,
+        speedY: Math.random() * 3 + 2,
+        speedX: (Math.random() - 0.5) * 2,
+        rotationSpeed: (Math.random() - 0.5) * 10
+      });
+    }
+
+    setParticles(newParticles);
+
+    const interval = setInterval(() => {
+      setParticles(prev => prev.map(p => ({
+        ...p,
+        y: p.y + p.speedY,
+        x: p.x + p.speedX,
+        rotation: p.rotation + p.rotationSpeed
+      })).filter(p => p.y < 150));
+    }, 16);
+
+    return () => clearInterval(interval);
+  }, [active]);
+
+  if (!active) return null;
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+      {particles.map(p => (
+        <div
+          key={p.id}
+          className="absolute"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            backgroundColor: p.color,
+            transform: `rotate(${p.rotation}deg)`,
+            borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+            opacity: 0.8
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function CardPaymentModal({ pkg, onClose, onSuccess }) {
   const [cardForm, setCardForm] = useState({ cardNumber: '', expiryDate: '', cvv: '', cardholderName: '' });
   const [processing, setProcessing] = useState(false);
   const [stage, setStage] = useState(null); // 'processing' | 'validating' | 'processed'
+  const [showConfetti, setShowConfetti] = useState(false);
   const { success, error: toastError } = useToast();
 
   const formatCardNumber = (val) => {
@@ -37,7 +103,9 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
       await sleep(1600);
       await onSuccess(cardForm);
       setStage('processed');
-      await sleep(900);
+      setShowConfetti(true);
+      await sleep(3000);
+      setShowConfetti(false);
     } catch {
       toastError('Payment Failed', 'Could not process payment. Please try again.');
       setProcessing(false);
@@ -51,37 +119,39 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
     : '';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}>
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-        {/* Card Visual */}
-        <div className="relative h-44 rounded-t-2xl overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #374151 100%)' }}>
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-4 right-4 w-32 h-32 rounded-full border border-white" />
-            <div className="absolute top-8 right-8 w-20 h-20 rounded-full border border-white" />
-          </div>
-          {!processing && (
-            <button onClick={onClose}
-              className="absolute top-3 right-3 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
-              <X className="w-4 h-4" />
-            </button>
-          )}
-          <div className="p-5 h-full flex flex-col justify-between">
-            <div className="flex items-center justify-between">
-              <div className="w-8 h-6 bg-amber-400 rounded" />
-              <span className="text-white/60 text-xs font-medium uppercase tracking-wider">Credit Card</span>
+    <>
+      <Confetti active={showConfetti} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}>
+        <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+          {/* Card Visual */}
+          <div className="relative h-44 rounded-t-2xl overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #374151 100%)' }}>
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-4 right-4 w-32 h-32 rounded-full border border-white" />
+              <div className="absolute top-8 right-8 w-20 h-20 rounded-full border border-white" />
             </div>
-            <div>
-              <div className="text-white/80 text-sm font-mono tracking-widest mb-1">
-                {cardForm.cardNumber || '•••• •••• •••• ••••'}
-              </div>
+            {!processing && (
+              <button onClick={onClose}
+                className="absolute top-3 right-3 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+            <div className="p-5 h-full flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-white/60 text-xs">{cardForm.cardholderName || 'CARDHOLDER NAME'}</span>
-                <span className="text-white/60 text-xs">{cardForm.expiryDate || 'MM/YY'}</span>
+                <div className="w-8 h-6 bg-amber-400 rounded" />
+                <span className="text-white/60 text-xs font-medium uppercase tracking-wider">Credit Card</span>
+              </div>
+              <div>
+                <div className="text-white/80 text-sm font-mono tracking-widest mb-1">
+                  {cardForm.cardNumber || '•••• •••• •••• ••••'}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/60 text-xs">{cardForm.cardholderName || 'CARDHOLDER NAME'}</span>
+                  <span className="text-white/60 text-xs">{cardForm.expiryDate || 'MM/YY'}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
         {/* Processing overlay */}
         {processing ? (
@@ -171,6 +241,7 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
           )}
       </div>
     </div>
+    </>
   );
 }
 

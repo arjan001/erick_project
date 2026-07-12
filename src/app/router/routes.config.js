@@ -443,6 +443,12 @@ const artistRoutes = [
     guard: ArtistGuard
   },
   {
+    path: '/ArtistFinance',
+    component: () => import('@/modules/artist/pages/ArtistFinancePage'),
+    layout: DashboardLayout,
+    guard: ArtistGuard
+  },
+  {
     path: '/JobInvitations',
     component: () => import('@/modules/jobs/pages/JobInvitationsPage'),
     layout: DashboardLayout,

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CountrySelector from '@/components/CountrySelector';
 import RolesTagInput from '@/components/artist/RolesTagInput';
-import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon } from 'lucide-react';
+import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { confirmDialog } from '@/lib/sweetAlert';
 import ShareProfileButton from '@/components/artist/ShareProfileButton';
@@ -349,6 +349,7 @@ export default function ArtistProfile() {
               <button onClick={() => setActiveTab('profile')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'profile' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Profile</button>
               <button onClick={() => setActiveTab('portfolio')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'portfolio' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Portfolio</button>
               <button onClick={() => setActiveTab('about')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'about' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>About</button>
+              <button onClick={() => setActiveTab('subscription')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'subscription' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Subscription</button>
               <button onClick={() => setActiveTab('settings')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'settings' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Account Settings</button>
             </div>
           </div>
@@ -541,6 +542,129 @@ export default function ArtistProfile() {
 
           {activeTab === 'about' && (
             <AboutSection artist={artist} endorsements={endorsements} onUpdate={setArtist} />
+          )}
+
+          {activeTab === 'subscription' && (
+            <div className="max-w-3xl space-y-6">
+              {/* Current Subscription Card */}
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                      <Crown className="w-5 h-5 text-gray-400" />
+                      Current Subscription
+                    </h3>
+                    {subscription ? (
+                      <div className={`flex items-center gap-2 text-sm font-medium ${
+                        subscription.status === 'active' ? 'text-green-600' : 'text-yellow-600'
+                      }`}>
+                        {subscription.status === 'active' && <CheckCircle className="w-4 h-4" />}
+                        {subscription.status === 'active' ? 'Active' : 'Inactive'}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-500">No active subscription</div>
+                    )}
+                  </div>
+                  {subscription && (
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
+                      Premium
+                    </span>
+                  )}
+                </div>
+
+                {subscription ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white rounded-lg p-4">
+                        <div className="text-xs text-gray-600 uppercase font-bold mb-1">Plan</div>
+                        <div className="text-lg font-bold text-gray-900">{subPackage?.name || 'Premium'}</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-4">
+                        <div className="text-xs text-gray-600 uppercase font-bold mb-1">Renewal Date</div>
+                        <div className="text-sm font-bold text-gray-900">
+                          {subscription.renews_at ? new Date(subscription.renews_at).toLocaleDateString() : 'N/A'}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        onClick={() => navigate('/ArtistSubscriptionCheckout')}
+                        className="flex-1 bg-black text-white hover:bg-gray-800 font-bold"
+                      >
+                        Upgrade Plan
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        Cancel Subscription
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Crown className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">Upgrade to Premium for exclusive benefits</p>
+                    <Button
+                      onClick={() => navigate('/ArtistSubscriptionCheckout')}
+                      className="bg-black text-white hover:bg-gray-800 font-bold"
+                    >
+                      Get Premium
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Subscription Benefits */}
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-gray-400" />
+                  Premium Benefits
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-gray-900">Unlimited Job Applications</div>
+                      <div className="text-sm text-gray-600">Apply to as many jobs as you want</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-gray-900">Priority Listing</div>
+                      <div className="text-sm text-gray-600">Your profile appears first in search results</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-gray-900">Premium Job Access</div>
+                      <div className="text-sm text-gray-600">Apply to premium-only job postings</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-gray-900">Direct Client Messages</div>
+                      <div className="text-sm text-gray-600">Connect directly with clients</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment History */}
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-gray-400" />
+                  Payment History
+                </h3>
+                <div className="text-center py-8 text-gray-500">
+                  Payment history will appear here
+                </div>
+              </div>
+            </div>
           )}
 
           {activeTab === 'settings' && (
