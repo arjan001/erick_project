@@ -30,6 +30,12 @@ export default function ArtistFinancePage() {
   
   // Transactions
   const [transactions, setTransactions] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  
+  // Pagination for other tabs
+  const [subscriptionPage, setSubscriptionPage] = useState(1);
+  const [paymentsPage, setPaymentsPage] = useState(1);
   
   // Payments received
   const [payments, setPayments] = useState([]);
@@ -251,26 +257,86 @@ export default function ArtistFinancePage() {
                     No subscription history available
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {subscriptionOrders.map((order) => (
-                      <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div>
-                          <div className="font-medium text-gray-900">{order.package_name}</div>
-                          <div className="text-sm text-gray-600">
-                            {new Date(order.created_at).toLocaleDateString()} · {order.payment_method}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-gray-900">€{order.amount}</div>
-                          <div className={`text-xs font-medium ${
-                            order.status === 'completed' ? 'text-green-600' : 'text-yellow-600'
-                          }`}>
-                            {order.status}
-                          </div>
-                        </div>
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Date</th>
+                            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Package</th>
+                            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Payment Method</th>
+                            <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Amount</th>
+                            <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {subscriptionOrders
+                            .slice((subscriptionPage - 1) * itemsPerPage, subscriptionPage * itemsPerPage)
+                            .map((order) => (
+                              <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                                <td className="py-3 px-4 text-sm text-gray-600">
+                                  {new Date(order.created_at).toLocaleDateString()}
+                                </td>
+                                <td className="py-3 px-4 text-sm text-gray-900">
+                                  {order.package_name}
+                                </td>
+                                <td className="py-3 px-4 text-sm text-gray-600 capitalize">
+                                  {order.payment_method}
+                                </td>
+                                <td className="py-3 px-4 text-sm font-medium text-gray-900 text-right">
+                                  €{order.amount}
+                                </td>
+                                <td className="py-3 px-4 text-right">
+                                  <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+                                    order.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                  }`}>
+                                    {order.status === 'completed' && <CheckCircle className="w-3 h-3" />}
+                                    {order.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                      <div className="text-sm text-gray-600">
+                        Showing {(subscriptionPage - 1) * itemsPerPage + 1} to {Math.min(subscriptionPage * itemsPerPage, subscriptionOrders.length)} of {subscriptionOrders.length} orders
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setSubscriptionPage(prev => Math.max(prev - 1, 1))}
+                          disabled={subscriptionPage === 1}
+                          className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Previous
+                        </button>
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: Math.ceil(subscriptionOrders.length / itemsPerPage) }, (_, i) => i + 1).map((page) => (
+                            <button
+                              key={page}
+                              onClick={() => setSubscriptionPage(page)}
+                              className={`w-8 h-8 text-sm rounded-lg ${
+                                subscriptionPage === page
+                                  ? 'bg-black text-white'
+                                  : 'border border-gray-300 hover:bg-gray-50'
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => setSubscriptionPage(prev => Math.min(prev + 1, Math.ceil(subscriptionOrders.length / itemsPerPage)))}
+                          disabled={subscriptionPage === Math.ceil(subscriptionOrders.length / itemsPerPage)}
+                          className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
@@ -278,14 +344,97 @@ export default function ArtistFinancePage() {
 
           {activeTab === 'payments' && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <div className="text-center py-12">
-                <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Payments</h2>
-                <p className="text-gray-600 mb-6">View payments received from clients</p>
-                <div className="text-sm text-gray-500">
-                  Payment history will appear here once you receive payments from clients
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Payments from Clients</h2>
+              {payments.length === 0 ? (
+                <div className="text-center py-12">
+                  <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-600 mb-2">No payments received yet</p>
+                  <p className="text-sm text-gray-500">Payment history will appear here once you receive payments from clients</p>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Date</th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Client</th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Project</th>
+                          <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Amount</th>
+                          <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {payments
+                          .slice((paymentsPage - 1) * itemsPerPage, paymentsPage * itemsPerPage)
+                          .map((payment) => (
+                            <tr key={payment.id} className="border-b border-gray-100 hover:bg-gray-50">
+                              <td className="py-3 px-4 text-sm text-gray-600">
+                                {new Date(payment.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-gray-900">
+                                {payment.client_name}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-gray-600">
+                                {payment.project_name}
+                              </td>
+                              <td className="py-3 px-4 text-sm font-medium text-gray-900 text-right">
+                                €{payment.amount}
+                              </td>
+                              <td className="py-3 px-4 text-right">
+                                <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+                                  payment.status === 'completed' ? 'bg-green-100 text-green-700' : 
+                                  payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {payment.status === 'completed' && <CheckCircle className="w-3 h-3" />}
+                                  {payment.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                    <div className="text-sm text-gray-600">
+                      Showing {(paymentsPage - 1) * itemsPerPage + 1} to {Math.min(paymentsPage * itemsPerPage, payments.length)} of {payments.length} payments
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setPaymentsPage(prev => Math.max(prev - 1, 1))}
+                        disabled={paymentsPage === 1}
+                        className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Previous
+                      </button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.ceil(payments.length / itemsPerPage) }, (_, i) => i + 1).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => setPaymentsPage(page)}
+                            className={`w-8 h-8 text-sm rounded-lg ${
+                              paymentsPage === page
+                                ? 'bg-black text-white'
+                                : 'border border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setPaymentsPage(prev => Math.min(prev + 1, Math.ceil(payments.length / itemsPerPage)))}
+                        disabled={paymentsPage === Math.ceil(payments.length / itemsPerPage)}
+                        className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -402,39 +551,94 @@ export default function ArtistFinancePage() {
                   No transactions available
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {transactions.map((tx) => (
-                    <div key={tx.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          tx.amount > 0 ? 'bg-green-100' : 'bg-red-100'
-                        }`}>
-                          {tx.amount > 0 ? (
-                            <ArrowDownRight className="w-5 h-5 text-green-600" />
-                          ) : (
-                            <ArrowUpRight className="w-5 h-5 text-red-600" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 capitalize">{tx.reason}</div>
-                          <div className="text-sm text-gray-600">
-                            {new Date(tx.created_at).toLocaleDateString()}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={`font-bold ${
-                          tx.amount > 0 ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {tx.amount > 0 ? '+' : ''}{tx.amount} connects
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Balance: {tx.balance_after}
-                        </div>
-                      </div>
+                <>
+                  {/* Data Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Date</th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Type</th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Description</th>
+                          <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Amount</th>
+                          <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Balance</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transactions
+                          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                          .map((tx) => (
+                            <tr key={tx.id} className="border-b border-gray-100 hover:bg-gray-50">
+                              <td className="py-3 px-4 text-sm text-gray-600">
+                                {new Date(tx.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+                                  tx.amount > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                }`}>
+                                  {tx.amount > 0 ? (
+                                    <ArrowDownRight className="w-3 h-3" />
+                                  ) : (
+                                    <ArrowUpRight className="w-3 h-3" />
+                                  )}
+                                  {tx.amount > 0 ? 'Credit' : 'Debit'}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-sm text-gray-900 capitalize">
+                                {tx.reason}
+                              </td>
+                              <td className={`py-3 px-4 text-sm font-medium text-right ${
+                                tx.amount > 0 ? 'text-green-600' : 'text-red-600'
+                              }`}>
+                                {tx.amount > 0 ? '+' : ''}{tx.amount} connects
+                              </td>
+                              <td className="py-3 px-4 text-sm text-gray-600 text-right">
+                                {tx.balance_after}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                    <div className="text-sm text-gray-600">
+                      Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, transactions.length)} of {transactions.length} transactions
                     </div>
-                  ))}
-                </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Previous
+                      </button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.ceil(transactions.length / itemsPerPage) }, (_, i) => i + 1).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`w-8 h-8 text-sm rounded-lg ${
+                              currentPage === page
+                                ? 'bg-black text-white'
+                                : 'border border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(transactions.length / itemsPerPage)))}
+                        disabled={currentPage === Math.ceil(transactions.length / itemsPerPage)}
+                        className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           )}

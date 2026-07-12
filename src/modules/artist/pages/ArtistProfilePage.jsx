@@ -236,12 +236,57 @@ export default function ArtistProfile() {
     }
   };
 
-  const handleConnectGoogleDrive = () => {
-    // This would typically open Google OAuth flow
-    // For now, we'll allow manual input of folder ID
-    const folderId = prompt('Enter your Google Drive Folder ID:');
-    if (folderId) {
+  const extractFolderIdFromLink = (link) => {
+    if (!link) return null;
+    
+    // Match various Google Drive folder link patterns
+    const patterns = [
+      /drive\.google\.com\/drive\/folders\/([a-zA-Z0-9_-]+)/,
+      /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
+      /drive\.google\.com\/drive\/u\/\d+\/folders\/([a-zA-Z0-9_-]+)/,
+      /drive\.google\.com\/folder\/([a-zA-Z0-9_-]+)/,
+      /\/([a-zA-Z0-9_-]{20,})/ // Fallback for long IDs
+    ];
+    
+    for (const pattern of patterns) {
+      const match = link.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    
+    // If the input itself looks like a folder ID (long alphanumeric string), return it
+    if (/^[a-zA-Z0-9_-]{10,}$/.test(link.trim())) {
+      return link.trim();
+    }
+    
+    return null;
+  };
+
+  const handleConnectGoogleDrive = async () => {
+    const link = googleDriveFolderId.trim();
+    
+    if (!link) {
+      toastError('Connection Failed', 'Please enter a Google Drive folder link');
+      return;
+    }
+    
+    const folderId = extractFolderIdFromLink(link);
+    
+    if (!folderId) {
+      toastError('Invalid Link', 'Could not extract folder ID from the link. Please check the URL and try again.');
+      return;
+    }
+    
+    try {
+      // Update the artist profile with the extracted folder ID
+      const updated = await Artist.update(artist.id, { google_drive_folder_id: folderId });
+      setArtist(updated);
       setGoogleDriveFolderId(folderId);
+      success('Google Drive Connected', 'Your Google Drive folder has been successfully connected');
+    } catch (err) {
+      console.error('Error connecting Google Drive:', err);
+      toastError('Connection Failed', 'Failed to connect Google Drive. Please try again.');
     }
   };
 
@@ -349,7 +394,6 @@ export default function ArtistProfile() {
               <button onClick={() => setActiveTab('profile')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'profile' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Profile</button>
               <button onClick={() => setActiveTab('portfolio')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'portfolio' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Portfolio</button>
               <button onClick={() => setActiveTab('about')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'about' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>About</button>
-              <button onClick={() => setActiveTab('subscription')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'subscription' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Subscription</button>
               <button onClick={() => setActiveTab('settings')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'settings' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Account Settings</button>
             </div>
           </div>
@@ -544,141 +588,18 @@ export default function ArtistProfile() {
             <AboutSection artist={artist} endorsements={endorsements} onUpdate={setArtist} />
           )}
 
-          {activeTab === 'subscription' && (
-            <div className="max-w-3xl space-y-6">
-              {/* Current Subscription Card */}
-              <div className="bg-gray-50 rounded-2xl p-6">
-                <div className="flex items-start justify-between mb-6">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
-                      <Crown className="w-5 h-5 text-gray-400" />
-                      Current Subscription
-                    </h3>
-                    {subscription ? (
-                      <div className={`flex items-center gap-2 text-sm font-medium ${
-                        subscription.status === 'active' ? 'text-green-600' : 'text-yellow-600'
-                      }`}>
-                        {subscription.status === 'active' && <CheckCircle className="w-4 h-4" />}
-                        {subscription.status === 'active' ? 'Active' : 'Inactive'}
-                      </div>
-                    ) : (
-                      <div className="text-sm text-gray-500">No active subscription</div>
-                    )}
-                  </div>
-                  {subscription && (
-                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
-                      Premium
-                    </span>
-                  )}
-                </div>
-
-                {subscription ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white rounded-lg p-4">
-                        <div className="text-xs text-gray-600 uppercase font-bold mb-1">Plan</div>
-                        <div className="text-lg font-bold text-gray-900">{subPackage?.name || 'Premium'}</div>
-                      </div>
-                      <div className="bg-white rounded-lg p-4">
-                        <div className="text-xs text-gray-600 uppercase font-bold mb-1">Renewal Date</div>
-                        <div className="text-sm font-bold text-gray-900">
-                          {subscription.renews_at ? new Date(subscription.renews_at).toLocaleDateString() : 'N/A'}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-3 pt-4">
-                      <Button
-                        onClick={() => navigate('/ArtistSubscriptionCheckout')}
-                        className="flex-1 bg-black text-white hover:bg-gray-800 font-bold"
-                      >
-                        Upgrade Plan
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="flex-1"
-                      >
-                        Cancel Subscription
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Crown className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-4">Upgrade to Premium for exclusive benefits</p>
-                    <Button
-                      onClick={() => navigate('/ArtistSubscriptionCheckout')}
-                      className="bg-black text-white hover:bg-gray-800 font-bold"
-                    >
-                      Get Premium
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Subscription Benefits */}
-              <div className="bg-gray-50 rounded-2xl p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-gray-400" />
-                  Premium Benefits
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-medium text-gray-900">Unlimited Job Applications</div>
-                      <div className="text-sm text-gray-600">Apply to as many jobs as you want</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-medium text-gray-900">Priority Listing</div>
-                      <div className="text-sm text-gray-600">Your profile appears first in search results</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-medium text-gray-900">Premium Job Access</div>
-                      <div className="text-sm text-gray-600">Apply to premium-only job postings</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-medium text-gray-900">Direct Client Messages</div>
-                      <div className="text-sm text-gray-600">Connect directly with clients</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment History */}
-              <div className="bg-gray-50 rounded-2xl p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-gray-400" />
-                  Payment History
-                </h3>
-                <div className="text-center py-8 text-gray-500">
-                  Payment history will appear here
-                </div>
-              </div>
-            </div>
-          )}
-
           {activeTab === 'settings' && (
             <div className="max-w-3xl space-y-6">
               <div className="bg-gray-50 rounded-2xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2"><HardDrive className="w-5 h-5 text-gray-400" /> Google Drive Integration</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">Google Drive Folder ID</label>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Google Drive Folder Link</label>
                     <div className="flex gap-2">
                       <Input 
                         value={googleDriveFolderId} 
                         onChange={(e) => setGoogleDriveFolderId(e.target.value)} 
-                        placeholder="Enter your Google Drive folder ID" 
+                        placeholder="Paste your Google Drive folder link (e.g., https://drive.google.com/drive/folders/...)" 
                         className="rounded-lg flex-1" 
                       />
                       <Button onClick={handleConnectGoogleDrive} variant="outline" className="rounded-lg">
@@ -687,7 +608,7 @@ export default function ArtistProfile() {
                       </Button>
                     </div>
                     <p className="text-xs text-gray-500 mt-2">
-                      Connect your Google Drive to easily import portfolio videos. Enter your folder ID or click Connect to authorize access.
+                      Paste the full Google Drive folder link. We'll automatically extract the folder ID and connect your portfolio.
                     </p>
                   </div>
                 </div>

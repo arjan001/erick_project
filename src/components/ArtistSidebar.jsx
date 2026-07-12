@@ -21,16 +21,10 @@ const MENU_ITEMS = [
 
 export default function ArtistSidebar() {
   const location = useLocation();
-  const [user, setUser] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [pendingConnections, setPendingConnections] = useState(0);
   const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
-  const { logout } = useAuth();
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    setUser(storedUser ? JSON.parse(storedUser) : null);
-  }, []);
+  const { logout, user } = useAuth();
 
   useEffect(() => {
     if (!user) return;
