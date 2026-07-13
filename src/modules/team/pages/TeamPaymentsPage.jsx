@@ -1,32 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import TeamSidebar from '@/components/TeamSidebar';
+import { Team } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { CreditCard, DollarSign, TrendingUp, Check, Clock, AlertCircle, CheckCircle } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function TeamPaymentsPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
+  const { user: authUser, isAuthenticated } = useAuth();
   const [team, setTeam] = useState(null);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedTeam = localStorage.getItem('studio22_team');
-    if (!storedTeam) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
-    setTeam(JSON.parse(storedTeam));
-    fetchPayments();
-  }, []);
+    loadTeamData();
+  }, [isAuthenticated]);
 
-  const fetchPayments = async () => {
+  const loadTeamData = async () => {
     try {
-      const allPayments = await base44.entities.Payment.filter({ team_id: team?.id });
+      let teamData = null;
+      if (authUser?.team_id) {
+        teamData = await Team.filter({ id: authUser.team_id }, '-created_date', 1).then(r => r?.[0] || null);
+      } else {
+        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_date', 1);
+        teamData = teams?.[0] || null;
+      }
+      setTeam(teamData);
+      if (teamData) {
+        fetchPayments(teamData.id);
+      } else {
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Error loading team:', err);
+      toastError('Load Failed', 'Failed to load team data');
+      setLoading(false);
+    }
+  };
+
+  const fetchPayments = async (teamId) => {
+    try {
+      const allPayments = await base44.entities.Payment.filter({ team_id: teamId });
       setPayments(allPayments);
     } catch (err) {
       console.error('Error fetching payments:', err);
@@ -38,11 +60,8 @@ export default function TeamPaymentsPage() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-white">
-        <TeamSidebar />
-        <main className="w-full h-full flex items-center justify-center pl-20">
-          <div className="text-gray-600">Loading...</div>
-        </main>
+      <div className="flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
       </div>
     );
   }
@@ -58,11 +77,8 @@ export default function TeamPaymentsPage() {
   };
 
   return (
-    <div className="h-screen bg-white">
-      <TeamSidebar />
-      <main className="w-full h-full flex flex-col overflow-y-auto bg-white pl-20">
-        <div className="p-6 max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Payments & Deals</h1>
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">Payments & Deals</h1>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white border border-gray-200 rounded-xl p-6">
@@ -138,8 +154,6 @@ export default function TeamPaymentsPage() {
               </div>
             )}
           </div>
-        </div>
-      </main>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Layers, Plus, Edit2, Trash2, TrendingUp, Crown, Gem, Sparkles, Percent, DollarSign } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
+import { useAuth } from '@/lib/AuthContext';
 
 const DEFAULT_TIERS = [
   {
@@ -47,14 +48,14 @@ const DEFAULT_TIERS = [
     roi_percentage: 25,
     benefits: ['All Gold benefits', 'Co-production rights', 'Revenue sharing', 'Strategic partnership'],
     icon: 'platinum',
-    color: 'bg-purple-100 text-purple-700'
+    color: 'bg-gray-100 text-gray-700'
   }
 ];
 
 export default function BackerInvestmentTiersPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
+  const { user: authUser, isAuthenticated } = useAuth();
   const [backer, setBacker] = useState(null);
   const [tiers, setTiers] = useState(DEFAULT_TIERS);
   const [loading, setLoading] = useState(true);
@@ -70,26 +71,22 @@ export default function BackerInvestmentTiersPage() {
   });
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
-    setUser(JSON.parse(storedUser));
     fetchData();
-  }, []);
+  }, [isAuthenticated]);
 
   const fetchData = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
-      
-      const backers = await Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }
 
       // Fetch custom tiers if they exist
-      const customTiers = await InvestmentTier.filter({ backer_email: storedUser.email });
+      const customTiers = await InvestmentTier.filter({ backer_email: authUser?.email });
       if (customTiers.length > 0) {
         setTiers(customTiers);
       }

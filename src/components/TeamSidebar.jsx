@@ -61,7 +61,7 @@ export default function TeamSidebar() {
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
             <Building2 className="w-4 h-4 text-white" />
           </div>
           {expanded && (
@@ -73,7 +73,7 @@ export default function TeamSidebar() {
         </Link>
         <button
           onClick={toggle}
-          className="p-1.5 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-colors text-gray-400"
+          className="p-1.5 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors text-gray-400"
         >
           {expanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
@@ -90,7 +90,7 @@ export default function TeamSidebar() {
               onClick={() => navigate(createPageUrl(item.path))}
               title={!expanded ? item.label : ''}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
-                isActive ? 'bg-indigo-50 text-indigo-600 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                isActive ? 'bg-gray-900 text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
@@ -104,7 +104,7 @@ export default function TeamSidebar() {
       <div className="border-t border-gray-100 p-2 space-y-1">
         {team && (
           <div className={`flex items-center gap-3 px-3 py-2 rounded-xl ${expanded ? '' : 'justify-center'}`}>
-            <div className="w-8 h-8 bg-indigo-100 ring-2 ring-indigo-50 rounded-full flex-shrink-0" />
+            <div className="w-8 h-8 bg-gray-100 ring-2 ring-gray-50 rounded-full flex-shrink-0" />
             {expanded && (
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-gray-900 text-xs truncate">{team.team_name}</div>

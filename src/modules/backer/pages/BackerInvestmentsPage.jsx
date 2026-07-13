@@ -7,11 +7,12 @@ import { DollarSign, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, Filter,
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
 import { confirmDialog } from '@/lib/sweetAlert';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function BackerInvestmentsPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
+  const { user: authUser, isAuthenticated } = useAuth();
   const [backer, setBacker] = useState(null);
   const [investments, setInvestments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,27 +20,23 @@ export default function BackerInvestmentsPage() {
   const [sortBy, setSortBy] = useState('date');
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
-    setUser(JSON.parse(storedUser));
     fetchData();
-  }, []);
+  }, [isAuthenticated]);
 
   const fetchData = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
-      
       // Fetch backer profile
-      const backers = await Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }
 
       // Fetch backed projects
-      const backedProjects = await BackedProject.filter({ backer_email: storedUser.email });
+      const backedProjects = await BackedProject.filter({ backer_email: authUser?.email });
       setInvestments(backedProjects);
     } catch (err) {
       console.error('Error fetching investments:', err);

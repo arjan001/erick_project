@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TeamSidebar from '@/components/TeamSidebar';
+import { Team } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -8,9 +8,11 @@ import {
   Plus, Search, MoreVertical, X, Users, Paperclip 
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function TeamMessagesPage() {
   const navigate = useNavigate();
+  const { user: authUser, isAuthenticated } = useAuth();
   const [team, setTeam] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -24,14 +26,30 @@ export default function TeamMessagesPage() {
   const remoteVideoRef = useRef(null);
 
   useEffect(() => {
-    const storedTeam = localStorage.getItem('studio22_team');
-    if (!storedTeam) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
-    setTeam(JSON.parse(storedTeam));
-    loadConversations();
-  }, []);
+    loadTeamData();
+  }, [isAuthenticated]);
+
+  const loadTeamData = async () => {
+    try {
+      let teamData = null;
+      if (authUser?.team_id) {
+        teamData = await Team.filter({ id: authUser.team_id }, '-created_date', 1).then(r => r?.[0] || null);
+      } else {
+        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_date', 1);
+        teamData = teams?.[0] || null;
+      }
+      setTeam(teamData);
+      if (teamData) {
+        loadConversations();
+      }
+    } catch (err) {
+      console.error('Error loading team:', err);
+    }
+  };
 
   useEffect(() => {
     scrollToBottom();
@@ -132,27 +150,25 @@ export default function TeamMessagesPage() {
   );
 
   return (
-    <div className="h-screen bg-white">
-      <TeamSidebar />
-      <main className="w-full h-full flex flex-col overflow-hidden bg-white pl-20">
-        <div className="flex h-full">
-          {/* Conversations List */}
-          <div className="w-80 border-r border-gray-200 flex flex-col">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">Messages</h2>
-                <Button size="sm" variant="ghost">
-                  <Plus className="w-5 h-5" />
-                </Button>
-              </div>
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search conversations..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+    <>
+      <div className="flex h-full">
+      {/* Conversations List */}
+      <div className="w-80 border-r border-gray-200 flex flex-col">
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Messages</h2>
+            <Button size="sm" variant="ghost">
+              <Plus className="w-5 h-5" />
+            </Button>
+          </div>
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search conversations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
                 />
               </div>
             </div>
@@ -283,10 +299,8 @@ export default function TeamMessagesPage() {
               </div>
             )}
           </div>
-        </div>
-      </main>
+      </div>
 
-      {/* Call Modal */}
       {showCallModal && (
         <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
           <div className="relative w-full h-full">
@@ -339,6 +353,6 @@ export default function TeamMessagesPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

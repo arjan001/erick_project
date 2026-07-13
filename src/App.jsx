@@ -6,6 +6,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { RouteRenderer } from '@/app/router/RouteRenderer';
 import { ToastProvider } from '@/hooks/useToast';
+import { MaintenanceGuard } from '@/app/router/guards/MaintenanceGuard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth } = useAuth();
@@ -19,8 +20,12 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Render the main app with new RouteRenderer
-  return <RouteRenderer />;
+  // Render the main app with new RouteRenderer wrapped in MaintenanceGuard
+  return (
+    <MaintenanceGuard>
+      <RouteRenderer />
+    </MaintenanceGuard>
+  );
 };
 
 

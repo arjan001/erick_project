@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Artist } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
-import { Plus, X, Sparkles, ThumbsUp, Edit2, Check } from 'lucide-react';
+import { Plus, X, Sparkles, ThumbsUp, Edit2, Check, Globe, Instagram, Linkedin, MapPin, Languages, Award, Briefcase, Users as UsersIcon } from 'lucide-react';
 import SkillsExperienceTagInput from '@/components/SkillsExperienceTagInput';
 import worldLanguages from '@/data/languages.json';
 
@@ -197,17 +197,20 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
 
 
   return (
-    <div className="grid grid-cols-3 gap-12">
+    <div className="grid grid-cols-3 gap-8">
       {/* Left Column - Main Info */}
-      <div className="col-span-2 space-y-8">
+      <div className="col-span-2 space-y-6">
         {/* Bio Section */}
-        <div>
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-900">About</h3>
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Award className="w-5 h-5 text-gray-700" />
+              About
+            </h3>
             {!editingBio && (
               <button
                 onClick={() => setEditingBio(true)}
-                className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900"
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
               >
                 <Edit2 className="w-3 h-3" />
                 Edit
@@ -221,7 +224,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="Write your professional bio..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400 resize-none h-24 bg-white"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none h-24 bg-white"
               />
               <div className="flex gap-2">
                 <Button
@@ -249,20 +252,23 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               </div>
             </div>
           ) : (
-            <p className="text-gray-800 leading-relaxed bg-gray-50 p-4 rounded-lg">
+            <p className="text-gray-800 leading-relaxed text-sm">
               {bio || 'Add a professional bio to tell others about your work and expertise.'}
             </p>
           )}
         </div>
 
-        {/* Skills & Experience - Combined with Modal */}
-        <div>
+        {/* Skills & Experience */}
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-500">Skills & Experience</h3>
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Briefcase className="w-5 h-5 text-blue-700" />
+              Skills & Experience
+            </h3>
             {!editingSkills && (
               <button
                 onClick={() => setEditingSkills(true)}
-                className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900"
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
               >
                 <Edit2 className="w-3 h-3" />
                 Edit
@@ -286,7 +292,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                   }
                   setEditingSkills(false);
                 }}
-                className="w-full bg-black text-white hover:bg-gray-800"
+                className="w-full bg-blue-600 text-white hover:bg-blue-700"
               >
                 <Check className="w-4 h-4 mr-1" />
                 Done
@@ -299,11 +305,11 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 return (
                   <button
                     key={skill}
-                    className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800 hover:border-gray-300 transition-colors flex items-center gap-2"
+                    className="px-3 py-1.5 bg-white border border-blue-200 rounded-full text-sm text-gray-800 hover:border-blue-400 transition-colors flex items-center gap-2 shadow-sm"
                   >
                     {skill}
                     {endorsementCount > 0 && (
-                      <span className="flex items-center gap-1 text-xs text-gray-500">
+                      <span className="flex items-center gap-1 text-xs text-blue-600 font-medium">
                         <ThumbsUp className="w-3 h-3" />
                         {endorsementCount}
                       </span>
@@ -311,20 +317,23 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                   </button>
                 );
               }) : (
-                <p className="text-gray-500 text-sm">No skills added yet. Click Edit to get started.</p>
+                <p className="text-gray-600 text-sm">No skills added yet. Click Edit to get started.</p>
               )}
             </div>
           )}
         </div>
 
-        {/* Past Clients - Editable */}
-        <div>
+        {/* Past Clients */}
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-500">Past Clients</h3>
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <UsersIcon className="w-5 h-5 text-purple-700" />
+              Past Clients
+            </h3>
             {!editingClients && (
               <button
                 onClick={() => setEditingClients(true)}
-                className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900"
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
               >
                 <Edit2 className="w-3 h-3" />
                 Edit
@@ -337,11 +346,11 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               <div className="flex flex-wrap gap-3 mb-3">
                 {clients.map((client) => (
                   <div key={client} className="relative">
-                    <div className="w-16 h-16 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 relative group">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 relative group shadow-md">
                       {client.slice(0, 2).toUpperCase()}
                       <button
                         onClick={() => removeClient(client)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -359,19 +368,19 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                     onChange={(e) => setNewClient(e.target.value)}
                     onFocus={() => setShowClientSuggestions(true)}
                     placeholder="Add a client..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                    className="flex-1 px-4 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                   <Button
                     onClick={() => addClient(newClient)}
                     size="sm"
-                    className="bg-black text-white hover:bg-gray-800"
+                    className="bg-purple-600 text-white hover:bg-purple-700"
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
 
                 {showClientSuggestions && filteredClientSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-purple-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
                     {filteredClientSuggestions.map((client) => (
                       <button
                         key={client}
@@ -379,7 +388,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                           addClient(client);
                           setShowClientSuggestions(false);
                         }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
+                        className="w-full text-left px-4 py-2 hover:bg-purple-50 text-sm border-b border-purple-100 last:border-0"
                       >
                         {client}
                       </button>
@@ -396,7 +405,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                   }
                   setEditingClients(false);
                 }}
-                className="w-full bg-black text-white hover:bg-gray-800"
+                className="w-full bg-purple-600 text-white hover:bg-purple-700"
               >
                 <Check className="w-4 h-4 mr-1" />
                 Done
@@ -405,24 +414,27 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               ) : (
               <div className="flex flex-wrap gap-3">
               {clients.length > 0 ? clients.map((client) => (
-                <div key={client} className="w-16 h-16 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" title={client}>
+                <div key={client} className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-md" title={client}>
                   {client.slice(0, 2).toUpperCase()}
                 </div>
               )) : (
-                <p className="text-gray-500 text-sm">No clients added yet. Click Edit to get started.</p>
+                <p className="text-gray-600 text-sm">No clients added yet. Click Edit to get started.</p>
               )}
             </div>
           )}
         </div>
 
-        {/* Project Types - Editable */}
-        <div>
+        {/* Project Types */}
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-500">Project Types</h3>
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Briefcase className="w-5 h-5 text-green-700" />
+              Project Types
+            </h3>
             {!editingProjects && (
               <button
                 onClick={() => setEditingProjects(true)}
-                className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900"
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
               >
                 <Edit2 className="w-3 h-3" />
                 Edit
@@ -434,7 +446,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2 mb-3">
                 {projectTypes.map((type) => (
-                  <div key={type} className="flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-full text-sm">
+                  <div key={type} className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-full text-sm shadow-sm">
                     {type}
                     <button onClick={() => removeProjectType(type)} className="hover:opacity-70">
                       <X className="w-3 h-3" />
@@ -451,19 +463,19 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                     onChange={(e) => setNewProjectType(e.target.value)}
                     onFocus={() => setShowProjectSuggestions(true)}
                     placeholder="Add project type..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                    className="flex-1 px-4 py-2 border border-green-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                   <Button
                     onClick={() => addProjectType(newProjectType)}
                     size="sm"
-                    className="bg-black text-white hover:bg-gray-800"
+                    className="bg-green-600 text-white hover:bg-green-700"
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
 
                 {showProjectSuggestions && filteredProjectSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-green-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
                     {filteredProjectSuggestions.map((type) => (
                       <button
                         key={type}
@@ -471,7 +483,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                           addProjectType(type);
                           setShowProjectSuggestions(false);
                         }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
+                        className="w-full text-left px-4 py-2 hover:bg-green-50 text-sm border-b border-green-100 last:border-0"
                       >
                         {type}
                       </button>
@@ -488,7 +500,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                   }
                   setEditingProjects(false);
                 }}
-                className="w-full bg-black text-white hover:bg-gray-800"
+                className="w-full bg-green-600 text-white hover:bg-green-700"
               >
                 <Check className="w-4 h-4 mr-1" />
                 Done
@@ -497,11 +509,11 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               ) : (
               <div className="flex flex-wrap gap-2">
               {projectTypes.length > 0 ? projectTypes.map((type) => (
-                <span key={type} className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800">
+                <span key={type} className="px-3 py-1.5 bg-white border border-green-200 rounded-full text-sm text-gray-800 shadow-sm">
                   {type}
                 </span>
               )) : (
-                <p className="text-gray-500 text-sm">No project types added yet. Click Edit to get started.</p>
+                <p className="text-gray-600 text-sm">No project types added yet. Click Edit to get started.</p>
               )}
             </div>
           )}
@@ -509,15 +521,18 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
       </div>
 
       {/* Right Column - Contact & Languages */}
-      <div className="space-y-8">
-        {/* Languages - Editable */}
-        <div>
+      <div className="space-y-6">
+        {/* Languages */}
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 border border-orange-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-500">Languages</h3>
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Languages className="w-5 h-5 text-orange-700" />
+              Languages
+            </h3>
             {!editingLanguages && (
               <button
                 onClick={() => setEditingLanguages(true)}
-                className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900"
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
               >
                 <Edit2 className="w-3 h-3" />
                 Edit
@@ -529,7 +544,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2 mb-3">
                 {languages.map((lang) => (
-                  <div key={lang} className="flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-full text-sm">
+                  <div key={lang} className="flex items-center gap-2 px-3 py-1.5 bg-orange-600 text-white rounded-full text-sm shadow-sm">
                     {lang}
                     <button onClick={() => removeLanguage(lang)} className="hover:opacity-70">
                       <X className="w-3 h-3" />
@@ -546,15 +561,15 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                     onChange={(e) => setNewLanguage(e.target.value)}
                     onFocus={() => setShowLanguageSuggestions(true)}
                     placeholder="Add a language..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                    className="flex-1 px-4 py-2 border border-orange-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
-                  <Button onClick={() => addLanguage(newLanguage)} size="sm" className="bg-black text-white hover:bg-gray-800">
+                  <Button onClick={() => addLanguage(newLanguage)} size="sm" className="bg-orange-600 text-white hover:bg-orange-700">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
 
                 {showLanguageSuggestions && filteredLanguageSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-orange-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
                     {filteredLanguageSuggestions.map((lang) => (
                       <button
                         key={lang}
@@ -562,7 +577,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                           addLanguage(lang);
                           setShowLanguageSuggestions(false);
                         }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
+                        className="w-full text-left px-4 py-2 hover:bg-orange-50 text-sm border-b border-orange-100 last:border-0"
                       >
                         {lang}
                       </button>
@@ -577,29 +592,32 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                   if (onUpdate) onUpdate(updated);
                 }
                 setEditingLanguages(false);
-              }} className="w-full bg-black text-white hover:bg-gray-800">
+              }} className="w-full bg-orange-600 text-white hover:bg-orange-700">
                 <Check className="w-4 h-4 mr-1" /> Done
               </Button>
               </div>
               ) : (
               <div className="flex flex-wrap gap-2">
               {languages.length > 0 ? languages.map((lang) => (
-                <span key={lang} className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800">
+                <span key={lang} className="px-3 py-1.5 bg-white border border-orange-200 rounded-full text-sm text-gray-800 shadow-sm">
                   {lang}
                 </span>
-              )) : <p className="text-gray-500 text-sm">No languages added yet</p>}
+              )) : <p className="text-gray-600 text-sm">No languages added yet</p>}
             </div>
           )}
         </div>
 
-        {/* Countries Worked - Editable */}
-        <div>
+        {/* Countries Worked */}
+        <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-2xl p-6 border border-teal-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-500">Countries Worked In</h3>
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-teal-700" />
+              Countries Worked In
+            </h3>
             {!editingCountries && (
               <button
                 onClick={() => setEditingCountries(true)}
-                className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900"
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
               >
                 <Edit2 className="w-3 h-3" />
                 Edit
@@ -611,7 +629,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2 mb-3">
                 {countries.map((c) => (
-                  <div key={c} className="flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-full text-sm">
+                  <div key={c} className="flex items-center gap-2 px-3 py-1.5 bg-teal-600 text-white rounded-full text-sm shadow-sm">
                     {c}
                     <button onClick={() => removeCountry(c)} className="hover:opacity-70">
                       <X className="w-3 h-3" />
@@ -628,15 +646,15 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                     onChange={(e) => setNewCountry(e.target.value)}
                     onFocus={() => setShowCountrySuggestions(true)}
                     placeholder="Add a country..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                    className="flex-1 px-4 py-2 border border-teal-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   />
-                  <Button onClick={() => addCountry(newCountry)} size="sm" className="bg-black text-white hover:bg-gray-800">
+                  <Button onClick={() => addCountry(newCountry)} size="sm" className="bg-teal-600 text-white hover:bg-teal-700">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
 
                 {showCountrySuggestions && filteredCountrySuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-teal-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
                     {filteredCountrySuggestions.map((country) => (
                       <button
                         key={country}
@@ -644,7 +662,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                           addCountry(country);
                           setShowCountrySuggestions(false);
                         }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
+                        className="w-full text-left px-4 py-2 hover:bg-teal-50 text-sm border-b border-teal-100 last:border-0"
                       >
                         {country}
                       </button>
@@ -659,48 +677,51 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                   if (onUpdate) onUpdate(updated);
                 }
                 setEditingCountries(false);
-              }} className="w-full bg-black text-white hover:bg-gray-800">
+              }} className="w-full bg-teal-600 text-white hover:bg-teal-700">
                 <Check className="w-4 h-4 mr-1" /> Done
               </Button>
               </div>
               ) : (
               <div className="flex flex-wrap gap-2">
               {countries.length > 0 ? countries.map((c) => (
-                <span key={c} className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-800">
+                <span key={c} className="px-3 py-1.5 bg-white border border-teal-200 rounded-full text-sm text-gray-800 shadow-sm">
                   {c}
                 </span>
-              )) : <p className="text-gray-500 text-sm">No countries added yet</p>}
+              )) : <p className="text-gray-600 text-sm">No countries added yet</p>}
             </div>
           )}
         </div>
-      </div>
 
-      {/* Right Column - Contact Info (Editable) */}
-      <div className="space-y-8">
         {/* Contact Section */}
-        <div>
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-500">Contact</h3>
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Globe className="w-5 h-5 text-gray-700" />
+              Contact
+            </h3>
             <p className="text-xs text-gray-500">Edit in Settings</p>
           </div>
           <div className="space-y-3">
-            {artist?.email && <p className="text-sm text-gray-800"><strong>Email:</strong> <a href={`mailto:${artist.email}`} className="text-gray-600 hover:text-gray-900">{artist.email}</a></p>}
+            {artist?.email && <p className="text-sm text-gray-800"><strong>Email:</strong> <a href={`mailto:${artist.email}`} className="text-gray-600 hover:text-black transition-colors">{artist.email}</a></p>}
             {artist?.phone && <p className="text-sm text-gray-800"><strong>Phone:</strong> {artist.phone}</p>}
-            {artist?.website && <a href={artist.website} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600 block"><Globe className="w-4 h-4 inline mr-2" />{artist.website}</a>}
+            {artist?.website && <a href={artist.website} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Globe className="w-4 h-4 inline mr-2" />{artist.website}</a>}
           </div>
         </div>
 
         {/* Social Media */}
-        <div>
+        <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl p-6 border border-pink-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-500">Socials</h3>
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Instagram className="w-5 h-5 text-pink-700" />
+              Socials
+            </h3>
             <p className="text-xs text-gray-500">Edit in Settings</p>
           </div>
           <div className="space-y-2">
-            {artist?.instagram && <a href={artist.instagram} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600 block"><Instagram className="w-4 h-4 inline mr-2" />@{artist.instagram.split('/').pop()}</a>}
-            {artist?.linkedin && <a href={artist.linkedin} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600 block"><Linkedin className="w-4 h-4 inline mr-2" />{artist.linkedin.split('/').pop()}</a>}
-            {artist?.vimeo && <a href={artist.vimeo} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600 block">🎬 Vimeo</a>}
-            {artist?.imdb && <a href={artist.imdb} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-gray-600 block">🎭 IMDb</a>}
+            {artist?.instagram && <a href={artist.instagram} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Instagram className="w-4 h-4 inline mr-2" />@{artist.instagram.split('/').pop()}</a>}
+            {artist?.linkedin && <a href={artist.linkedin} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Linkedin className="w-4 h-4 inline mr-2" />{artist.linkedin.split('/').pop()}</a>}
+            {artist?.vimeo && <a href={artist.vimeo} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block">🎬 Vimeo</a>}
+            {artist?.imdb && <a href={artist.imdb} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block">🎭 IMDb</a>}
           </div>
         </div>
       </div>

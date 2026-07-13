@@ -189,61 +189,61 @@ export default function AdminClientsPage() {
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Client</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Company</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Projects</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
-              <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Client</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Company</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Projects</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginatedClients.map((client) => (
               <tr key={client.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
                     {client.profile_image ? (
-                      <img src={client.profile_image} alt={client.full_name} className="w-10 h-10 rounded-full object-cover" />
+                      <img src={client.profile_image} alt={client.full_name} className="w-8 h-8 rounded-full object-cover" />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-600">
+                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
                         {client.full_name?.[0]?.toUpperCase() || 'C'}
                       </div>
                     )}
                     <div>
-                      <div className="font-medium text-gray-900">{client.full_name || 'Unknown'}</div>
-                      <div className="text-sm text-gray-500 flex items-center gap-2"><Mail className="w-3 h-3" />{client.email || 'No email'}</div>
+                      <div className="font-medium text-gray-900 text-sm">{client.full_name || 'Unknown'}</div>
+                      <div className="text-xs text-gray-500 flex items-center gap-2"><Mail className="w-3 h-3" />{client.email || 'No email'}</div>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  {client.company || <span className="text-gray-400">N/A</span>}
+                <td className="px-4 py-3 text-sm text-gray-600">
+                  {client.company || <span className="text-gray-400 text-xs">N/A</span>}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-3">
                   <span className={`px-2 py-1 text-xs font-medium rounded-full border ${STATUS_STYLES[getStatus(client)]}`}>
                     {getStatus(client).charAt(0).toUpperCase() + getStatus(client).slice(1)}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-3 text-sm text-gray-600">
                   {client.projects_submitted?.length || 0}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-3 text-sm text-gray-600">
                   {client.created_at ? new Date(client.created_at).toLocaleDateString() : 'N/A'}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
-                    <Button onClick={() => setSelectedClient(client)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                    <Button onClick={() => setSelectedClient(client)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 p-1">
                       <Eye className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => openModal(client)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                    <Button onClick={() => openModal(client)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 p-1">
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => toggleSuspend(client)} variant="ghost" size="sm" className={client.is_suspended ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'}>
+                    <Button onClick={() => toggleSuspend(client)} variant="ghost" size="sm" className={`${client.is_suspended ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'} p-1`}>
                       <Ban className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => toggleDisable(client)} variant="ghost" size="sm" className={client.is_disabled ? 'text-green-600 hover:text-green-700' : 'text-red-600 hover:text-red-700'}>
+                    <Button onClick={() => toggleDisable(client)} variant="ghost" size="sm" className={`${client.is_disabled ? 'text-green-600 hover:text-green-700' : 'text-red-600 hover:text-red-700'} p-1`}>
                       <AlertCircle className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => handleDeleteClient(client.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                    <Button onClick={() => handleDeleteClient(client.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 p-1">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -264,7 +264,7 @@ export default function AdminClientsPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
             <div className="text-sm text-gray-600">
               Showing {((page - 1) * PAGE_SIZE) + 1} to {Math.min(page * PAGE_SIZE, filteredClients.length)} of {filteredClients.length} clients
             </div>

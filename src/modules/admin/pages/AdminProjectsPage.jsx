@@ -149,41 +149,41 @@ export default function AdminProjectsPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredProjects.length === 0 && (
-                <tr><td colSpan={7} className="px-6 py-10 text-center text-sm text-gray-500">No projects found</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500">No projects found</td></tr>
               )}
               {filteredProjects.map(project => (
                 <tr key={project.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     <div className="text-sm font-medium text-gray-900">{project.title || 'Untitled'}</div>
-                    <div className="text-sm text-gray-500 capitalize">{project.project_type?.replace('_', ' ')}</div>
+                    <div className="text-xs text-gray-500 capitalize">{project.project_type?.replace('_', ' ')}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{project.project_owner_name}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-600">{project.project_owner_name}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
                     {project.budget_amount ? `$${project.budget_amount.toLocaleString()}` : project.budget_range?.replace(/_/g, ' ') || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{project.location_city || 'N/A'}</td>
-                  <td className="px-6 py-4">{getStatusBadge(project.status)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{project.created_date ? new Date(project.created_date).toLocaleDateString() : 'N/A'}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedProject(project)} title="View Details">
+                  <td className="px-4 py-3 text-sm text-gray-600">{project.location_city || 'N/A'}</td>
+                  <td className="px-4 py-3">{getStatusBadge(project.status)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{project.created_date ? new Date(project.created_date).toLocaleDateString() : 'N/A'}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedProject(project)} title="View Details" className="p-1">
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleVerify(project.id, project.status)} title="Toggle Verified">
+                      <Button variant="ghost" size="sm" onClick={() => handleVerify(project.id, project.status)} title="Toggle Verified" className="p-1">
                         {project.status === 'verified' ? <XCircle className="w-4 h-4 text-red-600" /> : <CheckCircle className="w-4 h-4 text-green-600" />}
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteProject(project.id)} title="Delete">
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteProject(project.id)} title="Delete" className="p-1">
                         <Trash2 className="w-4 h-4 text-red-600" />
                       </Button>
                     </div>

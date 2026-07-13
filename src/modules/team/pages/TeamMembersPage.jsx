@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import TeamSidebar from '@/components/TeamSidebar';
+import { Team } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Users, Plus, Mail, Search, MoreVertical, Crown, Shield, User } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
+import { useAuth } from '@/lib/AuthContext';
+import { createTeamInvitation, revokeInvitation, resendInvitation } from '@/lib/teamInvitationService';
 
 export default function TeamMembersPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
+  const { user: authUser, isAuthenticated } = useAuth();
   const [team, setTeam] = useState(null);
   const [members, setMembers] = useState([]);
   const [invitations, setInvitations] = useState([]);
@@ -21,14 +24,34 @@ export default function TeamMembersPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const storedTeam = localStorage.getItem('studio22_team');
-    if (!storedTeam) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
-    setTeam(JSON.parse(storedTeam));
-    fetchMembers(JSON.parse(storedTeam).id);
-  }, []);
+    loadTeamData();
+  }, [isAuthenticated]);
+
+  const loadTeamData = async () => {
+    try {
+      let teamData = null;
+      if (authUser?.team_id) {
+        teamData = await Team.filter({ id: authUser.team_id }, '-created_date', 1).then(r => r?.[0] || null);
+      } else {
+        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_date', 1);
+        teamData = teams?.[0] || null;
+      }
+      setTeam(teamData);
+      if (teamData) {
+        fetchMembers(teamData.id);
+      } else {
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Error loading team:', err);
+      toastError('Load Failed', 'Failed to load team data');
+      setLoading(false);
+    }
+  };
 
   const fetchMembers = async (teamId) => {
     try {
@@ -46,26 +69,26 @@ export default function TeamMembersPage() {
   const handleInvite = async () => {
     if (!inviteEmail || !team) return;
     try {
-      // Create invitation in base44 (for demo purposes)
-      // In production with Clerk, this would use:
-      // await clerk.organization().createInvitation({ email: inviteEmail, role: inviteRole })
-      await base44.entities.TeamInvitation.create({
-        team_id: team.id,
-        team_name: team.team_name,
-        email: inviteEmail,
-        status: 'pending',
-        role: inviteRole,
-        created_at: new Date().toISOString()
-      });
+      const inviterName = `${authUser?.first_name || ''} ${authUser?.last_name || ''}`.trim() || 'Team Admin';
       
-      // Simulate sending email (in production, Clerk handles this automatically)
-      success('Invitation Sent', `Invitation sent to ${inviteEmail}. They will receive an email to join your team.`);
-      setInviteEmail('');
-      setInviteRole('member');
-      setShowInviteModal(false);
+      const result = await createTeamInvitation(
+        team.id,
+        inviteEmail,
+        inviteRole,
+        inviterName
+      );
       
-      // Refresh members list
-      fetchMembers(team.id);
+      if (result.success) {
+        success('Invitation Sent', `Invitation sent to ${inviteEmail}. They will receive an email to join your team.`);
+        setInviteEmail('');
+        setInviteRole('member');
+        setShowInviteModal(false);
+        
+        // Refresh members list
+        fetchMembers(team.id);
+      } else {
+        toastError('Invitation Failed', result.error || 'Failed to send invitation. Please try again.');
+      }
     } catch (err) {
       console.error('Error sending invitation:', err);
       toastError('Invitation Failed', 'Failed to send invitation. Please try again.');
@@ -74,10 +97,14 @@ export default function TeamMembersPage() {
 
   const handleResendInvite = async (invitationId, email) => {
     try {
-      await base44.entities.TeamInvitation.update(invitationId, {
-        resent_at: new Date().toISOString()
-      });
-      success('Invitation Resent', `Invitation resent to ${email}`);
+      const inviterName = `${authUser?.first_name || ''} ${authUser?.last_name || ''}`.trim() || 'Team Admin';
+      const result = await resendInvitation(invitationId, team.team_name, inviterName);
+      
+      if (result.success) {
+        success('Invitation Resent', `Invitation resent to ${email}`);
+      } else {
+        toastError('Resend Failed', result.error || 'Failed to resend invitation');
+      }
     } catch (err) {
       console.error('Error resending invitation:', err);
       toastError('Resend Failed', 'Failed to resend invitation');
@@ -87,12 +114,18 @@ export default function TeamMembersPage() {
   const handleCancelInvite = async (invitationId) => {
     if (!confirm('Are you sure you want to cancel this invitation?')) return;
     try {
-      await base44.entities.TeamInvitation.delete(invitationId);
-      success('Invitation Cancelled', 'Invitation has been cancelled');
-      fetchMembers(team.id);
+      const result = await revokeInvitation(invitationId);
+      
+      if (result.success) {
+        success('Invitation Cancelled', 'Invitation has been cancelled');
+        fetchMembers(team.id);
+      } else {
+        toastError('Cancel Failed', result.error || 'Failed to cancel invitation');
+      }
     } catch (err) {
       console.error('Error cancelling invitation:', err);
       toastError('Cancel Failed', 'Failed to cancel invitation');
+      fetchMembers(team.id);
     }
   };
 
@@ -115,29 +148,23 @@ export default function TeamMembersPage() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-white">
-        <TeamSidebar />
-        <main className="w-full h-full flex items-center justify-center pl-20">
-          <div className="text-gray-600">Loading...</div>
-        </main>
+      <div className="flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-white">
-      <TeamSidebar />
-      <main className="w-full h-full flex flex-col overflow-y-auto bg-white pl-20">
-        <div className="p-6 max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Team Members</h1>
-            <Button onClick={() => setShowInviteModal(true)} className="bg-black text-white hover:bg-gray-800">
-              <Plus className="w-4 h-4 mr-2" />
-              Invite Member
-            </Button>
-          </div>
+    <div className="p-6 max-w-6xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Team Members</h1>
+        <Button onClick={() => setShowInviteModal(true)} className="bg-black text-white hover:bg-gray-800">
+          <Plus className="w-4 h-4 mr-2" />
+          Invite Member
+        </Button>
+      </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <Input
@@ -237,8 +264,6 @@ export default function TeamMembersPage() {
               </Button>
             </div>
           )}
-        </div>
-      </main>
 
       {/* Invite Modal */}
       {showInviteModal && (

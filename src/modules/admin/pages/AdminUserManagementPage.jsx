@@ -169,61 +169,62 @@ export default function AdminUserManagementPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50/60">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">User</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Joined</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">User</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Role</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Joined</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {paginatedUsers.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">No users found</td>
+                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-500">No users found</td>
                 </tr>
               )}
               {paginatedUsers.map(u => (
                 <tr key={u.id} className="hover:bg-gray-50/60 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-medium text-gray-600">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-medium text-gray-600">
                           {(u.full_name || u.team_name)?.charAt(0).toUpperCase() || u.email?.charAt(0).toUpperCase()}
                         </span>
                       </div>
-                      <div className="ml-4">
+                      <div>
                         <div className="text-sm font-medium text-gray-900">{u.full_name || u.team_name || 'Unknown'}</div>
-                        <div className="text-sm text-gray-500">{u.email || u.contact_email}</div>
+                        <div className="text-xs text-gray-500">{u.email || u.contact_email}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     <select
                       value={u.role}
                       disabled={u.id === user?.id}
                       onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                      className="text-sm border border-gray-200 rounded px-2 py-1 disabled:opacity-50 focus:outline-none focus:border-black"
+                      className="text-xs border border-gray-200 rounded px-2 py-1 disabled:opacity-50 focus:outline-none focus:border-black"
                     >
                       {ROLES.map(role => (
                         <option key={role} value={role}>{role}</option>
                       ))}
                     </select>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[u.status] || 'bg-gray-100 text-gray-700'}`}>
                       {u.status || 'active'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-4 py-3 text-sm text-gray-600">
                     {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => { setSelectedUser(u); setShowDetailModal(true); }}
                         title="View Details"
+                        className="p-1"
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -233,6 +234,7 @@ export default function AdminUserManagementPage() {
                         disabled={u.id === user?.id}
                         onClick={() => handleDeleteUser(u.id)}
                         title="Delete"
+                        className="p-1"
                       >
                         <Trash2 className="w-4 h-4 text-red-600" />
                       </Button>
@@ -245,7 +247,7 @@ export default function AdminUserManagementPage() {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
             <span className="text-xs text-gray-400">{filteredUsers.length} total · page {page} of {totalPages}</span>
             <div className="flex gap-1">
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}

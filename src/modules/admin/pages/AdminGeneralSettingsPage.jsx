@@ -75,10 +75,27 @@ export default function AdminGeneralSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const rows = await SystemSetting.list();
+        const rows = await SystemSetting.filter({}, 'setting_key', 100);
         if (rows && rows.length > 0) {
-          setSettingsId(rows[0].id);
-          setSettings({ ...DEFAULT_SETTINGS, ...rows[0] });
+          const settingsMap = {};
+          rows.forEach(setting => {
+            const value = setting.setting_value;
+            // Parse JSON values or convert to appropriate types
+            if (setting.setting_type === 'boolean') {
+              settingsMap[setting.setting_key] = value === 'true';
+            } else if (setting.setting_type === 'number') {
+              settingsMap[setting.setting_key] = parseFloat(value);
+            } else if (setting.setting_type === 'array') {
+              try {
+                settingsMap[setting.setting_key] = JSON.parse(value);
+              } catch {
+                settingsMap[setting.setting_key] = [];
+              }
+            } else {
+              settingsMap[setting.setting_key] = value;
+            }
+          });
+          setSettings({ ...DEFAULT_SETTINGS, ...settingsMap });
         }
       } catch (err) {
         console.error('Error fetching settings:', err);
@@ -93,11 +110,26 @@ export default function AdminGeneralSettingsPage() {
   const handleSaveSettings = async () => {
     setSaving(true);
     try {
-      if (settingsId) {
-        await SystemSetting.update(settingsId, settings);
-      } else {
-        const created = await SystemSetting.create(settings);
-        setSettingsId(created.id);
+      // Convert settings object to array of setting records
+      const settingsToSave = Object.entries(settings).map(([key, value]) => ({
+        setting_key: key,
+        setting_value: typeof value === 'object' ? JSON.stringify(value) : String(value),
+        setting_type: typeof value === 'boolean' ? 'boolean' : 
+                     typeof value === 'number' ? 'number' : 
+                     Array.isArray(value) ? 'array' : 'string',
+        description: ''
+      }));
+
+      for (const setting of settingsToSave) {
+        const existing = await SystemSetting.filter({ setting_key: setting.setting_key });
+        if (existing && existing.length > 0) {
+          await SystemSetting.update(existing[0].id, { 
+            setting_value: setting.setting_value,
+            setting_type: setting.setting_type
+          });
+        } else {
+          await SystemSetting.create(setting);
+        }
       }
       success('Saved', 'Settings saved successfully');
     } catch (err) {

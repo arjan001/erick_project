@@ -35,6 +35,14 @@ export default function AdminAPISettingsPage() {
     logRetentionDays: 30
   });
 
+  const [googleDriveSettings, setGoogleDriveSettings] = useState({
+    enabled: false,
+    clientId: '',
+    clientSecret: '',
+    apiKey: '',
+    scopes: ['https://www.googleapis.com/auth/drive.readonly']
+  });
+
   const [showAddKeyModal, setShowAddKeyModal] = useState(false);
   const [newKeyForm, setNewKeyForm] = useState({
     name: '',
@@ -233,6 +241,77 @@ export default function AdminAPISettingsPage() {
                         onChange={(e) => setRateLimits({ ...rateLimits, burstLimit: parseInt(e.target.value) })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent"
                       />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Google Drive Integration */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Code className="w-5 h-5 mr-2" />
+                Google Drive Integration
+              </h2>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium text-gray-900">Enable Google Drive</div>
+                    <div className="text-sm text-gray-500">Allow artists to connect Google Drive for portfolio uploads</div>
+                  </div>
+                  <button
+                    onClick={() => setGoogleDriveSettings({ ...googleDriveSettings, enabled: !googleDriveSettings.enabled })}
+                    className="p-2"
+                  >
+                    {googleDriveSettings.enabled ? <ToggleRight className="w-6 h-6 text-green-600" /> : <ToggleLeft className="w-6 h-6 text-gray-400" />}
+                  </button>
+                </div>
+                {googleDriveSettings.enabled && (
+                  <div className="pt-4 border-t border-gray-200 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">OAuth Client ID</label>
+                      <input
+                        type="text"
+                        value={googleDriveSettings.clientId}
+                        onChange={(e) => setGoogleDriveSettings({ ...googleDriveSettings, clientId: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+                        placeholder="Enter Google OAuth Client ID"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Get this from Google Cloud Console → Credentials</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">OAuth Client Secret</label>
+                      <input
+                        type="password"
+                        value={googleDriveSettings.clientSecret}
+                        onChange={(e) => setGoogleDriveSettings({ ...googleDriveSettings, clientSecret: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+                        placeholder="Enter Google OAuth Client Secret"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Keep this secret - never share it</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+                      <input
+                        type="text"
+                        value={googleDriveSettings.apiKey}
+                        onChange={(e) => setGoogleDriveSettings({ ...googleDriveSettings, apiKey: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+                        placeholder="Enter Google Places API Key"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Required for Google Picker API</p>
+                    </div>
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h4 className="text-sm font-semibold text-blue-900 mb-2">Setup Instructions:</h4>
+                      <ol className="text-xs text-blue-800 space-y-1 ml-4 list-decimal">
+                        <li>Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="underline">Google Cloud Console</a></li>
+                        <li>Create a new project or select existing one</li>
+                        <li>Enable "Google Drive API" and "Google Picker API"</li>
+                        <li>Go to Credentials → Create OAuth 2.0 Client ID</li>
+                        <li>Add your domain to Authorized JavaScript origins</li>
+                        <li>Add your redirect URL to Authorized redirect URIs</li>
+                        <li>Copy Client ID, Client Secret, and API Key here</li>
+                      </ol>
                     </div>
                   </div>
                 )}

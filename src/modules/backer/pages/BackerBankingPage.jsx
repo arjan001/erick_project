@@ -7,11 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, CreditCard, Lock, Plus, Trash2, Check, AlertCircle } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function BackerBankingPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
+  const { user: authUser, isAuthenticated } = useAuth();
   const [backer, setBacker] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showBankForm, setShowBankForm] = useState(false);
@@ -27,20 +28,16 @@ export default function BackerBankingPage() {
   });
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
-    setUser(JSON.parse(storedUser));
     fetchData();
-  }, []);
+  }, [isAuthenticated]);
 
   const fetchData = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
-      
-      const backers = await Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
         setBankAccounts(backers[0].bank_accounts || []);

@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Users, Plus, Search, Mail, Building2, Calendar, MessageSquare, Trash2, Edit2, Star } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function BackerPartnersPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
+  const { user: authUser, isAuthenticated } = useAuth();
   const [backer, setBacker] = useState(null);
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,26 +28,22 @@ export default function BackerPartnersPage() {
   });
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
-    setUser(JSON.parse(storedUser));
     fetchData();
-  }, []);
+  }, [isAuthenticated]);
 
   const fetchData = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
-      
-      const backers = await Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }
 
       // Fetch partners
-      const allPartners = await Partner.filter({ backer_email: storedUser.email });
+      const allPartners = await Partner.filter({ backer_email: authUser?.email });
       setPartners(allPartners);
     } catch (err) {
       console.error('Error fetching partners:', err);
@@ -142,7 +139,7 @@ export default function BackerPartnersPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
-                <Star className="w-5 h-5 text-purple-600" />
+                <Star className="w-5 h-5 text-gray-900" />
                 <div className="text-2xl font-bold">{partners.filter(p => p.partnership_type === 'strategic').length}</div>
               </div>
             </CardContent>
@@ -201,7 +198,7 @@ export default function BackerPartnersPage() {
                       )}
                     </div>
                     <span className={`px-2 py-1 text-xs rounded ${
-                      partner.partnership_type === 'strategic' ? 'bg-purple-100 text-purple-700' :
+                      partner.partnership_type === 'strategic' ? 'bg-gray-100 text-gray-700' :
                       partner.partnership_type === 'investment' ? 'bg-green-100 text-green-700' :
                       'bg-blue-100 text-blue-700'
                     }`}>

@@ -6,6 +6,7 @@ import { AuthGuard } from '@/app/router/guards/AuthGuard';
 import { RoleGuard, createRoleGuard } from '@/app/router/guards/RoleGuard';
 import { GuestGuard } from '@/app/router/guards/GuestGuard';
 import { HomeGuard } from '@/app/router/guards/HomeGuard';
+import { MaintenanceGuard } from '@/app/router/guards/MaintenanceGuard';
 // Temporarily disable permission guards until migration is complete
 // import { createRoutePermissionGuard } from '@/app/router/guards/PermissionGuard';
 
@@ -83,6 +84,11 @@ const BackerGuard = createRoleGuard(['backer']);
 
 // Public pages (no auth required)
 const publicRoutes = [
+  {
+    path: '/Maintenance',
+    component: () => import('@/modules/maintenance/MaintenancePage'),
+    layout: null
+  },
   {
     path: '/',
     component: () => import('@/pages/Home'),
@@ -171,6 +177,11 @@ const publicRoutes = [
     layout: MainLayout
   },
   {
+    path: '/artist/:id',
+    component: () => import('@/pages/ArtistPublicProfile'),
+    layout: MainLayout
+  },
+  {
     path: '/Categories',
     component: () => import('@/pages/CategoriesPage'),
     layout: MainLayout
@@ -249,6 +260,12 @@ const adminRoutes = [
   {
     path: '/Admin/GeneralSettings',
     component: () => import('@/modules/admin/pages/AdminGeneralSettingsPage'),
+    layout: AdminLayout,
+    guard: SettingsGuard
+  },
+  {
+    path: '/Admin/Maintenance',
+    component: () => import('@/modules/admin/pages/AdminMaintenancePage'),
     layout: AdminLayout,
     guard: SettingsGuard
   },
@@ -541,6 +558,36 @@ const teamRoutes = [
     guard: TeamGuard
   },
   {
+    path: '/TeamMembers',
+    component: () => import('@/modules/team/pages/TeamMembersPage'),
+    layout: DashboardLayout,
+    guard: TeamGuard
+  },
+  {
+    path: '/TeamProjects',
+    component: () => import('@/modules/team/pages/TeamProjectsPage'),
+    layout: DashboardLayout,
+    guard: TeamGuard
+  },
+  {
+    path: '/TeamTasks',
+    component: () => import('@/modules/team/pages/TeamTasksPage'),
+    layout: DashboardLayout,
+    guard: TeamGuard
+  },
+  {
+    path: '/TeamMessages',
+    component: () => import('@/modules/team/pages/TeamMessagesPage'),
+    layout: DashboardLayout,
+    guard: TeamGuard
+  },
+  {
+    path: '/TeamPayments',
+    component: () => import('@/modules/team/pages/TeamPaymentsPage'),
+    layout: DashboardLayout,
+    guard: TeamGuard
+  },
+  {
     path: '/TeamProfile',
     component: () => import('@/modules/team/pages/TeamProfilePage'),
     layout: DashboardLayout,
@@ -609,6 +656,12 @@ const backerRoutes = [
     component: () => import('@/modules/backer/pages/BackerProjectUpdatesPage'),
     layout: DashboardLayout,
     guard: BackerGuard
+  },
+  {
+    path: '/accept-invite',
+    component: () => import('@/pages/AcceptInvitePage'),
+    layout: null,
+    guard: null
   }
 ];
 

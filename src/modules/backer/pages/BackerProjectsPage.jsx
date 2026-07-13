@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Search, Filter, DollarSign, MapPin, Calendar, TrendingUp, Heart, Star, Play } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function BackerProjectsPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
+  const { user: authUser, isAuthenticated } = useAuth();
   const [backer, setBacker] = useState(null);
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
@@ -22,21 +23,17 @@ export default function BackerProjectsPage() {
   const [filterBudget, setFilterBudget] = useState('all');
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
-    setUser(JSON.parse(storedUser));
     fetchData();
-  }, []);
+  }, [isAuthenticated]);
 
   const fetchData = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
-      
       // Fetch backer profile
-      const backers = await Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }

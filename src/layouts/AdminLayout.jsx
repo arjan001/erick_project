@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock, BarChart3 } from 'lucide-react';
+import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock, BarChart3, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 const navItems = [
@@ -13,6 +13,7 @@ const navItems = [
   { path: '/Admin/Invites', label: 'Invites', icon: Mail },
   { path: '/Admin/Analytics', label: 'Analytics Dashboard', icon: BarChart3 },
   { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: FileText },
+  { path: '/Admin/Maintenance', label: 'Maintenance Mode', icon: AlertTriangle },
   { path: '/Admin/Settings', label: 'Settings', icon: Settings },
   { path: '/Admin/Ticker', label: 'Marquee/Ticker', icon: ScrollText },
   { path: '/Admin/Categories', label: 'Categories', icon: Grid3x3 },
@@ -35,7 +36,7 @@ const navGroups = [
   { label: 'Analytics', items: ['/Admin/Analytics', '/Admin/AuditLogs'] },
   { label: 'Finance', items: ['/Admin/FinanceDashboard', '/Admin/Subscriptions'] },
   { label: 'Integrations', items: ['/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
-  { label: 'System', items: ['/Admin/Settings', '/Admin/ImageStorage'] },
+  { label: 'System', items: ['/Admin/Maintenance', '/Admin/Settings', '/Admin/ImageStorage'] },
 ];
 
 export default function AdminLayout({ children }) {

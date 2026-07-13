@@ -183,71 +183,71 @@ export default function AdminBackersPage() {
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Backer</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Investment Focus</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
-              <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Backer</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Investment Focus</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginatedBackers.map((backer) => (
               <tr key={backer.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
                     {backer.profile_image ? (
-                      <img src={backer.profile_image} alt={backer.full_name} className="w-10 h-10 rounded-full object-cover" />
+                      <img src={backer.profile_image} alt={backer.full_name} className="w-8 h-8 rounded-full object-cover" />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-600">
+                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
                         {backer.full_name?.[0]?.toUpperCase() || 'B'}
                       </div>
                     )}
                     <div>
-                      <div className="font-medium text-gray-900">{backer.full_name || 'Unknown'}</div>
-                      <div className="text-sm text-gray-500">{backer.role || 'Backer'}</div>
+                      <div className="font-medium text-gray-900 text-sm">{backer.full_name || 'Unknown'}</div>
+                      <div className="text-xs text-gray-500">{backer.role || 'Backer'}</div>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-3 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-gray-400" />
+                    <Mail className="w-3 h-3 text-gray-400" />
                     {backer.email || 'No email'}
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-3 text-sm text-gray-600">
                   {backer.investment_focus ? (
                     <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-gray-400" />
+                      <DollarSign className="w-3 h-3 text-gray-400" />
                       {backer.investment_focus}
                     </div>
                   ) : (
-                    <span className="text-gray-400">No focus</span>
+                    <span className="text-gray-400 text-xs">No focus</span>
                   )}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-3">
                   <span className={`px-2 py-1 text-xs font-medium rounded-full border ${STATUS_STYLES[getStatus(backer)]}`}>
                     {getStatus(backer).charAt(0).toUpperCase() + getStatus(backer).slice(1)}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-3 text-sm text-gray-600">
                   {backer.created_at ? new Date(backer.created_at).toLocaleDateString() : 'N/A'}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
-                    <Button onClick={() => openViewModal(backer)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                    <Button onClick={() => openViewModal(backer)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 p-1">
                       <Eye className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => openModal(backer)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                    <Button onClick={() => openModal(backer)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 p-1">
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => toggleSuspend(backer)} variant="ghost" size="sm" className={backer.is_suspended ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'}>
+                    <Button onClick={() => toggleSuspend(backer)} variant="ghost" size="sm" className={`${backer.is_suspended ? 'text-green-600 hover:text-green-700' : 'text-orange-600 hover:text-orange-700'} p-1`}>
                       <Ban className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => toggleDisable(backer)} variant="ghost" size="sm" className={backer.is_disabled ? 'text-green-600 hover:text-green-700' : 'text-red-600 hover:text-red-700'}>
+                    <Button onClick={() => toggleDisable(backer)} variant="ghost" size="sm" className={`${backer.is_disabled ? 'text-green-600 hover:text-green-700' : 'text-red-600 hover:text-red-700'} p-1`}>
                       <AlertCircle className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => handleDelete(backer.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                    <Button onClick={() => handleDelete(backer.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 p-1">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>

@@ -9,11 +9,12 @@ import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
 import { confirmDialog } from '@/lib/sweetAlert';
 import InviteCodeCard from '@/components/InviteCodeCard';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function BackerDashboardPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
+  const { user: authUser, isAuthenticated } = useAuth();
   const [backer, setBacker] = useState(null);
   const [backedProjects, setBackedProjects] = useState([]);
   const [deals, setDeals] = useState([]);
@@ -28,25 +29,22 @@ export default function BackerDashboardPage() {
   });
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
-    const parsedUser = JSON.parse(storedUser);
-    setUser(parsedUser);
-    fetchData(parsedUser);
-  }, []);
+    fetchData();
+  }, [isAuthenticated]);
 
-  const fetchData = async (currentUser) => {
+  const fetchData = async () => {
     try {
-      const backers = await Backer.filter({ contact_email: currentUser.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email });
       const currentBacker = backers?.[0] || null;
       setBacker(currentBacker);
 
       const [projects, dealRows] = await Promise.all([
-        BackedProject.filter({ backer_email: currentUser.email }, '-investment_date'),
-        Deal.filter({ backer_email: currentUser.email })
+        BackedProject.filter({ backer_email: authUser?.email }, '-investment_date'),
+        Deal.filter({ backer_email: authUser?.email })
       ]);
       setBackedProjects(projects || []);
       setDeals(dealRows || []);
@@ -62,7 +60,7 @@ export default function BackerDashboardPage() {
     if (!projectForm.project_title || !projectForm.investment_amount) return;
     try {
       await BackedProject.create({
-        backer_email: user.email,
+        backer_email: authUser?.email,
         backer_id: backer?.id,
         project_title: projectForm.project_title,
         investment_amount: parseFloat(projectForm.investment_amount) || 0,
@@ -79,7 +77,7 @@ export default function BackerDashboardPage() {
       setShowModal(false);
       setProjectForm({ project_title: '', investment_amount: '', status: 'active', notes: '' });
       success('Project Backed', 'Project added to your portfolio');
-      fetchData(user);
+      fetchData();
     } catch (err) {
       console.error('Error creating backed project:', err);
       toastError('Creation Failed', 'Failed to back project');
@@ -99,7 +97,7 @@ export default function BackerDashboardPage() {
       setEditingProject(null);
       setProjectForm({ project_title: '', investment_amount: '', status: 'active', notes: '' });
       success('Project Updated', 'Investment details updated');
-      fetchData(user);
+      fetchData();
     } catch (err) {
       console.error('Error updating backed project:', err);
       toastError('Update Failed', 'Failed to update project');
@@ -117,7 +115,7 @@ export default function BackerDashboardPage() {
         });
       }
       success('Project Removed', 'Project removed from portfolio');
-      fetchData(user);
+      fetchData();
     } catch (err) {
       console.error('Error deleting backed project:', err);
       toastError('Deletion Failed', 'Failed to remove project');
@@ -150,7 +148,7 @@ export default function BackerDashboardPage() {
   const averageDealSize = backedProjects.length > 0 ? (totalInvested / backedProjects.length).toFixed(0) : 0;
   const activeDeals = deals.filter(d => d.status === 'active').length;
 
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
@@ -163,7 +161,7 @@ export default function BackerDashboardPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Investor Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {backer?.organization_name || user?.full_name || 'Investor'}</p>
+          <p className="text-gray-600">Welcome back, {backer?.organization_name || authUser?.full_name || 'Investor'}</p>
         </div>
 
         {/* Stats Cards */}
@@ -171,7 +169,7 @@ export default function BackerDashboardPage() {
           <DashboardStatCard icon={DollarSign} label={`${backedProjects.length} investments`} value={`$${totalInvested.toLocaleString()}`} iconBg="bg-green-50" iconColor="text-green-600" />
           <DashboardStatCard icon={totalROI >= 0 ? ArrowUpRight : ArrowDownRight} label={`${roiPercentage}% return`} value={`$${totalROI.toLocaleString()}`} iconBg={totalROI >= 0 ? 'bg-green-50' : 'bg-red-50'} iconColor={totalROI >= 0 ? 'text-green-600' : 'text-red-600'} />
           <DashboardStatCard icon={Target} label={`${completedInvestments} completed`} value={activeInvestments} iconBg="bg-blue-50" iconColor="text-blue-600" />
-          <DashboardStatCard icon={Zap} label="Per investment" value={`$${Number(averageDealSize).toLocaleString()}`} iconBg="bg-purple-50" iconColor="text-purple-600" />
+          <DashboardStatCard icon={Zap} label="Per investment" value={`$${Number(averageDealSize).toLocaleString()}`} iconBg="bg-gray-100" iconColor="text-gray-900" />
         </div>
 
         {/* Quick Actions */}
@@ -207,8 +205,8 @@ export default function BackerDashboardPage() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl('BackerAnalytics'))}>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-gray-900" />
                 </div>
                 <div>
                   <div className="font-bold text-gray-900">View Analytics</div>

@@ -746,26 +746,12 @@ export default function TeamDashboard() {
 
 
 
-        {/* Team Profile Header + Edit Profile (admin only) */}
-        <TeamProfileHeaderCard
-          team={team} setTeam={setTeam} isTeamMember={isTeamMember}
-          uploadingLogo={uploadingLogo} handleLogoUpload={handleLogoUpload}
-          editingBio={editingBio} setEditingBio={setEditingBio} profileBio={profileBio} setProfileBio={setProfileBio} handleSaveBio={handleSaveBio}
-          editingSocial={editingSocial} setEditingSocial={setEditingSocial}
-          profileWebsite={profileWebsite} setProfileWebsite={setProfileWebsite}
-          profileInstagram={profileInstagram} setProfileInstagram={setProfileInstagram}
-          profileLinkedin={profileLinkedin} setProfileLinkedin={setProfileLinkedin} handleSaveSocial={handleSaveSocial}
-          getStatusBadge={getStatusBadge} getAvailabilityBadge={getAvailabilityBadge}
-          editingProfile={editingProfile} setEditingProfile={setEditingProfile} handleSaveProfile={handleSaveProfile}
-        />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-
-          <DashboardStatCard icon={Briefcase} label="In progress" value={0} iconBg="bg-blue-50" iconColor="text-blue-600" />
-          <DashboardStatCard icon={Users} label="Active crew" value={teamMembers.length} iconBg="bg-amber-50" iconColor="text-amber-600" />
-          <DashboardStatCard icon={Eye} label="This month" value={portfolioClips.reduce((sum, clip) => sum + (clip.view_count || 0), 0)} iconBg="bg-green-50" iconColor="text-green-600" />
-          <DashboardStatCard icon={Film} label="Work samples" value={portfolioClips.length} iconBg="bg-purple-50" iconColor="text-purple-600" />
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <DashboardStatCard icon={Briefcase} label="In progress" value={0} />
+          <DashboardStatCard icon={Users} label="Active crew" value={teamMembers.length} />
+          <DashboardStatCard icon={Eye} label="This month" value={portfolioClips.reduce((sum, clip) => sum + (clip.view_count || 0), 0)} />
+          <DashboardStatCard icon={Film} label="Work samples" value={portfolioClips.length} />
         </div>
 
 

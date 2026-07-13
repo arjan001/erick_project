@@ -6,12 +6,11 @@ import ClientOverviewCards from '@/components/client/ClientOverviewCards';
 import ClientActivityChart from '@/components/client/ClientActivityChart';
 import ClientStatusDonut from '@/components/client/ClientStatusDonut';
 import ClientRecentApplications from '@/components/client/ClientRecentApplications';
-import ClientProfileHeader from '@/components/client/ClientProfileHeader';
 import ClientProjectCard from '@/components/client/ClientProjectCard';
 import ClientJobRow from '@/components/client/ClientJobRow';
-import ClientProjectModal from '@/components/client/ClientProjectModal';
 import ClientJobModal from '@/components/client/ClientJobModal';
-import { Plus, Briefcase, Send, MessageSquare, FolderKanban } from 'lucide-react';
+import ClientPostProjectModal from '@/components/client/ClientPostProjectModal';
+import { Plus, Briefcase, Send, MessageSquare, FolderKanban, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import InviteCodeCard from '@/components/InviteCodeCard';
 import { useToast } from '@/hooks/useToast.jsx';
@@ -29,24 +28,10 @@ export default function ClientDashboard() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [editingBio, setEditingBio] = useState(false);
-  const [editingSocial, setEditingSocial] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [profileCompanyName, setProfileCompanyName] = useState('');
-  const [profileIndustry, setProfileIndustry] = useState('');
-  const [profileCompanySize, setProfileCompanySize] = useState('');
-  const [profileWebsite, setProfileWebsite] = useState('');
-  const [profileBio, setProfileBio] = useState('');
-
   const [showProjectModal, setShowProjectModal] = useState(false);
-  const [editingProject, setEditingProject] = useState(null);
   const [showJobModal, setShowJobModal] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
-  const [projectForm, setProjectForm] = useState({ title: '', description: '', project_type: 'commercial', budget: '', location: '' });
   const [jobForm, setJobForm] = useState({ title: '', description: '', job_type: 'director', location: '', budget: '', required_skills: '' });
-
-  const logoInputRef = React.useRef(null);
 
   useEffect(() => {
     if (isLoadingAuth) return;
@@ -59,11 +44,6 @@ export default function ClientDashboard() {
         const owners = await ProjectOwner.filter({ email: authUser.email }, '-created_date', 1);
         const owner = owners?.[0] || { email: authUser.email, full_name: authUser.full_name };
         setProjectOwner(owner);
-        setProfileCompanyName(owner.company || '');
-        setProfileIndustry('');
-        setProfileCompanySize('');
-        setProfileWebsite(owner.website || '');
-        setProfileBio('');
 
         const projectsData = await Project.filter({ project_owner_email: authUser.email }, '-created_date', 20);
         setProjects(projectsData || []);
@@ -91,39 +71,6 @@ export default function ClientDashboard() {
     fetchData();
   }, [isLoadingAuth, isAuthenticated, authUser, navigate]);
 
-  const handleLogoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !projectOwner) return;
-    setUploadingLogo(true);
-    try {
-      const fileUrl = URL.createObjectURL(file);
-      setProjectOwner((prev) => ({ ...prev, logo_url: fileUrl }));
-    } catch (err) {
-      console.error('Error uploading logo:', err);
-      toastError('Upload Failed', 'Failed to upload logo');
-    } finally {
-      setUploadingLogo(false);
-    }
-  };
-
-  const handleSaveProfile = async () => {
-    if (!projectOwner) return;
-    setProjectOwner((prev) => ({ ...prev, company_name: profileCompanyName, industry: profileIndustry, company_size: profileCompanySize }));
-    setEditingProfile(false);
-  };
-
-  const handleSaveBio = async () => {
-    if (!projectOwner) return;
-    setProjectOwner((prev) => ({ ...prev, bio: profileBio }));
-    setEditingBio(false);
-  };
-
-  const handleSaveSocial = async () => {
-    if (!projectOwner) return;
-    setProjectOwner((prev) => ({ ...prev, website: profileWebsite }));
-    setEditingSocial(false);
-  };
-
   const handleDeleteProject = async (projectId) => {
     if (!confirm('Are you sure you want to delete this project?')) return;
     try {
@@ -133,46 +80,6 @@ export default function ClientDashboard() {
     } catch (err) {
       console.error('Error deleting project:', err);
       toastError('Error', 'Failed to delete project');
-    }
-  };
-
-  const handleCreateProject = async () => {
-    if (!user) return;
-    try {
-      const newProject = await Project.create({
-        project_owner_email: user.email,
-        project_owner_name: user.full_name,
-        notes: projectForm.description,
-        project_type: projectForm.project_type,
-        location_city: projectForm.location,
-        status: 'submitted'
-      });
-      setProjects((prev) => [...prev, newProject]);
-      setShowProjectModal(false);
-      setProjectForm({ title: '', description: '', project_type: 'commercial', budget: '', location: '' });
-      success('Project Created', 'Project created successfully');
-    } catch (err) {
-      console.error('Error creating project:', err);
-      toastError('Creation Failed', 'Failed to create project');
-    }
-  };
-
-  const handleUpdateProject = async () => {
-    if (!editingProject) return;
-    try {
-      const updatedProject = await Project.update(editingProject.id, {
-        notes: projectForm.description,
-        project_type: projectForm.project_type,
-        location_city: projectForm.location
-      });
-      setProjects((prev) => prev.map((p) => (p.id === editingProject.id ? updatedProject : p)));
-      setShowProjectModal(false);
-      setEditingProject(null);
-      setProjectForm({ title: '', description: '', project_type: 'commercial', budget: '', location: '' });
-      success('Updated', 'Project updated successfully');
-    } catch (err) {
-      console.error('Error updating project:', err);
-      toastError('Error', 'Failed to update project');
     }
   };
 
@@ -234,20 +141,7 @@ export default function ClientDashboard() {
     }
   };
 
-  const openProjectModal = (project = null) => {
-    if (project) {
-      setEditingProject(project);
-      setProjectForm({
-        title: project.title || '',
-        description: project.description || project.notes || '',
-        project_type: project.project_type || 'commercial',
-        budget: project.budget || '',
-        location: project.location || project.location_city || ''
-      });
-    } else {
-      setEditingProject(null);
-      setProjectForm({ title: '', description: '', project_type: 'commercial', budget: '', location: '' });
-    }
+  const openProjectModal = () => {
     setShowProjectModal(true);
   };
 
@@ -305,106 +199,83 @@ export default function ClientDashboard() {
   }));
 
   return (
-    <div className="bg-gray-50">
-      <main className="w-full flex flex-col">
-        <ClientProfileHeader
-          user={user}
-          projectOwner={projectOwner}
-          uploadingLogo={uploadingLogo}
-          logoInputRef={logoInputRef}
-          onLogoUpload={handleLogoUpload}
-          companyName={profileCompanyName}
-          editingProfile={editingProfile}
-          setEditingProfile={setEditingProfile}
-          editingBio={editingBio}
-          setEditingBio={setEditingBio}
-          profileBio={profileBio}
-          setProfileBio={setProfileBio}
-          onSaveBio={handleSaveBio}
-          editingSocial={editingSocial}
-          setEditingSocial={setEditingSocial}
-          profileWebsite={profileWebsite}
-          setProfileWebsite={setProfileWebsite}
-          onSaveSocial={handleSaveSocial}
-          profileIndustry={profileIndustry}
-          setProfileIndustry={setProfileIndustry}
-          profileCompanyName={profileCompanyName}
-          setProfileCompanyName={setProfileCompanyName}
-          profileCompanySize={profileCompanySize}
-          setProfileCompanySize={setProfileCompanySize}
-          onSaveProfile={handleSaveProfile}
-        />
-
-        <div className="p-6 space-y-6">
+    <div className="bg-gray-50 min-h-screen">
+      <main className="w-full">
+        <div className="px-6 py-6 space-y-6">
+          {/* Stats Cards */}
           <ClientOverviewCards stats={stats} />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <ClientActivityChart data={monthBuckets} />
             </div>
-            <ClientStatusDonut data={statusData} />
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2 bg-gray-900 rounded-2xl p-6 text-white flex flex-col justify-center">
-              <h2 className="text-xl font-bold mb-2">Ready to start a new project?</h2>
-              <p className="text-sm mb-4 text-gray-300">Connect with talented creators and teams to bring your vision to life</p>
-              <div className="flex gap-3">
-                <Button className="bg-white text-gray-900 hover:bg-gray-100" onClick={() => openProjectModal()}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Post a Project
-                </Button>
-                <Button variant="outline" className="border-white text-white hover:bg-white/10" onClick={() => openJobModal()}>
-                  <Briefcase className="w-4 h-4 mr-2" />
-                  Post a Job
-                </Button>
-              </div>
+            <div className="lg:col-span-1">
+              <ClientStatusDonut data={statusData} />
             </div>
-            <ClientRecentApplications applications={applications} />
           </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Your Projects</h2>
-              <Button variant="outline" size="sm" onClick={() => openProjectModal()}>
+          {/* Recent Applications */}
+          <ClientRecentApplications applications={applications} projects={projects} jobs={jobs} />
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">Your Projects & Jobs</h2>
+            <div className="flex gap-3">
+              <Button className="bg-black text-white hover:bg-gray-800" onClick={() => openProjectModal()}>
                 <Plus className="w-4 h-4 mr-2" />
-                New Project
+                Post Project
+              </Button>
+              <Button variant="outline" onClick={() => openJobModal()}>
+                <Briefcase className="w-4 h-4 mr-2" />
+                Post Job
               </Button>
             </div>
-
-            {projects.length === 0 ? (
-              <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
-                <div className="text-6xl mb-4">📋</div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">No projects yet</h3>
-                <p className="text-gray-600 mb-4">Start by posting your first project</p>
-                <Button className="bg-black text-white hover:bg-gray-800" onClick={() => openProjectModal()}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Post Your First Project
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {projects.map((project) => (
-                  <ClientProjectCard key={project.id} project={project} onEdit={openProjectModal} onDelete={handleDeleteProject} />
-                ))}
-              </div>
-            )}
           </div>
 
-          {jobs.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">Your Job Posts</h2>
-                <Button variant="outline" size="sm" onClick={() => openJobModal()}>
+          {/* Combined Projects & Jobs Grid */}
+          {projects.length === 0 && jobs.length === 0 ? (
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-dashed border-gray-300 rounded-2xl p-16 text-center">
+              <div className="text-6xl mb-4">📋</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No projects or jobs yet</h3>
+              <p className="text-gray-600 mb-6">Start by posting your first project or job</p>
+              <div className="flex gap-3 justify-center">
+                <Button className="bg-black text-white hover:bg-gray-800 px-6" onClick={() => openProjectModal()}>
                   <Plus className="w-4 h-4 mr-2" />
-                  New Job
+                  Post Project
+                </Button>
+                <Button variant="outline" onClick={() => openJobModal()}>
+                  <Briefcase className="w-4 h-4 mr-2" />
+                  Post Job
                 </Button>
               </div>
-              <div className="space-y-3">
-                {jobs.map((job) => (
-                  <ClientJobRow key={job.id} job={job} onEdit={openJobModal} onDelete={handleDeleteJob} />
-                ))}
-              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Project Cards */}
+              {projects.map((project) => (
+                <ClientProjectCard key={project.id} project={project} onEdit={() => {}} onDelete={handleDeleteProject} />
+              ))}
+              {/* Job Cards - convert to card format */}
+              {jobs.map((job) => (
+                <div key={job.id} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-lg transition-shadow">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-full">Job</span>
+                    <button
+                      onClick={() => handleDeleteJob(job.id)}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <h3 className="font-bold text-gray-900 mb-2 line-clamp-2">{job.title}</h3>
+                  <p className="text-sm text-gray-500 mb-3 line-clamp-2">{job.description}</p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-gray-900">€{job.budget || 'TBD'}</span>
+                    <span className="text-gray-500">{job.location || 'Remote'}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -412,13 +283,10 @@ export default function ClientDashboard() {
         <InviteCodeCard />
       </main>
 
-      <ClientProjectModal
+      <ClientPostProjectModal
         open={showProjectModal}
-        editing={!!editingProject}
-        form={projectForm}
-        setForm={setProjectForm}
         onClose={() => setShowProjectModal(false)}
-        onSubmit={editingProject ? handleUpdateProject : handleCreateProject}
+        user={user}
       />
 
       <ClientJobModal

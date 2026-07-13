@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CountrySelector from '@/components/CountrySelector';
 import { useToast } from '@/hooks/useToast.jsx';
+import { useAuth } from '@/lib/AuthContext';
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
   return (
@@ -26,7 +27,7 @@ function ToggleRow({ title, description, checked, onChange, isLast }) {
 
 export default function BackerProfile() {
   const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
+  const { user: authUser, isAuthenticated } = useAuth();
   const [backer, setBacker] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -46,39 +47,35 @@ export default function BackerProfile() {
   const logoInputRef = React.useRef(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
-    const parsedUser = JSON.parse(storedUser);
-    setUser(parsedUser);
-
-    const fetchData = async () => {
-      try {
-        const backers = await Backer.filter({ contact_email: parsedUser.email });
-        if (backers.length > 0) {
-          const b = backers[0];
-          setBacker(b);
-          setFormData({
-            organization_name: b.organization_name || '', bio: b.bio || '', website: b.website || '',
-            linkedin: b.linkedin || '', instagram: b.instagram || '', twitter: b.twitter || '', youtube: b.youtube || '',
-            city: b.city || '', country: b.country || '',
-            investment_focus: b.investment_focus || []
-          });
-          setEmailNotifications(b.email_notifications ?? true);
-          setDealAlerts(b.deal_alerts ?? true);
-          setProfilePublic(b.profile_public ?? true);
-        }
-      } catch (error) {
-        console.error('Error fetching backer data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-  }, []);
+  }, [isAuthenticated]);
+
+  const fetchData = async () => {
+    try {
+      const backers = await Backer.filter({ contact_email: authUser?.email });
+      if (backers.length > 0) {
+        const b = backers[0];
+        setBacker(b);
+        setFormData({
+          organization_name: b.organization_name || '', bio: b.bio || '', website: b.website || '',
+          linkedin: b.linkedin || '', instagram: b.instagram || '', twitter: b.twitter || '', youtube: b.youtube || '',
+          city: b.city || '', country: b.country || '',
+          investment_focus: b.investment_focus || []
+        });
+        setEmailNotifications(b.email_notifications ?? true);
+        setDealAlerts(b.deal_alerts ?? true);
+        setProfilePublic(b.profile_public ?? true);
+      }
+    } catch (error) {
+      console.error('Error fetching backer data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -194,7 +191,7 @@ export default function BackerProfile() {
                     {backer?.logo_url ? (
                       <img src={backer.logo_url} alt="Logo" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-4xl font-black text-gray-300">22.</span>
+                      <span className="text-4xl font-black text-gray-900">22.</span>
                     )}
                   </div>
                   <input ref={logoInputRef} type="file" accept="image/*,.gif,.jpg,.jpeg,.png,.jfif,.webp,.bmp,.tiff" onChange={handleLogoUpload} className="hidden" />

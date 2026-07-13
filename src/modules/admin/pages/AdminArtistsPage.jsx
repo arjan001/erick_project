@@ -191,68 +191,68 @@ export default function AdminArtistsPage() {
         <table className="w-full">
           <thead className="bg-gradient-to-r from-gray-50 to-indigo-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Artist</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
-              <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Artist</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {paginatedArtists.map((artist) => (
               <tr key={artist.id} className="hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
                     {artist.profile_photo_url ? (
-                      <img src={artist.profile_photo_url} alt={artist.full_name} className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-100" />
+                      <img src={artist.profile_photo_url} alt={artist.full_name} className="w-8 h-8 rounded-full object-cover ring-2 ring-indigo-100" />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-sm font-bold text-indigo-600 ring-2 ring-indigo-100">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-xs font-bold text-indigo-600 ring-2 ring-indigo-100">
                         {artist.full_name?.[0]?.toUpperCase() || 'A'}
                       </div>
                     )}
                     <div>
-                      <div className="font-medium text-gray-900">{artist.full_name || 'Unknown'}</div>
-                      <div className="text-sm text-gray-500">{artist.role || 'No role'}</div>
+                      <div className="font-medium text-gray-900 text-sm">{artist.full_name || 'Unknown'}</div>
+                      <div className="text-xs text-gray-500">{artist.role || 'No role'}</div>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-3 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-indigo-400" />
+                    <Mail className="w-3 h-3 text-indigo-400" />
                     {artist.email || 'No email'}
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-3 text-sm text-gray-600">
                   {artist.based_in_city || artist.based_in_country ? (
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-indigo-400" />
+                      <MapPin className="w-3 h-3 text-indigo-400" />
                       {artist.based_in_city || artist.based_in_country}
                     </div>
                   ) : (
-                    <span className="text-gray-400">No location</span>
+                    <span className="text-gray-400 text-xs">No location</span>
                   )}
                 </td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1.5 text-xs font-medium rounded-full border shadow-sm ${STATUS_STYLES[getStatus(artist)]}`}>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full border shadow-sm ${STATUS_STYLES[getStatus(artist)]}`}>
                     {getStatus(artist).charAt(0).toUpperCase() + getStatus(artist).slice(1)}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-3 text-sm text-gray-600">
                   {artist.created_at ? new Date(artist.created_at).toLocaleDateString() : 'N/A'}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
-                    <Button onClick={() => openViewModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg">
+                    <Button onClick={() => openViewModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg p-1">
                       <Eye className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => openModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg">
+                    <Button onClick={() => openModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg p-1">
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => toggleSuspend(artist)} variant="ghost" size="sm" className={artist.is_suspended ? 'text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg' : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg'}>
+                    <Button onClick={() => toggleSuspend(artist)} variant="ghost" size="sm" className={artist.is_suspended ? 'text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg p-1' : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg p-1'}>
                       <Ban className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => handleDelete(artist.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg">
+                    <Button onClick={() => handleDelete(artist.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg p-1">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -263,14 +263,14 @@ export default function AdminArtistsPage() {
         </table>
 
         {paginatedArtists.length === 0 && (
-          <div className="p-12 text-center text-gray-500">
+          <div className="p-8 text-center text-gray-500">
             <p>No artists found</p>
           </div>
         )}
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
             <div className="text-sm text-gray-600">
               Showing {((currentPage - 1) * PAGE_SIZE) + 1} to {Math.min(currentPage * PAGE_SIZE, filteredArtists.length)} of {filteredArtists.length} artists
             </div>

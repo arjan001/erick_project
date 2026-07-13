@@ -144,43 +144,43 @@ export default function AdminInvitesManagementPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expires</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expires</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {invites.length === 0 && (
-                <tr><td colSpan={6} className="px-6 py-10 text-center text-sm text-gray-500">No invites yet</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">No invites yet</td></tr>
               )}
               {invites.map(invite => (
                 <tr key={invite.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <Mail className="w-5 h-5 text-gray-400 mr-3" />
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-gray-400" />
                       <div className="text-sm font-medium text-gray-900">{invite.email}</div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 capitalize">{invite.role}</span>
                   </td>
-                  <td className="px-6 py-4">{getStatusBadge(invite.status)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{invite.created_date ? new Date(invite.created_date).toLocaleDateString() : 'N/A'}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-4 py-3">{getStatusBadge(invite.status)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{invite.created_date ? new Date(invite.created_date).toLocaleDateString() : 'N/A'}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">
                     {invite.expires_at ? new Date(invite.expires_at).toLocaleDateString() : 'N/A'}
                     {isExpired(invite.expires_at) && <span className="ml-2 text-xs text-red-600">(Expired)</span>}
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
                       {invite.status === 'pending' && !isExpired(invite.expires_at) && (
-                        <Button variant="ghost" size="sm" onClick={() => handleResendInvite(invite)} title="Resend Invite">
+                        <Button variant="ghost" size="sm" onClick={() => handleResendInvite(invite)} title="Resend Invite" className="p-1">
                           <Send className="w-4 h-4" />
                         </Button>
                       )}
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteInvite(invite.id)} title="Delete Invite">
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteInvite(invite.id)} title="Delete Invite" className="p-1">
                         <Trash2 className="w-4 h-4 text-red-600" />
                       </Button>
                     </div>

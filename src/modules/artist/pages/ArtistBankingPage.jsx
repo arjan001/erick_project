@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import ArtistSidebar from '@/components/ArtistSidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -140,9 +139,7 @@ export default function ArtistBankingPage() {
   }
 
   return (
-    <div className="bg-white">
-      <ArtistSidebar />
-      <div className="ml-20 p-8">
+    <div className="p-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Methods</h1>
@@ -353,7 +350,6 @@ export default function ArtistBankingPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }

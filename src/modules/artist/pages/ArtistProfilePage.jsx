@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CountrySelector from '@/components/CountrySelector';
 import RolesTagInput from '@/components/artist/RolesTagInput';
-import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
+import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { confirmDialog } from '@/lib/sweetAlert';
 import ShareProfileButton from '@/components/artist/ShareProfileButton';
@@ -39,7 +39,11 @@ export default function ArtistProfile() {
   const [portfolioClips, setPortfolioClips] = useState([]);
   const [endorsements, setEndorsements] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState(() => {
+    // Load saved tab from localStorage
+    const savedTab = localStorage.getItem('studio22_active_tab');
+    return savedTab || 'profile';
+  });
   const [subscription, setSubscription] = useState(null);
   const [subPackage, setSubPackage] = useState(null);
   const [activeClip, setActiveClip] = useState(null);
@@ -49,6 +53,7 @@ export default function ArtistProfile() {
   const [showBioModal, setShowBioModal] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [uploading, setUploading] = useState(false);
   
   const [formData, setFormData] = useState({
     full_name: '', roles: [], based_in_city: '', based_in_country: '', bio: '',
@@ -60,8 +65,17 @@ export default function ArtistProfile() {
   const [profilePublic, setProfilePublic] = useState(true);
   const [googleDriveFolderId, setGoogleDriveFolderId] = useState('');
   
-  const [portfolioForm, setPortfolioForm] = useState({
-    title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: ''
+  const [portfolioForm, setPortfolioForm] = useState(() => {
+    // Load draft from localStorage if exists
+    const savedDraft = localStorage.getItem('studio22_portfolio_draft');
+    if (savedDraft) {
+      try {
+        return JSON.parse(savedDraft);
+      } catch {
+        return { title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' };
+      }
+    }
+    return { title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' };
   });
   const [selectedCoverImage, setSelectedCoverImage] = useState(null);
   const [selectedVideoFile, setSelectedVideoFile] = useState(null);
@@ -69,6 +83,16 @@ export default function ArtistProfile() {
   const fileInputRef = React.useRef(null);
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
+
+  // Auto-save portfolio form draft to localStorage
+  useEffect(() => {
+    localStorage.setItem('studio22_portfolio_draft', JSON.stringify(portfolioForm));
+  }, [portfolioForm]);
+
+  // Save active tab to localStorage
+  useEffect(() => {
+    localStorage.setItem('studio22_active_tab', activeTab);
+  }, [activeTab]);
 
   useEffect(() => {
     if (isLoadingAuth) return;
@@ -278,6 +302,11 @@ export default function ArtistProfile() {
       return;
     }
     
+    if (!artist) {
+      toastError('Connection Failed', 'Artist profile not found. Please complete your profile first.');
+      return;
+    }
+    
     try {
       // Update the artist profile with the extracted folder ID
       const updated = await Artist.update(artist.id, { google_drive_folder_id: folderId });
@@ -286,11 +315,29 @@ export default function ArtistProfile() {
       success('Google Drive Connected', 'Your Google Drive folder has been successfully connected');
     } catch (err) {
       console.error('Error connecting Google Drive:', err);
-      toastError('Connection Failed', 'Failed to connect Google Drive. Please try again.');
+      toastError('Connection Failed', `Failed to connect Google Drive: ${err.message || 'Please try again.'}`);
+    }
+  };
+
+  const handleCopyProfileLink = async () => {
+    if (!artist) return;
+    const url = `${window.location.origin}/artist/${artist.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      success('Link Copied', 'Your public profile link has been copied to clipboard');
+    } catch (err) {
+      console.error('Error copying link:', err);
+      toastError('Copy Failed', 'Failed to copy profile link');
     }
   };
 
   const handleAddPortfolioClip = async () => {
+    console.log('handleAddPortfolioClip called');
+    console.log('portfolioForm:', portfolioForm);
+    console.log('selectedCoverImage:', selectedCoverImage);
+    console.log('selectedVideoFile:', selectedVideoFile);
+    console.log('artist:', artist);
+    
     if (!artist) {
       toastError('Error', 'Artist profile not found. Please complete your profile first.');
       return;
@@ -299,6 +346,9 @@ export default function ArtistProfile() {
       toastError('Validation Error', 'Please fill in the required fields (title)');
       return;
     }
+    
+    setUploading(true);
+    
     try {
       let videoUrl = '';
       let videoEmbedUrl = '';
@@ -311,7 +361,9 @@ export default function ArtistProfile() {
       };
       
       if (portfolioForm.video_source === 'upload' && selectedVideoFile) {
+        console.log('Uploading video file...');
         const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedVideoFile });
+        console.log('Video upload response:', uploadResponse);
         videoUrl = uploadResponse.file_url || uploadResponse.url;
       } else if (portfolioForm.video_source !== 'upload' && portfolioForm.original_video_url) {
         videoUrl = portfolioForm.original_video_url;
@@ -325,23 +377,33 @@ export default function ArtistProfile() {
       }
       
       if (selectedCoverImage) {
+        console.log('Uploading cover image...');
         const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedCoverImage });
+        console.log('Image upload response:', uploadResponse);
         thumbnailUrl = uploadResponse.file_url || uploadResponse.url;
       }
       
       const clipData = {
-        uploaded_by_type: 'artist',
-        uploaded_by_id: artist.id,
+        artist_id: artist.id,
         title: portfolioForm.title,
+        project_name: portfolioForm.title, // Map title to project_name as per schema
         project_type: portfolioForm.project_type,
         description: portfolioForm.description,
         role: portfolioForm.role,
-        original_video_url: videoUrl,
+        video_url: videoUrl, // Map to video_url as per schema
+        original_video_url: portfolioForm.original_video_url,
         video_embed_url: videoEmbedUrl,
         video_source: portfolioForm.video_source,
         thumbnail_url: thumbnailUrl,
-        status: 'pending'
+        status: 'pending',
+        uploaded_by_type: 'artist',
+        uploaded_by_id: artist.id
       };
+
+      console.log('Creating portfolio clip with data:', clipData);
+      console.log('Final videoUrl:', videoUrl);
+      console.log('Final videoEmbedUrl:', videoEmbedUrl);
+      console.log('Final thumbnailUrl:', thumbnailUrl);
 
       let newClip;
       if (editingPortfolio) {
@@ -352,15 +414,20 @@ export default function ArtistProfile() {
         setPortfolioClips([...portfolioClips, newClip]);
       }
       
+      console.log('Portfolio clip saved:', newClip);
+      
       setShowPortfolioModal(false);
-      setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '', video_source: 'upload', original_video_url: '' });
+      setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' });
       setSelectedCoverImage(null);
       setSelectedVideoFile(null);
       setEditingPortfolio(null);
+      localStorage.removeItem('studio22_portfolio_draft'); // Clear draft after successful save
       success(editingPortfolio ? 'Portfolio Updated' : 'Portfolio Added', editingPortfolio ? 'Your portfolio clip has been updated' : 'Your portfolio clip has been submitted for approval');
     } catch (err) {
       console.error('Error adding portfolio clip:', err);
-      toastError('Failed', 'Failed to save portfolio clip');
+      toastError('Failed', `Failed to save portfolio clip: ${err.message || 'Unknown error'}`);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -441,6 +508,10 @@ export default function ArtistProfile() {
                     </Button>
                     <Button onClick={() => setShowBioModal(true)} variant="outline">
                       Edit Bio
+                    </Button>
+                    <Button onClick={handleCopyProfileLink} variant="outline" className="gap-2">
+                      <Share2 className="w-4 h-4" />
+                      Share Profile
                     </Button>
                   </div>
                 </div>
@@ -668,8 +739,10 @@ export default function ArtistProfile() {
           selectedVideoFile={selectedVideoFile}
           setSelectedVideoFile={setSelectedVideoFile}
           onSubmit={handleAddPortfolioClip}
+          uploading={uploading}
           editingPortfolio={editingPortfolio}
           maxVideoSizeMB={MAX_VIDEO_SIZE_MB}
+          googleDriveFolderId={artist?.google_drive_folder_id}
         />
       )}
 
@@ -680,14 +753,29 @@ export default function ArtistProfile() {
             <X className="w-6 h-6" />
           </button>
           <div className="w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
+            {console.log('Active clip data:', activeClip)}
+            {console.log('video_url:', activeClip.video_url)}
+            {console.log('original_video_url:', activeClip.original_video_url)}
+            {console.log('video_embed_url:', activeClip.video_embed_url)}
             {activeClip.video_embed_url ? (
               <div className="relative aspect-video rounded-lg overflow-hidden bg-black">
                 <iframe src={activeClip.video_embed_url} className="w-full h-full" frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title={activeClip.title || 'Portfolio Video'} />
               </div>
-            ) : (
-              <video src={activeClip.original_video_url} controls autoPlay className="w-full max-h-[80vh] rounded-lg bg-black">
-                <source src={activeClip.original_video_url} />
+            ) : activeClip.video_url || activeClip.original_video_url ? (
+              <video 
+                src={activeClip.video_url || activeClip.original_video_url} 
+                controls 
+                autoPlay 
+                className="w-full max-h-[80vh] rounded-lg bg-black"
+                onError={(e) => console.error('Video error:', e)}
+              >
+                <source src={activeClip.video_url || activeClip.original_video_url} type="video/mp4" />
+                Your browser does not support the video tag.
               </video>
+            ) : (
+              <div className="w-full aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
+                <p className="text-white">No video URL available</p>
+              </div>
             )}
             {activeClip.title && <h3 className="text-white text-lg font-medium mt-4 text-center">{activeClip.title}</h3>}
           </div>

@@ -144,16 +144,16 @@ export default function AdminFinanceDashboardPage() {
             </thead>
             <tbody>
               {orders.length === 0 && (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-gray-400">No transactions yet</td></tr>
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">No transactions yet</td></tr>
               )}
               {orders.slice(0, 15).map(o => (
                 <tr key={o.id} className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors">
                   <td className="px-4 py-3 text-gray-700">
-                    <div className="font-medium">{o.user_name || o.user_email}</div>
+                    <div className="font-medium text-sm">{o.user_name || o.user_email}</div>
                     <div className="text-xs text-gray-400">{o.user_email}</div>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 hidden sm:table-cell">{o.package_name}</td>
-                  <td className="px-4 py-3 font-medium text-gray-900">{fmt(o.amount)}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs hidden sm:table-cell">{o.package_name}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900 text-sm">{fmt(o.amount)}</td>
                   <td className="px-4 py-3">{statusBadge(o.status)}</td>
                   <td className="px-4 py-3 text-gray-400 text-xs hidden lg:table-cell">{getDate(o).toLocaleDateString()}</td>
                 </tr>

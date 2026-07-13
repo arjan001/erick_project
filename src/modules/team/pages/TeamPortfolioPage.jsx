@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import TeamSidebar from '@/components/TeamSidebar';
+import { Team } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FolderOpen, Plus, Play, Trash2, Edit2, Upload, Film, Image, Music } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function TeamPortfolioPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
+  const { user: authUser, isAuthenticated } = useAuth();
   const [team, setTeam] = useState(null);
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,20 +28,40 @@ export default function TeamPortfolioPage() {
   });
 
   useEffect(() => {
-    const storedTeam = localStorage.getItem('studio22_team');
-    if (!storedTeam) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
-    setTeam(JSON.parse(storedTeam));
-    fetchPortfolio();
-  }, []);
+    loadTeamData();
+  }, [isAuthenticated]);
 
-  const fetchPortfolio = async () => {
+  const loadTeamData = async () => {
+    try {
+      let teamData = null;
+      if (authUser?.team_id) {
+        teamData = await Team.filter({ id: authUser.team_id }, '-created_date', 1).then(r => r?.[0] || null);
+      } else {
+        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_date', 1);
+        teamData = teams?.[0] || null;
+      }
+      setTeam(teamData);
+      if (teamData) {
+        fetchPortfolio(teamData.id);
+      } else {
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Error loading team:', err);
+      toastError('Load Failed', 'Failed to load team data');
+      setLoading(false);
+    }
+  };
+
+  const fetchPortfolio = async (teamId) => {
     try {
       const clips = await base44.entities.PortfolioClip.filter({ 
         uploaded_by_type: 'team',
-        uploaded_by_id: team?.id,
+        uploaded_by_id: teamId,
         status: 'approved'
       });
       setPortfolioItems(clips);
@@ -100,11 +122,8 @@ export default function TeamPortfolioPage() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-white">
-        <TeamSidebar />
-        <main className="w-full h-full flex items-center justify-center pl-20">
-          <div className="text-gray-600">Loading...</div>
-        </main>
+      <div className="flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
       </div>
     );
   }
@@ -117,12 +136,9 @@ export default function TeamPortfolioPage() {
   };
 
   return (
-    <div className="h-screen bg-white">
-      <TeamSidebar />
-      <main className="w-full h-full flex flex-col overflow-y-auto bg-white pl-20">
-        <div className="p-6 max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Team Portfolio</h1>
+    <div className="p-6 max-w-6xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Team Portfolio</h1>
             <Button onClick={() => setShowUploadModal(true)} className="bg-black text-white hover:bg-gray-800">
               <Plus className="w-4 h-4 mr-2" />
               Add Portfolio Item

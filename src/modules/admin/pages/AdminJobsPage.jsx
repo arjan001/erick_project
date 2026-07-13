@@ -117,44 +117,44 @@ export default function AdminJobsPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posted</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posted</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredJobs.length === 0 && (
-                <tr><td colSpan={7} className="px-6 py-10 text-center text-sm text-gray-500">No jobs found</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500">No jobs found</td></tr>
               )}
               {filteredJobs.map(job => (
                 <tr key={job.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     <div className="text-sm font-medium text-gray-900">{job.title}</div>
-                    <div className="text-sm text-gray-500 truncate max-w-xs">{job.short_description}</div>
+                    <div className="text-xs text-gray-500 truncate max-w-xs">{job.short_description}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{job.client_name}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-600">{job.client_name}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
                     {job.budget_min || job.budget_max ? `$${(job.budget_min || 0).toLocaleString()} - $${(job.budget_max || 0).toLocaleString()}` : 'N/A'}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 flex items-center gap-2"><MapPin className="w-4 h-4" />{job.location || 'N/A'}</td>
-                  <td className="px-6 py-4">{getStatusBadge(job.status)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
+                  <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-2"><MapPin className="w-3 h-3" />{job.location || 'N/A'}</td>
+                  <td className="px-4 py-3">{getStatusBadge(job.status)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-2">
+                    <Calendar className="w-3 h-3" />
                     {job.posted_at ? new Date(job.posted_at).toLocaleDateString() : 'N/A'}
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedJob(job)} title="View Details">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedJob(job)} title="View Details" className="p-1">
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleToggleStatus(job.id, job.status)} title="Toggle Status">
+                      <Button variant="ghost" size="sm" onClick={() => handleToggleStatus(job.id, job.status)} title="Toggle Status" className="p-1">
                         {job.status === 'open' ? <XCircle className="w-4 h-4 text-red-600" /> : <CheckCircle className="w-4 h-4 text-green-600" />}
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)} title="Delete">
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)} title="Delete" className="p-1">
                         <Trash2 className="w-4 h-4 text-red-600" />
                       </Button>
                     </div>

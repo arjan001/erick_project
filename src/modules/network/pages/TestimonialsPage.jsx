@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Testimonial, Artist, Notification } from '@/lib/supabaseEntities';
-import ArtistSidebar from '@/components/ArtistSidebar';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { Star, Plus, X, MessageCircle, ThumbsUp, Award, Users, Briefcase } from 'lucide-react';
@@ -143,27 +142,21 @@ export default function TestimonialsPage() {
   };
 
   return (
-    <div className="h-screen bg-white">
-      <ArtistSidebar />
-      
-      <main className="w-full h-full flex flex-col overflow-hidden bg-white pl-20">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Testimonials</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Share your experience working with others
-              </p>
-            </div>
-            <Button onClick={() => setShowModal(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Write Testimonial
-            </Button>
-          </div>
+    <>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Testimonials</h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Share your experience working with others
+          </p>
         </div>
+        <Button onClick={() => setShowModal(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Write Testimonial
+        </Button>
+      </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Received Testimonials */}
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -255,10 +248,9 @@ export default function TestimonialsPage() {
               )}
             </div>
           </div>
-        </div>
 
-        {/* Testimonial Modal */}
-        {showModal && (
+      {/* Testimonial Modal */}
+      {showModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6 border-b border-gray-200">
@@ -334,7 +326,6 @@ export default function TestimonialsPage() {
             </div>
           </div>
         )}
-      </main>
-    </div>
+    </>
   );
 }

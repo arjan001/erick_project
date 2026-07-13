@@ -201,84 +201,84 @@ export default function AdminTeamsPage() {
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Team</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Industry</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Auto-Approve</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
-              <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Team</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Industry</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Auto-Approve</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginatedTeams.map((team) => (
               <tr key={team.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
                     {team.logo_url ? (
-                      <img src={team.logo_url} alt={team.team_name} className="w-10 h-10 rounded-lg object-cover" />
+                      <img src={team.logo_url} alt={team.team_name} className="w-8 h-8 rounded-lg object-cover" />
                     ) : (
-                      <div className="w-10 h-10 rounded-lg bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-600">
+                      <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
                         {team.team_name?.[0]?.toUpperCase() || 'T'}
                       </div>
                     )}
                     <div>
-                      <div className="font-medium text-gray-900">{team.team_name || 'Unknown'}</div>
-                      <div className="text-sm text-gray-500 line-clamp-1">{team.description || 'No description'}</div>
+                      <div className="font-medium text-gray-900 text-sm">{team.team_name || 'Unknown'}</div>
+                      <div className="text-xs text-gray-500 line-clamp-1">{team.description || 'No description'}</div>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  {team.industry || <span className="text-gray-400">No industry</span>}
+                <td className="px-4 py-3 text-sm text-gray-600">
+                  {team.industry || <span className="text-gray-400 text-xs">No industry</span>}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-3 text-sm text-gray-600">
                   {team.location ? (
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <MapPin className="w-3 h-3 text-gray-400" />
                       {team.location}
                     </div>
                   ) : (
-                    <span className="text-gray-400">No location</span>
+                    <span className="text-gray-400 text-xs">No location</span>
                   )}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-3">
                   <span className={`px-2 py-1 text-xs font-medium rounded-full border ${STATUS_STYLES[getStatus(team)]}`}>
                     {getStatus(team).charAt(0).toUpperCase() + getStatus(team).slice(1)}
                   </span>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-3">
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${team.auto_approve ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                     {team.auto_approve ? 'On' : 'Off'}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-4 py-3 text-sm text-gray-600">
                   {team.created_at ? new Date(team.created_at).toLocaleDateString() : 'N/A'}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
-                    <Button onClick={() => openViewModal(team)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                    <Button onClick={() => openViewModal(team)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 p-1">
                       <Eye className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => openMembersModal(team)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900" title="View Members">
+                    <Button onClick={() => openMembersModal(team)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 p-1" title="View Members">
                       <Users className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => openModal(team)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                    <Button onClick={() => openModal(team)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 p-1">
                       <Edit2 className="w-4 h-4" />
                     </Button>
                     {team.status === 'pending' && (
                       <>
-                        <Button onClick={() => handleApprove(team)} variant="ghost" size="sm" className="text-green-600 hover:text-green-700" title="Approve">
+                        <Button onClick={() => handleApprove(team)} variant="ghost" size="sm" className="text-green-600 hover:text-green-700 p-1" title="Approve">
                           <UserCheck className="w-4 h-4" />
                         </Button>
-                        <Button onClick={() => handleReject(team)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700" title="Reject">
+                        <Button onClick={() => handleReject(team)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 p-1" title="Reject">
                           <UserX className="w-4 h-4" />
                         </Button>
                       </>
                     )}
-                    <Button onClick={() => toggleAutoApprove(team)} variant="ghost" size="sm" className={team.auto_approve ? 'text-green-600 hover:text-green-700' : 'text-gray-600 hover:text-gray-900'} title="Toggle Auto-Approve">
+                    <Button onClick={() => toggleAutoApprove(team)} variant="ghost" size="sm" className={team.auto_approve ? 'text-green-600 hover:text-green-700' : 'text-gray-600 hover:text-gray-900'} title="Toggle Auto-Approve" p-1>
                       <CheckCircle className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => handleDelete(team.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                    <Button onClick={() => handleDelete(team.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 p-1">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>

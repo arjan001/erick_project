@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input';
 import { FileText, Plus, Search, Calendar, Eye, Edit2, Trash2, Bell, Filter } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function BackerProjectUpdatesPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
+  const { user: authUser, isAuthenticated } = useAuth();
   const [backer, setBacker] = useState(null);
   const [updates, setUpdates] = useState([]);
   const [investments, setInvestments] = useState([]);
@@ -28,30 +29,26 @@ export default function BackerProjectUpdatesPage() {
   });
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
-    setUser(JSON.parse(storedUser));
     fetchData();
-  }, []);
+  }, [isAuthenticated]);
 
   const fetchData = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
-      
-      const backers = await Backer.filter({ contact_email: storedUser.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email });
       if (backers.length > 0) {
         setBacker(backers[0]);
       }
 
       // Fetch investments
-      const backedProjects = await BackedProject.filter({ backer_email: storedUser.email });
+      const backedProjects = await BackedProject.filter({ backer_email: authUser?.email });
       setInvestments(backedProjects);
 
       // Fetch project updates
-      const allUpdates = await ProjectUpdate.filter({ backer_email: storedUser.email });
+      const allUpdates = await ProjectUpdate.filter({ backer_email: authUser?.email });
       setUpdates(allUpdates);
     } catch (err) {
       console.error('Error fetching updates:', err);
@@ -149,7 +146,7 @@ export default function BackerProjectUpdatesPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
-                <Bell className="w-5 h-5 text-purple-600" />
+                <Bell className="w-5 h-5 text-gray-900" />
                 <div className="text-2xl font-bold">{uniqueProjects.length}</div>
               </div>
             </CardContent>
@@ -223,7 +220,7 @@ export default function BackerProjectUpdatesPage() {
                         <span className={`px-2 py-1 text-xs rounded ${
                           update.update_type === 'progress' ? 'bg-blue-100 text-blue-700' :
                           update.update_type === 'milestone' ? 'bg-green-100 text-green-700' :
-                          update.update_type === 'announcement' ? 'bg-purple-100 text-purple-700' :
+                          update.update_type === 'announcement' ? 'bg-gray-100 text-gray-700' :
                           'bg-gray-100 text-gray-700'
                         }`}>
                           {update.update_type}
