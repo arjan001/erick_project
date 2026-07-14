@@ -4,7 +4,7 @@
 import { base44 } from '@/api/base44Client';
 import { sendTeamInvitationEmail } from '@/lib/brevoClient';
 
-export const createTeamInvitation = async (teamId, email, role, inviterName) => {
+export const createTeamInvitation = async (teamId, email, role, inviterName, metadata = {}) => {
   try {
     // Generate a unique token
     const token = generateInviteToken();
@@ -13,7 +13,7 @@ export const createTeamInvitation = async (teamId, email, role, inviterName) => 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
     
-    // Create invitation record
+    // Create invitation record with metadata
     const invitation = await base44.entities.TeamInvitation.create({
       team_id: teamId,
       email: email,
@@ -21,7 +21,11 @@ export const createTeamInvitation = async (teamId, email, role, inviterName) => 
       token: token,
       status: 'pending',
       expires_at: expiresAt.toISOString(),
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      // Store additional metadata (roles, skills, profile_image)
+      roles: metadata.roles || [],
+      skills: metadata.skills || [],
+      profile_image: metadata.profile_image || null
     });
     
     // Send email invitation
@@ -118,14 +122,15 @@ export const acceptInvitation = async (token, userData) => {
       userId = newUser.id;
     }
     
-    // Add user to team members
+    // Add user to team members with invitation metadata
     const teamMember = await base44.entities.TeamMember.create({
       team_id: invitation.team_id,
       user_id: userId,
       name: `${userData.first_name} ${userData.last_name}`,
       role: invitation.role,
-      skills: userData.skills || [],
-      avatar_url: userData.avatar_url || null,
+      skills: invitation.skills || userData.skills || [],
+      roles: invitation.roles || [],
+      avatar_url: invitation.profile_image || userData.avatar_url || null,
       created_at: new Date().toISOString()
     });
     

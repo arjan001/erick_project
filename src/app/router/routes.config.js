@@ -570,12 +570,6 @@ const teamRoutes = [
     guard: TeamGuard
   },
   {
-    path: '/TeamTasks',
-    component: () => import('@/modules/team/pages/TeamTasksPage'),
-    layout: DashboardLayout,
-    guard: TeamGuard
-  },
-  {
     path: '/TeamMessages',
     component: () => import('@/modules/team/pages/TeamMessagesPage'),
     layout: DashboardLayout,
@@ -684,7 +678,12 @@ export const routes = [
   ...clientRoutes,
   ...teamRoutes,
   ...backerRoutes,
-  ...protectedRoutes
+  ...protectedRoutes,
+  {
+    path: '*',
+    component: () => import('@/pages/NotFoundPage'),
+    layout: null
+  }
 ];
 
 // Export route groups for easier access

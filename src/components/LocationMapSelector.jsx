@@ -113,9 +113,9 @@ export default function LocationMapSelector({
 
     setLoading(true);
     try {
-      // Using Nominatim API for geocoding
+      // Using Nominatim API for geocoding with enhanced parameters
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10&addressdetails=1&extratags=1&namedetails=1`
       );
       const data = await response.json();
       setSearchResults(data);
@@ -130,13 +130,16 @@ export default function LocationMapSelector({
   const reverseGeocode = async (lat, lng) => {
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&extratags=1&namedetails=1`
       );
       const data = await response.json();
       
       if (data.address) {
-        const newCity = data.address.city || data.address.town || data.address.village || '';
+        const newCity = data.address.city || data.address.town || data.address.village || data.address.municipality || data.address.suburb || data.address.district || '';
         const newCountry = data.address.country || '';
+        const state = data.address.state || data.address.region || data.address.province || '';
+        const street = data.address.road || data.address.street || '';
+        const postcode = data.address.postcode || '';
         
         setCity(newCity);
         setCountry(newCountry);
@@ -145,6 +148,10 @@ export default function LocationMapSelector({
           onLocationSelect({
             city: newCity,
             country: newCountry,
+            state,
+            street,
+            postcode,
+            fullAddress: data.display_name,
             lat,
             lng
           });
@@ -166,11 +173,14 @@ export default function LocationMapSelector({
       addMarker(lat, lng);
     }
 
-    // Extract city and country from display_name or address
+    // Extract detailed location information
     const address = result.address || {};
-    const newCity = address.city || address.town || address.village || address.municipality || '';
+    const newCity = address.city || address.town || address.village || address.municipality || address.suburb || address.district || '';
     const newCountry = address.country || '';
-
+    const state = address.state || address.region || address.province || address.county || '';
+    const street = address.road || address.street || address.building || '';
+    const postcode = address.postcode || address.zip || '';
+    
     setCity(newCity);
     setCountry(newCountry);
     setSearchQuery('');
@@ -180,6 +190,10 @@ export default function LocationMapSelector({
       onLocationSelect({
         city: newCity,
         country: newCountry,
+        state,
+        street,
+        postcode,
+        fullAddress: result.display_name,
         lat,
         lng
       });
@@ -248,15 +262,15 @@ export default function LocationMapSelector({
 
       {/* Selected Location Display */}
       {(city || country) && (
-        <div className="flex items-center gap-2 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-          <MapPin className="w-4 h-4 text-indigo-600" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">
+        <div className="flex items-start gap-2 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+          <MapPin className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">
               {city && country ? `${city}, ${country}` : city || country}
             </p>
             {selectedCoords && (
               <p className="text-xs text-gray-500">
-                {selectedCoords.lat.toFixed(4)}, {selectedCoords.lng.toFixed(4)}
+                {selectedCoords.lat.toFixed(6)}, {selectedCoords.lng.toFixed(6)}
               </p>
             )}
           </div>
