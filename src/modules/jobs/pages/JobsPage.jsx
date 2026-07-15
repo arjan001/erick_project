@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Job, Application, Artist, ConnectsTransaction, Project } from '@/lib/supabaseEntities';
+import { Job, Application, Artist, ConnectsTransaction, Project, JobInvitation } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, Euro, ChevronDown, Calendar, Building2, Users, Star, ExternalLink, Crown, Lock, Eye, EyeOff, AlertCircle, CheckCircle, XCircle, Hourglass, FileText } from 'lucide-react';
+import { MapPin, Clock, Euro, ChevronDown, Calendar, Building2, Users, Star, ExternalLink, Crown, Lock, Eye, EyeOff, AlertCircle, CheckCircle, XCircle, Hourglass, FileText, Mail, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { base44 } from '@/api/base44Client';
 import skillsAndRoles from '@/lib/skillsAndRoles.json';
+import confetti from 'canvas-confetti';
 
 export default function Jobs() {
   const [jobs, setJobs] = useState([]);
@@ -14,6 +15,9 @@ export default function Jobs() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('board');
   const [applications, setApplications] = useState([]);
+  const [artistId, setArtistId] = useState(null);
+  const [invitations, setInvitations] = useState([]);
+  const [selectedInvitation, setSelectedInvitation] = useState(null);
   const [filters, setFilters] = useState({
     roles: [],
     location: [],
@@ -73,6 +77,7 @@ export default function Jobs() {
           application_deadline: project.timeline_start,
           duration: project.duration,
           isProject: true,
+          requires_team: project.requires_team || false,
           image_url: project.image_url,
           requires_subscription: project.is_premium || false
         }));
@@ -82,14 +87,35 @@ export default function Jobs() {
         setJobs(allListings);
         if (allListings.length > 0) setSelectedJob(allListings[0]);
 
-        const userApplications = await Application.filter({ artist_email: user.email });
-        const enrichedApplications = await Promise.all(
-          userApplications.map(async (app) => {
-            const job = await Job.get(app.job_id);
-            return { ...app, job };
-          })
-        );
-        setApplications(enrichedApplications);
+        // Get artist ID first
+        const artists = await Artist.filter({ email: user.email });
+        const artist = artists?.[0];
+        
+        if (artist) {
+          setArtistId(artist.id);
+          const userApplications = await Application.filter({ artist_id: artist.id });
+          const enrichedApplications = await Promise.all(
+            userApplications.map(async (app) => {
+              const job = await Job.get(app.job_id);
+              return { ...app, job };
+            })
+          );
+          setApplications(enrichedApplications);
+
+          // Fetch job invitations
+          const userInvitations = await JobInvitation.filter({ artist_id: artist.id });
+          const enrichedInvitations = await Promise.all(
+            userInvitations.map(async (inv) => {
+              const job = await Job.get(inv.job_id);
+              return { ...inv, job };
+            })
+          );
+          setInvitations(enrichedInvitations);
+        } else {
+          setArtistId(null);
+          setApplications([]);
+          setInvitations([]);
+        }
       } catch (err) {
         console.error('Error fetching data:', err);
       } finally {
@@ -106,6 +132,12 @@ export default function Jobs() {
     try {
       const artists = await Artist.filter({ email: user.email });
       const artist = artists?.[0];
+      
+      if (!artist) {
+        toastError('Profile Required', 'Please complete your artist profile before applying for jobs.');
+        return;
+      }
+      
       const balance = artist?.connects_balance ?? 0;
 
       if (balance <= 0) {
@@ -113,12 +145,41 @@ export default function Jobs() {
         return;
       }
 
-      await Application.create({
-        job_id: selectedJob.id,
-        artist_email: user.email,
-        status: 'applied',
-        applied_at: new Date().toISOString()
+      // Check if already applied to this job/project
+      const existingApplications = await Application.filter({ artist_id: artist.id });
+      const alreadyApplied = existingApplications.some(app => {
+        if (selectedJob.isProject) {
+          return app.project_id === selectedJob.id;
+        } else {
+          return app.job_id === selectedJob.id;
+        }
       });
+
+      if (alreadyApplied) {
+        toastError('Already Applied', 'You have already applied to this position.');
+        return;
+      }
+
+      // Check if job/project requires team and user is solo artist
+      if (selectedJob.requires_team && !artist.is_team) {
+        toastError('Team Required', 'This position requires a team. Solo artists cannot apply.');
+        return;
+      }
+
+      // Use project_id for projects, job_id for jobs
+      const applicationData = {
+        artist_id: artist.id,
+        status: 'pending',
+        applied_at: new Date().toISOString()
+      };
+
+      if (selectedJob.isProject) {
+        applicationData.project_id = selectedJob.id;
+      } else {
+        applicationData.job_id = selectedJob.id;
+      }
+
+      await Application.create(applicationData);
 
       const newBalance = balance - 1;
       await Artist.update(artist.id, { connects_balance: newBalance });
@@ -129,10 +190,113 @@ export default function Jobs() {
         balance_after: newBalance
       });
 
-      success('Application Submitted', `1 connect used. ${newBalance} connect${newBalance === 1 ? '' : 's'} remaining.`);
+      // Trigger confetti effect with normal colors
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { y: 0.7 },
+        colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ff8800', '#8800ff']
+      });
+
+      success('Application Submitted Successfully', `1 connect used. ${newBalance} connect${newBalance === 1 ? '' : 's'} remaining.`);
+
+      // Close modal and refresh applications
+      setSelectedJob(null);
+      // Refresh applications list
+      const userApplications = await Application.filter({ artist_id: artist.id });
+      const enrichedApplications = await Promise.all(
+        userApplications.map(async (app) => {
+          const job = await Job.get(app.job_id);
+          return { ...app, job };
+        })
+      );
+      setApplications(enrichedApplications);
     } catch (err) {
       console.error('Error applying:', err);
       toastError('Application Failed', 'Failed to submit application');
+    }
+  };
+
+  // Check if user has already applied to selected job/project
+  const hasAlreadyApplied = () => {
+    if (!selectedJob || !applications) return false;
+    return applications.some(app => {
+      if (selectedJob.isProject) {
+        return app.project_id === selectedJob.id;
+      } else {
+        return app.job_id === selectedJob.id;
+      }
+    });
+  };
+
+  // Handle accepting invitation
+  const handleAcceptInvitation = async (invitation) => {
+    try {
+      await JobInvitation.update(invitation.id, {
+        status: 'accepted',
+        responded_at: new Date().toISOString()
+      });
+
+      // Create application automatically when invitation is accepted
+      await Application.create({
+        job_id: invitation.job_id,
+        artist_id: artistId,
+        status: 'pending',
+        applied_at: new Date().toISOString()
+      });
+
+      success('Invitation Accepted', 'You have accepted the invitation and applied for the job.');
+
+      // Refresh invitations and applications
+      const userInvitations = await JobInvitation.filter({ artist_id: artistId });
+      const enrichedInvitations = await Promise.all(
+        userInvitations.map(async (inv) => {
+          const job = await Job.get(inv.job_id);
+          return { ...inv, job };
+        })
+      );
+      setInvitations(enrichedInvitations);
+
+      const userApplications = await Application.filter({ artist_id: artistId });
+      const enrichedApplications = await Promise.all(
+        userApplications.map(async (app) => {
+          const job = await Job.get(app.job_id);
+          return { ...app, job };
+        })
+      );
+      setApplications(enrichedApplications);
+
+      setSelectedInvitation(null);
+    } catch (err) {
+      console.error('Error accepting invitation:', err);
+      toastError('Failed to Accept', 'Could not accept the invitation');
+    }
+  };
+
+  // Handle declining invitation
+  const handleDeclineInvitation = async (invitation) => {
+    try {
+      await JobInvitation.update(invitation.id, {
+        status: 'declined',
+        responded_at: new Date().toISOString()
+      });
+
+      success('Invitation Declined', 'You have declined the invitation.');
+
+      // Refresh invitations
+      const userInvitations = await JobInvitation.filter({ artist_id: artistId });
+      const enrichedInvitations = await Promise.all(
+        userInvitations.map(async (inv) => {
+          const job = await Job.get(inv.job_id);
+          return { ...inv, job };
+        })
+      );
+      setInvitations(enrichedInvitations);
+
+      setSelectedInvitation(null);
+    } catch (err) {
+      console.error('Error declining invitation:', err);
+      toastError('Failed to Decline', 'Could not decline the invitation');
     }
   };
 
@@ -385,7 +549,7 @@ export default function Jobs() {
                     : 'text-gray-600 hover:text-black'
                 }`}
               >
-                Applications ({applications.length})
+                Applications {applications.length > 0 && `(${applications.length})`}
               </button>
               <button
                 onClick={() => setActiveTab('invitations')}
@@ -395,7 +559,7 @@ export default function Jobs() {
                     : 'text-gray-600 hover:text-black'
                 }`}
               >
-                Invitations
+                Invitations {invitations.length > 0 && `(${invitations.length})`}
               </button>
             </div>
           </div>
@@ -694,13 +858,30 @@ export default function Jobs() {
                   {/* Apply Button */}
                   <Button
                     onClick={handleApply}
-                    className="w-full bg-black text-white hover:bg-gray-800 font-bold py-4 text-lg rounded-xl"
+                    disabled={hasAlreadyApplied()}
+                    className={`w-full font-bold py-4 text-lg rounded-xl ${
+                      hasAlreadyApplied()
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-black text-white hover:bg-gray-800'
+                    }`}
                   >
-                    Apply Now
+                    {hasAlreadyApplied() ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <CheckCircle className="w-5 h-5" />
+                        Already Applied
+                      </span>
+                    ) : selectedJob.requires_team ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Users className="w-5 h-5" />
+                        Apply as Team
+                      </span>
+                    ) : (
+                      'Apply Now'
+                    )}
                   </Button>
                   
                   <p className="text-center text-xs text-gray-500 mt-3">
-                    1 connect will be used to apply
+                    {hasAlreadyApplied() ? 'Application submitted' : '1 connect will be used to apply'}
                   </p>
                 </div>
               ) : null}
@@ -883,8 +1064,184 @@ export default function Jobs() {
         )}
 
         {activeTab === 'invitations' && (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
-            <p>Invitations coming soon</p>
+          <div className="flex-1 overflow-y-auto p-6">
+            {invitations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                <Mail className="w-16 h-16 text-gray-300 mb-4" />
+                <p className="text-lg font-medium">No invitations yet</p>
+                <p className="text-sm mt-1">When clients invite you to jobs, they'll appear here</p>
+              </div>
+            ) : selectedInvitation ? (
+              // Invitation Detail View
+              <div className="max-w-4xl mx-auto">
+                <button
+                  onClick={() => setSelectedInvitation(null)}
+                  className="mb-4 flex items-center gap-2 text-sm text-gray-600 hover:text-black"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to invitations
+                </button>
+
+                <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                        {selectedInvitation.job?.title || 'Job Invitation'}
+                      </h1>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Calendar className="w-4 h-4" />
+                        Invited {new Date(selectedInvitation.sent_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      selectedInvitation.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                      selectedInvitation.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                      selectedInvitation.status === 'declined' ? 'bg-red-100 text-red-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {selectedInvitation.status.charAt(0).toUpperCase() + selectedInvitation.status.slice(1)}
+                    </div>
+                  </div>
+
+                  {/* Client Message */}
+                  {selectedInvitation.message && (
+                    <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+                      <h3 className="text-sm font-semibold text-gray-900 mb-2">Message from Client</h3>
+                      <p className="text-sm text-gray-700">{selectedInvitation.message}</p>
+                    </div>
+                  )}
+
+                  {/* Job Details */}
+                  <div className="mb-6">
+                    <h2 className="text-lg font-bold text-gray-900 mb-4">Job Details</h2>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-1">Description</label>
+                        <div className="text-gray-700 leading-relaxed text-sm bg-gray-50 rounded-lg p-4">
+                          {selectedInvitation.job?.description || 'No description available'}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">Location</label>
+                          <div className="flex items-center gap-2 text-sm text-gray-900">
+                            <MapPin className="w-4 h-4" />
+                            {selectedInvitation.job?.location || 'Remote'}
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">Budget</label>
+                          <div className="flex items-center gap-2 text-sm text-gray-900">
+                            <Euro className="w-4 h-4" />
+                            €{selectedInvitation.job?.budget || 'Not specified'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {selectedInvitation.job?.required_skills && selectedInvitation.job.required_skills.length > 0 && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-2">Required Skills</label>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedInvitation.job.required_skills.map((skill, idx) => (
+                              <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  {selectedInvitation.status === 'pending' && (
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={() => handleDeclineInvitation(selectedInvitation)}
+                        className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold py-3 rounded-xl"
+                      >
+                        Decline Invitation
+                      </Button>
+                      <Button
+                        onClick={() => handleAcceptInvitation(selectedInvitation)}
+                        className="flex-1 bg-black text-white hover:bg-gray-800 font-semibold py-3 rounded-xl"
+                      >
+                        Accept & Apply
+                      </Button>
+                    </div>
+                  )}
+
+                  {selectedInvitation.status === 'accepted' && (
+                    <div className="flex items-center gap-2 text-green-600 bg-green-50 p-4 rounded-xl">
+                      <CheckCircle className="w-5 h-5" />
+                      <span className="font-medium">You have accepted this invitation and applied for the job.</span>
+                    </div>
+                  )}
+
+                  {selectedInvitation.status === 'declined' && (
+                    <div className="flex items-center gap-2 text-red-600 bg-red-50 p-4 rounded-xl">
+                      <XCircle className="w-5 h-5" />
+                      <span className="font-medium">You have declined this invitation.</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              // Invitations List View
+              <div className="max-w-6xl mx-auto">
+                <div className="grid gap-4">
+                  {invitations.map((invitation) => (
+                    <div
+                      key={invitation.id}
+                      onClick={() => setSelectedInvitation(invitation)}
+                      className="bg-white rounded-xl shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow border border-gray-100"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-semibold text-gray-900">
+                              {invitation.job?.title || 'Job Opportunity'}
+                            </h3>
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                              invitation.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                              invitation.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                              invitation.status === 'declined' ? 'bg-red-100 text-red-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {invitation.status.charAt(0).toUpperCase() + invitation.status.slice(1)}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                            {invitation.job?.description || 'No description available'}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5" />
+                              {new Date(invitation.sent_at).toLocaleDateString()}
+                            </div>
+                            {invitation.job?.location && (
+                              <div className="flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5" />
+                                {invitation.job.location}
+                              </div>
+                            )}
+                            {invitation.job?.budget && (
+                              <div className="flex items-center gap-1">
+                                <Euro className="w-3.5 h-3.5" />
+                                €{invitation.job.budget}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-gray-400 flex-shrink-0 ml-4" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>

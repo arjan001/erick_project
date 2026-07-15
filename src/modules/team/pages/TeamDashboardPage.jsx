@@ -33,7 +33,7 @@ import { Input } from '@/components/ui/input';
 import { notifyError, notifySuccess, confirmDialog } from '@/lib/sweetAlert';
 
 import { base44 } from '@/api/base44Client';
-import { Team, PortfolioClip, Message, Invite } from '@/lib/supabaseEntities';
+import { Team, PortfolioClip, Message, Invite, Application, Job, JobInvitation } from '@/lib/supabaseEntities';
 
 
 
@@ -167,9 +167,19 @@ export default function TeamDashboard() {
         // Load real messages
         const msgs = await Message.filter({ recipient_email: teamData.contact_email }, '-created_date', 5);
         setMessages(msgs || []);
-      }
 
-      setApplications([]);
+        // Load team applications
+        const teamApps = await Application.filter({ team_id: teamData.id });
+        const enrichedApplications = await Promise.all(
+          teamApps.map(async (app) => {
+            const job = await Job.get(app.job_id);
+            return { ...app, job };
+          })
+        );
+        setApplications(enrichedApplications || []);
+      } else {
+        setApplications([]);
+      }
 
     } catch (error) {
 
@@ -748,7 +758,7 @@ export default function TeamDashboard() {
 
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <DashboardStatCard icon={Briefcase} label="In progress" value={0} />
+          <DashboardStatCard icon={Briefcase} label="In progress" value={applications.filter(app => app.status === 'pending').length} />
           <DashboardStatCard icon={Users} label="Active crew" value={teamMembers.length} />
           <DashboardStatCard icon={Eye} label="This month" value={portfolioClips.reduce((sum, clip) => sum + (clip.view_count || 0), 0)} />
           <DashboardStatCard icon={Film} label="Work samples" value={portfolioClips.length} />
@@ -1073,13 +1083,15 @@ export default function TeamDashboard() {
 
                 <div className="space-y-3">
 
-                  {messages.slice(0, 5).map((msg, i) => (
+                  {messages.slice(0, 5).map((msg) => (
 
-                    <div key={i} className="p-3 bg-gray-50 rounded-lg">
+                    <div key={msg.id} className="p-3 bg-gray-50 rounded-lg">
 
-                      <p className="font-medium text-sm">{msg.from}</p>
+                      <p className="font-medium text-sm">{msg.sender_name || msg.sender_email || 'Unknown'}</p>
 
-                      <p className="text-xs text-gray-600 truncate">{msg.preview}</p>
+                      <p className="text-xs text-gray-600 truncate">{msg.message || 'No message content'}</p>
+
+                      <p className="text-xs text-gray-400 mt-1">{new Date(msg.created_at).toLocaleDateString()}</p>
 
                     </div>
 
