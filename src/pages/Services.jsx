@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
 import { Button } from '@/components/ui/button';
 import { Video, Film, Scissors, Wand2, ArrowRight, CheckCircle } from 'lucide-react';
+import SEOMetaTags from '../components/SEOMetaTags';
 
 const SERVICES = [
   {
@@ -62,6 +63,19 @@ const SERVICES = [
 export default function Services() {
   return (
     <div className="min-h-screen bg-white">
+      <SEOMetaTags
+        title="Video Production Services | Studio22 Full-Spectrum Production"
+        description="Studio22 offers comprehensive video production services including commercial production, film support, post-production, VFX and 3D animation, and creative direction. From concept to delivery, we handle every aspect of your production with curated teams across Europe."
+        keywords="video production services, commercial production, film production support, post-production services, video editing, color grading, sound design, VFX services, 3D animation, motion graphics, creative direction, production coordination, location scouting, video production company"
+        ogImage="https://studio22.com/og-services.jpg"
+        ogType="website"
+        schemaType="Service"
+        schemaData={{
+          name: "Studio22 Production Services",
+          description: "Full-spectrum video production services from concept to delivery",
+          author: "oneplusafrica.com - OnePlusAfrica Tech Solution"
+        }}
+      />
       {/* Hero */}
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-amber-600/10 to-transparent" />

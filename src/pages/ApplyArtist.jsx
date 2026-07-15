@@ -8,6 +8,7 @@ import ArtistStepQuestions from '../components/artist/ArtistStepQuestions';
 import ArtistStepPortfolio from '../components/artist/ArtistStepPortfolio';
 import ArtistStepDetails from '../components/artist/ArtistStepDetails';
 import ApplicationSuccess from '../components/ApplicationSuccess';
+import SEOMetaTags from '../components/SEOMetaTags';
 
 const STEPS = [
   { id: 1, name: 'Details', component: ArtistStepDetails },
@@ -106,6 +107,19 @@ export default function ApplyArtist() {
 
   return (
     <div className="min-h-screen bg-white py-8 lg:py-12">
+      <SEOMetaTags
+        title="Join as Creator | Studio22 Video Production Marketplace"
+        description="Create your professional profile and apply to premium video production projects on Studio22. Connect with brands, agencies, and production companies seeking talented filmmakers, cinematographers, editors, directors, and creative professionals for commercials, music videos, documentaries, and branded content."
+        keywords="join as filmmaker, video creator profile, filmmaker jobs, cinematographer jobs, video editor jobs, director jobs, creative talent marketplace, film production careers, video production work, filmmaker portfolio, creative professionals, production crew jobs"
+        ogImage="https://studio22.com/og-apply-artist.jpg"
+        ogType="website"
+        schemaType="ProfilePage"
+        schemaData={{
+          name: "Studio22 Creator Application",
+          description: "Join the premium video production marketplace as a creative professional",
+          author: "oneplusafrica.com - OnePlusAfrica Tech Solution"
+        }}
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 lg:mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 text-black">Join the Creator Network</h1>

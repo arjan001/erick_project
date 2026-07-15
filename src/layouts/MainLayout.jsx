@@ -171,7 +171,6 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                 </Button>
               )}
               <button
-                onClick={() => setExploreOpen(true)}
                 className="px-4 py-2 bg-black text-white hover:bg-gray-800 font-bold text-sm rounded-md transition-colors"
               >
                 Post a Project

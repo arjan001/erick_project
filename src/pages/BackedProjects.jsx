@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, Banknote } from 'lucide-react';
+import SEOMetaTags from '../components/SEOMetaTags';
 
 export default function BackedProjects() {
   const [projects, setProjects] = useState([]);
@@ -49,6 +50,19 @@ export default function BackedProjects() {
 
   return (
     <div className="min-h-screen bg-white py-12">
+      <SEOMetaTags
+        title="Backed Projects | Studio22 Film Funding & Co-Production"
+        description="Discover creative film and video projects seeking sponsorship, co-production partnerships, cultural support, and investment through Studio22. Connect with filmmakers, studios, and production companies across Europe for collaborative opportunities in commercials, music videos, documentaries, and feature films."
+        keywords="film funding, video production investment, co-production partnerships, film sponsorship, cultural support for films, documentary funding, short film backing, commercial production investment, film financing, video project investment, production partnerships, creative collaboration"
+        ogImage="https://studio22.com/og-backed-projects.jpg"
+        ogType="website"
+        schemaType="CollectionPage"
+        schemaData={{
+          name: "Studio22 Backed Projects",
+          description: "Film and video projects seeking funding and co-production partnerships",
+          author: "oneplusafrica.com - OnePlusAfrica Tech Solution"
+        }}
+      />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12">

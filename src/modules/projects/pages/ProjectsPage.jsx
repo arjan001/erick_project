@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, Sparkles, Loader } from 'lucide-react';
 import RequestIntroductionModal from '@/components/RequestIntroductionModal';
+import SEOMetaTags from '@/components/SEOMetaTags';
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);
@@ -68,6 +69,19 @@ export default function Projects() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEOMetaTags
+        title="Browse Video Production Projects | Studio22 Marketplace"
+        description="Discover and apply to verified video production projects from leading brands, agencies, and creators worldwide. Studio22 connects filmmakers, production teams, and creative professionals with commercial, music video, documentary, short film, and branded content opportunities."
+        keywords="video production projects, film jobs, commercial production jobs, music video projects, documentary projects, short film opportunities, branded content projects, filmmaker jobs, production crew jobs, video production work, creative projects, film production opportunities"
+        ogImage="https://studio22.com/og-projects.jpg"
+        ogType="website"
+        schemaType="CollectionPage"
+        schemaData={{
+          name: "Studio22 Projects",
+          description: "Curated marketplace of video production projects for filmmakers and production teams",
+          author: "oneplusafrica.com - OnePlusAfrica Tech Solution"
+        }}
+      />
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-gray-900 to-gray-800 text-white py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">

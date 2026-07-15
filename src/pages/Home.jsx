@@ -1,26 +1,18 @@
 import React, { useState, useEffect } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-
 import { createPageUrl } from '@/shared/utils/routing';
-
-import { ArrowRight, Play, Bookmark, Sparkles, X, Plus } from 'lucide-react';
-
+import { ArrowRight, Play, Bookmark, Sparkles, X, Plus, Send, CheckCircle2, Loader, Film, Music, Video, Clapperboard, Briefcase, Building, Calendar, Package, Share, Sparkles as SparklesIcon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-
 import { Creator, SavedProject, FeaturedWork, SuccessStory, RecentProject, ContentCategory } from '@/lib/supabaseEntities';
-
 import { Button } from '@/components/ui/button';
-
+import { Input } from '@/components/ui/input';
 import EditableSection from '../components/EditableSection';
-
 import CreatorFilterBar from '../components/CreatorFilterBar';
-
 import CreatorGrid from '../components/CreatorGrid';
-
 import CreatorGeneratorModal from '../components/CreatorGeneratorModal';
-
 import ServiceCard from '../components/home/ServiceCard';
+import SEOMetaTags from '../components/SEOMetaTags';
 
 
 
@@ -145,58 +137,116 @@ async function generateSingleShot(prompt) {
 
 
 export default function Home({ editMode = false }) {
+  const navigate = useNavigate();
 
   const [inProduction, setInProduction] = useState([]);
-
   const [released, setReleased] = useState([]);
-
   const [collections, setCollections] = useState([]);
-
   const [recent, setRecent] = useState([]);
-
   const [loading, setLoading] = useState(true);
 
   const [savedProjects, setSavedProjects] = useState({
-
     inproduction: [],
-
     released: [],
-
     collections: [],
-
     creators: [],
-
     recent: [],
-
     services: []
-
   });
 
   const [viewingProject, setViewingProject] = useState(null);
-
   const [showAddShotPopup, setShowAddShotPopup] = useState(false);
-
   const [addShotPrompt, setAddShotPrompt] = useState('');
-
   const [generatingShot, setGeneratingShot] = useState(false);
-
   const [allCreators, setAllCreators] = useState([]);
 
   const [creatorFilters, setCreatorFilters] = useState({
-
     type: 'all_types',
-
     category: 'all_categories', 
-
     countries: []
-
   });
 
   const [creatorView, setCreatorView] = useState('list');
-
   const [creatorsPerPage, setCreatorsPerPage] = useState(10);
-
   const [showCreatorGenerator, setShowCreatorGenerator] = useState(false);
+
+  // Quick project form state
+  const [projectUrl, setProjectUrl] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
+  const [projectCategory, setProjectCategory] = useState('commercial');
+  const [extracting, setExtracting] = useState(false);
+  const [extractProgress, setExtractProgress] = useState(null);
+
+  const projectCategories = [
+    { value: 'commercial', label: 'Commercial', icon: Film },
+    { value: 'music_video', label: 'Music Video', icon: Music },
+    { value: 'short_film', label: 'Short Film', icon: Clapperboard },
+    { value: 'documentary', label: 'Documentary', icon: Video },
+    { value: 'branded_content', label: 'Branded Content', icon: Briefcase },
+    { value: 'corporate_video', label: 'Corporate Video', icon: Building },
+    { value: 'event_coverage', label: 'Event Coverage', icon: Calendar },
+    { value: 'product_demo', label: 'Product Demo', icon: Package },
+    { value: 'social_media', label: 'Social Media', icon: Share },
+    { value: 'animation', label: 'Animation', icon: SparklesIcon }
+  ];
+
+  const progressSteps = [
+    'Fetching site content',
+    'Analyzing brand and tone',
+    'Identifying visual language',
+    'Translating into a film concept'
+  ];
+
+  const handleExtract = async () => {
+    if (!projectUrl) return;
+
+    setExtracting(true);
+    setExtractProgress(0);
+
+    // Simulate progress through steps
+    const progressInterval = setInterval(() => {
+      setExtractProgress(prev => {
+        if (prev === null) return 0;
+        if (prev < progressSteps.length - 1) return prev + 1;
+        return prev;
+      });
+    }, 800);
+
+    try {
+      const response = await base44.functions.invoke('extractAndAnalyze', {
+        url: projectUrl,
+        projectType: projectCategory
+      });
+
+      clearInterval(progressInterval);
+
+      if (response.data?.success && response.data?.description) {
+        setProjectDescription(response.data.description);
+        setExtractProgress(progressSteps.length - 1);
+        setTimeout(() => {
+          setExtractProgress(null);
+        }, 600);
+      } else if (response.data?.error) {
+        console.error('Extract error:', response.data.error);
+        setExtractProgress(null);
+      }
+    } catch (error) {
+      console.error('Extract failed:', error);
+      setExtractProgress(null);
+      clearInterval(progressInterval);
+    } finally {
+      setExtracting(false);
+    }
+  };
+
+  const handleQuickSubmit = (e) => {
+    e.preventDefault();
+    // Store the data in sessionStorage to pass to SubmitProject page
+    sessionStorage.setItem('quickProjectUrl', projectUrl);
+    sessionStorage.setItem('quickProjectDescription', projectDescription);
+    sessionStorage.setItem('quickProjectCategory', projectCategory);
+    navigate('/SubmitProject');
+  };
 
 
 
@@ -421,6 +471,20 @@ export default function Home({ editMode = false }) {
   return (
 
     <div className="min-h-screen bg-white">
+      <SEOMetaTags
+        title="Studio22 - Premium Video Production Marketplace | Connect with World-Class Creators"
+        description="Studio22 is the curated marketplace connecting brands and clients with the world's best independent filmmakers, video production teams, and creative studios. Find verified talent for commercials, music videos, documentaries, short films, and branded content projects across Europe and globally."
+        keywords="video production marketplace, filmmakers, production teams, creative studios, commercial production, music video directors, documentary filmmakers, short film creators, branded content, video production services, film crew, cinematographers, video editors, production companies, creative talent, video production jobs"
+        ogImage="https://studio22.com/og-home.jpg"
+        ogType="website"
+        schemaType="WebSite"
+        schemaData={{
+          name: "Studio22",
+          url: "https://studio22.com",
+          description: "Premium video production marketplace connecting clients with world-class creators and production teams",
+          author: "oneplusafrica.com - OnePlusAfrica Tech Solution"
+        }}
+      />
 
       {/* Add Shot Popup */}
 
@@ -747,87 +811,124 @@ export default function Home({ editMode = false }) {
       )}
 
       {/* Hero Section */}
-
-      <section className="relative bg-[#F9F9F9] py-12 md:py-20 overflow-hidden">
-
-        {/* Main Title */}
-
-        <div className="text-center px-4 md:px-6 max-w-6xl mx-auto mb-8 md:mb-12">
-
-          <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold tracking-tighter mb-4 md:mb-6">CONNECT. CREATE.</h1>
-
-          <p className="text-base md:text-lg lg:text-xl text-gray-600 font-light mb-6 md:mb-8 max-w-3xl mx-auto">
-
-            Studio22 is the curated marketplace connecting clients with the world's best independent creators and production teams. Post a project, find your crew, create incredible work.
-
+      <section className="relative bg-[#F9F9F9] min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Main Content */}
+        <div className="relative z-10 text-center px-4 md:px-6 max-w-4xl mx-auto">
+          {/* Main Title */}
+          <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold text-black tracking-tighter mb-6">
+            CONNECT. CREATE.
+          </h1>
+          
+          <p className="text-lg md:text-xl lg:text-2xl text-gray-600 font-light mb-12 max-w-2xl mx-auto">
+            Studio22 is the curated marketplace connecting clients with the world's best independent creators and production teams.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-
-            <Link to={createPageUrl('SubmitProject')}>
-
-              <Button size="lg" className="w-full sm:w-auto bg-black text-white hover:bg-gray-800">
-
-                Post a Project for Free
-
-              </Button>
-
-            </Link>
-
-            <Link to={createPageUrl('ApplyArtist')}>
-
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
-
-                Apply to Join the Network
-
-              </Button>
-
-            </Link>
-
-          </div>
-
-        </div>
-
-
-
-        {/* Background Image (smaller, positioned lower) */}
-
-        <div className="relative max-w-5xl mx-auto px-6 mb-16">
-
-          <div className="relative rounded-xl overflow-hidden shadow-2xl">
-
-            {loading ? (
-
-              <div className="w-full aspect-video bg-gray-200 flex items-center justify-center">
-
-                <div className="text-gray-400">Loading...</div>
-
-              </div>
-
-            ) : (
-
-              <img 
-
-                src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&amp;w=2000"
-
-                alt="Cinematic production"
-
-                className="w-full aspect-video object-cover"
-
-                loading="eager"
-
+          {/* Simple Form */}
+          <form onSubmit={handleQuickSubmit} className="max-w-xl mx-auto space-y-4">
+            <div className="relative">
+              <Input
+                type="url"
+                value={projectUrl}
+                onChange={(e) => setProjectUrl(e.target.value)}
+                placeholder="Paste your website or project URL (optional)"
+                className="w-full px-4 py-3 pr-32 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-transparent h-11"
               />
+              <button
+                type="button"
+                onClick={handleExtract}
+                disabled={!projectUrl || extracting}
+                className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1.5 bg-black text-white text-xs font-medium rounded hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3 h-3" />
+                {extracting ? 'Analyzing...' : 'Analyze'}
+              </button>
+            </div>
 
+            {/* Progress Indicator */}
+            {extractProgress !== null && (
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="space-y-2">
+                  {progressSteps.map((step, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-xs">
+                      {idx < extractProgress && (
+                        <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                      )}
+                      {idx === extractProgress && (
+                        <Loader className="w-4 h-4 text-blue-600 flex-shrink-0 animate-spin" />
+                      )}
+                      {idx > extractProgress && (
+                        <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex-shrink-0" />
+                      )}
+                      <span className={idx <= extractProgress ? 'text-gray-800' : 'text-gray-500'}>
+                        {step}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-
-          </div>
-
+            {/* Description with Category Selector */}
+            <div className="relative border border-gray-300 rounded-lg">
+              <textarea
+                value={projectDescription}
+                onChange={(e) => setProjectDescription(e.target.value)}
+                placeholder="Describe your project in one sentence..."
+                rows={3}
+                className="w-full px-4 py-4 pb-10 text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+              />
+              {/* Category Selector - Bottom Left Floating */}
+              <div className="absolute bottom-2 left-3">
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const dropdown = document.getElementById('category-dropdown');
+                      dropdown.classList.toggle('hidden');
+                    }}
+                    className="flex items-center gap-2 text-xs text-gray-600 bg-white border border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-black cursor-pointer"
+                  >
+                    {(() => {
+                      const selectedCategory = projectCategories.find(cat => cat.value === projectCategory);
+                      const Icon = selectedCategory?.icon || Film;
+                      return <Icon className="w-3 h-3 text-gray-500" />;
+                    })()}
+                    <span>{projectCategories.find(cat => cat.value === projectCategory)?.label}</span>
+                  </button>
+                  <div
+                    id="category-dropdown"
+                    className="hidden absolute bottom-full left-0 mb-1 bg-white border border-gray-200 rounded shadow-lg z-[100] min-w-[150px]"
+                  >
+                    {projectCategories.map((cat) => {
+                      const Icon = cat.icon;
+                      return (
+                        <button
+                          key={cat.value}
+                          type="button"
+                          onClick={() => {
+                            setProjectCategory(cat.value);
+                            document.getElementById('category-dropdown').classList.add('hidden');
+                          }}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 text-left"
+                        >
+                          <Icon className="w-3 h-3 text-gray-500" />
+                          <span>{cat.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-black text-white hover:bg-gray-800 py-4 text-lg font-semibold"
+            >
+              <Send className="w-5 h-5 mr-2" />
+              Submit
+            </Button>
+          </form>
         </div>
-
-
-
       </section>
 
 

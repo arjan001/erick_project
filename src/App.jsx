@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { RouteRenderer } from '@/app/router/RouteRenderer';
 import { ToastProvider } from '@/hooks/useToast';
 import { MaintenanceGuard } from '@/app/router/guards/MaintenanceGuard';
+import { HelmetProvider } from 'react-helmet-async';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth } = useAuth();
@@ -35,11 +36,13 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <ToastProvider>
-          <Router>
-            <NavigationTracker />
-            <AuthenticatedApp />
-          </Router>
-          <Toaster />
+          <HelmetProvider>
+            <Router>
+              <NavigationTracker />
+              <AuthenticatedApp />
+            </Router>
+            <Toaster />
+          </HelmetProvider>
         </ToastProvider>
       </QueryClientProvider>
     </AuthProvider>
