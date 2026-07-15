@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Artist } from '@/lib/supabaseEntities';
-import { FILM_ROLES_BY_CATEGORY, ALL_FILM_ROLES } from '@/lib/filmRoles';
+import { FILM_ROLES_BY_CATEGORY, ALL_FILM_ROLES, SOFTWARE_CATEGORIES } from '@/lib/filmRoles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, ArrowRight, ArrowLeft, Check, Plus, X as XIcon } from 'lucide-react';
 import { useToast } from '@/hooks/useToast.jsx';
+import confetti from 'canvas-confetti';
 
 export default function ArtistOnboardingFullModal({ user, onClose }) {
   const { success, error: toastError } = useToast();
@@ -21,6 +22,9 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
     website: '', instagram: '', vimeo: '', imdb: '', linkedin: '',
     skills_experience: [],
   });
+  const [skillInput, setSkillInput] = useState('');
+  const [languageInput, setLanguageInput] = useState('');
+  const [skillSearch, setSkillSearch] = useState('');
 
   useEffect(() => {
     const fetchArtist = async () => {
@@ -66,15 +70,33 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
   };
 
   const addSkill = () => {
-    update('skills_experience', [...formData.skills_experience, { skill: '', years: 0 }]);
+    if (skillInput.trim() && !formData.skills_experience.some(s => s.skill === skillInput.trim())) {
+      update('skills_experience', [...formData.skills_experience, { skill: skillInput.trim(), years: 0 }]);
+      setSkillInput('');
+    }
   };
 
-  const updateSkill = (idx, field, value) => {
-    update('skills_experience', formData.skills_experience.map((s, i) => i === idx ? { ...s, [field]: value } : s));
+  const toggleSkill = (skill) => {
+    if (formData.skills_experience.some(s => s.skill === skill)) {
+      removeSkill(skill);
+    } else {
+      update('skills_experience', [...formData.skills_experience, { skill, years: 0 }]);
+    }
   };
 
-  const removeSkill = (idx) => {
-    update('skills_experience', formData.skills_experience.filter((_, i) => i !== idx));
+  const removeSkill = (skill) => {
+    update('skills_experience', formData.skills_experience.filter(s => s.skill !== skill));
+  };
+
+  const addLanguage = () => {
+    if (languageInput.trim() && !formData.languages_spoken.includes(languageInput.trim())) {
+      update('languages_spoken', [...formData.languages_spoken, languageInput.trim()]);
+      setLanguageInput('');
+    }
+  };
+
+  const removeLanguage = (lang) => {
+    update('languages_spoken', formData.languages_spoken.filter(l => l !== lang));
   };
 
   const canProceed = () => {
@@ -87,7 +109,7 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
     setSaving(true);
     try {
       const primaryRole = formData.role || formData.roles[0] || 'director';
-      await Artist.update(artist.id, {
+      const updated = await Artist.update(artist.id, {
         full_name: formData.full_name,
         phone: formData.phone,
         role: primaryRole,
@@ -104,8 +126,18 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
         skills_experience: formData.skills_experience,
         onboarding_completed: true,
       });
+      setArtist(updated);
       success('Profile Complete', 'Your artist profile has been updated');
-      onClose();
+      
+      // Trigger confetti effect
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#000000', '#666666', '#999999', '#CCCCCC']
+      });
+      
+      setTimeout(() => onClose(), 1500);
     } catch (err) {
       console.error('Error saving profile:', err);
       toastError('Save Failed', 'Failed to save profile');
@@ -127,6 +159,11 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
   const filteredRoles = roleSearch
     ? ALL_FILM_ROLES.filter(r => r.toLowerCase().includes(roleSearch.toLowerCase()))
     : ALL_FILM_ROLES;
+
+  const allSoftwareSkills = Object.values(SOFTWARE_CATEGORIES).flat();
+  const filteredSkills = skillSearch
+    ? allSoftwareSkills.filter(s => s.toLowerCase().includes(skillSearch.toLowerCase()))
+    : allSoftwareSkills;
 
   return (
     <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 overflow-y-auto">
@@ -164,7 +201,28 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-sm font-medium mb-1">Phone (WhatsApp)</label><Input value={formData.phone} onChange={e => update('phone', e.target.value)} placeholder="+31..." /></div>
-                <div><label className="block text-sm font-medium mb-1">Languages (comma separated)</label><Input value={formData.languages_spoken.join(', ')} onChange={e => update('languages_spoken', e.target.value.split(',').map(s => s.trim()).filter(Boolean))} placeholder="English, Dutch" /></div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Languages</label>
+                  <div className="flex gap-2">
+                    <Input 
+                      value={languageInput} 
+                      onChange={e => setLanguageInput(e.target.value)} 
+                      onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
+                      placeholder="Add language" 
+                      className="flex-1" 
+                    />
+                    <Button onClick={addLanguage} variant="outline" size="icon"><Plus className="w-4 h-4" /></Button>
+                  </div>
+                  {formData.languages_spoken.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {formData.languages_spoken.map(lang => (
+                        <span key={lang} className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs rounded-full flex items-center gap-1">
+                          {lang} <button onClick={() => removeLanguage(lang)}><XIcon className="w-3 h-3" /></button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-sm font-medium mb-1">City</label><Input value={formData.based_in_city} onChange={e => update('based_in_city', e.target.value)} /></div>
@@ -213,19 +271,50 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
           {step === 3 && (
             <div className="space-y-4">
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium">Skills & Experience</label>
-                  <button onClick={addSkill} className="text-xs text-gray-600 hover:text-gray-900 flex items-center gap-1"><Plus className="w-3 h-3" /> Add Skill</button>
+                <label className="block text-sm font-medium mb-2">Select your skills (you can choose multiple)</label>
+                <Input value={skillSearch} onChange={e => setSkillSearch(e.target.value)} placeholder="Search skills..." className="mb-3" />
+                <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3 space-y-3">
+                  {Object.entries(SOFTWARE_CATEGORIES).map(([category, skills]) => {
+                    const visible = skills.filter(s => !skillSearch || s.toLowerCase().includes(skillSearch.toLowerCase()));
+                    if (visible.length === 0) return null;
+                    return (
+                      <div key={category}>
+                        <div className="text-xs font-bold uppercase text-gray-500 mb-1">{category}</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {visible.map(skill => (
+                            <button key={skill} onClick={() => toggleSkill(skill)} className={`px-2.5 py-1 text-xs rounded-full transition-colors ${formData.skills_experience.some(s => s.skill === skill) ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                              {skill} {formData.skills_experience.some(s => s.skill === skill) && <XIcon className="inline w-3 h-3 ml-1" />}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                {formData.skills_experience.length === 0 && <p className="text-sm text-gray-400">No skills added yet</p>}
-                <div className="space-y-2">
-                  {formData.skills_experience.map((s, idx) => (
-                    <div key={idx} className="flex gap-2">
-                      <Input value={s.skill} onChange={e => updateSkill(idx, 'skill', e.target.value)} placeholder="Skill (e.g., DaVinci Resolve)" className="flex-1" />
-                      <Input type="number" value={s.years} onChange={e => updateSkill(idx, 'years', parseInt(e.target.value) || 0)} placeholder="Years" className="w-24" />
-                      <button onClick={() => removeSkill(idx)} className="p-2 text-red-500 hover:bg-red-50 rounded"><XIcon className="w-4 h-4" /></button>
+                {formData.skills_experience.length > 0 && (
+                  <div className="mt-3">
+                    <div className="text-xs text-gray-500 mb-1">Selected skills ({formData.skills_experience.length}):</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {formData.skills_experience.map(s => (
+                        <span key={s.skill} className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs rounded-full flex items-center gap-1">
+                          {s.skill} <button onClick={() => removeSkill(s.skill)}><XIcon className="w-3 h-3" /></button>
+                        </span>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Or add custom skill</label>
+                <div className="flex gap-2">
+                  <Input 
+                    value={skillInput} 
+                    onChange={e => setSkillInput(e.target.value)} 
+                    onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                    placeholder="Add custom skill" 
+                    className="flex-1" 
+                  />
+                  <Button onClick={addSkill} variant="outline" size="icon"><Plus className="w-4 h-4" /></Button>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
@@ -245,7 +334,7 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
                 <div><span className="text-gray-500">Name:</span> {formData.full_name}</div>
                 <div><span className="text-gray-500">Location:</span> {formData.based_in_city}, {formData.based_in_country}</div>
                 <div><span className="text-gray-500">Roles:</span> <div className="flex flex-wrap gap-1 mt-1">{formData.roles.map(r => <span key={r} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">{r}</span>)}</div></div>
-                <div><span className="text-gray-500">Skills:</span> {formData.skills_experience.length} skills</div>
+                <div><span className="text-gray-500">Skills:</span> <div className="flex flex-wrap gap-1 mt-1">{formData.skills_experience.map(s => <span key={s.skill} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">{s.skill}</span>)}</div></div>
                 {formData.website && <div><span className="text-gray-500">Website:</span> {formData.website}</div>}
                 {formData.instagram && <div><span className="text-gray-500">Instagram:</span> {formData.instagram}</div>}
               </div>

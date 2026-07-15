@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Search, Briefcase, FileText, Mail, User,
-  Home as HomeIcon, Network, ChevronLeft, ChevronRight, LogOut, Wallet, Bell
+  Home as HomeIcon, Network, ChevronLeft, ChevronRight, LogOut, Wallet, Bell, Users
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useSidebar } from '@/layouts/DashboardLayout';
 import { useAuth } from '@/lib/AuthContext';
-import { Notification } from '@/lib/supabaseEntities';
+import { Notification, Artist } from '@/lib/supabaseEntities';
 
 const MENU_ITEMS = [
   { label: 'Dashboard', icon: HomeIcon, href: 'artistdashboard' },
@@ -26,6 +26,7 @@ export default function ArtistSidebar() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [pendingConnections, setPendingConnections] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [artistProfile, setArtistProfile] = useState(null);
   const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
   const { logout, user } = useAuth();
 
@@ -102,6 +103,21 @@ export default function ArtistSidebar() {
     return () => unsubscribe && unsubscribe();
   }, [user]);
 
+  useEffect(() => {
+    if (!user?.email) return;
+    const fetchArtistProfile = async () => {
+      try {
+        const artists = await Artist.filter({ email: user.email });
+        if (artists?.[0]) {
+          setArtistProfile(artists[0]);
+        }
+      } catch (err) {
+        console.error('Error fetching artist profile:', err);
+      }
+    };
+    fetchArtistProfile();
+  }, [user]);
+
   const toggle = () => {
     if (window.innerWidth < 1024) {
       setMobileSidebarOpen(!mobileSidebarOpen);
@@ -170,12 +186,16 @@ export default function ArtistSidebar() {
       {/* Footer */}
       <div className="border-t border-gray-100 p-2 space-y-1">
         <div className={`flex items-center gap-3 px-3 py-2 rounded-xl ${expanded ? '' : 'justify-center'}`}>
-          <div className="w-8 h-8 bg-gray-100 ring-2 ring-gray-50 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-gray-700">
-            {user?.full_name?.charAt(0) || 'A'}
+          <div className="w-8 h-8 bg-gray-100 ring-2 ring-gray-50 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
+            {artistProfile?.profile_photo_url ? (
+              <img src={artistProfile.profile_photo_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <Users className="w-4 h-4 text-gray-400" />
+            )}
           </div>
           {expanded && (
             <div className="text-left flex-1 min-w-0">
-              <div className="font-medium text-gray-900 text-xs truncate">{user?.full_name || 'Artist'}</div>
+              <div className="font-medium text-gray-900 text-xs truncate">{artistProfile?.full_name || user?.full_name || 'Artist'}</div>
               <div className="text-xs text-gray-500 truncate">{user?.email}</div>
             </div>
           )}

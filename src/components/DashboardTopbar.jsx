@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ChevronDown, LogOut, Settings, MessageCircle, Menu } from 'lucide-react';
+import { Search, ChevronDown, LogOut, Settings, MessageCircle, Menu, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -15,6 +15,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [recentSenders, setRecentSenders] = useState([]);
+  const [artistProfile, setArtistProfile] = useState(null);
 
   const fetchMessages = async () => {
     if (!user?.email) return;
@@ -58,12 +59,28 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
     fetchMessages();
   }, [user]);
 
+
   useEffect(() => {
     if (!user?.email) return;
     const interval = setInterval(() => {
       fetchMessages();
     }, 30000);
     return () => clearInterval(interval);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user?.email || user?.role !== 'artist') return;
+    const fetchArtistProfile = async () => {
+      try {
+        const artists = await Artist.filter({ email: user.email });
+        if (artists?.[0]) {
+          setArtistProfile(artists[0]);
+        }
+      } catch (err) {
+        console.error('Error fetching artist profile:', err);
+      }
+    };
+    fetchArtistProfile();
   }, [user]);
 
   const unreadMessagesCount = messages.length;
@@ -158,11 +175,15 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
             onClick={() => { setMenuOpen(!menuOpen); }}
             className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700 flex-shrink-0">
-              {user?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+              {artistProfile?.profile_photo_url ? (
+                <img src={artistProfile.profile_photo_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <Users className="w-4 h-4 text-indigo-600" />
+              )}
             </div>
             <span className="hidden md:block text-sm font-medium text-gray-700 max-w-[120px] truncate">
-              {user?.full_name || 'User'}
+              {artistProfile?.full_name || user?.full_name || 'User'}
             </span>
             <ChevronDown className="w-4 h-4 text-gray-400 hidden md:block" />
           </button>
@@ -172,7 +193,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
               <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
               <div className="absolute right-0 mt-2 w-52 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-20">
                 <div className="px-4 py-2 border-b border-gray-50">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{user?.full_name}</p>
+                  <p className="text-sm font-semibold text-gray-900 truncate">{artistProfile?.full_name || user?.full_name}</p>
                   <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                 </div>
                 <Link
