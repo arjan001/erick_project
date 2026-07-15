@@ -5,15 +5,17 @@ import { useSidebar } from '@/layouts/DashboardLayout';
 import { useAuth } from '@/lib/AuthContext';
 import { 
   LayoutDashboard, Users, Briefcase, MessageSquare,
-  CreditCard, Settings, LogOut, ChevronLeft, ChevronRight, Building2, Share2
+  CreditCard, Settings, LogOut, ChevronLeft, ChevronRight, Building2, Share2, Bell
 } from 'lucide-react';
+import { Message, Notification } from '@/lib/supabaseEntities';
 
 const MENU_ITEMS = [
   { icon: LayoutDashboard, label: 'Dashboard', path: 'TeamDashboard' },
   { icon: Users, label: 'Team Members', path: 'TeamMembers' },
   { icon: Briefcase, label: 'Projects', path: 'TeamProjects' },
-  { icon: MessageSquare, label: 'Messages', path: 'TeamMessages' },
+  { icon: MessageSquare, label: 'Messages', path: 'TeamMessages', showBadge: true },
   { icon: Share2, label: 'Network', path: 'Network' },
+  { icon: Bell, label: 'Notifications', path: 'Notifications', showNotificationBadge: true },
   { icon: CreditCard, label: 'Payments', path: 'TeamPayments' },
   { icon: Settings, label: 'Profile & Settings', path: 'TeamProfile' },
 ];
@@ -22,8 +24,54 @@ export default function TeamSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [team, setTeam] = useState(null);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+
+  useEffect(() => {
+    if (!user?.email) return;
+    let unsubscribe;
+
+    const fetchUnreadMessages = async () => {
+      try {
+        const msgs = await Message.filter({ recipient_email: user.email, read: false }, '-created_date', 50);
+        setUnreadMessageCount((msgs || []).length);
+      } catch {
+        setUnreadMessageCount(0);
+      }
+    };
+
+    const fetchUnreadNotifications = async () => {
+      try {
+        const notifs = await Notification.filter({ recipient_email: user.email });
+        setUnreadNotificationCount((notifs || []).filter(n => !n.read).length);
+      } catch {
+        setUnreadNotificationCount(0);
+      }
+    };
+
+    fetchUnreadMessages();
+    fetchUnreadNotifications();
+
+    (async () => {
+      unsubscribe = Message.subscribe((event) => {
+        if (event.data?.recipient_email === user.email) fetchUnreadMessages();
+      });
+    })();
+
+    (async () => {
+      const notifUnsubscribe = Notification.subscribe((event) => {
+        if (event.data?.recipient_email === user.email) fetchUnreadNotifications();
+      });
+      return () => {
+        unsubscribe && unsubscribe();
+        notifUnsubscribe && notifUnsubscribe();
+      };
+    })();
+
+    return () => unsubscribe && unsubscribe();
+  }, [user]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
@@ -94,6 +142,16 @@ export default function TeamSidebar() {
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               {expanded && <span className="text-sm whitespace-nowrap">{item.label}</span>}
+              {item.showBadge && unreadMessageCount > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                  {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                </span>
+              )}
+              {item.showNotificationBadge && unreadNotificationCount > 0 && (
+                <span className="ml-auto bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                  {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                </span>
+              )}
             </button>
           );
         })}

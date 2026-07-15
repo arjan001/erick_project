@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -6,91 +6,295 @@ import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Switch } from '@/shared/components/ui/switch';
-import { Save, Globe, FileText, Image as ImageIcon, Map, Settings, Code, RefreshCw } from 'lucide-react';
+import { Save, Globe, FileText, Image as ImageIcon, Map, Settings, Code, RefreshCw, Plus, Trash2, Edit, ChevronLeft, ChevronRight, Search, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { getSeoSettings, updateSeoSettings, getPageMetadata, updatePageMetadata, createPageMetadata, deletePageMetadata, generateSitemap } from '../api/seo.api';
 
 export default function AdminSEOPage() {
-  const [seoSettings, setSeoSettings] = useState({
-    // Global Settings
-    siteTitle: 'Studio22 - Premium Video Production Network',
-    siteDescription: 'Connect with world-class creators, teams, and production studios for your next project. The curated marketplace for video production projects.',
-    siteKeywords: 'video production, filmmakers, creators, studios, production teams, commercial, music video, short film, documentary, branded content, corporate video',
-    canonicalUrl: 'https://studio22.com',
-    
-    // Sitemap Settings
-    sitemapEnabled: true,
-    sitemapPriority: 0.8,
-    sitemapChangeFreq: 'weekly',
-    
-    // Robots.txt
-    robotsTxt: 'User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nSitemap: https://studio22.com/sitemap.xml',
-    
-    // Open Graph
-    ogTitle: 'Studio22 - Premium Video Production Network',
-    ogDescription: 'Connect with world-class creators, teams, and production studios for your next project.',
-    ogImage: 'https://studio22.com/og-image.jpg',
-    ogType: 'website',
-    ogLocale: 'en_US',
-    
-    // Twitter Card
-    twitterCard: 'summary_large_image',
-    twitterSite: '@studio22',
-    twitterCreator: '@studio22',
-    twitterImage: 'https://studio22.com/twitter-image.jpg',
-    
-    // JSON-LD Schema
-    enableSchema: true,
-    organizationName: 'Studio22',
-    organizationLogo: 'https://studio22.com/logo.png',
-    organizationUrl: 'https://studio22.com',
-    sameAs: ['https://twitter.com/studio22', 'https://linkedin.com/company/studio22', 'https://instagram.com/studio22'],
-    
-    // Advanced
-    enableAnalytics: true,
-    googleAnalyticsId: '',
-    enableGTM: false,
-    gtmId: '',
-    enableFacebookPixel: false,
-    facebookPixelId: '',
-  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [sitemapRegenerating, setSitemapRegenerating] = useState(false);
+  const [seoSettings, setSeoSettings] = useState(null);
+  const [cmsPages, setCmsPages] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
+  const [editingPage, setEditingPage] = useState(null);
+  const [showAddPage, setShowAddPage] = useState(false);
 
-  const [cmsPages, setCmsPages] = useState([
-    { id: 1, title: 'Home', slug: '/', metaTitle: 'Studio22 - Premium Video Production Network', metaDescription: 'Connect with world-class creators, teams, and production studios for your next video project.', canonical: 'https://studio22.com/', ogImage: '', noIndex: false, priority: 1.0, changeFreq: 'daily' },
-    { id: 2, title: 'Projects', slug: '/Projects', metaTitle: 'Browse Video Production Projects | Studio22', metaDescription: 'Discover and apply to video production projects from brands and creators worldwide.', canonical: 'https://studio22.com/Projects', ogImage: '', noIndex: false, priority: 0.9, changeFreq: 'daily' },
-    { id: 3, title: 'Creators', slug: '/ApplyArtist', metaTitle: 'Join as Creator | Studio22', metaDescription: 'Create your profile and apply to video production projects on Studio22.', canonical: 'https://studio22.com/ApplyArtist', ogImage: '', noIndex: false, priority: 0.8, changeFreq: 'weekly' },
-    { id: 4, title: 'Teams', slug: '/ApplyTeam', metaTitle: 'Join as Production Team | Studio22', metaDescription: 'Register your production team and connect with clients seeking video production services.', canonical: 'https://studio22.com/ApplyTeam', ogImage: '', noIndex: false, priority: 0.8, changeFreq: 'weekly' },
-    { id: 5, title: 'Services', slug: '/Services', metaTitle: 'Our Services | Studio22', metaDescription: 'Learn about Studio22 services for video production, creator matching, and project management.', canonical: 'https://studio22.com/Services', ogImage: '', noIndex: false, priority: 0.7, changeFreq: 'monthly' },
-    { id: 6, title: 'Backed Projects', slug: '/BackedProjects', metaTitle: 'Backed Projects | Studio22', metaDescription: 'Explore film and video projects seeking funding and co-production partnerships.', canonical: 'https://studio22.com/BackedProjects', ogImage: '', noIndex: false, priority: 0.8, changeFreq: 'daily' },
-  ]);
+  // Load data on mount
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const handleSave = () => {
-    console.log('Saving SEO settings:', seoSettings);
-    console.log('Saving CMS pages:', cmsPages);
-    // TODO: Integrate with backend API
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [settings, pages] = await Promise.all([
+        getSeoSettings().catch(() => null),
+        getPageMetadata().catch(() => [])
+      ]);
+      
+      if (settings) {
+        setSeoSettings({
+          siteTitle: settings.site_title || '',
+          siteDescription: settings.site_description || '',
+          siteKeywords: settings.site_keywords || '',
+          canonicalUrl: settings.canonical_url || '',
+          sitemapEnabled: settings.sitemap_enabled || false,
+          sitemapPriority: settings.sitemap_priority || 0.8,
+          sitemapChangeFreq: settings.sitemap_change_freq || 'weekly',
+          robotsTxt: settings.robots_txt || '',
+          ogTitle: settings.og_title || '',
+          ogDescription: settings.og_description || '',
+          ogImage: settings.og_image || '',
+          ogType: settings.og_type || 'website',
+          ogLocale: settings.og_locale || 'en_US',
+          twitterCard: settings.twitter_card || 'summary_large_image',
+          twitterSite: settings.twitter_site || '',
+          twitterCreator: settings.twitter_creator || '',
+          twitterImage: settings.twitter_image || '',
+          enableSchema: settings.enable_schema || false,
+          organizationName: settings.organization_name || '',
+          organizationLogo: settings.organization_logo || '',
+          organizationUrl: settings.organization_url || '',
+          sameAs: settings.same_as || [],
+          enableAnalytics: settings.enable_analytics || false,
+          googleAnalyticsId: settings.google_analytics_id || '',
+          enableGTM: settings.enable_gtm || false,
+          gtmId: settings.gtm_id || '',
+          enableFacebookPixel: settings.enable_facebook_pixel || false,
+          facebookPixelId: settings.facebook_pixel_id || '',
+        });
+      }
+      
+      if (pages && pages.length > 0) {
+        setCmsPages(pages.map(p => ({
+          id: p.id,
+          title: p.page_title || '',
+          slug: p.page_slug || '',
+          metaTitle: p.meta_title || '',
+          metaDescription: p.meta_description || '',
+          canonical: p.canonical_url || '',
+          ogImage: p.og_image || '',
+          noIndex: p.no_index || false,
+          priority: p.sitemap_priority || 0.8,
+          changeFreq: p.sitemap_change_freq || 'weekly'
+        })));
+      }
+    } catch (error) {
+      console.error('Error loading SEO data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRegenerateSitemap = () => {
-    console.log('Regenerating sitemap...');
-    // TODO: Call sitemap regeneration API
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveSuccess(false);
+    try {
+      // Save SEO settings
+      if (seoSettings) {
+        await updateSeoSettings({
+          site_title: seoSettings.siteTitle,
+          site_description: seoSettings.siteDescription,
+          site_keywords: seoSettings.siteKeywords,
+          canonical_url: seoSettings.canonicalUrl,
+          sitemap_enabled: seoSettings.sitemapEnabled,
+          sitemap_priority: seoSettings.sitemapPriority,
+          sitemap_change_freq: seoSettings.sitemapChangeFreq,
+          robots_txt: seoSettings.robotsTxt,
+          og_title: seoSettings.ogTitle,
+          og_description: seoSettings.ogDescription,
+          og_image: seoSettings.ogImage,
+          og_type: seoSettings.ogType,
+          og_locale: seoSettings.ogLocale,
+          twitter_card: seoSettings.twitterCard,
+          twitter_site: seoSettings.twitterSite,
+          twitter_creator: seoSettings.twitterCreator,
+          twitter_image: seoSettings.twitterImage,
+          enable_schema: seoSettings.enableSchema,
+          organization_name: seoSettings.organizationName,
+          organization_logo: seoSettings.organizationLogo,
+          organization_url: seoSettings.organizationUrl,
+          same_as: seoSettings.sameAs,
+          enable_analytics: seoSettings.enableAnalytics,
+          google_analytics_id: seoSettings.googleAnalyticsId,
+          enable_gtm: seoSettings.enableGTM,
+          gtm_id: seoSettings.gtmId,
+          enable_facebook_pixel: seoSettings.enableFacebookPixel,
+          facebook_pixel_id: seoSettings.facebookPixelId,
+        });
+      }
+      
+      // Save page metadata
+      for (const page of cmsPages) {
+        if (page.id) {
+          await updatePageMetadata(page.id, {
+            page_title: page.title,
+            page_slug: page.slug,
+            meta_title: page.metaTitle,
+            meta_description: page.metaDescription,
+            canonical_url: page.canonical,
+            og_image: page.ogImage,
+            no_index: page.noIndex,
+            sitemap_priority: page.priority,
+            sitemap_change_freq: page.changeFreq,
+          });
+        }
+      }
+      
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      console.error('Error saving SEO settings:', error);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleRegenerateSitemap = async () => {
+    setSitemapRegenerating(true);
+    try {
+      await generateSitemap();
+    } catch (error) {
+      console.error('Error regenerating sitemap:', error);
+    } finally {
+      setSitemapRegenerating(false);
+    }
+  };
+
+  // Pagination
+  const filteredPages = cmsPages.filter(page => 
+    page.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    page.slug.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const totalPages = Math.ceil(filteredPages.length / itemsPerPage);
+  const paginatedPages = filteredPages.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handleAddPage = () => {
+    const newPage = {
+      id: null,
+      title: '',
+      slug: '',
+      metaTitle: '',
+      metaDescription: '',
+      canonical: '',
+      ogImage: '',
+      noIndex: false,
+      priority: 0.8,
+      changeFreq: 'weekly'
+    };
+    setEditingPage(newPage);
+    setShowAddPage(true);
+  };
+
+  const handleEditPage = (page) => {
+    setEditingPage(page);
+    setShowAddPage(true);
+  };
+
+  const handleDeletePage = async (pageId) => {
+    if (window.confirm('Are you sure you want to delete this page metadata?')) {
+      try {
+        await deletePageMetadata(pageId);
+        setCmsPages(cmsPages.filter(p => p.id !== pageId));
+      } catch (error) {
+        console.error('Error deleting page:', error);
+      }
+    }
+  };
+
+  const handleSavePage = async () => {
+    try {
+      if (editingPage.id) {
+        await updatePageMetadata(editingPage.id, {
+          page_title: editingPage.title,
+          page_slug: editingPage.slug,
+          meta_title: editingPage.metaTitle,
+          meta_description: editingPage.metaDescription,
+          canonical_url: editingPage.canonical,
+          og_image: editingPage.ogImage,
+          no_index: editingPage.noIndex,
+          sitemap_priority: editingPage.priority,
+          sitemap_change_freq: editingPage.changeFreq,
+        });
+        setCmsPages(cmsPages.map(p => p.id === editingPage.id ? editingPage : p));
+      } else {
+        const newPage = await createPageMetadata({
+          page_title: editingPage.title,
+          page_slug: editingPage.slug,
+          meta_title: editingPage.metaTitle,
+          meta_description: editingPage.metaDescription,
+          canonical_url: editingPage.canonical,
+          og_image: editingPage.ogImage,
+          no_index: editingPage.noIndex,
+          sitemap_priority: editingPage.priority,
+          sitemap_change_freq: editingPage.changeFreq,
+        });
+        setCmsPages([...cmsPages, { ...editingPage, id: newPage.id }]);
+      }
+      setShowAddPage(false);
+      setEditingPage(null);
+    } catch (error) {
+      console.error('Error saving page:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">SEO & Metadata Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">SEO & Metadata Management</h1>
           <p className="text-gray-600">Comprehensive SEO settings, sitemap generation, and social media optimization</p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={handleRegenerateSitemap} variant="outline" className="border-gray-300">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Regenerate Sitemap
+        <div className="flex gap-3">
+          <Button 
+            onClick={handleRegenerateSitemap} 
+            variant="outline" 
+            className="border-gray-300 hover:bg-gray-50"
+            disabled={sitemapRegenerating}
+          >
+            {sitemapRegenerating ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2" />
+            )}
+            {sitemapRegenerating ? 'Regenerating...' : 'Regenerate Sitemap'}
           </Button>
-          <Button onClick={handleSave} className="bg-black text-white hover:bg-gray-800">
-            <Save className="w-4 h-4 mr-2" />
-            Save Changes
+          <Button 
+            onClick={handleSave} 
+            className="bg-black text-white hover:bg-gray-800"
+            disabled={saving}
+          >
+            {saving ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            {saving ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </div>
+      
+      {saveSuccess && (
+        <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <CheckCircle className="w-5 h-5 text-green-600" />
+          <span className="text-green-800 font-medium">Settings saved successfully!</span>
+        </div>
+      )}
 
       <Tabs defaultValue="global" className="space-y-4">
         <TabsList>
@@ -103,14 +307,14 @@ export default function AdminSEOPage() {
         </TabsList>
 
         <TabsContent value="global">
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm border-gray-200">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b">
               <CardTitle className="flex items-center gap-2">
-                <Globe className="w-5 h-5" />
+                <Globe className="w-5 h-5 text-gray-700" />
                 Global SEO Settings
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-6 space-y-6">
               <div className="space-y-2">
                 <Label>Site Title (60 chars max)</Label>
                 <Input
@@ -160,120 +364,256 @@ export default function AdminSEOPage() {
         </TabsContent>
 
         <TabsContent value="cms">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Page Metadata
-              </CardTitle>
+          <Card className="shadow-sm border-gray-200">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-gray-700" />
+                  Page Metadata
+                </CardTitle>
+                <Button 
+                  onClick={handleAddPage}
+                  size="sm"
+                  className="bg-black text-white hover:bg-gray-800"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Page
+                </Button>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {cmsPages.map((page) => (
-                  <div key={page.id} className="p-4 border border-gray-200 rounded-lg space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium">{page.title}</h4>
+            <CardContent className="p-6">
+              {/* Search */}
+              <div className="mb-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    placeholder="Search pages..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 border-gray-300"
+                  />
+                </div>
+              </div>
+              
+              {/* Pages Table */}
+              <div className="space-y-3">
+                {paginatedPages.map((page) => (
+                  <div key={page.id} className="p-5 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1">
+                          <h4 className="font-semibold text-gray-900">{page.title}</h4>
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">/{page.slug}</span>
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2">
-                        <Label className="text-xs flex items-center gap-1">
+                        <Label className="text-xs flex items-center gap-2 cursor-pointer">
                           <Switch 
                             checked={!page.noIndex}
                             onCheckedChange={(checked) => {
                               setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, noIndex: !checked } : p));
                             }}
                           />
-                          Index
+                          <span className={page.noIndex ? 'text-red-600' : 'text-green-600'}>
+                            {page.noIndex ? 'No Index' : 'Indexed'}
+                          </span>
                         </Label>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEditPage(page)}
+                          className="h-8 w-8 p-0 hover:bg-gray-100"
+                        >
+                          <Edit className="w-4 h-4 text-gray-600" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeletePage(page.id)}
+                          className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600">/{page.slug}</p>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-xs">Meta Title (60 chars)</Label>
+                        <Label className="text-xs text-gray-500 mb-1 block">Meta Title ({page.metaTitle.length}/60)</Label>
                         <Input 
                           value={page.metaTitle} 
-                          className="text-sm"
+                          className="text-sm border-gray-300"
                           maxLength={60}
                           onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, metaTitle: e.target.value } : p))}
                         />
                       </div>
                       <div>
-                        <Label className="text-xs">Canonical URL</Label>
+                        <Label className="text-xs text-gray-500 mb-1 block">Canonical URL</Label>
                         <Input 
                           value={page.canonical} 
-                          className="text-sm"
+                          className="text-sm border-gray-300"
                           onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, canonical: e.target.value } : p))}
                         />
                       </div>
                     </div>
-                    <div>
-                      <Label className="text-xs">Meta Description (160 chars)</Label>
+                    <div className="mt-4">
+                      <Label className="text-xs text-gray-500 mb-1 block">Meta Description ({page.metaDescription.length}/160)</Label>
                       <Input 
                         value={page.metaDescription} 
-                        className="text-sm"
+                        className="text-sm border-gray-300"
                         maxLength={160}
                         onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, metaDescription: e.target.value } : p))}
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-4 mt-4">
                       <div>
-                        <Label className="text-xs">OG Image URL</Label>
+                        <Label className="text-xs text-gray-500 mb-1 block">OG Image</Label>
                         <Input 
                           value={page.ogImage} 
-                          className="text-sm"
+                          className="text-sm border-gray-300"
                           placeholder="https://studio22.com/og-home.jpg"
                           onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, ogImage: e.target.value } : p))}
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <Label className="text-xs">Priority</Label>
-                          <select 
-                            value={page.priority}
-                            onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, priority: parseFloat(e.target.value) } : p))}
-                            className="w-full text-sm border border-gray-300 rounded px-2 py-1"
-                          >
-                            <option value="1.0">1.0</option>
-                            <option value="0.9">0.9</option>
-                            <option value="0.8">0.8</option>
-                            <option value="0.7">0.7</option>
-                            <option value="0.6">0.6</option>
-                            <option value="0.5">0.5</option>
-                          </select>
-                        </div>
-                        <div>
-                          <Label className="text-xs">Change Freq</Label>
-                          <select 
-                            value={page.changeFreq}
-                            onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, changeFreq: e.target.value } : p))}
-                            className="w-full text-sm border border-gray-300 rounded px-2 py-1"
-                          >
-                            <option value="always">Always</option>
-                            <option value="hourly">Hourly</option>
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                            <option value="yearly">Yearly</option>
-                            <option value="never">Never</option>
-                          </select>
-                        </div>
+                      <div>
+                        <Label className="text-xs text-gray-500 mb-1 block">Priority</Label>
+                        <select 
+                          value={page.priority}
+                          onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, priority: parseFloat(e.target.value) } : p))}
+                          className="w-full text-sm border border-gray-300 rounded px-3 py-2"
+                        >
+                          <option value="1.0">1.0</option>
+                          <option value="0.9">0.9</option>
+                          <option value="0.8">0.8</option>
+                          <option value="0.7">0.7</option>
+                          <option value="0.6">0.6</option>
+                          <option value="0.5">0.5</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-gray-500 mb-1 block">Change Freq</Label>
+                        <select 
+                          value={page.changeFreq}
+                          onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, changeFreq: e.target.value } : p))}
+                          className="w-full text-sm border border-gray-300 rounded px-3 py-2"
+                        >
+                          <option value="always">Always</option>
+                          <option value="hourly">Hourly</option>
+                          <option value="daily">Daily</option>
+                          <option value="weekly">Weekly</option>
+                          <option value="monthly">Monthly</option>
+                          <option value="yearly">Yearly</option>
+                          <option value="never">Never</option>
+                        </select>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-6 pt-6 border-t">
+                  <p className="text-sm text-gray-600">
+                    Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredPages.length)} of {filteredPages.length} pages
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="border-gray-300"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <span className="text-sm text-gray-600">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="border-gray-300"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
+          
+          {/* Add/Edit Page Modal */}
+          {showAddPage && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+              <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <CardHeader>
+                  <CardTitle>{editingPage?.id ? 'Edit Page' : 'Add New Page'}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>Page Title</Label>
+                    <Input
+                      value={editingPage?.title || ''}
+                      onChange={(e) => setEditingPage({ ...editingPage, title: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Page Slug</Label>
+                    <Input
+                      value={editingPage?.slug || ''}
+                      onChange={(e) => setEditingPage({ ...editingPage, slug: e.target.value })}
+                      placeholder="/your-page"
+                    />
+                  </div>
+                  <div>
+                    <Label>Meta Title</Label>
+                    <Input
+                      value={editingPage?.metaTitle || ''}
+                      onChange={(e) => setEditingPage({ ...editingPage, metaTitle: e.target.value })}
+                      maxLength={60}
+                    />
+                  </div>
+                  <div>
+                    <Label>Meta Description</Label>
+                    <Textarea
+                      value={editingPage?.metaDescription || ''}
+                      onChange={(e) => setEditingPage({ ...editingPage, metaDescription: e.target.value })}
+                      rows={3}
+                      maxLength={160}
+                    />
+                  </div>
+                  <div>
+                    <Label>Canonical URL</Label>
+                    <Input
+                      value={editingPage?.canonical || ''}
+                      onChange={(e) => setEditingPage({ ...editingPage, canonical: e.target.value })}
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <Button onClick={handleSavePage} className="flex-1">
+                      Save Page
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowAddPage(false)} className="flex-1">
+                      Cancel
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="social">
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm border-gray-200">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b">
               <CardTitle className="flex items-center gap-2">
-                <ImageIcon className="w-5 h-5" />
+                <ImageIcon className="w-5 h-5 text-gray-700" />
                 Social Media & Open Graph
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-6 space-y-6">
               <div className="space-y-2">
                 <Label>OG Title</Label>
                 <Input
@@ -367,14 +707,14 @@ export default function AdminSEOPage() {
         </TabsContent>
 
         <TabsContent value="sitemap">
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm border-gray-200">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b">
               <CardTitle className="flex items-center gap-2">
-                <Map className="w-5 h-5" />
+                <Map className="w-5 h-5 text-gray-700" />
                 Sitemap Configuration
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-6 space-y-6">
               <div className="flex items-center gap-3">
                 <Switch 
                   checked={seoSettings.sitemapEnabled}
@@ -422,14 +762,14 @@ export default function AdminSEOPage() {
         </TabsContent>
 
         <TabsContent value="schema">
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm border-gray-200">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b">
               <CardTitle className="flex items-center gap-2">
-                <Code className="w-5 h-5" />
+                <Code className="w-5 h-5 text-gray-700" />
                 Schema.org Structured Data
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-6 space-y-6">
               <div className="flex items-center gap-3">
                 <Switch 
                   checked={seoSettings.enableSchema}
@@ -474,14 +814,14 @@ export default function AdminSEOPage() {
         </TabsContent>
 
         <TabsContent value="advanced">
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm border-gray-200">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b">
               <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5" />
+                <Settings className="w-5 h-5 text-gray-700" />
                 Advanced Settings
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-6 space-y-6">
               <div className="flex items-center gap-3">
                 <Switch 
                   checked={seoSettings.enableAnalytics}

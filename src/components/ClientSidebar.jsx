@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Briefcase, Plus, FileText, Mail, BarChart3, Settings, ChevronLeft, ChevronRight, LogOut, Share2 } from 'lucide-react';
+import { Briefcase, Plus, FileText, Mail, BarChart3, Settings, ChevronLeft, ChevronRight, LogOut, Share2, Bell } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useSidebar } from '@/layouts/DashboardLayout';
 import { useAuth } from '@/lib/AuthContext';
+import { Message, Notification } from '@/lib/supabaseEntities';
 
 const MENU_ITEMS = [
   { label: 'My Projects', icon: Briefcase, href: 'ClientDashboard' },
   { label: 'Post Project', icon: Plus, href: 'ClientPostProject' },
   { label: 'Applications', icon: FileText, href: 'ClientApplications' },
-  { label: 'Messages', icon: Mail, href: 'ClientMessages' },
+  { label: 'Messages', icon: Mail, href: 'ClientMessages', showBadge: true },
   { label: 'Network', icon: Share2, href: 'Network', showConnectionBadge: true },
+  { label: 'Notifications', icon: Bell, href: 'Notifications', showNotificationBadge: true },
   { label: 'Analytics', icon: BarChart3, href: 'ClientAnalytics' },
   { label: 'Profile & Settings', icon: Settings, href: 'ClientProfile' }
 ];
@@ -19,6 +21,8 @@ export default function ClientSidebar() {
   const location = useLocation();
   const [user, setUser] = useState(null);
   const [pendingConnections, setPendingConnections] = useState(0);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
   const { logout } = useAuth();
 
@@ -26,6 +30,50 @@ export default function ClientSidebar() {
     const storedUser = localStorage.getItem('studio22_user');
     setUser(storedUser ? JSON.parse(storedUser) : null);
   }, []);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    let unsubscribe;
+
+    const fetchUnreadMessages = async () => {
+      try {
+        const msgs = await Message.filter({ recipient_email: user.email, read: false }, '-created_date', 50);
+        setUnreadMessageCount((msgs || []).length);
+      } catch {
+        setUnreadMessageCount(0);
+      }
+    };
+
+    const fetchUnreadNotifications = async () => {
+      try {
+        const notifs = await Notification.filter({ recipient_email: user.email });
+        setUnreadNotificationCount((notifs || []).filter(n => !n.read).length);
+      } catch {
+        setUnreadNotificationCount(0);
+      }
+    };
+
+    fetchUnreadMessages();
+    fetchUnreadNotifications();
+
+    (async () => {
+      unsubscribe = Message.subscribe((event) => {
+        if (event.data?.recipient_email === user.email) fetchUnreadMessages();
+      });
+    })();
+
+    (async () => {
+      const notifUnsubscribe = Notification.subscribe((event) => {
+        if (event.data?.recipient_email === user.email) fetchUnreadNotifications();
+      });
+      return () => {
+        unsubscribe && unsubscribe();
+        notifUnsubscribe && notifUnsubscribe();
+      };
+    })();
+
+    return () => unsubscribe && unsubscribe();
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -99,9 +147,19 @@ export default function ClientSidebar() {
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               {expanded && <span className="text-sm whitespace-nowrap">{item.label}</span>}
+              {item.showBadge && unreadMessageCount > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                  {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                </span>
+              )}
               {item.showConnectionBadge && pendingConnections > 0 && (
                 <span className="ml-auto bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 animate-pulse">
                   {pendingConnections > 9 ? '9+' : pendingConnections}
+                </span>
+              )}
+              {item.showNotificationBadge && unreadNotificationCount > 0 && (
+                <span className="ml-auto bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                  {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
                 </span>
               )}
             </Link>

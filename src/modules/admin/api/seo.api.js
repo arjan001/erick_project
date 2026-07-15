@@ -87,6 +87,18 @@ export const createPageMetadata = async (metadata) => {
   }
 };
 
+// Delete page metadata
+export const deletePageMetadata = async (id) => {
+  try {
+    const { data, error } = await base44.entities.page_seo_metadata.delete(id);
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error deleting page metadata:', error);
+    throw error;
+  }
+};
+
 /**
  * Sitemap Generation API
  */

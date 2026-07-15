@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Job, Application, Artist, ConnectsTransaction, Project } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, Euro, ChevronDown, Calendar, Building2, Users, Star, ExternalLink, Crown, Lock } from 'lucide-react';
+import { MapPin, Clock, Euro, ChevronDown, Calendar, Building2, Users, Star, ExternalLink, Crown, Lock, Eye, EyeOff, AlertCircle, CheckCircle, XCircle, Hourglass, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { base44 } from '@/api/base44Client';
 import skillsAndRoles from '@/lib/skillsAndRoles.json';
@@ -28,6 +28,7 @@ export default function Jobs() {
     skills: false,
     paid: false
   });
+  const [applicationStatusFilter, setApplicationStatusFilter] = useState('all');
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
 
@@ -207,6 +208,38 @@ export default function Jobs() {
     });
   };
 
+  const getTimeAgo = (date) => {
+    if (!date) return 'Recently';
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    if (seconds < 60) return 'Just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return new Date(date).toLocaleDateString();
+  };
+
+  const isJobExpired = (job) => {
+    if (!job.application_deadline) return false;
+    return new Date(job.application_deadline) < new Date();
+  };
+
+  const getStatusConfig = (status) => {
+    const configs = {
+      pending: { icon: Hourglass, color: 'bg-yellow-100 text-yellow-700 border-yellow-200', label: 'Pending' },
+      viewed: { icon: Eye, color: 'bg-blue-100 text-blue-700 border-blue-200', label: 'Viewed' },
+      shortlisted: { icon: Star, color: 'bg-purple-100 text-purple-700 border-purple-200', label: 'Shortlisted' },
+      interview_scheduled: { icon: Calendar, color: 'bg-indigo-100 text-indigo-700 border-indigo-200', label: 'Interview' },
+      accepted: { icon: CheckCircle, color: 'bg-green-100 text-green-700 border-green-200', label: 'Accepted' },
+      rejected: { icon: XCircle, color: 'bg-red-100 text-red-700 border-red-200', label: 'Rejected' },
+      withdrawn: { icon: FileText, color: 'bg-gray-100 text-gray-700 border-gray-200', label: 'Withdrawn' },
+      expired: { icon: AlertCircle, color: 'bg-orange-100 text-orange-700 border-orange-200', label: 'Expired' }
+    };
+    return configs[status] || configs.pending;
+  };
+
   if (!user || loading) return null;
 
   const FilterDropdown = ({ type, label }) => (
@@ -382,7 +415,7 @@ export default function Jobs() {
         {/* Content Area */}
         {activeTab === 'board' && (
           <div className="flex-1 overflow-y-auto p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
               {filteredJobs.length === 0 ? (
                 <div className="col-span-full flex items-center justify-center h-64 text-gray-500">
                   No jobs match your filters
@@ -678,42 +711,172 @@ export default function Jobs() {
         {activeTab === 'applications' && (
           <div className="flex-1 overflow-y-auto p-6">
             {applications.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                <p>No applications yet</p>
+              <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                <FileText className="w-16 h-16 text-gray-300 mb-4" />
+                <p className="text-lg font-medium">No applications yet</p>
+                <p className="text-sm mt-1">Start applying to jobs to track your applications here</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {applications.map((app) => (
-                  <div key={app.id} className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-bold text-black text-sm mb-1">{app.job?.title}</h3>
-                        <p className="text-xs text-gray-600">{app.job?.client_name}</p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        app.status === 'applied' ? 'bg-blue-100 text-blue-700' :
-                        app.status === 'shortlisted' ? 'bg-green-100 text-green-700' :
-                        app.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {app.status}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {app.job?.location}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {new Date(app.applied_at).toLocaleDateString()}
-                      </div>
-                      <div className="font-bold text-black">
-                        €{app.job?.budget_min || 0}
-                      </div>
-                    </div>
+              <div className="max-w-6xl mx-auto">
+                {/* Status Filter Bar */}
+                <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
+                  <button
+                    onClick={() => setApplicationStatusFilter('all')}
+                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                      applicationStatusFilter === 'all'
+                        ? 'bg-black text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    All ({applications.length})
+                  </button>
+                  {['pending', 'viewed', 'shortlisted', 'interview_scheduled', 'accepted', 'rejected', 'withdrawn', 'expired'].map(status => {
+                    const count = applications.filter(app => app.status === status).length;
+                    if (count === 0) return null;
+                    const config = getStatusConfig(status);
+                    const Icon = config.icon;
+                    return (
+                      <button
+                        key={status}
+                        onClick={() => setApplicationStatusFilter(status)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                          applicationStatusFilter === status
+                            ? config.color
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        {config.label} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Applications Table */}
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Job</th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Client</th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Applied</th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Budget</th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {applications
+                          .filter(app => applicationStatusFilter === 'all' || app.status === applicationStatusFilter)
+                          .map((app) => {
+                            const job = app.job;
+                            const statusConfig = getStatusConfig(app.status);
+                            const StatusIcon = statusConfig.icon;
+                            const expired = isJobExpired(job);
+                            
+                            return (
+                              <tr key={app.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4">
+                                  <div className="flex items-start gap-3">
+                                    <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                      {job?.image_url ? (
+                                        <img src={job.image_url} alt={job?.title} className="w-full h-full object-cover" />
+                                      ) : (
+                                        <Building2 className="w-5 h-5 text-gray-400" />
+                                      )}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="font-semibold text-sm text-gray-900 truncate">{job?.title}</div>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        {expired && (
+                                          <span className="flex items-center gap-1 text-xs text-orange-600 font-medium">
+                                            <AlertCircle className="w-3 h-3" />
+                                            Expired
+                                          </span>
+                                        )}
+                                        {app.viewed_by_client && (
+                                          <span className="flex items-center gap-1 text-xs text-blue-600 font-medium">
+                                            <Eye className="w-3 h-3" />
+                                            Viewed
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-900 font-medium">{job?.client_name}</div>
+                                  <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                                    <MapPin className="w-3 h-3" />
+                                    {job?.location || 'Remote'}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${statusConfig.color}`}>
+                                    <StatusIcon className="w-3.5 h-3.5" />
+                                    {statusConfig.label}
+                                  </span>
+                                  {app.rejection_reason && app.status === 'rejected' && (
+                                    <div className="text-xs text-gray-500 mt-1 truncate max-w-[150px]" title={app.rejection_reason}>
+                                      {app.rejection_reason}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-600 flex items-center gap-1">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    {getTimeAgo(app.applied_at)}
+                                  </div>
+                                  {app.client_responded_at && (
+                                    <div className="text-xs text-gray-400 mt-0.5">
+                                      Responded {getTimeAgo(app.client_responded_at)}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="font-semibold text-sm text-gray-900">
+                                    {job?.budget_type === 'Hourly' ? `€${job?.budget_min}/hr` : job?.budget_type === 'Daily' ? `€${job?.budget_min}/day` : `€${job?.budget_min}`}
+                                  </div>
+                                  {job?.budget_max && job.budget_max > job.budget_min && job.budget_type !== 'Hourly' && job.budget_type !== 'Daily' && (
+                                    <div className="text-xs text-gray-500">up to €{job.budget_max}</div>
+                                  )}
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={() => setSelectedJob(job)}
+                                      className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+                                      title="View details"
+                                    >
+                                      <ExternalLink className="w-4 h-4" />
+                                    </button>
+                                    {app.status === 'pending' && (
+                                      <button
+                                        onClick={async () => {
+                                          try {
+                                            await Application.update(app.id, { status: 'withdrawn' });
+                                            setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: 'withdrawn' } : a));
+                                            toastError('Withdrawn', 'Application withdrawn successfully');
+                                          } catch (err) {
+                                            console.error('Error withdrawing:', err);
+                                          }
+                                        }}
+                                        className="p-2 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors"
+                                        title="Withdraw application"
+                                      >
+                                        <XCircle className="w-4 h-4" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
                   </div>
-                ))}
+                </div>
               </div>
             )}
           </div>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, ChevronDown, LogOut, Settings, MessageCircle, Menu } from 'lucide-react';
+import { Search, ChevronDown, LogOut, Settings, MessageCircle, Menu } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/shared/utils/routing';
-import { Notification, Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities';
+import { Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities';
 import { useSidebar } from '@/layouts/DashboardLayout';
 
 // Modern TailAdmin-style top bar shared across all dashboard roles.
@@ -12,21 +12,9 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   const navigate = useNavigate();
   const { setMobileSidebarOpen } = useSidebar();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
   const [messages, setMessages] = useState([]);
   const [recentSenders, setRecentSenders] = useState([]);
-
-  const fetchNotifications = async () => {
-    if (!user?.email) return;
-    try {
-      const notifs = await Notification.filter({ recipient_email: user.email });
-      setNotifications(notifs || []);
-    } catch (err) {
-      console.error('Error fetching notifications:', err);
-    }
-  };
 
   const fetchMessages = async () => {
     if (!user?.email) return;
@@ -67,67 +55,24 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   };
 
   useEffect(() => { 
-    fetchNotifications(); 
     fetchMessages();
   }, [user]);
 
   useEffect(() => {
     if (!user?.email) return;
     const interval = setInterval(() => {
-      fetchNotifications();
       fetchMessages();
     }, 30000);
     return () => clearInterval(interval);
   }, [user]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
   const unreadMessagesCount = messages.length;
-
-  const handleOpenNotifications = () => {
-    setNotifOpen(!notifOpen);
-    setMenuOpen(false);
-    setMessagesOpen(false);
-  };
 
   const handleOpenMessages = () => {
     setMessagesOpen(!messagesOpen);
     setMenuOpen(false);
-    setNotifOpen(false);
   };
 
-  const handleNotificationClick = async (notif) => {
-    if (!notif.read) {
-      try {
-        await Notification.update(notif.id, { read: true });
-        setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n));
-      } catch (err) {
-        console.error('Error marking notification read:', err);
-      }
-    }
-    setNotifOpen(false);
-    if (notif.link) navigate(notif.link);
-  };
-
-  const handleMarkAllRead = async () => {
-    const unread = notifications.filter(n => !n.read);
-    if (unread.length === 0) return;
-    try {
-      await Promise.all(unread.map(n => Notification.update(n.id, { read: true })));
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    } catch (err) {
-      console.error('Error marking all read:', err);
-    }
-  };
-
-  const handleClearAll = async () => {
-    if (notifications.length === 0) return;
-    try {
-      await Promise.all(notifications.map(n => Notification.delete(n.id)));
-      setNotifications([]);
-    } catch (err) {
-      console.error('Error clearing notifications:', err);
-    }
-  };
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-gray-100 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
@@ -208,62 +153,9 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
           )}
         </div>
 
-        {/* Notifications Button */}
-        <div className="relative">
-          <button onClick={handleOpenNotifications} className="relative p-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-500">
-            <Bell className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-white text-[10px] font-bold flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </button>
-
-          {notifOpen && (
-            <>
-              <div className="fixed inset-0 z-10" onClick={() => setNotifOpen(false)} />
-              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-lg z-20 max-h-96 flex flex-col">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
-                  <span className="font-semibold text-gray-900 text-sm">Notifications</span>
-                  <div className="flex gap-2">
-                    {unreadCount > 0 && (
-                      <button onClick={handleMarkAllRead} className="text-xs text-indigo-600 hover:underline">Mark all read</button>
-                    )}
-                    {notifications.length > 0 && (
-                      <button onClick={handleClearAll} className="text-xs text-red-600 hover:underline">Clear all</button>
-                    )}
-                  </div>
-                </div>
-                <div className="overflow-y-auto flex-1">
-                  {notifications.length === 0 ? (
-                    <div className="p-6 text-center text-sm text-gray-400">No notifications yet</div>
-                  ) : (
-                    notifications.map((n) => (
-                      <button
-                        key={n.id}
-                        onClick={() => handleNotificationClick(n)}
-                        className={`w-full text-left px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${!n.read ? 'bg-indigo-50/50' : ''}`}
-                      >
-                        <div className="flex items-start gap-2">
-                          {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 mt-1.5 flex-shrink-0" />}
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{n.title}</p>
-                            <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{n.message}</p>
-                            <p className="text-[10px] text-gray-400 mt-1">{new Date(n.created_date).toLocaleString()}</p>
-                          </div>
-                        </div>
-                      </button>
-                    ))
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-
         <div className="relative">
           <button
-            onClick={() => { setMenuOpen(!menuOpen); setNotifOpen(false); }}
+            onClick={() => { setMenuOpen(!menuOpen); }}
             className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700 flex-shrink-0">

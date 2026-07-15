@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Search, Briefcase, FileText, Mail, User,
-  Home as HomeIcon, Network, ChevronLeft, ChevronRight, LogOut, Wallet
+  Home as HomeIcon, Network, ChevronLeft, ChevronRight, LogOut, Wallet, Bell
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useSidebar } from '@/layouts/DashboardLayout';
 import { useAuth } from '@/lib/AuthContext';
+import { Notification } from '@/lib/supabaseEntities';
 
 const MENU_ITEMS = [
   { label: 'Dashboard', icon: HomeIcon, href: 'artistdashboard' },
@@ -15,6 +16,7 @@ const MENU_ITEMS = [
   // { label: 'Applications', icon: FileText, href: 'JobApplications' }, // Hidden for now
   { label: 'Messages', icon: Mail, href: 'Messages', showBadge: true },
   { label: 'Network', icon: Network, href: 'Network', showConnectionBadge: true },
+  { label: 'Notifications', icon: Bell, href: 'Notifications', showNotificationBadge: true },
   { label: 'Finances', icon: Wallet, href: 'ArtistFinance' },
   { label: 'My Profile & Settings', icon: User, href: 'ArtistProfile' }
 ];
@@ -23,6 +25,7 @@ export default function ArtistSidebar() {
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [pendingConnections, setPendingConnections] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
   const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
   const { logout, user } = useAuth();
 
@@ -71,6 +74,28 @@ export default function ArtistSidebar() {
       const { Connection } = await import('@/lib/supabaseEntities');
       unsubscribe = Connection.subscribe((event) => {
         if (event.data?.recipient_email === user.email) fetchPendingConnections();
+      });
+    })();
+
+    return () => unsubscribe && unsubscribe();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    let unsubscribe;
+    const fetchNotifications = async () => {
+      try {
+        const notifs = await Notification.filter({ recipient_email: user.email });
+        setNotificationCount((notifs || []).filter(n => !n.read).length);
+      } catch {
+        setNotificationCount(0);
+      }
+    };
+    fetchNotifications();
+
+    (async () => {
+      unsubscribe = Notification.subscribe((event) => {
+        if (event.data?.recipient_email === user.email) fetchNotifications();
       });
     })();
 
@@ -130,6 +155,11 @@ export default function ArtistSidebar() {
               {item.showConnectionBadge && pendingConnections > 0 && (
                 <span className="ml-auto bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 animate-pulse">
                   {pendingConnections > 9 ? '9+' : pendingConnections}
+                </span>
+              )}
+              {item.showNotificationBadge && notificationCount > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                  {notificationCount > 9 ? '9+' : notificationCount}
                 </span>
               )}
             </Link>
