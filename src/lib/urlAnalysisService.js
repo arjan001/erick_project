@@ -251,6 +251,213 @@ Format the response as structured JSON with these exact keys:
 };
 
 /**
+ * Re-generates project brief with updated context (category or description changes)
+ * @param {Object} currentBrief - The current brief data
+ * @param {string} newProjectType - The new project type (if changed)
+ * @param {string} newDescription - The new description (if changed)
+ * @param {Object} originalAnalysis - The original URL analysis data
+ * @returns {Promise<Object>} - Re-generated project brief
+ */
+export const regenerateProjectBrief = async (currentBrief, newProjectType, newDescription, originalAnalysis) => {
+  try {
+    const prompt = `
+You are a professional film production consultant. Re-generate and update the project brief based on the following changes.
+
+ORIGINAL WEBSITE ANALYSIS:
+${originalAnalysis.rawAnalysis}
+
+CURRENT PROJECT BRIEF:
+${JSON.stringify(currentBrief, null, 2)}
+
+UPDATED PROJECT TYPE: ${newProjectType}
+UPDATED DESCRIPTION/NOTES: ${newDescription}
+
+Please re-generate the project brief with the following changes:
+1. Update all sections to reflect the new project type (${newProjectType})
+2. Incorporate the new description/notes into the project overview and key messages
+3. Maintain consistency across all sections (creative direction, production requirements, technical specs, timeline, budget)
+4. Ensure the brief is tailored specifically to the ${newProjectType} project type
+5. Update tags to be relevant to the new project type
+
+Generate a detailed project brief with the following sections:
+
+1. PROJECT OVERVIEW
+   - Project title (creative and professional)
+   - Project goal (what the client wants to achieve)
+   - Target audience (who will see this content)
+
+2. CREATIVE DIRECTION
+   - Visual style (cinematic, documentary, commercial, etc.)
+   - Tone and mood (serious, playful, inspirational, etc.)
+   - Key visual elements (colors, imagery, branding)
+
+3. PRODUCTION REQUIREMENTS
+   - Suggested video length
+   - Shooting locations (based on business location or studio)
+   - Key scenes or segments needed
+   - Talent requirements (actors, presenters, voiceover)
+
+4. TECHNICAL SPECIFICATIONS
+   - Camera format suggestions
+   - Lighting requirements
+   - Audio needs
+   - Post-production requirements
+
+5. DELIVERABLES
+   - Final video formats
+   - Social media versions
+   - Additional assets (stills, graphics)
+
+6. TIMELINE
+   - Pre-production timeline
+   - Production timeline
+   - Post-production timeline
+
+7. BUDGET RANGE
+   - Estimated budget range (low, medium, high)
+   - Budget breakdown by phase
+
+8. KEY MESSAGES
+   - Main message to convey
+   - Supporting messages
+   - Call to action
+
+9. SUCCESS METRICS
+   - How success will be measured
+   - KPIs to track
+
+10. ADDITIONAL NOTES
+    - Any other relevant information
+
+Format the response as structured JSON with these exact keys:
+{
+  "project_title": "...",
+  "project_overview": { "goal": "...", "target_audience": "..." },
+  "creative_direction": { "visual_style": "...", "tone": "...", "key_elements": "..." },
+  "production_requirements": { "video_length": "...", "locations": "...", "key_scenes": "...", "talent": "..." },
+  "technical_specifications": { "camera": "...", "lighting": "...", "audio": "...", "post_production": "..." },
+  "deliverables": { "formats": "...", "social_versions": "...", "additional_assets": "..." },
+  "timeline": { "pre_production": "...", "production": "...", "post_production": "..." },
+  "budget": { "range": "...", "breakdown": "..." },
+  "key_messages": { "main_message": "...", "supporting_messages": "...", "call_to_action": "..." },
+  "success_metrics": "...",
+  "additional_notes": "...",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
+}
+`;
+
+    const response = await base44.integrations.Core.InvokeLLM({
+      prompt: prompt,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          project_title: { type: "string" },
+          project_overview: {
+            type: "object",
+            properties: {
+              goal: { type: "string" },
+              target_audience: { type: "string" }
+            }
+          },
+          creative_direction: {
+            type: "object",
+            properties: {
+              visual_style: { type: "string" },
+              tone: { type: "string" },
+              key_elements: { type: "string" }
+            }
+          },
+          production_requirements: {
+            type: "object",
+            properties: {
+              video_length: { type: "string" },
+              locations: { type: "string" },
+              key_scenes: { type: "string" },
+              talent: { type: "string" }
+            }
+          },
+          technical_specifications: {
+            type: "object",
+            properties: {
+              camera: { type: "string" },
+              lighting: { type: "string" },
+              audio: { type: "string" },
+              post_production: { type: "string" }
+            }
+          },
+          deliverables: {
+            type: "object",
+            properties: {
+              formats: { type: "string" },
+              social_versions: { type: "string" },
+              additional_assets: { type: "string" }
+            }
+          },
+          timeline: {
+            type: "object",
+            properties: {
+              pre_production: { type: "string" },
+              production: { type: "string" },
+              post_production: { type: "string" }
+            }
+          },
+          budget: {
+            type: "object",
+            properties: {
+              range: { type: "string" },
+              breakdown: { type: "string" }
+            }
+          },
+          key_messages: {
+            type: "object",
+            properties: {
+              main_message: { type: "string" },
+              supporting_messages: { type: "string" },
+              call_to_action: { type: "string" }
+            }
+          },
+          success_metrics: { type: "string" },
+          additional_notes: { type: "string" },
+          tags: {
+            type: "array",
+            items: { type: "string" }
+          }
+        },
+        required: ["project_title", "project_overview", "creative_direction", "production_requirements", "technical_specifications", "deliverables", "timeline", "budget", "key_messages", "success_metrics", "tags"]
+      },
+      temperature: 0.7,
+      max_tokens: 2000
+    });
+
+    if (!response?.data?.content) {
+      throw new Error('Failed to re-generate project brief');
+    }
+
+    let briefData;
+    try {
+      briefData = typeof response.data.content === 'string' 
+        ? JSON.parse(response.data.content) 
+        : response.data.content;
+    } catch (parseError) {
+      console.error('Error parsing brief JSON:', parseError);
+      throw new Error('Failed to parse re-generated brief');
+    }
+
+    return {
+      success: true,
+      brief: briefData,
+      originalAnalysis: originalAnalysis
+    };
+  } catch (error) {
+    console.error('Error re-generating project brief:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to re-generate project brief'
+    };
+  }
+};
+
+/**
  * Saves analyzed project data to localStorage
  * @param {Object} projectData - The analyzed project data to save
  */

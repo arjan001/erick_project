@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { Project } from '@/lib/supabaseEntities';
-import { loadAnalyzedProjectFromStorage, clearAnalyzedProjectFromStorage } from '@/lib/urlAnalysisService';
+import { loadAnalyzedProjectFromStorage, clearAnalyzedProjectFromStorage, regenerateProjectBrief, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService';
 import StepProjectType from '../components/intake/StepProjectType';
 import StepUsage from '../components/intake/StepUsage';
 import StepVisualDirection from '../components/intake/StepVisualDirection';
@@ -48,6 +48,7 @@ export default function SubmitProject() {
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [projectData, setProjectData] = useState({
     project_type: '',
     usage: [],
@@ -66,6 +67,9 @@ export default function SubmitProject() {
     project_owner_company: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const regenerationTimeoutRef = useRef(null);
+  const previousProjectTypeRef = useRef('');
+  const previousNotesRef = useRef('');
 
   // Initialize with data from Home page or URL analysis if available
   useEffect(() => {
@@ -96,8 +100,13 @@ export default function SubmitProject() {
         project_owner_company: brief.project_title || '',
         // Store full brief for reference
         _analyzedBrief: brief,
-        _originalUrl: analyzedProject.url
+        _originalUrl: analyzedProject.url,
+        _originalAnalysis: analyzedProject.analysis
       }));
+      
+      // Set initial refs for change detection
+      previousProjectTypeRef.current = analyzedProject.projectType || '';
+      previousNotesRef.current = `${brief.project_overview?.goal || ''}\n\n${brief.additional_notes || ''}`;
     }
 
     // Also check for data passed via navigation state
@@ -108,6 +117,85 @@ export default function SubmitProject() {
       }));
     }
   }, [location.state]);
+
+  // Dynamic re-generation when project type or description changes
+  useEffect(() => {
+    // Only regenerate if we have an analyzed brief from URL analysis
+    if (!projectData._analyzedBrief || !projectData._originalAnalysis) {
+      return;
+    }
+
+    const currentProjectType = projectData.project_type;
+    const currentNotes = projectData.notes;
+
+    // Check if project type or notes changed
+    const typeChanged = currentProjectType !== previousProjectTypeRef.current && currentProjectType !== '';
+    const notesChanged = currentNotes !== previousNotesRef.current && currentNotes !== '';
+
+    if (!typeChanged && !notesChanged) {
+      return;
+    }
+
+    // Clear any pending regeneration timeout
+    if (regenerationTimeoutRef.current) {
+      clearTimeout(regenerationTimeoutRef.current);
+    }
+
+    // Debounce the regeneration (wait 1.5 seconds after user stops typing)
+    regenerationTimeoutRef.current = setTimeout(async () => {
+      if (!projectData._analyzedBrief || !projectData._originalAnalysis) {
+        return;
+      }
+
+      setIsRegenerating(true);
+      try {
+        const result = await regenerateProjectBrief(
+          projectData._analyzedBrief,
+          currentProjectType,
+          currentNotes,
+          projectData._originalAnalysis
+        );
+
+        if (result.success && result.brief) {
+          const newBrief = result.brief;
+          setProjectData(prev => ({
+            ...prev,
+            notes: `${newBrief.project_overview?.goal || ''}\n\n${newBrief.additional_notes || ''}`,
+            usage: newBrief.tags || [],
+            location_country: newBrief.production_requirements?.locations?.split(',')[0]?.trim() || prev.location_country,
+            budget_range: newBrief.budget?.range || prev.budget_range,
+            project_owner_company: newBrief.project_title || prev.project_owner_company,
+            _analyzedBrief: newBrief
+          }));
+
+          // Update refs
+          previousProjectTypeRef.current = currentProjectType;
+          previousNotesRef.current = currentNotes;
+
+          // Save updated brief to localStorage
+          const analyzedProject = loadAnalyzedProjectFromStorage();
+          if (analyzedProject) {
+            saveAnalyzedProjectToStorage({
+              ...analyzedProject,
+              brief: newBrief,
+              projectType: currentProjectType,
+              additionalNotes: currentNotes
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error regenerating project brief:', error);
+      } finally {
+        setIsRegenerating(false);
+      }
+    }, 1500); // 1.5 second debounce
+
+    return () => {
+      if (regenerationTimeoutRef.current) {
+        clearTimeout(regenerationTimeoutRef.current);
+      }
+    };
+  }, [projectData.project_type, projectData.notes, projectData._analyzedBrief, projectData._originalAnalysis]);
 
   const updateData = (field, value) => {
     setProjectData(prev => ({ ...prev, [field]: value }));
@@ -251,6 +339,12 @@ export default function SubmitProject() {
         <div className="mb-8 lg:mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 text-black">Submit Your Project</h1>
           <p className="text-lg text-gray-600">Let's find the perfect team for your production</p>
+          {isRegenerating && (
+            <div className="mt-4 flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-4 py-2 rounded-lg inline-flex">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Updating project brief based on your changes...</span>
+            </div>
+          )}
         </div>
 
         {/* Progress Bar */}
