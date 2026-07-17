@@ -59,15 +59,82 @@ export const analyzeWebsiteUrl = async (url, projectType = 'commercial') => {
  * @param {Object} analysisData - The data from URL analysis
  * @param {string} projectType - The type of project
  * @param {string} additionalNotes - Any additional notes from the user
+ * @param {Array} attachments - Array of uploaded file objects {name, type, url}
  * @returns {Promise<Object>} - Generated project brief
  */
-export const generateProjectBrief = async (analysisData, projectType, additionalNotes = '') => {
+export const generateProjectBrief = async (analysisData, projectType, additionalNotes = '', attachments = []) => {
   try {
+    let attachmentAnalysis = '';
+    
+    // Analyze attachments if provided
+    if (attachments && attachments.length > 0) {
+      const imageAttachments = attachments.filter(att => 
+        att.type?.startsWith('image/') || 
+        att.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+      );
+      
+      const pdfAttachments = attachments.filter(att => 
+        att.type === 'application/pdf' || 
+        att.name?.match(/\.pdf$/i)
+      );
+      
+      const videoAttachments = attachments.filter(att => 
+        att.type?.startsWith('video/') || 
+        att.name?.match(/\.(mp4|mov|avi|hvec)$/i)
+      );
+      
+      const audioAttachments = attachments.filter(att => 
+        att.type?.startsWith('audio/') || 
+        att.name?.match(/\.(mp3|wav)$/i)
+      );
+      
+      if (imageAttachments.length > 0) {
+        attachmentAnalysis += '\n\nIMAGE ATTACHMENTS ANALYSIS:\n';
+        for (const img of imageAttachments) {
+          try {
+            const imgAnalysis = await base44.integrations.Core.InvokeLLM({
+              prompt: `Analyze this image for a ${projectType} project. Extract: visual style, color palette, mood, key elements, any text visible, and how it could inform the production.`,
+              file_urls: [img.url],
+              max_tokens: 300
+            });
+            if (imgAnalysis?.data?.content) {
+              attachmentAnalysis += `\n- ${img.name}: ${imgAnalysis.data.content}\n`;
+            }
+          } catch (err) {
+            console.error('Error analyzing image:', err);
+          }
+        }
+      }
+      
+      if (pdfAttachments.length > 0) {
+        attachmentAnalysis += '\n\nPDF ATTACHMENTS:\n';
+        for (const pdf of pdfAttachments) {
+          attachmentAnalysis += `- ${pdf.name} (PDF document attached for reference)\n`;
+        }
+      }
+      
+      if (videoAttachments.length > 0) {
+        attachmentAnalysis += '\n\nVIDEO ATTACHMENTS:\n';
+        for (const vid of videoAttachments) {
+          attachmentAnalysis += `- ${vid.name} (Video reference attached)\n`;
+        }
+      }
+      
+      if (audioAttachments.length > 0) {
+        attachmentAnalysis += '\n\nAUDIO ATTACHMENTS:\n';
+        for (const aud of audioAttachments) {
+          attachmentAnalysis += `- ${aud.name} (Audio reference attached)\n`;
+        }
+      }
+    }
+
     const prompt = `
-You are a professional film production consultant. Based on the following website analysis and project type, create a comprehensive project brief.
+You are a professional film production consultant. Based on the following website analysis, attachments, and project type, create a comprehensive project brief.
 
 WEBSITE ANALYSIS:
 ${analysisData.rawAnalysis}
+
+${attachmentAnalysis}
 
 PROJECT TYPE: ${projectType}
 ADDITIONAL NOTES: ${additionalNotes}

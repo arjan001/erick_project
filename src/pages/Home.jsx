@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
-import { ArrowRight, Play, Bookmark, Sparkles, X, Plus, Send, CheckCircle2, Loader, Film, Music, Video, Clapperboard, Briefcase, Building, Calendar, Package, Share, Sparkles as SparklesIcon } from 'lucide-react';
+import { ArrowRight, Play, Bookmark, Sparkles, X, Plus, Send, CheckCircle2, Loader, Film, Music, Video, Clapperboard, Briefcase, Building, Calendar, Package, Share, Sparkles as SparklesIcon, Paperclip, Upload } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Creator, SavedProject, FeaturedWork, SuccessStory, RecentProject, ContentCategory } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import CreatorGrid from '../components/CreatorGrid';
 import CreatorGeneratorModal from '../components/CreatorGeneratorModal';
 import ServiceCard from '../components/home/ServiceCard';
 import SEOMetaTags from '../components/SEOMetaTags';
+import { analyzeWebsiteUrl, generateProjectBrief, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService';
 
 
 
@@ -176,6 +177,9 @@ export default function Home({ editMode = false }) {
   const [projectCategory, setProjectCategory] = useState('commercial');
   const [extracting, setExtracting] = useState(false);
   const [extractProgress, setExtractProgress] = useState(null);
+  const [attachments, setAttachments] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const projectCategories = [
     { value: 'commercial', label: 'Commercial', icon: Film },
@@ -213,21 +217,36 @@ export default function Home({ editMode = false }) {
     }, 800);
 
     try {
-      const response = await base44.functions.invoke('extractAndAnalyze', {
-        url: projectUrl,
-        projectType: projectCategory
-      });
+      // Use the new urlAnalysisService
+      const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory);
 
       clearInterval(progressInterval);
 
-      if (response.data?.success && response.data?.description) {
-        setProjectDescription(response.data.description);
-        setExtractProgress(progressSteps.length - 1);
-        setTimeout(() => {
-          setExtractProgress(null);
-        }, 600);
-      } else if (response.data?.error) {
-        console.error('Extract error:', response.data.error);
+      if (analysisResult.success) {
+        // Generate full project brief with attachments
+        const briefResult = await generateProjectBrief(analysisResult, projectCategory, projectDescription, attachments);
+        
+        if (briefResult.success && briefResult.brief) {
+          const brief = briefResult.brief;
+          setProjectDescription(`${brief.project_overview?.goal || ''}\n\n${brief.additional_notes || ''}`);
+          setExtractProgress(progressSteps.length - 1);
+          
+          // Save to localStorage for SubmitProject page
+          saveAnalyzedProjectToStorage({
+            url: analysisResult.url,
+            analysis: analysisResult,
+            brief: briefResult.brief,
+            projectType: projectCategory,
+            additionalNotes: projectDescription,
+            attachments: attachments
+          });
+          
+          setTimeout(() => {
+            setExtractProgress(null);
+          }, 600);
+        }
+      } else {
+        console.error('Extract error:', analysisResult.error);
         setExtractProgress(null);
       }
     } catch (error) {
@@ -239,13 +258,95 @@ export default function Home({ editMode = false }) {
     }
   };
 
-  const handleQuickSubmit = (e) => {
+  const handleQuickSubmit = async (e) => {
     e.preventDefault();
-    // Store the data in sessionStorage to pass to SubmitProject page
-    sessionStorage.setItem('quickProjectUrl', projectUrl);
-    sessionStorage.setItem('quickProjectDescription', projectDescription);
-    sessionStorage.setItem('quickProjectCategory', projectCategory);
+    
+    // If we have URL analysis data, it's already saved to localStorage
+    // If not, save basic data
+    const analyzedProject = JSON.parse(localStorage.getItem('studio22_analyzed_project') || 'null');
+    
+    if (!analyzedProject) {
+      // Save basic data if no URL analysis was done
+      sessionStorage.setItem('quickProjectUrl', projectUrl);
+      sessionStorage.setItem('quickProjectDescription', projectDescription);
+      sessionStorage.setItem('quickProjectCategory', projectCategory);
+      sessionStorage.setItem('quickProjectAttachments', JSON.stringify(attachments));
+    } else {
+      // Update existing analyzed project with attachments
+      saveAnalyzedProjectToStorage({
+        ...analyzedProject,
+        attachments: attachments
+      });
+    }
+    
     navigate('/SubmitProject');
+  };
+
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setUploading(true);
+    const uploadedFiles = [];
+
+    for (const file of files) {
+      // Validate file type
+      const validTypes = [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'audio/mpeg',
+        'audio/mp3',
+        'video/mp4',
+        'video/quicktime',
+        'video/x-msvideo'
+      ];
+      
+      // Also check by extension
+      const validExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp3', '.mp4', '.mov', '.avi', '.hvec'];
+      const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+      
+      if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension)) {
+        console.warn(`Invalid file type: ${file.type}, skipping ${file.name}`);
+        continue;
+      }
+
+      // Check file size (max 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        console.warn(`File too large: ${file.name}, skipping`);
+        continue;
+      }
+
+      try {
+        // Upload file using Base44
+        const uploadResult = await base44.integrations.Core.UploadFile({ file });
+        
+        if (uploadResult.data?.file_url) {
+          uploadedFiles.push({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            url: uploadResult.data.file_url
+          });
+        }
+      } catch (error) {
+        console.error('Error uploading file:', error);
+      }
+    }
+
+    setAttachments(prev => [...prev, ...uploadedFiles]);
+    setUploading(false);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = (index) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
 
@@ -868,17 +969,19 @@ export default function Home({ editMode = false }) {
               </div>
             )}
 
-            {/* Description with Category Selector */}
+            {/* Description with Category Selector and Attachment */}
             <div className="relative border border-gray-300 rounded-lg">
               <textarea
                 value={projectDescription}
                 onChange={(e) => setProjectDescription(e.target.value)}
                 placeholder="Describe your project in one sentence..."
                 rows={3}
-                className="w-full px-4 py-4 pb-10 text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+                className="w-full px-4 py-4 pb-10 text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-transparent resize-none pr-24"
               />
-              {/* Category Selector - Bottom Left Floating */}
-              <div className="absolute bottom-2 left-3">
+              
+              {/* Bottom Bar with Category (Left) and Attachment (Right) */}
+              <div className="absolute bottom-2 left-3 right-3 flex justify-between items-center">
+                {/* Category Selector - Left */}
                 <div className="relative">
                   <button
                     type="button"
@@ -917,6 +1020,55 @@ export default function Home({ editMode = false }) {
                       );
                     })}
                   </div>
+                </div>
+                
+                {/* Attachment Button - Right */}
+                <div className="flex items-center gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.mp3,.mp4,.mov,.avi,.hvec"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="flex items-center gap-1.5 text-xs text-gray-600 bg-white border border-gray-200 rounded px-2 py-1 hover:bg-gray-50 focus:ring-1 focus:ring-black cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Add attachment (PDF, images, audio, video)"
+                  >
+                    {uploading ? (
+                      <Loader className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Paperclip className="w-3 h-3" />
+                    )}
+                    <span>{uploading ? 'Uploading...' : attachments.length > 0 ? `${attachments.length} file${attachments.length > 1 ? 's' : ''}` : 'Attach'}</span>
+                  </button>
+                </div>
+              </div>
+              
+              {/* Attachments Preview */}
+              {attachments.length > 0 && (
+                <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
+                  {attachments.map((att, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-gray-200 rounded px-2 py-1 text-xs"
+                    >
+                      <span className="max-w-[100px] truncate">{att.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeAttachment(idx)}
+                        className="text-gray-400 hover:text-red-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
                 </div>
               </div>
             </div>
@@ -1884,7 +2036,7 @@ export default function Home({ editMode = false }) {
 
             <Link to={createPageUrl('ApplyArtist')}>
 
-              <Button size="lg" variant="outline" className="w-full sm:w-auto text-white border-white hover:bg-white hover:text-black">
+              <Button size="lg" className="w-full sm:w-auto bg-black text-white hover:bg-gray-800 border-none">
 
                 Apply to Join the Network
 
