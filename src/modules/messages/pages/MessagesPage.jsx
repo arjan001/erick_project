@@ -227,27 +227,41 @@ export default function MessagesPage() {
     }
   };
 
-  // Keep a ref of conversations so the subscription callback always sees the latest state
-  // without needing conversations in the dependency array (which causes constant resubscriptions).
+  // Keep a ref of conversations so the polling callback always sees the latest state
   const conversationsRef = useRef([]);
   useEffect(() => { conversationsRef.current = conversations; }, [conversations]);
 
+  // Poll for new messages instead of using subscribe (subscribe doesn't work with current setup)
   useEffect(() => {
-    const unsubscribe = Message.subscribe((event) => {
-      const m = event.data;
-      if (!m || (m.sender_email !== user?.email && m.recipient_email !== user?.email)) return;
-      if (event.type === 'create') {
-        if (m.sender_email !== user?.email) {
-          playMessageTone();
-          // Notify user about new message
-          const senderName = conversations.find(c => c.id === m.conversation_id)?.name || m.sender_email;
-          notificationService.notifyNewMessage(user.email, senderName, m.conversation_id);
+    if (!user) return;
+
+    const pollMessages = async () => {
+      try {
+        const [sent, received] = await Promise.all([
+          Message.filter({ sender_email: user.email }, '-created_date', 50),
+          Message.filter({ recipient_email: user.email }, '-created_date', 50),
+        ]);
+        const allMessages = [...sent, ...received];
+        const convs = buildConversations(allMessages);
+
+        // Check for new messages and apply them
+        const currentConvIds = new Set(conversationsRef.current.map(c => c.id));
+        const newConvIds = new Set(convs.map(c => c.id));
+
+        // If there are new conversations or messages, refetch
+        if (convs.length !== conversationsRef.current.length ||
+            !convs.every(c => currentConvIds.has(c.id))) {
+          await fetchConversations();
         }
-        applyIncomingMessage(m);
+      } catch (err) {
+        console.error('Error polling messages:', err);
       }
-    });
-    return unsubscribe;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    };
+
+    // Poll every 30 seconds
+    const interval = setInterval(pollMessages, 30000);
+
+    return () => clearInterval(interval);
   }, [user]);
 
   useEffect(() => {

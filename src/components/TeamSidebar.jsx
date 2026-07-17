@@ -31,12 +31,12 @@ export default function TeamSidebar() {
 
   useEffect(() => {
     if (!user?.email) return;
-    let unsubscribe;
 
     const fetchUnreadMessages = async () => {
       try {
-        const msgs = await Message.filter({ recipient_email: user.email, read: false }, '-created_date', 50);
-        setUnreadMessageCount((msgs || []).length);
+        // Messages table uses conversation_id and sender_id, not recipient_email
+        // For now, set to 0 until proper conversation-based messaging is implemented
+        setUnreadMessageCount(0);
       } catch {
         setUnreadMessageCount(0);
       }
@@ -54,23 +54,13 @@ export default function TeamSidebar() {
     fetchUnreadMessages();
     fetchUnreadNotifications();
 
-    (async () => {
-      unsubscribe = Message.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchUnreadMessages();
-      });
-    })();
+    // Poll for updates every 30 seconds instead of using subscribe
+    const interval = setInterval(() => {
+      fetchUnreadMessages();
+      fetchUnreadNotifications();
+    }, 30000);
 
-    (async () => {
-      const notifUnsubscribe = Notification.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchUnreadNotifications();
-      });
-      return () => {
-        unsubscribe && unsubscribe();
-        notifUnsubscribe && notifUnsubscribe();
-      };
-    })();
-
-    return () => unsubscribe && unsubscribe();
+    return () => clearInterval(interval);
   }, [user]);
 
   useEffect(() => {

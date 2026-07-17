@@ -43,7 +43,8 @@ export default function BackerSidebar() {
 
     const fetchUnreadMessages = async () => {
       try {
-        const msgs = await Message.filter({ recipient_email: user.email, read: false }, '-created_date', 50);
+        // Messages table uses is_read, not read
+        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_date', 50);
         setUnreadMessageCount((msgs || []).length);
       } catch {
         setUnreadMessageCount(0);

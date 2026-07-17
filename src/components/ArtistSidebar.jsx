@@ -12,7 +12,7 @@ import { Notification, Artist } from '@/lib/supabaseEntities';
 const MENU_ITEMS = [
   { label: 'Dashboard', icon: HomeIcon, href: 'artistdashboard' },
   { label: 'Find Work', icon: Search, href: 'Jobs' },
-  { label: 'Projects from Clients', icon: Briefcase, href: 'JobBoard' },
+  // { label: 'Projects from Clients', icon: Briefcase, href: 'JobBoard' }, // Commented out - redundant with Jobs module
   // { label: 'Applications', icon: FileText, href: 'JobApplications' }, // Hidden for now
   { label: 'Messages', icon: Mail, href: 'Messages', showBadge: true },
   { label: 'Network', icon: Network, href: 'Network', showConnectionBadge: true },
@@ -32,31 +32,27 @@ export default function ArtistSidebar() {
 
   useEffect(() => {
     if (!user) return;
-    let unsubscribe;
     const fetchUnread = async () => {
       try {
-        const { Message } = await import('@/lib/supabaseEntities');
-        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_date', 50);
-        setUnreadCount((msgs || []).length);
+        // Messages table uses conversation_id and sender_id, not recipient_email
+        // For now, set to 0 until proper conversation-based messaging is implemented
+        setUnreadCount(0);
       } catch {
         setUnreadCount(0);
       }
     };
     fetchUnread();
 
-    (async () => {
-      const { Message } = await import('@/lib/supabaseEntities');
-      unsubscribe = Message.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchUnread();
-      });
-    })();
+    // Poll for updates every 30 seconds instead of using subscribe
+    const interval = setInterval(() => {
+      fetchUnread();
+    }, 30000);
 
-    return () => unsubscribe && unsubscribe();
+    return () => clearInterval(interval);
   }, [user]);
 
   useEffect(() => {
     if (!user) return;
-    let unsubscribe;
     const fetchPendingConnections = async () => {
       try {
         const { Connection } = await import('@/lib/supabaseEntities');
@@ -71,19 +67,16 @@ export default function ArtistSidebar() {
     };
     fetchPendingConnections();
 
-    (async () => {
-      const { Connection } = await import('@/lib/supabaseEntities');
-      unsubscribe = Connection.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchPendingConnections();
-      });
-    })();
+    // Poll for updates every 30 seconds instead of using subscribe
+    const interval = setInterval(() => {
+      fetchPendingConnections();
+    }, 30000);
 
-    return () => unsubscribe && unsubscribe();
+    return () => clearInterval(interval);
   }, [user]);
 
   useEffect(() => {
     if (!user) return;
-    let unsubscribe;
     const fetchNotifications = async () => {
       try {
         const notifs = await Notification.filter({ recipient_email: user.email });
@@ -94,13 +87,12 @@ export default function ArtistSidebar() {
     };
     fetchNotifications();
 
-    (async () => {
-      unsubscribe = Notification.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchNotifications();
-      });
-    })();
+    // Poll for updates every 30 seconds instead of using subscribe
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 30000);
 
-    return () => unsubscribe && unsubscribe();
+    return () => clearInterval(interval);
   }, [user]);
 
   useEffect(() => {

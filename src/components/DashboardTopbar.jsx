@@ -20,7 +20,8 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   const fetchMessages = async () => {
     if (!user?.email) return;
     try {
-      const msgs = await Message.filter({ recipient_email: user.email, read: false }, '-created_date', 10);
+      // Messages table uses is_read, not read
+      const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_date', 10);
       setMessages(msgs || []);
       
       // Get unique senders

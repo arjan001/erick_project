@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Euro, ChevronDown, Calendar, Building2, Users, Star, ExternalLink, Crown, Lock, Eye, EyeOff, AlertCircle, CheckCircle, XCircle, Hourglass, FileText, Mail, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { base44 } from '@/api/base44Client';
+import { supabase } from '@/lib/supabase';
 import skillsAndRoles from '@/lib/skillsAndRoles.json';
 import confetti from 'canvas-confetti';
 
@@ -55,9 +56,27 @@ export default function Jobs() {
           Job.list(),
           Project.filter({ status: 'verified' })
         ]);
-        
+
         const openJobs = allJobs.filter(j => j.status === 'open');
-        
+
+        // Fetch view counts from job_views and project_views tables
+        const [jobViewCounts, projectViewCounts] = await Promise.all([
+          supabase.from('job_views').select('job_id').then(({ data }) => {
+            const counts = {};
+            data?.forEach(v => {
+              counts[v.job_id] = (counts[v.job_id] || 0) + 1;
+            });
+            return counts;
+          }),
+          supabase.from('project_views').select('project_id').then(({ data }) => {
+            const counts = {};
+            data?.forEach(v => {
+              counts[v.project_id] = (counts[v.project_id] || 0) + 1;
+            });
+            return counts;
+          })
+        ]);
+
         // Convert projects to job-like format for unified display
         const projectJobs = allProjects.map(project => ({
           id: project.id,
@@ -79,11 +98,18 @@ export default function Jobs() {
           isProject: true,
           requires_team: project.requires_team || false,
           image_url: project.image_url,
-          requires_subscription: project.is_premium || false
+          requires_subscription: project.is_premium || false,
+          view_count: projectViewCounts[project.id] || 0
+        }));
+
+        // Convert jobs with view counts
+        const jobsWithCounts = openJobs.map(job => ({
+          ...job,
+          view_count: jobViewCounts[job.id] || 0
         }));
 
         // Combine jobs and projects
-        const allListings = [...openJobs, ...projectJobs];
+        const allListings = [...jobsWithCounts, ...projectJobs];
         setJobs(allListings);
         if (allListings.length > 0) setSelectedJob(allListings[0]);
 
@@ -227,6 +253,48 @@ export default function Jobs() {
         return app.job_id === selectedJob.id;
       }
     });
+  };
+
+  const handleJobClick = async (job) => {
+    setSelectedJob(job);
+
+    // Track view in job_views or project_views table
+    try {
+      const { user } = await import('@/lib/AuthContext');
+      const authUser = user();
+
+      if (job.isProject) {
+        // Insert into project_views - unique constraint will prevent duplicates
+        try {
+          await supabase.from('project_views').insert({
+            project_id: job.id,
+            user_id: authUser?.id || null,
+            ip_address: null // TODO: Add IP tracking if needed
+          });
+        } catch (err) {
+          // Ignore duplicate key errors - view already tracked
+          if (err.code !== '23505') {
+            console.error('Error tracking project view:', err);
+          }
+        }
+      } else {
+        // Insert into job_views - unique constraint will prevent duplicates
+        try {
+          await supabase.from('job_views').insert({
+            job_id: job.id,
+            user_id: authUser?.id || null,
+            ip_address: null // TODO: Add IP tracking if needed
+          });
+        } catch (err) {
+          // Ignore duplicate key errors - view already tracked
+          if (err.code !== '23505') {
+            console.error('Error tracking job view:', err);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error tracking view:', err);
+    }
   };
 
   // Handle accepting invitation
@@ -578,313 +646,240 @@ export default function Jobs() {
 
         {/* Content Area */}
         {activeTab === 'board' && (
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-              {filteredJobs.length === 0 ? (
-                <div className="col-span-full flex items-center justify-center h-64 text-gray-500">
-                  No jobs match your filters
-                </div>
-              ) : (
-                filteredJobs.map((job) => (
-                  <button
-                    key={job.id}
-                    onClick={() => setSelectedJob(job)}
-                    className={`w-full text-left bg-white rounded-2xl border-2 transition-all overflow-hidden shadow-sm hover:shadow-lg ${
-                      selectedJob?.id === job.id
-                        ? 'border-black shadow-md ring-2 ring-black/5'
-                        : 'border-gray-100 hover:border-gray-300'
-                    }`}
-                  >
-                    {/* Job Card Image */}
-                    <div className="relative h-48 bg-gray-100">
-                      {job.image_url ? (
-                        <img 
-                          src={job.image_url} 
-                          alt={job.title}
+          <div className="flex-1 overflow-hidden">
+            <div className="flex h-full">
+              {/* Left Side - Job List */}
+              <div className="w-1/2 border-r border-gray-200 overflow-y-auto p-4">
+                {filteredJobs.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    No jobs match your filters
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredJobs.map((job) => (
+                      <button
+                        key={job.id}
+                        onClick={() => handleJobClick(job)}
+                        className={`w-full text-left bg-white rounded-2xl border-2 transition-all overflow-hidden shadow-sm hover:shadow-lg ${
+                          selectedJob?.id === job.id
+                            ? 'border-black shadow-md ring-2 ring-black/5'
+                            : 'border-gray-100 hover:border-gray-300'
+                        }`}
+                      >
+                        {/* Job Card Image */}
+                        <div className="relative h-32 bg-gray-100">
+                          {job.image_url ? (
+                            <img
+                              src={job.image_url}
+                              alt={job.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                              <Building2 className="w-8 h-8 text-gray-300" />
+                            </div>
+                          )}
+                          {job.isProject && (
+                            <div className="absolute top-2 left-2 bg-black text-white text-xs font-bold px-2 py-1 rounded-full">
+                              Project
+                            </div>
+                          )}
+                          <div className="absolute bottom-2 right-2 bg-white/95 backdrop-blur text-black text-xs font-bold px-2 py-1 rounded-full shadow-sm">
+                            {job.budget_type === 'Hourly' ? '€/hr' : job.budget_type === 'Daily' ? '€/day' : 'Fixed'}
+                          </div>
+                          {job.requires_subscription && (
+                            <div className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-xs font-bold px-2 py-1 rounded-full shadow-sm">
+                              Premium
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Job Card Content */}
+                        <div className="p-3">
+                          <div className="flex items-start gap-2 mb-2">
+                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-gray-50">
+                              {job.client_avatar_url ? (
+                                <img src={job.client_avatar_url} alt={job.client_name} className="w-full h-full object-cover" />
+                              ) : (
+                                <Building2 className="w-4 h-4 text-gray-400" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-xs text-gray-900 truncate">{job.client_name}</div>
+                              <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                                <MapPin className="w-2 h-2" />
+                                <span className="truncate">{job.location || 'Remote'}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <h3 className="font-bold text-gray-900 mb-1 text-xs line-clamp-2 leading-tight">{job.title}</h3>
+
+                          {/* View Count */}
+                          {job.view_count > 0 && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                              <Eye className="w-2 h-2" />
+                              <span>{job.view_count} view{job.view_count !== 1 ? 's' : ''}</span>
+                            </div>
+                          )}
+
+                          {/* Skills/Roles Tags */}
+                          {job.roles_needed && job.roles_needed.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {job.roles_needed.slice(0, 2).map((role) => (
+                                <span key={role} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full truncate max-w-[80px]">
+                                  {role}
+                                </span>
+                              ))}
+                              {job.roles_needed.length > 2 && (
+                                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
+                                  +{job.roles_needed.length - 2}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                            <div className="flex items-center gap-1">
+                              <div className="font-bold text-gray-900 text-xs">
+                                {job.budget_type === 'Hourly' ? `€${job.budget_min}/hr` : job.budget_type === 'Daily' ? `€${job.budget_min}/day` : `€${job.budget_min}`}
+                              </div>
+                              {job.budget_max && job.budget_max > job.budget_min && job.budget_type !== 'Hourly' && job.budget_type !== 'Daily' && (
+                                <div className="text-[10px] text-gray-500">- €{job.budget_max}</div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                              <Clock className="w-2 h-2" />
+                              {job.posted_at ? new Date(job.posted_at).toLocaleDateString() : 'Recently'}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Side - Details Panel */}
+              <div className="w-1/2 overflow-y-auto p-6 bg-gray-50">
+                {selectedJob ? (
+                  <div className="bg-white rounded-2xl shadow-sm p-6">
+                    {/* Header with Image */}
+                    <div className="relative h-48 bg-gray-100 rounded-xl mb-6 overflow-hidden">
+                      {selectedJob.image_url ? (
+                        <img
+                          src={selectedJob.image_url}
+                          alt={selectedJob.title}
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                          <Building2 className="w-12 h-12 text-gray-300" />
+                        <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                          <Building2 className="w-16 h-16 text-gray-400" />
                         </div>
                       )}
-                      {job.isProject && (
-                        <div className="absolute top-3 left-3 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                      {selectedJob.isProject && (
+                        <div className="absolute top-3 left-3 bg-black text-white text-sm font-bold px-3 py-1.5 rounded">
                           Project
                         </div>
                       )}
-                      <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
-                        {job.budget_type === 'Hourly' ? '€/hr' : job.budget_type === 'Daily' ? '€/day' : 'Fixed'}
+                      <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur text-black text-sm font-bold px-3 py-1.5 rounded shadow">
+                        {selectedJob.budget_type === 'Hourly' ? 'Hourly Rate' : selectedJob.budget_type === 'Daily' ? 'Daily Rate' : 'Fixed Price'}
                       </div>
-                      {job.requires_subscription && (
-                        <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
-                          <Crown className="w-3 h-3" />
+                      {selectedJob.requires_subscription && (
+                        <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-sm font-bold px-3 py-1.5 rounded shadow flex items-center gap-1">
+                          <Crown className="w-4 h-4" />
                           Premium
                         </div>
                       )}
                     </div>
-                    
-                    {/* Job Card Content */}
-                    <div className="p-4">
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-gray-50">
-                          {job.client_avatar_url ? (
-                            <img src={job.client_avatar_url} alt={job.client_name} className="w-full h-full object-cover" />
-                          ) : (
-                            <Building2 className="w-5 h-5 text-gray-400" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold text-sm text-gray-900 truncate">{job.client_name}</div>
-                          <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                            <MapPin className="w-3 h-3" />
-                            <span className="truncate">{job.location || 'Remote'}</span>
-                          </div>
+
+                    {/* Client Info */}
+                    <div className="flex items-start gap-4 mb-6">
+                      <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {selectedJob.client_avatar_url ? (
+                          <img src={selectedJob.client_avatar_url} alt={selectedJob.client_name} className="w-full h-full object-cover" />
+                        ) : (
+                          <Building2 className="w-6 h-6 text-gray-400" />
+                        )}
+                      </div>
+                      <div>
+                        <h1 className="text-2xl font-bold text-black mb-1">{selectedJob.title}</h1>
+                        <p className="text-gray-600 text-sm font-medium">{selectedJob.client_name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                          <span className="text-xs text-gray-500">Verified Client</span>
                         </div>
                       </div>
-                      
-                      <h3 className="font-bold text-gray-900 mb-2 text-sm line-clamp-2 leading-tight">{job.title}</h3>
-                      
-                      {/* Skills/Roles Tags */}
-                      {job.roles_needed && job.roles_needed.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {job.roles_needed.slice(0, 3).map((role) => (
-                            <span key={role} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full truncate max-w-[100px]">
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
+                        <div className="text-xs text-gray-600 uppercase font-bold mb-1">Budget</div>
+                        <div className="text-lg font-bold text-black">
+                          {selectedJob.budget_type === 'Hourly' ? `€${selectedJob.budget_min}/hr` : selectedJob.budget_type === 'Daily' ? `€${selectedJob.budget_min}/day` : `€${selectedJob.budget_min}`}
+                        </div>
+                        {selectedJob.budget_max && selectedJob.budget_max > selectedJob.budget_min && selectedJob.budget_type !== 'Hourly' && selectedJob.budget_type !== 'Daily' && (
+                          <div className="text-xs text-gray-500">up to €{selectedJob.budget_max}</div>
+                        )}
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
+                        <div className="text-xs text-gray-600 uppercase font-bold mb-1">Location</div>
+                        <div className="text-sm font-bold text-black truncate">{selectedJob.location}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
+                        <div className="text-xs text-gray-600 uppercase font-bold mb-1">Duration</div>
+                        <div className="text-sm font-bold text-black">{selectedJob.duration || 'Flexible'}</div>
+                      </div>
+                    </div>
+
+                    {/* Full Description */}
+                    <div className="mb-6">
+                      <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
+                        <span className="w-1 h-5 bg-black rounded"></span>
+                        Job Description
+                      </h2>
+                      <div className="text-gray-700 leading-relaxed text-sm whitespace-pre-line bg-gray-50 rounded-lg p-4">
+                        {selectedJob.description}
+                      </div>
+                    </div>
+
+                    {/* Roles Needed */}
+                    {selectedJob.roles_needed && selectedJob.roles_needed.length > 0 && (
+                      <div className="mb-6">
+                        <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
+                          <span className="w-1 h-5 bg-black rounded"></span>
+                          Roles Needed
+                        </h2>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedJob.roles_needed.map((role) => (
+                            <span key={role} className="px-3 py-1.5 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
                               {role}
                             </span>
                           ))}
-                          {job.roles_needed.length > 3 && (
-                            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
-                              +{job.roles_needed.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                        <div className="flex items-center gap-2">
-                          <div className="font-bold text-gray-900 text-base">
-                            {job.budget_type === 'Hourly' ? `€${job.budget_min}/hr` : job.budget_type === 'Daily' ? `€${job.budget_min}/day` : `€${job.budget_min}`}
-                          </div>
-                          {job.budget_max && job.budget_max > job.budget_min && job.budget_type !== 'Hourly' && job.budget_type !== 'Daily' && (
-                            <div className="text-xs text-gray-500">- €{job.budget_max}</div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                          <Clock className="w-3 h-3" />
-                          {job.posted_at ? new Date(job.posted_at).toLocaleDateString() : 'Recently'}
                         </div>
                       </div>
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Job Detail Modal */}
-        {selectedJob && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedJob(null)}>
-            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              {selectedJob ? (
-                <div className="p-6">
-                  {/* Header with Image */}
-                  <div className="relative h-48 bg-gray-100 rounded-xl mb-6 overflow-hidden">
-                    {selectedJob.image_url ? (
-                      <img 
-                        src={selectedJob.image_url} 
-                        alt={selectedJob.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                        <Building2 className="w-16 h-16 text-gray-400" />
-                      </div>
                     )}
-                    {selectedJob.isProject && (
-                      <div className="absolute top-3 left-3 bg-black text-white text-sm font-bold px-3 py-1.5 rounded">
-                        Project
-                      </div>
-                    )}
-                    <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur text-black text-sm font-bold px-3 py-1.5 rounded shadow">
-                      {selectedJob.budget_type === 'Hourly' ? 'Hourly Rate' : selectedJob.budget_type === 'Daily' ? 'Daily Rate' : 'Fixed Price'}
-                    </div>
-                    {selectedJob.requires_subscription && (
-                      <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-sm font-bold px-3 py-1.5 rounded shadow flex items-center gap-1">
-                        <Crown className="w-4 h-4" />
-                        Premium
-                      </div>
-                    )}
+
+                    {/* Apply Button */}
+                    <Button
+                      className={`w-full py-3 text-lg font-bold ${
+                        hasAlreadyApplied()
+                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                          : 'bg-black text-white hover:bg-gray-800'
+                      }`}
+                      onClick={handleApply}
+                      disabled={hasAlreadyApplied()}
+                    >
+                      {hasAlreadyApplied() ? 'Application Sent' : selectedJob.requires_team ? 'Apply as Team' : 'Apply Now'}
+                    </Button>
                   </div>
-
-                  {/* Client Info */}
-                  <div className="flex items-start gap-4 mb-6">
-                    <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      {selectedJob.client_avatar_url ? (
-                        <img src={selectedJob.client_avatar_url} alt={selectedJob.client_name} className="w-full h-full object-cover" />
-                      ) : (
-                        <Building2 className="w-6 h-6 text-gray-400" />
-                      )}
-                    </div>
-                    <div>
-                      <h1 className="text-2xl font-bold text-black mb-1">{selectedJob.title}</h1>
-                      <p className="text-gray-600 text-sm font-medium">{selectedJob.client_name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-xs text-gray-500">Verified Client</span>
-                      </div>
-                    </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    Select a job to view details
                   </div>
-
-                  {/* Quick Stats */}
-                  <div className="grid grid-cols-3 gap-3 mb-6">
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <div className="text-xs text-gray-600 uppercase font-bold mb-1">Budget</div>
-                      <div className="text-lg font-bold text-black">
-                        {selectedJob.budget_type === 'Hourly' ? `€${selectedJob.budget_min}/hr` : selectedJob.budget_type === 'Daily' ? `€${selectedJob.budget_min}/day` : `€${selectedJob.budget_min}`}
-                      </div>
-                      {selectedJob.budget_max && selectedJob.budget_max > selectedJob.budget_min && selectedJob.budget_type !== 'Hourly' && selectedJob.budget_type !== 'Daily' && (
-                        <div className="text-xs text-gray-500">up to €{selectedJob.budget_max}</div>
-                      )}
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <div className="text-xs text-gray-600 uppercase font-bold mb-1">Location</div>
-                      <div className="text-sm font-bold text-black truncate">{selectedJob.location}</div>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <div className="text-xs text-gray-600 uppercase font-bold mb-1">Duration</div>
-                      <div className="text-sm font-bold text-black">{selectedJob.duration || 'Flexible'}</div>
-                    </div>
-                  </div>
-
-                  {/* Full Description */}
-                  <div className="mb-6">
-                    <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
-                      <span className="w-1 h-5 bg-black rounded"></span>
-                      Job Description
-                    </h2>
-                    <div className="text-gray-700 leading-relaxed text-sm whitespace-pre-line bg-gray-50 rounded-lg p-4">
-                      {selectedJob.description}
-                    </div>
-                  </div>
-
-                  {/* Roles Needed */}
-                  {selectedJob.roles_needed && selectedJob.roles_needed.length > 0 && (
-                    <div className="mb-6">
-                      <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
-                        <span className="w-1 h-5 bg-black rounded"></span>
-                        Roles Needed
-                      </h2>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedJob.roles_needed.map((role) => (
-                          <span key={role} className="px-3 py-1.5 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
-                            {role}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Skills Required */}
-                  {selectedJob.skills_required && selectedJob.skills_required.length > 0 && (
-                    <div className="mb-6">
-                      <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
-                        <span className="w-1 h-5 bg-black rounded"></span>
-                        Skills Required
-                      </h2>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedJob.skills_required.map((skill) => (
-                          <span key={skill} className="px-3 py-1.5 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Deadline */}
-                  {selectedJob.application_deadline && (
-                    <div className="mb-6">
-                      <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
-                        <span className="w-1 h-5 bg-black rounded"></span>
-                        Application Deadline
-                      </h2>
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Calendar className="w-4 h-4" />
-                        {new Date(selectedJob.application_deadline).toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Pricing Details */}
-                  <div className="mb-6 bg-gray-50 rounded-lg p-4">
-                    <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
-                      <span className="w-1 h-5 bg-black rounded"></span>
-                      Pricing Details
-                    </h2>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Payment Type</span>
-                        <span className="text-sm font-bold text-black">{selectedJob.payment_type || selectedJob.budget_type || 'Fixed'}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Budget Range</span>
-                        <span className="text-sm font-bold text-black">
-                          {selectedJob.budget_type === 'Hourly' 
-                            ? `€${selectedJob.budget_min}/hr` 
-                            : selectedJob.budget_type === 'Daily'
-                            ? `€${selectedJob.budget_min}/day`
-                            : `€${selectedJob.budget_min}${selectedJob.budget_max ? ` - €${selectedJob.budget_max}` : ''}`}
-                        </span>
-                      </div>
-                      {selectedJob.requires_subscription && (
-                        <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                          <span className="text-sm text-gray-600">Subscription Required</span>
-                          <span className="text-sm font-bold text-yellow-600 flex items-center gap-1">
-                            <Crown className="w-4 h-4" />
-                            Premium
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Apply Button */}
-                  <Button
-                    onClick={handleApply}
-                    disabled={hasAlreadyApplied()}
-                    className={`w-full font-bold py-4 text-lg rounded-xl ${
-                      hasAlreadyApplied()
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-black text-white hover:bg-gray-800'
-                    }`}
-                  >
-                    {hasAlreadyApplied() ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <CheckCircle className="w-5 h-5" />
-                        Already Applied
-                      </span>
-                    ) : selectedJob.requires_team ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Users className="w-5 h-5" />
-                        Apply as Team
-                      </span>
-                    ) : (
-                      'Apply Now'
-                    )}
-                  </Button>
-                  
-                  <p className="text-center text-xs text-gray-500 mt-3">
-                    {hasAlreadyApplied() ? 'Application submitted' : '1 connect will be used to apply'}
-                  </p>
-                </div>
-              ) : null}
+                )}
+              </div>
             </div>
           </div>
         )}
