@@ -331,37 +331,37 @@
 
 ---
 
-## Summary of Improvements
+## Summary of Improvements (Uncommitted Changes)
 
 ### UI/UX Improvements:
-- Redesigned jobs page to match team projects page layout
-- Enhanced artist onboarding modal with tag-style selection
-- Improved application tracking with modern data table UI
-- Fixed sidebar spacing and layout issues
-- Added confetti effects for user celebrations
-- Enhanced profile photo display in sidebars and topbars
+- Redesigned artist jobs page to match team projects page layout with split view
+- Replaced job detail modal with right-side details panel for better UX
+- Added applications and invitations tabs to team projects page matching artist jobs page UI
+- Implemented tab navigation with dynamic item counts
+- Commented out redundant "Projects from Clients" link in artist sidebar
 
 ### Functionality Improvements:
-- Implemented unique view tracking to prevent duplicate counts
-- Added applications and invitations tabs to team projects page
-- Fixed white screen issue in messages module
-- Enhanced job application system with project support
-- Improved subscription plan card responsiveness
-- Added comprehensive SEO system with admin panel
+- Implemented unique view tracking system to prevent duplicate view counts per user/IP
+- Added job_views table for tracking unique job views by logged-in users
+- Added project_views table for tracking unique project views by logged-in users
+- View counts now calculated from unique rows in views tables instead of direct increments
+- Enhanced team projects page with invitations fetching and display
+- Added graceful handling for missing team_id column in applications table
 
 ### Database Improvements:
-- Added project_id support to applications table
-- Created job_views and project_views tables for unique view tracking
-- Enhanced application tracking with detailed fields
-- Added applicant details snapshot capabilities
-- Created SEO database schema
+- Created add_team_id_to_applications.sql migration for team application support
+- Added team_id column to applications table with foreign key and constraints
+- Created create_job_views_table.sql migration for unique view tracking
+- Implemented partial unique indexes for logged-in users (user_id) and anonymous users (ip_address)
+- Added indexes for efficient querying of views tables
 
 ### Bug Fixes:
-- Fixed messages query to use correct column name (is_read)
-- Fixed white screen in messages module by replacing subscription with polling
-- Fixed duplicate application prevention
-- Fixed sidebar name updates to reflect profile changes
-- Fixed modal save/fetch functionality
+- Fixed white screen issue in messages module by replacing Message.subscribe() with polling mechanism
+- Polls for new messages every 30 seconds to prevent subscription errors
+- Fixed messages query in all sidebar components to use is_read instead of read column
+- Updated AdminSidebar, ArtistSidebar, BackerSidebar, ClientSidebar, TeamSidebar, and DashboardTopbar
+- Fixed SQL constraint syntax error in job views table by using partial unique indexes instead of table-level constraints
+- Fixed supabase import error by correcting import path from @/lib/supabaseClient to @/lib/supabase
 
 ---
 

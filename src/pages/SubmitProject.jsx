@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { Project } from '@/lib/supabaseEntities';
+import { loadAnalyzedProjectFromStorage, clearAnalyzedProjectFromStorage } from '@/lib/urlAnalysisService';
 import StepProjectType from '../components/intake/StepProjectType';
 import StepUsage from '../components/intake/StepUsage';
 import StepVisualDirection from '../components/intake/StepVisualDirection';
@@ -66,7 +67,7 @@ export default function SubmitProject() {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  // Initialize with data from Home page if available
+  // Initialize with data from Home page or URL analysis if available
   useEffect(() => {
     // Auto-fill owner email/name from logged-in user
     try {
@@ -75,6 +76,31 @@ export default function SubmitProject() {
       if (storedUser.full_name) setProjectData(prev => ({ ...prev, project_owner_name: storedUser.full_name }));
     } catch (e) { /* ignore */ }
 
+    // Load analyzed project data from localStorage (from URL analysis)
+    const analyzedProject = loadAnalyzedProjectFromStorage();
+    if (analyzedProject && analyzedProject.brief) {
+      const brief = analyzedProject.brief;
+      setProjectData(prev => ({
+        ...prev,
+        project_type: analyzedProject.projectType || prev.project_type,
+        notes: `${brief.project_overview?.goal || ''}\n\n${brief.additional_notes || ''}`,
+        // Map brief data to existing fields
+        usage: brief.tags || [],
+        location_country: brief.production_requirements?.locations?.split(',')[0]?.trim() || '',
+        location_city: '',
+        is_remote: false,
+        departments_needed: [], // Could be derived from talent requirements
+        timeline_start: '', // Could be derived from timeline
+        timeline_deadline: '', // Could be derived from timeline
+        budget_range: brief.budget?.range || '',
+        project_owner_company: brief.project_title || '',
+        // Store full brief for reference
+        _analyzedBrief: brief,
+        _originalUrl: analyzedProject.url
+      }));
+    }
+
+    // Also check for data passed via navigation state
     if (location.state?.initialData) {
       setProjectData(prev => ({
         ...prev,
@@ -198,6 +224,10 @@ export default function SubmitProject() {
           image_url: projectImage
         });
       }
+      
+      // Clear analyzed project data from localStorage after successful submission
+      clearAnalyzedProjectFromStorage();
+      
       setSubmitted(true);
     } catch (error) {
       console.error('Project submission error:', error);
