@@ -1069,8 +1069,6 @@ export default function Home({ editMode = false }) {
                   ))}
                 </div>
               )}
-                </div>
-              </div>
             </div>
             <Button
               type="submit"
