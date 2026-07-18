@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { 
   Settings, Save, Clock, Shield, CheckCircle2, AlertTriangle, RefreshCw,
-  Layout, Mail
+  Layout, Mail, Key, Plus, Trash2, Copy, Eye, X
 } from 'lucide-react';
 import { 
   fetchMaintenanceSettings, 
@@ -16,7 +16,7 @@ import {
   MAINTENANCE_TEMPLATES,
   getAllTemplates 
 } from '@/lib/maintenanceMode';
-import { base44 } from '@/api/base44Client';
+import { supabase } from '@/lib/supabase';
 
 const ToggleRow = ({ label, description, checked, onChange }) => (
   <div className="flex items-center justify-between py-2">
@@ -44,6 +44,7 @@ export default function AdminMaintenancePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const [templatePreview, setTemplatePreview] = useState(null);
   
   const [settings, setSettings] = useState({
     enabled: false,
@@ -52,15 +53,19 @@ export default function AdminMaintenancePage() {
     endTime: '',
     allowedIPs: '',
     showCountdown: true,
-    contactEmail: 'support@studio22.com',
+    contactEmail: 'support@studio22.app',
     template: 'default'
   });
 
   const [templates, setTemplates] = useState([]);
+  const [accessCodes, setAccessCodes] = useState([]);
+  const [newCode, setNewCode] = useState('');
+  const [codeExpiry, setCodeExpiry] = useState('');
 
   useEffect(() => {
     loadSettings();
     setTemplates(getAllTemplates());
+    loadAccessCodes();
   }, []);
 
   const loadSettings = async () => {
@@ -101,11 +106,21 @@ export default function AdminMaintenancePage() {
       };
 
       for (const [key, value] of Object.entries(settingsMap)) {
-        const existing = await base44.entities.admin_settings.filter({ setting_key: key });
-        if (existing && existing.length > 0) {
-          await base44.entities.admin_settings.update(existing[0].id, { setting_value: value });
+        const { data: existing } = await supabase
+          .from('admin_settings')
+          .select('*')
+          .eq('setting_key', key)
+          .single();
+        
+        if (existing) {
+          await supabase
+            .from('admin_settings')
+            .update({ setting_value: value })
+            .eq('setting_key', key);
         } else {
-          await base44.entities.admin_settings.create({ setting_key: key, setting_value: value });
+          await supabase
+            .from('admin_settings')
+            .insert({ setting_key: key, setting_value: value });
         }
       }
 
@@ -126,6 +141,89 @@ export default function AdminMaintenancePage() {
     const template = MAINTENANCE_TEMPLATES[templateKey];
     if (template) {
       setSettings(prev => ({ ...prev, message: template.message, template: templateKey }));
+    }
+  };
+
+  const showTemplatePreview = (templateKey) => {
+    const template = MAINTENANCE_TEMPLATES[templateKey];
+    if (template) {
+      setTemplatePreview(template);
+    }
+  };
+
+  const loadAccessCodes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('maintenance_access_codes')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setAccessCodes(data || []);
+    } catch (err) {
+      console.error('Error loading access codes:', err);
+    }
+  };
+
+  const handleCreateCode = async () => {
+    if (!newCode.trim()) {
+      error('Error', 'Please enter an access code');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('maintenance_access_codes')
+        .insert({
+          code: newCode.trim(),
+          is_active: true,
+          created_by: localStorage.getItem('studio22_user') ? JSON.parse(localStorage.getItem('studio22_user')).email : 'admin',
+          expires_at: codeExpiry || null
+        });
+      
+      if (error) throw error;
+      
+      success('Success', 'Access code created successfully');
+      setNewCode('');
+      setCodeExpiry('');
+      loadAccessCodes();
+    } catch (err) {
+      console.error('Error creating access code:', err);
+      error('Error', 'Failed to create access code');
+    }
+  };
+
+  const handleDeleteCode = async (codeId) => {
+    try {
+      const { error } = await supabase
+        .from('maintenance_access_codes')
+        .delete()
+        .eq('id', codeId);
+      
+      if (error) throw error;
+      
+      success('Success', 'Access code deleted');
+      loadAccessCodes();
+    } catch (err) {
+      console.error('Error deleting access code:', err);
+      error('Error', 'Failed to delete access code');
+    }
+  };
+
+  const handleToggleCode = async (codeId, isActive) => {
+    try {
+      const { error } = await supabase
+        .from('maintenance_access_codes')
+        .update({ is_active: !isActive })
+        .eq('id', codeId);
+      
+      if (error) throw error;
+      
+      success('Success', 'Access code updated');
+      loadAccessCodes();
+    } catch (err) {
+      console.error('Error toggling access code:', err);
+      error('Error', 'Failed to update access code');
     }
   };
 
@@ -196,17 +294,25 @@ export default function AdminMaintenancePage() {
                   <label className="block text-xs font-medium text-gray-700 mb-1">Use Prebuilt Template</label>
                   <div className="grid grid-cols-2 gap-2">
                     {templates.map((template) => (
-                      <button
-                        key={template.key}
-                        onClick={() => applyTemplate(template.key)}
-                        className={`p-2 rounded border text-left transition-all text-xs ${
-                          settings.template === template.key
-                            ? 'border-black bg-gray-50'
-                            : 'border-gray-300 hover:border-gray-400'
-                        }`}
-                      >
-                        <div className="font-medium text-gray-900">{template.name}</div>
-                      </button>
+                      <div key={template.key} className="flex gap-1">
+                        <button
+                          onClick={() => applyTemplate(template.key)}
+                          className={`flex-1 p-2 rounded border text-left transition-all text-xs ${
+                            settings.template === template.key
+                              ? 'border-black bg-gray-50'
+                              : 'border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          <div className="font-medium text-gray-900">{template.name}</div>
+                        </button>
+                        <button
+                          onClick={() => showTemplatePreview(template.key)}
+                          className="p-2 rounded border border-gray-300 hover:border-gray-400 text-xs text-gray-600 hover:text-gray-900"
+                          title="Preview template"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -365,6 +471,99 @@ export default function AdminMaintenancePage() {
           </div>
         </div>
 
+        {/* Admin Access Codes */}
+        <div className="border border-gray-300 bg-white rounded-lg p-4">
+          <h2 className="font-semibold text-gray-900 text-sm mb-3 flex items-center">
+            <Key className="w-4 h-4 mr-2" />
+            Admin Access Codes
+          </h2>
+          <p className="text-xs text-gray-600 mb-4">
+            Generate access codes to bypass maintenance mode. Access the site using: /{`{code}`}
+          </p>
+          
+          {/* Create New Code */}
+          <div className="flex gap-3 mb-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                value={newCode}
+                onChange={(e) => setNewCode(e.target.value)}
+                placeholder="Enter access code (e.g., test123)"
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-black focus:border-transparent text-sm"
+              />
+            </div>
+            <div>
+              <input
+                type="datetime-local"
+                value={codeExpiry}
+                onChange={(e) => setCodeExpiry(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-black focus:border-transparent text-sm"
+              />
+            </div>
+            <Button
+              onClick={handleCreateCode}
+              className="bg-black text-white hover:bg-gray-800"
+              size="sm"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Code
+            </Button>
+          </div>
+
+          {/* Access Codes List */}
+          <div className="space-y-2">
+            {accessCodes.length === 0 ? (
+              <p className="text-xs text-gray-500 text-center py-4">No access codes created yet</p>
+            ) : (
+              accessCodes.map((code) => (
+                <div key={code.id} className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm text-gray-900">/{code.code}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                        code.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {code.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Created: {new Date(code.created_at).toLocaleString()}
+                      {code.expires_at && ` • Expires: ${new Date(code.expires_at).toLocaleString()}`}
+                      {code.usage_count > 0 && ` • Used: ${code.usage_count} times`}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`/${code.code}`);
+                        success('Copied', 'Access code copied to clipboard');
+                      }}
+                      className="p-1.5 hover:bg-gray-200 rounded text-gray-600"
+                      title="Copy code"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleToggleCode(code.id, code.is_active)}
+                      className="p-1.5 hover:bg-gray-200 rounded text-gray-600"
+                      title={code.is_active ? 'Deactivate' : 'Activate'}
+                    >
+                      {code.is_active ? <AlertTriangle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCode(code.id)}
+                      className="p-1.5 hover:bg-red-100 rounded text-gray-600 hover:text-red-600"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-2">
           <Button
@@ -387,6 +586,76 @@ export default function AdminMaintenancePage() {
           </Button>
         </div>
       </div>
+
+      {/* Template Preview Modal */}
+      {templatePreview && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="bg-gray-900 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Template Preview: {templatePreview.name}</h2>
+              <button 
+                onClick={() => setTemplatePreview(null)} 
+                className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="bg-black rounded-2xl p-8">
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl mb-4 shadow-lg">
+                    <span className="text-black text-3xl font-bold">22</span>
+                  </div>
+                  <h1 className="text-3xl font-bold text-white">Studio22</h1>
+                  <p className="text-gray-400 mt-2">Professional Creative Platform</p>
+                </div>
+                <div className="prose prose-invert max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: templatePreview.message }} />
+                </div>
+                <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mt-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Mail className="w-5 h-5 text-gray-400" />
+                    <span className="font-medium text-white">Need Help?</span>
+                  </div>
+                  <p className="text-gray-400 mb-2">
+                    For urgent inquiries, please contact us at:
+                  </p>
+                  <a 
+                    href={`mailto:${settings.contactEmail}`}
+                    className="text-white font-medium hover:underline"
+                  >
+                    {settings.contactEmail}
+                  </a>
+                </div>
+                <div className="mt-6 text-center">
+                  <button
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-white text-black hover:bg-gray-200 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Check Status
+                  </button>
+                </div>
+                <div className="mt-8 pt-6 border-t border-gray-700 text-center">
+                  <p className="text-sm text-gray-500">
+                    © 2026 Studio22. All rights reserved.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
+              <Button 
+                onClick={() => applyTemplate(Object.keys(MAINTENANCE_TEMPLATES).find(key => MAINTENANCE_TEMPLATES[key].name === templatePreview.name))}
+                className="bg-black text-white hover:bg-gray-800"
+              >
+                Use This Template
+              </Button>
+              <Button variant="outline" onClick={() => setTemplatePreview(null)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

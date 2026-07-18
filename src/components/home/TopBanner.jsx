@@ -2,13 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { TickerEntry, Article } from '@/lib/supabaseEntities';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
+import { features } from '@/lib/settings';
 
 export default function TopBanner() {
   const [entries, setEntries] = useState([]);
   const [articles, setArticles] = useState({});
   const [loading, setLoading] = useState(true);
+  const [marqueeEnabled, setMarqueeEnabled] = useState(true);
 
   useEffect(() => {
+    const checkMarquee = async () => {
+      const enabled = await features.isMarqueeEnabled();
+      setMarqueeEnabled(enabled);
+    };
+    checkMarquee();
+  }, []);
+
+  useEffect(() => {
+    if (!marqueeEnabled) return;
+
     const fetchData = async () => {
       try {
         const [tickerData, articlesData] = await Promise.all([
@@ -38,7 +50,7 @@ export default function TopBanner() {
     fetchData();
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [marqueeEnabled]);
 
   const defaultMessages = [
     'New commercial project posted in Berlin',
@@ -107,13 +119,11 @@ export default function TopBanner() {
   };
 
   if (loading) {
-    return (
-      <div className="fixed top-0 left-0 right-0 h-[40px] bg-[#F5F5F5] text-[#4A4A4A] z-50 overflow-hidden border-b border-gray-200">
-        <div className="flex items-center h-full px-8 text-sm font-medium">
-          Loading...
-        </div>
-      </div>
-    );
+    return null;
+  }
+
+  if (!marqueeEnabled) {
+    return null;
   }
 
   return (

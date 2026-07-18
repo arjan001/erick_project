@@ -6,9 +6,9 @@ import { Edit2, Trash2, X, Eye, Ban, CheckCircle, AlertCircle, Search, User, Mai
 import { useToast } from '@/hooks/useToast.jsx';
 
 const STATUS_STYLES = {
-  active: 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200',
-  suspended: 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 border-orange-200',
-  disabled: 'bg-gradient-to-r from-red-100 to-rose-100 text-red-700 border-red-200',
+  active: 'bg-green-100 text-green-700',
+  suspended: 'bg-orange-100 text-orange-700',
+  disabled: 'bg-red-100 text-red-700',
 };
 
 const PAGE_SIZE = 10;
@@ -152,44 +152,39 @@ export default function AdminArtistsPage() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="bg-gray-50 min-h-screen p-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Artists Management</h1>
-          <p className="text-gray-600">Manage all artists on the platform</p>
+          <h1 className="text-2xl font-bold text-gray-900">Artists Management</h1>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-2xl border border-white/50 shadow-lg shadow-indigo-100/50 mb-6 p-6">
-        <div className="flex gap-4 items-center">
-          <div className="relative w-64">
+      {/* Datatable */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-gray-200 flex gap-3 items-center">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Search..."
+              placeholder="Search artists..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-lg border-gray-200 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+              className="pl-10 rounded-lg border-gray-200 focus:border-gray-400 focus:ring-2 focus:ring-gray-100"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 outline-none"
+            className="px-3 py-2 border border-gray-200 rounded-lg focus:border-gray-400 focus:ring-2 focus:ring-gray-100 outline-none text-sm"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
             <option value="disabled">Disabled</option>
           </select>
-          <div className="text-sm text-gray-500 ml-auto">{filteredArtists.length} artists</div>
+          <div className="text-sm text-gray-500 whitespace-nowrap">{filteredArtists.length} artists</div>
         </div>
-      </div>
-
-      {/* Datatable */}
-      <div className="bg-white rounded-2xl border border-white/50 shadow-lg shadow-indigo-100/50 overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gradient-to-r from-gray-50 to-indigo-50 border-b border-gray-200">
+          <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Artist</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
@@ -201,40 +196,29 @@ export default function AdminArtistsPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {paginatedArtists.map((artist) => (
-              <tr key={artist.id} className="hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-colors">
+              <tr key={artist.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     {artist.profile_photo_url ? (
-                      <img src={artist.profile_photo_url} alt={artist.full_name} className="w-8 h-8 rounded-full object-cover ring-2 ring-indigo-100" />
+                      <img src={artist.profile_photo_url} alt={artist.full_name} className="w-8 h-8 rounded-full object-cover" />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-xs font-bold text-indigo-600 ring-2 ring-indigo-100">
+                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
                         {artist.full_name?.[0]?.toUpperCase() || 'A'}
                       </div>
                     )}
                     <div>
                       <div className="font-medium text-gray-900 text-sm">{artist.full_name || 'Unknown'}</div>
-                      <div className="text-xs text-gray-500">{artist.role || 'No role'}</div>
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-3 h-3 text-indigo-400" />
-                    {artist.email || 'No email'}
-                  </div>
+                  {artist.email || 'No email'}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-600">
-                  {artist.based_in_city || artist.based_in_country ? (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-3 h-3 text-indigo-400" />
-                      {artist.based_in_city || artist.based_in_country}
-                    </div>
-                  ) : (
-                    <span className="text-gray-400 text-xs">No location</span>
-                  )}
+                  {artist.based_in_city || artist.based_in_country || 'N/A'}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full border shadow-sm ${STATUS_STYLES[getStatus(artist)]}`}>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_STYLES[getStatus(artist)]}`}>
                     {getStatus(artist).charAt(0).toUpperCase() + getStatus(artist).slice(1)}
                   </span>
                 </td>
@@ -243,16 +227,16 @@ export default function AdminArtistsPage() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
-                    <Button onClick={() => openViewModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg p-1">
+                    <Button onClick={() => openViewModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded p-1">
                       <Eye className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => openModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg p-1">
+                    <Button onClick={() => openModal(artist)} variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded p-1">
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => toggleSuspend(artist)} variant="ghost" size="sm" className={artist.is_suspended ? 'text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg p-1' : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg p-1'}>
+                    <Button onClick={() => toggleSuspend(artist)} variant="ghost" size="sm" className={artist.is_suspended ? 'text-green-600 hover:text-green-700 hover:bg-green-50 rounded p-1' : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded p-1'}>
                       <Ban className="w-4 h-4" />
                     </Button>
-                    <Button onClick={() => handleDelete(artist.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg p-1">
+                    <Button onClick={() => handleDelete(artist.id)} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded p-1">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -270,27 +254,37 @@ export default function AdminArtistsPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+          <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
             <div className="text-sm text-gray-600">
-              Showing {((currentPage - 1) * PAGE_SIZE) + 1} to {Math.min(currentPage * PAGE_SIZE, filteredArtists.length)} of {filteredArtists.length} artists
+              Showing {((currentPage - 1) * PAGE_SIZE) + 1} to {Math.min(currentPage * PAGE_SIZE, filteredArtists.length)} of {filteredArtists.length}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 variant="outline"
                 size="sm"
+                className="h-8 w-8 p-0"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <span className="text-sm text-gray-600 px-3">
-                Page {currentPage} of {totalPages}
-              </span>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  className={`h-8 w-8 p-0 ${currentPage === page ? 'bg-black text-white hover:bg-gray-800' : ''}`}
+                >
+                  {page}
+                </Button>
+              ))}
               <Button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 variant="outline"
                 size="sm"
+                className="h-8 w-8 p-0"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>

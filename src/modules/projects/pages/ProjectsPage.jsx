@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, Sparkles, Loader } from 'lucide-react';
 import RequestIntroductionModal from '@/components/RequestIntroductionModal';
 import SEOMetaTags from '@/components/SEOMetaTags';
+import { features } from '@/lib/settings';
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);
@@ -14,8 +15,19 @@ export default function Projects() {
   const [viewMode, setViewMode] = useState(() => sessionStorage.getItem('projectViewMode') || 'raster');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [marketplaceEnabled, setMarketplaceEnabled] = useState(true);
 
   useEffect(() => {
+    const checkMarketplace = async () => {
+      const enabled = await features.isMarketplaceEnabled();
+      setMarketplaceEnabled(enabled);
+    };
+    checkMarketplace();
+  }, []);
+
+  useEffect(() => {
+    if (!marketplaceEnabled) return;
+
     const fetchProjects = async () => {
       try {
         const allProjects = await Project.list();
@@ -29,7 +41,7 @@ export default function Projects() {
     };
 
     fetchProjects();
-  }, []);
+  }, [marketplaceEnabled]);
 
   const handleViewModeChange = (mode) => {
     setViewMode(mode);
@@ -142,7 +154,11 @@ export default function Projects() {
       {/* Projects View */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
        <div className="max-w-6xl mx-auto">
-         {loading ? (
+         {!marketplaceEnabled ? (
+           <div className="text-center py-16">
+             <p className="text-gray-500 text-lg">Marketplace is currently disabled.</p>
+           </div>
+         ) : loading ? (
            <div className="text-center py-12">
              <p className="text-gray-500">Loading projects...</p>
            </div>

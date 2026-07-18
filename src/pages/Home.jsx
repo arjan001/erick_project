@@ -14,6 +14,7 @@ import CreatorGeneratorModal from '../components/CreatorGeneratorModal';
 import ServiceCard from '../components/home/ServiceCard';
 import SEOMetaTags from '../components/SEOMetaTags';
 import { analyzeWebsiteUrl, generateProjectBrief, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService';
+import { features } from '@/lib/settings';
 
 
 
@@ -158,6 +159,7 @@ export default function Home({ editMode = false }) {
   const [collections, setCollections] = useState([]);
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categoriesEnabled, setCategoriesEnabled] = useState(true);
 
   const [savedProjects, setSavedProjects] = useState({
     inproduction: [],
@@ -195,6 +197,15 @@ export default function Home({ editMode = false }) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
   const previousCategoryRef = useRef(projectCategory);
+
+  // Check if categories are enabled
+  useEffect(() => {
+    const checkCategories = async () => {
+      const enabled = await features.areCategoriesEnabled();
+      setCategoriesEnabled(enabled);
+    };
+    checkCategories();
+  }, []);
 
   const projectCategories = [
     { value: 'commercial', label: 'Commercial', icon: Film },
@@ -1541,7 +1552,7 @@ export default function Home({ editMode = false }) {
 
 
       {/* COLLECTIONS Section */}
-
+      {categoriesEnabled && (
       <section className="py-12 md:py-20 px-4 md:px-6 bg-white">
 
         <div className="max-w-[1800px] mx-auto">
@@ -1652,6 +1663,7 @@ export default function Home({ editMode = false }) {
         </div>
 
       </section>
+      )}
 
 
 

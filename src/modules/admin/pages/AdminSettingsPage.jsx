@@ -11,6 +11,7 @@ import { Save, Globe, Mail, Bell, Shield, Users, CreditCard, Store, Settings as 
 import { Link } from 'react-router-dom';
 import { SystemSetting } from '@/lib/supabaseEntities';
 import { useToast } from '@/hooks/useToast.jsx';
+import { clearSettingsCache } from '@/lib/settings';
 
 export default function AdminSettingsPage() {
   const { success, error: toastError } = useToast();
@@ -107,6 +108,9 @@ export default function AdminSettingsPage() {
         }
       }
 
+      // Clear settings cache so changes take effect immediately
+      clearSettingsCache();
+      
       success('Settings Saved', 'Your settings have been updated successfully');
     } catch (err) {
       console.error('Error saving settings:', err);

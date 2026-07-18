@@ -12,7 +12,7 @@ export default function MaintenancePage() {
   const [endTime, setEndTime] = useState(null);
   const [timeRemaining, setTimeRemaining] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [contactEmail, setContactEmail] = useState('support@studio22.com');
+  const [contactEmail, setContactEmail] = useState('support@studio22.app');
 
   useEffect(() => {
     loadMaintenanceInfo();
@@ -91,15 +91,16 @@ export default function MaintenancePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="max-w-2xl w-full">
-        <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-12">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 sm:p-12">
           {/* Logo/Branding */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-black rounded-2xl mb-4">
-              <span className="text-white text-2xl font-bold">22</span>
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-black rounded-2xl mb-4 shadow-lg">
+              <span className="text-white text-3xl font-bold">22</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Studio22</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Studio22</h1>
+            <p className="text-gray-500 mt-2">Professional Creative Platform</p>
           </div>
 
           {/* Maintenance Message */}
@@ -109,12 +110,12 @@ export default function MaintenancePage() {
 
           {/* Countdown Timer */}
           {timeRemaining && (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+            <div className="bg-gray-100 border border-gray-200 rounded-xl p-6 mb-6">
               <div className="flex items-center justify-center gap-2 mb-2">
-                <Clock className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold text-blue-900">Estimated Time Remaining</span>
+                <Clock className="w-5 h-5 text-gray-600" />
+                <span className="font-semibold text-gray-900">Estimated Time Remaining</span>
               </div>
-              <div className="text-3xl font-bold text-blue-600 text-center">
+              <div className="text-3xl font-bold text-black text-center">
                 {formatTimeRemaining(timeRemaining)}
               </div>
             </div>
@@ -141,7 +142,7 @@ export default function MaintenancePage() {
           <div className="mt-6 text-center">
             <button
               onClick={() => window.location.reload()}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 font-medium transition-colors"
+              className="inline-flex items-center gap-2 px-8 py-3 bg-black text-white hover:bg-gray-800 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
             >
               <RefreshCw className="w-4 h-4" />
               Check Status

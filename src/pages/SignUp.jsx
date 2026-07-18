@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertCircle } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { Link } from 'react-router-dom';
+import { features } from '@/lib/settings';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -42,10 +43,23 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [inviteCodeValid, setInviteCodeValid] = useState(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [registrationEnabled, setRegistrationEnabled] = useState(true);
   const navigate = useNavigate();
 
+  // Check if registration is enabled
+  useEffect(() => {
+    const checkRegistration = async () => {
+      const enabled = await features.isRegistrationEnabled();
+      setRegistrationEnabled(enabled);
+      if (!enabled) {
+        navigate('/SignIn');
+      }
+    };
+    checkRegistration();
+  }, [navigate]);
+
   // Check for invite code in URL query params or from invite landing
-  React.useEffect(() => {
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('ref') || urlParams.get('code');
     if (code) {

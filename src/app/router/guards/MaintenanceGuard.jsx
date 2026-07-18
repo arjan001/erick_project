@@ -2,11 +2,12 @@
  * Maintenance Guard
  * Redirects to maintenance page if maintenance mode is enabled
  * Allows admins to bypass maintenance mode
+ * Allows access codes to bypass maintenance mode
  */
 
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { isMaintenanceMode, isAllowedDuringMaintenance } from '@/lib/maintenanceMode';
+import { isMaintenanceMode, isAllowedDuringMaintenance, canAccessSite } from '@/lib/maintenanceMode';
 import { useAuth } from '@/lib/AuthContext';
 
 export function MaintenanceGuard({ children }) {
@@ -19,10 +20,31 @@ export function MaintenanceGuard({ children }) {
   useEffect(() => {
     const checkMaintenance = async () => {
       try {
-        // Skip maintenance check for admin routes
+        // Check for access code in URL (e.g., /code/SECRET123)
+        if (location.pathname?.startsWith('/code/')) {
+          const pathParts = location.pathname?.split('/').filter(Boolean);
+          const code = pathParts[1]; // Second path segment after 'code'
+          
+          if (code) {
+            const allowed = await canAccessSite(null, code);
+            if (allowed) {
+              // Store code in session storage for temporary access
+              sessionStorage.setItem('maintenance_access_code', code);
+              navigate('/Admin');
+              return;
+            }
+          }
+        }
+
+        // Skip maintenance check for admin routes if user has valid access code
         if (location.pathname?.startsWith('/Admin')) {
-          setLoading(false);
-          return;
+          const hasAccessCode = sessionStorage.getItem('maintenance_access_code');
+          const isAdmin = user?.role === 'admin';
+          
+          if (isAdmin || hasAccessCode) {
+            setLoading(false);
+            return;
+          }
         }
 
         // Skip maintenance check for maintenance page itself
@@ -36,13 +58,11 @@ export function MaintenanceGuard({ children }) {
         if (maintenance) {
           // Check if user is admin (admins can bypass maintenance)
           const isAdmin = user?.role === 'admin';
+          const hasAccessCode = sessionStorage.getItem('maintenance_access_code');
           
-          if (!isAdmin) {
-            const allowed = await isAllowedDuringMaintenance();
-            if (!allowed) {
-              navigate('/Maintenance');
-              return;
-            }
+          if (!isAdmin && !hasAccessCode) {
+            navigate('/Maintenance');
+            return;
           }
         }
       } catch (error) {

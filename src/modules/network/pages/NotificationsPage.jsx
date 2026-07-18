@@ -97,15 +97,15 @@ export default function NotificationsPage() {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'job_invitation':
-        return <Briefcase className="w-5 h-5 text-blue-600" />;
+        return <Briefcase className="w-5 h-5 text-gray-600" />;
       case 'connection_request':
-        return <Users className="w-5 h-5 text-green-600" />;
+        return <Users className="w-5 h-5 text-gray-600" />;
       case 'endorment':
-        return <Award className="w-5 h-5 text-yellow-600" />;
+        return <Award className="w-5 h-5 text-gray-600" />;
       case 'testimonial':
-        return <ThumbsUp className="w-5 h-5 text-purple-600" />;
+        return <ThumbsUp className="w-5 h-5 text-gray-600" />;
       case 'message':
-        return <MessageCircle className="w-5 h-5 text-indigo-600" />;
+        return <MessageCircle className="w-5 h-5 text-gray-600" />;
       default:
         return <Bell className="w-5 h-5 text-gray-600" />;
     }

@@ -90,6 +90,11 @@ const publicRoutes = [
     layout: null
   },
   {
+    path: '/code/:code',
+    component: () => import('@/modules/maintenance/AccessCodePage'),
+    layout: null
+  },
+  {
     path: '/',
     component: () => import('@/pages/Home'),
     layout: MainLayout,

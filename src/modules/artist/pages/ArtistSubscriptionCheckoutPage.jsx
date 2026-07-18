@@ -6,6 +6,7 @@ import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft, X, Loader2, Check
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
 import notificationService from '@/shared/services/notificationService';
+import { features } from '@/lib/settings';
 
 // Simple confetti component
 function Confetti({ active }) {
@@ -255,8 +256,22 @@ export default function ArtistSubscriptionCheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isInvited, setIsInvited] = useState(false);
+  const [subscriptionsEnabled, setSubscriptionsEnabled] = useState(true);
 
   useEffect(() => {
+    const checkSubscriptions = async () => {
+      const enabled = await features.areSubscriptionsEnabled();
+      setSubscriptionsEnabled(enabled);
+      if (!enabled) {
+        navigate('/ArtistDashboard');
+      }
+    };
+    checkSubscriptions();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!subscriptionsEnabled) return;
+
     const storedUser = localStorage.getItem('studio22_user');
     if (!storedUser) { window.location.href = '/signin'; return; }
     const userData = JSON.parse(storedUser);
@@ -267,7 +282,7 @@ export default function ArtistSubscriptionCheckoutPage() {
     setIsInvited(!!referredBy);
     
     fetchData(userData);
-  }, []);
+  }, [subscriptionsEnabled]);
 
   const fetchData = async (userData) => {
     try {

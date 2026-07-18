@@ -160,44 +160,40 @@ export default function AdminTeamsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="bg-gray-50 min-h-screen p-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Teams Management</h1>
-          <p className="text-gray-600">Manage all teams on the platform</p>
+          <h1 className="text-2xl font-bold text-gray-900">Teams Management</h1>
         </div>
         <Button onClick={() => openModal()} className="bg-black text-white hover:bg-gray-800">
           <Users className="w-4 h-4 mr-2" /> Add Team
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg border border-gray-200 mb-6 p-4">
-        <div className="flex gap-4">
-          <div className="flex-1 relative">
+      {/* Datatable */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-gray-200 flex gap-3 items-center">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Search by name or description..."
+              placeholder="Search teams..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 rounded-lg border-gray-200 focus:border-gray-400 focus:ring-2 focus:ring-gray-100"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg"
+            className="px-3 py-2 border border-gray-200 rounded-lg focus:border-gray-400 focus:ring-2 focus:ring-gray-100 outline-none text-sm"
           >
             <option value="all">All Status</option>
             <option value="approved">Approved</option>
             <option value="pending">Pending</option>
             <option value="rejected">Rejected</option>
           </select>
+          <div className="text-sm text-gray-500 whitespace-nowrap">{filteredTeams.length} teams</div>
         </div>
-      </div>
-
-      {/* Datatable */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
@@ -299,27 +295,37 @@ export default function AdminTeamsPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between bg-gray-50">
             <div className="text-sm text-gray-600">
-              Showing {((currentPage - 1) * PAGE_SIZE) + 1} to {Math.min(currentPage * PAGE_SIZE, filteredTeams.length)} of {filteredTeams.length} teams
+              Showing {((currentPage - 1) * PAGE_SIZE) + 1} to {Math.min(currentPage * PAGE_SIZE, filteredTeams.length)} of {filteredTeams.length}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 variant="outline"
                 size="sm"
+                className="h-8 w-8 p-0"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <span className="text-sm text-gray-600 px-3">
-                Page {currentPage} of {totalPages}
-              </span>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  className={`h-8 w-8 p-0 ${currentPage === page ? 'bg-black text-white hover:bg-gray-800' : ''}`}
+                >
+                  {page}
+                </Button>
+              ))}
               <Button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 variant="outline"
                 size="sm"
+                className="h-8 w-8 p-0"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>

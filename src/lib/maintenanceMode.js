@@ -4,6 +4,7 @@
  */
 
 import { SystemSetting } from '@/lib/supabaseEntities';
+import { supabase } from '@/lib/supabase';
 
 let maintenanceSettings = null;
 let maintenanceCheckPromise = null;
@@ -26,7 +27,7 @@ export async function fetchMaintenanceSettings() {
         endTime: null,
         allowedIPs: [],
         showCountdown: true,
-        contactEmail: 'support@studio22.com',
+        contactEmail: 'support@studio22.app',
         template: 'default'
       };
     }
@@ -54,7 +55,7 @@ export async function fetchMaintenanceSettings() {
       endTime: settingsMap.maintenance_end_time || null,
       allowedIPs: settingsMap.maintenance_allowed_ips || [],
       showCountdown: settingsMap.maintenance_show_countdown !== false,
-      contactEmail: settingsMap.maintenance_contact_email || 'support@studio22.com',
+      contactEmail: settingsMap.maintenance_contact_email || 'support@studio22.app',
       template: settingsMap.maintenance_template || 'default'
     };
   } catch (error) {
@@ -66,7 +67,7 @@ export async function fetchMaintenanceSettings() {
       endTime: null,
       allowedIPs: [],
       showCountdown: true,
-      contactEmail: 'support@studio22.com',
+      contactEmail: 'support@studio22.app',
       template: 'default'
     };
   }
@@ -115,6 +116,68 @@ export async function isAllowedDuringMaintenance(userIP = null) {
   }
   
   return false;
+}
+
+/**
+ * Check if access code is valid for maintenance bypass
+ * @param {string} code - Access code to validate
+ * @returns {Promise<boolean>} - Whether code is valid and active
+ */
+export async function isValidAccessCode(code) {
+  if (!code) return false;
+  
+  try {
+    const { data, error } = await supabase
+      .from('maintenance_access_codes')
+      .select('*')
+      .eq('code', code)
+      .eq('is_active', true)
+      .single();
+    
+    if (error || !data) return false;
+    
+    // Check if code has expired
+    if (data.expires_at && new Date(data.expires_at) < new Date()) {
+      return false;
+    }
+    
+    // Update usage count
+    await supabase
+      .from('maintenance_access_codes')
+      .update({ 
+        last_used_at: new Date().toISOString(),
+        usage_count: (data.usage_count || 0) + 1
+      })
+      .eq('id', data.id);
+    
+    return true;
+  } catch (err) {
+    console.error('Error validating access code:', err);
+    return false;
+  }
+}
+
+/**
+ * Check if user can access site (via IP or access code)
+ * @param {string} userIP - User's IP address
+ * @param {string} accessCode - Optional access code
+ * @returns {Promise<boolean>} - Whether user is allowed
+ */
+export async function canAccessSite(userIP = null, accessCode = null) {
+  const settings = await fetchMaintenanceSettings();
+  
+  if (!settings.enabled) {
+    return true;
+  }
+  
+  // Check access code first
+  if (accessCode) {
+    const validCode = await isValidAccessCode(accessCode);
+    if (validCode) return true;
+  }
+  
+  // Fall back to IP check
+  return isAllowedDuringMaintenance(userIP);
 }
 
 /**
@@ -181,16 +244,26 @@ export const MAINTENANCE_TEMPLATES = {
   },
   coming_soon: {
     name: 'Coming Soon',
-    message: `<h2 class="text-4xl font-bold text-gray-900 mb-4">Coming Soon</h2>
-<p class="text-gray-600 mb-6">We're working hard to launch something amazing. Stay tuned!</p>
+    message: `<h2 class="text-4xl font-bold text-gray-900 mb-2">Coming Soon</h2>
+<p class="text-lg text-gray-600 mb-4">We're building something extraordinary</p>
+<p class="text-gray-500 mb-6">The future of creative collaboration is arriving. Be the first to know when we launch.</p>
+<div class="bg-gray-100 border border-gray-200 rounded-xl p-6 mb-6">
+<p class="text-sm text-gray-600 mb-2"><strong>What to expect:</strong></p>
+<ul class="text-sm text-gray-600 space-y-1">
+<li>• Seamless artist-client connections</li>
+<li>• Powerful project management tools</li>
+<li>• Secure payment processing</li>
+<li>• Global talent marketplace</li>
+</ul>
+</div>
 <p class="text-sm text-gray-500">Expected launch: Q4 2026</p>`
   },
   update: {
     name: 'System Update',
     message: `<h2 class="text-3xl font-bold text-gray-900 mb-4">System Update in Progress</h2>
 <p class="text-gray-600 mb-6">We're upgrading our systems to serve you better. This should take approximately 2-3 hours.</p>
-<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-<p class="text-blue-800 text-sm"><strong>What's new:</strong> Enhanced performance, new features, and improved security.</p>
+<div class="bg-gray-100 border border-gray-200 rounded-lg p-4 mb-4">
+<p class="text-gray-800 text-sm"><strong>What's new:</strong> Enhanced performance, new features, and improved security.</p>
 </div>`
   },
   emergency: {
@@ -200,7 +273,7 @@ export const MAINTENANCE_TEMPLATES = {
 <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
 <p class="text-red-800 text-sm"><strong>Status:</strong> Our team is working to resolve this as quickly as possible.</p>
 </div>
-<p class="text-sm text-gray-500">For urgent inquiries, please contact us at support@studio22.com</p>`
+<p class="text-sm text-gray-500">For urgent inquiries, please contact us at support@studio22.app</p>`
   }
 };
 
