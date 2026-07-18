@@ -16,8 +16,7 @@ const SERVICES = [
       'Production coordination across Europe',
       'On-set direction & cinematography',
       'Multi-format delivery for all platforms'
-    ],
-    gradient: 'from-blue-600 to-cyan-600'
+    ]
   },
   {
     icon: Film,
@@ -29,8 +28,7 @@ const SERVICES = [
       'Equipment & location packages',
       'Production management',
       'Festival preparation & delivery'
-    ],
-    gradient: 'from-purple-600 to-pink-600'
+    ]
   },
   {
     icon: Scissors,
@@ -42,8 +40,7 @@ const SERVICES = [
       'Music composition & licensing',
       'Motion graphics & titles',
       'Format conversion & delivery'
-    ],
-    gradient: 'from-amber-600 to-orange-600'
+    ]
   },
   {
     icon: Wand2,
@@ -55,8 +52,7 @@ const SERVICES = [
       'Green screen & set extensions',
       'Product visualization',
       'Real-time rendering & previews'
-    ],
-    gradient: 'from-green-600 to-emerald-600'
+    ]
   }
 ];
 
@@ -78,17 +74,16 @@ export default function Services() {
       />
       {/* Hero */}
       <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-amber-600/10 to-transparent" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 text-black">
-              Full-Spectrum <span className="gradient-text">Production Services</span>
+              Full-Spectrum Production Services
             </h1>
             <p className="text-xl text-gray-600 mb-8">
               From initial concept to final delivery, we handle every aspect of your production with curated teams across Europe
             </p>
             <Link to={createPageUrl('SubmitProject')}>
-              <Button size="lg" className="bg-amber-600 hover:bg-amber-700">
+              <Button size="lg" className="bg-black text-white hover:bg-gray-800">
                 Start a Project
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
@@ -106,9 +101,9 @@ export default function Services() {
               return (
                 <div
                   key={index}
-                  className="bg-gray-50 rounded-2xl border border-gray-200 p-8 hover-lift"
+                  className="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-lg transition-shadow"
                 >
-                  <div className={`w-16 h-16 bg-gradient-to-br ${service.gradient} rounded-xl flex items-center justify-center mb-6`}>
+                  <div className="w-16 h-16 bg-black rounded-xl flex items-center justify-center mb-6">
                     <Icon className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold mb-3 text-black">{service.title}</h3>
@@ -116,7 +111,7 @@ export default function Services() {
                   <ul className="space-y-3">
                     {service.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <CheckCircle className="w-5 h-5 text-black flex-shrink-0 mt-0.5" />
                         <span className="text-gray-700">{feature}</span>
                       </li>
                     ))}

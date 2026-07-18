@@ -1036,13 +1036,13 @@ export default function Home({ editMode = false }) {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
-                    className="flex items-center gap-1.5 text-xs text-gray-600 bg-white border border-gray-200 rounded px-2 py-1 hover:bg-gray-50 focus:ring-1 focus:ring-black cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-600 bg-white border border-gray-200 rounded px-2 sm:px-3 py-1.5 hover:bg-gray-50 focus:ring-1 focus:ring-black cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Add attachment (PDF, images, audio, video)"
                   >
                     {uploading ? (
-                      <Loader className="w-3 h-3 animate-spin" />
+                      <Loader className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
                     ) : (
-                      <Paperclip className="w-3 h-3" />
+                      <Paperclip className="w-3 h-3 sm:w-4 sm:h-4" />
                     )}
                     <span>{uploading ? 'Uploading...' : attachments.length > 0 ? `${attachments.length} file${attachments.length > 1 ? 's' : ''}` : 'Attach'}</span>
                   </button>
