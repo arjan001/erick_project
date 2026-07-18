@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Gift, MessageCircle, Briefcase, Star, ArrowRight, Share2, Copy, Check, CheckCircle } from 'lucide-react';
 
-const OG_IMAGE = 'https://media.base44.com/images/public/6968a46f6ea94ba83cd1497c/ee5480676_generated_image.png';
+// Use a simple SVG data URI for OG image representing Studio22 brand
+const OG_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630"%3E%3Crect fill="%23000" width="1200" height="630"/%3E%3Ctext x="50%25" y="45%25" dominant-baseline="middle" text-anchor="middle" fill="%23fff" font-size="72" font-weight="bold"%3EStudio22%3C/text%3E%3Ctext x="50%25" y="55%25" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="36"%3EPro Beta Invite%3C/text%3E%3C/svg%3E';
 
 function setMeta(attr, key, content) {
   let el = document.querySelector(`meta[${attr}="${key}"]`);

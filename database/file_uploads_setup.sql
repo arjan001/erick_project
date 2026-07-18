@@ -15,6 +15,12 @@ ON CONFLICT (id) DO NOTHING;
 -- STORAGE POLICIES FOR FILE UPLOADS
 -- ============================================
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Authenticated can upload files" ON storage.objects;
+DROP POLICY IF EXISTS "Users can read own files" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update own files" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete own files" ON storage.objects;
+
 -- Authenticated users can upload files
 CREATE POLICY "Authenticated can upload files" ON storage.objects FOR INSERT
 WITH CHECK (
@@ -70,6 +76,12 @@ USING (
 INSERT INTO storage.buckets (id, name, public, file_size_limit)
 VALUES ('ticket-attachments', 'ticket-attachments', false, 52428800) -- 50MB
 ON CONFLICT (id) DO NOTHING;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Authenticated can upload ticket attachments" ON storage.objects;
+DROP POLICY IF EXISTS "Users can read own ticket attachments" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update own ticket attachments" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete own ticket attachments" ON storage.objects;
 
 -- Authenticated users can upload ticket attachments
 CREATE POLICY "Authenticated can upload ticket attachments" ON storage.objects FOR INSERT

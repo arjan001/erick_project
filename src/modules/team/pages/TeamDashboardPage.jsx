@@ -13,7 +13,7 @@ import {
 
   Eye, TrendingUp, Upload, Edit, Users, Mail, Phone, MapPin,
 
-  Globe, Award, Film, Calendar, Plus, X, Edit2, Play, Instagram, Linkedin
+  Globe, Award, Film, Calendar, Plus, X, Edit2, Play, Instagram, Linkedin, Ticket
 
 
 } from 'lucide-react';
@@ -33,7 +33,7 @@ import { Input } from '@/components/ui/input';
 import { notifyError, notifySuccess, confirmDialog } from '@/lib/sweetAlert';
 
 import { base44 } from '@/api/base44Client';
-import { Team, PortfolioClip, Message, Invite, Application, Job, JobInvitation } from '@/lib/supabaseEntities';
+import { Team, PortfolioClip, Message, Invite, Application, Job, JobInvitation, SupportTicket } from '@/lib/supabaseEntities';
 
 
 
@@ -54,6 +54,8 @@ export default function TeamDashboard() {
   const [applications, setApplications] = useState([]);
 
   const [messages, setMessages] = useState([]);
+
+  const [supportTickets, setSupportTickets] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -177,8 +179,13 @@ export default function TeamDashboard() {
           })
         );
         setApplications(enrichedApplications || []);
+
+        // Load support tickets
+        const tickets = await SupportTicket.filter({ user_email: teamData.contact_email }, '-created_at', 10);
+        setSupportTickets(tickets || []);
       } else {
         setApplications([]);
+        setSupportTickets([]);
       }
 
     } catch (error) {
@@ -758,25 +765,25 @@ export default function TeamDashboard() {
 
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <DashboardStatCard icon={Briefcase} label="In progress" value={applications.filter(app => app.status === 'pending').length} />
-          <DashboardStatCard icon={Users} label="Active crew" value={teamMembers.length} />
-          <DashboardStatCard icon={Eye} label="This month" value={portfolioClips.reduce((sum, clip) => sum + (clip.view_count || 0), 0)} />
-          <DashboardStatCard icon={Film} label="Work samples" value={portfolioClips.length} />
+          <DashboardStatCard icon={Briefcase} label="In Progress" value={applications.filter(app => app.status === 'pending').length} color="bg-black" />
+          <DashboardStatCard icon={Users} label="Active Crew" value={teamMembers.length} color="bg-black" />
+          <DashboardStatCard icon={Eye} label="This Month" value={portfolioClips.reduce((sum, clip) => sum + (clip.view_count || 0), 0)} color="bg-black" />
+          <DashboardStatCard icon={Film} label="Work Samples" value={portfolioClips.length} color="bg-black" />
         </div>
 
 
 
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
 
           {/* Team Members */}
 
-          <Card>
+          <Card className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
 
-            <CardHeader>
+            <CardHeader className="bg-gray-50 border-b border-gray-200">
 
-              <CardTitle className="flex items-center justify-between">
+              <CardTitle className="flex items-center justify-between text-gray-900">
 
-                <span>Team Members</span>
+                <span className="font-semibold">Team Members</span>
 
                 {!isTeamMember && (
                   <Button size="sm" onClick={() => setShowMemberModal(true)} className="bg-black text-white hover:bg-gray-800">
@@ -800,7 +807,7 @@ export default function TeamDashboard() {
                   <p className="text-gray-600 mb-4">No team members yet</p>
 
                   {!isTeamMember && (
-                    <Button size="sm" onClick={() => setShowMemberModal(true)} className="bg-blue-600 hover:bg-blue-700">
+                    <Button size="sm" onClick={() => setShowMemberModal(true)} className="bg-black hover:bg-gray-800">
                       Add Your First Member
                     </Button>
                   )}
@@ -877,13 +884,13 @@ export default function TeamDashboard() {
 
           {/* Current Projects */}
 
-          <Card>
+          <Card className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
 
-            <CardHeader>
+            <CardHeader className="bg-gray-50 border-b border-gray-200">
 
-              <CardTitle className="flex items-center justify-between">
+              <CardTitle className="flex items-center justify-between text-gray-900">
 
-                <span>Active Contracts</span>
+                <span className="font-semibold">Active Contracts</span>
 
                 <Link to={createPageUrl('Projects')}>
 
@@ -905,7 +912,7 @@ export default function TeamDashboard() {
 
                 <Link to={createPageUrl('Projects')}>
 
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Find Projects</Button>
+                  <Button size="sm" className="bg-black hover:bg-gray-800">Find Projects</Button>
 
                 </Link>
 
@@ -919,17 +926,17 @@ export default function TeamDashboard() {
 
 
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-6">
 
           {/* Portfolio Section */}
 
-          <Card>
+          <Card className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
 
-            <CardHeader>
+            <CardHeader className="bg-gray-50 border-b border-gray-200">
 
-              <CardTitle className="flex items-center justify-between">
+              <CardTitle className="flex items-center justify-between text-gray-900">
 
-                <span>Team Portfolio</span>
+                <span className="font-semibold">Team Portfolio</span>
 
                 <Button size="sm" onClick={() => setShowPortfolioModal(true)} className="bg-black text-white hover:bg-gray-800">
 
@@ -953,7 +960,7 @@ export default function TeamDashboard() {
 
                   <p className="text-gray-600 mb-4">No portfolio clips yet</p>
 
-                  <Button size="sm" onClick={() => setShowPortfolioModal(true)} className="bg-blue-600 hover:bg-blue-700">
+                  <Button size="sm" onClick={() => setShowPortfolioModal(true)} className="bg-black hover:bg-gray-800">
 
                     Add Your First Clip
 
@@ -1049,13 +1056,13 @@ export default function TeamDashboard() {
 
           {/* Recent Messages */}
 
-          <Card>
+          <Card className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
 
-            <CardHeader>
+            <CardHeader className="bg-gray-50 border-b border-gray-200">
 
-              <CardTitle className="flex items-center justify-between">
+              <CardTitle className="flex items-center justify-between text-gray-900">
 
-                <span>Recent Messages</span>
+                <span className="font-semibold">Recent Messages</span>
 
                 <Link to={createPageUrl('Messages')}>
 
@@ -1107,13 +1114,52 @@ export default function TeamDashboard() {
 
         </div>
 
+        {/* Support Tickets */}
+        <Card className="mt-8 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="bg-gray-50 border-b border-gray-200">
+            <CardTitle className="flex items-center justify-between text-gray-900">
+              <span className="font-semibold">Support Tickets</span>
+              <Link to={createPageUrl('SupportTickets')}>
+                <Button size="sm" variant="outline">View All</Button>
+              </Link>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {supportTickets.length === 0 ? (
+              <div className="text-center py-8">
+                <Ticket className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-600">No support tickets</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {supportTickets.slice(0, 5).map((ticket) => (
+                  <div key={ticket.id} className="p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="font-medium text-sm">{ticket.ticket_number}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                        ticket.status === 'open' ? 'bg-blue-100 text-blue-800' :
+                        ticket.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                        ticket.status === 'resolved' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {ticket.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 truncate">{ticket.subject}</p>
+                    <p className="text-xs text-gray-400 mt-1">{new Date(ticket.created_at).toLocaleDateString()}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
 
         {/* Call to Action */}
 
         {team.status === 'approved' && (
 
-          <Card className="mt-8 bg-gray-900 text-white border-0">
+          <Card className="mt-8 bg-gray-900 text-white border-0 shadow-lg">
 
             <CardContent className="pt-6">
 
@@ -1123,13 +1169,13 @@ export default function TeamDashboard() {
 
                   <h3 className="text-2xl font-bold mb-2">Start Browsing Projects</h3>
 
-                  <p className="text-blue-100">Your team profile is approved! Explore opportunities and apply to projects that match your expertise.</p>
+                  <p className="text-gray-300">Your team profile is approved! Explore opportunities and apply to projects that match your expertise.</p>
 
                 </div>
 
                 <Link to={createPageUrl('Projects')}>
 
-                  <Button size="lg" className="bg-white text-blue-700 hover:bg-gray-100">
+                  <Button size="lg" className="bg-white text-black hover:bg-gray-100">
 
                     Browse Projects
 

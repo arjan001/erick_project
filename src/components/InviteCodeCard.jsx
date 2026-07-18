@@ -211,7 +211,7 @@ export default function InviteCodeCard() {
             <Gift className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Invite Friends</h3>
+            <h3 className="font-semibold text-gray-900">Invite an artist to join Studio22 Pro Beta</h3>
             <p className="text-sm text-gray-500">Share your code and grow the network</p>
           </div>
         </div>

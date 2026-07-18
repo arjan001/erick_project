@@ -5,7 +5,7 @@ import { Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntit
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { formatDistanceToNow } from 'date-fns';
-import { Search, Send, Plus, X, Trash2, Archive, ArchiveRestore, Inbox, ArrowLeft, LogOut, MoreVertical, Star, Edit, Mic, Paperclip } from 'lucide-react';
+import { Search, Send, Plus, X, Trash2, Archive, ArchiveRestore, Inbox, ArrowLeft, LogOut, MoreVertical, Star, Edit, Mic, Paperclip, Download, ExternalLink, FileText, Image as ImageIcon, FileArchive, File, Check, CheckCheck } from 'lucide-react';
 import { confirmDialog } from '@/lib/sweetAlert';
 import notificationService from '@/shared/services/notificationService';
 import subscriptionService from '@/shared/services/subscriptionService';
@@ -34,6 +34,47 @@ const getConversationId = (a, b) => [a, b].sort().join('__');
 const ONLINE_THRESHOLD_MS = 90 * 1000; // consider online if active within last 90s
 
 const isOnline = (lastActive) => lastActive && (Date.now() - new Date(lastActive).getTime()) < ONLINE_THRESHOLD_MS;
+
+function getFileIcon(fileType) {
+  if (!fileType) return <File className="w-5 h-5 text-gray-600" />;
+  
+  if (fileType.startsWith('image/')) {
+    return <ImageIcon className="w-5 h-5 text-gray-600" />;
+  }
+  if (fileType.includes('pdf')) {
+    return <FileText className="w-5 h-5 text-red-600" />;
+  }
+  if (fileType.includes('zip') || fileType.includes('rar') || fileType.includes('7z') || fileType.includes('tar')) {
+    return <FileArchive className="w-5 h-5 text-yellow-600" />;
+  }
+  if (fileType.includes('word') || fileType.includes('document')) {
+    return <FileText className="w-5 h-5 text-blue-600" />;
+  }
+  if (fileType.includes('excel') || fileType.includes('spreadsheet')) {
+    return <FileText className="w-5 h-5 text-green-600" />;
+  }
+  return <File className="w-5 h-5 text-gray-600" />;
+}
+
+function formatFileSize(bytes) {
+  if (!bytes) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+function getMessageStatus(msg, currentUserEmail) {
+  if (msg.sender_email !== currentUserEmail) return null; // Only show status for sent messages
+  
+  if (msg.is_read) {
+    return { icon: CheckCheck, color: 'text-blue-500', label: 'Read' };
+  }
+  if (msg.delivered_at) {
+    return { icon: CheckCheck, color: 'text-gray-400', label: 'Delivered' };
+  }
+  return { icon: Check, color: 'text-gray-400', label: 'Sent' };
+}
 
 // Look up a participant's profile across all user types and return display info + tags + presence
 async function enrichParticipant(email) {
@@ -108,6 +149,9 @@ export default function MessagesPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [attachedFile, setAttachedFile] = useState(null);
+  const [previewAttachment, setPreviewAttachment] = useState(null);
+  const [editingMessage, setEditingMessage] = useState(null);
+  const [editText, setEditText] = useState('');
   const messagesEndRef = useRef(null);
   const conversationsListRef = useRef(null);
   const messagesListRef = useRef(null);
@@ -298,9 +342,9 @@ export default function MessagesPage() {
     const unread = selectedConversation.messages.filter(m => m.recipient_email === user.email && !m.is_read);
     if (unread.length === 0) return;
     setConversations(prev => prev.map(c => c.id === selectedConversation.id
-      ? { ...c, messages: c.messages.map(m => (m.recipient_email === user.email && !m.is_read) ? { ...m, is_read: true } : m) }
+      ? { ...c, messages: c.messages.map(m => (m.recipient_email === user.email && !m.is_read) ? { ...m, is_read: true, read_at: new Date().toISOString() } : m) }
       : c));
-    Promise.all(unread.map(m => Message.update(m.id, { is_read: true }))).catch(err => {
+    Promise.all(unread.map(m => Message.update(m.id, { is_read: true, read_at: new Date().toISOString() }))).catch(err => {
       console.error('Error marking messages as read:', err);
     });
   }, [selectedId]);
@@ -356,6 +400,7 @@ export default function MessagesPage() {
         recipient_email: selectedConversation.otherEmail,
         text,
         attachment: attachmentData,
+        delivered_at: new Date().toISOString(),
       });
       // Replace temp message with the real saved one
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
@@ -366,6 +411,17 @@ export default function MessagesPage() {
       
       // Track usage and notify if approaching limit
       await subscriptionService.trackUsage(user.email, 'message');
+      
+      // Notify recipient about new message
+      try {
+        notificationService.notifyNewMessage(
+          selectedConversation.otherEmail,
+          user.full_name || user.email,
+          selectedConversation.id
+        );
+      } catch (notifErr) {
+        console.error('Error sending notification:', notifErr);
+      }
     } catch (err) {
       console.error('Error sending message:', err);
       error('Failed', 'Failed to send message');
@@ -482,13 +538,15 @@ export default function MessagesPage() {
     try {
       if (deleteType === 'everyone') {
         // Mark as deleted for everyone
-        await Message.update(msg.id, { deleted_for_everyone: true, text: 'This message was deleted' });
+        await Message.update(msg.id, { deleted_for_everyone: true });
         setConversations(prev => prev.map(c => c.id === selectedConversation.id
           ? { ...c, messages: c.messages.map(m => m.id === msg.id ? { ...m, deleted_for_everyone: true, text: 'This message was deleted' } : m) }
           : c));
       } else {
         // Delete only for current user (soft delete - add to deleted_for array)
-        await Message.update(msg.id, { deleted_for: [...(msg.deleted_for || []), user.email] });
+        const currentDeletedFor = msg.deleted_for || [];
+        const updatedDeletedFor = [...currentDeletedFor, user.email];
+        await Message.update(msg.id, { deleted_for: updatedDeletedFor });
         setConversations(prev => prev.map(c => c.id === selectedConversation.id
           ? { ...c, messages: c.messages.filter(m => m.id !== msg.id) }
           : c));
@@ -501,15 +559,25 @@ export default function MessagesPage() {
     }
   };
 
-  const handleEditMessage = async (msg) => {
-    const newText = prompt('Edit message:', msg.text);
-    if (newText === null || newText.trim() === '') return;
+  const handleEditMessage = (msg) => {
+    setEditingMessage(msg);
+    setEditText(msg.text || '');
+    setShowMessageMenu(null);
+    setMessageInput('');
+    setAttachedFile(null);
+    // Scroll to input
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingMessage || editText.trim() === '') return;
     try {
-      await Message.update(msg.id, { text: newText });
+      await Message.update(editingMessage.id, { text: editText.trim() });
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
-        ? { ...c, messages: c.messages.map(m => m.id === msg.id ? { ...m, text: newText } : m) }
+        ? { ...c, messages: c.messages.map(m => m.id === editingMessage.id ? { ...m, text: editText.trim() } : m) }
         : c));
-      setShowMessageMenu(null);
+      setEditingMessage(null);
+      setEditText('');
       success('Edited', 'Message updated');
     } catch (err) {
       console.error('Error editing message:', err);
@@ -517,14 +585,25 @@ export default function MessagesPage() {
     }
   };
 
+  const handleCancelEdit = () => {
+    setEditingMessage(null);
+    setEditText('');
+  };
+
   const handleStarMessage = async (msg) => {
     try {
-      await Message.update(msg.id, { is_starred: !msg.is_starred });
+      const currentStarredBy = msg.starred_by || [];
+      const isStarred = currentStarredBy.includes(user.email);
+      const updatedStarredBy = isStarred
+        ? currentStarredBy.filter(email => email !== user.email)
+        : [...currentStarredBy, user.email];
+      
+      await Message.update(msg.id, { starred_by: updatedStarredBy });
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
-        ? { ...c, messages: c.messages.map(m => m.id === msg.id ? { ...m, is_starred: !m.is_starred } : m) }
+        ? { ...c, messages: c.messages.map(m => m.id === msg.id ? { ...m, starred_by: updatedStarredBy } : m) }
         : c));
       setShowMessageMenu(null);
-      success(msg.is_starred ? 'Unstarred' : 'Starred', `Message ${msg.is_starred ? 'unstarred' : 'starred'}`);
+      success(isStarred ? 'Unstarred' : 'Starred', `Message ${isStarred ? 'unstarred' : 'starred'}`);
     } catch (err) {
       console.error('Error starring message:', err);
       error('Failed', 'Failed to star message');
@@ -780,10 +859,51 @@ export default function MessagesPage() {
                           onMouseLeave={() => setHoveredMessageId(null)}
                         >
                           {msg.text && <p className="text-sm break-words leading-tight pr-12">{msg.text}</p>}
+                          {msg.attachment && (
+                            <div className="mt-2 flex items-center gap-2 bg-white/50 rounded-lg p-2">
+                              {msg.attachment.fileType?.startsWith('image/') ? (
+                                <div className="relative w-12 h-12 rounded overflow-hidden flex-shrink-0">
+                                  <img src={msg.attachment.url} alt={msg.attachment.fileName} className="w-full h-full object-cover" />
+                                </div>
+                              ) : (
+                                <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                  {getFileIcon(msg.attachment.fileType)}
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-gray-900 truncate">{msg.attachment.fileName}</p>
+                                <p className="text-[10px] text-gray-600">{formatFileSize(msg.attachment.fileSize)}</p>
+                              </div>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setPreviewAttachment(msg.attachment); }}
+                                className="p-1.5 hover:bg-gray-200 rounded flex-shrink-0"
+                                title="Preview"
+                              >
+                                <ExternalLink className="w-4 h-4 text-gray-600" />
+                              </button>
+                              <a
+                                href={msg.attachment.url}
+                                download={msg.attachment.fileName}
+                                onClick={(e) => e.stopPropagation()}
+                                className="p-1.5 hover:bg-gray-200 rounded flex-shrink-0"
+                                title="Download"
+                              >
+                                <Download className="w-4 h-4 text-gray-600" />
+                              </a>
+                            </div>
+                          )}
                           <div className={`absolute bottom-1 right-2 flex items-center gap-1 ${hoveredMessageId === msg.id ? 'opacity-100' : 'opacity-0'} transition-opacity`}>
                             <span className="text-[10px] text-gray-500">
                               {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
+                            {(() => {
+                              const status = getMessageStatus(msg, user.email);
+                              if (!status) return null;
+                              const StatusIcon = status.icon;
+                              return (
+                                <StatusIcon className={`w-3.5 h-3.5 ${status.color}`} title={status.label} />
+                              );
+                            })()}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -897,24 +1017,52 @@ export default function MessagesPage() {
                 </button>
 
                 {/* Message input */}
-                <input
-                  type="text"
-                  value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
-                  placeholder="Type a message..."
-                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-                  disabled={isRecording}
-                />
-
-                {/* Send button */}
-                <button 
-                  onClick={handleSend} 
-                  disabled={!messageInput.trim() && !attachedFile}
-                  className="px-5 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
+                {editingMessage ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEdit(); if (e.key === 'Escape') handleCancelEdit(); }}
+                      placeholder="Edit message..."
+                      className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                      disabled={isRecording}
+                      autoFocus
+                    />
+                    <button 
+                      onClick={handleCancelEdit} 
+                      className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={handleSaveEdit} 
+                      disabled={!editText.trim()}
+                      className="px-5 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={messageInput}
+                      onChange={(e) => setMessageInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
+                      placeholder="Type a message..."
+                      className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                      disabled={isRecording}
+                    />
+                    <button 
+                      onClick={handleSend} 
+                      disabled={!messageInput.trim() && !attachedFile}
+                      className="px-5 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </>
@@ -962,6 +1110,64 @@ export default function MessagesPage() {
               {filteredDirectory.length === 0 && (
                 <div className="text-center text-sm text-gray-400 py-6">No matches found</div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* File Preview Modal */}
+      {previewAttachment && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                {getFileIcon(previewAttachment.fileType)}
+                <div>
+                  <h3 className="font-semibold text-gray-900">{previewAttachment.fileName}</h3>
+                  <p className="text-sm text-gray-600">{formatFileSize(previewAttachment.fileSize)}</p>
+                </div>
+              </div>
+              <button onClick={() => setPreviewAttachment(null)} className="p-2 hover:bg-gray-100 rounded">
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-gray-50">
+              {previewAttachment.fileType?.startsWith('image/') ? (
+                <img src={previewAttachment.url} alt={previewAttachment.fileName} className="max-w-full max-h-full object-contain" />
+              ) : previewAttachment.fileType?.includes('pdf') ? (
+                <iframe src={previewAttachment.url} className="w-full h-full min-h-[500px]" title="PDF Preview" />
+              ) : (
+                <div className="text-center">
+                  <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-gray-200 rounded-full">
+                    {getFileIcon(previewAttachment.fileType)}
+                  </div>
+                  <p className="text-gray-600 mb-4">Preview not available for this file type</p>
+                  <a
+                    href={previewAttachment.url}
+                    download={previewAttachment.fileName}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download File
+                  </a>
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
+              <a
+                href={previewAttachment.url}
+                download={previewAttachment.fileName}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+              >
+                <Download className="w-4 h-4" />
+                Download
+              </a>
+              <button
+                onClick={() => setPreviewAttachment(null)}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

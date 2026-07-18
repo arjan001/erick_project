@@ -6,6 +6,7 @@ import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast';
 import { Search, MapPin, ChevronDown, Users, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import notificationService from '@/shared/services/notificationService';
 
 // Maps the app's user.role values to the Connection entity's requester/recipient type enum
 const ROLE_TO_TYPE = {

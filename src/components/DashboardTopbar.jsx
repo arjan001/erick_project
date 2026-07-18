@@ -84,18 +84,35 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   }, [user]);
 
   useEffect(() => {
-    if (!user?.email || user?.role !== 'artist') return;
-    const fetchArtistProfile = async () => {
+    if (!user?.email) return;
+    const fetchProfile = async () => {
       try {
-        const artists = await Artist.filter({ email: user.email });
-        if (artists?.[0]) {
-          setArtistProfile(artists[0]);
+        if (user.role === 'artist' || user.role === 'artist_admin') {
+          const artists = await Artist.filter({ email: user.email });
+          if (artists?.[0]) {
+            setArtistProfile(artists[0]);
+          }
+        } else if (user.role === 'team' || user.role === 'team_admin') {
+          const teams = await Team.filter({ contact_email: user.email });
+          if (teams?.[0]) {
+            setArtistProfile(teams[0]);
+          }
+        } else if (user.role === 'backer') {
+          const backers = await Backer.filter({ contact_email: user.email });
+          if (backers?.[0]) {
+            setArtistProfile(backers[0]);
+          }
+        } else if (user.role === 'client' || user.role === 'project_owner') {
+          const owners = await ProjectOwner.filter({ email: user.email });
+          if (owners?.[0]) {
+            setArtistProfile(owners[0]);
+          }
         }
       } catch (err) {
-        console.error('Error fetching artist profile:', err);
+        console.error('Error fetching profile:', err);
       }
     };
-    fetchArtistProfile();
+    fetchProfile();
   }, [user]);
 
   const unreadMessagesCount = messages.length;
@@ -260,14 +277,14 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
             className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-              {artistProfile?.profile_photo_url ? (
-                <img src={artistProfile.profile_photo_url} alt="Profile" className="w-full h-full object-cover" />
+              {artistProfile?.profile_photo_url || artistProfile?.team_logo_url ? (
+                <img src={artistProfile.profile_photo_url || artistProfile.team_logo_url} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <Users className="w-4 h-4 text-indigo-600" />
               )}
             </div>
             <span className="hidden md:block text-sm font-medium text-gray-700 max-w-[120px] truncate">
-              {artistProfile?.full_name || user?.full_name || 'User'}
+              {artistProfile?.full_name || artistProfile?.team_name || user?.full_name || 'User'}
             </span>
             <ChevronDown className="w-4 h-4 text-gray-400 hidden md:block" />
           </button>
@@ -277,7 +294,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
               <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
               <div className="absolute right-0 mt-2 w-52 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-20">
                 <div className="px-4 py-2 border-b border-gray-50">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{artistProfile?.full_name || user?.full_name}</p>
+                  <p className="text-sm font-semibold text-gray-900 truncate">{artistProfile?.full_name || artistProfile?.team_name || user?.full_name}</p>
                   <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                 </div>
                 <Link

@@ -48,11 +48,19 @@ export default function TeamPaymentsPage() {
 
   const fetchPayments = async (teamId) => {
     try {
-      const allPayments = await base44.entities.Payment.filter({ team_id: teamId });
-      setPayments(allPayments);
+      // Try to fetch from database directly since Payment entity might not exist
+      const { data, error } = await base44
+        .from('payments')
+        .select('*')
+        .eq('team_id', teamId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setPayments(data || []);
     } catch (err) {
       console.error('Error fetching payments:', err);
       toastError('Load Failed', 'Failed to load payments. Please try again.');
+      setPayments([]);
     } finally {
       setLoading(false);
     }
