@@ -235,29 +235,24 @@ export default function Home({ editMode = false }) {
 
       clearInterval(progressInterval);
 
-      if (analysisResult.success) {
-        // Generate full project brief with attachments
-        const briefResult = await generateProjectBrief(analysisResult, projectCategory, projectDescription, attachments);
+      if (analysisResult.success && analysisResult.rawAnalysis) {
+        // Set description directly from raw analysis for speed
+        setProjectDescription(analysisResult.rawAnalysis);
+        setExtractProgress(progressSteps.length - 1);
         
-        if (briefResult.success && briefResult.brief) {
-          const brief = briefResult.brief;
-          setProjectDescription(`${brief.project_overview?.goal || ''}\n\n${brief.additional_notes || ''}`);
-          setExtractProgress(progressSteps.length - 1);
-          
-          // Save to localStorage for SubmitProject page
-          saveAnalyzedProjectToStorage({
-            url: analysisResult.url,
-            analysis: analysisResult,
-            brief: briefResult.brief,
-            projectType: projectCategory,
-            additionalNotes: projectDescription,
-            attachments: attachments
-          });
-          
-          setTimeout(() => {
-            setExtractProgress(null);
-          }, 600);
-        }
+        // Save to localStorage for SubmitProject page
+        saveAnalyzedProjectToStorage({
+          url: analysisResult.url,
+          analysis: analysisResult,
+          brief: null, // Skip brief generation for speed
+          projectType: projectCategory,
+          additionalNotes: projectDescription,
+          attachments: attachments
+        });
+        
+        setTimeout(() => {
+          setExtractProgress(null);
+        }, 600);
       } else {
         console.error('Extract error:', analysisResult.error);
         setExtractProgress(null);

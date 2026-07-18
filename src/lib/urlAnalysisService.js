@@ -12,11 +12,13 @@ import { base44 } from '@/api/base44Client';
  */
 export const analyzeWebsiteUrl = async (url, projectType = 'commercial') => {
   try {
-    // Normalize URL
+    // Normalize URL - handle plain domains like proton.me
     let normalizedUrl = url.trim();
     if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
       normalizedUrl = 'https://' + normalizedUrl;
     }
+
+    console.log('Analyzing URL:', normalizedUrl);
 
     // Select prompt template based on project type
     const prompt = getPromptForProjectType(projectType);
@@ -29,11 +31,26 @@ export const analyzeWebsiteUrl = async (url, projectType = 'commercial') => {
       max_tokens: 500
     });
 
-    if (!response?.data?.content) {
-      throw new Error('Failed to analyze website');
+    console.log('Base44 response:', response);
+
+    // Check multiple possible response structures
+    let analysis = null;
+    if (response?.data?.content) {
+      analysis = response.data.content;
+    } else if (response?.data?.text) {
+      analysis = response.data.text;
+    } else if (response?.content) {
+      analysis = response.content;
+    } else if (typeof response === 'string') {
+      analysis = response;
+    } else if (response?.message) {
+      analysis = response.message;
     }
 
-    const analysis = response.data.content;
+    if (!analysis) {
+      console.error('No content in response:', response);
+      throw new Error('Failed to analyze website - no content returned');
+    }
 
     // Parse the analysis to extract structured data
     const parsedAnalysis = parseAnalysisResponse(analysis);

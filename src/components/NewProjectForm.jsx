@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Sparkles, CheckCircle2, Loader } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/shared/utils/routing';
+import { analyzeWebsiteUrl, generateProjectBrief } from '@/lib/urlAnalysisService';
 
 export default function NewProjectForm({ selectedCategory = 'commercial' }) {
   const navigate = useNavigate();
@@ -21,10 +21,50 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
   const [projectType, setProjectType] = useState(projectTypeMap[selectedCategory] || 'commercial');
   const [extracting, setExtracting] = useState(false);
   const [extractProgress, setExtractProgress] = useState(null);
+  const [regenerating, setRegenerating] = useState(false);
+  const previousProjectTypeRef = useRef(projectType);
+  const previousDescriptionRef = useRef(description);
 
   React.useEffect(() => {
     setProjectType(projectTypeMap[selectedCategory] || 'commercial');
   }, [selectedCategory]);
+
+  // Auto-regenerate brief when project type changes
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      // Only regenerate if project type changed and we have a description
+      if (description && previousProjectTypeRef.current !== projectType) {
+        try {
+          setRegenerating(true);
+          // Simple category-based context update instead of full brief generation
+          const categoryContext = getCategoryContext(projectType);
+          const updatedDescription = `${categoryContext}\n\n${description}`;
+          setDescription(updatedDescription);
+        } catch (err) {
+          console.error('Regeneration error:', err);
+        } finally {
+          setRegenerating(false);
+        }
+      }
+      
+      // Update refs
+      previousProjectTypeRef.current = projectType;
+      previousDescriptionRef.current = description;
+    }, 500); // 0.5 second debounce for faster response
+
+    return () => clearTimeout(timer);
+  }, [projectType, description]);
+
+  const getCategoryContext = (type) => {
+    const contexts = {
+      commercial: 'Commercial Project: Brand-focused, clear structure, defined budgets, marketing-driven.',
+      short_film: 'Short Film: Narrative-driven, script-heavy, small to mid crews, artistic focus.',
+      film: 'Feature Film: Full production planning, cast, locations, long schedule, cinematic.',
+      music_video: 'Music Video: Visual-first, short schedule, strong art direction, performance-based.',
+      documentary: 'Documentary: Real-world content, flexible planning, research-focused, authentic storytelling.'
+    };
+    return contexts[type] || contexts.commercial;
+  };
 
   const progressSteps = [
     'Fetching site content',
@@ -49,21 +89,20 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
     }, 800);
 
     try {
-      const response = await base44.functions.invoke('extractAndAnalyze', { 
-        url: referenceUrl,
-        projectType: selectedCategory
-      });
+      // Use the new urlAnalysisService
+      const analysisResult = await analyzeWebsiteUrl(referenceUrl, projectType);
       
       clearInterval(progressInterval);
       
-      if (response.data?.success && response.data?.description) {
-        setDescription(response.data.description);
+      if (analysisResult.success && analysisResult.rawAnalysis) {
+        // Set description directly from raw analysis for speed
+        setDescription(analysisResult.rawAnalysis);
         setExtractProgress(progressSteps.length - 1);
         setTimeout(() => {
           setExtractProgress(null);
         }, 600);
-      } else if (response.data?.error) {
-        console.error('Extract error:', response.data.error);
+      } else {
+        console.error('Extract error:', analysisResult.error);
         setExtractProgress(null);
       }
     } catch (error) {
