@@ -139,9 +139,9 @@ export default function TeamDashboard() {
       // workspace), the team admin looks up by their own contact_email.
       let teamData = null;
       if (currentUser.team_id) {
-        teamData = await Team.filter({ id: currentUser.team_id }, '-created_date', 1).then(r => r?.[0] || null);
+        teamData = await Team.filter({ id: currentUser.team_id }, '-created_at', 1).then(r => r?.[0] || null);
       } else {
-        const teams = await Team.filter({ contact_email: currentUser.email }, '-created_date', 1);
+        const teams = await Team.filter({ contact_email: currentUser.email }, '-created_at', 1);
         teamData = teams?.[0] || null;
       }
       setTeam(teamData);
@@ -158,14 +158,14 @@ export default function TeamDashboard() {
         setProfileSpecialties(Array.isArray(teamData.specialties) ? teamData.specialties.join(', ') : '');
 
         // Load real portfolio clips
-        const clips = await PortfolioClip.filter({ uploaded_by_id: teamData.id, uploaded_by_type: 'team' }, '-created_date', 20);
+        const clips = await PortfolioClip.filter({ uploaded_by_id: teamData.id, uploaded_by_type: 'team' }, '-created_at', 20);
         setPortfolioClips(clips || []);
 
         // Load real team members from the team's team_members array (embedded)
         setTeamMembers(teamData.team_members || []);
 
         // Load real messages
-        const msgs = await Message.filter({ recipient_email: teamData.contact_email }, '-created_date', 5);
+        const msgs = await Message.filter({ recipient_email: teamData.contact_email }, '-created_at', 5);
         setMessages(msgs || []);
 
         // Load team applications

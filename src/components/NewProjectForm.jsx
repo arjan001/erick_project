@@ -33,37 +33,45 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
     setProjectType(newProjectType);
   }, [selectedCategory]);
 
-  // Auto-regenerate brief when project type changes
+  // Auto-regenerate analysis when project type changes (if URL exists)
   useEffect(() => {
+    console.log('Regeneration effect triggered - projectType:', projectType, 'referenceUrl:', referenceUrl, 'previous:', previousProjectTypeRef.current);
+    
     const timer = setTimeout(async () => {
-      // Check if project type actually changed
-      if (previousProjectTypeRef.current !== projectType) {
-        console.log('Project type changed from', previousProjectTypeRef.current, 'to', projectType);
+      // Check if project type actually changed and we have a reference URL
+      if (previousProjectTypeRef.current !== projectType && referenceUrl && referenceUrl.trim() !== '') {
+        console.log('Regenerating analysis for', referenceUrl, 'with type', projectType);
         
         try {
           setRegenerating(true);
           
-          // If we have existing description, prepend category context
-          if (description) {
-            const categoryContext = getCategoryContext(projectType);
-            // Remove previous category context if it exists
-            const cleanDescription = description.replace(/^.*Project:.*?\n\n/, '');
-            const updatedDescription = `${categoryContext}\n\n${cleanDescription}`;
-            setDescription(updatedDescription);
+          // Re-analyze the URL with the new project type
+          const analysisResult = await analyzeWebsiteUrl(referenceUrl, projectType);
+          
+          console.log('Analysis result:', analysisResult);
+          
+          if (analysisResult.success && analysisResult.rawAnalysis) {
+            setDescription(analysisResult.rawAnalysis);
           }
         } catch (err) {
           console.error('Regeneration error:', err);
         } finally {
           setRegenerating(false);
         }
+      } else {
+        console.log('Skipping regeneration - conditions not met:', {
+          typeChanged: previousProjectTypeRef.current !== projectType,
+          hasUrl: !!referenceUrl,
+          urlNotEmpty: referenceUrl?.trim() !== ''
+        });
       }
       
       // Update refs
       previousProjectTypeRef.current = projectType;
-    }, 300); // 0.3 second debounce for faster response
+    }, 500); // 0.5 second debounce
 
     return () => clearTimeout(timer);
-  }, [projectType]);
+  }, [projectType, referenceUrl]);
 
   const getCategoryContext = (type) => {
     const contexts = {
@@ -127,7 +135,7 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
   const handleSubmit = () => {
     if (!description) return;
     
-    // Save analyzed data to localStorage for SubmitProject flow
+    // Save analyzed data to localStorage for SubmitProject flow - pass URL as-is without validation
     saveAnalyzedProjectToStorage({
       url: referenceUrl,
       analysis: { rawAnalysis: description, url: referenceUrl },

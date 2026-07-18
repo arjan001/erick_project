@@ -389,89 +389,98 @@ export default function JobBoard() {
                 <button
                   key={project.id}
                   onClick={() => { setSelectedProject(project); setShowDetailModal(true); }}
-                  className={`w-full text-left bg-white rounded-2xl border-2 transition-all overflow-hidden shadow-sm hover:shadow-lg ${
+                  className={`w-full text-left bg-white rounded-xl border transition-all overflow-hidden shadow-sm hover:shadow-md ${
                     selectedProject?.id === project.id
-                      ? 'border-black shadow-md ring-2 ring-black/5'
-                      : 'border-gray-100 hover:border-gray-300'
+                      ? 'border-black shadow-md ring-1 ring-black/5'
+                      : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  {/* Project Card Image */}
-                  <div className="relative h-48 bg-gray-100">
-                    {project.image_url ? (
-                      <img 
-                        src={project.image_url} 
-                        alt={project.title || project.project_type}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                        <Building2 className="w-12 h-12 text-gray-300" />
-                      </div>
-                    )}
-                    {project.isJob && (
-                      <div className="absolute top-3 left-3 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                        Job
-                      </div>
-                    )}
-                    <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
-                      {project.budget_type === 'Hourly' ? '€/hr' : project.budget_type === 'Daily' ? '€/day' : 'Fixed'}
+                  <div className="flex gap-3 p-4">
+                    {/* Left - Job Image (square) */}
+                    <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                      {project.image_url ? (
+                        <>
+                          <img src={project.image_url} alt={project.title} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
+                        </>
+                      ) : (
+                        <Building2 className="w-6 h-6 text-gray-400" />
+                      )}
                     </div>
-                    {project.requires_subscription && (
-                      <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
-                        <Crown className="w-3 h-3" />
-                        Premium
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Project Card Content */}
-                  <div className="p-4">
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-gray-50">
-                        <Building2 className="w-5 h-5 text-gray-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-bold text-sm text-gray-900 truncate">{project.project_owner_name || 'Client'}</div>
-                        <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                          <MapPin className="w-3 h-3" />
-                          <span className="truncate">{[project.location_city, project.location_country].filter(Boolean).join(', ') || 'Remote'}</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <h3 className="font-bold text-gray-900 mb-2 text-sm line-clamp-2 leading-tight">
-                      {project.title || project.project_type?.replace(/_/g, ' ')}
-                    </h3>
-                    
-                    {/* Skills/Departments Tags */}
-                    {project.departments_needed && project.departments_needed.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-3">
-                        {project.departments_needed.slice(0, 3).map((dept) => (
-                          <span key={dept} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full truncate max-w-[100px]">
-                            {dept.replace(/_/g, ' ')}
-                          </span>
-                        ))}
-                        {project.departments_needed.length > 3 && (
-                          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
-                            +{project.departments_needed.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    )}
 
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                      <div className="flex items-center gap-2">
-                        <div className="font-bold text-gray-900 text-base">
-                          {project.budget_type === 'Hourly' ? `€${project.budget_min}/hr` : project.budget_type === 'Daily' ? `€${project.budget_min}/day` : `€${project.budget_min}`}
+                    {/* Right - Content */}
+                    <div className="flex-1 min-w-0">
+                      {/* Top Row - Timestamp and Badges */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">{getTimeAgo(project.created_at)}</span>
+                          {project.isJob && (
+                            <span className="bg-black text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                              Job
+                            </span>
+                          )}
+                          {project.requires_subscription && (
+                            <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-[10px] font-medium px-2 py-0.5 rounded-full">
+                              Premium
+                            </span>
+                          )}
                         </div>
-                        {project.budget_max && project.budget_max > project.budget_min && project.budget_type !== 'Hourly' && project.budget_type !== 'Daily' && (
-                          <div className="text-xs text-gray-500">- €{project.budget_max}</div>
-                        )}
                       </div>
-                      <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                        <Clock className="w-3 h-3" />
-                        {getTimeAgo(project.created_at)}
+
+                      {/* Job Title */}
+                      <h3 className="font-semibold text-gray-900 mb-1 text-sm line-clamp-1">
+                        {project.title || project.project_type?.replace(/_/g, ' ')}
+                      </h3>
+
+                      {/* Description - blurred for pro-only jobs */}
+                      {project.requires_subscription ? (
+                        <div className="relative mb-2">
+                          <p className="text-xs text-gray-600 line-clamp-2 blur-sm">
+                            {project.notes?.substring(0, 100) + '...' || 'Project opportunity'}
+                          </p>
+                          <div className="absolute inset-0 flex items-center justify-center bg-gray-100/80 backdrop-blur-sm rounded">
+                            <div className="flex items-center gap-1 text-xs font-medium text-gray-700">
+                              <Lock className="w-3 h-3" />
+                              Unlock with Pro
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                          {project.notes?.substring(0, 100) + '...' || 'Project opportunity'}
+                        </p>
+                      )}
+
+                      {/* Location and Pay */}
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          <span>{[project.location_city, project.location_country].filter(Boolean).join(', ') || 'Remote'}</span>
+                        </div>
+                        <div className="flex items-center gap-1 font-medium text-gray-900">
+                          <span>
+                            {project.budget_type === 'Hourly' ? `€${project.budget_min}/hr` : 
+                             project.budget_type === 'Daily' ? `€${project.budget_min}/day` : 
+                             `€${project.budget_min}${project.budget_max && project.budget_max > project.budget_min ? ` - €${project.budget_max}` : ''}`}
+                          </span>
+                        </div>
                       </div>
+
+                      {/* Skills/Departments Tags */}
+                      {project.departments_needed && project.departments_needed.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {project.departments_needed.slice(0, 3).map((dept) => (
+                            <span key={dept} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
+                              {dept.replace(/_/g, ' ')}
+                            </span>
+                          ))}
+                          {project.departments_needed.length > 3 && (
+                            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
+                              +{project.departments_needed.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </button>

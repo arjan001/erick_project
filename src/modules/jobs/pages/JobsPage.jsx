@@ -80,7 +80,7 @@ export default function Jobs() {
         // Convert projects to job-like format for unified display
         const projectJobs = allProjects.map(project => ({
           id: project.id,
-          title: project.project_type?.replace(/_/g, ' ') || 'Project',
+          title: project.title || project.project_type?.replace(/_/g, ' ') || 'Project',
           description: project.notes || project.description || 'No description available',
           short_description: project.notes?.substring(0, 150) + '...' || 'Project opportunity',
           location: [project.location_city, project.location_country].filter(Boolean).join(', ') || 'Remote',
@@ -122,7 +122,27 @@ export default function Jobs() {
           const userApplications = await Application.filter({ artist_id: artist.id });
           const enrichedApplications = await Promise.all(
             userApplications.map(async (app) => {
-              const job = await Job.get(app.job_id);
+              let job = null;
+              if (app.job_id) {
+                job = await Job.get(app.job_id);
+              } else if (app.project_id) {
+                // For projects, fetch the project and convert to job-like format
+                const project = await Project.get(app.project_id);
+                if (project) {
+                  job = {
+                    id: project.id,
+                    title: project.title || project.project_type?.replace(/_/g, ' ') || 'Project',
+                    description: project.notes || project.description,
+                    location: [project.location_city, project.location_country].filter(Boolean).join(', ') || 'Remote',
+                    client_name: project.project_owner_name || 'Client',
+                    budget_min: project.budget_min || 0,
+                    budget_max: project.budget_max || 0,
+                    budget_type: project.budget_range?.includes('hourly') ? 'Hourly' : project.budget_range?.includes('daily') ? 'Daily' : 'Fixed',
+                    isProject: true,
+                    image_url: project.image_url
+                  };
+                }
+              }
               return { ...app, job };
             })
           );
@@ -226,17 +246,38 @@ export default function Jobs() {
 
       success('Application Submitted Successfully', `1 connect used. ${newBalance} connect${newBalance === 1 ? '' : 's'} remaining.`);
 
-      // Close modal and refresh applications
-      setSelectedJob(null);
-      // Refresh applications list
+      // Refresh applications list - handle both jobs and projects
       const userApplications = await Application.filter({ artist_id: artist.id });
       const enrichedApplications = await Promise.all(
         userApplications.map(async (app) => {
-          const job = await Job.get(app.job_id);
+          let job = null;
+          if (app.job_id) {
+            job = await Job.get(app.job_id);
+          } else if (app.project_id) {
+            // For projects, fetch the project and convert to job-like format
+            const project = await Project.get(app.project_id);
+            if (project) {
+              job = {
+                id: project.id,
+                title: project.title || project.project_type?.replace(/_/g, ' ') || 'Project',
+                description: project.notes || project.description,
+                location: [project.location_city, project.location_country].filter(Boolean).join(', ') || 'Remote',
+                client_name: project.project_owner_name || 'Client',
+                budget_min: project.budget_min || 0,
+                budget_max: project.budget_max || 0,
+                budget_type: project.budget_range?.includes('hourly') ? 'Hourly' : project.budget_range?.includes('daily') ? 'Daily' : 'Fixed',
+                isProject: true,
+                image_url: project.image_url
+              };
+            }
+          }
           return { ...app, job };
         })
       );
       setApplications(enrichedApplications);
+      
+      // Close modal
+      setSelectedJob(null);
     } catch (err) {
       console.error('Error applying:', err);
       toastError('Application Failed', 'Failed to submit application');
@@ -660,98 +701,99 @@ export default function Jobs() {
                       <button
                         key={job.id}
                         onClick={() => handleJobClick(job)}
-                        className={`w-full text-left bg-white rounded-2xl border-2 transition-all overflow-hidden shadow-sm hover:shadow-lg ${
+                        className={`w-full text-left bg-white rounded-xl border transition-all overflow-hidden shadow-sm hover:shadow-md ${
                           selectedJob?.id === job.id
-                            ? 'border-black shadow-md ring-2 ring-black/5'
-                            : 'border-gray-100 hover:border-gray-300'
+                            ? 'border-black shadow-md ring-1 ring-black/5'
+                            : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
-                        {/* Job Card Image */}
-                        <div className="relative h-32 bg-gray-100">
-                          {job.image_url ? (
-                            <img
-                              src={job.image_url}
-                              alt={job.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                              <Building2 className="w-8 h-8 text-gray-300" />
-                            </div>
-                          )}
-                          {job.isProject && (
-                            <div className="absolute top-2 left-2 bg-black text-white text-xs font-bold px-2 py-1 rounded-full">
-                              Project
-                            </div>
-                          )}
-                          <div className="absolute bottom-2 right-2 bg-white/95 backdrop-blur text-black text-xs font-bold px-2 py-1 rounded-full shadow-sm">
-                            {job.budget_type === 'Hourly' ? '€/hr' : job.budget_type === 'Daily' ? '€/day' : 'Fixed'}
-                          </div>
-                          {job.requires_subscription && (
-                            <div className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-xs font-bold px-2 py-1 rounded-full shadow-sm">
-                              Premium
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Job Card Content */}
-                        <div className="p-3">
-                          <div className="flex items-start gap-2 mb-2">
-                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-gray-50">
-                              {job.client_avatar_url ? (
-                                <img src={job.client_avatar_url} alt={job.client_name} className="w-full h-full object-cover" />
-                              ) : (
-                                <Building2 className="w-4 h-4 text-gray-400" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-bold text-xs text-gray-900 truncate">{job.client_name}</div>
-                              <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                                <MapPin className="w-2 h-2" />
-                                <span className="truncate">{job.location || 'Remote'}</span>
-                              </div>
-                            </div>
+                        <div className="flex gap-3 p-4">
+                          {/* Left - Job Image (square) */}
+                          <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                            {job.image_url ? (
+                              <>
+                                <img src={job.image_url} alt={job.title} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
+                              </>
+                            ) : (
+                              <Briefcase className="w-6 h-6 text-gray-400" />
+                            )}
                           </div>
 
-                          <h3 className="font-bold text-gray-900 mb-1 text-xs line-clamp-2 leading-tight">{job.title}</h3>
-
-                          {/* View Count */}
-                          {job.view_count > 0 && (
-                            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                              <Eye className="w-2 h-2" />
-                              <span>{job.view_count} view{job.view_count !== 1 ? 's' : ''}</span>
-                            </div>
-                          )}
-
-                          {/* Skills/Roles Tags */}
-                          {job.roles_needed && job.roles_needed.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mb-2">
-                              {job.roles_needed.slice(0, 2).map((role) => (
-                                <span key={role} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full truncate max-w-[80px]">
-                                  {role}
-                                </span>
-                              ))}
-                              {job.roles_needed.length > 2 && (
-                                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
-                                  +{job.roles_needed.length - 2}
-                                </span>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                            <div className="flex items-center gap-1">
-                              <div className="font-bold text-gray-900 text-xs">
-                                {job.budget_type === 'Hourly' ? `€${job.budget_min}/hr` : job.budget_type === 'Daily' ? `€${job.budget_min}/day` : `€${job.budget_min}`}
+                          {/* Right - Content */}
+                          <div className="flex-1 min-w-0">
+                            {/* Top Row - Timestamp and Badges */}
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">{getTimeAgo(job.posted_at)}</span>
+                                {job.isProject && (
+                                  <span className="bg-black text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                                    Project
+                                  </span>
+                                )}
+                                {job.requires_subscription && (
+                                  <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-[10px] font-medium px-2 py-0.5 rounded-full">
+                                    Premium
+                                  </span>
+                                )}
                               </div>
-                              {job.budget_max && job.budget_max > job.budget_min && job.budget_type !== 'Hourly' && job.budget_type !== 'Daily' && (
-                                <div className="text-[10px] text-gray-500">- €{job.budget_max}</div>
+                              {job.view_count > 0 && (
+                                <div className="flex items-center gap-1 text-xs text-gray-400">
+                                  <Eye className="w-3 h-3" />
+                                  <span>{job.view_count}</span>
+                                </div>
                               )}
                             </div>
-                            <div className="flex items-center gap-1 text-[10px] text-gray-400">
-                              <Clock className="w-2 h-2" />
-                              {job.posted_at ? new Date(job.posted_at).toLocaleDateString() : 'Recently'}
+
+                            {/* Job Title */}
+                            <h3 className="font-semibold text-gray-900 mb-1 text-sm line-clamp-1">{job.title}</h3>
+
+                            {/* Description - blurred for pro-only jobs */}
+                            {job.requires_subscription ? (
+                              <div className="relative mb-2">
+                                <p className="text-xs text-gray-600 line-clamp-2 blur-sm">{job.short_description || job.description?.substring(0, 100) + '...'}</p>
+                                <div className="absolute inset-0 flex items-center justify-center bg-gray-100/80 backdrop-blur-sm rounded">
+                                  <div className="flex items-center gap-1 text-xs font-medium text-gray-700">
+                                    <Lock className="w-3 h-3" />
+                                    Unlock with Pro
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-gray-600 mb-2 line-clamp-2">{job.short_description || job.description?.substring(0, 100) + '...'}</p>
+                            )}
+
+                            {/* Location and Pay */}
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                <span>{job.location || 'Remote'}</span>
+                              </div>
+                              <div className="flex items-center gap-1 font-medium text-gray-900">
+                                <Euro className="w-3 h-3" />
+                                <span>
+                                  {job.budget_type === 'Hourly' ? `€${job.budget_min}/hr` :
+                                   job.budget_type === 'Daily' ? `€${job.budget_min}/day` :
+                                   `€${job.budget_min}${job.budget_max && job.budget_max > job.budget_min ? ` - €${job.budget_max}` : ''}`}
+                                </span>
+                              </div>
                             </div>
+
+                            {/* Skills/Roles Tags */}
+                            {job.roles_needed && job.roles_needed.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {job.roles_needed.slice(0, 3).map((role) => (
+                                  <span key={role} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
+                                    {role}
+                                  </span>
+                                ))}
+                                {job.roles_needed.length > 3 && (
+                                  <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
+                                    +{job.roles_needed.length - 3}
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </button>
@@ -930,128 +972,105 @@ export default function Jobs() {
 
                 {/* Applications Table */}
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Job</th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Client</th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Applied</th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Budget</th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {applications
-                          .filter(app => applicationStatusFilter === 'all' || app.status === applicationStatusFilter)
-                          .map((app) => {
-                            const job = app.job;
-                            const statusConfig = getStatusConfig(app.status);
-                            const StatusIcon = statusConfig.icon;
-                            const expired = isJobExpired(job);
-                            
-                            return (
-                              <tr key={app.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4">
-                                  <div className="flex items-start gap-3">
-                                    <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                      {job?.image_url ? (
-                                        <img src={job.image_url} alt={job?.title} className="w-full h-full object-cover" />
-                                      ) : (
-                                        <Building2 className="w-5 h-5 text-gray-400" />
-                                      )}
-                                    </div>
-                                    <div className="min-w-0">
-                                      <div className="font-semibold text-sm text-gray-900 truncate">{job?.title}</div>
-                                      <div className="flex items-center gap-2 mt-1">
-                                        {expired && (
-                                          <span className="flex items-center gap-1 text-xs text-orange-600 font-medium">
-                                            <AlertCircle className="w-3 h-3" />
-                                            Expired
-                                          </span>
-                                        )}
-                                        {app.viewed_by_client && (
-                                          <span className="flex items-center gap-1 text-xs text-blue-600 font-medium">
-                                            <Eye className="w-3 h-3" />
-                                            Viewed
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="text-sm text-gray-900 font-medium">{job?.client_name}</div>
-                                  <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                                    <MapPin className="w-3 h-3" />
-                                    {job?.location || 'Remote'}
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${statusConfig.color}`}>
-                                    <StatusIcon className="w-3.5 h-3.5" />
-                                    {statusConfig.label}
-                                  </span>
-                                  {app.rejection_reason && app.status === 'rejected' && (
-                                    <div className="text-xs text-gray-500 mt-1 truncate max-w-[150px]" title={app.rejection_reason}>
-                                      {app.rejection_reason}
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="text-sm text-gray-600 flex items-center gap-1">
-                                    <Clock className="w-3.5 h-3.5" />
-                                    {getTimeAgo(app.applied_at)}
-                                  </div>
-                                  {app.client_responded_at && (
-                                    <div className="text-xs text-gray-400 mt-0.5">
-                                      Responded {getTimeAgo(app.client_responded_at)}
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="font-semibold text-sm text-gray-900">
-                                    {job?.budget_type === 'Hourly' ? `€${job?.budget_min}/hr` : job?.budget_type === 'Daily' ? `€${job?.budget_min}/day` : `€${job?.budget_min}`}
-                                  </div>
-                                  {job?.budget_max && job.budget_max > job.budget_min && job.budget_type !== 'Hourly' && job.budget_type !== 'Daily' && (
-                                    <div className="text-xs text-gray-500">up to €{job.budget_max}</div>
-                                  )}
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      onClick={() => setSelectedJob(job)}
-                                      className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
-                                      title="View details"
-                                    >
-                                      <ExternalLink className="w-4 h-4" />
-                                    </button>
-                                    {app.status === 'pending' && (
-                                      <button
-                                        onClick={async () => {
-                                          try {
-                                            await Application.update(app.id, { status: 'withdrawn' });
-                                            setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: 'withdrawn' } : a));
-                                            toastError('Withdrawn', 'Application withdrawn successfully');
-                                          } catch (err) {
-                                            console.error('Error withdrawing:', err);
-                                          }
-                                        }}
-                                        className="p-2 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors"
-                                        title="Withdraw application"
-                                      >
-                                        <XCircle className="w-4 h-4" />
-                                      </button>
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applied</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {applications
+                        .filter(app => applicationStatusFilter === 'all' || app.status === applicationStatusFilter)
+                        .map((app) => {
+                          const job = app.job;
+                          const statusConfig = getStatusConfig(app.status);
+                          const StatusIcon = statusConfig.icon;
+                          const expired = isJobExpired(job);
+                          
+                          return (
+                            <tr key={app.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                    {job?.image_url ? (
+                                      <img src={job.image_url} alt={job.title} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <Briefcase className="w-5 h-5 text-gray-400" />
                                     )}
                                   </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                      </tbody>
-                    </table>
-                  </div>
+                                  <div className="min-w-0">
+                                    <div className="text-sm font-medium text-gray-900 truncate">{job?.title}</div>
+                                    {expired && (
+                                      <div className="flex items-center gap-1 text-xs text-orange-600 mt-0.5">
+                                        <AlertCircle className="w-3 h-3" />
+                                        Expired
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="text-sm text-gray-600">{job?.client_name}</div>
+                                {app.viewed_by_client && (
+                                  <div className="flex items-center gap-1 text-xs text-blue-600 mt-0.5">
+                                    <Eye className="w-3 h-3" />
+                                    Viewed
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                {job?.budget_type === 'Hourly' ? `€${job?.budget_min}/hr` : 
+                                 job?.budget_type === 'Daily' ? `€${job?.budget_min}/day` : 
+                                 `€${job?.budget_min}${job?.budget_max && job?.budget_max > job?.budget_min ? ` - €${job?.budget_max}` : ''}`}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                {job?.location || 'Remote'}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border ${statusConfig.color}`}>
+                                  <StatusIcon className="w-3 h-3" />
+                                  {statusConfig.label}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600">{getTimeAgo(app.applied_at)}</td>
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => { setSelectedJob(job); setActiveTab('board'); }}
+                                    className="px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                                  >
+                                    View
+                                  </button>
+                                  {app.status === 'pending' && (
+                                    <button
+                                      onClick={async () => {
+                                        try {
+                                          await Application.update(app.id, { status: 'withdrawn' });
+                                          setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: 'withdrawn' } : a));
+                                          toastError('Withdrawn', 'Application withdrawn successfully');
+                                        } catch (err) {
+                                          console.error('Error withdrawing:', err);
+                                        }
+                                      }}
+                                      className="px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                      Withdraw
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}

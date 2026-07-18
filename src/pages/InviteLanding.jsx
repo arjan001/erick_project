@@ -23,17 +23,17 @@ export default function InviteLanding() {
 
   useEffect(() => {
     const url = `${window.location.origin}/invite/${code}`;
-    document.title = `${inviterName} invited you — Free Pro Beta Access | Studio22`;
-    setMeta('name', 'description', `${inviterName} has invited you to Studio22 Pro Beta Release at no cost. Join the creative network connecting filmmakers, creators, and production teams worldwide.`);
-    setMeta('property', 'og:title', `${inviterName} invited you — Free Pro Beta Access`);
-    setMeta('property', 'og:description', `${inviterName} invites you to join Studio22 with invite code ${code}. Get the Pro Beta Release plan at no cost — more messages, more projects, priority access.`);
+    document.title = `${inviterName} invited you to join Studio22 Pro Beta`;
+    setMeta('name', 'description', `${inviterName} has invited you to join Studio22 as a Pro Beta user. Connect with top film & creative talent, post projects, and grow your creative career.`);
+    setMeta('property', 'og:title', `${inviterName} invited you to join Studio22 Pro Beta`);
+    setMeta('property', 'og:description', `${inviterName} invites you to join Studio22 with invite code ${code}. Get Pro Beta access — more messages, more projects, priority features.`);
     setMeta('property', 'og:image', OG_IMAGE);
     setMeta('property', 'og:url', url);
     setMeta('property', 'og:type', 'website');
     setMeta('property', 'og:site_name', 'Studio22');
     setMeta('name', 'twitter:card', 'summary_large_image');
-    setMeta('name', 'twitter:title', `${inviterName} invited you — Free Pro Beta Access | Studio22`);
-    setMeta('name', 'twitter:description', `${inviterName} invites you to join Studio22 with invite code ${code}. Get Pro Beta Release free.`);
+    setMeta('name', 'twitter:title', `${inviterName} invited you to join Studio22 Pro Beta`);
+    setMeta('name', 'twitter:description', `${inviterName} invites you to join Studio22 with invite code ${code}. Get Pro Beta access free.`);
     setMeta('name', 'twitter:image', OG_IMAGE);
 
     // Schema.org structured data for SEO
@@ -47,8 +47,8 @@ export default function InviteLanding() {
     scriptEl.textContent = JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'InviteAction',
-      name: 'Studio22 Pro Beta Release Invite',
-      description: `Free Pro Beta access to Studio22 creative network, invited by ${inviterName}`,
+      name: 'Studio22 Pro Beta Invite',
+      description: `${inviterName} invited you to join Studio22 as a Pro Beta user`,
       url: url,
       agent: {
         '@type': 'Person',

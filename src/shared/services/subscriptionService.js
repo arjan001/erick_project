@@ -86,7 +86,7 @@ class SubscriptionService {
     const periodStart = renewsAt || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const messages = await Message.filter({
       sender_email: userEmail,
-      created_date: { $gte: periodStart.toISOString() }
+      created_at: { $gte: periodStart.toISOString() }
     });
 
     const used = messages.length;

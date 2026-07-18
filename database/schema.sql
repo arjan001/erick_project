@@ -1118,6 +1118,90 @@ CREATE TRIGGER update_conversation_last_message_at AFTER INSERT ON messages
     FOR EACH ROW EXECUTE FUNCTION update_conversation_last_message();
 
 -- ============================================
+-- SUPPORT TICKETS / SUGGESTIONS
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS support_tickets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ticket_number VARCHAR(20) UNIQUE NOT NULL,
+    user_email VARCHAR(255) NOT NULL,
+    user_name VARCHAR(255) NOT NULL,
+    user_role VARCHAR(50) NOT NULL,
+    category VARCHAR(50) NOT NULL CHECK (category IN ('bug', 'feature', 'suggestion', 'support', 'other')),
+    priority VARCHAR(20) DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+    subject VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    status VARCHAR(20) DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'resolved', 'closed')),
+    assigned_to VARCHAR(255),
+    attachments JSONB DEFAULT '[]'::jsonb,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMP WITH TIME ZONE,
+    closed_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX IF NOT EXISTS idx_support_tickets_user_email ON support_tickets(user_email);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_category ON support_tickets(category);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_priority ON support_tickets(priority);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_ticket_number ON support_tickets(ticket_number);
+
+CREATE TABLE IF NOT EXISTS ticket_responses (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ticket_id UUID NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
+    responder_email VARCHAR(255) NOT NULL,
+    responder_name VARCHAR(255) NOT NULL,
+    responder_role VARCHAR(50) NOT NULL,
+    response TEXT NOT NULL,
+    attachments JSONB DEFAULT '[]'::jsonb,
+    is_internal BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ticket_responses_ticket_id ON ticket_responses(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_ticket_responses_created_at ON ticket_responses(created_at DESC);
+
+-- Function to generate ticket number
+CREATE OR REPLACE FUNCTION generate_ticket_number()
+RETURNS VARCHAR(20) AS $$
+DECLARE
+    ticket_num VARCHAR(20);
+    prefix VARCHAR(10) := 'TKT';
+    sequence_num INTEGER;
+BEGIN
+    -- Get the next sequence number
+    SELECT COALESCE(MAX(CAST(SUBSTRING(ticket_number, 4) AS INTEGER)), 0) + 1
+    INTO sequence_num
+    FROM support_tickets
+    WHERE ticket_number LIKE prefix || '%';
+    
+    -- Format as TKT-XXXXX (5 digits, padded with zeros)
+    ticket_num := prefix || '-' || LPAD(sequence_num::TEXT, 5, '0');
+    
+    RETURN ticket_num;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to auto-generate ticket number
+CREATE OR REPLACE FUNCTION set_ticket_number()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.ticket_number IS NULL OR NEW.ticket_number = '' THEN
+        NEW.ticket_number := generate_ticket_number();
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_set_ticket_number BEFORE INSERT ON support_tickets
+    FOR EACH ROW EXECUTE FUNCTION set_ticket_number();
+
+-- Trigger to update updated_at
+CREATE TRIGGER update_support_tickets_updated_at BEFORE UPDATE ON support_tickets
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
 -- STORAGE BUCKETS (Supabase Storage)
 -- ============================================
 

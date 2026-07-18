@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Search, Briefcase, FileText, Mail, User,
-  Home as HomeIcon, Network, ChevronLeft, ChevronRight, LogOut, Wallet, Bell, Users
+  Home as HomeIcon, Network, ChevronLeft, ChevronRight, LogOut, Wallet, Bell, Users, Ticket
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useSidebar } from '@/layouts/DashboardLayout';
@@ -17,6 +17,7 @@ const MENU_ITEMS = [
   { label: 'Messages', icon: Mail, href: 'Messages', showBadge: true },
   { label: 'Network', icon: Network, href: 'Network', showConnectionBadge: true },
   { label: 'Notifications', icon: Bell, href: 'Notifications', showNotificationBadge: true },
+  { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets' },
   { label: 'Finances', icon: Wallet, href: 'ArtistFinance' },
   { label: 'My Profile & Settings', icon: User, href: 'ArtistProfile' }
 ];

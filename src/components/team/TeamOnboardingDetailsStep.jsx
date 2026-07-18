@@ -2,6 +2,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import CountrySelector from '../CountrySelector';
+import LanguageMultiSelect from '@/components/LanguageMultiSelect';
 
 export default function TeamOnboardingDetailsStep({ data, updateData }) {
   return (
@@ -48,11 +49,10 @@ export default function TeamOnboardingDetailsStep({ data, updateData }) {
 
         <div>
           <Label className="text-base mb-3 block">Languages Spoken</Label>
-          <Input
-            value={(data.languages_spoken || []).join(', ')}
-            onChange={(e) => updateData('languages_spoken', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-            placeholder="English, Dutch, Spanish"
-            className="bg-white border-gray-300 text-black h-12"
+          <LanguageMultiSelect
+            value={data.languages_spoken || []}
+            onChange={(languages) => updateData('languages_spoken', languages)}
+            placeholder="Search and select languages..."
           />
         </div>
       </div>

@@ -42,9 +42,9 @@ export default function TeamMemberProfilePage() {
     try {
       let teamData = null;
       if (authUser?.team_id) {
-        teamData = await Team.filter({ id: authUser.team_id }, '-created_date', 1).then(r => r?.[0] || null);
+        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null);
       } else {
-        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_date', 1);
+        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1);
         teamData = teams?.[0] || null;
       }
       setTeam(teamData);

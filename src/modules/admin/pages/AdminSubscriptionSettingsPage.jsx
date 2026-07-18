@@ -23,6 +23,8 @@ export default function AdminSubscriptionSettingsPage() {
     billing_cycle: 'monthly',
     job_applications_limit: 5,
     message_limit: 50,
+    connects_included: 0,
+    duration_days: 30,
     featured_listing: false,
     priority_support: false,
     analytics_access: false,
@@ -60,6 +62,8 @@ export default function AdminSubscriptionSettingsPage() {
         billing_cycle: 'monthly',
         job_applications_limit: 5,
         message_limit: 50,
+        connects_included: 0,
+        duration_days: 30,
         featured_listing: false,
         priority_support: false,
         analytics_access: false,
@@ -90,6 +94,8 @@ export default function AdminSubscriptionSettingsPage() {
         billing_cycle: 'monthly',
         job_applications_limit: 5,
         message_limit: 50,
+        connects_included: 0,
+        duration_days: 30,
         featured_listing: false,
         priority_support: false,
         analytics_access: false,
@@ -142,6 +148,8 @@ export default function AdminSubscriptionSettingsPage() {
         billing_cycle: 'monthly',
         job_applications_limit: 5,
         message_limit: 50,
+        connects_included: 0,
+        duration_days: 30,
         featured_listing: false,
         priority_support: false,
         analytics_access: false,
@@ -311,6 +319,27 @@ export default function AdminSubscriptionSettingsPage() {
                     value={packageForm.message_limit}
                     onChange={(e) => setPackageForm({ ...packageForm, message_limit: parseInt(e.target.value) })}
                     placeholder="-1 for unlimited"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Connects Included</label>
+                  <Input
+                    type="number"
+                    value={packageForm.connects_included}
+                    onChange={(e) => setPackageForm({ ...packageForm, connects_included: parseInt(e.target.value) })}
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Duration (Days)</label>
+                  <Input
+                    type="number"
+                    value={packageForm.duration_days}
+                    onChange={(e) => setPackageForm({ ...packageForm, duration_days: parseInt(e.target.value) })}
+                    placeholder="30"
                   />
                 </div>
               </div>

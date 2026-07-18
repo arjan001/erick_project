@@ -70,11 +70,21 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
     }
   };
 
+  const getDashboardUrl = () => {
+    if (!user) return '/';
+    const role = user.role;
+    if (role === 'artist' || role === 'artist_admin') return createPageUrl('ArtistDashboard');
+    if (role === 'team' || role === 'team_admin') return createPageUrl('TeamDashboard');
+    if (role === 'client' || role === 'project_owner') return createPageUrl('ClientDashboard');
+    if (role === 'backer') return createPageUrl('Back Dashboard');
+    return '/';
+  };
+
   const bottomNav = [
     { name: 'Projects', href: 'Projects' },
     { name: 'Creators', href: 'ApplyArtist' },
     { name: 'Teams', href: 'ApplyTeam' },
-    { name: 'Post Project', href: 'SubmitProject', highlight: true },
+    ...(user ? [{ name: 'Dashboard', href: getDashboardUrl(), highlight: true }] : [{ name: 'Post Project', href: 'SubmitProject', highlight: true }]),
   ];
 
   return (
@@ -161,21 +171,30 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                   </Button>
                 </Link>
               ) : (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent"
-                  onClick={() => logout(true)}
-                >
-                  Logout
-                </Button>
+                <>
+                  <Link to={getDashboardUrl()}>
+                    <button className="px-4 py-2 bg-black text-white hover:bg-gray-800 font-bold text-sm rounded-md transition-colors">
+                      Dashboard
+                    </button>
+                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent"
+                    onClick={() => logout(true)}
+                  >
+                    Logout
+                  </Button>
+                </>
               )}
-              <button
-                onClick={() => setExploreOpen(true)}
-                className="px-4 py-2 bg-black text-white hover:bg-gray-800 font-bold text-sm rounded-md transition-colors"
-              >
-                Post a Project
-              </button>
+              {!user && (
+                <button
+                  onClick={() => setExploreOpen(true)}
+                  className="px-4 py-2 bg-black text-white hover:bg-gray-800 font-bold text-sm rounded-md transition-colors"
+                >
+                  Post a Project
+                </button>
+              )}
             </div>
           </div>
         </div>

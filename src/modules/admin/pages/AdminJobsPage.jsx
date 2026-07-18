@@ -3,7 +3,7 @@ import { Job, AuditLog } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { Briefcase, Search, Eye, Trash2, Calendar, MapPin, CheckCircle, XCircle, X } from 'lucide-react';
+import { Briefcase, Search, Eye, Trash2, Calendar, MapPin, CheckCircle, XCircle, X, Crown } from 'lucide-react';
 
 const STATUSES = ['open', 'closed', 'filled'];
 
@@ -54,6 +54,18 @@ export default function AdminJobsPage() {
     } catch (err) {
       console.error('Error updating job status:', err);
       error('Failed', 'Failed to update job status');
+    }
+  };
+
+  const handleToggleProRequired = async (jobId, currentProRequired) => {
+    try {
+      await Job.update(jobId, { requires_subscription: !currentProRequired });
+      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, requires_subscription: !currentProRequired } : j));
+      success('Updated', `Job ${!currentProRequired ? 'now requires' : 'no longer requires'} Pro subscription`);
+      AuditLog.create({ actor_email: user?.email, action: 'job.pro_requirement_update', entity_type: 'Job', entity_id: jobId, details: `Changed pro requirement to ${!currentProRequired}` }).catch(() => {});
+    } catch (err) {
+      console.error('Error updating pro requirement:', err);
+      error('Failed', 'Failed to update pro requirement');
     }
   };
 
@@ -122,13 +134,14 @@ export default function AdminJobsPage() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pro Required</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posted</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredJobs.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500">No jobs found</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500">No jobs found</td></tr>
               )}
               {filteredJobs.map(job => (
                 <tr key={job.id} className="hover:bg-gray-50">
@@ -142,6 +155,17 @@ export default function AdminJobsPage() {
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-2"><MapPin className="w-3 h-3" />{job.location || 'N/A'}</td>
                   <td className="px-4 py-3">{getStatusBadge(job.status)}</td>
+                  <td className="px-4 py-3">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleToggleProRequired(job.id, job.requires_subscription)} 
+                      title={job.requires_subscription ? 'Remove Pro requirement' : 'Require Pro subscription'}
+                      className="p-1"
+                    >
+                      <Crown className={`w-4 h-4 ${job.requires_subscription ? 'text-yellow-600 fill-yellow-600' : 'text-gray-400'}`} />
+                    </Button>
+                  </td>
                   <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-2">
                     <Calendar className="w-3 h-3" />
                     {job.posted_at ? new Date(job.posted_at).toLocaleDateString() : 'N/A'}

@@ -41,25 +41,25 @@ export default function ClientDashboard() {
 
     const fetchData = async () => {
       try {
-        const owners = await ProjectOwner.filter({ email: authUser.email }, '-created_date', 1);
+        const owners = await ProjectOwner.filter({ email: authUser.email }, '-created_at', 1);
         const owner = owners?.[0] || { email: authUser.email, full_name: authUser.full_name };
         setProjectOwner(owner);
 
-        const projectsData = await Project.filter({ project_owner_email: authUser.email }, '-created_date', 20);
+        const projectsData = await Project.filter({ project_owner_email: authUser.email }, '-created_at', 20);
         setProjects(projectsData || []);
 
-        const jobsData = await Job.filter({ client_email: authUser.email }, '-created_date', 20);
+        const jobsData = await Job.filter({ client_email: authUser.email }, '-created_at', 20);
         setJobs(jobsData || []);
 
         const projectIds = new Set((projectsData || []).map((p) => p.id));
         const jobIds = new Set((jobsData || []).map((j) => j.id));
-        const allApplications = await Application.list('-created_date', 200);
+        const allApplications = await Application.list('-created_at', 200);
         const myApplications = (allApplications || []).filter(
           (a) => (a.project_id && projectIds.has(a.project_id)) || (a.job_id && jobIds.has(a.job_id))
         );
         setApplications(myApplications);
 
-        const messages = await Message.filter({ recipient_email: authUser.email }, '-created_date', 100);
+        const messages = await Message.filter({ recipient_email: authUser.email }, '-created_at', 100);
         setUnreadMessages((messages || []).filter((m) => !m.is_read).length);
       } catch (err) {
         console.error('Error fetching client data:', err);

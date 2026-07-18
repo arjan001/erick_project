@@ -666,6 +666,12 @@ const protectedRoutes = [
     component: () => import('@/modules/network/pages/NetworkPage'),
     layout: DashboardLayout,
     guard: AuthGuard
+  },
+  {
+    path: '/SupportTickets',
+    component: () => import('@/modules/support/pages/SupportTicketsPage'),
+    layout: DashboardLayout,
+    guard: AuthGuard
   }
 ];
 

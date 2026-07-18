@@ -29,16 +29,16 @@ export default function RecentConversations({ userEmail }) {
     (async () => {
       try {
         const [sent, received] = await Promise.all([
-          Message.filter({ sender_email: userEmail }, '-created_date', 100),
-          Message.filter({ recipient_email: userEmail }, '-created_date', 100),
+          Message.filter({ sender_email: userEmail }, '-created_at', 100),
+          Message.filter({ recipient_email: userEmail }, '-created_at', 100),
         ]);
         const grouped = {};
         [...sent, ...received].forEach(m => {
           const existing = grouped[m.conversation_id];
-          if (!existing || new Date(m.created_date) > new Date(existing.created_date)) grouped[m.conversation_id] = m;
+          if (!existing || new Date(m.created_at) > new Date(existing.created_at)) grouped[m.conversation_id] = m;
         });
         const top = Object.values(grouped)
-          .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .slice(0, 3);
         const enriched = await Promise.all(top.map(async m => {
           const otherEmail = m.sender_email === userEmail ? m.recipient_email : m.sender_email;

@@ -609,115 +609,45 @@ export const clearAnalyzedProjectFromStorage = () => {
  */
 const getPromptForProjectType = (projectType) => {
   const prompts = {
-    commercial: `Visit the website at {{URL}} and analyze it for a commercial video project. Extract:
-1. Business name and what they do
-2. Their target audience
-3. Their key products/services
-4. Their brand voice and personality
-5. Any existing video content or marketing materials
-6. Their unique selling proposition
-7. Their brand colors and visual style
+    commercial: `Visit {{URL}} and write a concise 2-3 sentence film production brief for a commercial video. Include: what to showcase (key selling points), target audience, visual style, brand integration (colors/logo), distribution platform, and call-to-action.
 
-Write a 3-5 sentence description of what kind of commercial video would work best for this business.`,
+Example: "Create a high-impact commercial for [Brand] showcasing [key features]. Target [audience] with selling points like [features]. Use [visual style] featuring [specific visuals]. Integrate [brand elements] throughout, ending with CTA: '[action]'. Designed for [distribution platforms]."`,
 
-    music_video: `Visit the website at {{URL}} and analyze it for a music video project. Extract:
-1. Artist/band name and genre
-2. Their musical style and aesthetic
-3. Their target audience
-4. Any existing music videos or visual content
-5. Their brand identity and image
-6. Key themes in their music
-7. Their visual preferences
+    music_video: `Visit {{URL}} and write a concise 2-3 sentence film production brief for a music video. Include: what to showcase (song themes/artist personality), target audience, visual style, artist brand integration, distribution platform, and key visual elements.
 
-Write a 3-5 sentence description of what kind of music video would suit this artist.`,
+Example: "Create a [visual style] music video for [Artist] showcasing [song themes]. Target [audience] with [key elements]. Use [visual approach] featuring [specific scenes]. Integrate [brand elements] throughout. Designed for [distribution platforms]."`,
 
-    short_film: `Visit the website at {{URL}} and analyze it for a short film project. Extract:
-1. Production company or filmmaker information
-2. Their genre preferences
-3. Their storytelling style
-4. Target audience
-5. Any existing film work
-6. Their creative vision
-7. Technical capabilities
+    short_film: `Visit {{URL}} and write a concise 2-3 sentence film production brief for a short film. Include: what to explore (themes/story concept), target audience, visual style, key narrative elements, distribution platform, and production approach.
 
-Write a 3-5 sentence description of what kind of short film project this would be.`,
+Example: "Create a [visual style] short film exploring [themes]. Target [audience] with [story approach]. Use [cinematic style] featuring [key scenes]. Designed for [distribution platforms]."`,
 
-    documentary: `Visit the website at {{URL}} and analyze it for a documentary project. Extract:
-1. Subject matter or topic focus
-2. Documentary style (observational, expository, etc.)
-3. Target audience
-4. Any existing documentary work
-5. Their storytelling approach
-6. Key themes or issues they cover
-7. Their production capabilities
+    documentary: `Visit {{URL}} and write a concise 2-3 sentence film production brief for a documentary. Include: what to cover (subject/themes), target audience, documentary style, key narrative elements, distribution platform, and production approach.
 
-Write a 3-5 sentence description of what kind of documentary this would be.`,
+Example: "Create a [documentary style] documentary covering [subject]. Target [audience] with [storytelling approach]. Use [visual style] featuring [key elements]. Designed for [distribution platforms]."`,
 
-    branded_content: `Visit the website at {{URL}} and analyze it for a branded content project. Extract:
-1. Brand name and industry
-2. Their brand values and mission
-3. Target audience
-4. Existing content marketing
-5. Brand voice and personality
-6. Key products/services
-7. Visual brand identity
+    branded_content: `Visit {{URL}} and write a concise 2-3 sentence film production brief for branded content. Include: what to showcase (brand story/values), target audience, visual style, brand integration (logo/colors/messaging), distribution platform, and content format.
 
-Write a 3-5 sentence description of what kind of branded content would work for this brand.`,
+Example: "Create [visual style] branded content for [Brand] showcasing [brand story]. Target [audience] with [key messages]. Use [visual approach] featuring [specific content]. Integrate [brand elements] throughout. Designed for [distribution platforms]."`,
 
-    corporate_video: `Visit the website at {{URL}} and analyze it for a corporate video project. Extract:
-1. Company name and industry
-2. Company size and structure
-3. Target audience (internal/external)
-4. Company culture and values
-5. Key services or products
-6. Existing video content
-7. Corporate brand guidelines
+    corporate_video: `Visit {{URL}} and write a concise 2-3 sentence film production brief for a corporate video. Include: what to communicate (company story/values), target audience, visual style, brand integration, distribution platform, and key scenes.
 
-Write a 3-5 sentence description of what kind of corporate video this company needs.`,
+Example: "Create a [visual style] corporate video for [Company] showcasing [company story]. Target [audience] with [key messages]. Use [visual approach] featuring [key scenes]. Integrate [brand elements] throughout. Designed for [distribution platforms]."`,
 
-    event_coverage: `Visit the website at {{URL}} and analyze it for an event coverage project. Extract:
-1. Event type and purpose
-2. Event scale and audience
-3. Key moments to capture
-4. Existing event content
-5. Brand or organization identity
-6. Technical requirements
-7. Distribution channels
+    event_coverage: `Visit {{URL}} and write a concise 2-3 sentence film production brief for event coverage. Include: what to capture (key moments/atmosphere), target audience, visual style, key moments to highlight, distribution platform, and production approach.
 
-Write a 3-5 sentence description of what kind of event coverage this would be.`,
+Example: "Create [visual style] event coverage for [Event] capturing [key moments]. Target [audience] with [coverage approach]. Use [visual style] featuring [specific content]. Designed for [distribution platforms]."`,
 
-    product_demo: `Visit the website at {{URL}} and analyze it for a product demo video project. Extract:
-1. Product name and category
-2. Key features and benefits
-3. Target audience
-4. Existing product videos
-5. Brand identity
-6. Product positioning
-7. Technical specifications
+    product_demo: `Visit {{URL}} and write a concise 2-3 sentence film production brief for a product demo. Include: what to showcase (features/benefits), target audience, visual style, product integration, distribution platform, and demo format.
 
-Write a 3-5 sentence description of what kind of product demo video would work best.`,
+Example: "Create a [visual style] product demo for [Product] showcasing [key features]. Target [audience] with [selling points]. Use [visual approach] featuring [specific demonstrations]. Integrate [brand elements] throughout. Designed for [distribution platforms]."`,
 
-    social_media: `Visit the website at {{URL}} and analyze it for a social media video project. Extract:
-1. Brand or creator name
-2. Social media platform focus
-3. Target audience demographics
-4. Content style and tone
-5. Existing social media content
-6. Brand guidelines
-7. Engagement goals
+    social_media: `Visit {{URL}} and write a concise 2-3 sentence film production brief for social media content. Include: what to achieve (engagement/awareness), target audience and platform, visual style, content format, distribution platform, and engagement strategy.
 
-Write a 3-5 sentence description of what kind of social media video content would work.`,
+Example: "Create [visual style] social media content for [Brand/Creator] showcasing [content theme]. Target [audience] on [platform] with [engagement approach]. Use [visual style] featuring [key elements]. Designed for [distribution platforms]."`,
 
-    animation: `Visit the website at {{URL}} and analyze it for an animation project. Extract:
-1. Project or brand name
-2. Animation style preferences
-3. Target audience
-4. Existing animated content
-5. Brand identity
-6. Story or concept
-7. Technical requirements
+    animation: `Visit {{URL}} and write a concise 2-3 sentence film production brief for an animation. Include: what to convey (story/brand message), target audience, animation style, key visual elements and characters, distribution platform, and production approach.
 
-Write a 3-5 sentence description of what kind of animation project this would be.`
+Example: "Create a [animation style] animation for [Brand/Project] showcasing [story/message]. Target [audience] with [key elements]. Use [visual style] featuring [specific content]. Designed for [distribution platforms]."`
   };
 
   return prompts[projectType] || prompts.commercial;

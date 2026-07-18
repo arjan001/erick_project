@@ -168,6 +168,39 @@ export default function NetworkPage() {
     return connection ? connection.status : 'not_connected';
   };
 
+  const getMutualConnections = (personEmail) => {
+    // Find all accepted connections for the current user
+    const myAcceptedConnections = connections.filter(c =>
+      (c.requester_email === user.email || c.recipient_email === user.email) && c.status === 'accepted'
+    );
+
+    // Find all accepted connections for the other person
+    const theirAcceptedConnections = connections.filter(c =>
+      (c.requester_email === personEmail || c.recipient_email === personEmail) && c.status === 'accepted'
+    );
+
+    // Extract email addresses from both sets
+    const myConnectionsEmails = new Set();
+    myAcceptedConnections.forEach(c => {
+      if (c.requester_email === user.email) myConnectionsEmails.add(c.recipient_email);
+      else myConnectionsEmails.add(c.requester_email);
+    });
+
+    const theirConnectionsEmails = new Set();
+    theirAcceptedConnections.forEach(c => {
+      if (c.requester_email === personEmail) theirConnectionsEmails.add(c.recipient_email);
+      else theirConnectionsEmails.add(c.requester_email);
+    });
+
+    // Find mutual connections
+    const mutualEmails = [...myConnectionsEmails].filter(email => theirConnectionsEmails.has(email));
+
+    // Get the actual person objects for mutual connections
+    const mutualPeople = people.filter(p => mutualEmails.includes(p.email));
+
+    return mutualPeople;
+  };
+
   const refreshConnections = async () => {
     const [sent, received] = await Promise.all([
       Connection.filter({ requester_email: user.email }),
@@ -316,42 +349,6 @@ export default function NetworkPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Connection requests header */}
-      <div className="px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
-        <h2 className="text-base font-semibold text-gray-900 mb-2">Connection requests ({pendingRequests.length})</h2>
-        {pendingRequests.length > 0 && (
-          <div className="space-y-3">
-            {pendingRequests.map((request) => {
-              const requester = people.find(p => p.email === request.requester_email);
-              const TypeIcon = typeIcon(requester?.type);
-              return (
-                <div key={request.id} className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
-                  <div className="relative flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-xs font-bold text-gray-600">
-                      {requester?.image ? <img src={requester.image} alt={requester.name} className="w-full h-full object-cover" /> : (requester?.name?.[0] || request.requester_email[0]).toUpperCase()}
-                    </div>
-                    <TypeIcon className="w-3 h-3 absolute -bottom-0.5 -right-0.5 bg-black text-white rounded-full p-0.5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-gray-900 text-sm">{requester?.name || request.requester_email}</div>
-                    <div className="text-xs text-gray-600 mb-0.5">{requester?.role || 'User'}</div>
-                    {request.message && <div className="text-[11px] text-gray-500 italic line-clamp-1">"{request.message}"</div>}
-                  </div>
-                  <div className="flex gap-1.5 flex-shrink-0">
-                    <button onClick={() => handleAcceptConnection(request.id)} className="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 text-xs font-medium transition-colors">
-                      Accept
-                    </button>
-                    <button onClick={() => handleDeclineConnection(request.id)} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors">
-                      Decline
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
       {/* Requests you've sent — LinkedIn-style outgoing pending requests */}
       {sentRequests.length > 0 && (
         <div className="px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
@@ -493,6 +490,7 @@ export default function NetworkPage() {
             )}
             {suggestions.map((person) => {
               const TypeIcon = typeIcon(person.type);
+              const mutuals = getMutualConnections(person.email);
               return (
                 <div key={`${person.type}-${person.id}`} className="p-4 hover:bg-gray-50">
                   <div className="flex items-start gap-3">
@@ -507,6 +505,24 @@ export default function NetworkPage() {
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
                           <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
+                          {mutuals.length > 0 && (
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <div className="flex -space-x-2">
+                                {mutuals.slice(0, 3).map((mutual, idx) => (
+                                  <div key={idx} className="w-4 h-4 rounded-full bg-gray-300 border-2 border-white overflow-hidden">
+                                    {mutual.image ? (
+                                      <img src={mutual.image} alt={mutual.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-[7px] font-bold text-gray-600">
+                                        {mutual.name?.[0]?.toUpperCase()}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                              <span className="text-[10px] text-gray-500">{mutuals.length} mutual{mutuals.length > 1 ? 's' : ''}</span>
+                            </div>
+                          )}
                         </div>
                         {getConnectionStatus(person) === 'pending' ? (
                           <Button size="sm" variant="outline" className="text-xs px-3 flex-shrink-0" disabled>Pending</Button>

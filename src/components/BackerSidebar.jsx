@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   DollarSign, Film, TrendingUp, User, Briefcase, BarChart3,
-  CreditCard, Users, Layers, Bell, LogOut, ChevronLeft, ChevronRight, Share2, MessageSquare
+  CreditCard, Users, Layers, Bell, LogOut, ChevronLeft, ChevronRight, Share2, MessageSquare, Ticket
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useSidebar } from '@/layouts/DashboardLayout';
@@ -16,6 +16,7 @@ const MENU_ITEMS = [
   { label: 'Deals', icon: Briefcase, href: 'BackerDeals' },
   { label: 'Messages', icon: MessageSquare, href: 'Messages', showBadge: true },
   { label: 'Network', icon: Share2, href: 'Network' },
+  { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets' },
   { label: 'Analytics', icon: BarChart3, href: 'BackerAnalytics' },
   { label: 'Banking', icon: CreditCard, href: 'BackerBanking' },
   { label: 'Partners', icon: Users, href: 'BackerPartners' },
@@ -44,7 +45,7 @@ export default function BackerSidebar() {
     const fetchUnreadMessages = async () => {
       try {
         // Messages table uses is_read, not read
-        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_date', 50);
+        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_at', 50);
         setUnreadMessageCount((msgs || []).length);
       } catch {
         setUnreadMessageCount(0);

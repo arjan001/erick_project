@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import LocationMapSelector from '../LocationMapSelector';
 import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete';
 import languages from '@/data/languages.json';
+import { formatSocialMediaUrl } from '@/lib/socialMediaUtils';
 
 export default function ArtistStepDetails({ data, updateData }) {
   const selectedLanguages = data.languages_spoken || [];
@@ -84,45 +85,45 @@ export default function ArtistStepDetails({ data, updateData }) {
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🌐</span>
               <Input
-                placeholder="Website URL"
+                placeholder="example.com"
                 value={data.website || ''}
-                onChange={(e) => updateData('website', e.target.value)}
+                onChange={(e) => updateData('website', formatSocialMediaUrl('website', e.target.value))}
                 className="bg-white border-gray-300 text-black h-12 pl-10"
               />
             </div>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">📷</span>
               <Input
-                placeholder="Instagram @username"
+                placeholder="username"
                 value={data.instagram || ''}
-                onChange={(e) => updateData('instagram', e.target.value)}
+                onChange={(e) => updateData('instagram', formatSocialMediaUrl('instagram', e.target.value))}
                 className="bg-white border-gray-300 text-black h-12 pl-10"
               />
             </div>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">▶️</span>
               <Input
-                placeholder="Vimeo URL"
+                placeholder="username"
                 value={data.vimeo || ''}
-                onChange={(e) => updateData('vimeo', e.target.value)}
+                onChange={(e) => updateData('vimeo', formatSocialMediaUrl('vimeo', e.target.value))}
                 className="bg-white border-gray-300 text-black h-12 pl-10"
               />
             </div>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🎬</span>
               <Input
-                placeholder="IMDb URL"
+                placeholder="nm1234567"
                 value={data.imdb || ''}
-                onChange={(e) => updateData('imdb', e.target.value)}
+                onChange={(e) => updateData('imdb', formatSocialMediaUrl('imdb', e.target.value))}
                 className="bg-white border-gray-300 text-black h-12 pl-10"
               />
             </div>
             <div className="relative sm:col-span-2">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">💼</span>
               <Input
-                placeholder="LinkedIn URL"
+                placeholder="username"
                 value={data.linkedin || ''}
-                onChange={(e) => updateData('linkedin', e.target.value)}
+                onChange={(e) => updateData('linkedin', formatSocialMediaUrl('linkedin', e.target.value))}
                 className="bg-white border-gray-300 text-black h-12 pl-10"
               />
             </div>

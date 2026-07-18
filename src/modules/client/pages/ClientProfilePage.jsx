@@ -4,6 +4,7 @@ import { ProjectOwner } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CountrySelector from '@/components/CountrySelector';
+import { formatSocialMediaUrl } from '@/lib/socialMediaUtils';
 import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 
@@ -289,7 +290,7 @@ export default function ClientProfilePage() {
                   <div className="flex items-center gap-3">
                     <Linkedin className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.linkedin} onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })} placeholder="LinkedIn URL" />
+                      <Input className="rounded-lg flex-1" value={formData.linkedin} onChange={(e) => setFormData({ ...formData, linkedin: formatSocialMediaUrl('linkedin', e.target.value) })} placeholder="username" />
                     ) : (
                       <p className="text-gray-900 flex-1">{owner?.linkedin || 'Not set'}</p>
                     )}
@@ -297,7 +298,7 @@ export default function ClientProfilePage() {
                   <div className="flex items-center gap-3">
                     <Instagram className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} placeholder="Instagram URL" />
+                      <Input className="rounded-lg flex-1" value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: formatSocialMediaUrl('instagram', e.target.value) })} placeholder="username" />
                     ) : (
                       <p className="text-gray-900 flex-1">{owner?.instagram || 'Not set'}</p>
                     )}
@@ -305,7 +306,7 @@ export default function ClientProfilePage() {
                   <div className="flex items-center gap-3">
                     <Twitter className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.twitter} onChange={(e) => setFormData({ ...formData, twitter: e.target.value })} placeholder="Twitter URL" />
+                      <Input className="rounded-lg flex-1" value={formData.twitter} onChange={(e) => setFormData({ ...formData, twitter: formatSocialMediaUrl('twitter', e.target.value) })} placeholder="username" />
                     ) : (
                       <p className="text-gray-900 flex-1">{owner?.twitter || 'Not set'}</p>
                     )}
@@ -313,7 +314,7 @@ export default function ClientProfilePage() {
                   <div className="flex items-center gap-3">
                     <Youtube className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.youtube} onChange={(e) => setFormData({ ...formData, youtube: e.target.value })} placeholder="YouTube URL" />
+                      <Input className="rounded-lg flex-1" value={formData.youtube} onChange={(e) => setFormData({ ...formData, youtube: formatSocialMediaUrl('youtube', e.target.value) })} placeholder="channel" />
                     ) : (
                       <p className="text-gray-900 flex-1">{owner?.youtube || 'Not set'}</p>
                     )}

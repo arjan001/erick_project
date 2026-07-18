@@ -136,7 +136,7 @@ export default function JobInvitations() {
                       <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
                         <span className="flex items-center gap-1">
                           <User className="w-4 h-4" />
-                          {invitation.client?.company_name || invitation.client?.full_name || 'Client'}
+                          {invitation.client?.company || invitation.client?.full_name || 'Client'}
                         </span>
                         <span className="flex items-center gap-1">
                           <MapPin className="w-4 h-4" />

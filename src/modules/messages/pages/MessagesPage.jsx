@@ -5,10 +5,11 @@ import { Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntit
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { formatDistanceToNow } from 'date-fns';
-import { Search, Send, Plus, X, Trash2, Archive, ArchiveRestore, Inbox, ArrowLeft, LogOut } from 'lucide-react';
+import { Search, Send, Plus, X, Trash2, Archive, ArchiveRestore, Inbox, ArrowLeft, LogOut, MoreVertical, Star, Edit, Mic, Paperclip } from 'lucide-react';
 import { confirmDialog } from '@/lib/sweetAlert';
 import notificationService from '@/shared/services/notificationService';
 import subscriptionService from '@/shared/services/subscriptionService';
+import { uploadFile, deleteFile } from '@/lib/fileUploadService';
 
 function playMessageTone() {
   try {
@@ -102,9 +103,17 @@ export default function MessagesPage() {
   const [directory, setDirectory] = useState([]);
   const [directorySearch, setDirectorySearch] = useState('');
   const [, setPresenceTick] = useState(0); // forces re-render so "last seen" text stays fresh
+  const [hoveredMessageId, setHoveredMessageId] = useState(null);
+  const [showMessageMenu, setShowMessageMenu] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [attachedFile, setAttachedFile] = useState(null);
   const messagesEndRef = useRef(null);
   const conversationsListRef = useRef(null);
   const messagesListRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordingIntervalRef = useRef(null);
 
   const buildConversations = (all) => {
     const grouped = {};
@@ -114,7 +123,7 @@ export default function MessagesPage() {
     });
 
     return Object.entries(grouped).map(([id, msgs]) => {
-      const sorted = msgs.slice().sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+      const sorted = msgs.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
       const last = sorted[sorted.length - 1];
       const otherEmail = sorted.find(m => m.sender_email !== user.email)?.sender_email
         || sorted.find(m => m.recipient_email !== user.email)?.recipient_email;
@@ -123,7 +132,7 @@ export default function MessagesPage() {
         otherEmail,
         messages: sorted,
         lastMessage: last?.text || last?.file_name || '',
-        lastMessageTime: last?.created_date,
+        lastMessageTime: last?.created_at,
         isArchived: sorted.every(m => m.is_archived),
       };
     }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
@@ -132,8 +141,8 @@ export default function MessagesPage() {
   const fetchConversations = async () => {
     try {
       const [sent, received] = await Promise.all([
-        Message.filter({ sender_email: user.email }, '-created_date', 500),
-        Message.filter({ recipient_email: user.email }, '-created_date', 500),
+        Message.filter({ sender_email: user.email }, '-created_at', 500),
+        Message.filter({ recipient_email: user.email }, '-created_at', 500),
       ]);
       const convs = buildConversations([...sent, ...received]);
 
@@ -157,15 +166,25 @@ export default function MessagesPage() {
   // Handle ?with= query parameter to automatically open chat with specific person
   useEffect(() => {
     const withEmail = searchParams.get('with');
-    if (withEmail && user && conversations.length > 0) {
+    if (withEmail && user) {
       const conversationId = getConversationId(user.email, withEmail);
+      
+      // First check if conversation already exists
       const existing = conversations.find(c => c.id === conversationId);
       if (existing) {
         setSelectedId(conversationId);
-      } else {
-        // Create new conversation and select it
-        enrichParticipant(withEmail).then(info => {
-          setConversations(prev => [{
+        return;
+      }
+      
+      // If not, create new conversation and select it
+      enrichParticipant(withEmail).then(info => {
+        setConversations(prev => {
+          // Check again in case it was added while fetching
+          if (prev.some(c => c.id === conversationId)) {
+            setSelectedId(conversationId);
+            return prev;
+          }
+          const newConv = {
             id: conversationId,
             otherEmail: withEmail,
             name: info.name,
@@ -177,12 +196,13 @@ export default function MessagesPage() {
             lastMessage: '',
             lastMessageTime: new Date().toISOString(),
             isArchived: false,
-          }, ...prev]);
+          };
           setSelectedId(conversationId);
+          return [newConv, ...prev];
         });
-      }
+      });
     }
-  }, [searchParams, user, conversations]);
+  }, [searchParams, user]);
 
   // Keep "last seen" labels fresh without refetching anything
   useEffect(() => {
@@ -201,7 +221,7 @@ export default function MessagesPage() {
         ...conv,
         messages: [...conv.messages, m],
         lastMessage: m.text || m.file_name || '',
-        lastMessageTime: m.created_date,
+        lastMessageTime: m.created_at,
         isArchived: false,
       };
       const rest = prev.filter((_, i) => i !== idx);
@@ -219,7 +239,7 @@ export default function MessagesPage() {
           otherEmail,
           messages: [m],
           lastMessage: m.text || m.file_name || '',
-          lastMessageTime: m.created_date,
+          lastMessageTime: m.created_at,
           isArchived: false,
           ...info,
         }, ...prev];
@@ -238,8 +258,8 @@ export default function MessagesPage() {
     const pollMessages = async () => {
       try {
         const [sent, received] = await Promise.all([
-          Message.filter({ sender_email: user.email }, '-created_date', 50),
-          Message.filter({ recipient_email: user.email }, '-created_date', 50),
+          Message.filter({ sender_email: user.email }, '-created_at', 50),
+          Message.filter({ recipient_email: user.email }, '-created_at', 50),
         ]);
         const allMessages = [...sent, ...received];
         const convs = buildConversations(allMessages);
@@ -286,7 +306,7 @@ export default function MessagesPage() {
   }, [selectedId]);
 
   const handleSend = async () => {
-    if (!messageInput.trim() || !selectedConversation) return;
+    if ((!messageInput.trim() && !attachedFile) || !selectedConversation) return;
     
     // Check subscription limits before sending
     const limitCheck = await subscriptionService.checkLimit(user.email, 'message');
@@ -298,19 +318,36 @@ export default function MessagesPage() {
     }
 
     const text = messageInput;
+    const file = attachedFile;
     setMessageInput('');
+    setAttachedFile(null);
     const tempId = `temp-${Date.now()}`;
+
+    // Handle file upload if present
+    let attachmentData = null;
+    if (file) {
+      const uploadResult = await uploadFile(file, 'message-attachments', `conversations/${selectedConversation.id}`);
+      if (uploadResult.error) {
+        error('Upload Failed', uploadResult.error);
+        setMessageInput(text);
+        setAttachedFile(file);
+        return;
+      }
+      attachmentData = uploadResult.data;
+    }
+
     const optimisticMsg = {
       id: tempId,
       conversation_id: selectedConversation.id,
       sender_email: user.email,
       recipient_email: selectedConversation.otherEmail,
       text,
-      created_date: new Date().toISOString(),
+      attachment: attachmentData,
+      created_at: new Date().toISOString(),
     };
     // Optimistic update — instant, no waiting on the network for the UI to feel responsive
     setConversations(prev => prev.map(c => c.id === selectedConversation.id
-      ? { ...c, messages: [...c.messages, optimisticMsg], lastMessage: text, lastMessageTime: optimisticMsg.created_date }
+      ? { ...c, messages: [...c.messages, optimisticMsg], lastMessage: text, lastMessageTime: optimisticMsg.created_at }
       : c));
     try {
       const created = await Message.create({
@@ -318,6 +355,7 @@ export default function MessagesPage() {
         sender_email: user.email,
         recipient_email: selectedConversation.otherEmail,
         text,
+        attachment: attachmentData,
       });
       // Replace temp message with the real saved one
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
@@ -340,9 +378,73 @@ export default function MessagesPage() {
   const handleFileAttach = async (e) => {
     const file = e.target.files?.[0];
     if (!file || !selectedConversation) return;
-    // File upload disabled - base44 removed
-    error('Not Available', 'File upload is currently disabled');
+    
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      error('File too large', 'Maximum file size is 10MB');
+      e.target.value = null;
+      return;
+    }
+
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/zip', 'audio/mpeg', 'audio/mp3', 'audio/wav'];
+    if (!allowedTypes.includes(file.type)) {
+      error('Invalid file type', 'Allowed types: images, PDF, ZIP, MP3, WAV');
+      e.target.value = null;
+      return;
+    }
+
+    setAttachedFile(file);
     e.target.value = null;
+  };
+
+  const handleRemoveAttachment = () => {
+    setAttachedFile(null);
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      const chunks = [];
+
+      mediaRecorderRef.current.ondataavailable = (e) => {
+        chunks.push(e.data);
+      };
+
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        const audioFile = new File([audioBlob], `recording_${Date.now()}.webm`, { type: 'audio/webm' });
+        setAttachedFile(audioFile);
+        setRecordingTime(0);
+        setIsRecording(false);
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } catch (err) {
+      console.error('Error starting recording:', err);
+      error('Recording Failed', 'Could not access microphone');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      clearInterval(recordingIntervalRef.current);
+    }
+  };
+
+  const formatRecordingTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleArchive = async (conv, archive) => {
@@ -368,6 +470,64 @@ export default function MessagesPage() {
     } catch (err) {
       console.error('Error deleting conversation:', err);
       error('Failed', 'Failed to delete conversation');
+    }
+  };
+
+  const handleDeleteMessage = async (msg, deleteType = 'me') => {
+    const confirmText = deleteType === 'everyone' 
+      ? 'Delete for everyone? This will remove the message for all participants.' 
+      : 'Delete for you? This will only remove the message from your view.';
+    const confirmed = await confirmDialog('Delete message?', confirmText, 'Yes, delete it');
+    if (!confirmed) return;
+    try {
+      if (deleteType === 'everyone') {
+        // Mark as deleted for everyone
+        await Message.update(msg.id, { deleted_for_everyone: true, text: 'This message was deleted' });
+        setConversations(prev => prev.map(c => c.id === selectedConversation.id
+          ? { ...c, messages: c.messages.map(m => m.id === msg.id ? { ...m, deleted_for_everyone: true, text: 'This message was deleted' } : m) }
+          : c));
+      } else {
+        // Delete only for current user (soft delete - add to deleted_for array)
+        await Message.update(msg.id, { deleted_for: [...(msg.deleted_for || []), user.email] });
+        setConversations(prev => prev.map(c => c.id === selectedConversation.id
+          ? { ...c, messages: c.messages.filter(m => m.id !== msg.id) }
+          : c));
+      }
+      setShowMessageMenu(null);
+      success('Deleted', deleteType === 'everyone' ? 'Message deleted for everyone' : 'Message deleted for you');
+    } catch (err) {
+      console.error('Error deleting message:', err);
+      error('Failed', 'Failed to delete message');
+    }
+  };
+
+  const handleEditMessage = async (msg) => {
+    const newText = prompt('Edit message:', msg.text);
+    if (newText === null || newText.trim() === '') return;
+    try {
+      await Message.update(msg.id, { text: newText });
+      setConversations(prev => prev.map(c => c.id === selectedConversation.id
+        ? { ...c, messages: c.messages.map(m => m.id === msg.id ? { ...m, text: newText } : m) }
+        : c));
+      setShowMessageMenu(null);
+      success('Edited', 'Message updated');
+    } catch (err) {
+      console.error('Error editing message:', err);
+      error('Failed', 'Failed to edit message');
+    }
+  };
+
+  const handleStarMessage = async (msg) => {
+    try {
+      await Message.update(msg.id, { is_starred: !msg.is_starred });
+      setConversations(prev => prev.map(c => c.id === selectedConversation.id
+        ? { ...c, messages: c.messages.map(m => m.id === msg.id ? { ...m, is_starred: !m.is_starred } : m) }
+        : c));
+      setShowMessageMenu(null);
+      success(msg.is_starred ? 'Unstarred' : 'Starred', `Message ${msg.is_starred ? 'unstarred' : 'starred'}`);
+    } catch (err) {
+      console.error('Error starring message:', err);
+      error('Failed', 'Failed to star message');
     }
   };
 
@@ -588,7 +748,7 @@ export default function MessagesPage() {
               </button>
             </div>
 
-            <div ref={messagesListRef} className="flex-1 overflow-y-auto p-6 bg-gray-50">
+            <div ref={messagesListRef} className="flex-1 overflow-y-auto p-3 bg-[#efeae2]">
               <div className="max-w-2xl mx-auto">
                 {selectedConversation.messages.length === 0 && (
                   <div className="text-center text-sm text-gray-400 py-10">Send a message to start the conversation</div>
@@ -610,11 +770,64 @@ export default function MessagesPage() {
                         }}
                         className={`flex ${msg.sender_email === user.email ? 'justify-end' : 'justify-start'}`}
                       >
-                        <div className={`max-w-md rounded-2xl px-4 py-2.5 ${msg.sender_email === user.email ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-900'}`}>
-                          {msg.text && <p className="text-sm break-words">{msg.text}</p>}
-                          <p className={`text-[10px] mt-1 ${msg.sender_email === user.email ? 'text-gray-300' : 'text-gray-400'}`}>
-                            {new Date(msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                        <div 
+                          className={`max-w-[280px] sm:max-w-[320px] rounded-lg px-2.5 py-1.5 relative group ${
+                            msg.sender_email === user.email 
+                              ? 'bg-[#dcf8c6] text-gray-900' 
+                              : 'bg-white text-gray-900 shadow-sm'
+                          }`}
+                          onMouseEnter={() => setHoveredMessageId(msg.id)}
+                          onMouseLeave={() => setHoveredMessageId(null)}
+                        >
+                          {msg.text && <p className="text-sm break-words leading-tight pr-12">{msg.text}</p>}
+                          <div className={`absolute bottom-1 right-2 flex items-center gap-1 ${hoveredMessageId === msg.id ? 'opacity-100' : 'opacity-0'} transition-opacity`}>
+                            <span className="text-[10px] text-gray-500">
+                              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowMessageMenu(showMessageMenu === msg.id ? null : msg.id);
+                              }}
+                              className="p-0.5 hover:bg-gray-200 rounded"
+                            >
+                              <MoreVertical className="w-3 h-3 text-gray-500" />
+                            </button>
+                          </div>
+                          {showMessageMenu === msg.id && (
+                            <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 flex flex-col min-w-[100px]">
+                              {msg.sender_email === user.email && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleEditMessage(msg); }}
+                                  className="px-3 py-1.5 text-xs text-left hover:bg-gray-50 flex items-center gap-2"
+                                >
+                                  <Edit className="w-3 h-3" /> Edit
+                                </button>
+                              )}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleStarMessage(msg); }}
+                                className="px-3 py-1.5 text-xs text-left hover:bg-gray-50 flex items-center gap-2"
+                              >
+                                <Star className="w-3 h-3" /> Star
+                              </button>
+                              {msg.sender_email === user.email && (
+                                <>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteMessage(msg, 'me'); }}
+                                    className="px-3 py-1.5 text-xs text-left hover:bg-gray-50 flex items-center gap-2"
+                                  >
+                                    <Trash2 className="w-3 h-3" /> Delete for me
+                                  </button>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteMessage(msg, 'everyone'); }}
+                                    className="px-3 py-1.5 text-xs text-left hover:bg-red-50 text-red-600 flex items-center gap-2"
+                                  >
+                                    <Trash2 className="w-3 h-3" /> Delete for everyone
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -624,18 +837,85 @@ export default function MessagesPage() {
               </div>
             </div>
 
-            <div className="p-4 border-t border-gray-200 flex items-center gap-2">
-              <input
-                type="text"
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
-                placeholder="Type a message..."
-                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-              />
-              <button onClick={handleSend} className="px-5 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800">
-                <Send className="w-4 h-4" />
-              </button>
+            <div className="p-4 border-t border-gray-200">
+              {/* Attachment preview */}
+              {attachedFile && (
+                <div className="mb-3 flex items-center gap-2 bg-gray-100 rounded-lg p-2">
+                  <div className="flex-1 flex items-center gap-2">
+                    {attachedFile.type.startsWith('image/') ? (
+                      <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
+                        📷
+                      </div>
+                    ) : attachedFile.type.startsWith('audio/') ? (
+                      <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
+                        🎵
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center">
+                        📎
+                      </div>
+                    )}
+                    <span className="text-xs text-gray-700 truncate flex-1">{attachedFile.name}</span>
+                  </div>
+                  <button onClick={handleRemoveAttachment} className="p-1 hover:bg-gray-200 rounded">
+                    <X className="w-4 h-4 text-gray-500" />
+                  </button>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                {/* File attachment button */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  onChange={handleFileAttach}
+                  className="hidden"
+                  accept="image/*,.pdf,.zip,audio/*"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2.5 hover:bg-gray-100 rounded-lg text-gray-500"
+                  title="Attach file"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </button>
+
+                {/* Recording button */}
+                <button
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className={`p-2.5 rounded-lg ${isRecording ? 'bg-red-100 text-red-600' : 'hover:bg-gray-100 text-gray-500'}`}
+                  title={isRecording ? 'Stop recording' : 'Record audio'}
+                >
+                  {isRecording ? (
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
+                      <span className="text-xs font-medium">{formatRecordingTime(recordingTime)}</span>
+                    </div>
+                  ) : (
+                    <Mic className="w-5 h-5" />
+                  )}
+                </button>
+
+                {/* Message input */}
+                <input
+                  type="text"
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
+                  placeholder="Type a message..."
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                  disabled={isRecording}
+                />
+
+                {/* Send button */}
+                <button 
+                  onClick={handleSend} 
+                  disabled={!messageInput.trim() && !attachedFile}
+                  className="px-5 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </>
         ) : (

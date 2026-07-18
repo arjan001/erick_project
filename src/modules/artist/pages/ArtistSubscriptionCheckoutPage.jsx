@@ -254,12 +254,18 @@ export default function ArtistSubscriptionCheckoutPage() {
   const [currentSubscription, setCurrentSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [isInvited, setIsInvited] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
     if (!storedUser) { window.location.href = '/signin'; return; }
     const userData = JSON.parse(storedUser);
     setUser(userData);
+    
+    // Check if user was invited (has referred_by or invite_code in metadata)
+    const referredBy = userData.user_metadata?.referred_by || userData.user_metadata?.invite_code;
+    setIsInvited(!!referredBy);
+    
     fetchData(userData);
   }, []);
 
@@ -322,21 +328,26 @@ export default function ArtistSubscriptionCheckoutPage() {
         });
       }
 
-      // Grant connects included in the plan
+      // Grant connects included in the plan (only if upgrading or new subscription)
       if (pkg.connects_included > 0) {
         const artists = await Artist.filter({ email: user.email });
         const artist = artists?.[0];
         if (artist) {
-          const newBalance = (artist.connects_balance || 0) + pkg.connects_included;
-          await Artist.update(artist.id, { connects_balance: newBalance });
-          await ConnectsTransaction.create({
-            artist_email: user.email,
-            amount: pkg.connects_included,
-            reason: 'subscription_grant',
-            balance_after: newBalance
-          });
-          // Notify user about connects received
-          notificationService.notifyConnectsReceived(user.email, pkg.connects_included, 'subscription activation');
+          // Check if this is a new subscription or upgrade (not re-granting for same plan)
+          const isNewOrUpgrade = !currentSubscription || currentSubscription.package_id !== pkg.id;
+          
+          if (isNewOrUpgrade) {
+            const newBalance = (artist.connects_balance || 0) + pkg.connects_included;
+            await Artist.update(artist.id, { connects_balance: newBalance });
+            await ConnectsTransaction.create({
+              artist_email: user.email,
+              amount: pkg.connects_included,
+              reason: 'subscription_grant',
+              balance_after: newBalance
+            });
+            // Notify user about connects received
+            notificationService.notifyConnectsReceived(user.email, pkg.connects_included, 'subscription activation');
+          }
         }
       }
 
@@ -388,19 +399,24 @@ export default function ArtistSubscriptionCheckoutPage() {
       });
     }
 
-    // Grant connects included in the plan
+    // Grant connects included in the plan (only if upgrading or new subscription)
     if (selectedPackage.connects_included > 0) {
       const artists = await Artist.filter({ email: user.email });
       const artist = artists?.[0];
       if (artist) {
-        const newBalance = (artist.connects_balance || 0) + selectedPackage.connects_included;
-        await Artist.update(artist.id, { connects_balance: newBalance });
-        await ConnectsTransaction.create({
-          artist_email: user.email,
-          amount: selectedPackage.connects_included,
-          reason: 'subscription_grant',
-          balance_after: newBalance
-        });
+        // Check if this is a new subscription or upgrade (not re-granting for same plan)
+        const isNewOrUpgrade = !currentSubscription || currentSubscription.package_id !== selectedPackage.id;
+        
+        if (isNewOrUpgrade) {
+          const newBalance = (artist.connects_balance || 0) + selectedPackage.connects_included;
+          await Artist.update(artist.id, { connects_balance: newBalance });
+          await ConnectsTransaction.create({
+            artist_email: user.email,
+            amount: selectedPackage.connects_included,
+            reason: 'subscription_grant',
+            balance_after: newBalance
+          });
+        }
       }
     }
 
@@ -449,7 +465,13 @@ export default function ArtistSubscriptionCheckoutPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl">
-        {packages.map((pkg) => {
+        {packages.filter(pkg => {
+          // Only show Pro plan if user is invited
+          if (pkg.name.toLowerCase().includes('pro') && !isInvited) {
+            return false;
+          }
+          return true;
+        }).map((pkg) => {
           const PackageIcon = getPackageIcon(pkg);
           const accent = getPackageAccent(pkg);
           const isPopular = pkg.name.toLowerCase().includes('pro');

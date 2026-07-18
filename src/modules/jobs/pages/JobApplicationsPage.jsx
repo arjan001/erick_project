@@ -34,7 +34,7 @@ export default function JobApplications() {
               }
               const project = await Project.get(app.project_id);
               return { ...app, job: project ? {
-                title: project.project_type?.replace(/_/g, ' ') + ' project',
+                title: project.title || project.project_type?.replace(/_/g, ' ') + ' project',
                 location: [project.location_city, project.location_country].filter(Boolean).join(', '),
                 client_name: project.project_owner_name,
                 budget_min: 0,

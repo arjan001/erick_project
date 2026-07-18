@@ -37,7 +37,7 @@ export default function ActivityFeedPage() {
             message: `${job.client_email} posted a new job: ${job.title}`,
             actor: job.client_email,
             actor_name: job.client_email.split('@')[0],
-            created_date: job.created_date,
+            created_date: job.created_at,
             link: `/jobs/${job.id}`,
             icon: <Briefcase className="w-5 h-5 text-blue-600" />
           });
@@ -55,7 +55,7 @@ export default function ActivityFeedPage() {
               message: `You connected with ${otherEmail}`,
               actor: otherEmail,
               actor_name: otherEmail.split('@')[0],
-              created_date: conn.updated_date || conn.created_date,
+              created_date: conn.updated_date || conn.created_at,
               link: '/network',
               icon: <Users className="w-5 h-5 text-green-600" />
             });
@@ -76,7 +76,7 @@ export default function ActivityFeedPage() {
                 : `You endorsed ${endorsement.endorsed_name} for ${endorsement.skill}`,
               actor: isReceived ? endorsement.endorser_email : endorsement.endorsed_email,
               actor_name: isReceived ? endorsement.endorser_name : endorsement.endorsed_name,
-              created_date: endorsement.created_date,
+              created_date: endorsement.created_at,
               link: '/endorsements',
               icon: <Award className="w-5 h-5 text-yellow-600" />
             });
@@ -97,7 +97,7 @@ export default function ActivityFeedPage() {
                 : `You wrote a testimonial for ${testimonial.recipient_name}`,
               actor: isReceived ? testimonial.author_email : testimonial.recipient_email,
               actor_name: isReceived ? testimonial.author_name : testimonial.recipient_name,
-              created_date: testimonial.created_date,
+              created_date: testimonial.created_at,
               link: '/testimonials',
               icon: <ThumbsUp className="w-5 h-5 text-purple-600" />
             });
@@ -136,7 +136,7 @@ export default function ActivityFeedPage() {
             message: `${job.client_email} posted a new job: ${job.title}`,
             actor: job.client_email,
             actor_name: job.client_email.split('@')[0],
-            created_date: job.created_date,
+            created_date: job.created_at,
             link: `/jobs/${job.id}`,
             icon: <Briefcase className="w-5 h-5 text-blue-600" />
           });
@@ -153,7 +153,7 @@ export default function ActivityFeedPage() {
               message: `You connected with ${otherEmail}`,
               actor: otherEmail,
               actor_name: otherEmail.split('@')[0],
-              created_date: conn.updated_date || conn.created_date,
+              created_date: conn.updated_date || conn.created_at,
               link: '/network',
               icon: <Users className="w-5 h-5 text-green-600" />
             });
@@ -173,7 +173,7 @@ export default function ActivityFeedPage() {
                 : `You endorsed ${endorsement.endorsed_name} for ${endorsement.skill}`,
               actor: isReceived ? endorsement.endorser_email : endorsement.endorsed_email,
               actor_name: isReceived ? endorsement.endorser_name : endorsement.endorsed_name,
-              created_date: endorsement.created_date,
+              created_date: endorsement.created_at,
               link: '/endorsements',
               icon: <Award className="w-5 h-5 text-yellow-600" />
             });
@@ -193,7 +193,7 @@ export default function ActivityFeedPage() {
                 : `You wrote a testimonial for ${testimonial.recipient_name}`,
               actor: isReceived ? testimonial.author_email : testimonial.recipient_email,
               actor_name: isReceived ? testimonial.author_name : testimonial.recipient_name,
-              created_date: testimonial.created_date,
+              created_date: testimonial.created_at,
               link: '/testimonials',
               icon: <ThumbsUp className="w-5 h-5 text-purple-600" />
             });

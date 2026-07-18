@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Team } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import LanguageMultiSelect from '@/components/LanguageMultiSelect';
 import { Building2, Users, Mail, Phone, Globe, MapPin, Briefcase, ArrowLeft } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast.jsx';
@@ -219,12 +220,11 @@ export default function TeamRegistrationPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Languages Spoken (comma-separated)</label>
-              <Input
-                type="text"
-                value={formData.languages_spoken.join(', ')}
-                onChange={(e) => setFormData({ ...formData, languages_spoken: e.target.value.split(',').map(s => s.trim()).filter(s => s) })}
-                placeholder="e.g. English, Spanish, French"
+              <label className="block text-sm font-medium text-gray-900 mb-2">Languages Spoken</label>
+              <LanguageMultiSelect
+                value={formData.languages_spoken}
+                onChange={(languages) => setFormData({ ...formData, languages_spoken: languages })}
+                placeholder="Search and select languages..."
               />
             </div>
 

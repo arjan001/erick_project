@@ -190,9 +190,11 @@ export default function Home({ editMode = false }) {
   const [projectCategory, setProjectCategory] = useState('commercial');
   const [extracting, setExtracting] = useState(false);
   const [extractProgress, setExtractProgress] = useState(null);
+  const [regenerating, setRegenerating] = useState(false);
   const [attachments, setAttachments] = useState([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const previousCategoryRef = useRef(projectCategory);
 
   const projectCategories = [
     { value: 'commercial', label: 'Commercial', icon: Film },
@@ -266,8 +268,57 @@ export default function Home({ editMode = false }) {
     }
   };
 
+  // Auto-regenerate analysis when category changes (if URL exists)
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      // Check if category actually changed and we have a reference URL
+      if (previousCategoryRef.current !== projectCategory && projectUrl && projectUrl.trim() !== '') {
+        console.log('Category changed from', previousCategoryRef.current, 'to', projectCategory, '- regenerating analysis');
+        
+        try {
+          setRegenerating(true);
+          
+          // Re-analyze the URL with the new category
+          const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory);
+          
+          if (analysisResult.success && analysisResult.rawAnalysis) {
+            setProjectDescription(analysisResult.rawAnalysis);
+            
+            // Save to localStorage
+            saveAnalyzedProjectToStorage({
+              url: analysisResult.url,
+              analysis: analysisResult,
+              brief: null,
+              projectType: projectCategory,
+              additionalNotes: projectDescription,
+              attachments: attachments
+            });
+          }
+        } catch (err) {
+          console.error('Regeneration error:', err);
+        } finally {
+          setRegenerating(false);
+        }
+      }
+      
+      // Update ref
+      previousCategoryRef.current = projectCategory;
+    }, 500); // 0.5 second debounce
+
+    return () => clearTimeout(timer);
+  }, [projectCategory, projectUrl]);
+
   const handleQuickSubmit = async (e) => {
     e.preventDefault();
+    
+    // Normalize URL if provided (add https:// if missing)
+    let normalizedUrl = projectUrl;
+    if (projectUrl && projectUrl.trim() !== '') {
+      normalizedUrl = projectUrl.trim();
+      if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+        normalizedUrl = 'https://' + normalizedUrl;
+      }
+    }
     
     // If we have URL analysis data, it's already saved to localStorage
     // If not, save basic data
@@ -275,7 +326,7 @@ export default function Home({ editMode = false }) {
     
     if (!analyzedProject) {
       // Save basic data if no URL analysis was done
-      sessionStorage.setItem('quickProjectUrl', projectUrl);
+      sessionStorage.setItem('quickProjectUrl', normalizedUrl);
       sessionStorage.setItem('quickProjectDescription', projectDescription);
       sessionStorage.setItem('quickProjectCategory', projectCategory);
       sessionStorage.setItem('quickProjectAttachments', JSON.stringify(attachments));
@@ -283,6 +334,7 @@ export default function Home({ editMode = false }) {
       // Update existing analyzed project with attachments
       saveAnalyzedProjectToStorage({
         ...analyzedProject,
+        url: normalizedUrl,
         attachments: attachments
       });
     }
@@ -979,6 +1031,14 @@ export default function Home({ editMode = false }) {
 
             {/* Description with Category Selector and Attachment */}
             <div className="relative border border-gray-300 rounded-lg">
+              <div className="absolute top-2 right-3 z-10">
+                {regenerating && (
+                  <div className="flex items-center gap-2 text-xs text-gray-600 bg-white/90 px-2 py-1 rounded">
+                    <Loader className="w-3 h-3 animate-spin" />
+                    <span>Reanalyzing...</span>
+                  </div>
+                )}
+              </div>
               <textarea
                 value={projectDescription}
                 onChange={(e) => setProjectDescription(e.target.value)}
@@ -1044,7 +1104,7 @@ export default function Home({ editMode = false }) {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
-                    className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-600 bg-white border border-gray-200 rounded px-2 sm:px-3 py-1.5 hover:bg-gray-50 focus:ring-1 focus:ring-black cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-600 bg-white border border-gray-200 rounded px-2 sm:px-3 py-1.5 hover:bg-gray-50 focus:ring-1 focus:ring-black cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
                     title="Add attachment (PDF, images, audio, video)"
                   >
                     {uploading ? (
@@ -1052,7 +1112,7 @@ export default function Home({ editMode = false }) {
                     ) : (
                       <Paperclip className="w-3 h-3 sm:w-4 sm:h-4" />
                     )}
-                    <span>{uploading ? 'Uploading...' : attachments.length > 0 ? `${attachments.length} file${attachments.length > 1 ? 's' : ''}` : 'Attach'}</span>
+                    <span className="hidden group-hover:inline">{uploading ? 'Uploading...' : 'Attach files'}</span>
                   </button>
                 </div>
               </div>
@@ -1299,9 +1359,8 @@ export default function Home({ editMode = false }) {
 
 
 
-      {/* RELEASED Section */}
-
-      <section className="py-12 md:py-20 px-4 md:px-6 bg-[#F9F9F9]">
+      {/* RELEASED Section - COMMENTED OUT */}
+      {/* <section className="py-12 md:py-20 px-4 md:px-6 bg-[#F9F9F9]">
 
         <div className="max-w-[1800px] mx-auto">
 
@@ -1477,7 +1536,7 @@ export default function Home({ editMode = false }) {
 
         </div>
 
-      </section>
+      </section> */}
 
 
 

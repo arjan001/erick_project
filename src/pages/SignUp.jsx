@@ -192,7 +192,7 @@ export default function SignUp() {
         case 'client':
           await ProjectOwner.create({
             ...userData,
-            company_name: `${formData.firstName} ${formData.lastName}`
+            company: `${formData.firstName} ${formData.lastName}`
           });
           break;
         case 'backer':

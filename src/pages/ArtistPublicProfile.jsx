@@ -98,7 +98,7 @@ export default function ArtistPublicProfile() {
     ? (testimonials.reduce((sum, t) => sum + (t.rating || 0), 0) / testimonials.filter(t => t.rating).length || 0).toFixed(1)
     : null;
 
-  const memberSince = viewedArtist.created_date ? new Date(viewedArtist.created_date).getFullYear() : null;
+  const memberSince = viewedArtist.created_at ? new Date(viewedArtist.created_at).getFullYear() : null;
 
   const formatLabel = (val) => (val || 'other').charAt(0).toUpperCase() + (val || 'other').slice(1).replace(/_/g, ' ');
 

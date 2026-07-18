@@ -29,9 +29,19 @@ export default function RolesTagInput({ selected = [], onChange }) {
     setShowDropdown(false);
   };
 
-  // Flat filtered suggestions
+  // Check if query matches a category name
+  const matchedCategory = Object.keys(FILM_ROLES_BY_CATEGORY).find(
+    cat => cat.toLowerCase().includes(query.toLowerCase())
+  );
+
+  // Flat filtered suggestions - search by role name
   const flatMatches = query
     ? ALL_FILM_ROLES.filter(r => r.toLowerCase().includes(query.toLowerCase())).slice(0, 15)
+    : [];
+
+  // If query matches a category, show all roles from that category
+  const categoryMatches = matchedCategory
+    ? FILM_ROLES_BY_CATEGORY[matchedCategory]
     : [];
 
   // Grouped suggestions when no query (show top roles per category)
@@ -72,7 +82,25 @@ export default function RolesTagInput({ selected = [], onChange }) {
       {showDropdown && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-64 overflow-y-auto">
           {query ? (
-            flatMatches.length > 0 ? (
+            matchedCategory ? (
+              // Show all roles from matched category
+              <div className="px-3 py-2">
+                <div className="text-[10px] font-bold uppercase text-gray-400 mb-1.5 tracking-wider">{matchedCategory}</div>
+                <div className="flex flex-wrap gap-1">
+                  {categoryMatches.map(role => (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => toggleRole(role)}
+                      className={`px-2 py-1 text-xs rounded-full transition-all ${selected.includes(role) ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    >
+                      {role}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : flatMatches.length > 0 ? (
+              // Show flat role matches
               flatMatches.map(role => (
                 <button
                   key={role}

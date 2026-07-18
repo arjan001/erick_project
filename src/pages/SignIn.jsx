@@ -218,7 +218,7 @@ export default function SignIn() {
           case 'client':
             await ProjectOwner.create({
               ...userData,
-              company_name: fullName
+              company: fullName
             });
             break;
           case 'backer':

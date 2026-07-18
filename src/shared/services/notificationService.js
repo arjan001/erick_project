@@ -50,7 +50,7 @@ class NotificationService {
         message,
         link: actionUrl,
         read: false,
-        created_date: notification.createdAt,
+        created_at: notification.createdAt,
         metadata: JSON.stringify(metadata)
       });
     } catch (err) {

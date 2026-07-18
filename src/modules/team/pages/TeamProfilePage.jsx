@@ -4,6 +4,8 @@ import { Team } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CountrySelector from '@/components/CountrySelector';
+import LanguageMultiSelect from '@/components/LanguageMultiSelect';
+import { formatSocialMediaUrl } from '@/lib/socialMediaUtils';
 import { Building2, MapPin, Globe, Phone, Mail, Edit2, Save, Upload, X, Users, Briefcase, Bell, Shield, Linkedin, Instagram, Twitter, Youtube } from 'lucide-react';
 import { useToast } from '@/hooks/useToast.jsx';
 
@@ -239,6 +241,14 @@ export default function TeamProfilePage() {
                     <Input value={formData.specialties.join(', ')} onChange={(e) => setFormData({ ...formData, specialties: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="rounded-lg" />
                   </div>
                   <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Languages Spoken</label>
+                    <LanguageMultiSelect
+                      value={formData.languages_spoken}
+                      onChange={(languages) => setFormData({ ...formData, languages_spoken: languages })}
+                      placeholder="Search and select languages..."
+                    />
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">Description</label>
                     <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black" />
                   </div>
@@ -278,7 +288,7 @@ export default function TeamProfilePage() {
                   <div className="flex items-center gap-3">
                     <Linkedin className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.linkedin} onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })} placeholder="LinkedIn URL" />
+                      <Input className="rounded-lg flex-1" value={formData.linkedin} onChange={(e) => setFormData({ ...formData, linkedin: formatSocialMediaUrl('linkedin', e.target.value) })} placeholder="username" />
                     ) : (
                       <p className="text-gray-900 flex-1">{team.linkedin || 'Not set'}</p>
                     )}
@@ -286,7 +296,7 @@ export default function TeamProfilePage() {
                   <div className="flex items-center gap-3">
                     <Instagram className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} placeholder="Instagram URL" />
+                      <Input className="rounded-lg flex-1" value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: formatSocialMediaUrl('instagram', e.target.value) })} placeholder="username" />
                     ) : (
                       <p className="text-gray-900 flex-1">{team.instagram || 'Not set'}</p>
                     )}
@@ -294,7 +304,7 @@ export default function TeamProfilePage() {
                   <div className="flex items-center gap-3">
                     <Twitter className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.twitter} onChange={(e) => setFormData({ ...formData, twitter: e.target.value })} placeholder="Twitter URL" />
+                      <Input className="rounded-lg flex-1" value={formData.twitter} onChange={(e) => setFormData({ ...formData, twitter: formatSocialMediaUrl('twitter', e.target.value) })} placeholder="username" />
                     ) : (
                       <p className="text-gray-900 flex-1">{team.twitter || 'Not set'}</p>
                     )}
@@ -302,7 +312,7 @@ export default function TeamProfilePage() {
                   <div className="flex items-center gap-3">
                     <Youtube className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.youtube} onChange={(e) => setFormData({ ...formData, youtube: e.target.value })} placeholder="YouTube URL" />
+                      <Input className="rounded-lg flex-1" value={formData.youtube} onChange={(e) => setFormData({ ...formData, youtube: formatSocialMediaUrl('youtube', e.target.value) })} placeholder="channel" />
                     ) : (
                       <p className="text-gray-900 flex-1">{team.youtube || 'Not set'}</p>
                     )}

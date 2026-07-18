@@ -18,17 +18,17 @@ export default function AdminMessagesPage() {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      const rows = await Message.list('-created_date', 500);
+      const rows = await Message.list('-created_at', 500);
       const grouped = {};
       (rows || []).forEach(m => {
         if (!grouped[m.conversation_id]) grouped[m.conversation_id] = [];
         grouped[m.conversation_id].push(m);
       });
       const convs = Object.entries(grouped).map(([id, msgs]) => {
-        const sorted = msgs.slice().sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+        const sorted = msgs.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
         const last = sorted[sorted.length - 1];
         const otherParty = sorted.find(m => m.sender_email !== user?.email)?.sender_email || last.sender_email;
-        return { id, messages: sorted, lastMessage: last.text, lastMessageTime: last.created_date, participant: otherParty };
+        return { id, messages: sorted, lastMessage: last.text, lastMessageTime: last.created_at, participant: otherParty };
       }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
       setConversations(convs);
     } catch (err) {
@@ -54,7 +54,7 @@ export default function AdminMessagesPage() {
         text: newMessage,
       });
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
-        ? { ...c, messages: [...c.messages, created], lastMessage: created.text, lastMessageTime: created.created_date }
+        ? { ...c, messages: [...c.messages, created], lastMessage: created.text, lastMessageTime: created.created_at }
         : c
       ));
       setNewMessage('');
@@ -158,7 +158,7 @@ export default function AdminMessagesPage() {
                   <div className={`max-w-md rounded-lg p-3 ${msg.sender_email === user?.email ? 'bg-black text-white' : 'bg-gray-100 text-gray-900'}`}>
                     <div className="text-sm">{msg.text}</div>
                     <div className={`text-xs mt-1 ${msg.sender_email === user?.email ? 'text-gray-300' : 'text-gray-500'}`}>
-                      {new Date(msg.created_date).toLocaleTimeString()}
+                      {new Date(msg.created_at).toLocaleTimeString()}
                     </div>
                   </div>
                 </div>

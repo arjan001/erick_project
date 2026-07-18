@@ -38,10 +38,10 @@ export default function ArtistDashboard() {
     const fetchData = async () => {
       try {
         const [jobsData, appsData, msgsData, subsData] = await Promise.all([
-          Job.filter({ status: 'open' }, '-created_date', 5),
-          Application.filter({ artist_email: user.email }, '-created_date', 10),
-          Message.filter({ recipient_email: user.email }, '-created_date', 5),
-          Subscription.filter({ user_email: user.email }, '-created_date', 1)
+          Job.filter({ status: 'open' }, '-created_at', 5),
+          Application.filter({ artist_email: user.email }, '-created_at', 10),
+          Message.filter({ recipient_email: user.email }, '-created_at', 5),
+          Subscription.filter({ user_email: user.email }, '-created_at', 1)
         ]);
 
         setJobs(jobsData || []);

@@ -5,7 +5,7 @@ import { useSidebar } from '@/layouts/DashboardLayout';
 import { useAuth } from '@/lib/AuthContext';
 import { 
   LayoutDashboard, Users, Briefcase, MessageSquare,
-  CreditCard, Settings, LogOut, ChevronLeft, ChevronRight, Building2, Share2, Bell
+  CreditCard, Settings, LogOut, ChevronLeft, ChevronRight, Building2, Share2, Bell, Ticket
 } from 'lucide-react';
 import { Message, Notification } from '@/lib/supabaseEntities';
 
@@ -16,6 +16,7 @@ const MENU_ITEMS = [
   { icon: MessageSquare, label: 'Messages', path: 'TeamMessages', showBadge: true },
   { icon: Share2, label: 'Network', path: 'Network' },
   { icon: Bell, label: 'Notifications', path: 'Notifications', showNotificationBadge: true },
+  { icon: Ticket, label: 'Support Tickets', path: 'SupportTickets' },
   { icon: CreditCard, label: 'Payments', path: 'TeamPayments' },
   { icon: Settings, label: 'Profile & Settings', path: 'TeamProfile' },
 ];

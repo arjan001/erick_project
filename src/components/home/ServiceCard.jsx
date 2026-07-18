@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
 
 const SERVICE_IMAGES = {
-  commercial: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/5ace6ee23_generated_image.png',
-  film: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/e9a428902_generated_image.png',
-  post: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/05ff39441_generated_image.png',
-  vfx: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/0e9506bb0_generated_image.png',
-  sound: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/21488ed1b_generated_image.png',
-  web: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6968a46f6ea94ba83cd1497c/7e5680733_generated_image.png'
+  commercial: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80',
+  film: 'https://images.unsplash.com/photo-1485846234645-614d22381569?w=800&q=80',
+  post: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80',
+  vfx: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80',
+  sound: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800&q=80',
+  web: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80'
 };
 
 const ServiceVisual = ({ type, isHovered }) => {

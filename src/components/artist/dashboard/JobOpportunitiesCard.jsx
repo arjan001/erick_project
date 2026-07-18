@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
-import { Plus, Briefcase, Building2 } from 'lucide-react';
+import { Plus, Briefcase, Building2, MapPin, Clock } from 'lucide-react';
 import { Job, Project } from '@/lib/supabaseEntities';
 
 const ICON_COLORS = [
@@ -11,6 +11,19 @@ const ICON_COLORS = [
   { bg: '#264653', text: '#ffffff' },
   { bg: '#2A9D8F', text: '#ffffff' },
 ];
+
+const getTimeAgo = (date) => {
+  if (!date) return 'Recently';
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  if (seconds < 60) return 'Just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(date).toLocaleDateString();
+};
 
 export default function JobOpportunitiesCard({ jobs = [] }) {
   const [allOpportunities, setAllOpportunities] = useState([]);
@@ -33,7 +46,9 @@ export default function JobOpportunitiesCard({ jobs = [] }) {
           budget_type: project.budget_range?.includes('hourly') ? 'Hourly' : 'Fixed',
           isProject: true,
           image_url: project.image_url,
-          client_name: project.project_owner_name || 'Client'
+          client_name: project.project_owner_name || 'Client',
+          created_at: project.created_at,
+          description: project.notes?.substring(0, 80) || 'Project opportunity'
         }));
 
         // Combine and take first 5
@@ -73,22 +88,44 @@ export default function JobOpportunitiesCard({ jobs = [] }) {
           <p className="text-xs text-gray-400">No opportunities available right now</p>
         </div>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-2">
           {displayItems.map((item, idx) => {
-            const c = ICON_COLORS[idx % ICON_COLORS.length];
-            const Icon = item.isProject ? Building2 : Briefcase;
             return (
-              <Link key={item.id} to={createPageUrl('Jobs')} className="flex items-center gap-2.5 hover:bg-gray-50 px-2 py-2 rounded-xl transition-colors group">
-                <span className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: c.bg, color: c.text }}>
-                  <Icon className="w-3.5 h-3.5" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-gray-900 truncate">{item.title}</p>
-                  <p className="text-xs text-gray-400">{item.location || 'Remote'}</p>
+              <Link key={item.id} to={createPageUrl('Jobs')} className="flex gap-3 hover:bg-gray-50 p-3 rounded-xl transition-colors group border border-gray-100">
+                {/* Left - Client Avatar */}
+                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <Building2 className="w-5 h-5 text-gray-400" />
                 </div>
-                <span className="text-xs font-semibold text-[#2A9D8F] opacity-0 group-hover:opacity-100 transition-opacity">
-                  {item.budget_type === 'Hourly' ? `€${item.budget_min}/hr` : `€${item.budget_min}`}
-                </span>
+
+                {/* Right - Content */}
+                <div className="flex-1 min-w-0">
+                  {/* Top Row - Timestamp */}
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-gray-500">{getTimeAgo(item.created_at)}</span>
+                    {item.isProject && (
+                      <span className="bg-black text-white text-[9px] font-medium px-1.5 py-0.5 rounded-full">
+                        Project
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Job Title */}
+                  <p className="text-xs font-semibold text-gray-900 truncate mb-1">{item.title}</p>
+
+                  {/* Description */}
+                  <p className="text-[10px] text-gray-600 line-clamp-1 mb-1">{item.description || 'Job opportunity'}</p>
+
+                  {/* Location and Pay */}
+                  <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                    <div className="flex items-center gap-0.5">
+                      <MapPin className="w-2.5 h-2.5" />
+                      <span className="truncate">{item.location || 'Remote'}</span>
+                    </div>
+                    <span className="font-medium text-gray-900">
+                      {item.budget_type === 'Hourly' ? `€${item.budget_min}/hr` : `€${item.budget_min}`}
+                    </span>
+                  </div>
+                </div>
               </Link>
             );
           })}

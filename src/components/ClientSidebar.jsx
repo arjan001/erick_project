@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Briefcase, Plus, FileText, Mail, BarChart3, Settings, ChevronLeft, ChevronRight, LogOut, Share2, Bell } from 'lucide-react';
+import { Briefcase, Plus, FileText, Mail, BarChart3, Settings, ChevronLeft, ChevronRight, LogOut, Share2, Bell, Ticket } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useSidebar } from '@/layouts/DashboardLayout';
 import { useAuth } from '@/lib/AuthContext';
@@ -13,6 +13,7 @@ const MENU_ITEMS = [
   { label: 'Messages', icon: Mail, href: 'ClientMessages', showBadge: true },
   { label: 'Network', icon: Share2, href: 'Network', showConnectionBadge: true },
   { label: 'Notifications', icon: Bell, href: 'Notifications', showNotificationBadge: true },
+  { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets' },
   { label: 'Analytics', icon: BarChart3, href: 'ClientAnalytics' },
   { label: 'Profile & Settings', icon: Settings, href: 'ClientProfile' }
 ];
@@ -38,7 +39,7 @@ export default function ClientSidebar() {
     const fetchUnreadMessages = async () => {
       try {
         // Messages table uses is_read, not read
-        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_date', 50);
+        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_at', 50);
         setUnreadMessageCount((msgs || []).length);
       } catch {
         setUnreadMessageCount(0);

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ChevronDown, LogOut, Settings, MessageCircle, Menu, Users } from 'lucide-react';
+import { Search, ChevronDown, LogOut, Settings, MessageCircle, Menu, Users, Home, Bell } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/shared/utils/routing';
-import { Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities';
+import { Message, Artist, Team, ProjectOwner, Backer, Notification } from '@/lib/supabaseEntities';
 import { useSidebar } from '@/layouts/DashboardLayout';
 
 // Modern TailAdmin-style top bar shared across all dashboard roles.
@@ -13,7 +13,9 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   const { setMobileSidebarOpen } = useSidebar();
   const [menuOpen, setMenuOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [recentSenders, setRecentSenders] = useState([]);
   const [artistProfile, setArtistProfile] = useState(null);
 
@@ -21,7 +23,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
     if (!user?.email) return;
     try {
       // Messages table uses is_read, not read
-      const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_date', 10);
+      const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_at', 10);
       setMessages(msgs || []);
       
       // Get unique senders
@@ -56,8 +58,19 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
     }
   };
 
-  useEffect(() => { 
+  const fetchNotifications = async () => {
+    if (!user?.email) return;
+    try {
+      const notifs = await Notification.filter({ recipient_email: user.email }, '-created_at', 10);
+      setNotifications(notifs || []);
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+    }
+  };
+
+  useEffect(() => {
     fetchMessages();
+    fetchNotifications();
   }, [user]);
 
 
@@ -65,6 +78,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
     if (!user?.email) return;
     const interval = setInterval(() => {
       fetchMessages();
+      fetchNotifications();
     }, 30000);
     return () => clearInterval(interval);
   }, [user]);
@@ -85,10 +99,27 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   }, [user]);
 
   const unreadMessagesCount = messages.length;
+  const unreadNotificationsCount = notifications.filter(n => !n.read).length;
 
   const handleOpenMessages = () => {
     setMessagesOpen(!messagesOpen);
+    setNotificationsOpen(false);
     setMenuOpen(false);
+  };
+
+  const handleOpenNotifications = () => {
+    setNotificationsOpen(!notificationsOpen);
+    setMessagesOpen(false);
+    setMenuOpen(false);
+  };
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await Notification.update(notificationId, { read: true });
+      setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, read: true } : n));
+    } catch (err) {
+      console.error('Error marking notification as read:', err);
+    }
   };
 
 
@@ -121,6 +152,12 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
       </button>
 
       <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Back to Site Button */}
+        <Link to="/" className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-600">
+          <Home className="w-4 h-4" />
+          <span className="text-sm font-medium">Back to Site</span>
+        </Link>
+
         {/* Messages Button */}
         <div className="relative">
           <button onClick={handleOpenMessages} className="relative p-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-500">
@@ -163,6 +200,52 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
                           <p className="text-xs text-gray-500 truncate">New message</p>
                         </div>
                       </Link>
+                    ))
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Notifications Button */}
+        <div className="relative">
+          <button onClick={handleOpenNotifications} className="relative p-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-500">
+            <Bell className="w-5 h-5" />
+            {unreadNotificationsCount > 0 && (
+              <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full text-white text-[10px] font-bold flex items-center justify-center">
+                {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
+              </span>
+            )}
+          </button>
+
+          {notificationsOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setNotificationsOpen(false)} />
+              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-lg z-20 max-h-96 flex flex-col">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
+                  <span className="font-semibold text-gray-900 text-sm">Notifications</span>
+                  <Link to={createPageUrl('Notifications')} onClick={() => setNotificationsOpen(false)} className="text-xs text-indigo-600 hover:underline">View all</Link>
+                </div>
+                <div className="overflow-y-auto flex-1">
+                  {notifications.length === 0 ? (
+                    <div className="p-6 text-center text-sm text-gray-400">No notifications</div>
+                  ) : (
+                    notifications.map((notification) => (
+                      <div
+                        key={notification.id}
+                        onClick={() => handleMarkAsRead(notification.id)}
+                        className={`flex items-start gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${!notification.read ? 'bg-blue-50/20' : ''}`}
+                      >
+                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <Bell className="w-4 h-4 text-gray-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">{notification.title}</p>
+                          <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notification.message}</p>
+                          <p className="text-[10px] text-gray-400 mt-1">{new Date(notification.created_at).toLocaleString()}</p>
+                        </div>
+                      </div>
                     ))
                   )}
                 </div>
