@@ -130,9 +130,22 @@ function SavedProjectCard({ project, editMode, onEdit, onView }) {
 
 
 async function generateSingleShot(prompt) {
-  // Skip base44 call to prevent white screen issues
-  // Return a placeholder image instead
-  return 'https://images.unsplash.com/photo-1485846234645-6ed24d24a7f3?w=800';
+  try {
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `Generate a detailed visual description for a video production shot based on: ${prompt}. Describe the scene, lighting, camera angle, mood, and composition in detail.`,
+      max_tokens: 500
+    });
+    
+    if (result?.data?.content) {
+      return result.data.content;
+    }
+    
+    // Fallback text description
+    return `Cinematic shot for: ${prompt}`;
+  } catch (error) {
+    console.error('Error generating shot description:', error);
+    return `Cinematic shot for: ${prompt}`;
+  }
 }
 
 
@@ -779,9 +792,9 @@ export default function Home({ editMode = false }) {
 
                 {viewingProject.images.map((img, idx) => (
 
-                  <div key={idx} className="relative aspect-video rounded-lg overflow-hidden shadow-lg group">
+                  <div key={idx} className="relative bg-gray-50 rounded-lg p-4 shadow-lg group">
 
-                    <img src={img} alt={`Shot ${idx + 1}`} className="w-full h-full object-cover" />
+                    <p className="text-sm text-gray-700 leading-relaxed">{img}</p>
 
                     <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-3 py-1 rounded">
 

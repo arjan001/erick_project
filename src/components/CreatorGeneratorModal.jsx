@@ -77,7 +77,7 @@ CRITICAL: Better to return 3 companies with REAL logos than 10 with fake ones.
 
 Return ONLY valid JSON array of companies.`;
 
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await base44.functions.invoke('generateCreators', {
         prompt,
         add_context_from_internet: true,
         response_json_schema: {
