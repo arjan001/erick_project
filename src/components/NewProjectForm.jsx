@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Sparkles, CheckCircle2, Loader } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
-import { analyzeWebsiteUrl, generateProjectBrief } from '@/lib/urlAnalysisService';
+import { analyzeWebsiteUrl, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService';
 
 export default function NewProjectForm({ selectedCategory = 'commercial' }) {
   const navigate = useNavigate();
@@ -25,21 +25,32 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
   const previousProjectTypeRef = useRef(projectType);
   const previousDescriptionRef = useRef(description);
 
+  console.log('NewProjectForm render - selectedCategory:', selectedCategory, 'projectType:', projectType);
+
   React.useEffect(() => {
-    setProjectType(projectTypeMap[selectedCategory] || 'commercial');
+    const newProjectType = projectTypeMap[selectedCategory] || 'commercial';
+    console.log('Category changed:', selectedCategory, '→', newProjectType);
+    setProjectType(newProjectType);
   }, [selectedCategory]);
 
   // Auto-regenerate brief when project type changes
   useEffect(() => {
     const timer = setTimeout(async () => {
-      // Only regenerate if project type changed and we have a description
-      if (description && previousProjectTypeRef.current !== projectType) {
+      // Check if project type actually changed
+      if (previousProjectTypeRef.current !== projectType) {
+        console.log('Project type changed from', previousProjectTypeRef.current, 'to', projectType);
+        
         try {
           setRegenerating(true);
-          // Simple category-based context update instead of full brief generation
-          const categoryContext = getCategoryContext(projectType);
-          const updatedDescription = `${categoryContext}\n\n${description}`;
-          setDescription(updatedDescription);
+          
+          // If we have existing description, prepend category context
+          if (description) {
+            const categoryContext = getCategoryContext(projectType);
+            // Remove previous category context if it exists
+            const cleanDescription = description.replace(/^.*Project:.*?\n\n/, '');
+            const updatedDescription = `${categoryContext}\n\n${cleanDescription}`;
+            setDescription(updatedDescription);
+          }
         } catch (err) {
           console.error('Regeneration error:', err);
         } finally {
@@ -49,11 +60,10 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
       
       // Update refs
       previousProjectTypeRef.current = projectType;
-      previousDescriptionRef.current = description;
-    }, 500); // 0.5 second debounce for faster response
+    }, 300); // 0.3 second debounce for faster response
 
     return () => clearTimeout(timer);
-  }, [projectType, description]);
+  }, [projectType]);
 
   const getCategoryContext = (type) => {
     const contexts = {
@@ -116,6 +126,15 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
 
   const handleSubmit = () => {
     if (!description) return;
+    
+    // Save analyzed data to localStorage for SubmitProject flow
+    saveAnalyzedProjectToStorage({
+      url: referenceUrl,
+      analysis: { rawAnalysis: description, url: referenceUrl },
+      brief: null,
+      projectType: selectedCategory,
+      additionalNotes: description
+    });
     
     // Navigate to SubmitProject with the description
     const params = new URLSearchParams();
@@ -182,16 +201,11 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <label className="block text-xs font-semibold text-[#666]">Project Description</label>
-          {description && (
-            <Button 
-              onClick={handleExtract}
-              disabled={!referenceUrl || extracting}
-              variant="ghost"
-              size="sm"
-              className="text-xs h-7 px-2 text-gray-600 hover:text-gray-900"
-            >
-              {extracting ? 'Regenerating...' : 'Regenerate'}
-            </Button>
+          {regenerating && (
+            <div className="flex items-center gap-2 text-xs text-gray-600">
+              <Loader className="w-3 h-3 animate-spin" />
+              <span>Reanalyzing...</span>
+            </div>
           )}
         </div>
         <Textarea

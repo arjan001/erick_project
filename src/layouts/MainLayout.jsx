@@ -210,7 +210,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                   {Object.entries(categoryInfo).map(([key, info]) => (
                     <div key={key}>
                       <button
-                        onClick={() => setExpandedCategory(expandedCategory === key ? null : key)}
+                        onClick={() => setExpandedCategory(key)}
                         className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between ${
                           expandedCategory === key 
                             ? 'bg-gray-300 text-[#1a1a1a]' 

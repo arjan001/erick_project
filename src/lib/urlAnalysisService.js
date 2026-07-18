@@ -52,13 +52,22 @@ export const analyzeWebsiteUrl = async (url, projectType = 'commercial') => {
       throw new Error('Failed to analyze website - no content returned');
     }
 
+    // Remove markdown formatting
+    let cleanAnalysis = analysis
+      .replace(/#{1,6}\s/g, '') // Remove headers
+      .replace(/\*\*/g, '') // Remove bold
+      .replace(/\*/g, '') // Remove italic
+      .replace(/`/g, '') // Remove code
+      .replace(/\n\n+/g, '\n\n') // Fix multiple newlines
+      .trim();
+
     // Parse the analysis to extract structured data
-    const parsedAnalysis = parseAnalysisResponse(analysis);
+    const parsedAnalysis = parseAnalysisResponse(cleanAnalysis);
 
     return {
       success: true,
       url: normalizedUrl,
-      rawAnalysis: analysis,
+      rawAnalysis: cleanAnalysis,
       ...parsedAnalysis
     };
   } catch (error) {
