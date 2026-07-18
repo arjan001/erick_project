@@ -115,6 +115,7 @@ export default function SignUp() {
         email: formData.email,
         password: formData.password,
         options: {
+          emailConfirm: false, // Disable email verification
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
@@ -226,6 +227,34 @@ export default function SignUp() {
       };
       localStorage.setItem('studio22_user', JSON.stringify(user));
       sessionStorage.setItem('studio22_just_logged_in', 'true');
+
+      // Auto-login since email verification is disabled
+      try {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ 
+          email: formData.email, 
+          password: formData.password 
+        });
+        if (!signInError && signInData.user) {
+          // Show invite acceptance modal if valid code was used
+          if (formData.inviteCode && inviteCodeValid) {
+            setShowInviteModal(true);
+            return;
+          }
+          
+          // Redirect based on role
+          const redirects = {
+            artist: '/artistdashboard',
+            team: '/teamdashboard',
+            client: '/clientdashboard',
+            backer: '/backerdashboard',
+            admin: '/admin'
+          };
+          window.location.href = createPageUrl(redirects[formData.role]?.replace('/', '') || 'Home');
+          return;
+        }
+      } catch (loginErr) {
+        console.error('Auto-login failed:', loginErr);
+      }
 
       // Show invite acceptance modal if valid code was used
       if (formData.inviteCode && inviteCodeValid) {

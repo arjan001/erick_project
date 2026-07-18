@@ -121,7 +121,7 @@ export default function SignIn() {
         if (acc.role === 'team') {
           localStorage.setItem('studio22_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: email, role: 'team_admin' }));
         }
-        navigate(ROLE_REDIRECTS[acc.role] || '/');
+        window.location.href = ROLE_REDIRECTS[acc.role] || '/';
         return;
       }
       // 2. Supabase auth
@@ -131,7 +131,7 @@ export default function SignIn() {
       const fullName = data.user?.user_metadata?.full_name || data.user?.email?.split('@')[0] || 'User';
       const userData = { id: data.user.id, email: data.user.email, full_name: fullName, role: userRole };
       login(userData);
-      navigate(ROLE_REDIRECTS[userRole] || '/');
+      window.location.href = ROLE_REDIRECTS[userRole] || '/';
     } catch (err) {
       setError(err.message || 'Invalid email or password');
     } finally {
@@ -181,6 +181,7 @@ export default function SignIn() {
           email,
           password,
           options: { 
+            emailConfirm: false, // Disable email verification
             data: { 
               full_name: fullName, 
               role: finalRole, 
@@ -231,7 +232,16 @@ export default function SignIn() {
         }
 
         if (data.user && !data.session) {
-          setMessage('Check your email to confirm your account, then sign in.');
+          // Auto-login since email verification is disabled
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+          if (!signInError && signInData.user) {
+            const userRole = signInData.user?.user_metadata?.role || finalRole;
+            const fullName = signInData.user?.user_metadata?.full_name || fullName;
+            const userData = { id: signInData.user.id, email: signInData.user.email, full_name: fullName, role: userRole };
+            login(userData);
+            navigate(ROLE_REDIRECTS[userRole] || '/');
+            return;
+          }
           setSignupStep(5);
         } else {
           setSignupStep(5);

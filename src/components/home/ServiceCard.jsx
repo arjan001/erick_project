@@ -16,56 +16,12 @@ const ServiceVisual = ({ type, isHovered }) => {
   
   return (
     <div className="relative w-full h-full overflow-hidden">
-      <style>{`
-        @keyframes signal-reveal {
-          0% {
-            filter: contrast(0.3) brightness(1.2) blur(8px);
-          }
-          100% {
-            filter: contrast(1) brightness(1) blur(0px);
-          }
-        }
-        
-        .signal-image {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          filter: contrast(0.3) brightness(1.2) blur(8px) grayscale(1);
-          transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .signal-image.revealed {
-          filter: contrast(0.9) brightness(0.95) blur(0.5px) grayscale(1);
-        }
-        
-        .noise-overlay {
-          position: absolute;
-          inset: 0;
-          background: 
-            radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(0,0,0,0.05) 0%, transparent 50%);
-          mix-blend-mode: overlay;
-          pointer-events: none;
-        }
-        
-        .grain {
-          position: absolute;
-          inset: 0;
-          opacity: 0.08;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-          mix-blend-mode: overlay;
-          pointer-events: none;
-        }
-      `}</style>
-      
       <img 
         src={imageUrl} 
         alt=""
-        className={`signal-image ${isHovered ? 'revealed' : ''}`}
+        className="w-full h-full object-cover transition-transform duration-500 ease-out"
+        style={{ transform: isHovered ? 'scale(1.05)' : 'scale(1)' }}
       />
-      
-      <div className="noise-overlay" />
-      <div className="grain" />
     </div>
   );
 };
