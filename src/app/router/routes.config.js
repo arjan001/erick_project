@@ -252,7 +252,7 @@ const adminRoutes = [
   },
   {
     path: '/Admin/UserManagement',
-    component: () => import('@/modules/admin/pages/AdminUserManagementPage'),
+    component: () => import('@/modules/admin/pages/AdminUsersPage'),
     layout: AdminLayout,
     guard: UserManagementGuard
   },

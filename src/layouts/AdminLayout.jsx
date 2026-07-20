@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock, BarChart3, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
@@ -33,10 +33,9 @@ const navGroups = [
   { label: 'Overview', items: ['/Admin', '/Admin/Artists', '/TeamAdmin', '/ProjectAdmin'] },
   { label: 'Content', items: ['/Admin/Ticker', '/Admin/Categories', '/Admin/FeaturedWork', '/Admin/SuccessStories', '/Admin/RecentProjects', '/Admin/SEOCMS'] },
   { label: 'Users', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
-  { label: 'Analytics', items: ['/Admin/Analytics', '/Admin/AuditLogs'] },
   { label: 'Finance', items: ['/Admin/FinanceDashboard', '/Admin/Subscriptions'] },
   { label: 'Integrations', items: ['/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
-  { label: 'System', items: ['/Admin/Maintenance', '/Admin/Settings', '/Admin/ImageStorage'] },
+  { label: 'System', items: ['/Admin/Maintenance', '/Admin/Settings', '/Admin/ImageStorage', '/Admin/Analytics', '/Admin/AuditLogs'] },
 ];
 
 export default function AdminLayout({ children }) {
@@ -44,12 +43,33 @@ export default function AdminLayout({ children }) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [expandedGroups, setExpandedGroups] = useState({});
 
   const isActive = (path, exact) => exact
     ? location.pathname === path
     : location.pathname === path || location.pathname.startsWith(path + '/');
 
   const getNavItem = (path) => navItems.find(n => n.path === path);
+
+  const toggleGroup = (groupLabel) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupLabel]: !prev[groupLabel]
+    }));
+  };
+
+  // Auto-expand group containing current path
+  useEffect(() => {
+    navGroups.forEach(group => {
+      const hasActivePath = group.items.some(path => {
+        const item = getNavItem(path);
+        return item && isActive(path, item.exact);
+      });
+      if (hasActivePath) {
+        setExpandedGroups(prev => ({ ...prev, [group.label]: true }));
+      }
+    });
+  }, [location.pathname]);
 
   // Filter nav items based on search
   const filteredNavGroups = navGroups.map(group => ({
@@ -62,76 +82,119 @@ export default function AdminLayout({ children }) {
   })).filter(group => group.items.length > 0);
 
   return (
-    <div className="min-h-screen bg-[#f5f6fa] flex">
+    <div className="min-h-screen bg-[#f5f6fa] flex lg:flex-row flex-col">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-60' : 'w-0'} bg-white flex-shrink-0 transition-all duration-300 overflow-hidden flex flex-col h-screen sticky top-0`}>
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative h-screen lg:h-auto`}>
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-100 flex-shrink-0">
-          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+        <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100 flex-shrink-0">
+          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
             <span className="text-white font-black text-sm tracking-tighter">22</span>
           </div>
-          <div>
-            <div className="font-bold text-gray-900 text-sm leading-tight">Studio22</div>
-            <div className="text-[10px] text-gray-400 uppercase tracking-wider">Admin</div>
-          </div>
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-1.5 rounded-lg hover:bg-gray-100 hover:text-black transition-colors text-gray-400"
+          >
+            {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </button>
         </div>
 
-        {/* User */}
-        <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-              {user?.email?.[0]?.toUpperCase() || 'A'}
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs font-semibold text-gray-800 truncate">{user?.full_name || 'Admin'}</div>
-              <div className="text-[10px] text-gray-400 truncate">{user?.email}</div>
+        {/* User - hide when collapsed */}
+        {sidebarOpen && (
+          <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
+                {user?.email?.[0]?.toUpperCase() || 'A'}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-semibold text-gray-800 truncate">{user?.full_name || 'Admin'}</div>
+                <div className="text-[10px] text-gray-400 truncate">{user?.email}</div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Search Bar */}
-        <div className="px-3 py-3 border-b border-gray-100 flex-shrink-0">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search modules..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-            />
+        {/* Search Bar - hide when collapsed */}
+        {sidebarOpen && (
+          <div className="px-3 py-3 border-b border-gray-100 flex-shrink-0">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search modules..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-3 px-2">
-          {filteredNavGroups.map((group) => (
-            <div key={group.label} className="mb-4">
-              <div className="px-3 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{group.label}</div>
-              {group.items.map((path) => {
-                const item = getNavItem(path);
-                if (!item) return null;
-                const Icon = item.icon;
-                const active = isActive(path, item.exact);
-                return (
+        <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
+          {sidebarOpen ? (
+            // Expanded state - show full navigation with groups
+            filteredNavGroups.map((group) => (
+              <div key={group.label} className="mb-2">
+                <button
+                  onClick={() => toggleGroup(group.label)}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wider">{group.label}</span>
+                  <ChevronRight className={`w-4 h-4 transition-transform ${expandedGroups[group.label] ? 'rotate-90' : ''}`} />
+                </button>
+                {expandedGroups[group.label] && (
+                  <div className="mt-1 space-y-1 pl-2">
+                    {group.items.map((path) => {
+                      const item = getNavItem(path);
+                      if (!item) return null;
+                      const Icon = item.icon;
+                      const active = isActive(path, item.exact);
+                      return (
+                        <Link
+                          key={path}
+                          to={path}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                            active
+                              ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span className="flex-1 text-left">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            // Collapsed state - show icons only with tooltips
+            navItems.map((item) => {
+              const active = isActive(item.path, item.exact);
+              const Icon = item.icon;
+              return (
+                <div key={item.path} className="relative group">
                   <Link
-                    key={path}
-                    to={path}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm mb-0.5 transition-all ${
+                    to={item.path}
+                    className={`flex items-center justify-center w-full p-2 rounded-lg transition-all ${
                       active
-                        ? 'bg-black text-white font-medium'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        ? 'bg-gray-100 text-black font-semibold'
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                   >
-                    <Icon className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">{item.label}</span>
-                    {active && <ChevronRight className="w-3 h-3 ml-auto opacity-60" />}
+                    <Icon className="w-5 h-5 flex-shrink-0" />
                   </Link>
-                );
-              })}
-            </div>
-          ))}
-          {filteredNavGroups.length === 0 && (
+                  {/* Tooltip */}
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[10000] pointer-events-none fixed lg:relative">
+                    {item.label}
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+          {sidebarOpen && filteredNavGroups.length === 0 && (
             <div className="px-3 py-4 text-sm text-gray-500 text-center">
               No modules found
             </div>
@@ -139,19 +202,35 @@ export default function AdminLayout({ children }) {
         </nav>
 
         {/* Logout */}
-        <div className="p-3 border-t border-gray-100 flex-shrink-0">
-          <button
-            onClick={() => logout(true)}
-            className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
+        <div className="border-t border-gray-100 p-2 space-y-1">
+          {sidebarOpen ? (
+            <button
+              onClick={() => logout(true)}
+              className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 transition-all text-sm font-medium"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          ) : (
+            <div className="relative group">
+              <button
+                onClick={() => logout(true)}
+                className="flex items-center justify-center w-full p-2 rounded-lg text-red-500 hover:bg-red-50 transition-all"
+              >
+                <LogOut className="w-4 h-4 flex-shrink-0" />
+              </button>
+              {/* Tooltip */}
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[10000] pointer-events-none fixed lg:relative">
+                Logout
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+              </div>
+            </div>
+          )}
         </div>
       </aside>
 
       {/* Main */}
-      <div className={`flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-all duration-300 ${sidebarOpen ? 'ml-4' : 'ml-6 mr-6'}`}>
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 lg:ml-2`}>
         {/* Top Bar */}
         <header className="bg-white border-b border-gray-100 flex-shrink-0"
           style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>
@@ -159,7 +238,7 @@ export default function AdminLayout({ children }) {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors lg:hidden"
               >
                 {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
               </button>

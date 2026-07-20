@@ -184,47 +184,47 @@ export default function AdminUsersPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+                <p className="text-xs text-gray-500">Total Users</p>
+                <p className="text-xl font-bold text-gray-900">{users.length}</p>
               </div>
-              <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-                <User className="w-6 h-6 text-indigo-600" />
+              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <User className="w-5 h-5 text-indigo-600" />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Active</p>
-                <p className="text-2xl font-bold text-green-600">{users.filter(u => u.is_active).length}</p>
+                <p className="text-xs text-gray-500">Active</p>
+                <p className="text-xl font-bold text-green-600">{users.filter(u => u.is_active).length}</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Suspended</p>
-                <p className="text-2xl font-bold text-amber-600">{users.filter(u => !u.is_active).length}</p>
+                <p className="text-xs text-gray-500">Suspended</p>
+                <p className="text-xl font-bold text-amber-600">{users.filter(u => !u.is_active).length}</p>
               </div>
-              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                <Ban className="w-6 h-6 text-amber-600" />
+              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                <Ban className="w-5 h-5 text-amber-600" />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Roles</p>
-                <p className="text-2xl font-bold text-gray-900">{roles.length}</p>
+                <p className="text-xs text-gray-500">Roles</p>
+                <p className="text-xl font-bold text-gray-900">{roles.length}</p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                <Shield className="w-6 h-6 text-purple-600" />
+              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                <Shield className="w-5 h-5 text-purple-600" />
               </div>
             </div>
           </div>
@@ -516,7 +516,7 @@ export default function AdminUsersPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowSuspendDialog(false)} className="rounded-xl">Cancel</Button>
-            <Button onClick={handleSuspendUser} disabled={saving} className={selectedUser?.is_active ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'} rounded-xl">
+            <Button onClick={handleSuspendUser} disabled={saving} className={selectedUser?.is_active ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"}>
               {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
               {selectedUser?.is_active ? 'Suspend' : 'Activate'}
             </Button>
@@ -565,3 +565,8 @@ export default function AdminUsersPage() {
     </div>
   );
 }
+
+
+
+
+
