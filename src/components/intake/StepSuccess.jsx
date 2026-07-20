@@ -64,12 +64,6 @@ export default function StepSuccess({ projectData }) {
           </div>
         </div>
 
-        {/* Email Confirmation */}
-        <div className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-8">
-          <Mail className="w-4 h-4" />
-          <span>Confirmation sent to {projectData.project_owner_email}</span>
-        </div>
-
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link to={createPageUrl('Home')}>

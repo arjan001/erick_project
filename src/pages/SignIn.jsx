@@ -476,7 +476,7 @@ export default function SignIn() {
                       </svg>
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Account created!</h2>
-                    <p className="text-sm text-gray-500 mb-6">Check your email to confirm your account, then sign in.</p>
+                    <p className="text-sm text-gray-500 mb-6">Your account is ready. You can now sign in.</p>
                     <button type="button" onClick={() => { setMode('login'); setSignupStep(1); setError(''); setMessage(''); }}
                       className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-all">
                       Go to sign in

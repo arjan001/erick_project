@@ -37,7 +37,6 @@ export default function ApplyTeam() {
     languages_spoken: [],
   });
   const [submitted, setSubmitted] = useState(false);
-  const [needsEmailConfirm, setNeedsEmailConfirm] = useState(false);
 
   const updateData = (field, value) => {
     setTeamData(prev => ({ ...prev, [field]: value }));
@@ -118,10 +117,7 @@ export default function ApplyTeam() {
         availability: 'available'
       });
 
-      if (signUpData.user && !signUpData.session) {
-        // Email confirmation required before they can sign in
-        setNeedsEmailConfirm(true);
-      } else if (signUpData.session) {
+      if (signUpData.session) {
         login({
           id: signUpData.user.id,
           email: signUpData.user.email,
@@ -146,7 +142,6 @@ export default function ApplyTeam() {
       <ApplicationSuccess
         type="team"
         name={teamData.contact_name}
-        message={needsEmailConfirm ? 'Check your email to confirm your account, then sign in as your team.' : undefined}
       />
     );
   }

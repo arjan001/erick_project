@@ -37,7 +37,7 @@ export default function AdminShopSettingsPage() {
     
     // Order Settings
     autoConfirmOrders: true,
-    requireEmailConfirmation: true,
+    requireEmailConfirmation: false,
     orderConfirmationTemplate: 'Thank you for your order! Your order #{order_number} has been received.',
     
     // Inventory Settings
