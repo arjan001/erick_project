@@ -642,10 +642,10 @@ export default function ArtistProfile() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-gray-900 text-base truncate">{clip.title}</h3>
-                          <p className="text-sm text-gray-500 mt-1 line-clamp-2">{clip.description || clip.project_type}</p>
+                          <p className="text-sm text-gray-500 mt-1 line-clamp-2">{clip.description}</p>
                         </div>
-                        <span className="flex-shrink-0 text-xs px-2.5 py-1 bg-green-100 text-green-700 rounded-full font-medium capitalize">
-                          {clip.status}
+                        <span className="flex-shrink-0 text-xs px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full font-medium capitalize">
+                          {clip.project_type}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
