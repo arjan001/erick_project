@@ -13,6 +13,7 @@ export default function AdminSidebar() {
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [expandedSections, setExpandedSections] = useState({});
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     if (!user?.email) return;
@@ -152,19 +153,31 @@ export default function AdminSidebar() {
   const handleLogout = () => { logout(true); };
 
   return (
-    <div className={`fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <div 
+      className={`fixed left-0 top-0 h-full bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col z-50 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+    >
       {/* Logo */}
-      <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-black bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">Studio22</h1>
-          <p className="text-sm text-gray-500">Admin Panel</p>
+      <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+        {!isCollapsed && (
+          <div>
+            <h1 className="text-xl font-black bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">Studio22</h1>
+            <p className="text-sm text-gray-500">Admin Panel</p>
+          </div>
+        )}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden lg:flex p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+          </button>
+          <button
+            onClick={() => setMobileSidebarOpen(false)}
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <button
-          onClick={() => setMobileSidebarOpen(false)}
-          className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
-        >
-          <X className="w-5 h-5" />
-        </button>
       </div>
 
       {/* Navigation */}
@@ -173,6 +186,35 @@ export default function AdminSidebar() {
           const isExpanded = expandedSections[section.section];
           const hasActivePath = section.items.some(item => isActive(item.path));
           
+          // When collapsed, show only section icon with tooltip
+          if (isCollapsed) {
+            return (
+              <div key={section.section} className="mb-2">
+                <div className="relative group">
+                  <button
+                    onClick={() => {
+                      setIsCollapsed(false);
+                      setExpandedSections(prev => ({ ...prev, [section.section]: true }));
+                    }}
+                    className={`w-full flex items-center justify-center p-3 rounded-xl transition-colors ${
+                      hasActivePath
+                        ? 'bg-indigo-50 text-indigo-600'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    {section.items[0]?.icon ? React.createElement(section.items[0].icon, { className: "w-5 h-5" }) : <LayoutDashboard className="w-5 h-5" />}
+                  </button>
+                  {/* Tooltip */}
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                    {section.section}
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          
+          // When expanded, show full dropdown
           return (
             <div key={section.section} className="mb-2">
               <button
@@ -224,13 +266,29 @@ export default function AdminSidebar() {
 
       {/* Logout */}
       <div className="p-3 border-t border-gray-100">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors rounded-xl"
-        >
-          <LogOut className="w-5 h-5" />
-          <span>Logout</span>
-        </button>
+        {isCollapsed ? (
+          <div className="relative group">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center p-3 text-red-500 hover:bg-red-50 transition-colors rounded-xl"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+            {/* Tooltip */}
+            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+              Logout
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors rounded-xl"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Logout</span>
+          </button>
+        )}
       </div>
     </div>
   );
