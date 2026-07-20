@@ -13,10 +13,53 @@ function buildUserFromSupabase(supaUser) {
     email: supaUser.email,
     full_name: meta.full_name || meta.name || supaUser.email?.split('@')[0] || 'User',
     role: meta.role || 'artist',
+    is_system_user: meta.is_system_user || false,
     // Present only for invited team members — links them to their team's workspace
     // instead of the team owner's own account (matched by contact_email).
     team_id: meta.team_id || null,
   };
+}
+
+// Fetch user permissions from roles/permissions system
+async function fetchUserPermissions(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select(`
+        roles (
+          role_permissions (
+            permissions (
+              permission_key,
+              permission_name,
+              module,
+              action,
+              resource
+            )
+          )
+        )
+      `)
+      .eq('user_id', userId)
+      .eq('is_active', true);
+
+    if (error) throw error;
+
+    // Flatten permissions
+    const permissions = [];
+    data.forEach(userRole => {
+      if (userRole.roles?.role_permissions) {
+        userRole.roles.role_permissions.forEach(rp => {
+          if (rp.permissions) {
+            permissions.push(rp.permissions.permission_key);
+          }
+        });
+      }
+    });
+
+    return permissions;
+  } catch (error) {
+    console.error('Error fetching permissions:', error);
+    return [];
+  }
 }
 
 // Generate a unique invite/referral code for each new user
@@ -146,6 +189,7 @@ async function updatePresence(u) {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [permissions, setPermissions] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
@@ -157,12 +201,18 @@ export const AuthProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, [user?.email]);
 
-  const applySession = (supaUser) => {
+  const applySession = async (supaUser) => {
     const u = buildUserFromSupabase(supaUser);
     if (u) {
       setUser(u);
       setIsAuthenticated(true);
       localStorage.setItem('studio22_user', JSON.stringify(u));
+      
+      // Fetch permissions for system users
+      if (u.is_system_user) {
+        const userPermissions = await fetchUserPermissions(u.id);
+        setPermissions(userPermissions);
+      }
     }
     return u;
   };
@@ -190,14 +240,15 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Listen for Supabase auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        applySession(session.user);
+        await applySession(session.user);
         if (event === 'SIGNED_IN') {
           ensureProfile(session.user);
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
+        setPermissions([]);
         setIsAuthenticated(false);
         localStorage.removeItem('studio22_user');
       }
@@ -229,6 +280,22 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error('Error updating Supabase metadata:', err);
     }
+  };
+
+  const hasPermission = (permissionKey) => {
+    return permissions.includes(permissionKey);
+  };
+
+  const hasAnyPermission = (permissionKeys) => {
+    return permissionKeys.some(key => permissions.includes(key));
+  };
+
+  const hasAllPermissions = (permissionKeys) => {
+    return permissionKeys.every(key => permissions.includes(key));
+  };
+
+  const hasModuleAccess = (module) => {
+    return permissions.some(p => p.startsWith(`${module}.`));
   };
 
   const logout = async (shouldRedirect = true) => {
@@ -271,7 +338,7 @@ export const AuthProvider = ({ children }) => {
   const navigateToLogin = () => { window.location.href = '/SignIn'; };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isLoadingAuth, login, logout, navigateToLogin, updateUser }}>
+    <AuthContext.Provider value={{ user, permissions, isAuthenticated, isLoadingAuth, login, logout, navigateToLogin, updateUser, hasPermission, hasAnyPermission, hasAllPermissions, hasModuleAccess }}>
       {children}
     </AuthContext.Provider>
   );
