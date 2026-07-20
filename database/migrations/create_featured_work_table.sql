@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS featured_work (
     status VARCHAR(20) DEFAULT 'active', -- 'active', 'inactive'
     display_order INTEGER DEFAULT 0,
     project_id UUID REFERENCES projects(id) ON DELETE SET NULL, -- Optional link to actual project
+    artist_id UUID REFERENCES artists(id) ON DELETE SET NULL, -- Optional link to artist
+    portfolio_clip_id UUID REFERENCES portfolio_clips(id) ON DELETE SET NULL, -- Optional link to portfolio clip
     
     -- Timestamps
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -21,6 +23,8 @@ CREATE TABLE IF NOT EXISTS featured_work (
 CREATE INDEX IF NOT EXISTS idx_featured_work_status ON featured_work(status);
 CREATE INDEX IF NOT EXISTS idx_featured_work_display_order ON featured_work(display_order);
 CREATE INDEX IF NOT EXISTS idx_featured_work_project_id ON featured_work(project_id);
+CREATE INDEX IF NOT EXISTS idx_featured_work_artist_id ON featured_work(artist_id);
+CREATE INDEX IF NOT EXISTS idx_featured_work_portfolio_clip_id ON featured_work(portfolio_clip_id);
 CREATE INDEX IF NOT EXISTS idx_featured_work_featured_type ON featured_work(featured_type);
 
 -- Drop trigger if exists
@@ -60,3 +64,36 @@ COMMENT ON COLUMN featured_work.featured_type IS 'Type of featured work: admin_p
 COMMENT ON COLUMN featured_work.status IS 'Status: active or inactive';
 COMMENT ON COLUMN featured_work.display_order IS 'Display order for sorting (lower numbers appear first)';
 COMMENT ON COLUMN featured_work.project_id IS 'Optional reference to the actual project in projects table';
+
+-- Grant permissions to admin role
+GRANT ALL ON featured_work TO admin;
+GRANT USAGE, SELECT ON SEQUENCE featured_work_id_seq TO admin;
+
+-- Enable RLS and create policies for admin access
+ALTER TABLE featured_work ENABLE ROW LEVEL SECURITY;
+
+-- Admin can do everything on featured_work
+CREATE POLICY "Admin full access to featured_work" ON featured_work
+    FOR ALL
+    TO admin
+    USING (true)
+    WITH CHECK (true);
+
+-- Service role can do everything (for backend operations)
+CREATE POLICY "Service full access to featured_work" ON featured_work
+    FOR ALL
+    TO service_role
+    USING (true)
+    WITH CHECK (true);
+
+-- Authenticated users can view active featured work
+CREATE POLICY "Authenticated users can view featured_work" ON featured_work
+    FOR SELECT
+    TO authenticated
+    USING (status = 'active');
+
+-- Public can view active featured work
+CREATE POLICY "Public can view featured_work" ON featured_work
+    FOR SELECT
+    TO anon
+    USING (status = 'active');
