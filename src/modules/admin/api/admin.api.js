@@ -13,6 +13,29 @@ export const adminApi = {
     reject: async (id) => {
       return Project.update(id, { status: 'rejected' });
     },
+    suspend: async (id, { reason, admin_notes }) => {
+      return Project.update(id, {
+        status: 'suspended',
+        suspension_reason: reason,
+        admin_notes: admin_notes,
+        suspended_at: new Date().toISOString()
+      });
+    },
+    pause: async (id, { reason, admin_notes }) => {
+      return Project.update(id, {
+        status: 'paused',
+        suspension_reason: reason,
+        admin_notes: admin_notes,
+        suspended_at: new Date().toISOString()
+      });
+    },
+    delete: async (id, { reason }) => {
+      return Project.update(id, {
+        status: 'deleted',
+        deletion_reason: reason,
+        deleted_at: new Date().toISOString()
+      });
+    },
     enableBacking: async (id) => {
       return Project.update(id, { verified_only: false });
     }
