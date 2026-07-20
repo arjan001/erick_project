@@ -149,6 +149,21 @@ export default function ClientSidebar() {
                   }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
+                  {item.showBadge && unreadMessageCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                      {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                    </span>
+                  )}
+                  {item.showConnectionBadge && pendingConnections > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                      {pendingConnections > 9 ? '9+' : pendingConnections}
+                    </span>
+                  )}
+                  {item.showNotificationBadge && unreadNotificationCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                      {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                    </span>
+                  )}
                 </Link>
                 {/* Tooltip */}
                 <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">

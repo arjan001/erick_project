@@ -507,6 +507,18 @@ const artistRoutes = [
     guard: ArtistGuard
   },
   {
+    path: '/Network',
+    component: () => import('@/modules/network/pages/NetworkPage'),
+    layout: DashboardLayout,
+    guard: ArtistGuard
+  },
+  {
+    path: '/SupportTickets',
+    component: () => import('@/modules/support/pages/SupportTicketsPage'),
+    layout: DashboardLayout,
+    guard: ArtistGuard
+  },
+  {
     path: '/ArtistSubscriptionCheckout',
     component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
     layout: DashboardLayout,
@@ -547,6 +559,18 @@ const clientRoutes = [
     guard: ClientGuard
   },
   {
+    path: '/Network',
+    component: () => import('@/modules/network/pages/NetworkPage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
+  },
+  {
+    path: '/SupportTickets',
+    component: () => import('@/modules/support/pages/SupportTicketsPage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
+  },
+  {
     path: '/ClientProfile',
     component: () => import('@/modules/client/pages/ClientProfilePage'),
     layout: DashboardLayout,
@@ -577,6 +601,18 @@ const teamRoutes = [
   {
     path: '/TeamMessages',
     component: () => import('@/modules/team/pages/TeamMessagesPage'),
+    layout: DashboardLayout,
+    guard: TeamGuard
+  },
+  {
+    path: '/Network',
+    component: () => import('@/modules/network/pages/NetworkPage'),
+    layout: DashboardLayout,
+    guard: TeamGuard
+  },
+  {
+    path: '/SupportTickets',
+    component: () => import('@/modules/support/pages/SupportTicketsPage'),
     layout: DashboardLayout,
     guard: TeamGuard
   },
@@ -683,20 +719,7 @@ const backerRoutes = [
 ];
 
 // Protected routes (auth required, no specific role) — shared across artist/team/client/backer
-const protectedRoutes = [
-  {
-    path: '/Network',
-    component: () => import('@/modules/network/pages/NetworkPage'),
-    layout: DashboardLayout,
-    guard: AuthGuard
-  },
-  {
-    path: '/SupportTickets',
-    component: () => import('@/modules/support/pages/SupportTicketsPage'),
-    layout: DashboardLayout,
-    guard: AuthGuard
-  }
-];
+const protectedRoutes = [];
 
 // Combine all routes
 export const routes = [
