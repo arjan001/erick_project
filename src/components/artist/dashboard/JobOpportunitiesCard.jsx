@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
-import { Plus, Briefcase, Building2, MapPin, Clock } from 'lucide-react';
+import { Plus, Briefcase, Building2, MapPin, Clock, Star, Flame, Sparkles, DollarSign } from 'lucide-react';
 import { Job, Project } from '@/lib/supabaseEntities';
+import { getProjectTags, isNewProject, isPopularProject } from '@/shared/utils/projectTags';
 
 const ICON_COLORS = [
   { bg: '#2A9D8F', text: '#ffffff' },
@@ -48,7 +49,9 @@ export default function JobOpportunitiesCard({ jobs = [] }) {
           image_url: project.image_url,
           client_name: project.project_owner_name || 'Client',
           created_at: project.created_at,
-          description: project.notes?.substring(0, 80) || 'Project opportunity'
+          description: project.notes?.substring(0, 80) || 'Project opportunity',
+          // Add project data for tags
+          projectData: project
         }));
 
         // Combine and take first 5
@@ -111,6 +114,36 @@ export default function JobOpportunitiesCard({ jobs = [] }) {
 
                   {/* Job Title */}
                   <p className="text-xs font-semibold text-gray-900 truncate mb-1">{item.title}</p>
+
+                  {/* Project Tags */}
+                  {item.isProject && item.projectData && (
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {item.projectData.is_featured && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-yellow-100 text-yellow-800">
+                          <Star className="w-2.5 h-2.5 mr-0.5" />
+                          Featured
+                        </span>
+                      )}
+                      {isPopularProject(item.projectData.budget) && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-orange-100 text-orange-800">
+                          <Flame className="w-2.5 h-2.5 mr-0.5" />
+                          Popular
+                        </span>
+                      )}
+                      {isNewProject(item.projectData.created_at) && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-blue-100 text-blue-800">
+                          <Sparkles className="w-2.5 h-2.5 mr-0.5" />
+                          New
+                        </span>
+                      )}
+                      {item.projectData.open_to_backing && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-green-100 text-green-800">
+                          <DollarSign className="w-2.5 h-2.5 mr-0.5" />
+                          Backing
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Description */}
                   <p className="text-[10px] text-gray-600 line-clamp-1 mb-1">{item.description || 'Job opportunity'}</p>

@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FolderKanban, Search, Eye, Trash2, DollarSign, CheckCircle, XCircle, TrendingUp, X, Plus, Building2, FileText, Film, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FolderKanban, Search, Eye, Trash2, DollarSign, CheckCircle, XCircle, TrendingUp, X, Plus, Building2, FileText, Film, ChevronLeft, ChevronRight, MapPin, Calendar, Clock, Users, Tag, Star, Flame, Sparkles } from 'lucide-react';
 
 const STATUSES = ['submitted', 'verified', 'in_progress', 'delivered', 'rejected'];
 
@@ -121,10 +121,42 @@ export default function AdminProjectsPage() {
     return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[status] || 'bg-gray-100 text-gray-800'}`}>{status?.replace('_', ' ')}</span>;
   };
 
+  // Helper functions for dynamic tags
+  const isNewProject = (createdAt) => {
+    if (!createdAt) return false;
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    return new Date(createdAt) > oneDayAgo;
+  };
+
+  const isPopularProject = (budget) => {
+    if (!budget) return false;
+    const budgetNum = parseFloat(budget);
+    return budgetNum >= 50000; // Popular if budget is $50k or more
+  };
+
+  const handleToggleFeatured = async (projectId, currentFeatured) => {
+    try {
+      await Project.update(projectId, { is_featured: !currentFeatured });
+      setProjects(prev => prev.map(p => p.id === projectId ? { ...p, is_featured: !currentFeatured } : p));
+      success('Updated', !currentFeatured ? 'Project featured' : 'Project unfeatured');
+      AuditLog.create({ actor_email: user?.email, action: 'project.feature_toggle', entity_type: 'Project', entity_id: projectId, details: `Set featured to ${!currentFeatured}` }).catch(() => {});
+    } catch (err) {
+      console.error('Error toggling featured:', err);
+      error('Failed', 'Failed to update featured status');
+    }
+  };
+
   const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.project_owner_name?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-                         project.project_type?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-                         project.title?.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+    const searchLower = debouncedSearchQuery.toLowerCase();
+    const matchesSearch = !searchLower || 
+      project.project_owner_name?.toLowerCase().includes(searchLower) ||
+      project.project_owner_company?.toLowerCase().includes(searchLower) ||
+      project.project_owner_email?.toLowerCase().includes(searchLower) ||
+      project.project_type?.toLowerCase().includes(searchLower) ||
+      project.title?.toLowerCase().includes(searchLower) ||
+      project.location_city?.toLowerCase().includes(searchLower) ||
+      project.location_country?.toLowerCase().includes(searchLower) ||
+      project.budget_range?.toLowerCase().includes(searchLower);
     const matchesStatus = filterStatus === 'all' || project.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -229,6 +261,7 @@ export default function AdminProjectsPage() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timeline</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -236,23 +269,82 @@ export default function AdminProjectsPage() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {paginatedProjects.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500">No projects found</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500">No projects found</td></tr>
               )}
               {paginatedProjects.map(project => (
                 <tr key={project.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <div className="text-sm font-medium text-gray-900">{project.title || 'Untitled'}</div>
                     <div className="text-xs text-gray-500 capitalize">{project.project_type?.replace('_', ' ')}</div>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {project.is_featured && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800">
+                          <Star className="w-3 h-3 mr-0.5" />
+                          Featured
+                        </span>
+                      )}
+                      {isPopularProject(project.budget) && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-800">
+                          <Flame className="w-3 h-3 mr-0.5" />
+                          Popular
+                        </span>
+                      )}
+                      {isNewProject(project.created_at) && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800">
+                          <Sparkles className="w-3 h-3 mr-0.5" />
+                          New
+                        </span>
+                      )}
+                      {project.open_to_backing && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800">
+                          <DollarSign className="w-3 h-3 mr-0.5" />
+                          Seeking Backing
+                        </span>
+                      )}
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{project.project_owner_name}</td>
+                  <td className="px-4 py-3">
+                    <div className="text-sm text-gray-600">{project.project_owner_name || 'N/A'}</div>
+                    <div className="text-xs text-gray-500">{project.project_owner_company || ''}</div>
+                  </td>
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                    {project.budget_amount ? `$${project.budget_amount.toLocaleString()}` : project.budget_range?.replace(/_/g, ' ') || 'N/A'}
+                    {project.budget ? `$${project.budget.toLocaleString()}` : project.budget_range?.replace(/_/g, ' ') || 'N/A'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{project.location_city || 'N/A'}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">
+                    {project.is_remote ? (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        Remote
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {[project.location_city, project.location_country].filter(Boolean).join(', ') || 'N/A'}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600">
+                    {project.timeline_start || project.timeline_deadline ? (
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {project.timeline_start ? new Date(project.timeline_start).toLocaleDateString() : 'N/A'}
+                        {project.timeline_deadline && ` - ${new Date(project.timeline_deadline).toLocaleDateString()}`}
+                      </div>
+                    ) : 'N/A'}
+                  </td>
                   <td className="px-4 py-3">{getStatusBadge(project.status)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{project.created_date ? new Date(project.created_date).toLocaleDateString() : 'N/A'}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{project.created_at ? new Date(project.created_at).toLocaleDateString() : 'N/A'}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleToggleFeatured(project.id, project.is_featured)} 
+                        title={project.is_featured ? "Unfeature" : "Feature"}
+                        className={`p-1 ${project.is_featured ? 'text-yellow-600' : 'text-gray-400'}`}
+                      >
+                        <Star className={`w-4 h-4 ${project.is_featured ? 'fill-current' : ''}`} />
+                      </Button>
                       <Button variant="ghost" size="sm" onClick={() => setSelectedProject(project)} title="View Details" className="p-1">
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -373,8 +465,12 @@ export default function AdminProjectsPage() {
                     <p className="text-sm font-medium text-gray-900 mt-1 capitalize">{selectedProject.project_type?.replace('_', ' ') || 'N/A'}</p>
                   </div>
                   <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Budget Amount</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.budget ? `$${selectedProject.budget.toLocaleString()}` : 'N/A'}</p>
+                  </div>
+                  <div>
                     <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Budget Range</label>
-                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.budget_range?.replace(/_/g, ' ') || selectedProject.budget ? `$${selectedProject.budget?.toLocaleString()}` : 'N/A'}</p>
+                    <p className="text-sm font-medium text-gray-900 mt-1 capitalize">{selectedProject.budget_range?.replace(/_/g, ' ') || 'N/A'}</p>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Location</label>
@@ -383,12 +479,24 @@ export default function AdminProjectsPage() {
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Timeline Start</label>
-                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.timeline_start || 'N/A'}</p>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Remote</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.is_remote ? 'Yes' : 'No'}</p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Timeline End</label>
-                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.timeline_deadline || 'N/A'}</p>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Timeline Start</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.timeline_start ? new Date(selectedProject.timeline_start).toLocaleDateString() : 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Timeline Deadline</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.timeline_deadline ? new Date(selectedProject.timeline_deadline).toLocaleDateString() : 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Start Date</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.start_date ? new Date(selectedProject.start_date).toLocaleDateString() : 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">End Date</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.end_date ? new Date(selectedProject.end_date).toLocaleDateString() : 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -399,7 +507,7 @@ export default function AdminProjectsPage() {
                     <FileText className="w-5 h-5 text-purple-600" />
                     Description
                   </h3>
-                  <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-4">{selectedProject.description}</p>
+                  <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-4 whitespace-pre-wrap">{selectedProject.description}</p>
                 </div>
               )}
 
@@ -416,7 +524,10 @@ export default function AdminProjectsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {selectedProject.usage && selectedProject.usage.length > 0 && (
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-2">Usage</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                      <Tag className="w-4 h-4" />
+                      Usage
+                    </h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedProject.usage.map((tag, idx) => (
                         <span key={idx} className="px-2 py-1 bg-white border border-gray-200 rounded-full text-xs text-gray-700">
@@ -428,7 +539,10 @@ export default function AdminProjectsPage() {
                 )}
                 {selectedProject.departments_needed && selectedProject.departments_needed.length > 0 && (
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-2">Departments Needed</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Departments Needed
+                    </h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedProject.departments_needed.map((dept, idx) => (
                         <span key={idx} className="px-2 py-1 bg-white border border-gray-200 rounded-full text-xs text-gray-700">
@@ -439,6 +553,22 @@ export default function AdminProjectsPage() {
                   </div>
                 )}
               </div>
+
+              {selectedProject.visual_direction_clips && selectedProject.visual_direction_clips.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Film className="w-5 h-5 text-purple-600" />
+                    Visual Direction Clips
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {selectedProject.visual_direction_clips.map((clip, idx) => (
+                      <div key={idx} className="rounded-lg overflow-hidden border border-gray-200">
+                        <img src={clip} alt={`Visual direction ${idx + 1}`} className="w-full h-32 object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {selectedProject.open_to_backing && (
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 border border-green-100">
@@ -452,6 +582,16 @@ export default function AdminProjectsPage() {
                       <p className="text-sm font-medium text-gray-900 mt-1 capitalize">{selectedProject.funding_stage || 'N/A'}</p>
                     </div>
                     <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Backing Types</label>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {selectedProject.backing_types?.map((type, idx) => (
+                          <span key={idx} className="px-2 py-1 bg-white border border-green-200 rounded-full text-xs text-gray-700">
+                            {type}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="md:col-span-2">
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Seeking Partners</label>
                       <div className="flex flex-wrap gap-2 mt-1">
                         {selectedProject.seeking_partners?.map((partner, idx) => (
@@ -465,11 +605,32 @@ export default function AdminProjectsPage() {
                   {selectedProject.backing_notes && (
                     <div className="mt-4">
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Backing Notes</label>
-                      <p className="text-sm text-gray-700 mt-1">{selectedProject.backing_notes}</p>
+                      <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{selectedProject.backing_notes}</p>
+                    </div>
+                  )}
+                  {selectedProject.rights_collaboration_notes && (
+                    <div className="mt-4">
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Rights & Collaboration Notes</label>
+                      <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{selectedProject.rights_collaboration_notes}</p>
                     </div>
                   )}
                 </div>
               )}
+
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Timestamps
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-600">
+                  <div>
+                    <span className="font-medium">Created:</span> {selectedProject.created_at ? new Date(selectedProject.created_at).toLocaleString() : 'N/A'}
+                  </div>
+                  <div>
+                    <span className="font-medium">Updated:</span> {selectedProject.updated_at ? new Date(selectedProject.updated_at).toLocaleString() : 'N/A'}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
