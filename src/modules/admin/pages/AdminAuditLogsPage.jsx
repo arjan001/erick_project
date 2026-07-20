@@ -185,54 +185,54 @@ export default function AdminAuditLogsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-6">
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Logs</p>
-                <p className="text-2xl font-bold text-gray-900">{logs.length}</p>
+                <p className="text-xs text-gray-500">Total Logs</p>
+                <p className="text-xl font-bold text-gray-900">{logs.length}</p>
               </div>
-              <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-                <Activity className="w-6 h-6 text-indigo-600" />
+              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <Activity className="w-5 h-5 text-indigo-600" />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Today</p>
-                <p className="text-2xl font-bold text-green-600">{logs.filter(l => {
+                <p className="text-xs text-gray-500">Today</p>
+                <p className="text-xl font-bold text-green-600">{logs.filter(l => {
                   const today = new Date().toDateString();
                   return new Date(l.created_at).toDateString() === today;
                 }).length}</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <Clock className="w-6 h-6 text-green-600" />
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <Clock className="w-5 h-5 text-green-600" />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">This Week</p>
-                <p className="text-2xl font-bold text-blue-600">{logs.filter(l => {
+                <p className="text-xs text-gray-500">This Week</p>
+                <p className="text-xl font-bold text-blue-600">{logs.filter(l => {
                   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
                   return new Date(l.created_at) >= weekAgo;
                 }).length}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-blue-600" />
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-blue-600" />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Unique Users</p>
-                <p className="text-2xl font-bold text-purple-600">{new Set(logs.map(l => l.actor_email)).size}</p>
+                <p className="text-xs text-gray-500">Unique Users</p>
+                <p className="text-xl font-bold text-purple-600">{new Set(logs.map(l => l.actor_email)).size}</p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                <User className="w-6 h-6 text-purple-600" />
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <User className="w-5 h-5 text-purple-600" />
               </div>
             </div>
           </div>

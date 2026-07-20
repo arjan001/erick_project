@@ -154,10 +154,10 @@ export default function AdminSidebar() {
 
   return (
     <div 
-      className={`fixed left-0 top-0 h-full bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col z-50 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+      className={`fixed left-0 top-0 h-full bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col z-50 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
     >
       {/* Logo */}
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+      <div className="p-3 border-b border-gray-100 flex items-center justify-between">
         {!isCollapsed && (
           <div>
             <h1 className="text-xl font-black bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">Studio22</h1>
@@ -181,7 +181,7 @@ export default function AdminSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3">
+      <nav className="flex-1 overflow-y-auto py-4 px-2">
         {menuItems.map((section) => {
           const isExpanded = expandedSections[section.section];
           const hasActivePath = section.items.some(item => isActive(item.path));
@@ -189,14 +189,14 @@ export default function AdminSidebar() {
           // When collapsed, show only section icon with tooltip
           if (isCollapsed) {
             return (
-              <div key={section.section} className="mb-2">
+              <div key={section.section} className="mb-1">
                 <div className="relative group">
                   <button
                     onClick={() => {
                       setIsCollapsed(false);
                       setExpandedSections(prev => ({ ...prev, [section.section]: true }));
                     }}
-                    className={`w-full flex items-center justify-center p-3 rounded-xl transition-colors ${
+                    className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${
                       hasActivePath
                         ? 'bg-indigo-50 text-indigo-600'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -265,12 +265,12 @@ export default function AdminSidebar() {
       </nav>
 
       {/* Logout */}
-      <div className="p-3 border-t border-gray-100">
+      <div className="p-2 border-t border-gray-100">
         {isCollapsed ? (
           <div className="relative group">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center p-3 text-red-500 hover:bg-red-50 transition-colors rounded-xl"
+              className="w-full flex items-center justify-center p-2 text-red-500 hover:bg-red-50 transition-colors rounded-lg"
             >
               <LogOut className="w-5 h-5" />
             </button>
