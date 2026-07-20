@@ -84,7 +84,7 @@ export default function TeamSidebar() {
     if (window.innerWidth < 1024) {
       setMobileSidebarOpen(!mobileSidebarOpen);
     } else {
-      setSidebarExpanded(true);
+      setSidebarExpanded(!expanded);
     }
   };
 
