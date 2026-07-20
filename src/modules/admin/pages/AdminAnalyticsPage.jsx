@@ -17,6 +17,7 @@ export default function AdminAnalyticsPage() {
   const [recentErrors, setRecentErrors] = useState([]);
   const [subscriptionStats, setSubscriptionStats] = useState(null);
   const [overviewStats, setOverviewStats] = useState(null);
+  const [transactionalStats, setTransactionalStats] = useState(null);
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -43,7 +44,8 @@ export default function AdminAnalyticsPage() {
         errorStatsData,
         recentErrorsData,
         subStats,
-        overview
+        overview,
+        transactional
       ] = await Promise.all([
         analyticsApi.getLiveUsers(),
         analyticsApi.getLiveUserCount(),
@@ -54,7 +56,8 @@ export default function AdminAnalyticsPage() {
         analyticsApi.getErrorStats(startDate, endDate),
         analyticsApi.getErrors(startDate, endDate, 'critical'),
         analyticsApi.getSubscriptionStats(),
-        analyticsApi.getOverviewStats(startDate, endDate)
+        analyticsApi.getOverviewStats(startDate, endDate),
+        analyticsApi.getTransactionalStats(startDate, endDate)
       ]);
 
       setLiveUsers(liveUsersData);
@@ -66,6 +69,7 @@ export default function AdminAnalyticsPage() {
       setRecentErrors(recentErrorsData.slice(0, 5));
       setSubscriptionStats(subStats);
       setOverviewStats(overview);
+      setTransactionalStats(transactional);
     } catch (err) {
       console.error('Error fetching analytics:', err);
     } finally {
@@ -381,6 +385,98 @@ export default function AdminAnalyticsPage() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Transactional Analytics Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-800 mb-3">New Projects</h3>
+          <div className="text-2xl font-bold text-gray-900">{transactionalStats?.projects?.total || 0}</div>
+          <div className="text-xs text-gray-500 mt-1">In selected period</div>
+          <div className="text-xs text-gray-400 mt-2">
+            Total Budget: ${(transactionalStats?.projects?.totalBudget || 0).toLocaleString()}
+          </div>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-800 mb-3">New Jobs Posted</h3>
+          <div className="text-2xl font-bold text-gray-900">{transactionalStats?.jobs?.total || 0}</div>
+          <div className="text-xs text-gray-500 mt-1">In selected period</div>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-800 mb-3">Applications</h3>
+          <div className="text-2xl font-bold text-gray-900">{transactionalStats?.applications?.total || 0}</div>
+          <div className="text-xs text-gray-500 mt-1">In selected period</div>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-800 mb-3">New Users</h3>
+          <div className="text-2xl font-bold text-gray-900">{transactionalStats?.newUsers?.total || 0}</div>
+          <div className="text-xs text-gray-500 mt-1">
+            {transactionalStats?.newUsers?.artists || 0} artists, {transactionalStats?.newUsers?.teams || 0} teams, {transactionalStats?.newUsers?.clients || 0} clients
+          </div>
+        </div>
+      </div>
+
+      {/* Transactional Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <LineChart className="w-4 h-4" />
+            Projects Created Over Time
+          </h3>
+          {transactionalStats?.projects?.byDay?.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <RechartsLineChart data={transactionalStats.projects.byDay}>
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: 8, fontSize: 12 }} />
+                <Line type="monotone" dataKey="count" stroke="#1a1a1a" strokeWidth={2} dot={{ fill: '#1a1a1a' }} />
+              </RechartsLineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[200px] flex items-center justify-center text-sm text-gray-400">No project data</div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <PieChart className="w-4 h-4" />
+            Application Status Distribution
+          </h3>
+          {transactionalStats?.applications?.byStatus?.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={150}>
+                <RechartsPieChart>
+                  <Pie
+                    data={transactionalStats.applications.byStatus}
+                    dataKey="count"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={35}
+                    outerRadius={55}
+                  >
+                    {transactionalStats.applications.byStatus.map((entry, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: '#fff', border: '1px solid #f3f4f6', borderRadius: 8, fontSize: 12 }} />
+                </RechartsPieChart>
+              </ResponsiveContainer>
+              <div className="space-y-1.5 mt-2">
+                {transactionalStats.applications.byStatus.map((d) => (
+                  <div key={d.status} className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-black" />
+                      <span className="text-gray-600 capitalize">{d.status}</span>
+                    </div>
+                    <span className="font-medium text-gray-800">{d.count}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="h-[150px] flex items-center justify-center text-sm text-gray-400">No application data</div>
+          )}
         </div>
       </div>
     </div>
