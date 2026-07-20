@@ -12,6 +12,7 @@ export default function AdminSidebar() {
   const { mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  const [expandedSections, setExpandedSections] = useState({});
 
   useEffect(() => {
     if (!user?.email) return;
@@ -129,6 +130,23 @@ export default function AdminSidebar() {
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  // Auto-expand section containing current path
+  useEffect(() => {
+    menuItems.forEach(section => {
+      const hasActivePath = section.items.some(item => isActive(item.path));
+      if (hasActivePath) {
+        setExpandedSections(prev => ({ ...prev, [section.section]: true }));
+      }
+    });
+  }, [location.pathname]);
+
   const { logout } = useAuth();
 
   const handleLogout = () => { logout(true); };
@@ -151,42 +169,57 @@ export default function AdminSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-3">
-        {menuItems.map((section) => (
-          <div key={section.section} className="mb-6">
-            <div className="px-3 mb-2">
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                {section.section}
-              </span>
+        {menuItems.map((section) => {
+          const isExpanded = expandedSections[section.section];
+          const hasActivePath = section.items.some(item => isActive(item.path));
+          
+          return (
+            <div key={section.section} className="mb-2">
+              <button
+                onClick={() => toggleSection(section.section)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                  hasActivePath
+                    ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <span className="text-xs font-semibold uppercase tracking-wider">
+                  {section.section}
+                </span>
+                <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+              </button>
+              
+              {isExpanded && (
+                <div className="mt-1 space-y-1 pl-2">
+                  {section.items.map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => navigate(item.path)}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                        isActive(item.path)
+                          ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      <span className="flex-1 text-left">{item.label}</span>
+                      {item.showBadge && unreadMessageCount > 0 && (
+                        <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                          {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                        </span>
+                      )}
+                      {item.showNotificationBadge && unreadNotificationCount > 0 && (
+                        <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                          {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="space-y-1">
-              {section.items.map((item) => (
-                <button
-                  key={item.path}
-                  onClick={() => navigate(item.path)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-                    isActive(item.path)
-                      ? 'bg-indigo-50 text-indigo-600 font-semibold'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span>{item.label}</span>
-                  {item.showBadge && unreadMessageCount > 0 && (
-                    <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
-                      {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
-                    </span>
-                  )}
-                  {item.showNotificationBadge && unreadNotificationCount > 0 && (
-                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
-                      {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
-                    </span>
-                  )}
-                  {isActive(item.path) && <ChevronRight className="w-4 h-4 ml-auto" />}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Logout */}
