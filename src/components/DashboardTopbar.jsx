@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ChevronDown, LogOut, Settings, MessageCircle, Menu, Users, Home, Bell, CreditCard, UserCheck, Briefcase, MessageSquare, Heart, Star, Ticket, Zap } from 'lucide-react';
+import { Search, ChevronDown, LogOut, Settings, MessageCircle, Menu, Users, Home, Bell, CreditCard, UserCheck, Briefcase, MessageSquare, Heart, Star, Ticket, Zap, CheckCheck, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/shared/utils/routing';
 import { Message, Artist, Team, ProjectOwner, Backer, Notification } from '@/lib/supabaseEntities';
 import { useSidebar } from '@/layouts/DashboardLayout';
+import realtimeMessagingService from '@/services/realtimeMessagingService';
 
 // Modern TailAdmin-style top bar shared across all dashboard roles.
 export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
@@ -73,6 +74,40 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
     fetchNotifications();
   }, [user]);
 
+  // Real-time message subscription
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const handleNewMessage = (newMessage) => {
+      console.log('Real-time new message received in topbar:', newMessage);
+      fetchMessages();
+    };
+
+    const unsubscribe = realtimeMessagingService.subscribeToMessages(
+      user.email,
+      handleNewMessage
+    );
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // Real-time notification subscription
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const handleNewNotification = (newNotification) => {
+      console.log('Real-time new notification received:', newNotification);
+      setNotifications(prev => [newNotification, ...prev]);
+    };
+
+    const unsubscribe = realtimeMessagingService.subscribeToNotifications(
+      user.email,
+      handleNewNotification
+    );
+
+    return () => unsubscribe();
+  }, [user]);
+
 
   useEffect(() => {
     if (!user?.email) return;
@@ -136,6 +171,25 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
       setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, read: true } : n));
     } catch (err) {
       console.error('Error marking notification as read:', err);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      const unreadNotifications = notifications.filter(n => !n.read);
+      await Promise.all(unreadNotifications.map(n => Notification.update(n.id, { read: true })));
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (err) {
+      console.error('Error marking all notifications as read:', err);
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId) => {
+    try {
+      await Notification.delete(notificationId);
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    } catch (err) {
+      console.error('Error deleting notification:', err);
     }
   };
 
@@ -292,8 +346,27 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
               <div className="fixed inset-0 z-10" onClick={() => setNotificationsOpen(false)} />
               <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-lg z-20 max-h-96 flex flex-col">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
-                  <span className="font-semibold text-gray-900 text-sm">Notifications</span>
-                  <Link to={createPageUrl('Notifications')} onClick={() => setNotificationsOpen(false)} className="text-xs text-gray-600 hover:underline">View all</Link>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-900 text-sm">Notifications</span>
+                    {unreadNotificationsCount > 0 && (
+                      <span className="min-w-[18px] h-5 px-1.5 bg-black rounded-full text-white text-[10px] font-bold flex items-center justify-center">
+                        {unreadNotificationsCount}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {unreadNotificationsCount > 0 && (
+                      <button
+                        onClick={handleMarkAllAsRead}
+                        className="text-xs text-gray-600 hover:text-black flex items-center gap-1 transition-colors"
+                        title="Mark all as read"
+                      >
+                        <CheckCheck className="w-3 h-3" />
+                        Mark all read
+                      </button>
+                    )}
+                    <Link to={createPageUrl('Notifications')} onClick={() => setNotificationsOpen(false)} className="text-xs text-gray-600 hover:underline">View all</Link>
+                  </div>
                 </div>
                 <div className="overflow-y-auto flex-1">
                   {notifications.length === 0 ? (
@@ -302,20 +375,36 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
                     notifications.map((notification) => (
                       <div
                         key={notification.id}
-                        onClick={() => handleMarkAsRead(notification.id)}
-                        className={`flex items-start gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}`}
+                        className={`relative flex items-start gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${!notification.read ? 'bg-blue-50' : ''}`}
                       >
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${getNotificationIconColor(notification.type)}`}>
-                          {getNotificationIcon(notification.type)}
+                        <div
+                          onClick={() => handleMarkAsRead(notification.id)}
+                          className="cursor-pointer"
+                        >
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${getNotificationIconColor(notification.type)}`}>
+                            {getNotificationIcon(notification.type)}
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900">{notification.title}</p>
                           <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notification.message}</p>
                           <p className="text-[10px] text-gray-400 mt-1">{formatNotificationTime(notification.created_at)}</p>
                         </div>
-                        {!notification.read && (
-                          <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2" />
-                        )}
+                        <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                          {!notification.read && (
+                            <div className="w-2 h-2 bg-blue-600 rounded-full" />
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteNotification(notification.id);
+                            }}
+                            className="p-1 hover:bg-gray-200 rounded transition-colors"
+                            title="Delete notification"
+                          >
+                            <X className="w-3 h-3 text-gray-400 hover:text-red-500" />
+                          </button>
+                        </div>
                       </div>
                     ))
                   )}

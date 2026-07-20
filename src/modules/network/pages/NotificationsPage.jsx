@@ -2,50 +2,59 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Notification } from '@/lib/supabaseEntities';
 import { useToast } from '@/hooks/useToast';
+import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Bell, Check, X, Briefcase, MessageCircle, Users, Award, ThumbsUp, Clock, Filter, CreditCard, UserCheck, MessageSquare, Heart, Star, Ticket, Zap } from 'lucide-react';
+import { Bell, Check, X, Briefcase, MessageCircle, Users, Award, ThumbsUp, Clock, Filter, CreditCard, UserCheck, MessageSquare, Heart, Star, Ticket, Zap, CheckCheck } from 'lucide-react';
+import realtimeMessagingService from '@/services/realtimeMessagingService';
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
   const { success, error } = useToast();
-  const [user, setUser] = useState(null);
+  const { user: authUser } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, unread, action_required
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
-      window.location.href = '/';
-      return;
+  const fetchNotifications = async () => {
+    if (!authUser?.email) return;
+    try {
+      const allNotifications = await Notification.filter({ 
+        recipient_email: authUser.email 
+      });
+      
+      // Sort by created_at descending
+      const sorted = allNotifications.sort((a, b) => 
+        new Date(b.created_at) - new Date(a.created_at)
+      );
+      
+      setNotifications(sorted);
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+    } finally {
+      setLoading(false);
     }
-    setUser(JSON.parse(storedUser));
-  }, []);
+  };
 
   useEffect(() => {
-    if (!user) return;
+    fetchNotifications();
+  }, [authUser]);
 
-    const fetchNotifications = async () => {
-      try {
-        const allNotifications = await Notification.filter({ 
-          recipient_email: user.email 
-        });
-        
-        // Sort by created_at descending
-        const sorted = allNotifications.sort((a, b) => 
-          new Date(b.created_at) - new Date(a.created_at)
-        );
-        
-        setNotifications(sorted);
-      } catch (err) {
-        console.error('Error fetching notifications:', err);
-      } finally {
-        setLoading(false);
-      }
+  // Real-time notification subscription
+  useEffect(() => {
+    if (!authUser?.email) return;
+
+    const handleNewNotification = (newNotification) => {
+      console.log('Real-time new notification received:', newNotification);
+      setNotifications(prev => [newNotification, ...prev]);
     };
 
-    fetchNotifications();
-  }, [user]);
+    const unsubscribe = realtimeMessagingService.subscribeToNotifications(
+      authUser.email,
+      handleNewNotification
+    );
+
+    return () => unsubscribe();
+  }, [authUser]);
 
   const handleMarkAsRead = async (notificationId) => {
     try {
@@ -81,6 +90,20 @@ export default function NotificationsPage() {
     } catch (err) {
       console.error('Error deleting notification:', err);
       error('Failed', 'Failed to delete notification');
+    }
+  };
+
+  const handleDeleteAllRead = async () => {
+    try {
+      const read = notifications.filter(n => n.read);
+      await Promise.all(
+        read.map(n => Notification.delete(n.id))
+      );
+      setNotifications(prev => prev.filter(n => !n.read));
+      success('Success', 'All read notifications deleted');
+    } catch (err) {
+      console.error('Error deleting read notifications:', err);
+      error('Failed', 'Failed to delete read notifications');
     }
   };
 
@@ -152,7 +175,7 @@ export default function NotificationsPage() {
     return true;
   });
 
-  if (!user || loading) {
+  if (!authUser || loading) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
@@ -161,6 +184,7 @@ export default function NotificationsPage() {
   }
 
   const unreadCount = notifications.filter(n => !n.read).length;
+  const readCount = notifications.filter(n => n.read).length;
 
   return (
     <>
@@ -181,8 +205,15 @@ export default function NotificationsPage() {
             <option value="unread">Unread</option>
           </select>
           {unreadCount > 0 && (
-            <Button variant="outline" size="sm" onClick={handleMarkAllAsRead}>
-              Mark All as Read
+            <Button variant="outline" size="sm" onClick={handleMarkAllAsRead} className="flex items-center gap-1">
+              <CheckCheck className="w-3 h-3" />
+              Mark All Read
+            </Button>
+          )}
+          {readCount > 0 && (
+            <Button variant="outline" size="sm" onClick={handleDeleteAllRead} className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:border-red-300">
+              <X className="w-3 h-3" />
+              Clear Read
             </Button>
           )}
         </div>

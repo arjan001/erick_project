@@ -1,81 +1,147 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Message } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MessageSquare, Send, Search } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast';
+import { useAuth } from '@/lib/AuthContext';
+import realtimeMessagingService from '@/services/realtimeMessagingService';
 
 export default function ClientMessages() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
+  const { user: authUser } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
-    if (!storedUser) {
-      window.location.href = '/';
-      return;
-    }
-    setUser(JSON.parse(storedUser));
+  const getConversationId = (a, b) => [a, b].sort().join('__');
 
-    const fetchConversations = async () => {
-      try {
-        const conv1 = await base44.entities.Conversation.filter({ participant_1_email: JSON.parse(storedUser).email });
-        const conv2 = await base44.entities.Conversation.filter({ participant_2_email: JSON.parse(storedUser).email });
-        const allConversations = [...conv1, ...conv2];
-        setConversations(allConversations);
-        if (allConversations.length > 0) {
-          setSelectedChat(allConversations[0]);
-        }
-      } catch (err) {
-        console.error('Error fetching conversations:', err);
-      } finally {
-        setLoading(false);
+  const fetchConversations = async () => {
+    if (!authUser) return;
+    try {
+      const [sent, received] = await Promise.all([
+        Message.filter({ sender_email: authUser.email }, '-created_at', 500),
+        Message.filter({ recipient_email: authUser.email }, '-created_at', 500),
+      ]);
+      const allMessages = [...sent, ...received];
+      
+      const grouped = {};
+      allMessages.forEach(m => {
+        if (!grouped[m.conversation_id]) grouped[m.conversation_id] = [];
+        grouped[m.conversation_id].push(m);
+      });
+
+      const convs = Object.entries(grouped).map(([id, msgs]) => {
+        const sorted = msgs.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        const last = sorted[sorted.length - 1];
+        const otherEmail = sorted.find(m => m.sender_email !== authUser.email)?.sender_email
+          || sorted.find(m => m.recipient_email !== authUser.email)?.recipient_email;
+        return {
+          id,
+          otherEmail,
+          messages: sorted,
+          lastMessage: last.text || last.file_name || '',
+          lastMessageTime: last.created_at,
+        };
+      }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+
+      setConversations(convs);
+      if (convs.length > 0) {
+        setSelectedChat(convs[0]);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching conversations:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchConversations();
-  }, []);
+  }, [authUser]);
 
   useEffect(() => {
     if (selectedChat) {
-      const fetchMessages = async () => {
-        try {
-          const chatMessages = await base44.entities.Message.filter({ conversation_id: selectedChat.id });
-          setMessages(chatMessages);
-        } catch (err) {
-          console.error('Error fetching messages:', err);
-        }
-      };
-      fetchMessages();
+      setMessages(selectedChat.messages || []);
     }
   }, [selectedChat]);
 
+  // Real-time message subscription using Supabase Realtime
+  useEffect(() => {
+    if (!authUser) return;
+
+    const handleNewMessage = (newMessage) => {
+      console.log('Real-time new message received:', newMessage);
+      
+      // Check if conversation already exists
+      const existingConv = conversations.find(c => c.id === newMessage.conversation_id);
+      
+      if (existingConv) {
+        // Update existing conversation
+        setConversations(prev => prev.map(c => {
+          if (c.id === newMessage.conversation_id) {
+            return {
+              ...c,
+              messages: [...c.messages, newMessage],
+              lastMessage: newMessage.text || '',
+              lastMessageTime: newMessage.created_at
+            };
+          }
+          return c;
+        }));
+        
+        // If this is the selected conversation, add the message
+        if (selectedChat?.id === newMessage.conversation_id) {
+          setMessages(prev => [...prev, newMessage]);
+        }
+      } else {
+        // Create new conversation
+        const newConv = {
+          id: newMessage.conversation_id,
+          otherEmail: newMessage.sender_email === authUser.email ? newMessage.recipient_email : newMessage.sender_email,
+          messages: [newMessage],
+          lastMessage: newMessage.text || '',
+          lastMessageTime: newMessage.created_at,
+        };
+        setConversations(prev => [newConv, ...prev]);
+      }
+    };
+
+    // Subscribe to real-time messages
+    const unsubscribe = realtimeMessagingService.subscribeToMessages(
+      authUser.email,
+      handleNewMessage
+    );
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribe();
+    };
+  }, [authUser, selectedChat]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !selectedChat || !user) return;
+    if (!newMessage.trim() || !selectedChat || !authUser) return;
 
     try {
-      await base44.entities.Message.create({
+      const created = await Message.create({
         conversation_id: selectedChat.id,
-        sender_email: user.email,
+        sender_email: authUser.email,
+        recipient_email: selectedChat.otherEmail,
         text: newMessage,
-        status: 'sent',
-        created_at: new Date().toISOString()
       });
-      setMessages([...messages, {
-        id: Date.now(),
-        sender_email: user.email,
-        text: newMessage,
-        created_at: new Date().toISOString()
-      }]);
+      
+      setMessages([...messages, created]);
+      setConversations(prev => prev.map(c => 
+        c.id === selectedChat.id 
+          ? { ...c, messages: [...c.messages, created], lastMessage: newMessage, lastMessageTime: created.created_at }
+          : c
+      ));
       setNewMessage('');
     } catch (err) {
       console.error('Error sending message:', err);

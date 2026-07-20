@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, Search, Send, Trash2, User } from 'lucide-react';
+import realtimeMessagingService from '@/services/realtimeMessagingService';
 
 export default function AdminMessagesPage() {
   const { user } = useAuth();
@@ -40,6 +41,54 @@ export default function AdminMessagesPage() {
   };
 
   useEffect(() => { fetchMessages(); }, []);
+
+  // Real-time message subscription using Supabase Realtime
+  useEffect(() => {
+    if (!user) return;
+
+    const handleNewMessage = (newMessage) => {
+      console.log('Real-time new message received:', newMessage);
+      
+      // Check if conversation already exists
+      const existingConv = conversations.find(c => c.id === newMessage.conversation_id);
+      
+      if (existingConv) {
+        // Update existing conversation
+        setConversations(prev => prev.map(c => {
+          if (c.id === newMessage.conversation_id) {
+            return {
+              ...c,
+              messages: [...c.messages, newMessage],
+              lastMessage: newMessage.text || '',
+              lastMessageTime: newMessage.created_at
+            };
+          }
+          return c;
+        }));
+      } else {
+        // Create new conversation
+        const newConv = {
+          id: newMessage.conversation_id,
+          messages: [newMessage],
+          lastMessage: newMessage.text || '',
+          lastMessageTime: newMessage.created_at,
+          participant: newMessage.sender_email === user.email ? newMessage.recipient_email : newMessage.sender_email
+        };
+        setConversations(prev => [newConv, ...prev]);
+      }
+    };
+
+    // Subscribe to real-time messages
+    const unsubscribe = realtimeMessagingService.subscribeToMessages(
+      user.email,
+      handleNewMessage
+    );
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribe();
+    };
+  }, [user]);
 
   const selectedConversation = conversations.find(c => c.id === selectedId);
 

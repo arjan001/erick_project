@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Team } from '@/lib/supabaseEntities';
+import { Team, Message } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useAuth } from '@/lib/AuthContext';
+import realtimeMessagingService from '@/services/realtimeMessagingService';
 
 export default function TeamMessagesPage() {
   const navigate = useNavigate();
@@ -54,6 +55,66 @@ export default function TeamMessagesPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Real-time message subscription using Supabase Realtime
+  useEffect(() => {
+    if (!authUser) return;
+
+    const handleNewMessage = (newMessage) => {
+      console.log('Real-time new message received:', newMessage);
+      
+      // Check if conversation already exists
+      const existingConv = conversations.find(c => c.id === newMessage.conversation_id);
+      
+      if (existingConv) {
+        // Update existing conversation
+        setConversations(prev => prev.map(c => {
+          if (c.id === newMessage.conversation_id) {
+            return {
+              ...c,
+              lastMessage: newMessage.text || '',
+              timestamp: newMessage.created_at,
+              unread: c.id === selectedConversation?.id ? 0 : (c.unread || 0) + 1
+            };
+          }
+          return c;
+        }));
+        
+        // If this is the selected conversation, add the message
+        if (selectedConversation?.id === newMessage.conversation_id) {
+          setMessages(prev => [...prev, {
+            id: newMessage.id,
+            sender: newMessage.sender_email === authUser.email ? 'me' : 'other',
+            text: newMessage.text,
+            timestamp: newMessage.created_at
+          }]);
+        }
+      } else {
+        // Create new conversation
+        const newConv = {
+          id: newMessage.conversation_id,
+          name: newMessage.sender_email === authUser.email ? newMessage.recipient_email : newMessage.sender_email,
+          type: 'direct',
+          avatar: '',
+          lastMessage: newMessage.text || '',
+          timestamp: newMessage.created_at,
+          unread: 1
+        };
+        setConversations(prev => [newConv, ...prev]);
+      }
+    };
+
+    // Subscribe to real-time messages
+    const unsubscribe = realtimeMessagingService.subscribeToMessages(
+      authUser.email,
+      handleNewMessage
+    );
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribe();
+    };
+  }, [authUser, selectedConversation]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

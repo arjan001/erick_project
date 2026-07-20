@@ -10,6 +10,7 @@ import { confirmDialog } from '@/lib/sweetAlert';
 import notificationService from '@/shared/services/notificationService';
 import subscriptionService from '@/shared/services/subscriptionService';
 import { uploadFile, deleteFile } from '@/lib/fileUploadService';
+import realtimeMessagingService from '@/services/realtimeMessagingService';
 
 function playMessageTone() {
   try {
@@ -295,37 +296,52 @@ export default function MessagesPage() {
   const conversationsRef = useRef([]);
   useEffect(() => { conversationsRef.current = conversations; }, [conversations]);
 
-  // Poll for new messages instead of using subscribe (subscribe doesn't work with current setup)
+  // Real-time message subscription using Supabase Realtime
   useEffect(() => {
     if (!user) return;
 
-    const pollMessages = async () => {
-      try {
-        const [sent, received] = await Promise.all([
-          Message.filter({ sender_email: user.email }, '-created_at', 50),
-          Message.filter({ recipient_email: user.email }, '-created_at', 50),
-        ]);
-        const allMessages = [...sent, ...received];
-        const convs = buildConversations(allMessages);
-
-        // Check for new messages and apply them
-        const currentConvIds = new Set(conversationsRef.current.map(c => c.id));
-        const newConvIds = new Set(convs.map(c => c.id));
-
-        // If there are new conversations or messages, refetch
-        if (convs.length !== conversationsRef.current.length ||
-            !convs.every(c => currentConvIds.has(c.id))) {
-          await fetchConversations();
-        }
-      } catch (err) {
-        console.error('Error polling messages:', err);
+    const handleNewMessage = async (newMessage) => {
+      console.log('Real-time new message received:', newMessage);
+      
+      // Apply the new message to state
+      await applyIncomingMessage(newMessage);
+      
+      // Play notification sound if message is from someone else
+      if (newMessage.sender_email !== user.email) {
+        playMessageTone();
       }
     };
 
-    // Poll every 30 seconds
-    const interval = setInterval(pollMessages, 30000);
+    const handleMessageUpdate = async (updatedMessage) => {
+      console.log('Real-time message update received:', updatedMessage);
+      
+      // Update message in state (e.g., read status, delivery status)
+      setConversations(prev => {
+        return prev.map(c => {
+          if (c.id === updatedMessage.conversation_id) {
+            return {
+              ...c,
+              messages: c.messages.map(m => 
+                m.id === updatedMessage.id ? { ...m, ...updatedMessage } : m
+              )
+            };
+          }
+          return c;
+        });
+      });
+    };
 
-    return () => clearInterval(interval);
+    // Subscribe to real-time messages
+    const unsubscribe = realtimeMessagingService.subscribeToMessages(
+      user.email,
+      handleNewMessage,
+      handleMessageUpdate
+    );
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribe();
+    };
   }, [user]);
 
   useEffect(() => {
