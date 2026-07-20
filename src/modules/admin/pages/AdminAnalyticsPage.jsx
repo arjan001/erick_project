@@ -5,6 +5,25 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart as 
 
 const COLORS = ['#1a1a1a', '#6b7280', '#d1d5db', '#374151', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
+const COUNTRY_FLAGS = {
+  'US': '🇺🇸', 'GB': '🇬🇧', 'CA': '🇨🇦', 'AU': '🇦🇺', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹', 'NL': '🇳🇱', 'JP': '🇯🇵',
+  'KR': '🇰🇷', 'CN': '🇨🇳', 'IN': '🇮🇳', 'BR': '🇧🇷', 'MX': '🇲🇽', 'ZA': '🇿🇦', 'NG': '🇳🇬', 'KE': '🇰🇪', 'EG': '🇪🇬', 'RU': '🇷🇺',
+  'TR': '🇹🇷', 'SA': '🇸🇦', 'AE': '🇦🇪', 'ID': '🇮🇩', 'MY': '🇲🇾', 'SG': '🇸🇬', 'TH': '🇹🇭', 'VN': '🇻🇳', 'PH': '🇵🇭', 'PK': '🇵🇰',
+  'BD': '🇧🇩', 'LK': '🇱🇰', 'NP': '🇳🇵', 'MM': '🇲🇲', 'KH': '🇰🇭', 'LA': '🇱🇦', 'NZ': '🇳🇿', 'FJ': '🇫🇯', 'SE': '🇸🇪', 'NO': '🇳🇴',
+  'DK': '🇩🇰', 'FI': '🇫🇮', 'PL': '🇵🇱', 'CZ': '🇨🇿', 'AT': '🇦🇹', 'CH': '🇨🇭', 'BE': '🇧🇪', 'IE': '🇮🇪', 'PT': '🇵🇹', 'GR': '🇬🇷',
+  'UA': '🇺🇦', 'RO': '🇷🇴', 'BG': '🇧🇬', 'HU': '🇭🇺', 'SK': '🇸🇰', 'SI': '🇸🇮', 'HR': '🇭🇷', 'BA': '🇧🇦', 'RS': '🇷🇸', 'ME': '🇲🇪',
+  'MK': '🇲🇰', 'AL': '🇦🇱', 'XK': '🇽🇰', 'IS': '🇮🇸', 'LV': '🇱🇻', 'LT': '🇱🇹', 'EE': '🇪🇪', 'BY': '🇧🇾', 'MD': '🇲🇩', 'GE': '🇬🇪',
+  'AM': '🇦🇲', 'AZ': '🇦🇿', 'KZ': '🇰🇿', 'UZ': '🇺🇿', 'KG': '🇰🇬', 'TJ': '🇹🇯', 'TM': '🇹🇲', 'AF': '🇦🇫', 'IQ': '🇮🇶', 'IR': '🇮🇷',
+  'IL': '🇮🇱', 'LB': '🇱🇧', 'JO': '🇯🇴', 'SY': '🇸🇾', 'YE': '🇾🇪', 'OM': '🇴🇲', 'QA': '🇶🇦', 'KW': '🇰🇼', 'BH': '🇧🇭', 'CY': '🇨🇾',
+  'MT': '🇲🇹', 'LU': '🇱🇺', 'MC': '🇲🇨', 'AD': '🇦🇩', 'SM': '🇸🇲', 'VA': '🇻🇦', 'LI': '🇱🇮', 'CL': '🇨🇱', 'AR': '🇦🇷', 'UY': '🇺🇾',
+  'PY': '🇵🇾', 'BO': '🇧🇴', 'PE': '🇵🇪', 'EC': '🇪🇨', 'CO': '🇨🇴', 'VE': '🇻🇪', 'GY': '🇬🇾', 'SR': '🇸🇷', 'GF': '🇬🇫', 'CU': '🇨🇺',
+  'HT': '🇭🇹', 'DO': '🇩🇴', 'JM': '🇯🇲', 'TT': '🇹🇹', 'BB': '🇧🇧', 'GD': '🇬🇩', 'LC': '🇱🇨', 'VC': '🇻🇨', 'AG': '🇦🇬', 'DM': '🇩🇲',
+  'KN': '🇰🇳', 'BS': '🇧🇸', 'BM': '🇧🇲', 'KY': '🇰🇾', 'PA': '🇵🇦', 'CR': '🇨🇷', 'NI': '🇳🇮', 'SV': '🇸🇻', 'GT': '🇬🇹', 'HN': '🇭🇳',
+  'MX': '🇲🇽'
+};
+
+const getCountryFlag = (code) => COUNTRY_FLAGS[code?.toUpperCase()] || '🌐';
+
 export default function AdminAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('7d'); // 7d, 30d, 90d
@@ -265,10 +284,22 @@ export default function AdminAnalyticsPage() {
             </h3>
             <div className="space-y-3">
               {topPages.map((page, i) => (
-                <div key={page.path} className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 w-4">{i + 1}</span>
-                  <span className="text-xs text-gray-700 flex-1 truncate">{page.path}</span>
-                  <span className="text-xs font-semibold text-gray-800">{page.count} views</span>
+                <div key={page.path} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <span className="text-xs font-bold text-gray-400 w-4">{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium text-gray-900 truncate">{page.path}</div>
+                    <div className="flex items-center gap-2 mt-1">
+                      {page.top_countries?.slice(0, 3).map((country, idx) => (
+                        <span key={idx} className="text-xs text-gray-500 flex items-center gap-1">
+                          {getCountryFlag(country.code)} {country.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs font-semibold text-gray-800">{page.count} views</div>
+                    <div className="text-xs text-gray-400">{page.unique_users || 0} users</div>
+                  </div>
                 </div>
               ))}
             </div>

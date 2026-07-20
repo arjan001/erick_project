@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { SystemSetting } from '@/lib/supabaseEntities';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { Settings, Save, Globe, Bell, Shield, Clock, Users, Database, ToggleLeft, ToggleRight, Layers, ArrowRight, Mail, Send, CheckCircle2 } from 'lucide-react';
+import { Settings, Save, Globe, Bell, Shield, Clock, Users, Database, ToggleLeft, ToggleRight, Layers, ArrowRight, Mail, Send, CheckCircle2, Trash2, RefreshCw } from 'lucide-react';
 
 const DEFAULT_SETTINGS = {
   site_name: 'Studio22',
@@ -71,6 +71,7 @@ export default function AdminGeneralSettingsPage() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [clearingCache, setClearingCache] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -142,6 +143,59 @@ export default function AdminGeneralSettingsPage() {
 
   const handleToggle = (key) => setSettings(prev => ({ ...prev, [key]: !prev[key] }));
   const handleChange = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
+
+  const handleClearCache = async () => {
+    setClearingCache(true);
+    try {
+      // Clear localStorage
+      localStorage.clear();
+      
+      // Clear sessionStorage
+      sessionStorage.clear();
+      
+      // Clear all cookies
+      document.cookie.split(';').forEach(c => {
+        const eq = c.indexOf('=');
+        const name = eq > -1 ? c.slice(0, eq).trim() : c.trim();
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + window.location.hostname;
+      });
+      
+      // Clear Supabase session
+      const { supabase } = await import('@/lib/supabase');
+      await supabase.auth.signOut({ scope: 'local' });
+      
+      // Clear service worker caches if available
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)));
+      }
+      
+      // Clear IndexedDB if available
+      if ('indexedDB' in window) {
+        const databases = await indexedDB.databases();
+        await Promise.all(databases.map(db => {
+          return new Promise((resolve, reject) => {
+            const request = indexedDB.deleteDatabase(db.name);
+            request.onsuccess = resolve;
+            request.onerror = reject;
+          });
+        }));
+      }
+      
+      success('Cache Cleared', 'All browser and application cache has been cleared successfully');
+      
+      // Reload page after short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err) {
+      console.error('Error clearing cache:', err);
+      error('Failed', 'Failed to clear cache');
+    } finally {
+      setClearingCache(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -419,7 +473,73 @@ export default function AdminGeneralSettingsPage() {
           </div>
         </div>
 
-        <div className="sticky bottom-4 flex justify-end">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-1 flex items-center"><span className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center mr-2"><Database className="w-4 h-4" /></span>Cache Management</h2>
+          <p className="text-sm text-gray-500 mb-4">Clear browser and application cache to resolve loading issues or force fresh data loading.</p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+              <div>
+                <div className="font-medium text-gray-900">Clear All Cache</div>
+                <div className="text-sm text-gray-500 mt-1">Clears localStorage, sessionStorage, cookies, service worker caches, and IndexedDB</div>
+              </div>
+              <Button 
+                onClick={handleClearCache} 
+                disabled={clearingCache}
+                className="bg-red-600 text-white hover:bg-red-700 rounded-xl"
+              >
+                {clearingCache ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Clearing...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Clear Cache
+                  </>
+                )}
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-xs text-gray-500">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full" />
+                <span>localStorage: {localStorage.length} chars</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                <span>sessionStorage: {sessionStorage.length} chars</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-500 rounded-full" />
+                <span>Cookies: {document.cookie.split(';').length} items</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-orange-500 rounded-full" />
+                <span>Service Workers: {navigator.serviceWorker?.controller ? 'Active' : 'Inactive'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="sticky bottom-4 flex justify-end gap-3">
+          <Button 
+            onClick={handleClearCache} 
+            disabled={clearingCache}
+            variant="outline"
+            className="border-red-200 text-red-600 hover:bg-red-50 rounded-xl"
+          >
+            {clearingCache ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                Clearing...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear Cache
+              </>
+            )}
+          </Button>
           <Button onClick={handleSaveSettings} disabled={saving} className="bg-black text-white hover:bg-gray-800 px-8 shadow-lg rounded-xl h-11">
             <Save className="w-4 h-4 mr-2" />
             {saving ? 'Saving...' : 'Save Settings'}

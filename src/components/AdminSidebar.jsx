@@ -118,7 +118,7 @@ export default function AdminSidebar() {
       ]
     },
     {
-      section: 'Analytics',
+      section: 'System',
       items: [
         { path: '/Admin/Analytics', label: 'Analytics Dashboard', icon: BarChart3 },
         { path: '/Admin/FinanceDashboard', label: 'Finance Dashboard', icon: DollarSign },
