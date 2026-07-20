@@ -1181,6 +1181,7 @@ CREATE TABLE IF NOT EXISTS ticket_responses (
     responder_name VARCHAR(255) NOT NULL,
     responder_role VARCHAR(50) NOT NULL,
     response TEXT NOT NULL,
+    reply_to VARCHAR(255),
     attachments JSONB DEFAULT '[]'::jsonb,
     is_internal BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SupportTicket, TicketResponse } from '@/lib/supabaseEntities';
+import { SupportTicket, TicketResponse, Notification } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  Ticket, Plus, Search, Filter, Clock, AlertCircle, CheckCircle, 
-  MessageSquare, Paperclip, Send, X, ChevronDown, ChevronUp, 
-  Eye, Edit2, Trash2, ChevronLeft, ChevronRight 
+import {
+  Ticket, Plus, Search, Filter, Clock, AlertCircle, CheckCircle,
+  MessageSquare, Paperclip, Send, X, ChevronDown, ChevronUp,
+  Eye, Edit2, Trash2, ChevronLeft, ChevronRight, MoreVertical, Reply, Star
 } from 'lucide-react';
 
 export default function SupportTicketsPage() {
@@ -33,6 +33,42 @@ export default function SupportTicketsPage() {
 
   const [responseText, setResponseText] = useState('');
   const [responses, setResponses] = useState([]);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [showReplyMenu, setShowReplyMenu] = useState(null);
+  const [swipeAction, setSwipeAction] = useState(null);
+  const [touchStart, setTouchStart] = useState(null);
+
+  const handleTouchStart = (e, responseId) => {
+    setTouchStart({ x: e.touches[0].clientX, responseId });
+  };
+
+  const handleTouchMove = (e) => {
+    if (!touchStart) return;
+    const deltaX = e.touches[0].clientX - touchStart.x;
+    if (deltaX < -50) {
+      setSwipeAction({ type: 'reply', responseId: touchStart.responseId });
+    } else if (deltaX > 50) {
+      setSwipeAction({ type: 'star', responseId: touchStart.responseId });
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (swipeAction) {
+      const response = responses.find(r => r.id === swipeAction.responseId);
+      if (response) {
+        handleSwipeAction(response);
+      }
+    }
+    setTouchStart(null);
+  };
+
+  const handleSwipeAction = (response) => {
+    if (swipeAction?.type === 'reply') {
+      setReplyingTo(response.responder_name);
+      setResponseText(`@${response.responder_name} `);
+    }
+    setSwipeAction(null);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -103,6 +139,7 @@ export default function SupportTicketsPage() {
         responder_name: user.full_name || user.email,
         responder_role: user.role || 'artist',
         response: responseText,
+        reply_to: replyingTo || null,
         is_internal: false
       });
 
@@ -111,8 +148,32 @@ export default function SupportTicketsPage() {
         await SupportTicket.update(selectedTicket.id, { status: 'in_progress' });
       }
 
+      // Send notification to ticket creator and all participants
+      try {
+        const allParticipants = [selectedTicket.user_email, ...responses.map(r => r.responder_email)];
+        const uniqueParticipants = [...new Set(allParticipants)].filter(email => email !== user.email);
+
+        for (const participantEmail of uniqueParticipants) {
+          await Notification.create({
+            recipient_email: participantEmail,
+            type: 'ticket_response',
+            title: `New response on ticket #${selectedTicket.ticket_number}`,
+            message: `${user.full_name || user.email} replied to "${selectedTicket.subject}"`,
+            metadata: {
+              ticket_id: selectedTicket.id,
+              ticket_number: selectedTicket.ticket_number,
+              responder_name: user.full_name || user.email
+            },
+            read: false
+          });
+        }
+      } catch (notifErr) {
+        console.error('Error sending notifications:', notifErr);
+      }
+
       success('Success', 'Response added');
       setResponseText('');
+      setReplyingTo(null);
       fetchTicketResponses(selectedTicket.id);
       fetchTickets();
     } catch (err) {
@@ -496,18 +557,99 @@ export default function SupportTicketsPage() {
               </div>
 
               <div className="border-t border-gray-200 pt-4">
-                <h3 className="font-medium text-gray-900 mb-3">Responses</h3>
-                <div className="space-y-3">
+                <h3 className="font-medium text-gray-900 mb-3">Conversation</h3>
+                <div className="space-y-4">
+                  {/* Original ticket message */}
+                  <div className="flex gap-3">
+                    <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-xs font-medium">{selectedTicket.user_name?.charAt(0) || 'U'}</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="bg-gray-100 rounded-2xl rounded-tl-none p-3">
+                        <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedTicket.description}</p>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1 ml-1">{new Date(selectedTicket.created_at).toLocaleString()}</p>
+                    </div>
+                  </div>
+
                   {responses.length === 0 ? (
                     <p className="text-sm text-gray-500 text-center py-4">No responses yet</p>
                   ) : (
                     responses.map((response) => (
-                      <div key={response.id} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm font-medium text-gray-900">{response.responder_name}</p>
-                          <p className="text-xs text-gray-500">{new Date(response.created_at).toLocaleString()}</p>
+                      <div
+                        key={response.id}
+                        className="flex gap-3 relative group overflow-hidden"
+                        onTouchStart={(e) => handleTouchStart(e, response.id)}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                      >
+                        {/* Swipe action indicator */}
+                        {swipeAction?.responseId === response.id && (
+                          <div className="absolute inset-0 flex items-center justify-end pr-4 z-10">
+                            {swipeAction.type === 'reply' && (
+                              <div className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                                <Reply className="w-4 h-4" />
+                                <span className="text-sm">Reply</span>
+                              </div>
+                            )}
+                            {swipeAction.type === 'star' && (
+                              <div className="bg-yellow-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                                <Star className="w-4 h-4" />
+                                <span className="text-sm">Star</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 z-20">
+                          <span className="text-white text-xs font-medium">{response.responder_name?.charAt(0) || 'A'}</span>
                         </div>
-                        <p className="text-sm text-gray-700 whitespace-pre-wrap">{response.response}</p>
+                        <div className="flex-1 z-20">
+                          <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-none p-3 shadow-sm">
+                            {response.reply_to && (
+                              <div className="bg-gray-50 rounded-lg p-2 mb-2 text-xs text-gray-600 border-l-2 border-indigo-400">
+                                <span className="font-medium">Replying to:</span> {response.reply_to}
+                              </div>
+                            )}
+                            <p className="text-sm text-gray-900 whitespace-pre-wrap">{response.response}</p>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1 ml-1">
+                            <p className="text-xs text-gray-500">{new Date(response.created_at).toLocaleString()}</p>
+                            <button
+                              onClick={() => { setReplyingTo(response.responder_name); setResponseText(`@${response.responder_name} `); }}
+                              className="text-xs text-indigo-600 hover:text-indigo-800"
+                            >
+                              Reply
+                            </button>
+                          </div>
+                          {/* Desktop action menu */}
+                          <div className="absolute right-0 top-0 hidden group-hover:block">
+                            <button
+                              onClick={() => setShowReplyMenu(showReplyMenu === response.id ? null : response.id)}
+                              className="p-1.5 bg-gray-100 rounded-lg hover:bg-gray-200"
+                            >
+                              <MoreVertical className="w-4 h-4 text-gray-600" />
+                            </button>
+                            {showReplyMenu === response.id && (
+                              <div className="absolute right-0 top-8 bg-white rounded-lg shadow-lg border border-gray-200 py-1 w-32 z-10">
+                                <button
+                                  onClick={() => { setReplyingTo(response.responder_name); setResponseText(`@${response.responder_name} `); setShowReplyMenu(null); }}
+                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                >
+                                  <Reply className="w-4 h-4" />
+                                  Reply
+                                </button>
+                                <button
+                                  onClick={() => { setShowReplyMenu(null); }}
+                                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                >
+                                  <Star className="w-4 h-4" />
+                                  Star
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ))
                   )}
