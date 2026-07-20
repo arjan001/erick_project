@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { supabase } from '@/lib/supabase';
 import { Artist, Team, ProjectOwner, Backer, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
+import auditLogger from '@/lib/auditLogger';
 
 const AuthContext = createContext();
 
@@ -257,10 +258,13 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = (userData) => {
+  const login = async (userData) => {
     setUser(userData);
     setIsAuthenticated(true);
     localStorage.setItem('studio22_user', JSON.stringify(userData));
+    
+    // Log login event
+    await auditLogger.auth.login(userData.email);
   };
 
   const updateUser = async (newName) => {
@@ -299,6 +303,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async (shouldRedirect = true) => {
+    const userEmail = user?.email;
+    
     // 1. Sign out from Supabase (both local + global to kill all sessions/tokens)
     try {
       await supabase.auth.signOut({ scope: 'global' });
@@ -312,6 +318,7 @@ export const AuthProvider = ({ children }) => {
     }
     // 2. Clear all React state
     setUser(null);
+    setPermissions([]);
     setIsAuthenticated(false);
     // 3. Clear every piece of stored auth/session data
     localStorage.removeItem('studio22_user');
@@ -329,7 +336,13 @@ export const AuthProvider = ({ children }) => {
       document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
       document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + window.location.hostname;
     });
-    // 5. Redirect to landing page
+    
+    // 5. Log logout event
+    if (userEmail) {
+      await auditLogger.auth.logout(userEmail);
+    }
+    
+    // 6. Redirect to landing page
     if (shouldRedirect) {
       window.location.href = '/';
     }

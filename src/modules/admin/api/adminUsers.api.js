@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import auditLogger from '@/lib/auditLogger';
 
 export const adminUsersApi = {
   // Get all system users (not entity users like artists/teams)
@@ -81,6 +82,9 @@ export const adminUsersApi = {
       }
     }
 
+    // Log audit event
+    await auditLogger.users.create(userRecord.id, email);
+
     return userRecord;
   },
 
@@ -129,11 +133,21 @@ export const adminUsersApi = {
       }
     }
 
+    // Log audit event
+    await auditLogger.users.update(userId, data.email, userData);
+
     return data;
   },
 
   // Delete user
   deleteUser: async (userId) => {
+    // Get user email before deletion for audit log
+    const { data: user } = await supabase
+      .from('users')
+      .select('email')
+      .eq('id', userId)
+      .single();
+
     // Delete from Supabase Auth
     await supabase.auth.admin.deleteUser(userId);
     
@@ -144,6 +158,12 @@ export const adminUsersApi = {
       .eq('id', userId);
 
     if (error) throw error;
+
+    // Log audit event
+    if (user) {
+      await auditLogger.users.delete(userId, user.email);
+    }
+
     return true;
   },
 
