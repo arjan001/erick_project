@@ -395,7 +395,7 @@ export default function ArtistProfile() {
         video_embed_url: videoEmbedUrl,
         video_source: portfolioForm.video_source,
         thumbnail_url: thumbnailUrl,
-        status: 'pending',
+        status: 'approved',
         uploaded_by_type: 'artist',
         uploaded_by_id: artist.id
       };
@@ -621,32 +621,40 @@ export default function ArtistProfile() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {portfolioClips.map(clip => (
-                  <div key={clip.id} className="bg-gray-50 rounded-2xl overflow-hidden group">
-                    <div className="aspect-video bg-gray-200 relative cursor-pointer" onClick={() => setActiveClip(clip)}>
+                  <div key={clip.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 group hover:shadow-lg transition-all duration-300">
+                    <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative cursor-pointer" onClick={() => setActiveClip(clip)}>
                       {clip.thumbnail_url ? (
                         <img src={clip.thumbnail_url} alt={clip.title} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Play className="w-12 h-12 text-gray-400" />
+                          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md">
+                            <Play className="w-8 h-8 text-gray-400 ml-1" />
+                          </div>
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Play className="w-12 h-12 text-white" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
+                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                          <Play className="w-8 h-8 text-black ml-1" />
+                        </div>
                       </div>
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900">{clip.title}</h3>
-                      <p className="text-sm text-gray-500 mt-1">{clip.description || clip.project_type}</p>
-                      <div className="flex items-center justify-between mt-3">
-                        <span className="text-xs px-2 py-1 bg-gray-200 rounded-full text-gray-700">{clip.status}</span>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="ghost" onClick={() => { setEditingPortfolio(clip); setShowPortfolioModal(true); }} className="text-gray-600 hover:text-gray-900">
-                            Edit
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => handleDeletePortfolioClip(clip.id)} className="text-red-500 hover:text-red-700">
-                            Delete
-                          </Button>
+                    <div className="p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 text-base truncate">{clip.title}</h3>
+                          <p className="text-sm text-gray-500 mt-1 line-clamp-2">{clip.description || clip.project_type}</p>
                         </div>
+                        <span className="flex-shrink-0 text-xs px-2.5 py-1 bg-green-100 text-green-700 rounded-full font-medium capitalize">
+                          {clip.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+                        <Button size="sm" variant="ghost" onClick={() => { setEditingPortfolio(clip); setShowPortfolioModal(true); }} className="flex-1 text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                          Edit
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleDeletePortfolioClip(clip.id)} className="flex-1 text-red-500 hover:text-red-700 hover:bg-red-50">
+                          Delete
+                        </Button>
                       </div>
                     </div>
                   </div>
