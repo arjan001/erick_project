@@ -1,5 +1,17 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import filmIndustryRoles from '@/data/filmIndustryRoles.json';
+
+// Flatten roles from JSON for display
+const ROLES_OPTIONS = Object.values(filmIndustryRoles)
+  .filter(Array.isArray)
+  .flat();
+
+const EMPLOYMENT_TYPES = [
+  { value: 'fulltime', label: 'Full-time' },
+  { value: 'day_payment', label: 'Day Payment' },
+  { value: 'gig', label: 'Gig' }
+];
 
 export default function ClientJobModal({ open, editing, form, setForm, onClose, onSubmit }) {
   if (!open) return null;
@@ -31,19 +43,32 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-2">Job Type</label>
+            <label className="block text-sm font-medium text-gray-900 mb-2">Role</label>
             <select
               value={form.job_type}
               onChange={(e) => setForm({ ...form, job_type: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
             >
-              <option value="director">Director</option>
-              <option value="cinematographer">Cinematographer</option>
-              <option value="editor">Editor</option>
-              <option value="sound_engineer">Sound Engineer</option>
-              <option value="producer">Producer</option>
-              <option value="actor">Actor</option>
-              <option value="other">Other</option>
+              {ROLES_OPTIONS.map((role) => (
+                <option key={role} value={role.toLowerCase().replace(/\s+/g, '_')}>
+                  {role}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-2">Employment Type</label>
+            <select
+              value={form.employment_type || ''}
+              onChange={(e) => setForm({ ...form, employment_type: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+            >
+              <option value="">Select employment type</option>
+              {EMPLOYMENT_TYPES.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
             </select>
           </div>
           <div>

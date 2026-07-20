@@ -239,9 +239,29 @@ CREATE TABLE IF NOT EXISTS projects (
     project_type VARCHAR(50) NOT NULL CHECK (project_type IN ('commercial', 'short_film', 'film', 'music_video', 'documentary', 'other')),
     status VARCHAR(50) DEFAULT 'draft' CHECK (status IN ('draft', 'in_production', 'released', 'cancelled')),
     budget DECIMAL(12, 2),
+    budget_range VARCHAR(50),
     location VARCHAR(255),
+    location_city VARCHAR(255),
+    location_country VARCHAR(255),
+    is_remote BOOLEAN DEFAULT FALSE,
     start_date DATE,
     end_date DATE,
+    timeline_start DATE,
+    timeline_deadline DATE,
+    usage TEXT[] DEFAULT ARRAY[]::TEXT[],
+    visual_direction_clips TEXT[] DEFAULT ARRAY[]::TEXT[],
+    departments_needed TEXT[] DEFAULT ARRAY[]::TEXT[],
+    notes TEXT,
+    project_owner_email VARCHAR(255),
+    project_owner_name VARCHAR(255),
+    project_owner_company VARCHAR(255),
+    funding_stage VARCHAR(50),
+    seeking_partners TEXT[] DEFAULT ARRAY[]::TEXT[],
+    rights_collaboration_notes TEXT,
+    open_to_backing BOOLEAN DEFAULT FALSE,
+    backing_types TEXT[] DEFAULT ARRAY[]::TEXT[],
+    backing_notes TEXT,
+    image_url TEXT,
     images TEXT[] DEFAULT ARRAY[]::TEXT[],
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -282,13 +302,17 @@ CREATE TABLE IF NOT EXISTS jobs (
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
     job_type VARCHAR(50) NOT NULL CHECK (job_type IN ('director', 'cinematographer', 'editor', 'sound_engineer', 'producer', 'actor', 'other')),
+    employment_type VARCHAR(50) CHECK (employment_type IN ('fulltime', 'day_payment', 'gig')),
     location VARCHAR(255),
     budget DECIMAL(10, 2),
     duration VARCHAR(50) CHECK (duration IN ('short_term', 'long_term', 'ongoing')),
     is_premium BOOLEAN DEFAULT FALSE,
-    status VARCHAR(50) DEFAULT 'open' CHECK (status IN ('draft', 'open', 'closed', 'filled')),
+    status VARCHAR(50) DEFAULT 'open' CHECK (status IN ('draft', 'pending_approval', 'open', 'closed', 'filled')),
     required_skills TEXT[] DEFAULT ARRAY[]::TEXT[],
     application_deadline TIMESTAMP WITH TIME ZONE,
+    contact_name VARCHAR(255),
+    contact_email VARCHAR(255),
+    contact_phone VARCHAR(50),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -297,6 +321,7 @@ CREATE INDEX IF NOT EXISTS idx_jobs_project_id ON jobs(project_id);
 CREATE INDEX IF NOT EXISTS idx_jobs_client_id ON jobs(client_id);
 CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
 CREATE INDEX IF NOT EXISTS idx_jobs_type ON jobs(job_type);
+CREATE INDEX IF NOT EXISTS idx_jobs_contact_email ON jobs(contact_email) WHERE contact_email IS NOT NULL;
 
 -- ============================================
 -- APPLICATIONS
@@ -1133,6 +1158,7 @@ CREATE TABLE IF NOT EXISTS support_tickets (
     description TEXT NOT NULL,
     status VARCHAR(20) DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'resolved', 'closed')),
     assigned_to VARCHAR(255),
+    is_public BOOLEAN DEFAULT TRUE,
     attachments JSONB DEFAULT '[]'::jsonb,
     metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -1146,6 +1172,7 @@ CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status)
 CREATE INDEX IF NOT EXISTS idx_support_tickets_category ON support_tickets(category);
 CREATE INDEX IF NOT EXISTS idx_support_tickets_priority ON support_tickets(priority);
 CREATE INDEX IF NOT EXISTS idx_support_tickets_ticket_number ON support_tickets(ticket_number);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_is_public ON support_tickets(is_public);
 
 CREATE TABLE IF NOT EXISTS ticket_responses (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

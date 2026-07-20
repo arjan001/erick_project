@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Upload, Image as ImageIcon, MapPin, Calendar, Clock, DollarSign, Briefcase, Users, Sparkles } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast';
+import filmIndustrySkills from '@/data/filmIndustrySkills.json';
+import CountrySelector from '@/components/CountrySelector';
 
 const PROJECT_TYPES = [
   'commercial', 'short_film', 'film', 'music_video', 'documentary', 'other'
@@ -13,11 +15,8 @@ const PROJECT_TYPES = [
 
 const PAYMENT_TYPES = ['Fixed', 'Hourly', 'Daily'];
 
-const SKILLS_OPTIONS = [
-  'Director', 'Cinematographer', 'Editor', 'VFX Artist', 'Sound Designer',
-  'Production Designer', 'Art Director', 'Makeup Artist', 'Wardrobe',
-  'Gaffer', 'Grip', 'Scriptwriter', 'Producer', 'Location Manager'
-];
+// Flatten skills from JSON for display
+const SKILLS_OPTIONS = Object.values(filmIndustrySkills).flat();
 
 export default function ClientPostProject() {
   const navigate = useNavigate();

@@ -93,11 +93,11 @@ export default function ArtistDashboard() {
   return (
     <div className="bg-[#FAFAFA] min-h-screen">
       <main className="w-full">
-        <div className="px-5 sm:px-7 lg:px-9 pt-7 pb-12">
+        <div className="px-4 sm:px-5 md:px-7 lg:px-9 pt-7 pb-12">
           <UpgradeConnectsBanner />
 
           {/* Stats row */}
-          <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
             {stats.map((stat, idx) => (
               <StatCard key={idx} {...stat} />
             ))}

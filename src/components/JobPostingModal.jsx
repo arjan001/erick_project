@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Calendar as CalendarIcon, CheckCircle } from 'lucide-react';
+import { X, Calendar as CalendarIcon, CheckCircle, User, Mail, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { PRODUCTION_POSITIONS } from './positions';
 import ReactQuill from 'react-quill';
@@ -135,7 +136,11 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
     rate: '',
     frequency: 'flat_fee',
     skills: [],
-    image_url: ''
+    image_url: '',
+    // Contact info for non-logged-in users
+    contact_name: user?.full_name || '',
+    contact_email: user?.email || '',
+    contact_phone: ''
   });
   const [positionSearch, setPositionSearch] = useState('');
   const [showPositionDropdown, setShowPositionDropdown] = useState(false);
@@ -167,19 +172,18 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
     const jobData = {
       title: `${formData.position} needed for a ${formData.project_type} in ${formData.location} starting ${formData.dates}`,
       description: formData.description || 'I want to have ...',
-      short_description: formData.description?.substring(0, 100) || '',
-      client_name: user?.full_name || 'Client',
-      client_email: user?.email || '',
-      client_avatar_url: '',
+      job_type: formData.position.toLowerCase().replace(/ /g, '_'),
+      employment_type: formData.job_type === 'paid_gig' ? 'gig' : formData.job_type === 'full_time' ? 'fulltime' : 'day_payment',
       location: formData.location,
-      budget_min: parseFloat(formData.rate) || 0,
-      budget_max: parseFloat(formData.rate) || 0,
-      budget_type: formData.pay_type,
-      roles_needed: [formData.position],
-      skills_required: formData.skills,
-      project_types: [formData.project_type],
-      status: 'open',
-      posted_at: new Date().toISOString()
+      budget: parseFloat(formData.rate) || 0,
+      duration: 'short_term',
+      required_skills: formData.skills,
+      status: 'pending_approval', // Changed from 'open' to require admin approval
+      created_date: new Date().toISOString(),
+      // Additional contact info for non-logged-in users
+      contact_name: formData.contact_name,
+      contact_email: formData.contact_email,
+      contact_phone: formData.contact_phone
     };
     onSubmit(jobData);
     setShowSuccessNotification(true);
@@ -210,13 +214,13 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
       {/* Success Notification */}
       {showSuccessNotification && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] animate-slideDown">
-          <div className="bg-white rounded-xl shadow-2xl border-2 border-green-500 px-6 py-4 flex items-center gap-4 min-w-[400px]">
-            <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+          <div className="bg-white rounded-xl shadow-2xl border-2 border-yellow-500 px-6 py-4 flex items-center gap-4 min-w-[400px]">
+            <div className="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center flex-shrink-0">
               <CheckCircle className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-gray-900">Job posted successfully!</h3>
-              <p className="text-sm text-gray-600">Your job is now live and visible to creators</p>
+              <h3 className="font-bold text-lg text-gray-900">Job submitted for approval!</h3>
+              <p className="text-sm text-gray-600">Your job will be reviewed by admin before going live</p>
             </div>
           </div>
         </div>
@@ -580,6 +584,52 @@ Write in a professional, direct tone.`
           {/* Step 2: Job Details */}
           {step === 2 && (
             <div className="space-y-6">
+              {/* Contact Information for non-logged-in users */}
+              {!user && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+                  <h3 className="text-sm font-semibold text-blue-900 flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Contact Information
+                  </h3>
+                  <p className="text-xs text-blue-700">We'll use this to contact you about your job posting</p>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Full Name *</label>
+                    <Input
+                      type="text"
+                      value={formData.contact_name}
+                      onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
+                      placeholder="Your full name"
+                      className="w-full"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Email Address *</label>
+                    <Input
+                      type="email"
+                      value={formData.contact_email}
+                      onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                      placeholder="your@email.com"
+                      className="w-full"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Phone Number (optional)</label>
+                    <Input
+                      type="tel"
+                      value={formData.contact_phone}
+                      onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                      placeholder="+1 234 567 8900"
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium mb-2">Job title</label>
                 <input
@@ -798,7 +848,13 @@ Write in a professional, direct tone.`
             {step < 3 ? (
               <Button
                 onClick={handleNext}
-                disabled={!formData.position || !formData.location || !formData.dates || !formData.project_type}
+                disabled={
+                  !formData.position || 
+                  !formData.location || 
+                  !formData.dates || 
+                  !formData.project_type ||
+                  (!user && (!formData.contact_name || !formData.contact_email))
+                }
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg"
               >
                 Next

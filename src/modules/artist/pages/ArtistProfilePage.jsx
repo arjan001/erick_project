@@ -455,13 +455,13 @@ export default function ArtistProfile() {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 overflow-x-auto">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="flex gap-8">
-              <button onClick={() => setActiveTab('profile')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'profile' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Profile</button>
-              <button onClick={() => setActiveTab('portfolio')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'portfolio' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Portfolio</button>
-              <button onClick={() => setActiveTab('about')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'about' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>About</button>
-              <button onClick={() => setActiveTab('settings')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'settings' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Account Settings</button>
+            <div className="flex gap-4 sm:gap-8 min-w-max">
+              <button onClick={() => setActiveTab('profile')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'profile' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Profile</button>
+              <button onClick={() => setActiveTab('portfolio')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'portfolio' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Portfolio</button>
+              <button onClick={() => setActiveTab('about')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'about' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>About</button>
+              <button onClick={() => setActiveTab('settings')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'settings' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Account Settings</button>
             </div>
           </div>
         </div>
@@ -471,8 +471,8 @@ export default function ArtistProfile() {
           {activeTab === 'profile' && (
             <div className="space-y-8">
               {/* Profile Header */}
-              <div className="flex items-start gap-8">
-                <div className="relative">
+              <div className="flex flex-col sm:flex-row items-start gap-6 sm:gap-8">
+                <div className="relative mx-auto sm:mx-0">
                   <div className="w-32 h-32 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden">
                     {previewUrl ? (
                       <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -491,17 +491,17 @@ export default function ArtistProfile() {
                     <input type="file" accept="image/*,.gif,.jpg,.jpeg,.png,.jfif,.webp,.bmp,.tiff" onChange={handleProfileImageUpload} disabled={uploadingImage} className="hidden" />
                   </label>
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 text-center sm:text-left">
                   <h2 className="text-2xl font-bold text-gray-900">{formData.full_name || user?.full_name}</h2>
                   <p className="text-sm text-gray-500 mt-1">{user?.email}</p>
                   {formData.roles && formData.roles.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
+                    <div className="flex flex-wrap gap-2 mt-2 justify-center sm:justify-start">
                       {formData.roles.map((role, i) => (
                         <span key={i} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">{role}</span>
                       ))}
                     </div>
                   )}
-                  <div className="mt-4 flex gap-3">
+                  <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
                     <Button onClick={() => setEditing(!editing)} variant={editing ? 'outline' : 'default'} className={editing ? '' : 'bg-black text-white hover:bg-gray-800'}>
                       {editing ? <X className="w-4 h-4 mr-2" /> : <Edit2 className="w-4 h-4 mr-2" />}
                       {editing ? 'Cancel' : 'Edit Profile'}
@@ -660,20 +660,20 @@ export default function ArtistProfile() {
           )}
 
           {activeTab === 'settings' && (
-            <div className="max-w-3xl space-y-6">
+            <div className="max-w-3xl space-y-6 w-full">
               <div className="bg-gray-50 rounded-2xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2"><HardDrive className="w-5 h-5 text-gray-400" /> Google Drive Integration</h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">Google Drive Folder Link</label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Input 
                         value={googleDriveFolderId} 
                         onChange={(e) => setGoogleDriveFolderId(e.target.value)} 
                         placeholder="Paste your Google Drive folder link (e.g., https://drive.google.com/drive/folders/...)" 
-                        className="rounded-lg flex-1" 
+                        className="rounded-lg flex-1 min-w-0" 
                       />
-                      <Button onClick={handleConnectGoogleDrive} variant="outline" className="rounded-lg">
+                      <Button onClick={handleConnectGoogleDrive} variant="outline" className="rounded-lg whitespace-nowrap">
                         <LinkIcon className="w-4 h-4 mr-2" />
                         Connect
                       </Button>

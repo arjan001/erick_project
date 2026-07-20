@@ -26,3 +26,11 @@ COMMENT ON COLUMN maintenance_access_codes.created_by IS 'Email of admin who cre
 COMMENT ON COLUMN maintenance_access_codes.expires_at IS 'Optional expiration time for the code';
 COMMENT ON COLUMN maintenance_access_codes.last_used_at IS 'Last time the code was used';
 COMMENT ON COLUMN maintenance_access_codes.usage_count IS 'Number of times the code has been used';
+
+-- Insert sample maintenance access codes (for development/testing)
+-- In production, these should be managed through the admin interface
+INSERT INTO maintenance_access_codes (code, is_active, created_by, expires_at) VALUES
+('MAINTENANCE-2024-DEV', TRUE, 'system@studio22.app', NULL),
+('EMERGENCY-ACCESS-2024', TRUE, 'system@studio22.app', NULL),
+('TEMP-ACCESS-24H', TRUE, 'system@studio22.app', CURRENT_TIMESTAMP + INTERVAL '24 hours')
+ON CONFLICT (code) DO NOTHING;

@@ -19,11 +19,12 @@ const ALL_SKILLS = Object.values(filmIndustrySkills).flat();
 const ALL_ROLES = Object.values(filmIndustryRoles).flat().filter(item => typeof item === 'string');
 const ALL_OPTIONS = [...new Set([...ALL_SKILLS, ...ALL_ROLES])];
 
-export default function ClientPostProjectModal({ open, onClose, user }) {
+export default function ClientPostProjectModal({ open, onClose, user, editingProject = null }) {
   const { success, error: toastError } = useToast();
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [projectForm, setProjectForm] = useState({
     title: '',
@@ -49,29 +50,50 @@ export default function ClientPostProjectModal({ open, onClose, user }) {
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [searchingLocation, setSearchingLocation] = useState(false);
 
-  // Reset form when modal opens
+  // Reset form when modal opens or when editing project changes
   useEffect(() => {
     if (open) {
-      setProjectForm({
-        title: '',
-        description: '',
-        project_type: 'commercial',
-        budget_type: 'Fixed',
-        budget_min: '',
-        budget_max: '',
-        location: '',
-        duration: '',
-        timeline_start: '',
-        timeline_end: '',
-        requirements: '',
-        skills_needed: []
-      });
-      setSelectedSkills([]);
-      setImagePreview(null);
+      if (editingProject) {
+        setIsEditing(true);
+        setProjectForm({
+          title: editingProject.title || '',
+          description: editingProject.description || '',
+          project_type: editingProject.project_type || 'commercial',
+          budget_type: editingProject.budget_type || 'Fixed',
+          budget_min: editingProject.budget_min || '',
+          budget_max: editingProject.budget_max || '',
+          location: editingProject.location_city || '',
+          duration: editingProject.duration || '',
+          timeline_start: editingProject.timeline_start || '',
+          timeline_end: editingProject.timeline_deadline || '',
+          requirements: editingProject.requirements || '',
+          skills_needed: []
+        });
+        setSelectedSkills(editingProject.departments_needed || []);
+        setImagePreview(editingProject.image_url || null);
+      } else {
+        setIsEditing(false);
+        setProjectForm({
+          title: '',
+          description: '',
+          project_type: 'commercial',
+          budget_type: 'Fixed',
+          budget_min: '',
+          budget_max: '',
+          location: '',
+          duration: '',
+          timeline_start: '',
+          timeline_end: '',
+          requirements: '',
+          skills_needed: []
+        });
+        setSelectedSkills([]);
+        setImagePreview(null);
+      }
       setSkillSearch('');
       setLocationSearch('');
     }
-  }, [open]);
+  }, [open, editingProject]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -162,7 +184,7 @@ export default function ClientPostProjectModal({ open, onClose, user }) {
         budget_min < 100000 ? '50k_100k' :
         budget_min < 250000 ? '100k_250k' : '250k_plus';
 
-      await Project.create({
+      const projectData = {
         project_owner_email: user.email,
         project_owner_name: user.full_name,
         title: projectForm.title,
@@ -182,15 +204,22 @@ export default function ClientPostProjectModal({ open, onClose, user }) {
         departments_needed: selectedSkills,
         image_url: imagePreview,
         status: 'submitted'
-      });
+      };
 
-      success('Project Posted', 'Your project has been submitted successfully');
+      if (isEditing && editingProject) {
+        await Project.update(editingProject.id, projectData);
+        success('Project Updated', 'Your project has been updated successfully');
+      } else {
+        await Project.create(projectData);
+        success('Project Posted', 'Your project has been submitted successfully');
+      }
+
       onClose();
-      // Refresh the page to show new project
+      // Refresh the page to show changes
       window.location.reload();
     } catch (err) {
-      console.error('Error posting project:', err);
-      toastError('Posting Failed', 'Failed to post project');
+      console.error('Error saving project:', err);
+      toastError(isEditing ? 'Update Failed' : 'Posting Failed', isEditing ? 'Failed to update project' : 'Failed to post project');
     } finally {
       setLoading(false);
     }
@@ -207,8 +236,8 @@ export default function ClientPostProjectModal({ open, onClose, user }) {
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-5 flex items-center justify-between z-10">
           <div>
-            <h2 className="text-xl font-bold text-white">Post a New Project</h2>
-            <p className="text-gray-300 text-sm">Share your project details to connect with talented creators</p>
+            <h2 className="text-xl font-bold text-white">{isEditing ? 'Edit Project' : 'Post a New Project'}</h2>
+            <p className="text-gray-300 text-sm">{isEditing ? 'Update your project details' : 'Share your project details to connect with talented creators'}</p>
           </div>
           <button
             onClick={onClose}
@@ -494,7 +523,7 @@ export default function ClientPostProjectModal({ open, onClose, user }) {
               className="flex-1 bg-black text-white hover:bg-gray-800 h-11 font-medium"
               disabled={loading}
             >
-              {loading ? 'Submitting...' : 'Submit Project'}
+              {loading ? (isEditing ? 'Updating...' : 'Submitting...') : (isEditing ? 'Update Project' : 'Submit Project')}
             </Button>
             <Button
               type="button"

@@ -42,7 +42,8 @@ export default function SupportTicketsPage() {
   const fetchTickets = async () => {
     try {
       setLoading(true);
-      const allTickets = await SupportTicket.filter({ user_email: user.email }, '-created_at', 50);
+      // Fetch all public tickets for community viewing
+      const allTickets = await SupportTicket.filter({ is_public: true }, '-created_at', 100);
       setTickets(allTickets || []);
     } catch (err) {
       console.error('Error fetching tickets:', err);
@@ -122,6 +123,15 @@ export default function SupportTicketsPage() {
 
   const handleUpdateStatus = async (ticketId, newStatus) => {
     try {
+      const ticket = tickets.find(t => t.id === ticketId);
+      if (!ticket) return;
+
+      // Only ticket creator or admin can close tickets
+      if (newStatus === 'closed' && ticket.user_email !== user.email && user.role !== 'admin') {
+        error('Permission Denied', 'Only the ticket creator or an admin can close this ticket');
+        return;
+      }
+
       const updates = { status: newStatus };
       if (newStatus === 'resolved') {
         updates.resolved_at = new Date().toISOString();
@@ -258,17 +268,18 @@ export default function SupportTicketsPage() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Created By</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Category</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Priority</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Created</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {paginatedTickets.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-4 py-12 text-center text-sm text-gray-500">
+                  <td colSpan="7" className="px-4 py-12 text-center text-sm text-gray-500">
                     <Ticket className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                     No tickets found
                   </td>
@@ -287,10 +298,16 @@ export default function SupportTicketsPage() {
                           <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">{ticket.subject}</p>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        <div className="text-xs text-gray-700">
+                          <p className="font-medium">{ticket.user_name}</p>
+                          <p className="text-gray-500">{ticket.user_role}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell">
                         <span className="text-xs font-medium text-gray-700 capitalize">{ticket.category}</span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 hidden md:table-cell">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${priorityConfig.color}`}>
                           {priorityConfig.label}
                         </span>
@@ -301,7 +318,7 @@ export default function SupportTicketsPage() {
                           {statusConfig.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-500">
+                      <td className="px-4 py-3 text-xs text-gray-500 hidden lg:table-cell">
                         {new Date(ticket.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -459,16 +476,23 @@ export default function SupportTicketsPage() {
 
             <div className="flex-1 overflow-y-auto p-4">
               <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityConfig(selectedTicket.priority).color}`}>
                     {getPriorityConfig(selectedTicket.priority).label}
                   </span>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusConfig(selectedTicket.status).color}`}>
                     {getStatusConfig(selectedTicket.status).label}
                   </span>
+                  {selectedTicket.is_public && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Public
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedTicket.description}</p>
-                <p className="text-xs text-gray-500 mt-2">Created by {selectedTicket.user_name} on {new Date(selectedTicket.created_at).toLocaleString()}</p>
+                <p className="text-xs text-gray-500 mt-2">
+                  Created by <span className="font-medium">{selectedTicket.user_name}</span> ({selectedTicket.user_role}) on {new Date(selectedTicket.created_at).toLocaleString()}
+                </p>
               </div>
 
               <div className="border-t border-gray-200 pt-4">

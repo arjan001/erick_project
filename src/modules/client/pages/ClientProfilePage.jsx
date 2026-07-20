@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CountrySelector from '@/components/CountrySelector';
 import { formatSocialMediaUrl } from '@/lib/socialMediaUtils';
-import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube } from 'lucide-react';
+import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
@@ -133,6 +133,25 @@ export default function ClientProfilePage() {
     } catch (err) {
       console.error('Error saving preferences:', err);
       toastError('Save Failed', 'Failed to update preferences');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!owner) return;
+    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone and will permanently delete all your data including projects, jobs, and applications.')) {
+      return;
+    }
+    
+    try {
+      await ProjectOwner.delete(owner.id);
+      localStorage.removeItem('studio22_user');
+      success('Account Deleted', 'Your account has been permanently deleted');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
+    } catch (err) {
+      console.error('Error deleting account:', err);
+      toastError('Delete Failed', 'Failed to delete account. Please try again.');
     }
   };
 
@@ -336,6 +355,11 @@ export default function ClientProfilePage() {
                 <h3 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2"><Shield className="w-4 h-4 text-gray-400" /> Privacy</h3>
                 <ToggleRow title="Public Profile" description="Allow creators to view your company profile" checked={profilePublic} onChange={() => setProfilePublic(!profilePublic)} isLast />
                 <Button onClick={handleSavePreferences} className="w-full bg-black text-white hover:bg-gray-800 rounded-lg py-2.5 mt-4">Save Privacy Settings</Button>
+              </div>
+              <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
+                <h3 className="font-bold text-red-900 text-base mb-4 flex items-center gap-2"><Trash2 className="w-4 h-4 text-red-600" /> Danger Zone</h3>
+                <p className="text-sm text-red-700 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
+                <Button onClick={handleDeleteAccount} variant="outline" className="w-full border-red-600 text-red-600 hover:bg-red-600 hover:text-white rounded-lg py-2.5">Delete Account</Button>
               </div>
             </div>
           )}

@@ -31,7 +31,8 @@ export default function ClientDashboard() {
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [showJobModal, setShowJobModal] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
-  const [jobForm, setJobForm] = useState({ title: '', description: '', job_type: 'director', location: '', budget: '', required_skills: '' });
+  const [editingProject, setEditingProject] = useState(null);
+  const [jobForm, setJobForm] = useState({ title: '', description: '', job_type: 'director', employment_type: '', location: '', budget: '', duration: '', required_skills: '' });
 
   useEffect(() => {
     if (isLoadingAuth) return;
@@ -103,15 +104,17 @@ export default function ClientDashboard() {
         title: jobForm.title,
         description: jobForm.description,
         job_type: jobForm.job_type,
+        employment_type: jobForm.employment_type,
         location: jobForm.location,
         budget: parseFloat(jobForm.budget) || 0,
+        duration: jobForm.duration,
         required_skills: jobForm.required_skills.split(',').map((s) => s.trim()).filter((s) => s),
         status: 'open',
         created_date: new Date().toISOString()
       });
       setJobs((prev) => [...prev, newJob]);
       setShowJobModal(false);
-      setJobForm({ title: '', description: '', job_type: 'director', location: '', budget: '', required_skills: '' });
+      setJobForm({ title: '', description: '', job_type: 'director', employment_type: '', location: '', budget: '', duration: '', required_skills: '' });
       success('Job Created', 'Job created successfully');
     } catch (err) {
       console.error('Error creating job:', err);
@@ -126,14 +129,16 @@ export default function ClientDashboard() {
         title: jobForm.title,
         description: jobForm.description,
         job_type: jobForm.job_type,
+        employment_type: jobForm.employment_type,
         location: jobForm.location,
         budget: parseFloat(jobForm.budget) || 0,
+        duration: jobForm.duration,
         required_skills: jobForm.required_skills.split(',').map((s) => s.trim()).filter((s) => s)
       });
       setJobs((prev) => prev.map((j) => (j.id === editingJob.id ? updatedJob : j)));
       setShowJobModal(false);
       setEditingJob(null);
-      setJobForm({ title: '', description: '', job_type: 'director', location: '', budget: '', required_skills: '' });
+      setJobForm({ title: '', description: '', job_type: 'director', employment_type: '', location: '', budget: '', duration: '', required_skills: '' });
       success('Job Updated', 'Job updated successfully');
     } catch (err) {
       console.error('Error updating job:', err);
@@ -141,7 +146,12 @@ export default function ClientDashboard() {
     }
   };
 
-  const openProjectModal = () => {
+  const openProjectModal = (project = null) => {
+    if (project) {
+      setEditingProject(project);
+    } else {
+      setEditingProject(null);
+    }
     setShowProjectModal(true);
   };
 
@@ -152,13 +162,15 @@ export default function ClientDashboard() {
         title: job.title || '',
         description: job.description || '',
         job_type: job.job_type || 'director',
+        employment_type: job.employment_type || '',
         location: job.location || '',
         budget: job.budget || '',
+        duration: job.duration || '',
         required_skills: Array.isArray(job.required_skills) ? job.required_skills.join(', ') : (job.required_skills || '')
       });
     } else {
       setEditingJob(null);
-      setJobForm({ title: '', description: '', job_type: 'director', location: '', budget: '', required_skills: '' });
+      setJobForm({ title: '', description: '', job_type: 'director', employment_type: '', location: '', budget: '', duration: '', required_skills: '' });
     }
     setShowJobModal(true);
   };
@@ -254,7 +266,7 @@ export default function ClientDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Project Cards */}
               {projects.map((project) => (
-                <ClientProjectCard key={project.id} project={project} onEdit={() => {}} onDelete={handleDeleteProject} />
+                <ClientProjectCard key={project.id} project={project} onEdit={() => openProjectModal(project)} onDelete={handleDeleteProject} />
               ))}
               {/* Job Cards - convert to card format */}
               {jobs.map((job) => (
@@ -285,8 +297,9 @@ export default function ClientDashboard() {
 
       <ClientPostProjectModal
         open={showProjectModal}
-        onClose={() => setShowProjectModal(false)}
+        onClose={() => { setShowProjectModal(false); setEditingProject(null); }}
         user={user}
+        editingProject={editingProject}
       />
 
       <ClientJobModal

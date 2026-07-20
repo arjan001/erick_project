@@ -3,7 +3,8 @@ import { Project, AuditLog } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { FolderKanban, Search, Eye, Trash2, DollarSign, CheckCircle, XCircle, TrendingUp, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { FolderKanban, Search, Eye, Trash2, DollarSign, CheckCircle, XCircle, TrendingUp, X, Plus, Building2, FileText, Film, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const STATUSES = ['submitted', 'verified', 'in_progress', 'delivered', 'rejected'];
 
@@ -13,8 +14,28 @@ export default function AdminProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedProject, setSelectedProject] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    description: '',
+    project_type: 'commercial',
+    location_city: '',
+    budget_amount: '',
+    status: 'submitted'
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const fetchProjects = async () => {
     try {
@@ -44,6 +65,38 @@ export default function AdminProjectsPage() {
     }
   };
 
+  const handleCreateProject = async () => {
+    if (!createForm.title || !createForm.description) {
+      error('Validation Error', 'Title and description are required');
+      return;
+    }
+    try {
+      const newProject = await Project.create({
+        title: createForm.title,
+        description: createForm.description,
+        project_type: createForm.project_type,
+        location_city: createForm.location_city,
+        budget_amount: parseFloat(createForm.budget_amount) || 0,
+        status: createForm.status
+      });
+      setProjects(prev => [newProject, ...prev]);
+      setShowCreateModal(false);
+      setCreateForm({
+        title: '',
+        description: '',
+        project_type: 'commercial',
+        location_city: '',
+        budget_amount: '',
+        status: 'submitted'
+      });
+      success('Created', 'Project created successfully');
+      AuditLog.create({ actor_email: user?.email, action: 'project.create', entity_type: 'Project', entity_id: newProject.id, details: 'Created project' }).catch(() => {});
+    } catch (err) {
+      console.error('Error creating project:', err);
+      error('Failed', 'Failed to create project');
+    }
+  };
+
   const handleVerify = async (projectId, currentStatus) => {
     const newStatus = currentStatus === 'verified' ? 'submitted' : 'verified';
     try {
@@ -69,11 +122,27 @@ export default function AdminProjectsPage() {
   };
 
   const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.project_owner_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.project_type?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = project.project_owner_name?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+                         project.project_type?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+                         project.title?.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'all' || project.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
+
+  const paginatedProjects = filteredProjects.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, filterStatus]);
 
   if (loading) {
     return (
@@ -142,6 +211,13 @@ export default function AdminProjectsPage() {
               {STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
             </select>
           </div>
+          <Button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-black text-white hover:bg-gray-800"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Project
+          </Button>
           <div className="text-sm text-gray-500">Total: {filteredProjects.length}</div>
         </div>
 
@@ -159,10 +235,10 @@ export default function AdminProjectsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredProjects.length === 0 && (
+              {paginatedProjects.length === 0 && (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500">No projects found</td></tr>
               )}
-              {filteredProjects.map(project => (
+              {paginatedProjects.map(project => (
                 <tr key={project.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <div className="text-sm font-medium text-gray-900">{project.title || 'Untitled'}</div>
@@ -193,26 +269,284 @@ export default function AdminProjectsPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredProjects.length)} of {filteredProjects.length} projects
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 ${currentPage === page ? 'bg-black text-white hover:bg-gray-800' : ''}`}
+                >
+                  {page}
+                </Button>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {selectedProject && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Project Details</h2>
+                <p className="text-sm text-gray-500 mt-1">Complete project information</p>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedProject(null)} className="rounded-full">
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {selectedProject.image_url && (
+                <div className="rounded-xl overflow-hidden border border-gray-200">
+                  <img src={selectedProject.image_url} alt={selectedProject.title} className="w-full h-48 object-cover" />
+                </div>
+              )}
+
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-blue-600" />
+                  Client Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Name</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.project_owner_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.project_owner_email || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Company</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.project_owner_company || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
+                    <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full mt-1 ${getStatusBadge(selectedProject.status)}`}>
+                      {selectedProject.status?.replace('_', ' ') || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <FolderKanban className="w-5 h-5 text-indigo-600" />
+                  Project Details
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Title</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.title || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Type</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1 capitalize">{selectedProject.project_type?.replace('_', ' ') || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Budget Range</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.budget_range?.replace(/_/g, ' ') || selectedProject.budget ? `$${selectedProject.budget?.toLocaleString()}` : 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Location</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">
+                      {selectedProject.is_remote ? 'Remote' : [selectedProject.location_city, selectedProject.location_country].filter(Boolean).join(', ') || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Timeline Start</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.timeline_start || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Timeline End</label>
+                    <p className="text-sm font-medium text-gray-900 mt-1">{selectedProject.timeline_deadline || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {selectedProject.description && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-purple-600" />
+                    Description
+                  </h3>
+                  <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-4">{selectedProject.description}</p>
+                </div>
+              )}
+
+              {selectedProject.notes && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-purple-600" />
+                    Additional Notes
+                  </h3>
+                  <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-4 whitespace-pre-wrap">{selectedProject.notes}</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {selectedProject.usage && selectedProject.usage.length > 0 && (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-2">Usage</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProject.usage.map((tag, idx) => (
+                        <span key={idx} className="px-2 py-1 bg-white border border-gray-200 rounded-full text-xs text-gray-700">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {selectedProject.departments_needed && selectedProject.departments_needed.length > 0 && (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-2">Departments Needed</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProject.departments_needed.map((dept, idx) => (
+                        <span key={idx} className="px-2 py-1 bg-white border border-gray-200 rounded-full text-xs text-gray-700">
+                          {dept}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {selectedProject.open_to_backing && (
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 border border-green-100">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <DollarSign className="w-5 h-5 text-green-600" />
+                    Funding Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Funding Stage</label>
+                      <p className="text-sm font-medium text-gray-900 mt-1 capitalize">{selectedProject.funding_stage || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Seeking Partners</label>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {selectedProject.seeking_partners?.map((partner, idx) => (
+                          <span key={idx} className="px-2 py-1 bg-white border border-green-200 rounded-full text-xs text-gray-700">
+                            {partner}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {selectedProject.backing_notes && (
+                    <div className="mt-4">
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Backing Notes</label>
+                      <p className="text-sm text-gray-700 mt-1">{selectedProject.backing_notes}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Project Details</h2>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedProject(null)}><X className="w-4 h-4" /></Button>
+              <h2 className="text-xl font-bold">Create Project</h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowCreateModal(false)}><X className="w-4 h-4" /></Button>
             </div>
-            <div className="space-y-3 text-sm">
-              <div><span className="font-medium text-gray-500">Owner:</span> {selectedProject.project_owner_name} ({selectedProject.project_owner_email})</div>
-              <div><span className="font-medium text-gray-500">Title:</span> {selectedProject.title || 'N/A'}</div>
-              <div><span className="font-medium text-gray-500">Type:</span> <span className="capitalize">{selectedProject.project_type?.replace('_', ' ')}</span></div>
-              <div><span className="font-medium text-gray-500">Description:</span> {selectedProject.description || 'N/A'}</div>
-              <div><span className="font-medium text-gray-500">Location:</span> {[selectedProject.location_city, selectedProject.location_country].filter(Boolean).join(', ') || 'N/A'}</div>
-              <div><span className="font-medium text-gray-500">Budget:</span> {selectedProject.budget_amount ? `$${selectedProject.budget_amount.toLocaleString()}` : selectedProject.budget_range?.replace(/_/g, ' ') || 'N/A'}</div>
-              <div><span className="font-medium text-gray-500">Requirements:</span> {selectedProject.requirements || 'N/A'}</div>
-              <div><span className="font-medium text-gray-500">Timeline:</span> {[selectedProject.timeline_start, selectedProject.timeline_deadline].filter(Boolean).join(' - ') || 'N/A'}</div>
-              <div><span className="font-medium text-gray-500">Open to Backing:</span> {selectedProject.open_to_backing ? 'Yes' : 'No'}</div>
-              <div><span className="font-medium text-gray-500">Status:</span> <span className="capitalize">{selectedProject.status?.replace('_', ' ')}</span></div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                <Input
+                  value={createForm.title}
+                  onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
+                  placeholder="Project title"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                <textarea
+                  value={createForm.description}
+                  onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+                  placeholder="Project description"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Project Type</label>
+                <select
+                  value={createForm.project_type}
+                  onChange={(e) => setCreateForm({ ...createForm, project_type: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                >
+                  <option value="commercial">Commercial</option>
+                  <option value="short_film">Short Film</option>
+                  <option value="film">Film</option>
+                  <option value="music_video">Music Video</option>
+                  <option value="documentary">Documentary</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <Input
+                  value={createForm.location_city}
+                  onChange={(e) => setCreateForm({ ...createForm, location_city: e.target.value })}
+                  placeholder="City"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Budget Amount</label>
+                <Input
+                  type="number"
+                  value={createForm.budget_amount}
+                  onChange={(e) => setCreateForm({ ...createForm, budget_amount: e.target.value })}
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  value={createForm.status}
+                  onChange={(e) => setCreateForm({ ...createForm, status: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                >
+                  {STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
+                </select>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <Button variant="outline" onClick={() => setShowCreateModal(false)}>Cancel</Button>
+                <Button onClick={handleCreateProject} className="bg-black text-white hover:bg-gray-800">Create Project</Button>
+              </div>
             </div>
           </div>
         </div>

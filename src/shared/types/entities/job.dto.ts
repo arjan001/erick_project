@@ -11,6 +11,8 @@ export function mapJobFromEntity(raw: any) {
     description: raw.description ?? '',
     client_email: raw.client_email ?? '',
     role: raw.role ?? '',
+    job_type: raw.job_type ?? '',
+    employment_type: raw.employment_type ?? '',
     location: raw.location,
     budget: raw.budget,
     status: raw.status || 'open',
