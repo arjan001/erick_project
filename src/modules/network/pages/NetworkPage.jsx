@@ -65,7 +65,7 @@ export default function NetworkPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [showTypeFilter, setShowTypeFilter] = useState(false);
-  const [subscriptionFilter, setSubscriptionFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState('connections'); // 'connections', 'sent', 'pending'
   const [showSubFilter, setShowSubFilter] = useState(false);
   const [subscribedEmails, setSubscribedEmails] = useState(new Set());
 
@@ -311,6 +311,7 @@ export default function NetworkPage() {
   const myConnections = people.filter(p => getConnectionStatus(p) === 'accepted' && filterPerson(p));
   const notConnected = people.filter(p => getConnectionStatus(p) === 'not_connected' && filterPerson(p));
   const sentRequests = connections.filter(c => c.requester_email === user.email && c.status === 'pending');
+  const receivedRequests = connections.filter(c => c.recipient_email === user.email && c.status === 'pending');
 
   // Score suggestions by skill/role overlap with my profile — "career/niche" matching
   const myskillSet = new Set([
@@ -347,41 +348,39 @@ export default function NetworkPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Requests you've sent — LinkedIn-style outgoing pending requests */}
-      {sentRequests.length > 0 && (
-        <div className="px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
-          <h2 className="text-base font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-gray-400" /> Requests sent ({sentRequests.length})
-          </h2>
-          <div className="space-y-2">
-            {sentRequests.map((request) => {
-              const recipient = people.find(p => p.email === request.recipient_email);
-              const TypeIcon = typeIcon(recipient?.type);
-              return (
-                <div key={request.id} className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
-                  <div className="relative flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-xs font-bold text-gray-600">
-                      {recipient?.image ? <img src={recipient.image} alt={recipient.name} className="w-full h-full object-cover" /> : (recipient?.name?.[0] || request.recipient_email[0]).toUpperCase()}
-                    </div>
-                    <TypeIcon className="w-3 h-3 absolute -bottom-0.5 -right-0.5 bg-black text-white rounded-full p-0.5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-gray-900 text-sm">{recipient?.name || request.recipient_email}</div>
-                    <div className="text-xs text-gray-600 mb-0.5">{recipient?.role || 'User'}</div>
-                    {request.message && <div className="text-[11px] text-gray-500 italic line-clamp-1">"{request.message}"</div>}
-                  </div>
-                  <button onClick={() => handleCancelRequest(request.id)} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors flex-shrink-0">
-                    Cancel
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+      {/* Tabs */}
+      <div className="px-6 py-3 border-b border-gray-200 bg-white flex-shrink-0">
+        <div className="flex gap-6">
+          <button
+            onClick={() => setActiveTab('connections')}
+            className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
+              activeTab === 'connections' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Connections ({myConnections.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('sent')}
+            className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
+              activeTab === 'sent' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Sent Requests ({sentRequests.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
+              activeTab === 'pending' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Pending Requests ({receivedRequests.length})
+          </button>
         </div>
-      )}
+      </div>
 
-      {/* Search + filter */}
-      <div className="p-4 border-b border-gray-200 bg-white flex-shrink-0 flex gap-3">
+      {/* Search + filter - only show on connections tab */}
+      {activeTab === 'connections' && (
+        <div className="p-4 border-b border-gray-200 bg-white flex-shrink-0 flex gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -434,10 +433,12 @@ export default function NetworkPage() {
             )}
           </div>
         )}
-      </div>
+        </div>
+      )}
 
-      {/* Two column layout */}
-      <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-2">
+      {/* Content based on active tab */}
+      {activeTab === 'connections' && (
+        <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-2">
         <div className="overflow-y-auto border-r border-gray-200">
           <div className="p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
             <h2 className="text-sm font-semibold text-gray-900">Connections ({myConnections.length})</h2>
@@ -546,7 +547,86 @@ export default function NetworkPage() {
             })}
           </div>
         </div>
-      </div>
+      )}
+
+      {activeTab === 'sent' && (
+        <div className="flex-1 overflow-y-auto p-6">
+          {sentRequests.length === 0 ? (
+            <div className="text-center py-12">
+              <Clock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No sent requests</h3>
+              <p className="text-gray-600">You haven't sent any connection requests yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {sentRequests.map((request) => {
+                const recipient = people.find(p => p.email === request.recipient_email);
+                const TypeIcon = typeIcon(recipient?.type);
+                return (
+                  <div key={request.id} className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
+                        {recipient?.image ? <img src={recipient.image} alt={recipient.name} className="w-full h-full object-cover" /> : (recipient?.name?.[0] || request.recipient_email[0]).toUpperCase()}
+                      </div>
+                      <TypeIcon className="w-4 h-4 absolute -bottom-0.5 -right-0.5 bg-black text-white rounded-full p-0.5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-900">{recipient?.name || request.recipient_email}</div>
+                      <div className="text-sm text-gray-600 mb-1">{recipient?.role || 'User'}</div>
+                      {request.message && <div className="text-sm text-gray-500 italic line-clamp-2">"{request.message}"</div>}
+                    </div>
+                    <button onClick={() => handleCancelRequest(request.id)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm font-medium transition-colors flex-shrink-0">
+                      Cancel
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'pending' && (
+        <div className="flex-1 overflow-y-auto p-6">
+          {receivedRequests.length === 0 ? (
+            <div className="text-center py-12">
+              <UserCheck className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No pending requests</h3>
+              <p className="text-gray-600">You don't have any pending connection requests</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {receivedRequests.map((request) => {
+                const requester = people.find(p => p.email === request.requester_email);
+                const TypeIcon = typeIcon(requester?.type);
+                return (
+                  <div key={request.id} className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
+                        {requester?.image ? <img src={requester.image} alt={requester.name} className="w-full h-full object-cover" /> : (requester?.name?.[0] || request.requester_email[0]).toUpperCase()}
+                      </div>
+                      <TypeIcon className="w-4 h-4 absolute -bottom-0.5 -right-0.5 bg-black text-white rounded-full p-0.5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-900">{requester?.name || request.requester_email}</div>
+                      <div className="text-sm text-gray-600 mb-1">{requester?.role || 'User'}</div>
+                      {request.message && <div className="text-sm text-gray-500 italic line-clamp-2">"{request.message}"</div>}
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button onClick={() => handleAcceptConnection(request.id)} className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm font-medium transition-colors">
+                        Accept
+                      </button>
+                      <button onClick={() => handleDeclineConnection(request.id)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm font-medium transition-colors">
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {showConnectionModal && selectedPerson && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
