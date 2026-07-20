@@ -5,10 +5,18 @@
 -- covering all modules in the Studio22 system with granular CRUD permissions
 
 -- ============================================
+-- DROP EXISTING TABLES WITH WRONG SCHEMA
+-- ============================================
+DROP TABLE IF EXISTS user_roles CASCADE;
+DROP TABLE IF EXISTS role_permissions CASCADE;
+DROP TABLE IF EXISTS roles CASCADE;
+DROP TABLE IF EXISTS permissions CASCADE;
+
+-- ============================================
 -- PERMISSIONS TABLE
 -- ============================================
 -- Stores all available permissions in the system
-CREATE TABLE IF NOT EXISTS permissions (
+CREATE TABLE permissions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     permission_key VARCHAR(100) UNIQUE NOT NULL,
     permission_name VARCHAR(255) NOT NULL,
@@ -22,15 +30,15 @@ CREATE TABLE IF NOT EXISTS permissions (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_permissions_key ON permissions(permission_key);
-CREATE INDEX IF NOT EXISTS idx_permissions_module ON permissions(module);
-CREATE INDEX IF NOT EXISTS idx_permissions_category ON permissions(category);
+CREATE INDEX idx_permissions_key ON permissions(permission_key);
+CREATE INDEX idx_permissions_module ON permissions(module);
+CREATE INDEX idx_permissions_category ON permissions(category);
 
 -- ============================================
 -- ROLES TABLE
 -- ============================================
 -- Stores all roles in the system
-CREATE TABLE IF NOT EXISTS roles (
+CREATE TABLE roles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     role_key VARCHAR(50) UNIQUE NOT NULL,
     role_name VARCHAR(255) NOT NULL,
@@ -41,42 +49,32 @@ CREATE TABLE IF NOT EXISTS roles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_roles_key ON roles(role_key);
+CREATE INDEX idx_roles_key ON roles(role_key);
 
 -- ============================================
 -- ROLE_PERMISSIONS TABLE
 -- ============================================
 -- Junction table linking roles to permissions
-CREATE TABLE IF NOT EXISTS role_permissions (
+CREATE TABLE role_permissions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     role_id UUID NOT NULL,
     permission_id UUID NOT NULL,
     granted_by UUID,
     granted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(role_id, permission_id)
+    UNIQUE(role_id, permission_id),
+    CONSTRAINT fk_role_permissions_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+    CONSTRAINT fk_role_permissions_permission FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE,
+    CONSTRAINT fk_role_permissions_granted_by FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Add foreign key constraints after table creation
-ALTER TABLE role_permissions 
-ADD CONSTRAINT fk_role_permissions_role 
-FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE;
-
-ALTER TABLE role_permissions 
-ADD CONSTRAINT fk_role_permissions_permission 
-FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE;
-
-ALTER TABLE role_permissions 
-ADD CONSTRAINT fk_role_permissions_granted_by 
-FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL;
-
-CREATE INDEX IF NOT EXISTS idx_role_permissions_role ON role_permissions(role_id);
-CREATE INDEX IF NOT EXISTS idx_role_permissions_permission ON role_permissions(permission_id);
+CREATE INDEX idx_role_permissions_role ON role_permissions(role_id);
+CREATE INDEX idx_role_permissions_permission ON role_permissions(permission_id);
 
 -- ============================================
 -- USER_ROLES TABLE
 -- ============================================
 -- Junction table linking users to roles (supports multiple roles per user)
-CREATE TABLE IF NOT EXISTS user_roles (
+CREATE TABLE user_roles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL,
     role_id UUID NOT NULL,
@@ -84,25 +82,15 @@ CREATE TABLE IF NOT EXISTS user_roles (
     assigned_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP WITH TIME ZONE, -- Optional expiry for temporary roles
     is_active BOOLEAN DEFAULT TRUE,
-    UNIQUE(user_id, role_id)
+    UNIQUE(user_id, role_id),
+    CONSTRAINT fk_user_roles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_roles_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_roles_assigned_by FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Add foreign key constraints after table creation
-ALTER TABLE user_roles 
-ADD CONSTRAINT fk_user_roles_user 
-FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
-
-ALTER TABLE user_roles 
-ADD CONSTRAINT fk_user_roles_role 
-FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE;
-
-ALTER TABLE user_roles 
-ADD CONSTRAINT fk_user_roles_assigned_by 
-FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL;
-
-CREATE INDEX IF NOT EXISTS idx_user_roles_user ON user_roles(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_roles_role ON user_roles(role_id);
-CREATE INDEX IF NOT EXISTS idx_user_roles_active ON user_roles(is_active);
+CREATE INDEX idx_user_roles_user ON user_roles(user_id);
+CREATE INDEX idx_user_roles_role ON user_roles(role_id);
+CREATE INDEX idx_user_roles_active ON user_roles(is_active);
 
 -- ============================================
 -- INSERT SYSTEM PERMISSIONS
