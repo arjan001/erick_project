@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities';
+import { Message, Artist, Team, ProjectOwner, Backer, Notification } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import { formatDistanceToNow } from 'date-fns';
@@ -414,13 +414,16 @@ export default function MessagesPage() {
       
       // Notify recipient about new message
       try {
-        notificationService.notifyNewMessage(
-          selectedConversation.otherEmail,
-          user.full_name || user.email,
-          selectedConversation.id
-        );
+        await Notification.create({
+          recipient_email: selectedConversation.otherEmail,
+          type: 'message',
+          title: 'New Message',
+          message: `${user.full_name || user.email} sent you a message.`,
+          metadata: { sender_name: user.full_name || user.email, conversation_id: selectedConversation.id },
+          read: false
+        });
       } catch (notifErr) {
-        console.error('Error sending notification:', notifErr);
+        console.error('Error sending message notification:', notifErr);
       }
     } catch (err) {
       console.error('Error sending message:', err);

@@ -227,12 +227,11 @@ export default function NetworkPage() {
       });
       await Notification.create({
         recipient_email: selectedPerson.email,
-        sender_email: user.email,
-        sender_name: user.full_name,
         type: 'connection_request',
         title: 'New Connection Request',
         message: `${user.full_name} wants to connect with you`,
-        action_required: true,
+        metadata: { sender_email: user.email, sender_name: user.full_name, connection_message: connectionMessage },
+        read: false
       });
       setShowConnectionModal(false);
       setConnectionMessage('');
@@ -254,13 +253,11 @@ export default function NetworkPage() {
       if (connection) {
         await Notification.create({
           recipient_email: connection.requester_email,
-          sender_email: user.email,
-          sender_name: user.full_name,
-          type: 'connection_accepted',
+          type: 'connection_request',
           title: 'Connection Accepted',
           message: `${user.full_name} accepted your connection request`,
-          action_required: false,
-          read: false,
+          metadata: { sender_email: user.email, sender_name: user.full_name },
+          read: false
         });
       }
     } catch (err) {

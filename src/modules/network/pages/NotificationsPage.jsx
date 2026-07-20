@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Notification } from '@/lib/supabaseEntities';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { Bell, Check, X, Briefcase, MessageCircle, Users, Award, ThumbsUp, Clock, Filter } from 'lucide-react';
+import { Bell, Check, X, Briefcase, MessageCircle, Users, Award, ThumbsUp, Clock, Filter, CreditCard, UserCheck, MessageSquare, Heart, Star, Ticket, Zap } from 'lucide-react';
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
@@ -95,25 +95,60 @@ export default function NotificationsPage() {
   };
 
   const getNotificationIcon = (type) => {
-    switch (type) {
-      case 'job_invitation':
-        return <Briefcase className="w-5 h-5 text-gray-600" />;
-      case 'connection_request':
-        return <Users className="w-5 h-5 text-gray-600" />;
-      case 'endorment':
-        return <Award className="w-5 h-5 text-gray-600" />;
-      case 'testimonial':
-        return <ThumbsUp className="w-5 h-5 text-gray-600" />;
-      case 'message':
-        return <MessageCircle className="w-5 h-5 text-gray-600" />;
-      default:
-        return <Bell className="w-5 h-5 text-gray-600" />;
-    }
+    const iconMap = {
+      'message': <MessageSquare className="w-5 h-5 text-white" />,
+      'connection_request': <UserCheck className="w-5 h-5 text-white" />,
+      'job_application': <Briefcase className="w-5 h-5 text-white" />,
+      'job_status': <Briefcase className="w-5 h-5 text-white" />,
+      'job_invitation': <Briefcase className="w-5 h-5 text-white" />,
+      'subscription': <Star className="w-5 h-5 text-white" />,
+      'payment': <CreditCard className="w-5 h-5 text-white" />,
+      'connects': <Zap className="w-5 h-5 text-white" />,
+      'ticket_response': <Ticket className="w-5 h-5 text-white" />,
+      'endorsement': <Heart className="w-5 h-5 text-white" />,
+      'testimonial': <Star className="w-5 h-5 text-white" />,
+      'project_update': <Briefcase className="w-5 h-5 text-white" />,
+      'system': <Bell className="w-5 h-5 text-white" />,
+    };
+    return iconMap[type] || <Bell className="w-5 h-5 text-white" />;
+  };
+
+  const getNotificationIconColor = (type) => {
+    const colorMap = {
+      'message': 'bg-blue-500',
+      'connection_request': 'bg-green-500',
+      'job_application': 'bg-purple-500',
+      'job_status': 'bg-orange-500',
+      'job_invitation': 'bg-purple-500',
+      'subscription': 'bg-yellow-500',
+      'payment': 'bg-emerald-500',
+      'connects': 'bg-cyan-500',
+      'ticket_response': 'bg-indigo-500',
+      'endorsement': 'bg-pink-500',
+      'testimonial': 'bg-rose-500',
+      'project_update': 'bg-teal-500',
+      'system': 'bg-gray-500',
+    };
+    return colorMap[type] || 'bg-gray-500';
+  };
+
+  const formatNotificationTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
   };
 
   const filteredNotifications = notifications.filter(n => {
     if (filter === 'unread') return !n.read;
-    if (filter === 'action_required') return n.action_required;
     return true;
   });
 
@@ -144,7 +179,6 @@ export default function NotificationsPage() {
           >
             <option value="all">All</option>
             <option value="unread">Unread</option>
-            <option value="action_required">Action Required</option>
           </select>
           {unreadCount > 0 && (
             <Button variant="outline" size="sm" onClick={handleMarkAllAsRead}>
@@ -190,7 +224,7 @@ export default function NotificationsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getNotificationIconColor(notification.type)}`}>
                         {getNotificationIcon(notification.type)}
                       </div>
                       <span className="text-xs font-medium text-gray-700 capitalize">
@@ -205,7 +239,7 @@ export default function NotificationsPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-500">
-                    {new Date(notification.created_at).toLocaleString()}
+                    {formatNotificationTime(notification.created_at)}
                   </td>
                   <td className="px-4 py-3">
                     {!notification.read ? (

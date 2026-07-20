@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SubscriptionOrder, SubscriptionPackage, Subscription, Artist, ConnectsTransaction } from '@/lib/supabaseEntities';
+import { SubscriptionOrder, SubscriptionPackage, Subscription, Artist, ConnectsTransaction, Notification } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft, X, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -350,24 +350,40 @@ export default function ArtistSubscriptionCheckoutPage() {
         if (artist) {
           // Check if this is a new subscription or upgrade (not re-granting for same plan)
           const isNewOrUpgrade = !currentSubscription || currentSubscription.package_id !== pkg.id;
-          
+
           if (isNewOrUpgrade) {
             const newBalance = (artist.connects_balance || 0) + pkg.connects_included;
             await Artist.update(artist.id, { connects_balance: newBalance });
             await ConnectsTransaction.create({
               artist_email: user.email,
               amount: pkg.connects_included,
-              reason: 'subscription_grant',
+              type: 'subscription_grant',
+              description: `Connects from ${pkg.name} subscription`,
               balance_after: newBalance
             });
-            // Notify user about connects received
-            notificationService.notifyConnectsReceived(user.email, pkg.connects_included, 'subscription activation');
+
+            // Send notification for connects received
+            await Notification.create({
+              recipient_email: user.email,
+              type: 'connects',
+              title: 'Connects Received',
+              message: `You received ${pkg.connects_included} connects from your ${pkg.name} subscription.`,
+              metadata: { amount: pkg.connects_included, package_name: pkg.name },
+              read: false
+            });
           }
         }
       }
 
-      // Notify user about subscription activation
-      notificationService.notifySubscriptionActivated(user.email, pkg.name);
+      // Send subscription activation notification
+      await Notification.create({
+        recipient_email: user.email,
+        type: 'subscription',
+        title: 'Subscription Activated',
+        message: `Your ${pkg.name} subscription is now active. Enjoy your benefits!`,
+        metadata: { package_name: pkg.name, package_id: pkg.id },
+        read: false
+      });
 
       success('Subscription Successful', `You are now on ${pkg.name}`);
       navigate(createPageUrl('ArtistDashboard'));
@@ -431,9 +447,39 @@ export default function ArtistSubscriptionCheckoutPage() {
             reason: 'subscription_grant',
             balance_after: newBalance
           });
+
+          // Send notification for connects received
+          await Notification.create({
+            recipient_email: user.email,
+            type: 'connects',
+            title: 'Connects Received',
+            message: `You received ${selectedPackage.connects_included} connects from your ${selectedPackage.name} subscription.`,
+            metadata: { amount: selectedPackage.connects_included, package_name: selectedPackage.name },
+            read: false
+          });
         }
       }
     }
+
+    // Send payment notification
+    await Notification.create({
+      recipient_email: user.email,
+      type: 'payment',
+      title: 'Payment Successful',
+      message: `Your payment of $${selectedPackage.price} for ${selectedPackage.name} was successful.`,
+      metadata: { amount: selectedPackage.price, package_name: selectedPackage.name },
+      read: false
+    });
+
+    // Send subscription activation notification
+    await Notification.create({
+      recipient_email: user.email,
+      type: 'subscription',
+      title: 'Subscription Activated',
+      message: `Your ${selectedPackage.name} subscription is now active. Enjoy your benefits!`,
+      metadata: { package_name: selectedPackage.name, package_id: selectedPackage.id },
+      read: false
+    });
 
     setShowModal(false);
     success('Subscription Successful', `You are now on ${selectedPackage.name}`);

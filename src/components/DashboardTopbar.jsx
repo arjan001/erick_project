@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ChevronDown, LogOut, Settings, MessageCircle, Menu, Users, Home, Bell } from 'lucide-react';
+import { Search, ChevronDown, LogOut, Settings, MessageCircle, Menu, Users, Home, Bell, CreditCard, UserCheck, Briefcase, MessageSquare, Heart, Star, Ticket, Zap } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -139,6 +139,57 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
     }
   };
 
+  const getNotificationIcon = (type) => {
+    const iconMap = {
+      'message': <MessageSquare className="w-4 h-4 text-white" />,
+      'connection_request': <UserCheck className="w-4 h-4 text-white" />,
+      'job_application': <Briefcase className="w-4 h-4 text-white" />,
+      'job_status': <Briefcase className="w-4 h-4 text-white" />,
+      'subscription': <Star className="w-4 h-4 text-white" />,
+      'payment': <CreditCard className="w-4 h-4 text-white" />,
+      'connects': <Zap className="w-4 h-4 text-white" />,
+      'ticket_response': <Ticket className="w-4 h-4 text-white" />,
+      'endorsement': <Heart className="w-4 h-4 text-white" />,
+      'testimonial': <Star className="w-4 h-4 text-white" />,
+      'project_update': <Briefcase className="w-4 h-4 text-white" />,
+      'system': <Bell className="w-4 h-4 text-white" />,
+    };
+    return iconMap[type] || <Bell className="w-4 h-4 text-white" />;
+  };
+
+  const getNotificationIconColor = (type) => {
+    const colorMap = {
+      'message': 'bg-blue-500',
+      'connection_request': 'bg-green-500',
+      'job_application': 'bg-purple-500',
+      'job_status': 'bg-orange-500',
+      'subscription': 'bg-yellow-500',
+      'payment': 'bg-emerald-500',
+      'connects': 'bg-cyan-500',
+      'ticket_response': 'bg-indigo-500',
+      'endorsement': 'bg-pink-500',
+      'testimonial': 'bg-rose-500',
+      'project_update': 'bg-teal-500',
+      'system': 'bg-gray-500',
+    };
+    return colorMap[type] || 'bg-gray-500';
+  };
+
+  const formatNotificationTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-gray-100 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
@@ -252,16 +303,19 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
                       <div
                         key={notification.id}
                         onClick={() => handleMarkAsRead(notification.id)}
-                        className={`flex items-start gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${!notification.read ? 'bg-gray-100' : ''}`}
+                        className={`flex items-start gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}`}
                       >
-                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                          <Bell className="w-4 h-4 text-gray-600" />
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${getNotificationIconColor(notification.type)}`}>
+                          {getNotificationIcon(notification.type)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900">{notification.title}</p>
                           <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notification.message}</p>
-                          <p className="text-[10px] text-gray-400 mt-1">{new Date(notification.created_at).toLocaleString()}</p>
+                          <p className="text-[10px] text-gray-400 mt-1">{formatNotificationTime(notification.created_at)}</p>
                         </div>
+                        {!notification.read && (
+                          <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2" />
+                        )}
                       </div>
                     ))
                   )}

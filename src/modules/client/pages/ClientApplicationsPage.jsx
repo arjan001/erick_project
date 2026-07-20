@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Job, Project, Application } from '@/lib/supabaseEntities';
+import { Job, Project, Application, Notification } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { FileText, User, Calendar, MapPin, Check, X, Crown, Star, Briefcase, Eye, Bookmark, BookmarkCheck, Play, Download, Globe, Linkedin, Instagram, Youtube, Twitter, Award, Languages, Globe2, Building2, Mail, Phone, Tag, Clock, DollarSign, GraduationCap } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -104,10 +104,24 @@ export default function ClientApplications() {
 
   const handleAccept = async (applicationId) => {
     try {
+      const application = applications.find(app => app.id === applicationId);
       await Application.update(applicationId, { status: 'accepted' });
-      setApplications(prev => prev.map(app => 
+      setApplications(prev => prev.map(app =>
         app.id === applicationId ? { ...app, status: 'accepted' } : app
       ));
+
+      // Send notification to applicant
+      if (application?.artist_email) {
+        await Notification.create({
+          recipient_email: application.artist_email,
+          type: 'job_status',
+          title: 'Application Accepted',
+          message: `Your application for "${application.job_title || application.project_title}" has been accepted!`,
+          metadata: { job_title: application.job_title || application.project_title, application_id: applicationId },
+          read: false
+        });
+      }
+
       success('Application Accepted', 'Application has been accepted');
     } catch (err) {
       console.error('Error accepting application:', err);
@@ -117,10 +131,24 @@ export default function ClientApplications() {
 
   const handleReject = async (applicationId) => {
     try {
+      const application = applications.find(app => app.id === applicationId);
       await Application.update(applicationId, { status: 'rejected' });
-      setApplications(prev => prev.map(app => 
+      setApplications(prev => prev.map(app =>
         app.id === applicationId ? { ...app, status: 'rejected' } : app
       ));
+
+      // Send notification to applicant
+      if (application?.artist_email) {
+        await Notification.create({
+          recipient_email: application.artist_email,
+          type: 'job_status',
+          title: 'Application Rejected',
+          message: `Your application for "${application.job_title || application.project_title}" was not selected.`,
+          metadata: { job_title: application.job_title || application.project_title, application_id: applicationId },
+          read: false
+        });
+      }
+
       success('Application Rejected', 'Application has been rejected');
     } catch (err) {
       console.error('Error rejecting application:', err);
@@ -130,10 +158,24 @@ export default function ClientApplications() {
 
   const handleShortlist = async (applicationId) => {
     try {
+      const application = applications.find(app => app.id === applicationId);
       await Application.update(applicationId, { status: 'shortlisted' });
-      setApplications(prev => prev.map(app => 
+      setApplications(prev => prev.map(app =>
         app.id === applicationId ? { ...app, status: 'shortlisted' } : app
       ));
+
+      // Send notification to applicant
+      if (application?.artist_email) {
+        await Notification.create({
+          recipient_email: application.artist_email,
+          type: 'job_status',
+          title: 'Application Shortlisted',
+          message: `Your application for "${application.job_title || application.project_title}" has been shortlisted.`,
+          metadata: { job_title: application.job_title || application.project_title, application_id: applicationId },
+          read: false
+        });
+      }
+
       success('Application Shortlisted', 'Application has been shortlisted');
     } catch (err) {
       console.error('Error shortlisting application:', err);

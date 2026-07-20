@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Job, Application, Artist, ConnectsTransaction, Project, JobInvitation } from '@/lib/supabaseEntities';
+import { Job, Application, Artist, ConnectsTransaction, Project, JobInvitation, Notification } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Euro, ChevronDown, Calendar, Building2, Users, Star, ExternalLink, Crown, Lock, Eye, EyeOff, AlertCircle, CheckCircle, XCircle, Hourglass, FileText, Mail, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
@@ -234,6 +234,16 @@ export default function Jobs() {
         amount: -1,
         reason: 'job_application',
         balance_after: newBalance
+      });
+
+      // Send notification for job application submitted
+      await Notification.create({
+        recipient_email: user.email,
+        type: 'job_application',
+        title: 'Application Submitted',
+        message: `Your application for "${selectedJob.title}" has been submitted successfully.`,
+        metadata: { job_title: selectedJob.title, job_id: selectedJob.id },
+        read: false
       });
 
       // Trigger confetti effect with normal colors
