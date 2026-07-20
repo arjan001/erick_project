@@ -381,78 +381,78 @@ export default function NetworkPage() {
       {/* Search + filter - only show on connections tab */}
       {activeTab === 'connections' && (
         <div className="p-4 border-b border-gray-200 bg-white flex-shrink-0 flex gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name, skill, or location..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
-          />
-        </div>
-        <div className="relative">
-          <button
-            onClick={() => setShowTypeFilter(!showTypeFilter)}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-          >
-            {selectedType === 'all' ? 'All Types' : selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}
-            <ChevronDown className="w-4 h-4" />
-          </button>
-          {showTypeFilter && (
-            <div className="absolute z-50 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
-              {['all', 'artist', 'team', 'backer', 'client'].map(type => (
-                <button key={type} onClick={() => { setSelectedType(type); setShowTypeFilter(false); }} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm capitalize">
-                  {type === 'all' ? 'All Types' : type}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        {(myType === 'backer' || myType === 'client') && (
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by name, skill, or location..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+            />
+          </div>
           <div className="relative">
             <button
-              onClick={() => setShowSubFilter(!showSubFilter)}
+              onClick={() => setShowTypeFilter(!showTypeFilter)}
               className="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
             >
-              {subscriptionFilter === 'all' ? 'All Creators' : subscriptionFilter === 'subscribed' ? 'Subscribed' : 'No Subscription'}
+              {selectedType === 'all' ? 'All Types' : selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}
               <ChevronDown className="w-4 h-4" />
             </button>
-            {showSubFilter && (
-              <div className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
-                {[
-                  { value: 'all', label: 'All Creators' },
-                  { value: 'subscribed', label: 'Subscribed (Paid)' },
-                  { value: 'free', label: 'No Subscription' },
-                ].map(opt => (
-                  <button key={opt.value} onClick={() => { setSubscriptionFilter(opt.value); setShowSubFilter(false); }} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm">
-                    {opt.label}
+            {showTypeFilter && (
+              <div className="absolute z-50 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
+                {['all', 'artist', 'team', 'backer', 'client'].map(type => (
+                  <button key={type} onClick={() => { setSelectedType(type); setShowTypeFilter(false); }} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm capitalize">
+                    {type === 'all' ? 'All Types' : type}
                   </button>
                 ))}
               </div>
             )}
           </div>
-        )}
+          {(myType === 'backer' || myType === 'client') && (
+            <div className="relative">
+              <button
+                onClick={() => setShowSubFilter(!showSubFilter)}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              >
+                {subscriptionFilter === 'all' ? 'All Creators' : subscriptionFilter === 'subscribed' ? 'Subscribed' : 'No Subscription'}
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              {showSubFilter && (
+                <div className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
+                  {[
+                    { value: 'all', label: 'All Creators' },
+                    { value: 'subscribed', label: 'Subscribed (Paid)' },
+                    { value: 'free', label: 'No Subscription' },
+                  ].map(opt => (
+                    <button key={opt.value} onClick={() => { setSubscriptionFilter(opt.value); setShowSubFilter(false); }} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm">
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
       {/* Content based on active tab */}
       {activeTab === 'connections' && (
         <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-2">
-        <div className="overflow-y-auto border-r border-gray-200">
-          <div className="p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-            <h2 className="text-sm font-semibold text-gray-900">Connections ({myConnections.length})</h2>
-          </div>
-          <div className="divide-y divide-gray-100">
-            {myConnections.length === 0 && (
-              <div className="p-6 text-center text-sm text-gray-500">No connections yet</div>
-            )}
-            {myConnections.map((person) => (
-              <div key={`${person.type}-${person.id}`} className="p-4 hover:bg-gray-50">
-                <div className="flex items-start gap-3">
-                  <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden text-sm font-bold text-gray-600">
-                    {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
-                  </div>
+          <div className="overflow-y-auto border-r border-gray-200">
+            <div className="p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+              <h2 className="text-sm font-semibold text-gray-900">Connections ({myConnections.length})</h2>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {myConnections.length === 0 && (
+                <div className="p-6 text-center text-sm text-gray-500">No connections yet</div>
+              )}
+              {myConnections.map((person) => (
+                <div key={`${person.type}-${person.id}`} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-start gap-3">
+                    <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden text-sm font-bold text-gray-600">
+                      {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
+                    </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <div className="flex-1">
