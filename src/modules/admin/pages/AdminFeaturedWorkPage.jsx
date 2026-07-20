@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FeaturedWork, Artist, PortfolioClip } from '@/lib/supabaseEntities';
+import { FeaturedWork, Artist, PortfolioClip, Subscription } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Edit2, Trash2, X, Eye, EyeOff, Star, Calendar, DollarSign, User, Search, Check, Play } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Eye, EyeOff, Star, Calendar, DollarSign, User, Search, Check, Play, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast.jsx';
 
 export default function AdminFeaturedWorkPage() {
@@ -11,6 +11,7 @@ export default function AdminFeaturedWorkPage() {
   const [works, setWorks] = useState([]);
   const [artists, setArtists] = useState([]);
   const [artistPortfolioClips, setArtistPortfolioClips] = useState([]);
+  const [selectedProjects, setSelectedProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingClips, setLoadingClips] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -38,6 +39,18 @@ export default function AdminFeaturedWorkPage() {
     }
   };
 
+  const getActiveSubscriptionArtists = async () => {
+    try {
+      const activeSubscriptions = await Subscription.filter({ status: 'active' });
+      const artistEmails = activeSubscriptions.map(sub => sub.user_email);
+      const allArtists = await Artist.list('-created_at', 100);
+      return allArtists.filter(artist => artistEmails.includes(artist.email));
+    } catch (err) {
+      console.error('Error fetching active subscription artists:', err);
+      return [];
+    }
+  };
+
   const fetchArtistPortfolioClips = async (artistId) => {
     if (!artistId) {
       setArtistPortfolioClips([]);
@@ -61,7 +74,7 @@ export default function AdminFeaturedWorkPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const openModal = (work = null) => {
+  const openModal = async (work = null) => {
     if (work) {
       setEditing(work);
       setForm({
@@ -75,40 +88,78 @@ export default function AdminFeaturedWorkPage() {
         status: work.status || 'active'
       });
       if (work.artist_id) {
-        fetchArtistPortfolioClips(work.artist_id);
+        await fetchArtistPortfolioClips(work.artist_id);
       }
     } else {
       setEditing(null);
       setForm({ artist_id: '', portfolio_clip_id: '', title: '', description: '', images: [], video_url: '', featured_type: 'paid', featured_until: '', display_order: 0, status: 'active' });
       setArtistPortfolioClips([]);
       setSelectedPortfolioClip(null);
+      setSelectedProjects([]);
+      // Load only artists with active subscriptions
+      const activeArtists = await getActiveSubscriptionArtists();
+      setArtists(activeArtists);
     }
     setShowModal(true);
   };
 
   const handleSave = async () => {
-    if (!form.title.trim()) { toastError('Validation', 'Title is required'); return; }
+    // Check if adding would exceed 6 limit
+    if (!editing && works.length >= 6) {
+      toastError('Limit Reached', 'Maximum 6 featured projects allowed (3 per line)');
+      return;
+    }
+
+    if (selectedProjects.length === 0 && !editing) {
+      toastError('Validation', 'Please select at least one project');
+      return;
+    }
+
     try {
-      const dataToSave = {
-        artist_id: form.artist_id || null,
-        portfolio_clip_id: form.portfolio_clip_id || null,
-        title: form.title,
-        description: form.description,
-        images: form.images,
-        video_url: form.video_url,
-        featured_type: form.featured_type,
-        featured_until: form.featured_until,
-        display_order: form.display_order,
-        status: form.status
-      };
       if (editing) {
+        // Single edit mode
+        const dataToSave = {
+          artist_id: form.artist_id || null,
+          portfolio_clip_id: form.portfolio_clip_id || null,
+          title: form.title,
+          description: form.description,
+          images: form.images,
+          video_url: form.video_url,
+          featured_type: form.featured_type,
+          featured_until: form.featured_until,
+          display_order: form.display_order,
+          status: form.status
+        };
         await FeaturedWork.update(editing.id, dataToSave);
         success('Updated', 'Featured work updated');
       } else {
-        await FeaturedWork.create(dataToSave);
-        success('Created', 'Featured work created');
+        // Multi-select mode - create multiple featured works
+        const totalSlots = 6 - works.length;
+        const projectsToAdd = selectedProjects.slice(0, totalSlots);
+        
+        for (let i = 0; i < projectsToAdd.length; i++) {
+          const project = projectsToAdd[i];
+          await FeaturedWork.create({
+            artist_id: form.artist_id,
+            portfolio_clip_id: project.id,
+            title: project.title,
+            description: project.description,
+            images: project.cover_image_url ? [project.cover_image_url] : [],
+            video_url: project.video_embed_url || project.video_url || '',
+            featured_type: 'admin_pick',
+            display_order: works.length + i,
+            status: 'active'
+          });
+        }
+        
+        if (selectedProjects.length > totalSlots) {
+          toastError('Partial Success', `Only ${totalSlots} projects added (max 6 total)`);
+        } else {
+          success('Created', `${projectsToAdd.length} featured works created`);
+        }
       }
       setShowModal(false);
+      setSelectedProjects([]);
       fetchData();
     } catch (err) {
       console.error('Error saving featured work:', err);
@@ -206,111 +257,146 @@ export default function AdminFeaturedWorkPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="bg-gray-900 p-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">{editing ? 'Edit Featured Work' : 'Add Featured Work'}</h2>
+              <div>
+                <h2 className="text-xl font-bold text-white">{editing ? 'Edit Featured Work' : 'Add Featured Projects'}</h2>
+                {!editing && <p className="text-sm text-gray-300 mt-1">Select artist and projects to feature (max 6 total)</p>}
+              </div>
               <button onClick={() => setShowModal(false)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">
-                  <User className="w-4 h-4 text-gray-500" /> Search Artist
-                </label>
-                <select 
-                  value={form.artist_id} 
-                  onChange={(e) => {
-                    setForm({ ...form, artist_id: e.target.value, portfolio_clip_id: '' });
-                    setSelectedPortfolioClip(null);
-                    fetchArtistPortfolioClips(e.target.value);
-                  }} 
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                >
-                  <option value="">Select an artist...</option>
-                  {artists.map(artist => (
-                    <option key={artist.id} value={artist.id}>{artist.full_name || 'Unknown Artist'}</option>
-                  ))}
-                </select>
-              </div>
-              
-              {form.artist_id && (
-                <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">
-                    <Play className="w-4 h-4 text-gray-500" /> Select Portfolio Clip
-                  </label>
-                  {loadingClips ? (
-                    <div className="text-sm text-gray-500">Loading portfolio clips...</div>
-                  ) : artistPortfolioClips.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto">
-                      {artistPortfolioClips.map(clip => (
-                        <div 
-                          key={clip.id}
-                          onClick={() => {
-                            setSelectedPortfolioClip(clip);
-                            setForm({ 
-                              ...form, 
-                              portfolio_clip_id: clip.id,
-                              title: clip.title,
-                              description: clip.description,
-                              images: clip.cover_image_url ? [clip.cover_image_url] : [],
-                              video_url: clip.video_embed_url || clip.video_url || ''
-                            });
-                          }}
-                          className={`cursor-pointer border-2 rounded-lg p-2 transition-all ${
-                            selectedPortfolioClip?.id === clip.id 
-                              ? 'border-black bg-gray-50' 
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <div className="aspect-video bg-gray-100 rounded mb-2 overflow-hidden">
-                            {clip.thumbnail_url || clip.cover_image_url ? (
-                              <img src={clip.thumbnail_url || clip.cover_image_url} alt={clip.title} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                <Play className="w-8 h-8" />
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-xs font-medium text-gray-900 truncate">{clip.title}</p>
-                          <p className="text-xs text-gray-500 truncate">{clip.project_type}</p>
-                        </div>
-                      ))}
+              {!editing && (
+                <>
+                  <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-amber-600" />
+                      <span className="text-sm font-medium text-amber-900">
+                        Only artists with active subscriptions are shown
+                      </span>
                     </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">No approved portfolio clips found for this artist.</p>
+                    <span className="text-xs text-amber-700">
+                      {works.length}/6 slots used
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">
+                      <User className="w-4 h-4 text-gray-500" /> Select Artist
+                    </label>
+                    <select 
+                      value={form.artist_id} 
+                      onChange={(e) => {
+                        setForm({ ...form, artist_id: e.target.value, portfolio_clip_id: '' });
+                        setSelectedPortfolioClip(null);
+                        setSelectedProjects([]);
+                        fetchArtistPortfolioClips(e.target.value);
+                      }} 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    >
+                      <option value="">Select an artist with active subscription...</option>
+                      {artists.map(artist => (
+                        <option key={artist.id} value={artist.id}>{artist.full_name || 'Unknown Artist'}</option>
+                      ))}
+                    </select>
+                    {artists.length === 0 && (
+                      <p className="text-xs text-gray-500 mt-1">No artists with active subscriptions found</p>
+                    )}
+                  </div>
+                  
+                  {form.artist_id && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">
+                        <Play className="w-4 h-4 text-gray-500" /> 
+                        Select Projects to Feature
+                        <span className="text-xs text-gray-500 font-normal">
+                          ({selectedProjects.length} selected, max {6 - works.length} more)
+                        </span>
+                      </label>
+                      {loadingClips ? (
+                        <div className="text-sm text-gray-500 py-8 text-center">Loading portfolio clips...</div>
+                      ) : artistPortfolioClips.length > 0 ? (
+                        <div className="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto p-2">
+                          {artistPortfolioClips.map(clip => (
+                            <div 
+                              key={clip.id}
+                              onClick={() => {
+                                const isSelected = selectedProjects.some(p => p.id === clip.id);
+                                if (isSelected) {
+                                  setSelectedProjects(selectedProjects.filter(p => p.id !== clip.id));
+                                } else if (selectedProjects.length < 6 - works.length) {
+                                  setSelectedProjects([...selectedProjects, clip]);
+                                }
+                              }}
+                              className={`cursor-pointer border-2 rounded-lg p-3 transition-all relative ${
+                                selectedProjects.some(p => p.id === clip.id) 
+                                  ? 'border-black bg-gray-50' 
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              {selectedProjects.some(p => p.id === clip.id) && (
+                                <div className="absolute top-2 right-2 w-6 h-6 bg-black rounded-full flex items-center justify-center">
+                                  <CheckCircle2 className="w-4 h-4 text-white" />
+                                </div>
+                              )}
+                              <div className="aspect-video bg-gray-100 rounded mb-2 overflow-hidden">
+                                {clip.thumbnail_url || clip.cover_image_url ? (
+                                  <img src={clip.thumbnail_url || clip.cover_image_url} alt={clip.title} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                    <Play className="w-8 h-8" />
+                                  </div>
+                                )}
+                              </div>
+                              <p className="text-xs font-medium text-gray-900 truncate">{clip.title}</p>
+                              <p className="text-xs text-gray-500 truncate">{clip.project_type || 'Portfolio'}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500 py-8 text-center">No approved portfolio clips found for this artist.</p>
+                      )}
+                    </div>
                   )}
-                </div>
+                </>
               )}
-              
-              <div><label className="block text-sm font-medium mb-2">Title</label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Work title" className="rounded-lg" /></div>
-              <div><label className="block text-sm font-medium mb-2">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
-              <div><label className="block text-sm font-medium mb-2">Images (comma-separated URLs)</label><Input value={form.images.join(',')} onChange={(e) => setForm({ ...form, images: e.target.value.split(',').filter(Boolean) })} placeholder="https://..." className="rounded-lg" /></div>
-              <div><label className="block text-sm font-medium mb-2">Video URL</label><Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="https://..." className="rounded-lg" /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Featured Type</label>
-                  <select value={form.featured_type} onChange={(e) => setForm({ ...form, featured_type: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                    <option value="paid">Paid</option>
-                    <option value="subscription">Subscription</option>
-                    <option value="admin_pick">Admin Pick</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Status</label>
-                  <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                    <option value="active">Active</option>
-                    <option value="suspended">Suspended</option>
-                    <option value="expired">Expired</option>
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium mb-2">Featured Until</label><Input type="date" value={form.featured_until} onChange={(e) => setForm({ ...form, featured_until: e.target.value })} className="rounded-lg" /></div>
-                <div><label className="block text-sm font-medium mb-2">Display Order</label><Input type="number" value={form.display_order} onChange={(e) => setForm({ ...form, display_order: parseInt(e.target.value) || 0 })} className="rounded-lg" /></div>
-              </div>
+
+              {editing && (
+                <>
+                  <div><label className="block text-sm font-medium mb-2">Title</label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Work title" className="rounded-lg" /></div>
+                  <div><label className="block text-sm font-medium mb-2">Description</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg" /></div>
+                  <div><label className="block text-sm font-medium mb-2">Images (comma-separated URLs)</label><Input value={form.images.join(',')} onChange={(e) => setForm({ ...form, images: e.target.value.split(',').filter(Boolean) })} placeholder="https://..." className="rounded-lg" /></div>
+                  <div><label className="block text-sm font-medium mb-2">Video URL</label><Input value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="https://..." className="rounded-lg" /></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Featured Type</label>
+                      <select value={form.featured_type} onChange={(e) => setForm({ ...form, featured_type: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        <option value="paid">Paid</option>
+                        <option value="subscription">Subscription</option>
+                        <option value="admin_pick">Admin Pick</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Status</label>
+                      <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                        <option value="expired">Expired</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div><label className="block text-sm font-medium mb-2">Featured Until</label><Input type="date" value={form.featured_until} onChange={(e) => setForm({ ...form, featured_until: e.target.value })} className="rounded-lg" /></div>
+                    <div><label className="block text-sm font-medium mb-2">Display Order</label><Input type="number" value={form.display_order} onChange={(e) => setForm({ ...form, display_order: parseInt(e.target.value) || 0 })} className="rounded-lg" /></div>
+                  </div>
+                </>
+              )}
             </div>
             <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setShowModal(false)} className="rounded-lg">Cancel</Button>
-              <Button onClick={handleSave} className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg">{editing ? 'Update' : 'Create'}</Button>
+              <Button onClick={handleSave} disabled={!editing && selectedProjects.length === 0} className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg">
+                {editing ? 'Update' : `Add ${selectedProjects.length} Project${selectedProjects.length !== 1 ? 's' : ''}`}
+              </Button>
             </div>
           </div>
         </div>

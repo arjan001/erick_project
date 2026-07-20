@@ -5,25 +5,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Search, Plus, Edit, Trash2, Shield, User, Mail, Eye, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Shield, User, Mail, Eye, X, ChevronLeft, ChevronRight, Loader2, MoreVertical, Ban, CheckCircle } from 'lucide-react';
 
 const PAGE_SIZE = 10;
 
 const STATUS_STYLES = {
-  active: 'bg-green-100 text-green-700',
-  suspended: 'bg-gray-200 text-gray-700',
-  pending: 'bg-amber-100 text-amber-700',
-  inactive: 'bg-red-100 text-red-700'
+  active: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle },
+  suspended: { bg: 'bg-amber-100', text: 'text-amber-700', icon: Ban },
+  inactive: { bg: 'bg-red-100', text: 'text-red-700', icon: X }
 };
 
 const ROLE_STYLES = {
-  admin: 'bg-red-100 text-red-800',
-  artist_admin: 'bg-blue-100 text-blue-800',
-  team_admin: 'bg-green-100 text-green-800',
-  project_admin: 'bg-purple-100 text-purple-800',
-  content_manager: 'bg-orange-100 text-orange-800',
-  finance_manager: 'bg-yellow-100 text-yellow-800',
-  support: 'bg-gray-100 text-gray-800'
+  admin: 'bg-indigo-100 text-indigo-700',
+  artist_admin: 'bg-blue-100 text-blue-700',
+  team_admin: 'bg-emerald-100 text-emerald-700',
+  project_admin: 'bg-purple-100 text-purple-700',
+  content_manager: 'bg-orange-100 text-orange-700',
+  finance_manager: 'bg-amber-100 text-amber-700',
+  support: 'bg-gray-100 text-gray-700'
 };
 
 export default function AdminUsersPage() {
@@ -32,9 +31,12 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
   const [selectedUser, setSelectedUser] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showSuspendDialog, setShowSuspendDialog] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
@@ -96,14 +98,33 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
+  const handleDeleteUser = async () => {
+    setSaving(true);
     try {
-      await adminUsersApi.deleteUser(userId);
+      await adminUsersApi.deleteUser(selectedUser.id);
+      setShowDeleteDialog(false);
+      setSelectedUser(null);
       await fetchData();
     } catch (error) {
       console.error('Error deleting user:', error);
       alert('Failed to delete user: ' + error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSuspendUser = async () => {
+    setSaving(true);
+    try {
+      await adminUsersApi.updateUser(selectedUser.id, { is_active: !selectedUser.is_active });
+      setShowSuspendDialog(false);
+      setSelectedUser(null);
+      await fetchData();
+    } catch (error) {
+      console.error('Error suspending user:', error);
+      alert('Failed to suspend user: ' + error.message);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -113,7 +134,10 @@ export default function AdminUsersPage() {
                          user.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
     const userRoleKey = user.user_roles?.[0]?.roles?.role_key;
     const matchesRole = filterRole === 'all' || userRoleKey === filterRole;
-    return matchesSearch && matchesRole;
+    const matchesStatus = filterStatus === 'all' || 
+                          (filterStatus === 'active' && user.is_active) ||
+                          (filterStatus === 'suspended' && !user.is_active);
+    return matchesSearch && matchesRole && matchesStatus;
   });
 
   const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
@@ -128,128 +152,200 @@ export default function AdminUsersPage() {
   };
 
   const getRoleBadge = (roleKey) => {
-    return ROLE_STYLES[roleKey] || 'bg-gray-100 text-gray-800';
+    return ROLE_STYLES[roleKey] || 'bg-gray-100 text-gray-700';
+  };
+
+  const getStatusStyle = (isActive) => {
+    return isActive ? STATUS_STYLES.active : STATUS_STYLES.suspended;
   };
 
   if (loading) {
     return (
-      <div className="h-64 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">System User Management</h1>
-          <p className="text-gray-600">Create and manage system admin users with role-based permissions</p>
+    <div className="min-h-screen bg-gray-50 p-8">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">System Admin Users</h1>
+            <p className="text-gray-600 mt-1">Create and manage system admin users with role-based permissions</p>
+          </div>
+          <Button onClick={() => setShowAddDialog(true)} className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200">
+            <Plus className="w-4 h-4 mr-2" />
+            Add User
+          </Button>
         </div>
-        <Button onClick={() => setShowAddDialog(true)} className="bg-black text-white hover:bg-gray-800">
-          <Plus className="w-4 h-4 mr-2" />
-          Add User
-        </Button>
-      </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 1px 4px rgba(60,72,100,0.06)' }}>
-        <div className="p-6 border-b border-gray-100">
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                placeholder="Search users..."
-                value={searchTerm}
-                onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent focus:outline-none"
-              />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Total Users</p>
+                <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+              </div>
+              <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <User className="w-6 h-6 text-indigo-600" />
+              </div>
             </div>
-            <select
-              value={filterRole}
-              onChange={(e) => { setFilterRole(e.target.value); setPage(1); }}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent focus:outline-none"
-            >
-              <option value="all">All Roles</option>
-              {roles.map(role => (
-                <option key={role.role_key} value={role.role_key}>{role.role_name}</option>
-              ))}
-            </select>
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Active</p>
+                <p className="text-2xl font-bold text-green-600">{users.filter(u => u.is_active).length}</p>
+              </div>
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Suspended</p>
+                <p className="text-2xl font-bold text-amber-600">{users.filter(u => !u.is_active).length}</p>
+              </div>
+              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                <Ban className="w-6 h-6 text-amber-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Roles</p>
+                <p className="text-2xl font-bold text-gray-900">{roles.length}</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <Shield className="w-6 h-6 text-purple-600" />
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
+      {/* Filters */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              placeholder="Search users by name or email..."
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:outline-none"
+            />
+          </div>
+          <select
+            value={filterRole}
+            onChange={(e) => { setFilterRole(e.target.value); setPage(1); }}
+            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:outline-none"
+          >
+            <option value="all">All Roles</option>
+            {roles.map(role => (
+              <option key={role.role_key} value={role.role_key}>{role.role_name}</option>
+            ))}
+          </select>
+          <select
+            value={filterStatus}
+            onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
+            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:outline-none"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Users Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50/60">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">User</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Role</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Joined</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Created</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {paginatedUsers.length === 0 && (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-500">No users found</td></tr>
+                <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">No users found</td></tr>
               )}
-              {paginatedUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50/60 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                        <User className="w-4 h-4 text-gray-600" />
+              {paginatedUsers.map((user) => {
+                const statusStyle = getStatusStyle(user.is_active);
+                const StatusIcon = statusStyle.icon;
+                return (
+                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                          {user.first_name?.[0] || user.email?.[0] || 'U'}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{user.first_name} {user.last_name}</p>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900 text-sm">{user.first_name} {user.last_name}</p>
-                        <p className="text-xs text-gray-600 flex items-center gap-1">
-                          <Mail className="w-3 h-3" />
-                          {user.email}
-                        </p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleBadge(getUserRole(user))}`}>
+                        {getUserRoleName(user)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
+                        <StatusIcon className="w-3.5 h-3.5" />
+                        {user.is_active ? 'Active' : 'Suspended'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedUser(user)} className="p-2 hover:bg-gray-100">
+                          <Eye className="w-4 h-4 text-gray-600" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => { setEditingUser(user); setShowEditDialog(true); }} className="p-2 hover:bg-gray-100">
+                          <Edit className="w-4 h-4 text-gray-600" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowSuspendDialog(true); }} className="p-2 hover:bg-amber-50">
+                          <Ban className="w-4 h-4 text-amber-600" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowDeleteDialog(true); }} className="p-2 hover:bg-red-50">
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </Button>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getRoleBadge(getUserRole(user))}`}>
-                      {getUserRoleName(user)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[user.is_active ? 'active' : 'inactive']}`}>
-                      {user.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedUser(user)} className="p-1">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => { setEditingUser(user); setShowEditDialog(true); }} className="p-1">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(user.id)} className="text-red-600 hover:text-red-700 p-1">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
 
+        {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <span className="text-xs text-gray-400">{filteredUsers.length} total · page {page} of {totalPages}</span>
-            <div className="flex gap-1">
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+            <span className="text-sm text-gray-500">{filteredUsers.length} total · page {page} of {totalPages}</span>
+            <div className="flex gap-2">
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                className="p-1.5 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50">
+                className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50">
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                className="p-1.5 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50">
+                className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -261,15 +357,16 @@ export default function AdminUsersPage() {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Create New System User</DialogTitle>
+            <DialogTitle className="text-xl">Create New System User</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-5 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>First Name</Label>
                 <Input
                   value={newUserForm.first_name}
                   onChange={(e) => setNewUserForm({ ...newUserForm, first_name: e.target.value })}
+                  className="rounded-xl"
                 />
               </div>
               <div className="space-y-2">
@@ -277,6 +374,7 @@ export default function AdminUsersPage() {
                 <Input
                   value={newUserForm.last_name}
                   onChange={(e) => setNewUserForm({ ...newUserForm, last_name: e.target.value })}
+                  className="rounded-xl"
                 />
               </div>
             </div>
@@ -286,6 +384,7 @@ export default function AdminUsersPage() {
                 type="email"
                 value={newUserForm.email}
                 onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
+                className="rounded-xl"
               />
             </div>
             <div className="space-y-2">
@@ -294,12 +393,13 @@ export default function AdminUsersPage() {
                 type="password"
                 value={newUserForm.password}
                 onChange={(e) => setNewUserForm({ ...newUserForm, password: e.target.value })}
+                className="rounded-xl"
               />
             </div>
             <div className="space-y-2">
               <Label>Role</Label>
               <Select value={newUserForm.role_key} onValueChange={(value) => setNewUserForm({ ...newUserForm, role_key: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-xl">
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -311,8 +411,8 @@ export default function AdminUsersPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>Cancel</Button>
-            <Button onClick={handleCreateUser} disabled={saving}>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={handleCreateUser} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 rounded-xl">
               {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
               Create User
             </Button>
@@ -324,15 +424,16 @@ export default function AdminUsersPage() {
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
+            <DialogTitle className="text-xl">Edit User</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-5 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>First Name</Label>
                 <Input
                   value={editingUser?.first_name || ''}
                   onChange={(e) => setEditingUser({ ...editingUser, first_name: e.target.value })}
+                  className="rounded-xl"
                 />
               </div>
               <div className="space-y-2">
@@ -340,13 +441,14 @@ export default function AdminUsersPage() {
                 <Input
                   value={editingUser?.last_name || ''}
                   onChange={(e) => setEditingUser({ ...editingUser, last_name: e.target.value })}
+                  className="rounded-xl"
                 />
               </div>
             </div>
             <div className="space-y-2">
               <Label>Role</Label>
               <Select value={editingUser?.user_roles?.[0]?.roles?.role_key || ''} onValueChange={(value) => setEditingUser({ ...editingUser, role_key: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-xl">
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -356,22 +458,67 @@ export default function AdminUsersPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <input
                 type="checkbox"
                 id="active"
                 checked={editingUser?.is_active || false}
                 onChange={(e) => setEditingUser({ ...editingUser, is_active: e.target.checked })}
-                className="w-4 h-4"
+                className="w-4 h-4 rounded"
               />
-              <Label htmlFor="active">Active</Label>
+              <Label htmlFor="active" className="cursor-pointer">Active</Label>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
-            <Button onClick={handleUpdateUser} disabled={saving}>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={handleUpdateUser} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 rounded-xl">
               {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
               Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-red-600">Delete User</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-600">Are you sure you want to delete <strong>{selectedUser?.first_name} {selectedUser?.last_name}</strong>? This action cannot be undone.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={handleDeleteUser} disabled={saving} className="bg-red-600 hover:bg-red-700 rounded-xl">
+              {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Suspend Confirmation Dialog */}
+      <Dialog open={showSuspendDialog} onOpenChange={setShowSuspendDialog}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl">
+              {selectedUser?.is_active ? 'Suspend User' : 'Activate User'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-600">
+              {selectedUser?.is_active 
+                ? <>Are you sure you want to suspend <strong>{selectedUser?.first_name} {selectedUser?.last_name}</strong>? They will not be able to access the system.</>
+                : <>Are you sure you want to activate <strong>{selectedUser?.first_name} {selectedUser?.last_name}</strong>? They will regain access to the system.</>
+              }
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSuspendDialog(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={handleSuspendUser} disabled={saving} className={selectedUser?.is_active ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'} rounded-xl">
+              {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              {selectedUser?.is_active ? 'Suspend' : 'Activate'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -381,30 +528,36 @@ export default function AdminUsersPage() {
       {selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="bg-gray-900 p-6 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">User Details</h2>
               <button onClick={() => setSelectedUser(null)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
-            <div className="p-6 space-y-4 text-sm">
-              <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                  <User className="w-8 h-8 text-gray-600" />
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                  {selectedUser.first_name?.[0] || selectedUser.email?.[0] || 'U'}
                 </div>
                 <div>
-                  <div className="text-lg font-medium text-gray-900">{selectedUser.first_name} {selectedUser.last_name}</div>
+                  <div className="text-lg font-bold text-gray-900">{selectedUser.first_name} {selectedUser.last_name}</div>
                   <div className="text-gray-500">{selectedUser.email}</div>
-                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full mt-1 ${getRoleBadge(getUserRole(selectedUser))}`}>
+                  <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full mt-2 ${getRoleBadge(getUserRole(selectedUser))}`}>
                     {getUserRoleName(selectedUser)}
                   </span>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><span className="font-medium text-gray-500">Status:</span> {selectedUser.is_active ? 'Active' : 'Inactive'}</div>
-                <div><span className="font-medium text-gray-500">Joined:</span> {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString() : 'N/A'}</div>
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <p className="text-sm text-gray-500">Status</p>
+                  <p className="font-semibold text-gray-900">{selectedUser.is_active ? 'Active' : 'Suspended'}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <p className="text-sm text-gray-500">Joined</p>
+                  <p className="font-semibold text-gray-900">{selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString() : 'N/A'}</p>
+                </div>
               </div>
             </div>
-            <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setSelectedUser(null)} className="rounded-lg">Close</Button>
+            <div className="p-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setSelectedUser(null)} className="rounded-xl">Close</Button>
             </div>
           </div>
         </div>

@@ -1,55 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/shared/utils/routing';
 import { ArrowRight } from 'lucide-react';
-
-const FEATURED_PROJECTS = [
-  {
-    id: 1,
-    title: 'Luxury Watch Campaign',
-    type: 'Commercial',
-    thumbnail: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800',
-    video: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800',
-  },
-  {
-    id: 2,
-    title: 'European Fashion Film',
-    type: 'Short Film',
-    thumbnail: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800',
-    video: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800',
-  },
-  {
-    id: 3,
-    title: 'Tech Innovation Spot',
-    type: 'Commercial',
-    thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800',
-    video: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800',
-  },
-  {
-    id: 4,
-    title: 'Music Video: Urban',
-    type: 'Music Video',
-    thumbnail: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800',
-    video: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800',
-  },
-  {
-    id: 5,
-    title: 'Automotive Excellence',
-    type: 'Commercial',
-    thumbnail: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=800',
-    video: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=800',
-  },
-  {
-    id: 6,
-    title: 'Culinary Journey',
-    type: 'Documentary',
-    thumbnail: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800',
-    video: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800',
-  },
-];
+import { FeaturedWork } from '@/lib/supabaseEntities';
 
 export default function FeaturedWork() {
   const [hoveredId, setHoveredId] = useState(null);
+  const [featuredProjects, setFeaturedProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeaturedProjects = async () => {
+      try {
+        const works = await FeaturedWork.filter({ status: 'active' }, 'display_order', 6);
+        setFeaturedProjects(works || []);
+      } catch (error) {
+        console.error('Error fetching featured projects:', error);
+        setFeaturedProjects([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProjects();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (featuredProjects.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-24 bg-white">
@@ -71,9 +61,9 @@ export default function FeaturedWork() {
           </Link>
         </div>
 
-        {/* Netflix-style Grid */}
+        {/* Netflix-style Grid - 3 per line, max 6 total */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {FEATURED_PROJECTS.map((project) => (
+          {featuredProjects.slice(0, 6).map((project) => (
             <div
               key={project.id}
               className="group relative aspect-video rounded-lg overflow-hidden cursor-pointer hover-lift"
@@ -82,7 +72,7 @@ export default function FeaturedWork() {
             >
               {/* Thumbnail */}
               <img
-                src={project.thumbnail}
+                src={project.images?.[0] || project.video_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800'}
                 alt={project.title}
                 className={`w-full h-full object-cover transition-all duration-500 ${
                   hoveredId === project.id ? 'scale-110 opacity-80' : 'scale-100 opacity-100'
@@ -96,8 +86,14 @@ export default function FeaturedWork() {
                 hoveredId === project.id ? 'opacity-100' : 'opacity-60'
               }`}>
                 <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
-                  <div className="text-xs font-medium text-amber-600 mb-2">{project.type}</div>
+                  <div className="text-xs font-medium text-amber-600 mb-2">
+                    {project.featured_type === 'paid' ? 'Paid Feature' : 
+                     project.featured_type === 'subscription' ? 'Subscription' : 'Admin Pick'}
+                  </div>
                   <h3 className="text-lg md:text-xl font-bold text-white">{project.title}</h3>
+                  {project.description && (
+                    <p className="text-sm text-gray-300 line-clamp-2 mt-1">{project.description}</p>
+                  )}
                 </div>
               </div>
 

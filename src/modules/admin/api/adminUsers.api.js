@@ -17,6 +17,7 @@ export const adminUsersApi = {
           )
         )
       `)
+      .eq('role', 'admin') // Only fetch system admin users
       .order('created_at', { ascending: false });
     
     if (error) throw error;

@@ -68,7 +68,7 @@ export default function AdminSidebar() {
     {
       section: 'User Management',
       items: [
-        { path: '/Admin/UserManagement', label: 'Users', icon: Users },
+        { path: '/Admin/UserManagement', label: 'System Admin Users', icon: Users },
         { path: '/Admin/RolesPermissions', label: 'Roles & Permissions', icon: Shield },
         { path: '/Admin/Invites', label: 'Invites', icon: Mail },
       ]
