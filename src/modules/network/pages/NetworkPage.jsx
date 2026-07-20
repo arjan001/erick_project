@@ -453,88 +453,19 @@ export default function NetworkPage() {
                     <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden text-sm font-bold text-gray-600">
                       {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
                     </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
-                        <p className="text-xs text-gray-600 line-clamp-1 mb-1">{person.role}</p>
-                        {person.location && <div className="flex items-center gap-1 text-xs text-gray-500"><MapPin className="w-3 h-3" />{person.location}</div>}
-                      </div>
-                      <Button onClick={() => handleMessage(person)} size="sm" variant="outline" className="text-xs px-3 flex-shrink-0">
-                        <MessageCircle className="w-3 h-3 mr-1" /> Message
-                      </Button>
-                    </div>
-                    {person.skills?.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {person.skills.slice(0, 3).map((skill, idx) => (
-                          <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded">{skill}</span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="overflow-y-auto">
-          <div className="p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-            <h2 className="text-sm font-semibold text-gray-900">Suggested for you</h2>
-            <p className="text-xs text-gray-600 mt-1">Matched by skill and career niche</p>
-          </div>
-          <div className="divide-y divide-gray-100">
-            {suggestions.length === 0 && (
-              <div className="p-6 text-center text-sm text-gray-500">No suggestions available</div>
-            )}
-            {suggestions.map((person) => {
-              const TypeIcon = typeIcon(person.type);
-              const mutuals = getMutualConnections(person.email);
-              return (
-                <div key={`${person.type}-${person.id}`} className="p-4 hover:bg-gray-50">
-                  <div className="flex items-start gap-3">
-                    <div className="relative flex-shrink-0">
-                      <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
-                        {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
-                      </div>
-                      <TypeIcon className="w-3 h-3 absolute -bottom-1 -right-1 bg-black text-white rounded-full p-0.5" />
-                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
-                          <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
-                          {mutuals.length > 0 && (
-                            <div className="flex items-center gap-1.5 mt-1">
-                              <div className="flex -space-x-2">
-                                {mutuals.slice(0, 3).map((mutual, idx) => (
-                                  <div key={idx} className="w-4 h-4 rounded-full bg-gray-300 border-2 border-white overflow-hidden">
-                                    {mutual.image ? (
-                                      <img src={mutual.image} alt={mutual.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-[7px] font-bold text-gray-600">
-                                        {mutual.name?.[0]?.toUpperCase()}
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                              <span className="text-[10px] text-gray-500">{mutuals.length} mutual{mutuals.length > 1 ? 's' : ''}</span>
-                            </div>
-                          )}
+                          <p className="text-xs text-gray-600 line-clamp-1 mb-1">{person.role}</p>
+                          {person.location && <div className="flex items-center gap-1 text-xs text-gray-500"><MapPin className="w-3 h-3" />{person.location}</div>}
                         </div>
-                        {getConnectionStatus(person) === 'pending' ? (
-                          <Button size="sm" variant="outline" className="text-xs px-3 flex-shrink-0" disabled>Pending</Button>
-                        ) : (
-                          <Button onClick={() => { setSelectedPerson(person); setShowConnectionModal(true); }} size="sm" className="bg-black text-white hover:bg-gray-800 text-xs px-3 flex-shrink-0">Connect</Button>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-gray-500 mb-1">
-                        {person.matchScore > 0 && <span className="font-medium text-gray-900">{person.matchScore} skill match{person.matchScore > 1 ? 'es' : ''}</span>}
-                        {person.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{person.location}</span>}
+                        <Button onClick={() => handleMessage(person)} size="sm" variant="outline" className="text-xs px-3 flex-shrink-0">
+                          <MessageCircle className="w-3 h-3 mr-1" /> Message
+                        </Button>
                       </div>
                       {person.skills?.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1 mt-2">
                           {person.skills.slice(0, 3).map((skill, idx) => (
                             <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded">{skill}</span>
                           ))}
@@ -543,8 +474,78 @@ export default function NetworkPage() {
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+          </div>
+
+          <div className="overflow-y-auto">
+            <div className="p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+              <h2 className="text-sm font-semibold text-gray-900">Suggested for you</h2>
+              <p className="text-xs text-gray-600 mt-1">Matched by skill and career niche</p>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {suggestions.length === 0 && (
+                <div className="p-6 text-center text-sm text-gray-500">No suggestions available</div>
+              )}
+              {suggestions.map((person) => {
+                const TypeIcon = typeIcon(person.type);
+                const mutuals = getMutualConnections(person.email);
+                return (
+                  <div key={`${person.type}-${person.id}`} className="p-4 hover:bg-gray-50">
+                    <div className="flex items-start gap-3">
+                      <div className="relative flex-shrink-0">
+                        <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
+                          {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
+                        </div>
+                        <TypeIcon className="w-3 h-3 absolute -bottom-1 -right-1 bg-black text-white rounded-full p-0.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
+                            <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
+                            {mutuals.length > 0 && (
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <div className="flex -space-x-2">
+                                  {mutuals.slice(0, 3).map((mutual, idx) => (
+                                    <div key={idx} className="w-4 h-4 rounded-full bg-gray-300 border-2 border-white overflow-hidden">
+                                      {mutual.image ? (
+                                        <img src={mutual.image} alt={mutual.name} className="w-full h-full object-cover" />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-[7px] font-bold text-gray-600">
+                                          {mutual.name?.[0]?.toUpperCase()}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                                <span className="text-[10px] text-gray-500">{mutuals.length} mutual{mutuals.length > 1 ? 's' : ''}</span>
+                              </div>
+                            )}
+                          </div>
+                          {getConnectionStatus(person) === 'pending' ? (
+                            <Button size="sm" variant="outline" className="text-xs px-3 flex-shrink-0" disabled>Pending</Button>
+                          ) : (
+                            <Button onClick={() => { setSelectedPerson(person); setShowConnectionModal(true); }} size="sm" className="bg-black text-white hover:bg-gray-800 text-xs px-3 flex-shrink-0">Connect</Button>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-gray-500 mb-1">
+                          {person.matchScore > 0 && <span className="font-medium text-gray-900">{person.matchScore} skill match{person.matchScore > 1 ? 'es' : ''}</span>}
+                          {person.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{person.location}</span>}
+                        </div>
+                        {person.skills?.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {person.skills.slice(0, 3).map((skill, idx) => (
+                              <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded">{skill}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
