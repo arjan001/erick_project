@@ -145,16 +145,16 @@ export default function BackerDealsPage() {
           </Button>
         </div>
 
-        {/* Search */}
+        {/* Search - Minimalist */}
         <div className="mb-6">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               type="text"
               placeholder="Search deals..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-9 h-9 text-sm"
             />
           </div>
         </div>
@@ -173,43 +173,40 @@ export default function BackerDealsPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredDeals.map((deal) => {
               const StatusIcon = statusIcons[deal.status] || Clock;
               return (
-                <Card key={deal.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-lg">{deal.title}</CardTitle>
-                      <div className={`p-2 rounded-lg ${
+                <Card key={deal.id} className="hover:shadow-md transition-shadow">
+                  <div className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm text-gray-900 mb-1">{deal.title}</h3>
+                        <p className="text-xs text-gray-500 truncate">{deal.counterparty || 'N/A'}</p>
+                      </div>
+                      <div className={`p-1.5 rounded-lg ${
                         deal.status === 'active' ? 'bg-green-100 text-green-600' :
-                        deal.status === 'completed' ? 'bg-blue-100 text-blue-600' :
+                        deal.status === 'completed' ? 'bg-gray-100 text-gray-600' :
                         deal.status === 'cancelled' ? 'bg-red-100 text-red-600' :
                         'bg-yellow-100 text-yellow-600'
                       }`}>
-                        <StatusIcon className="w-5 h-5" />
+                        <StatusIcon className="w-4 h-4" />
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{deal.description}</p>
                     
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Counterparty</span>
-                        <span className="font-medium">{deal.counterparty || 'N/A'}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Amount</span>
-                        <span className="font-semibold">${deal.amount?.toLocaleString()}</span>
-                      </div>
-                      {deal.start_date && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Calendar className="w-4 h-4" />
-                          <span>{new Date(deal.start_date).toLocaleDateString()}</span>
-                        </div>
-                      )}
+                    <p className="text-xs text-gray-600 mb-3 line-clamp-2">{deal.description}</p>
+                    
+                    <div className="flex items-center justify-between text-xs mb-3">
+                      <span className="text-gray-500">Amount</span>
+                      <span className="font-semibold text-gray-900">${deal.amount?.toLocaleString()}</span>
                     </div>
+
+                    {deal.start_date && (
+                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
+                        <Calendar className="w-3 h-3" />
+                        <span>{new Date(deal.start_date).toLocaleDateString()}</span>
+                      </div>
+                    )}
 
                     <div className="flex gap-2">
                       {deal.status === 'pending' && (
@@ -218,18 +215,18 @@ export default function BackerDealsPage() {
                             size="sm" 
                             variant="outline"
                             onClick={() => handleSignDeal(deal.id)}
-                            className="flex-1"
+                            className="flex-1 h-8 text-xs"
                           >
-                            <Pen className="w-4 h-4 mr-1" />
-                            Sign Deal
+                            <Pen className="w-3 h-3 mr-1" />
+                            Sign
                           </Button>
                           <Button 
                             size="sm" 
                             variant="outline"
                             onClick={() => handleUpdateDealStatus(deal.id, 'cancelled')}
-                            className="text-red-600 border-red-300"
+                            className="text-red-600 border-red-300 h-8 px-2"
                           >
-                            <X className="w-4 h-4" />
+                            <X className="w-3 h-3" />
                           </Button>
                         </>
                       )}
@@ -237,16 +234,19 @@ export default function BackerDealsPage() {
                         <Button 
                           size="sm"
                           onClick={() => handleUpdateDealStatus(deal.id, 'completed')}
-                          className="flex-1"
+                          className="flex-1 h-8 text-xs"
                         >
-                          Mark Complete
+                          Complete
                         </Button>
                       )}
-                      <Button size="sm" variant="outline">
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                      {deal.status !== 'pending' && deal.status !== 'active' && (
+                        <Button size="sm" variant="outline" className="flex-1 h-8 text-xs">
+                          <Eye className="w-3 h-4 mr-1" />
+                          View
+                        </Button>
+                      )}
                     </div>
-                  </CardContent>
+                  </div>
                 </Card>
               );
             })}

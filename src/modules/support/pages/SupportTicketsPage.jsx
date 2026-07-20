@@ -605,6 +605,10 @@ export default function SupportTicketsPage() {
                           <span className="text-white text-xs font-medium">{response.responder_name?.charAt(0) || 'A'}</span>
                         </div>
                         <div className="flex-1 z-20">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium text-gray-900">{response.responder_name || 'Anonymous'}</span>
+                            <span className="text-xs text-gray-500">• {new Date(response.created_at).toLocaleString()}</span>
+                          </div>
                           <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-none p-3 shadow-sm">
                             {response.reply_to && (
                               <div className="bg-gray-50 rounded-lg p-2 mb-2 text-xs text-gray-600 border-l-2 border-indigo-400">
@@ -614,7 +618,6 @@ export default function SupportTicketsPage() {
                             <p className="text-sm text-gray-900 whitespace-pre-wrap">{response.response}</p>
                           </div>
                           <div className="flex items-center gap-2 mt-1 ml-1">
-                            <p className="text-xs text-gray-500">{new Date(response.created_at).toLocaleString()}</p>
                             <button
                               onClick={() => { setReplyingTo(response.responder_name); setResponseText(`@${response.responder_name} `); }}
                               className="text-xs text-indigo-600 hover:text-indigo-800"

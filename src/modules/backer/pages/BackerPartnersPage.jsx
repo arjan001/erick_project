@@ -119,55 +119,55 @@ export default function BackerPartnersPage() {
           </Button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Partners</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-600" />
-                <div className="text-2xl font-bold">{partners.length}</div>
+        {/* Stats - Smaller cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                <Users className="w-5 h-5 text-gray-900" />
               </div>
-            </CardContent>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{partners.length}</div>
+                <div className="text-xs text-gray-500">Total Partners</div>
+              </div>
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Strategic Partners</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
                 <Star className="w-5 h-5 text-gray-900" />
-                <div className="text-2xl font-bold">{partners.filter(p => p.partnership_type === 'strategic').length}</div>
               </div>
-            </CardContent>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{partners.filter(p => p.partnership_type === 'strategic').length}</div>
+                <div className="text-xs text-gray-500">Strategic Partners</div>
+              </div>
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Active Collaborations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-green-600" />
-                <div className="text-2xl font-bold">{partners.filter(p => p.status === 'active').length}</div>
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-gray-900" />
               </div>
-            </CardContent>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{partners.filter(p => p.status === 'active').length}</div>
+                <div className="text-xs text-gray-500">Active Collaborations</div>
+              </div>
+            </div>
           </Card>
         </div>
 
-        {/* Search */}
+        {/* Search - Minimalist */}
         <div className="mb-6">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               type="text"
               placeholder="Search partners..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-9 h-9 text-sm"
             />
           </div>
         </div>
@@ -186,67 +186,66 @@ export default function BackerPartnersPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredPartners.map((partner) => (
-              <Card key={partner.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{partner.name}</CardTitle>
+              <Card key={partner.id} className="hover:shadow-md transition-shadow">
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-sm text-gray-900 mb-1">{partner.name}</h3>
                       {partner.company && (
-                        <p className="text-sm text-gray-600">{partner.company}</p>
+                        <p className="text-xs text-gray-500 truncate">{partner.company}</p>
                       )}
                     </div>
-                    <span className={`px-2 py-1 text-xs rounded ${
+                    <span className={`px-2 py-0.5 text-xs rounded ${
                       partner.partnership_type === 'strategic' ? 'bg-gray-100 text-gray-700' :
-                      partner.partnership_type === 'investment' ? 'bg-green-100 text-green-700' :
-                      'bg-blue-100 text-blue-700'
+                      partner.partnership_type === 'investment' ? 'bg-gray-100 text-gray-700' :
+                      'bg-gray-100 text-gray-700'
                     }`}>
                       {partner.partnership_type}
                     </span>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 mb-4">
+                  
+                  <div className="space-y-2 mb-3">
                     {partner.email && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Mail className="w-4 h-4" />
-                        <span>{partner.email}</span>
+                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <Mail className="w-3 h-3" />
+                        <span className="truncate">{partner.email}</span>
                       </div>
                     )}
                     {partner.role && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Building2 className="w-4 h-4" />
-                        <span>{partner.role}</span>
+                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <Building2 className="w-3 h-3" />
+                        <span className="truncate">{partner.role}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Calendar className="w-4 h-4" />
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <Calendar className="w-3 h-3" />
                       <span>Since {new Date(partner.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
 
                   {partner.notes && (
-                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600">{partner.notes}</p>
+                    <div className="mb-3 p-2 bg-gray-50 rounded text-xs text-gray-600 line-clamp-2">
+                      {partner.notes}
                     </div>
                   )}
 
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <MessageSquare className="w-4 h-4 mr-1" />
+                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs">
+                      <MessageSquare className="w-3 h-3 mr-1" />
                       Contact
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="sm"
                       onClick={() => handleDeletePartner(partner.id)}
-                      className="text-red-600 hover:text-red-700"
+                      className="text-red-600 hover:text-red-700 h-8 px-2"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
-                </CardContent>
+                </div>
               </Card>
             ))}
           </div>

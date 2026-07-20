@@ -297,6 +297,41 @@ export default function BackerProfile() {
                   </div>
                 </div>
               </div>
+
+              {/* Investment Focus */}
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Investment Focus</h3>
+                {editing ? (
+                  <div className="space-y-3">
+                    {['Film', 'Music', 'Art', 'Technology', 'Fashion', 'Gaming', 'Publishing', 'Events'].map((focus) => (
+                      <label key={focus} className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.investment_focus?.includes(focus)}
+                          onChange={(e) => {
+                            const updated = e.target.checked
+                              ? [...(formData.investment_focus || []), focus]
+                              : formData.investment_focus?.filter(f => f !== focus) || [];
+                            setFormData({ ...formData, investment_focus: updated });
+                          }}
+                          className="w-4 h-4 rounded border-gray-300"
+                        />
+                        <span className="text-sm text-gray-700">{focus}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {backer?.backing_types?.length > 0 ? (
+                      backer.backing_types.map((focus, idx) => (
+                        <span key={idx} className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm">{focus}</span>
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-sm">No investment focus set</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

@@ -101,12 +101,12 @@ export default function BackerSidebar() {
     >
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100">
-        <Link to="/" className="font-black text-xl bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">
-          22.
+        <Link to="/" className="font-black text-xl text-black">
+          22
         </Link>
         <button
           onClick={toggle}
-          className="p-1.5 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-colors text-gray-400"
+          className="p-1.5 rounded-lg hover:bg-gray-100 hover:text-black transition-colors text-gray-400"
         >
           {expanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
@@ -124,7 +124,7 @@ export default function BackerSidebar() {
                 <Link
                   to={createPageUrl(item.href)}
                   className={`flex items-center justify-center w-full p-2 rounded-lg transition-all ${
-                    isActive ? 'bg-indigo-50 text-indigo-600 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                    isActive ? 'bg-gray-100 text-black font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
@@ -143,7 +143,7 @@ export default function BackerSidebar() {
               key={item.href}
               to={createPageUrl(item.href)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                isActive ? 'bg-indigo-50 text-indigo-600 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                isActive ? 'bg-gray-100 text-black font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
@@ -168,7 +168,7 @@ export default function BackerSidebar() {
         {!expanded ? (
           <div className="relative group">
             <div className="flex items-center justify-center w-full p-2 rounded-xl">
-              <div className="w-8 h-8 bg-indigo-100 ring-2 ring-indigo-50 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-indigo-700">
+              <div className="w-8 h-8 bg-gray-100 ring-2 ring-gray-50 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-gray-700">
                 {user?.full_name?.charAt(0) || 'B'}
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function BackerSidebar() {
           </div>
         ) : (
           <div className="flex items-center gap-3 px-3 py-2 rounded-xl">
-            <div className="w-8 h-8 bg-indigo-100 ring-2 ring-indigo-50 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-indigo-700">
+            <div className="w-8 h-8 bg-gray-100 ring-2 ring-gray-50 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-gray-700">
               {user?.full_name?.charAt(0) || 'B'}
             </div>
             <div className="text-left flex-1 min-w-0">

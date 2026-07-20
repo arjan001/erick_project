@@ -126,68 +126,67 @@ export default function BackerProjectUpdatesPage() {
           </Button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Updates</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-blue-600" />
-                <div className="text-2xl font-bold">{updates.length}</div>
+        {/* Stats - Smaller cards, gray theme */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                <FileText className="w-5 h-5 text-gray-900" />
               </div>
-            </CardContent>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{updates.length}</div>
+                <div className="text-xs text-gray-500">Total Updates</div>
+              </div>
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Projects Tracked</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
                 <Bell className="w-5 h-5 text-gray-900" />
-                <div className="text-2xl font-bold">{uniqueProjects.length}</div>
               </div>
-            </CardContent>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{uniqueProjects.length}</div>
+                <div className="text-xs text-gray-500">Projects Tracked</div>
+              </div>
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Recent Updates</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-green-600" />
-                <div className="text-2xl font-bold">
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-gray-900" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">
                   {updates.filter(u => {
                     const weekAgo = new Date();
                     weekAgo.setDate(weekAgo.getDate() - 7);
                     return new Date(u.created_at) > weekAgo;
                   }).length}
                 </div>
+                <div className="text-xs text-gray-500">This week</div>
               </div>
-              <p className="text-xs text-gray-500 mt-2">This week</p>
-            </CardContent>
+            </div>
           </Card>
         </div>
 
-        {/* Search and Filter */}
-        <div className="flex gap-4 mb-6">
+        {/* Search and Filter - Minimalist */}
+        <div className="flex gap-3 mb-6">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               type="text"
               placeholder="Search updates..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-9 h-9 text-sm"
             />
           </div>
           <select
             value={filterProject}
             onChange={(e) => setFilterProject(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 text-sm h-9"
           >
             <option value="all">All Projects</option>
             {investments.map(inv => (
@@ -210,43 +209,43 @@ export default function BackerProjectUpdatesPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {filteredUpdates.map((update) => (
-              <Card key={update.id} className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
+              <Card key={update.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className={`px-2 py-1 text-xs rounded ${
-                          update.update_type === 'progress' ? 'bg-blue-100 text-blue-700' :
-                          update.update_type === 'milestone' ? 'bg-green-100 text-green-700' :
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`px-2 py-0.5 text-xs rounded ${
+                          update.update_type === 'progress' ? 'bg-gray-100 text-gray-700' :
+                          update.update_type === 'milestone' ? 'bg-gray-100 text-gray-700' :
                           update.update_type === 'announcement' ? 'bg-gray-100 text-gray-700' :
                           'bg-gray-100 text-gray-700'
                         }`}>
                           {update.update_type}
                         </span>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-xs text-gray-500">
                           {update.project_title}
                         </span>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{update.title}</h3>
-                      <p className="text-gray-600 mb-3">{update.content}</p>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(update.created_at).toLocaleString()}</span>
+                      <h3 className="text-sm font-semibold text-gray-900 mb-1">{update.title}</h3>
+                      <p className="text-xs text-gray-600 mb-2 line-clamp-2">{update.content}</p>
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Calendar className="w-3 h-3" />
+                        <span>{new Date(update.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    <div className="flex gap-2 ml-4">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4" />
+                    <div className="flex gap-1 ml-3">
+                      <Button variant="ghost" size="sm" className="h-7 px-2">
+                        <Eye className="w-3 h-3" />
                       </Button>
                       <Button 
                         variant="ghost" 
                         size="sm"
                         onClick={() => handleDeleteUpdate(update.id)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 hover:text-red-700 h-7 px-2"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
                   </div>

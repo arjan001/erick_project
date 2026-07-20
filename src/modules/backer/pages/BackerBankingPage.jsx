@@ -134,14 +134,14 @@ export default function BackerBankingPage() {
           <p className="text-gray-600">Manage your bank accounts for investment returns and withdrawals</p>
         </div>
 
-        {/* Security Notice */}
-        <Card className="mb-8 bg-blue-50 border-blue-200">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <Lock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+        {/* Security Notice - Gray theme */}
+        <Card className="mb-6 bg-gray-50 border-gray-200">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <Lock className="w-4 h-4 text-gray-900 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-blue-900 mb-1">Secure Banking Information</h3>
-                <p className="text-sm text-blue-700">
+                <h3 className="font-semibold text-gray-900 mb-1 text-sm">Secure Banking Information</h3>
+                <p className="text-xs text-gray-600">
                   Your banking details are encrypted and stored securely. We only use this information to process investment returns and withdrawals.
                 </p>
               </div>
@@ -149,72 +149,76 @@ export default function BackerBankingPage() {
           </CardContent>
         </Card>
 
-        {/* Bank Accounts */}
-        <Card className="mb-8">
-          <CardHeader>
+        {/* Bank Accounts - Smaller */}
+        <Card className="mb-6">
+          <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="w-5 h-5" />
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Building2 className="w-4 h-4" />
                   Bank Accounts
                 </CardTitle>
-                <p className="text-sm text-gray-600 mt-1">Add bank accounts to receive investment returns</p>
+                <p className="text-xs text-gray-600 mt-1">Add bank accounts to receive investment returns</p>
               </div>
-              <Button onClick={() => setShowBankForm(!showBankForm)}>
-                <Plus className="w-4 h-4 mr-2" />
+              <Button onClick={() => setShowBankForm(!showBankForm)} className="bg-black text-white hover:bg-gray-800 h-8 text-sm">
+                <Plus className="w-3 h-3 mr-1" />
                 Add Account
               </Button>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <CardContent className="p-4">
             {showBankForm && (
-              <div className="mb-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
-                <h3 className="font-semibold mb-4">Add New Bank Account</h3>
-                <div className="space-y-4">
+              <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 className="font-semibold mb-3 text-sm">Add New Bank Account</h3>
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">Bank Name</label>
+                    <label className="block text-xs font-medium text-gray-900 mb-1">Bank Name</label>
                     <Input
                       type="text"
                       value={bankForm.bank_name}
                       onChange={(e) => setBankForm({ ...bankForm, bank_name: e.target.value })}
                       placeholder="e.g. Chase Bank, Bank of America"
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">Account Holder Name</label>
+                    <label className="block text-xs font-medium text-gray-900 mb-1">Account Holder Name</label>
                     <Input
                       type="text"
                       value={bankForm.account_holder_name}
                       onChange={(e) => setBankForm({ ...bankForm, account_holder_name: e.target.value })}
                       placeholder="Name as it appears on your account"
+                      className="h-8 text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">Account Number</label>
+                      <label className="block text-xs font-medium text-gray-900 mb-1">Account Number</label>
                       <Input
                         type="text"
                         value={bankForm.account_number}
                         onChange={(e) => setBankForm({ ...bankForm, account_number: e.target.value })}
                         placeholder="Enter account number"
+                        className="h-8 text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">Routing Number</label>
+                      <label className="block text-xs font-medium text-gray-900 mb-1">Routing Number</label>
                       <Input
                         type="text"
                         value={bankForm.routing_number}
                         onChange={(e) => setBankForm({ ...bankForm, routing_number: e.target.value })}
                         placeholder="9-digit routing number"
+                        className="h-8 text-sm"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">Account Type</label>
+                    <label className="block text-xs font-medium text-gray-900 mb-1">Account Type</label>
                     <select
                       value={bankForm.account_type}
                       onChange={(e) => setBankForm({ ...bankForm, account_type: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-400 text-sm h-8"
                     >
                       <option value="checking">Checking</option>
                       <option value="savings">Savings</option>
@@ -228,13 +232,13 @@ export default function BackerBankingPage() {
                       onChange={(e) => setBankForm({ ...bankForm, is_primary: e.target.checked })}
                       className="w-4 h-4"
                     />
-                    <label htmlFor="primary" className="text-sm text-gray-700">Set as primary account</label>
+                    <label htmlFor="primary" className="text-xs text-gray-700">Set as primary account</label>
                   </div>
-                  <div className="flex gap-3">
-                    <Button onClick={handleAddBankAccount} className="bg-black text-white hover:bg-gray-800">
+                  <div className="flex gap-2">
+                    <Button onClick={handleAddBankAccount} className="bg-black text-white hover:bg-gray-800 h-8 text-sm">
                       Add Account
                     </Button>
-                    <Button variant="outline" onClick={() => setShowBankForm(false)}>
+                    <Button variant="outline" onClick={() => setShowBankForm(false)} className="h-8 text-sm">
                       Cancel
                     </Button>
                   </div>
@@ -243,32 +247,32 @@ export default function BackerBankingPage() {
             )}
 
             {bankAccounts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Building2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>No bank accounts added yet</p>
-                <p className="text-sm mt-2">Add a bank account to receive investment returns</p>
+              <div className="text-center py-6 text-gray-500">
+                <Building2 className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                <p className="text-sm">No bank accounts added yet</p>
+                <p className="text-xs mt-1">Add a bank account to receive investment returns</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {bankAccounts.map((account) => (
-                  <div key={account.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Building2 className="w-6 h-6 text-blue-600" />
+                  <div key={account.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <Building2 className="w-5 h-5 text-gray-900" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{account.bank_name}</h3>
+                          <h3 className="font-semibold text-sm text-gray-900">{account.bank_name}</h3>
                           {account.is_primary && (
-                            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">
+                            <span className="px-2 py-0.5 bg-gray-900 text-white text-xs rounded-full font-medium">
                               Primary
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-xs text-gray-600">
                           {account.account_type === 'checking' ? 'Checking' : 'Savings'} • ****{account.account_number.slice(-4)}
                         </div>
-                        <div className="text-xs text-gray-500">{account.account_holder_name}</div>
+                        <div className="text-[10px] text-gray-500">{account.account_holder_name}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -277,6 +281,7 @@ export default function BackerBankingPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleSetPrimary(account.id)}
+                          className="h-7 text-xs"
                         >
                           Set Primary
                         </Button>
@@ -285,9 +290,9 @@ export default function BackerBankingPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteBankAccount(account.id)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 hover:text-red-700 h-7 px-2"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
                   </div>
@@ -297,36 +302,32 @@ export default function BackerBankingPage() {
           </CardContent>
         </Card>
 
-        {/* Payment Methods Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5" />
-              Payment Methods
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">Investment Funding</h4>
-                  <p className="text-sm text-gray-600">
-                    For making investments, you can use credit/debit cards or bank transfers. Payment methods are added during the investment process.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">Returns & Withdrawals</h4>
-                  <p className="text-sm text-gray-600">
-                    Investment returns and withdrawals are processed to your primary bank account. Processing time is typically 3-5 business days.
-                  </p>
-                </div>
+        {/* Payment Methods Info - Smaller */}
+        <Card className="p-4">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold mb-4">
+            <CreditCard className="w-4 h-4" />
+            Payment Methods
+          </CardTitle>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-gray-900 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1 text-sm">Investment Funding</h4>
+                <p className="text-xs text-gray-600">
+                  For making investments, you can use credit/debit cards or bank transfers. Payment methods are added during the investment process.
+                </p>
               </div>
             </div>
-          </CardContent>
+            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+              <Check className="w-4 h-4 text-gray-900 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1 text-sm">Returns & Withdrawals</h4>
+                <p className="text-xs text-gray-600">
+                  Investment returns and withdrawals are processed to your primary bank account. Processing time is typically 3-5 business days.
+                </p>
+              </div>
+            </div>
+          </div>
         </Card>
     </div>
   );

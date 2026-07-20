@@ -111,207 +111,183 @@ export default function BackerAnalyticsPage() {
           </select>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Invested</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-green-600" />
-                <div className="text-2xl font-bold">${totalInvested.toLocaleString()}</div>
+        {/* Key Metrics - Smaller cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-gray-900" />
               </div>
-            </CardContent>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">${totalInvested.toLocaleString()}</div>
+                <div className="text-xs text-gray-500">Total Invested</div>
+              </div>
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total ROI</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`flex items-center gap-2 ${totalROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {totalROI >= 0 ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
-                <div className="text-2xl font-bold">${totalROI.toLocaleString()}</div>
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${totalROI >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
+                {totalROI >= 0 ? <ArrowUpRight className="w-5 h-5 text-green-600" /> : <ArrowDownRight className="w-5 h-5 text-red-600" />}
               </div>
-            </CardContent>
+              <div>
+                <div className={`text-2xl font-bold ${totalROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>${totalROI.toLocaleString()}</div>
+                <div className="text-xs text-gray-500">Total ROI</div>
+              </div>
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">ROI %</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`flex items-center gap-2 ${parseFloat(roiPercentage) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                <TrendingUp className="w-5 h-5" />
-                <div className="text-2xl font-bold">{roiPercentage}%</div>
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${parseFloat(roiPercentage) >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
+                <TrendingUp className={`w-5 h-5 ${parseFloat(roiPercentage) >= 0 ? 'text-green-600' : 'text-red-600'}`} />
               </div>
-            </CardContent>
+              <div>
+                <div className={`text-2xl font-bold ${parseFloat(roiPercentage) >= 0 ? 'text-green-600' : 'text-red-600'}`}>{roiPercentage}%</div>
+                <div className="text-xs text-gray-500">ROI %</div>
+              </div>
+            </div>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Active Deals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-blue-600" />
-                <div className="text-2xl font-bold">{activeInvestments}</div>
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                <Target className="w-5 h-5 text-gray-900" />
               </div>
-            </CardContent>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{activeInvestments}</div>
+                <div className="text-xs text-gray-500">Active Deals</div>
+              </div>
+            </div>
           </Card>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Charts Section - Smaller */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
           {/* Investment Trend */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5" />
-                Investment Trend
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {monthlyTrend.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>No data for selected period</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {monthlyTrend.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-4">
-                      <div className="w-24 text-sm text-gray-600">{item.month}</div>
-                      <div className="flex-1 bg-gray-200 rounded-full h-4">
-                        <div 
-                          className="bg-green-600 h-4 rounded-full transition-all"
-                          style={{ width: `${(item.amount / Math.max(...monthlyTrend.map(d => d.amount))) * 100}%` }}
-                        />
-                      </div>
-                      <div className="w-24 text-right text-sm font-medium">${item.amount.toLocaleString()}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Category Breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PieChart className="w-5 h-5" />
-                Investment by Category
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {categoryBreakdown.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <PieChart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>No category data</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {categoryBreakdown.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-4">
-                      <div className="w-32 text-sm text-gray-600 truncate">{item.category}</div>
-                      <div className="flex-1 bg-gray-200 rounded-full h-4">
-                        <div 
-                          className="bg-blue-600 h-4 rounded-full transition-all"
-                          style={{ width: `${item.percentage}%` }}
-                        />
-                      </div>
-                      <div className="w-20 text-right text-sm font-medium">{item.percentage}%</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Performance Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Zap className="w-4 h-4" />
-                Average Deal Size
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">
-                ${investments.length > 0 ? (totalInvested / investments.length).toFixed(0).toLocaleString() : '0'}
-              </div>
-              <p className="text-sm text-gray-600 mt-2">Per investment</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Target className="w-4 h-4" />
-                Success Rate
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">
-                {investments.length > 0 ? ((completedInvestments / investments.length) * 100).toFixed(0) : '0'}%
-              </div>
-              <p className="text-sm text-gray-600 mt-2">{completedInvestments} of {investments.length} completed</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Calendar className="w-4 h-4" />
-                Investment Frequency
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">
-                {timeRange === '30d' ? (investments.length / 1).toFixed(1) :
-                 timeRange === '90d' ? (investments.length / 3).toFixed(1) :
-                 timeRange === '1y' ? (investments.length / 12).toFixed(1) :
-                 investments.length}
-              </div>
-              <p className="text-sm text-gray-600 mt-2">Deals per month</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Investment Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {investments.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>No recent activity</p>
+          <Card className="p-4">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold mb-4">
+              <BarChart3 className="w-4 h-4" />
+              Investment Trend
+            </CardTitle>
+            {monthlyTrend.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
+                <BarChart3 className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                <p className="text-sm">No data for selected period</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {investments.slice(0, 5).map((inv) => (
-                  <div key={inv.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <div className="font-medium">{inv.project_title}</div>
-                      <div className="text-sm text-gray-600">{new Date(inv.investment_date).toLocaleDateString()}</div>
+                {monthlyTrend.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <div className="w-20 text-xs text-gray-600">{item.month}</div>
+                    <div className="flex-1 bg-gray-200 rounded-full h-3">
+                      <div 
+                        className="bg-gray-900 h-3 rounded-full transition-all"
+                        style={{ width: `${(item.amount / Math.max(...monthlyTrend.map(d => d.amount))) * 100}%` }}
+                      />
                     </div>
-                    <div className="text-right">
-                      <div className="font-semibold">${inv.investment_amount?.toLocaleString()}</div>
-                      <div className={`text-sm ${inv.status === 'active' ? 'text-green-600' : 'text-gray-600'}`}>
-                        {inv.status}
-                      </div>
-                    </div>
+                    <div className="w-20 text-right text-xs font-medium">${item.amount.toLocaleString()}</div>
                   </div>
                 ))}
               </div>
             )}
-          </CardContent>
+          </Card>
+
+          {/* Category Breakdown */}
+          <Card className="p-4">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold mb-4">
+              <PieChart className="w-4 h-4" />
+              Investment by Category
+            </CardTitle>
+            {categoryBreakdown.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
+                <PieChart className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                <p className="text-sm">No category data</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {categoryBreakdown.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <div className="w-28 text-xs text-gray-600 truncate">{item.category}</div>
+                    <div className="flex-1 bg-gray-200 rounded-full h-3">
+                      <div 
+                        className="bg-gray-900 h-3 rounded-full transition-all"
+                        style={{ width: `${item.percentage}%` }}
+                      />
+                    </div>
+                    <div className="w-16 text-right text-xs font-medium">{item.percentage}%</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </div>
+
+        {/* Performance Metrics - Smaller cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="w-4 h-4 text-gray-900" />
+              <span className="text-xs font-medium text-gray-600">Average Deal Size</span>
+            </div>
+            <div className="text-2xl font-bold text-gray-900">
+              ${investments.length > 0 ? (totalInvested / investments.length).toFixed(0).toLocaleString() : '0'}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Per investment</p>
+          </Card>
+
+          <Card className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Target className="w-4 h-4 text-gray-900" />
+              <span className="text-xs font-medium text-gray-600">Success Rate</span>
+            </div>
+            <div className="text-2xl font-bold text-gray-900">
+              {investments.length > 0 ? ((completedInvestments / investments.length) * 100).toFixed(0) : '0'}%
+            </div>
+            <p className="text-xs text-gray-500 mt-1">{completedInvestments} of {investments.length} completed</p>
+          </Card>
+
+          <Card className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar className="w-4 h-4 text-gray-900" />
+              <span className="text-xs font-medium text-gray-600">Investment Frequency</span>
+            </div>
+            <div className="text-2xl font-bold text-gray-900">
+              {timeRange === '30d' ? (investments.length / 1).toFixed(1) :
+               timeRange === '90d' ? (investments.length / 3).toFixed(1) :
+               timeRange === '1y' ? (investments.length / 12).toFixed(1) :
+               investments.length}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Deals per month</p>
+          </Card>
+        </div>
+
+        {/* Recent Activity - Smaller */}
+        <Card className="p-4">
+          <CardTitle className="text-sm font-semibold mb-4">Recent Investment Activity</CardTitle>
+          {investments.length === 0 ? (
+            <div className="text-center py-6 text-gray-500">
+              <Calendar className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+              <p className="text-sm">No recent activity</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {investments.slice(0, 5).map((inv) => (
+                <div key={inv.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">{inv.project_title}</div>
+                    <div className="text-xs text-gray-600">{new Date(inv.investment_date).toLocaleDateString()}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-gray-900">${inv.investment_amount?.toLocaleString()}</div>
+                    <div className={`text-xs ${inv.status === 'active' ? 'text-green-600' : 'text-gray-600'}`}>
+                      {inv.status}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
     </div>
   );

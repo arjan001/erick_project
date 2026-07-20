@@ -657,6 +657,24 @@ const backerRoutes = [
     guard: BackerGuard
   },
   {
+    path: '/Messages',
+    component: () => import('@/modules/messages/pages/MessagesPage'),
+    layout: DashboardLayout,
+    guard: BackerGuard
+  },
+  {
+    path: '/Network',
+    component: () => import('@/modules/network/pages/NetworkPage'),
+    layout: DashboardLayout,
+    guard: BackerGuard
+  },
+  {
+    path: '/SupportTickets',
+    component: () => import('@/modules/support/pages/SupportTicketsPage'),
+    layout: DashboardLayout,
+    guard: BackerGuard
+  },
+  {
     path: '/accept-invite',
     component: () => import('@/pages/AcceptInvitePage'),
     layout: null,

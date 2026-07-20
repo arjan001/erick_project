@@ -227,14 +227,14 @@ export default function BackerInvestmentTiersPage() {
           </Button>
         </div>
 
-        {/* Info Card */}
-        <Card className="mb-8 bg-blue-50 border-blue-200">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <TrendingUp className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+        {/* Info Card - Gray theme, smaller */}
+        <Card className="mb-6 bg-gray-50 border-gray-200">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <TrendingUp className="w-4 h-4 text-gray-900 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-blue-900 mb-1">Investment Tiers</h3>
-                <p className="text-sm text-blue-700">
+                <h3 className="font-semibold text-gray-900 mb-1 text-sm">Investment Tiers</h3>
+                <p className="text-xs text-gray-600">
                   Investment tiers allow you to offer different ROI rates and benefits based on investment amounts. 
                   Higher tiers offer better returns and exclusive benefits to incentivize larger investments.
                 </p>
@@ -243,44 +243,43 @@ export default function BackerInvestmentTiersPage() {
           </CardContent>
         </Card>
 
-        {/* Tiers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Tiers Grid - Smaller cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {tiers.map((tier) => (
-            <Card key={tier.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className={`w-12 h-12 rounded-lg ${tier.color} flex items-center justify-center mb-3`}>
-                  {getTierIcon(tier.icon)}
+            <Card key={tier.id} className="hover:shadow-md transition-shadow">
+              <div className="p-4">
+                <div className={`w-10 h-10 rounded-lg ${tier.color} flex items-center justify-center mb-3`}>
+                  {React.cloneElement(getTierIcon(tier.icon), { className: 'w-5 h-5' })}
                 </div>
-                <CardTitle className="text-lg">{tier.name}</CardTitle>
-                <CardDescription>
+                <h3 className="font-semibold text-sm text-gray-900 mb-1">{tier.name}</h3>
+                <p className="text-xs text-gray-600 mb-3">
                   ${tier.min_investment?.toLocaleString()}
                   {tier.max_investment ? ` - $${tier.max_investment.toLocaleString()}` : '+'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Percent className="w-4 h-4 text-green-600" />
-                    <span className="text-2xl font-bold text-green-600">{tier.roi_percentage}% ROI</span>
+                </p>
+                
+                <div className="mb-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Percent className="w-3 h-3 text-gray-900" />
+                    <span className="text-lg font-bold text-gray-900">{tier.roi_percentage}% ROI</span>
                   </div>
-                  <p className="text-sm text-gray-600">Expected return on investment</p>
+                  <p className="text-[10px] text-gray-500">Expected return on investment</p>
                 </div>
 
-                <div className="mb-4">
-                  <h4 className="font-semibold text-sm mb-2">Benefits:</h4>
+                <div className="mb-3">
+                  <h4 className="font-semibold text-xs mb-2 text-gray-900">Benefits:</h4>
                   <ul className="space-y-1">
                     {tier.benefits?.map((benefit, idx) => (
-                      <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
-                        <span className="text-green-500">✓</span>
-                        {benefit}
+                      <li key={idx} className="text-xs text-gray-600 flex items-start gap-2">
+                        <span className="text-gray-900">✓</span>
+                        <span className="line-clamp-1">{benefit}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1" onClick={() => openModal(tier)}>
-                    <Edit2 className="w-4 h-4 mr-1" />
+                  <Button variant="outline" size="sm" className="flex-1 h-7 text-xs" onClick={() => openModal(tier)}>
+                    <Edit2 className="w-3 h-3 mr-1" />
                     Edit
                   </Button>
                   {tier.id !== 'bronze' && tier.id !== 'silver' && tier.id !== 'gold' && tier.id !== 'platinum' && (
@@ -288,13 +287,13 @@ export default function BackerInvestmentTiersPage() {
                       variant="ghost" 
                       size="sm"
                       onClick={() => handleDeleteTier(tier.id)}
-                      className="text-red-600 hover:text-red-700"
+                      className="text-red-600 hover:text-red-700 h-7 px-2"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3 h-3" />
                     </Button>
                   )}
                 </div>
-              </CardContent>
+              </div>
             </Card>
           ))}
         </div>

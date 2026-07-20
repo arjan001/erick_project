@@ -529,7 +529,7 @@ export default function NetworkPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-gray-500 mb-1">
-                        {person.matchScore > 0 && <span className="font-medium text-indigo-600">{person.matchScore} skill match{person.matchScore > 1 ? 'es' : ''}</span>}
+                        {person.matchScore > 0 && <span className="font-medium text-gray-900">{person.matchScore} skill match{person.matchScore > 1 ? 'es' : ''}</span>}
                         {person.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{person.location}</span>}
                       </div>
                       {person.skills?.length > 0 && (
