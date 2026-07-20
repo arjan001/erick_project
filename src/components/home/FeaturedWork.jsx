@@ -13,6 +13,7 @@ export default function FeaturedWork() {
     const fetchFeaturedProjects = async () => {
       try {
         const works = await FeaturedWork.filter({ status: 'active' }, 'display_order', 6);
+        console.log('Featured works fetched:', works);
         setFeaturedProjects(works || []);
       } catch (error) {
         console.error('Error fetching featured projects:', error);

@@ -42,22 +42,21 @@ CREATE INDEX IF NOT EXISTS idx_projects_suspended_at ON projects(suspended_at) W
 -- Step 11: Create index for deleted projects (soft delete)
 CREATE INDEX IF NOT EXISTS idx_projects_deleted_at ON projects(deleted_at) WHERE deleted_at IS NOT NULL;
 
--- Step 12: Add check constraint for valid status values
+-- Step 12: Update existing projects to have valid status before adding constraint
+UPDATE projects 
+SET status = CASE 
+  WHEN status IN ('submitted', 'verified', 'in_progress', 'rejected') THEN status
+  WHEN status IS NULL THEN 'active'
+  ELSE 'active'
+END
+WHERE status NOT IN ('active', 'suspended', 'paused', 'deleted') OR status IS NULL;
+
+-- Step 13: Add check constraint for valid status values
 ALTER TABLE projects 
 ADD CONSTRAINT chk_projects_status 
-CHECK (status IN ('active', 'suspended', 'paused', 'deleted'));
+CHECK (status IN ('active', 'submitted', 'verified', 'in_progress', 'rejected', 'suspended', 'paused', 'deleted'));
 
--- Step 13: Create a function to automatically set deleted_at and status when soft deleting
-CREATE OR REPLACE FUNCTION soft_delete_project()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.deleted_at = CURRENT_TIMESTAMP;
-    NEW.status = 'deleted';
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Step 14: Create trigger for soft delete (optional - can be used in application logic instead)
+-- Step 14: Create a function to automatically set deleted_at and status when soft delete
 -- DROP TRIGGER IF EXISTS trigger_soft_delete_project ON projects;
 -- CREATE TRIGGER trigger_soft_delete_project
 --     BEFORE UPDATE ON projects

@@ -60,8 +60,7 @@ export default function AdminFeaturedWorkPage() {
     try {
       const clips = await PortfolioClip.filter({ 
         uploaded_by_type: 'artist', 
-        uploaded_by_id: artistId,
-        status: 'approved'
+        uploaded_by_id: artistId
       });
       setArtistPortfolioClips(clips || []);
     } catch (err) {
@@ -354,7 +353,7 @@ export default function AdminFeaturedWorkPage() {
                           ))}
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-500 py-8 text-center">No approved portfolio clips found for this artist.</p>
+                        <p className="text-sm text-gray-500 py-8 text-center">No portfolio clips found for this artist.</p>
                       )}
                     </div>
                   )}
