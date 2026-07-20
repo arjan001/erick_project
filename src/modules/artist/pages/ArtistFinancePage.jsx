@@ -150,7 +150,7 @@ export default function ArtistFinancePage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-6 border-b border-gray-200">
+          <div className="flex gap-2 mb-6 border-b border-gray-200 overflow-x-auto">
             {[
               { id: 'subscription', label: 'Subscription', icon: Crown },
               { id: 'payments', label: 'Payments', icon: CreditCard },
@@ -162,14 +162,15 @@ export default function ArtistFinancePage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-3 font-medium transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'text-black border-b-2 border-black -mb-0.5'
                       : 'text-gray-500 hover:text-gray-900'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
-                  {tab.label}
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
                 </button>
               );
             })}
@@ -207,7 +208,7 @@ export default function ArtistFinancePage() {
 
                 {currentSubscription ? (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="bg-gray-50 rounded-lg p-4">
                         <div className="text-xs text-gray-600 uppercase font-bold mb-1">Plan</div>
                         <div className="text-lg font-bold text-gray-900">{currentSubscription.package_name}</div>
@@ -220,7 +221,7 @@ export default function ArtistFinancePage() {
                       </div>
                     </div>
                     
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex flex-col sm:flex-row gap-3 pt-4">
                       <Button
                         onClick={() => navigate(createPageUrl('ArtistSubscriptionCheckout'))}
                         className="flex-1 bg-black text-white hover:bg-gray-800 font-bold"
@@ -259,12 +260,12 @@ export default function ArtistFinancePage() {
                 ) : (
                   <>
                     <div className="overflow-x-auto">
-                      <table className="w-full">
+                      <table className="w-full min-w-[600px]">
                         <thead>
                           <tr className="border-b border-gray-200">
                             <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Date</th>
                             <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Package</th>
-                            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Payment Method</th>
+                            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase hidden sm:table-cell">Payment Method</th>
                             <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Amount</th>
                             <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Status</th>
                           </tr>
@@ -280,7 +281,7 @@ export default function ArtistFinancePage() {
                                 <td className="py-3 px-4 text-sm text-gray-900">
                                   {order.package_name}
                                 </td>
-                                <td className="py-3 px-4 text-sm text-gray-600 capitalize">
+                                <td className="py-3 px-4 text-sm text-gray-600 capitalize hidden sm:table-cell">
                                   {order.payment_method}
                                 </td>
                                 <td className="py-3 px-4 text-sm font-medium text-gray-900 text-right">
@@ -300,7 +301,7 @@ export default function ArtistFinancePage() {
                       </table>
                     </div>
 
-                    <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                    <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-4 border-t border-gray-200 gap-4">
                       <div className="text-sm text-gray-600">
                         Showing {(subscriptionPage - 1) * itemsPerPage + 1} to {Math.min(subscriptionPage * itemsPerPage, subscriptionOrders.length)} of {subscriptionOrders.length} orders
                       </div>
@@ -354,12 +355,12 @@ export default function ArtistFinancePage() {
               ) : (
                 <>
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[600px]">
                       <thead>
                         <tr className="border-b border-gray-200">
                           <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Date</th>
                           <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Client</th>
-                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Project</th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase hidden sm:table-cell">Project</th>
                           <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Amount</th>
                           <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Status</th>
                         </tr>
@@ -375,7 +376,7 @@ export default function ArtistFinancePage() {
                               <td className="py-3 px-4 text-sm text-gray-900">
                                 {payment.client_name}
                               </td>
-                              <td className="py-3 px-4 text-sm text-gray-600">
+                              <td className="py-3 px-4 text-sm text-gray-600 hidden sm:table-cell">
                                 {payment.project_name}
                               </td>
                               <td className="py-3 px-4 text-sm font-medium text-gray-900 text-right">
@@ -397,7 +398,7 @@ export default function ArtistFinancePage() {
                     </table>
                   </div>
 
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-4 border-t border-gray-200 gap-4">
                     <div className="text-sm text-gray-600">
                       Showing {(paymentsPage - 1) * itemsPerPage + 1} to {Math.min(paymentsPage * itemsPerPage, payments.length)} of {payments.length} payments
                     </div>
@@ -476,7 +477,7 @@ export default function ArtistFinancePage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Account Number</label>
                     <input
@@ -498,7 +499,7 @@ export default function ArtistFinancePage() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">IBAN</label>
                     <input
@@ -522,7 +523,7 @@ export default function ArtistFinancePage() {
                 </div>
 
                 {editingBank && (
-                  <div className="flex gap-3 pt-4">
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
                     <Button
                       onClick={handleSaveBankDetails}
                       className="flex-1 bg-black text-white hover:bg-gray-800 font-bold flex items-center justify-center gap-2"
@@ -554,14 +555,14 @@ export default function ArtistFinancePage() {
                 <>
                   {/* Data Table */}
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[600px]">
                       <thead>
                         <tr className="border-b border-gray-200">
                           <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Date</th>
                           <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Type</th>
-                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Description</th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase hidden sm:table-cell">Description</th>
                           <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Amount</th>
-                          <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase">Balance</th>
+                          <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 uppercase hidden sm:table-cell">Balance</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -584,7 +585,7 @@ export default function ArtistFinancePage() {
                                   {tx.amount > 0 ? 'Credit' : 'Debit'}
                                 </span>
                               </td>
-                              <td className="py-3 px-4 text-sm text-gray-900 capitalize">
+                              <td className="py-3 px-4 text-sm text-gray-900 capitalize hidden sm:table-cell">
                                 {tx.reason}
                               </td>
                               <td className={`py-3 px-4 text-sm font-medium text-right ${
@@ -592,7 +593,7 @@ export default function ArtistFinancePage() {
                               }`}>
                                 {tx.amount > 0 ? '+' : ''}{tx.amount} connects
                               </td>
-                              <td className="py-3 px-4 text-sm text-gray-600 text-right">
+                              <td className="py-3 px-4 text-sm text-gray-600 text-right hidden sm:table-cell">
                                 {tx.balance_after}
                               </td>
                             </tr>
@@ -602,7 +603,7 @@ export default function ArtistFinancePage() {
                   </div>
 
                   {/* Pagination */}
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-4 border-t border-gray-200 gap-4">
                     <div className="text-sm text-gray-600">
                       Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, transactions.length)} of {transactions.length} transactions
                     </div>

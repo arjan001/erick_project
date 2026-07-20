@@ -197,9 +197,9 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
 
 
   return (
-    <div className="grid grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
       {/* Left Column - Main Info */}
-      <div className="col-span-2 space-y-6">
+      <div className="col-span-1 lg:col-span-2 space-y-6">
         {/* Bio Section */}
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200">
           <div className="flex items-center justify-between mb-4">
