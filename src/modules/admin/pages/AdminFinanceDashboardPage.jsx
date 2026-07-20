@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { SubscriptionOrder, Subscription } from '@/lib/supabaseEntities';
-import { DollarSign, TrendingUp, Users, CreditCard, BarChart3, PieChart, Activity } from 'lucide-react';
+import { DollarSign, TrendingUp, Users, CreditCard, BarChart3, PieChart, Activity, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function AdminFinanceDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   const [activeSubscriptions, setActiveSubscriptions] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,6 +74,17 @@ export default function AdminFinanceDashboardPage() {
     return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${map[status] || 'bg-gray-100 text-gray-600'}`}>{status}</span>;
   };
 
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = (order.user_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (order.user_email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (order.package_name || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const totalPages = Math.ceil(filteredOrders.length / PAGE_SIZE);
+  const paginatedOrders = filteredOrders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
@@ -131,6 +146,33 @@ export default function AdminFinanceDashboardPage() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2"><Activity className="w-4 h-4" />Recent Transactions</h3>
         </div>
+        
+        {/* Filters */}
+        <div className="bg-gray-50 px-5 py-3 border-b border-gray-100">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                placeholder="Search transactions..."
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:outline-none text-sm"
+              />
+            </div>
+            <select
+              value={filterStatus}
+              onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:outline-none text-sm"
+            >
+              <option value="all">All Status</option>
+              <option value="completed">Completed</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Failed</option>
+              <option value="refunded">Refunded</option>
+            </select>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -143,10 +185,10 @@ export default function AdminFinanceDashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {orders.length === 0 && (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">No transactions yet</td></tr>
+              {paginatedOrders.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">No transactions found</td></tr>
               )}
-              {orders.slice(0, 15).map(o => (
+              {paginatedOrders.map(o => (
                 <tr key={o.id} className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors">
                   <td className="px-4 py-3 text-gray-700">
                     <div className="font-medium text-sm">{o.user_name || o.user_email}</div>
@@ -161,6 +203,29 @@ export default function AdminFinanceDashboardPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100">
+            <span className="text-xs text-gray-500">{filteredOrders.length} total · page {page} of {totalPages}</span>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setPage(p => Math.max(1, p - 1))} 
+                disabled={page === 1}
+                className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))} 
+                disabled={page === totalPages}
+                className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
