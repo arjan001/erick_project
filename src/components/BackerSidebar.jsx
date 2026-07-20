@@ -87,7 +87,7 @@ export default function BackerSidebar() {
     if (window.innerWidth < 1024) {
       setMobileSidebarOpen(!mobileSidebarOpen);
     } else {
-      setSidebarExpanded(!expanded);
+      setSidebarExpanded(true);
     }
   };
 

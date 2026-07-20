@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Shield, Settings, Search, HardDrive, Mail, Lock, Key, CreditCard, DollarSign, Activity, ChevronRight, LogOut, Briefcase, FolderKanban, Building, MessageSquare, Package, ShoppingCart, Store, Radio, LayoutGrid, BarChart3, Bell } from 'lucide-react';
+import { LayoutDashboard, Users, Shield, Settings, Search, HardDrive, Mail, Lock, Key, CreditCard, DollarSign, Activity, ChevronRight, LogOut, Briefcase, FolderKanban, Building, MessageSquare, Package, ShoppingCart, Store, Radio, LayoutGrid, BarChart3, Bell, X } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
+import { useSidebar } from '@/layouts/DashboardLayout';
 import { Message, Notification } from '@/lib/supabaseEntities';
 
 export default function AdminSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
@@ -132,11 +134,19 @@ export default function AdminSidebar() {
   const handleLogout = () => { logout(true); };
 
   return (
-    <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col">
+    <div className={`fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       {/* Logo */}
-      <div className="p-6 border-b border-gray-100">
-        <h1 className="text-xl font-black bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">Studio22</h1>
-        <p className="text-sm text-gray-500">Admin Panel</p>
+      <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-black bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">Studio22</h1>
+          <p className="text-sm text-gray-500">Admin Panel</p>
+        </div>
+        <button
+          onClick={() => setMobileSidebarOpen(false)}
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Navigation */}
