@@ -1,27 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import { adminApi } from '../api/admin.api';
-import { Users, FolderKanban, Clock, CheckCircle, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { Users, FolderKanban, Clock, CheckCircle, TrendingUp, TrendingDown, Activity, Briefcase, DollarSign, Star, MessageCircle, Building2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { Project, Job, Subscription, Artist, Team, Client, Backer } from '@/lib/supabaseEntities';
 
 const COLORS = ['#1a1a1a', '#6b7280', '#d1d5db', '#374151'];
 
 export default function AdminDashboardPage() {
   const [projects, setProjects] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [artists, setArtists] = useState([]);
   const [teams, setTeams] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [backers, setBackers] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [p, a, t] = await Promise.all([
-          adminApi.projects.list(),
-          adminApi.artists.list(),
-          adminApi.teams.list(),
+        const [p, j, a, t, c, b, s] = await Promise.all([
+          Project.list('-created_at'),
+          Job.list('-created_at'),
+          Artist.list('-created_at'),
+          Team.list('-created_at'),
+          Client.list('-created_at'),
+          Backer.list('-created_at'),
+          Subscription.list('-created_at')
         ]);
-        setProjects(p);
-        setArtists(a);
-        setTeams(t);
+        setProjects(p || []);
+        setJobs(j || []);
+        setArtists(a || []);
+        setTeams(t || []);
+        setClients(c || []);
+        setBackers(b || []);
+        setSubscriptions(s || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -40,10 +53,14 @@ export default function AdminDashboardPage() {
   }
 
   const pendingProjects = projects.filter(p => p.status === 'submitted').length;
-  const approvedProjects = projects.filter(p => p.status === 'verified').length;
-  const pendingArtists = artists.filter(a => a.status === 'pending').length;
-  const approvedArtists = artists.filter(a => a.status === 'approved').length;
-  const pendingTeams = teams.filter(t => t.status === 'pending').length;
+  const verifiedProjects = projects.filter(p => p.status === 'verified').length;
+  const featuredProjects = projects.filter(p => p.is_featured).length;
+  const openJobs = jobs.filter(j => j.status === 'open').length;
+  const totalRevenue = subscriptions.reduce((sum, sub) => sum + (sub.amount || 0), 0);
+  const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length;
+  const totalCreators = artists.length + teams.length;
+  const totalClients = clients.length;
+  const totalBackers = backers.length;
 
   // Project types breakdown
   const projectTypeData = Object.entries(
@@ -76,30 +93,30 @@ export default function AdminDashboardPage() {
     {
       label: 'Total Projects',
       value: projects.length,
-      sub: `${pendingProjects} pending`,
+      sub: `${verifiedProjects} verified`,
       icon: FolderKanban,
       trend: pendingProjects > 0 ? 'up' : 'neutral',
     },
     {
+      label: 'Open Jobs',
+      value: openJobs,
+      sub: 'actively hiring',
+      icon: Briefcase,
+      trend: openJobs > 0 ? 'up' : 'neutral',
+    },
+    {
       label: 'Total Creators',
-      value: artists.length,
-      sub: `${approvedArtists} approved`,
+      value: totalCreators,
+      sub: `${artists.length} artists, ${teams.length} teams`,
       icon: Users,
       trend: 'up',
     },
     {
-      label: 'Teams',
-      value: teams.length,
-      sub: `${pendingTeams} pending`,
-      icon: Activity,
-      trend: pendingTeams > 0 ? 'up' : 'neutral',
-    },
-    {
-      label: 'Pending Review',
-      value: pendingProjects + pendingArtists + pendingTeams,
-      sub: 'across all queues',
-      icon: Clock,
-      trend: pendingProjects + pendingArtists + pendingTeams > 0 ? 'up' : 'neutral',
+      label: 'Total Clients',
+      value: totalClients,
+      sub: 'registered',
+      icon: Building2,
+      trend: 'up',
     },
   ];
 
@@ -131,6 +148,50 @@ export default function AdminDashboardPage() {
             </div>
           );
         })}
+      </div>
+
+      {/* Additional Stats Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl p-5 border border-gray-100" style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <DollarSign className="w-4 h-4 text-green-600" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-gray-900">${totalRevenue.toLocaleString()}</div>
+          <div className="text-sm text-gray-500 mt-0.5">Total Revenue</div>
+          <div className="text-xs text-gray-400 mt-1">{activeSubscriptions} active subscriptions</div>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-gray-100" style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <Star className="w-4 h-4 text-yellow-600" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-gray-900">{featuredProjects}</div>
+          <div className="text-sm text-gray-500 mt-0.5">Featured Projects</div>
+          <div className="text-xs text-gray-400 mt-1">on landing page</div>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-gray-100" style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <Activity className="w-4 h-4 text-purple-600" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-gray-900">{totalBackers}</div>
+          <div className="text-sm text-gray-500 mt-0.5">Total Backers</div>
+          <div className="text-xs text-gray-400 mt-1">registered investors</div>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-gray-100" style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Clock className="w-4 h-4 text-blue-600" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-gray-900">{pendingProjects}</div>
+          <div className="text-sm text-gray-500 mt-0.5">Pending Projects</div>
+          <div className="text-xs text-gray-400 mt-1">awaiting verification</div>
+        </div>
       </div>
 
       {/* Charts Row */}
@@ -228,9 +289,9 @@ export default function AdminDashboardPage() {
           <h3 className="text-sm font-semibold text-gray-800 mb-4">Pending Actions</h3>
           <div className="space-y-3">
             {[
-              { label: 'Projects awaiting approval', count: pendingProjects, href: '/ProjectAdmin', color: 'bg-amber-100 text-amber-700' },
-              { label: 'Creator applications', count: pendingArtists, href: '/ArtistAdmin', color: 'bg-blue-100 text-blue-700' },
-              { label: 'Team applications', count: pendingTeams, href: '/TeamAdmin', color: 'bg-purple-100 text-purple-700' },
+              { label: 'Projects awaiting verification', count: pendingProjects, href: '/AdminProjects', color: 'bg-amber-100 text-amber-700' },
+              { label: 'Open jobs to review', count: openJobs, href: '/AdminJobs', color: 'bg-blue-100 text-blue-700' },
+              { label: 'Featured projects', count: featuredProjects, href: '/AdminProjects', color: 'bg-yellow-100 text-yellow-700' },
             ].map((item) => (
               <a key={item.label} href={item.href}
                 className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors group">
