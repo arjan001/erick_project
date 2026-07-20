@@ -45,14 +45,32 @@ CREATE TRIGGER update_featured_work_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 -- Add check constraint for valid status values
-ALTER TABLE featured_work 
-ADD CONSTRAINT chk_featured_work_status 
-CHECK (status IN ('active', 'inactive'));
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'chk_featured_work_status' 
+        AND conrelid = 'featured_work'::regclass
+    ) THEN
+        ALTER TABLE featured_work 
+        ADD CONSTRAINT chk_featured_work_status 
+        CHECK (status IN ('active', 'inactive'));
+    END IF;
+END $$;
 
 -- Add check constraint for valid featured_type values
-ALTER TABLE featured_work 
-ADD CONSTRAINT chk_featured_work_type 
-CHECK (featured_type IN ('admin_pick', 'paid', 'subscription'));
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'chk_featured_work_type' 
+        AND conrelid = 'featured_work'::regclass
+    ) THEN
+        ALTER TABLE featured_work 
+        ADD CONSTRAINT chk_featured_work_type 
+        CHECK (featured_type IN ('admin_pick', 'paid', 'subscription'));
+    END IF;
+END $$;
 
 -- Add comments for documentation
 COMMENT ON TABLE featured_work IS 'Stores featured projects displayed on the landing page';
@@ -65,19 +83,8 @@ COMMENT ON COLUMN featured_work.status IS 'Status: active or inactive';
 COMMENT ON COLUMN featured_work.display_order IS 'Display order for sorting (lower numbers appear first)';
 COMMENT ON COLUMN featured_work.project_id IS 'Optional reference to the actual project in projects table';
 
--- Grant permissions to admin role
-GRANT ALL ON featured_work TO admin;
-GRANT USAGE, SELECT ON SEQUENCE featured_work_id_seq TO admin;
-
--- Enable RLS and create policies for admin access
+-- Enable RLS and create policies for access
 ALTER TABLE featured_work ENABLE ROW LEVEL SECURITY;
-
--- Admin can do everything on featured_work
-CREATE POLICY "Admin full access to featured_work" ON featured_work
-    FOR ALL
-    TO admin
-    USING (true)
-    WITH CHECK (true);
 
 -- Service role can do everything (for backend operations)
 CREATE POLICY "Service full access to featured_work" ON featured_work

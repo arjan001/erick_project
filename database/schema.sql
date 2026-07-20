@@ -237,7 +237,7 @@ CREATE TABLE IF NOT EXISTS projects (
     title VARCHAR(255) NOT NULL,
     description TEXT,
     project_type VARCHAR(50) NOT NULL CHECK (project_type IN ('commercial', 'short_film', 'film', 'music_video', 'documentary', 'other')),
-    status VARCHAR(50) DEFAULT 'draft' CHECK (status IN ('draft', 'in_production', 'released', 'cancelled')),
+    status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'submitted', 'verified', 'in_progress', 'rejected', 'suspended', 'paused', 'deleted')),
     budget DECIMAL(12, 2),
     budget_range VARCHAR(50),
     location VARCHAR(255),
@@ -264,6 +264,13 @@ CREATE TABLE IF NOT EXISTS projects (
     image_url TEXT,
     images TEXT[] DEFAULT ARRAY[]::TEXT[],
     is_featured BOOLEAN DEFAULT FALSE,
+    suspension_reason TEXT,
+    admin_notes TEXT,
+    suspended_at TIMESTAMP WITH TIME ZONE,
+    suspended_by UUID REFERENCES users(id),
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    deleted_by UUID REFERENCES users(id),
+    deletion_reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -271,6 +278,8 @@ CREATE TABLE IF NOT EXISTS projects (
 CREATE INDEX IF NOT EXISTS idx_projects_client_id ON projects(client_id);
 CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
 CREATE INDEX IF NOT EXISTS idx_projects_type ON projects(project_type);
+CREATE INDEX IF NOT EXISTS idx_projects_suspended_at ON projects(suspended_at) WHERE suspended_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_projects_deleted_at ON projects(deleted_at) WHERE deleted_at IS NOT NULL;
 
 -- ============================================
 -- BACKED PROJECTS
@@ -694,23 +703,27 @@ CREATE INDEX IF NOT EXISTS idx_content_categories_status ON content_categories(s
 -- ============================================
 
 CREATE TABLE IF NOT EXISTS featured_work (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  artist_id UUID REFERENCES artists(id) ON DELETE CASCADE,
-  project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   title VARCHAR(255) NOT NULL,
   description TEXT,
-  images JSONB DEFAULT '[]'::jsonb,
+  images TEXT[] DEFAULT ARRAY[]::TEXT[],
   video_url TEXT,
-  featured_type VARCHAR(50) DEFAULT 'paid',
-  featured_until TIMESTAMP WITH TIME ZONE,
+  featured_type VARCHAR(20) DEFAULT 'admin_pick' CHECK (featured_type IN ('admin_pick', 'paid', 'subscription')),
+  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
   display_order INTEGER DEFAULT 0,
-  status VARCHAR(50) DEFAULT 'active',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  project_id UUID REFERENCES projects(id) ON DELETE SET NULL,
+  artist_id UUID REFERENCES artists(id) ON DELETE SET NULL,
+  portfolio_clip_id UUID REFERENCES portfolio_clips(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_featured_work_artist_id ON featured_work(artist_id);
 CREATE INDEX IF NOT EXISTS idx_featured_work_status ON featured_work(status);
+CREATE INDEX IF NOT EXISTS idx_featured_work_display_order ON featured_work(display_order);
+CREATE INDEX IF NOT EXISTS idx_featured_work_project_id ON featured_work(project_id);
+CREATE INDEX IF NOT EXISTS idx_featured_work_artist_id ON featured_work(artist_id);
+CREATE INDEX IF NOT EXISTS idx_featured_work_portfolio_clip_id ON featured_work(portfolio_clip_id);
+CREATE INDEX IF NOT EXISTS idx_featured_work_featured_type ON featured_work(featured_type);
 
 -- ============================================
 -- SUCCESS STORIES
