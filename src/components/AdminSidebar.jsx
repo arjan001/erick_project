@@ -186,30 +186,29 @@ export default function AdminSidebar() {
           const isExpanded = expandedSections[section.section];
           const hasActivePath = section.items.some(item => isActive(item.path));
           
-          // When collapsed, show only section icon with tooltip
+          // When collapsed, show individual item icons with tooltips
           if (isCollapsed) {
             return (
-              <div key={section.section} className="mb-1">
-                <div className="relative group">
-                  <button
-                    onClick={() => {
-                      setIsCollapsed(false);
-                      setExpandedSections(prev => ({ ...prev, [section.section]: true }));
-                    }}
-                    className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${
-                      hasActivePath
-                        ? 'bg-indigo-50 text-indigo-600'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    {section.items[0]?.icon ? React.createElement(section.items[0].icon, { className: "w-5 h-5" }) : <LayoutDashboard className="w-5 h-5" />}
-                  </button>
-                  {/* Tooltip */}
-                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
-                    {section.section}
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+              <div key={section.section} className="mb-1 space-y-1">
+                {section.items.map((item) => (
+                  <div key={item.path} className="relative group">
+                    <button
+                      onClick={() => navigate(item.path)}
+                      className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${
+                        isActive(item.path)
+                          ? 'bg-indigo-50 text-indigo-600'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      <item.icon className="w-5 h-5" />
+                    </button>
+                    {/* Tooltip */}
+                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                      {item.label}
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             );
           }

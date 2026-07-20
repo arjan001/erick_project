@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { CheckCircle, XCircle, Loader2, User, Lock, Mail } from 'lucide-react';
-import { validateInvitation, acceptInvitation } from '@/lib/teamInvitationService';
+import { validateInvitationToken, acceptInvitation } from '@/lib/teamInvitationService';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast.jsx';
 import { hashData } from '@/lib/dataEncryption';
