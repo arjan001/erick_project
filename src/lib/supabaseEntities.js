@@ -91,6 +91,7 @@ export const SubscriptionOrder = buildEntity('subscription_orders', 'created_at'
 export const Artist = buildEntity('artists', 'created_at');
 export const Backer = buildEntity('backers', 'created_at');
 export const ProjectOwner = buildEntity('project_owners', 'created_at');
+export const Client = buildEntity('clients', 'created_at');
 export const Message = buildEntity('messages', 'created_at');
 export const Notification = buildEntity('notifications', 'created_at');
 export const Connection = buildEntity('connections', 'created_at');
