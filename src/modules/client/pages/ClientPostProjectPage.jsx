@@ -502,9 +502,9 @@ export default function ClientPostProject() {
                     return (
                       <div>
                         <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-gray-900">What type of project?</h2>
-                        <p className="text-gray-500 mb-10">Select the format that best describes your production</p>
+                        <p className="text-gray-500 mb-6">Select the format that best describes your production</p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {PROJECT_TYPES.map((type) => {
                             const Icon = type.icon;
                             const isSelected = projectForm.project_type === type.value;
@@ -513,15 +513,15 @@ export default function ClientPostProject() {
                                 key={type.value}
                                 type="button"
                                 onClick={() => updateForm('project_type', type.value)}
-                                className={`p-6 rounded-xl border-2 transition-all text-left ${
+                                className={`p-4 rounded-lg border-2 transition-all text-left ${
                                   isSelected
                                     ? 'border-gray-900 bg-gray-50'
                                     : 'border-gray-200 hover:border-gray-300 bg-white'
                                 }`}
                               >
-                                <Icon className={`w-8 h-8 mb-3 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
-                                <h3 className="text-lg font-semibold mb-1 text-gray-900">{type.label}</h3>
-                                <p className="text-sm text-gray-500">{type.description}</p>
+                                <Icon className={`w-6 h-6 mb-2 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
+                                <h3 className="text-base font-semibold mb-1 text-gray-900">{type.label}</h3>
+                                <p className="text-xs text-gray-500">{type.description}</p>
                               </button>
                             );
                           })}
@@ -546,13 +546,13 @@ export default function ClientPostProject() {
                                     key={stage.value}
                                     type="button"
                                     onClick={() => updateForm('funding_stage', stage.value)}
-                                    className={`p-4 rounded-lg border-2 transition-all text-left ${
+                                    className={`p-3 rounded-lg border-2 transition-all text-left ${
                                       isSelected
                                         ? 'border-black bg-black/5'
                                         : 'border-gray-300 hover:border-gray-400 bg-white'
                                     }`}
                                   >
-                                    <span className={`font-medium ${isSelected ? 'text-black' : 'text-gray-700'}`}>
+                                    <span className={`font-medium text-sm ${isSelected ? 'text-black' : 'text-gray-700'}`}>
                                       {stage.label}
                                     </span>
                                   </button>
@@ -609,7 +609,7 @@ export default function ClientPostProject() {
                         <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Where will this be used?</h2>
                         <p className="text-gray-600 mb-8">Select all that apply</p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {USAGE_OPTIONS.map((option) => {
                             const Icon = option.icon;
                             const isSelected = (projectForm.usage || []).includes(option.value);
@@ -618,15 +618,15 @@ export default function ClientPostProject() {
                                 key={option.value}
                                 type="button"
                                 onClick={() => toggleUsage(option.value)}
-                                className={`p-6 rounded-xl border-2 transition-all text-left ${
+                                className={`p-4 rounded-lg border-2 transition-all text-left ${
                                   isSelected
                                     ? 'border-gray-900 bg-gray-50'
                                     : 'border-gray-200 hover:border-gray-300 bg-white'
                                 }`}
                               >
-                                <Icon className={`w-8 h-8 mb-3 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
-                                <h3 className="text-lg font-semibold mb-1 text-gray-900">{option.label}</h3>
-                                <p className="text-sm text-gray-500">{option.description}</p>
+                                <Icon className={`w-6 h-6 mb-2 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
+                                <h3 className="text-base font-semibold mb-1 text-gray-900">{option.label}</h3>
+                                <p className="text-xs text-gray-500">{option.description}</p>
                               </button>
                             );
                           })}
@@ -811,7 +811,7 @@ export default function ClientPostProject() {
                         <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What services do you need?</h2>
                         <p className="text-gray-600 mb-8">Select all departments required</p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {DEPARTMENTS.map((dept) => {
                             const Icon = dept.icon;
                             const isSelected = (projectForm.departments_needed || []).includes(dept.value);
@@ -820,15 +820,15 @@ export default function ClientPostProject() {
                                 key={dept.value}
                                 type="button"
                                 onClick={() => toggleDepartment(dept.value)}
-                                className={`p-5 rounded-xl border-2 transition-all text-left ${
+                                className={`p-4 rounded-lg border-2 transition-all text-left ${
                                   isSelected
                                     ? 'border-gray-900 bg-gray-50'
                                     : 'border-gray-200 hover:border-gray-300 bg-white'
                                 }`}
                               >
-                                <Icon className={`w-7 h-7 mb-3 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
+                                <Icon className={`w-6 h-6 mb-2 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
                                 <h3 className="text-base font-semibold mb-1 text-gray-900">{dept.label}</h3>
-                                <p className="text-sm text-gray-500">{dept.description}</p>
+                                <p className="text-xs text-gray-500">{dept.description}</p>
                               </button>
                             );
                           })}
@@ -885,7 +885,7 @@ export default function ClientPostProject() {
                         <p className="text-gray-600 mb-2">This helps us match you with the right teams</p>
                         <p className="text-sm text-gray-500 mb-8">Optional - you can discuss exact numbers later</p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {BUDGET_RANGES.map((range) => {
                             const isSelected = projectForm.budget_range === range.value;
                             return (
@@ -893,15 +893,15 @@ export default function ClientPostProject() {
                                 key={range.value}
                                 type="button"
                                 onClick={() => updateForm('budget_range', range.value)}
-                                className={`p-5 rounded-xl border-2 transition-all text-left ${
+                                className={`p-4 rounded-lg border-2 transition-all text-left ${
                                   isSelected
                                     ? 'border-gray-900 bg-gray-50'
                                     : 'border-gray-200 hover:border-gray-300 bg-white'
                                 }`}
                               >
-                                <DollarSign className={`w-7 h-7 mb-3 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
+                                <DollarSign className={`w-6 h-6 mb-2 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
                                 <h3 className="text-base font-semibold mb-1 text-gray-900">{range.label}</h3>
-                                <p className="text-sm text-gray-500">{range.description}</p>
+                                <p className="text-xs text-gray-500">{range.description}</p>
                               </button>
                             );
                           })}

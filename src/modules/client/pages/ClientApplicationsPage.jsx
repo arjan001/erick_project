@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Job, Project, Application, Notification } from '@/lib/supabaseEntities';
+import { Job, Project, Application, Notification, Artist, Team } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
-import { FileText, User, Calendar, MapPin, Check, X, Crown, Star, Briefcase, Eye, Bookmark, BookmarkCheck, Play, Download, Globe, Linkedin, Instagram, Youtube, Twitter, Award, Languages, Globe2, Building2, Mail, Phone, Tag, Clock, DollarSign, GraduationCap } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { FileText, User, Calendar, MapPin, Check, X, Crown, Star, Briefcase, Eye, Bookmark, BookmarkCheck, Play, Download, Globe, Linkedin, Instagram, Youtube, Twitter, Award, Languages, Globe2, Building2, Mail, Phone, Tag, Clock, DollarSign, GraduationCap, Search, Filter, MessageSquare, ChevronDown, ChevronUp, TrendingUp, Users } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast';
 import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge';
+import ApplicationRankingEngine from '@/lib/applicationRankingEngine';
 
 export default function ClientApplications() {
   const navigate = useNavigate();
@@ -16,10 +18,32 @@ export default function ClientApplications() {
   const [artistSubscriptions, setArtistSubscriptions] = useState({});
   const [artistProfiles, setArtistProfiles] = useState({});
   const [artistPortfolios, setArtistPortfolios] = useState({});
+  const [teamProfiles, setTeamProfiles] = useState({});
+  const [teamPortfolios, setTeamPortfolios] = useState({});
+  const [jobs, setJobs] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedJob, setSelectedJob] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedType, setSelectedType] = useState('all'); // 'artist', 'team', 'all'
+  const [minScore, setMinScore] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState('score'); // 'score', 'date', 'name'
+  const [sortOrder, setSortOrder] = useState('desc');
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  // Ranking
+  const [rankedApplications, setRankedApplications] = useState([]);
+  const [showBestFit, setShowBestFit] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('studio22_user');
@@ -34,20 +58,24 @@ export default function ClientApplications() {
         const clientEmail = JSON.parse(storedUser).email;
 
         // Fetch jobs posted by this client
-        const jobs = await Job.filter({ client_email: clientEmail });
+        const clientJobs = await Job.filter({ client_email: clientEmail });
+        setJobs(clientJobs);
+        
         const jobApplicationsLists = await Promise.all(
-          jobs.map(async (job) => {
+          clientJobs.map(async (job) => {
             const jobApplications = await Application.filter({ job_id: job.id });
-            return jobApplications.map(app => ({ ...app, job_title: job.title }));
+            return jobApplications.map(app => ({ ...app, job_title: job.title, job_type: job.job_type, job_location: job.location, job_required_skills: job.required_skills }));
           })
         );
 
         // Fetch projects posted by this client
-        const projects = await Project.filter({ project_owner_email: clientEmail });
+        const clientProjects = await Project.filter({ project_owner_email: clientEmail });
+        setProjects(clientProjects);
+        
         const projectApplicationsLists = await Promise.all(
-          projects.map(async (project) => {
+          clientProjects.map(async (project) => {
             const projectApplications = await Application.filter({ project_id: project.id });
-            return projectApplications.map(app => ({ ...app, job_title: project.project_type?.replace(/_/g, ' ') + ' project' }));
+            return projectApplications.map(app => ({ ...app, job_title: project.title || project.project_type?.replace(/_/g, ' ') + ' project', job_type: project.project_type, job_location: project.location_city, job_required_skills: project.departments_needed }));
           })
         );
 
@@ -55,7 +83,7 @@ export default function ClientApplications() {
         setApplications(flatApplications);
 
         // Fetch subscriptions, profiles, and portfolios for all artists who applied
-        const artistEmails = [...new Set(flatApplications.map(app => app.artist_email))];
+        const artistEmails = [...new Set(flatApplications.map(app => app.artist_email).filter(Boolean))];
         const subscriptionsData = {};
         const profilesData = {};
         const portfoliosData = {};
@@ -71,20 +99,46 @@ export default function ClientApplications() {
               }
 
               // Fetch artist profile
-              const artists = await base44.entities.Artist.filter({ email });
+              const artists = await Artist.filter({ email });
               if (artists.length > 0) {
                 profilesData[email] = artists[0];
-              }
 
-              // Fetch portfolio clips
-              const clips = await base44.entities.PortfolioClip.filter({ 
-                uploaded_by_type: 'artist',
-                uploaded_by_id: artists[0]?.id,
-                status: 'approved'
-              });
-              portfoliosData[email] = clips;
+                // Fetch portfolio clips
+                const clips = await base44.entities.PortfolioClip.filter({ 
+                  uploaded_by_type: 'artist',
+                  uploaded_by_id: artists[0].id,
+                  status: 'approved'
+                });
+                portfoliosData[email] = clips;
+              }
             } catch (err) {
               console.error('Error fetching artist data:', err);
+            }
+          })
+        );
+        
+        // Fetch team profiles for team applications
+        const teamIds = [...new Set(flatApplications.map(app => app.team_id).filter(Boolean))];
+        const teamProfilesData = {};
+        const teamPortfoliosData = {};
+        
+        await Promise.all(
+          teamIds.map(async (teamId) => {
+            try {
+              const teams = await base44.entities.Team.filter({ id: teamId });
+              if (teams.length > 0) {
+                teamProfilesData[teamId] = teams[0];
+
+                // Fetch team portfolio clips
+                const clips = await base44.entities.PortfolioClip.filter({ 
+                  uploaded_by_type: 'team',
+                  uploaded_by_id: teamId,
+                  status: 'approved'
+                });
+                teamPortfoliosData[teamId] = clips;
+              }
+            } catch (err) {
+              console.error('Error fetching team data:', err);
             }
           })
         );
@@ -92,6 +146,8 @@ export default function ClientApplications() {
         setArtistSubscriptions(subscriptionsData);
         setArtistProfiles(profilesData);
         setArtistPortfolios(portfoliosData);
+        setTeamProfiles(teamProfilesData);
+        setTeamPortfolios(teamPortfoliosData);
       } catch (err) {
         console.error('Error fetching applications:', err);
       } finally {
@@ -101,6 +157,47 @@ export default function ClientApplications() {
 
     fetchApplications();
   }, []);
+  
+  // Rank applications using the ranking engine
+  useEffect(() => {
+    if (applications.length === 0) return;
+    
+    const rankingEngine = new ApplicationRankingEngine();
+    const applicationsWithProfiles = applications.map(app => {
+      let profile = null;
+      let type = 'unknown';
+      let portfolio = [];
+      
+      if (app.artist_email && artistProfiles[app.artist_email]) {
+        profile = artistProfiles[app.artist_email];
+        type = 'artist';
+        portfolio = artistPortfolios[app.artist_email] || [];
+      } else if (app.team_id && teamProfiles[app.team_id]) {
+        profile = teamProfiles[app.team_id];
+        type = 'team';
+        portfolio = teamPortfolios[app.team_id] || [];
+      }
+      
+      // Add portfolio to profile for scoring
+      if (profile) {
+        profile.portfolio_clips = portfolio;
+      }
+      
+      return {
+        application: app,
+        profile,
+        type,
+        jobRequirements: {
+          required_skills: app.job_required_skills || [],
+          location: app.job_location,
+          job_type: app.job_type
+        }
+      };
+    });
+    
+    const ranked = rankingEngine.rankApplications(applicationsWithProfiles);
+    setRankedApplications(ranked);
+  }, [applications, artistProfiles, teamProfiles, artistPortfolios, teamPortfolios]);
 
   const handleAccept = async (applicationId) => {
     try {
@@ -165,13 +262,14 @@ export default function ClientApplications() {
       ));
 
       // Send notification to applicant
-      if (application?.artist_email) {
+      const recipientEmail = application?.artist_email || application?.team_email;
+      if (recipientEmail) {
         await Notification.create({
-          recipient_email: application.artist_email,
+          recipient_email: recipientEmail,
           type: 'job_status',
           title: 'Application Shortlisted',
-          message: `Your application for "${application.job_title || application.project_title}" has been shortlisted.`,
-          metadata: { job_title: application.job_title || application.project_title, application_id: applicationId },
+          message: `Your application for "${application.job_title}" has been shortlisted.`,
+          metadata: { job_title: application.job_title, application_id: applicationId },
           read: false
         });
       }
@@ -186,6 +284,13 @@ export default function ClientApplications() {
   const handleViewProfile = (application) => {
     setSelectedApplication(application);
     setShowReviewModal(true);
+  };
+
+  const handleContact = (application) => {
+    const recipientEmail = application.artist_email || application.team_email;
+    if (recipientEmail) {
+      navigate('/Messages', { state: { recipientEmail } });
+    }
   };
 
   const handleGeneratePDF = async (application) => {
@@ -369,104 +474,451 @@ export default function ClientApplications() {
     }
   };
 
+  // Filter and sort applications
+  const filteredAndSortedApplications = useMemo(() => {
+    let filtered = rankedApplications;
+
+    // Filter by job
+    if (selectedJob !== 'all') {
+      filtered = filtered.filter(item => 
+        item.application.job_title === selectedJob || 
+        item.application.job_id === selectedJob
+      );
+    }
+
+    // Filter by status
+    if (selectedStatus !== 'all') {
+      filtered = filtered.filter(item => item.application.status === selectedStatus);
+    }
+
+    // Filter by type (artist/team)
+    if (selectedType !== 'all') {
+      filtered = filtered.filter(item => item.type === selectedType);
+    }
+
+    // Filter by minimum score
+    if (minScore > 0) {
+      filtered = filtered.filter(item => item.totalScore >= minScore);
+    }
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(item => {
+        const profile = item.profile;
+        const app = item.application;
+        return (
+          profile?.full_name?.toLowerCase().includes(query) ||
+          profile?.display_name?.toLowerCase().includes(query) ||
+          app.artist_email?.toLowerCase().includes(query) ||
+          app.job_title?.toLowerCase().includes(query) ||
+          profile?.roles?.some(r => r.toLowerCase().includes(query)) ||
+          profile?.skills_experience?.some(s => s.skill.toLowerCase().includes(query))
+        );
+      });
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      
+      if (sortBy === 'score') {
+        comparison = a.totalScore - b.totalScore;
+      } else if (sortBy === 'date') {
+        comparison = new Date(a.application.applied_at) - new Date(b.application.applied_at);
+      } else if (sortBy === 'name') {
+        comparison = (a.profile?.full_name || '').localeCompare(b.profile?.full_name || '');
+      }
+      
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+
+    return filtered;
+  }, [rankedApplications, selectedJob, selectedStatus, selectedType, minScore, searchQuery, sortBy, sortOrder]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAndSortedApplications.length / itemsPerPage);
+  const paginatedApplications = filteredAndSortedApplications.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Get best fit candidates
+  const bestFitCandidates = useMemo(() => {
+    return rankedApplications.filter(item => item.totalScore >= 75).slice(0, 5);
+  }, [rankedApplications]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedJob, selectedStatus, selectedType, minScore, searchQuery]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <div className="text-gray-600">Loading...</div>
+        <div className="text-gray-600">Loading applications...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Applications</h1>
-      <p className="text-gray-600 mb-6 sm:mb-8">Review applications for your job postings</p>
+    <div className="bg-white min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Applications</h1>
+          <p className="text-gray-500">Review and manage applications for your job postings</p>
+        </div>
 
-          {applications.length === 0 ? (
-            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 sm:p-12 text-center">
-              <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">No applications yet</h3>
-              <p className="text-gray-600 text-sm sm:text-base">Applications will appear here when artists apply to your jobs</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {applications.map((application) => (
-                <div key={application.id} className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow">
-                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                        <h3 className="font-bold text-gray-900 text-base sm:text-lg">{application.job_title}</h3>
-                        {artistSubscriptions[application.artist_email] && (
-                          <SubscriptionBadge
-                            subscription={artistSubscriptions[application.artist_email].subscription}
-                            package={artistSubscriptions[application.artist_email].package}
-                          />
-                        )}
+        {applications.length === 0 ? (
+          <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-16 text-center">
+            <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-gray-900 mb-2">No applications yet</h3>
+            <p className="text-gray-500">Applications will appear here when artists apply to your jobs</p>
+          </div>
+        ) : (
+          <>
+            {/* Best Fit Section */}
+            {showBestFit && bestFitCandidates.length > 0 && (
+              <div className="mb-8 bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-white" />
+                    <h2 className="text-lg font-semibold text-white">Best Fit Candidates</h2>
+                    <span className="text-gray-300 text-sm">({bestFitCandidates.length} top matches)</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowBestFit(false)}
+                    className="text-gray-300 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {bestFitCandidates.map((item) => (
+                    <div key={item.application.id} className="bg-white/10 backdrop-blur rounded-lg p-4 border border-white/20">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-white font-medium">{item.profile?.full_name || 'Unknown'}</p>
+                            <p className="text-gray-300 text-xs">{item.application.job_title}</p>
+                          </div>
+                        </div>
+                        <div className="bg-green-500 text-white px-2 py-1 rounded text-sm font-bold">
+                          {item.totalScore}%
+                        </div>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-3">
-                        <span className="flex items-center gap-1">
-                          <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                          <span className="truncate max-w-[150px] sm:max-w-none">{application.artist_email}</span>
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          application.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                          application.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                          application.status === 'shortlisted' ? 'bg-blue-100 text-blue-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {application.status}
-                        </span>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleViewProfile(item.application)}
+                          className="flex-1 bg-white text-gray-900 hover:bg-gray-100 text-xs"
+                        >
+                          View Profile
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleContact(item.application)}
+                          variant="outline"
+                          className="flex-1 border-white/30 text-white hover:bg-white/10 text-xs"
+                        >
+                          <MessageSquare className="w-3 h-3 mr-1" />
+                          Contact
+                        </Button>
                       </div>
-                      {application.cover_letter && (
-                        <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{application.cover_letter}</p>
-                      )}
                     </div>
-                    {application.status === 'applied' && (
-                      <div className="flex gap-2 sm:flex-shrink-0">
-                        <Button
-                          size="sm"
-                          onClick={() => handleShortlist(application.id)}
-                          className="bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
-                        >
-                          <Bookmark className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                          Shortlist
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => handleViewProfile(application)}
-                          variant="outline"
-                          className="text-xs sm:text-sm"
-                        >
-                          <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                          Review
-                        </Button>
-                      </div>
-                    )}
-                    {application.status === 'shortlisted' && (
-                      <div className="flex gap-2 sm:flex-shrink-0">
-                        <Button
-                          size="sm"
-                          onClick={() => handleAccept(application.id)}
-                          className="bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm"
-                        >
-                          <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                          Accept
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleReject(application.id)}
-                          className="border-red-300 text-red-600 hover:bg-red-50 text-xs sm:text-sm"
-                        >
-                          <X className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </Button>
-                      </div>
-                    )}
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Filters Bar */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-6">
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Search */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      placeholder="Search by name, email, skills..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
                   </div>
                 </div>
-              ))}
+
+                {/* Job Filter */}
+                <div className="flex gap-2">
+                  <select
+                    value={selectedJob}
+                    onChange={(e) => setSelectedJob(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  >
+                    <option value="all">All Jobs</option>
+                    {jobs.map(job => (
+                      <option key={job.id} value={job.id}>{job.title}</option>
+                    ))}
+                    {projects.map(project => (
+                      <option key={project.id} value={project.id}>{project.title || project.project_type?.replace(/_/g, ' ')}</option>
+                    ))}
+                  </select>
+
+                  {/* Status Filter */}
+                  <select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="shortlisted">Shortlisted</option>
+                    <option value="accepted">Accepted</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+
+                  {/* Type Filter */}
+                  <select
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="artist">Artists</option>
+                    <option value="team">Teams</option>
+                  </select>
+
+                  {/* Score Filter */}
+                  <select
+                    value={minScore}
+                    onChange={(e) => setMinScore(Number(e.target.value))}
+                    className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  >
+                    <option value="0">All Scores</option>
+                    <option value="50">50%+</option>
+                    <option value="60">60%+</option>
+                    <option value="70">70%+</option>
+                    <option value="80">80%+</option>
+                  </select>
+                </div>
+
+                {/* Sort Toggle */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (sortBy === 'score') {
+                      setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
+                    } else {
+                      setSortBy('score');
+                      setSortOrder('desc');
+                    }
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  {sortBy === 'score' && sortOrder === 'desc' ? <TrendingUp className="w-4 h-4" : <TrendingUp className="w-4 h-4 rotate-180" />}
+                  Sort by Score
+                </Button>
+              </div>
             </div>
-          )}
+
+            {/* Stats */}
+            <div className="flex items-center gap-6 mb-6 text-sm text-gray-500">
+              <span>Total: {filteredAndSortedApplications.length} applications</span>
+              <span>•</span>
+              <span>Page {currentPage} of {totalPages}</span>
+            </div>
+
+            {/* Applications Table */}
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Applicant</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Job/Project</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Match Score</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Applied</th>
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {paginatedApplications.map((item) => (
+                    <tr key={item.application.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                            {item.type === 'team' ? (
+                              <Users className="w-5 h-5 text-gray-500" />
+                            ) : (
+                              <User className="w-5 h-5 text-gray-500" />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium text-gray-900 truncate">{item.profile?.full_name || 'Unknown'}</p>
+                            <p className="text-sm text-gray-500 truncate">{item.application.artist_email || item.application.team_email}</p>
+                            {artistSubscriptions[item.application.artist_email] && (
+                              <SubscriptionBadge
+                                subscription={artistSubscriptions[item.application.artist_email].subscription}
+                                package={artistSubscriptions[item.application.artist_email].package}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-medium text-gray-900">{item.application.job_title}</p>
+                        <p className="text-xs text-gray-500">{item.type === 'team' ? 'Team' : 'Artist'}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className={`px-3 py-1 rounded-full text-sm font-bold ${
+                          item.totalScore >= 75 ? 'bg-green-100 text-green-700' :
+                          item.totalScore >= 60 ? 'bg-blue-100 text-blue-700' :
+                          item.totalScore >= 40 ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {item.totalScore}%
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          item.application.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                          item.application.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                          item.application.status === 'shortlisted' ? 'bg-blue-100 text-blue-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {item.application.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {new Date(item.application.applied_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleViewProfile(item.application)}
+                            className="text-gray-600 hover:text-gray-900"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleContact(item.application)}
+                            className="text-gray-600 hover:text-gray-900"
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                          </Button>
+                          {item.application.status === 'pending' && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleShortlist(item.application.id)}
+                                className="text-blue-600 hover:text-blue-700"
+                              >
+                                <Bookmark className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleAccept(item.application.id)}
+                                className="text-green-600 hover:text-green-700"
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleReject(item.application.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                          {item.application.status === 'shortlisted' && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleAccept(item.application.id)}
+                                className="text-green-600 hover:text-green-700"
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleReject(item.application.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {paginatedApplications.length === 0 && (
+                <div className="p-12 text-center text-gray-500">
+                  No applications match your filters
+                </div>
+              )}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">Items per page:</span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    className="px-3 py-1 border border-gray-300 rounded bg-white text-sm"
+                  >
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span className="text-sm text-gray-600">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Review Modal */}
       {showReviewModal && selectedApplication && (
