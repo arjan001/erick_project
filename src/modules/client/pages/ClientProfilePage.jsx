@@ -196,16 +196,16 @@ export default function ClientProfilePage() {
       <div className="w-full">
         {/* Header */}
         <div className="border-b border-gray-200 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-6 py-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">Client Profile</h1>
-            <p className="text-gray-500">Manage your company profile, contact info and preferences</p>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Client Profile</h1>
+            <p className="text-gray-500 text-sm sm:text-base">Manage your company profile, contact info and preferences</p>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex gap-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="flex gap-4 sm:gap-8">
               <button onClick={() => setActiveTab('profile')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'profile' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Profile</button>
               <button onClick={() => setActiveTab('settings')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'settings' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Account Settings</button>
             </div>
@@ -213,7 +213,7 @@ export default function ClientProfilePage() {
         </div>
 
         {/* Content */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {activeTab === 'profile' && (
             <div className="space-y-8">
               {/* Profile Header */}

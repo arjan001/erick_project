@@ -553,6 +553,12 @@ const clientRoutes = [
     guard: ClientGuard
   },
   {
+    path: '/ClientNotifications',
+    component: () => import('@/modules/network/pages/NotificationsPage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
+  },
+  {
     path: '/ClientAnalytics',
     component: () => import('@/modules/client/pages/ClientAnalyticsPage'),
     layout: DashboardLayout,

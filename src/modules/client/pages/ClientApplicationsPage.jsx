@@ -378,35 +378,35 @@ export default function ClientApplications() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Applications</h1>
-      <p className="text-gray-600 mb-8">Review applications for your job postings</p>
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Applications</h1>
+      <p className="text-gray-600 mb-6 sm:mb-8">Review applications for your job postings</p>
 
           {applications.length === 0 ? (
-            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
-              <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-gray-900 mb-2">No applications yet</h3>
-              <p className="text-gray-600">Applications will appear here when artists apply to your jobs</p>
+            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 sm:p-12 text-center">
+              <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">No applications yet</h3>
+              <p className="text-gray-600 text-sm sm:text-base">Applications will appear here when artists apply to your jobs</p>
             </div>
           ) : (
             <div className="space-y-4">
               {applications.map((application) => (
-                <div key={application.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between">
+                <div key={application.id} className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="font-bold text-gray-900">{application.job_title}</h3>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                        <h3 className="font-bold text-gray-900 text-base sm:text-lg">{application.job_title}</h3>
                         {artistSubscriptions[application.artist_email] && (
-                          <SubscriptionBadge 
+                          <SubscriptionBadge
                             subscription={artistSubscriptions[application.artist_email].subscription}
                             package={artistSubscriptions[application.artist_email].package}
                           />
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-3">
                         <span className="flex items-center gap-1">
-                          <User className="w-4 h-4" />
-                          {application.artist_email}
+                          <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="truncate max-w-[150px] sm:max-w-none">{application.artist_email}</span>
                         </span>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           application.status === 'accepted' ? 'bg-green-100 text-green-800' :
@@ -418,46 +418,47 @@ export default function ClientApplications() {
                         </span>
                       </div>
                       {application.cover_letter && (
-                        <p className="text-sm text-gray-600 line-clamp-2">{application.cover_letter}</p>
+                        <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{application.cover_letter}</p>
                       )}
                     </div>
                     {application.status === 'applied' && (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 sm:flex-shrink-0">
                         <Button
                           size="sm"
                           onClick={() => handleShortlist(application.id)}
-                          className="bg-blue-600 text-white hover:bg-blue-700"
+                          className="bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm"
                         >
-                          <Bookmark className="w-4 h-4 mr-1" />
+                          <Bookmark className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                           Shortlist
                         </Button>
                         <Button
                           size="sm"
                           onClick={() => handleViewProfile(application)}
                           variant="outline"
+                          className="text-xs sm:text-sm"
                         >
-                          <Eye className="w-4 h-4 mr-1" />
+                          <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                           Review
                         </Button>
                       </div>
                     )}
                     {application.status === 'shortlisted' && (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 sm:flex-shrink-0">
                         <Button
                           size="sm"
                           onClick={() => handleAccept(application.id)}
-                          className="bg-green-600 text-white hover:bg-green-700"
+                          className="bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm"
                         >
-                          <Check className="w-4 h-4 mr-1" />
+                          <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                           Accept
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleReject(application.id)}
-                          className="border-red-300 text-red-600 hover:bg-red-50"
+                          className="border-red-300 text-red-600 hover:bg-red-50 text-xs sm:text-sm"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                       </div>
                     )}

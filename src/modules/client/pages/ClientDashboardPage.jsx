@@ -10,7 +10,7 @@ import ClientProjectCard from '@/components/client/ClientProjectCard';
 import ClientJobRow from '@/components/client/ClientJobRow';
 import ClientJobModal from '@/components/client/ClientJobModal';
 import ClientPostProjectModal from '@/components/client/ClientPostProjectModal';
-import { Plus, Briefcase, Send, MessageSquare, FolderKanban, X } from 'lucide-react';
+import { Plus, Briefcase, Send, MessageSquare, FolderKanban, X, MapPin, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import InviteCodeCard from '@/components/InviteCodeCard';
 import { useToast } from '@/hooks/useToast.jsx';
@@ -148,11 +148,10 @@ export default function ClientDashboard() {
 
   const openProjectModal = (project = null) => {
     if (project) {
-      setEditingProject(project);
+      navigate('/ClientPostProject', { state: { editingProject: project } });
     } else {
-      setEditingProject(null);
+      navigate('/ClientPostProject');
     }
-    setShowProjectModal(true);
   };
 
   const openJobModal = (job = null) => {
@@ -211,88 +210,138 @@ export default function ClientDashboard() {
   }));
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
       <main className="w-full">
-        <div className="px-6 py-6 space-y-6">
+        <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          {/* Header Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back, {user?.full_name?.split(' ')[0] || 'Client'}</h1>
+              <p className="text-gray-500 mt-1 text-sm sm:text-base">Manage your projects and connect with creative talent</p>
+            </div>
+            <div className="flex gap-2 sm:gap-3">
+              <Button
+                className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/20 transition-all text-sm sm:text-base"
+                onClick={() => openProjectModal()}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Post Project
+              </Button>
+              <Button
+                variant="outline"
+                className="border-gray-300 hover:bg-gray-50 transition-all text-sm sm:text-base"
+                onClick={() => openJobModal()}
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Post with AI
+              </Button>
+            </div>
+          </div>
+
           {/* Stats Cards */}
-          <ClientOverviewCards stats={stats} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {stats.map((stat, idx) => {
+              const Icon = stat.icon;
+              return (
+                <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
+                    <span className="text-3xl font-bold text-gray-900">{stat.value}</span>
+                  </div>
+                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                </div>
+              );
+            })}
+          </div>
 
           {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Activity</h3>
               <ClientActivityChart data={monthBuckets} />
             </div>
-            <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Status</h3>
               <ClientStatusDonut data={statusData} />
             </div>
           </div>
 
           {/* Recent Applications */}
-          <ClientRecentApplications applications={applications} projects={projects} jobs={jobs} />
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">Your Projects & Jobs</h2>
-            <div className="flex gap-3">
-              <Button className="bg-black text-white hover:bg-gray-800" onClick={() => openProjectModal()}>
-                <Plus className="w-4 h-4 mr-2" />
-                Post Project
-              </Button>
-              <Button variant="outline" onClick={() => openJobModal()}>
-                <Briefcase className="w-4 h-4 mr-2" />
-                Post Job
-              </Button>
-            </div>
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Applications</h3>
+            <ClientRecentApplications applications={applications} projects={projects} jobs={jobs} />
           </div>
 
-          {/* Combined Projects & Jobs Grid */}
-          {projects.length === 0 && jobs.length === 0 ? (
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-dashed border-gray-300 rounded-2xl p-16 text-center">
-              <div className="text-6xl mb-4">📋</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No projects or jobs yet</h3>
-              <p className="text-gray-600 mb-6">Start by posting your first project or job</p>
-              <div className="flex gap-3 justify-center">
-                <Button className="bg-black text-white hover:bg-gray-800 px-6" onClick={() => openProjectModal()}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Post Project
-                </Button>
-                <Button variant="outline" onClick={() => openJobModal()}>
-                  <Briefcase className="w-4 h-4 mr-2" />
-                  Post Job
-                </Button>
-              </div>
+          {/* Projects & Jobs Section */}
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Your Projects & Jobs</h2>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Project Cards */}
-              {projects.map((project) => (
-                <ClientProjectCard key={project.id} project={project} onEdit={() => openProjectModal(project)} onDelete={handleDeleteProject} />
-              ))}
-              {/* Job Cards - convert to card format */}
-              {jobs.map((job) => (
-                <div key={job.id} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-lg transition-shadow">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-full">Job</span>
-                    <button
-                      onClick={() => handleDeleteJob(job.id)}
-                      className="text-gray-400 hover:text-red-500"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <h3 className="font-bold text-gray-900 mb-2 line-clamp-2">{job.title}</h3>
-                  <p className="text-sm text-gray-500 mb-3 line-clamp-2">{job.description}</p>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-semibold text-gray-900">€{job.budget || 'TBD'}</span>
-                    <span className="text-gray-500">{job.location || 'Remote'}</span>
-                  </div>
+
+            {projects.length === 0 && jobs.length === 0 ? (
+              <div className="bg-white rounded-2xl p-16 text-center border-2 border-dashed border-gray-200 shadow-sm">
+                <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FolderKanban className="w-10 h-10 text-amber-600" />
                 </div>
-              ))}
-            </div>
-          )}
+                <h3 className="text-xl font-bold text-gray-900 mb-2">No projects or jobs yet</h3>
+                <p className="text-gray-500 mb-6 max-w-md mx-auto">Start by posting your first project or job to connect with talented creators</p>
+                <div className="flex gap-3 justify-center">
+                  <Button 
+                    className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/20" 
+                    onClick={() => openProjectModal()}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Post Project
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="border-gray-300 hover:bg-gray-50"
+                    onClick={() => openJobModal()}
+                  >
+                    <Briefcase className="w-4 h-4 mr-2" />
+                    Post Job
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {/* Project Cards */}
+                {projects.map((project) => (
+                  <ClientProjectCard key={project.id} project={project} onEdit={() => openProjectModal(project)} onDelete={handleDeleteProject} />
+                ))}
+                {/* Job Cards */}
+                {jobs.map((job) => (
+                  <div key={job.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-lg transition-all group">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs font-bold bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-full">Job</span>
+                      <button
+                        onClick={() => handleDeleteJob(job.id)}
+                        className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 text-lg">{job.title}</h3>
+                    <p className="text-sm text-gray-500 mb-4 line-clamp-2">{job.description}</p>
+                    <div className="flex items-center justify-between text-sm pt-4 border-t border-gray-100">
+                      <span className="font-semibold text-gray-900">€{job.budget || 'TBD'}</span>
+                      <span className="text-gray-500 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {job.location || 'Remote'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        <InviteCodeCard />
+        <div className="px-4 sm:px-6 lg:px-8 pb-8">
+          <InviteCodeCard />
+        </div>
       </main>
 
       <ClientPostProjectModal

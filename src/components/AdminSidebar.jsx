@@ -160,7 +160,7 @@ export default function AdminSidebar() {
       <div className="p-3 border-b border-gray-100 flex items-center justify-between">
         {!isCollapsed && (
           <div>
-            <h1 className="text-xl font-black bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">Studio22</h1>
+            <h1 className="text-xl font-black bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">22.</h1>
             <p className="text-sm text-gray-500">Admin Panel</p>
           </div>
         )}

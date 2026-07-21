@@ -12,7 +12,7 @@ const MENU_ITEMS = [
   { label: 'Applications', icon: FileText, href: 'ClientApplications' },
   { label: 'Messages', icon: Mail, href: 'ClientMessages', showBadge: true },
   { label: 'Network', icon: Share2, href: 'Network', showConnectionBadge: true },
-  { label: 'Notifications', icon: Bell, href: 'Notifications', showNotificationBadge: true },
+  { label: 'Notifications', icon: Bell, href: 'ClientNotifications', showNotificationBadge: true },
   { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets' },
   { label: 'Analytics', icon: BarChart3, href: 'ClientAnalytics' },
   { label: 'Profile & Settings', icon: Settings, href: 'ClientProfile' }
@@ -123,7 +123,7 @@ export default function ClientSidebar() {
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100">
         <Link to="/" className="font-black text-xl text-black">
-          22
+          22.
         </Link>
         <button
           onClick={toggle}

@@ -65,41 +65,41 @@ export default function ClientAnalytics() {
   }
 
   const statCards = [
-    { label: 'Total Projects', value: stats.totalProjects, icon: Briefcase, color: 'bg-blue-500' },
-    { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'bg-green-500' },
-    { label: 'Total Jobs Posted', value: stats.totalJobs, icon: Users, color: 'bg-purple-500' },
-    { label: 'Open Jobs', value: stats.openJobs, icon: Eye, color: 'bg-orange-500' },
-    { label: 'Total Applications', value: stats.totalApplications, icon: BarChart3, color: 'bg-pink-500' },
-    { label: 'Accepted Applications', value: stats.acceptedApplications, icon: TrendingUp, color: 'bg-teal-500' }
+    { label: 'Total Projects', value: stats.totalProjects, icon: Briefcase, color: 'bg-amber-500' },
+    { label: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'bg-black' },
+    { label: 'Total Jobs Posted', value: stats.totalJobs, icon: Users, color: 'bg-gray-800' },
+    { label: 'Open Jobs', value: stats.openJobs, icon: Eye, color: 'bg-amber-600' },
+    { label: 'Total Applications', value: stats.totalApplications, icon: BarChart3, color: 'bg-gray-700' },
+    { label: 'Accepted Applications', value: stats.acceptedApplications, icon: TrendingUp, color: 'bg-amber-700' }
   ];
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics</h1>
-      <p className="text-gray-600 mb-8">Track your project and job performance</p>
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Analytics</h1>
+      <p className="text-gray-600 mb-6 sm:mb-8">Track your project and job performance</p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {statCards.map((stat) => (
-          <div key={stat.label} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center`}>
-                <stat.icon className="w-6 h-6 text-white" />
+          <div key={stat.label} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2">
+              <div className={`w-8 h-8 sm:w-9 sm:h-9 ${stat.color} rounded-md flex items-center justify-center`}>
+                <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <span className="text-3xl font-bold text-gray-900">{stat.value}</span>
+              <span className="text-xl sm:text-2xl font-bold text-gray-900">{stat.value}</span>
             </div>
-            <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+            <p className="text-[10px] sm:text-xs font-medium text-gray-600">{stat.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Performance Overview</h2>
+      <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Performance Overview</h2>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-gray-600">Application Acceptance Rate</span>
-            <span className="font-bold text-gray-900">
-              {stats.totalApplications > 0 
-                ? Math.round((stats.acceptedApplications / stats.totalApplications) * 100) 
+            <span className="text-gray-600 text-sm sm:text-base">Application Acceptance Rate</span>
+            <span className="font-bold text-gray-900 text-sm sm:text-base">
+              {stats.totalApplications > 0
+                ? Math.round((stats.acceptedApplications / stats.totalApplications) * 100)
                 : 0}%
             </span>
           </div>
@@ -107,8 +107,8 @@ export default function ClientAnalytics() {
             <div
               className="bg-green-500 h-2 rounded-full"
               style={{
-                width: `${stats.totalApplications > 0 
-                  ? (stats.acceptedApplications / stats.totalApplications) * 100 
+                width: `${stats.totalApplications > 0
+                  ? (stats.acceptedApplications / stats.totalApplications) * 100
                   : 0}%`
               }}
             />

@@ -104,7 +104,7 @@ export default function TeamSidebar() {
           </div>
           {expanded && (
             <div>
-              <div className="font-bold text-gray-900 text-sm">Studio22</div>
+              <div className="font-bold text-gray-900 text-sm">22.</div>
               <div className="text-xs text-gray-500">Team Portal</div>
             </div>
           )}

@@ -102,7 +102,7 @@ export default function BackerSidebar() {
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100">
         <Link to="/" className="font-black text-xl text-black">
-          22
+          22.
         </Link>
         <button
           onClick={toggle}

@@ -67,6 +67,7 @@ export default function NetworkPage() {
   const [showTypeFilter, setShowTypeFilter] = useState(false);
   const [activeTab, setActiveTab] = useState('connections'); // 'connections', 'sent', 'pending'
   const [showSubFilter, setShowSubFilter] = useState(false);
+  const [subscriptionFilter, setSubscriptionFilter] = useState('all');
   const [subscribedEmails, setSubscribedEmails] = useState(new Set());
 
   const [myProfile, setMyProfile] = useState(null);

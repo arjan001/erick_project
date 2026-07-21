@@ -177,7 +177,8 @@ export default function BackerDashboardPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+      <div className="p-6">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Investor Dashboard</h1>
@@ -436,6 +437,7 @@ export default function BackerDashboardPage() {
             </div>
           </div>
         )}
+      </div>
     </div>
   );
 }

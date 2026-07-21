@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { AlertCircle, Eye, EyeOff, Mail, Lock, Gift, Sparkles, X } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, Mail, Lock, Gift, Sparkles, X, Key } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Artist, Team, Backer, ProjectOwner, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
@@ -24,10 +24,13 @@ const DEMO_ACCOUNTS = {
 
 export default function SignIn() {
   const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'update_password'
+  const [loginMethod, setLoginMethod] = useState('otp'); // 'otp' | 'password'
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [signupStep, setSignupStep] = useState(1); // 1: name, 2: email, 3: password, 4: role, 5: success
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -69,20 +72,43 @@ export default function SignIn() {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
+  setError('');
+  setLoading(true);
+  try {
+    const { error: supaError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/SignIn?mode=reset`,
+    });
+    if (supaError) throw supaError;
+    setMessage('Password reset email sent! Check your inbox (including spam folder).');
+    setTimeout(() => {
+      setShowForgotPassword(false);
+      setMessage('');
+    }, 4000);
+  } catch (err) {
+    console.error('Password reset error:', err);
+    setError(err.message || 'Failed to send reset email. Please check your email address.');
+  } finally {
+    setLoading(false);
+  }
+  };
+
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const { error: supaError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/SignIn`,
+      const { error: supaError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/SignIn`,
+        },
       });
       if (supaError) throw supaError;
-      setMessage('Password reset email sent! Check your inbox.');
-      setTimeout(() => {
-        setShowForgotPassword(false);
-        setMessage('');
-      }, 2000);
+      setOtpSent(true);
+      setMessage('Magic link sent! Check your email to sign in.');
     } catch (err) {
-      setError(err.message || 'Failed to send reset email');
+      console.error('OTP error:', err);
+      setError(err.message || 'Failed to send magic link. Please check your email address.');
     } finally {
       setLoading(false);
     }
@@ -315,38 +341,88 @@ export default function SignIn() {
 
           {/* Login Form */}
           {mode === 'login' && (
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                    placeholder="you@example.com" disabled={loading}
-                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
-                </div>
+            <div className="space-y-4">
+              {/* Login Method Toggle */}
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  type="button"
+                  onClick={() => { setLoginMethod('otp'); setOtpSent(false); setMessage(''); setError(''); }}
+                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${loginMethod === 'otp' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  <Key className="w-4 h-4 inline mr-1" />
+                  OTP Login
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setLoginMethod('password'); setOtpSent(false); setMessage(''); setError(''); }}
+                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${loginMethod === 'password' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  <Lock className="w-4 h-4 inline mr-1" />
+                  Password
+                </button>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
-                    placeholder="Your password" disabled={loading}
-                    className="w-full pl-9 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+
+              {/* OTP Login Form */}
+              {loginMethod === 'otp' && (
+                <form onSubmit={handleSendOtp} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
+                        placeholder="you@example.com" disabled={loading || otpSent}
+                        className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                    </div>
+                  </div>
+                  {otpSent ? (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-700">OTP sent! Check your email to sign in. No password needed.</p>
+                    </div>
+                  ) : (
+                    <button type="submit" disabled={loading}
+                      className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
+                      {loading ? 'Sending...' : 'Send OTP'}
+                    </button>
+                  )}
+                </form>
+              )}
+
+              {/* Password Login Form */}
+              {loginMethod === 'password' && (
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
+                        placeholder="you@example.com" disabled={loading}
+                        className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
+                        placeholder="Your password" disabled={loading}
+                        className="w-full pl-9 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <button type="button" onClick={() => { setShowForgotPassword(true); setError(''); setMessage(''); }}
+                      className="text-xs text-gray-500 hover:text-black transition-colors">Forgot password?</button>
+                  </div>
+                  <button type="submit" disabled={loading}
+                    className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
+                    {loading ? 'Signing in...' : 'Sign in'}
                   </button>
-                </div>
-              </div>
-              <div className="flex justify-end">
-                <button type="button" onClick={() => { setShowForgotPassword(true); setError(''); setMessage(''); }}
-                  className="text-xs text-gray-500 hover:text-black transition-colors">Forgot password?</button>
-              </div>
-              <button type="submit" disabled={loading}
-                className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
-                {loading ? 'Signing in...' : 'Sign in'}
-              </button>
-            </form>
+                </form>
+              )}
+            </div>
           )}
 
           {/* Sign Up Form - Step by Step Wizard */}
