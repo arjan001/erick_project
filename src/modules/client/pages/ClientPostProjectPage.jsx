@@ -143,6 +143,9 @@ export default function ClientPostProject() {
     backing_notes: ''
   });
 
+  const [roleSearchQuery, setRoleSearchQuery] = useState('');
+  const [skillSearchQuery, setSkillSearchQuery] = useState('');
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/SignIn');
@@ -366,12 +369,16 @@ export default function ClientPostProject() {
         return true;
       case 'Location':
         return projectForm.location_country !== '';
-      case 'Departments':
-        return (projectForm.departments_needed || []).length > 0;
+      case 'Roles Needed':
+        return (projectForm.roles_needed || []).length > 0;
+      case 'Skills Required':
+        return (projectForm.skills_needed || []).length > 0;
+      case 'Team Type':
+        return projectForm.team_type !== '';
       case 'Timeline':
         return projectForm.timeline_start !== '';
       case 'Budget':
-        return projectForm.budget_range !== '';
+        return projectForm.budget_range !== '' || projectForm.custom_budget !== '';
       case 'Details':
         return projectForm.title !== '' && projectForm.description !== '';
       default:
@@ -410,9 +417,13 @@ export default function ClientPostProject() {
         location_city: projectForm.location_city,
         is_remote: projectForm.is_remote,
         departments_needed: projectForm.departments_needed,
+        roles_needed: projectForm.roles_needed,
+        skills_needed: projectForm.skills_needed,
+        team_type: projectForm.team_type,
         timeline_start: projectForm.timeline_start || undefined,
         timeline_deadline: projectForm.timeline_end || undefined,
         budget_range: projectForm.budget_range,
+        budget_custom: projectForm.custom_budget,
         notes: projectForm.requirements,
         funding_stage: projectForm.funding_stage,
         seeking_partners: projectForm.seeking_partners,
@@ -842,16 +853,32 @@ export default function ClientPostProject() {
                         <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What roles do you need?</h2>
                         <p className="text-gray-600 mb-8">Select the specific roles required for your project</p>
 
-                        <div className="space-y-6">
+                        <div className="mb-6">
+                          <input
+                            type="text"
+                            placeholder="Search roles..."
+                            value={roleSearchQuery}
+                            onChange={(e) => setRoleSearchQuery(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                          />
+                        </div>
+
+                        <div className="space-y-6 max-h-96 overflow-y-auto">
                           {Object.entries(filmIndustryRoles).map(([category, roles]) => {
                             if (category === 'equipment' || category === 'software' || category === 'delivery_types') return null;
                             if (!Array.isArray(roles)) return null;
+                            
+                            const filteredRoles = roleSearchQuery 
+                              ? roles.filter(role => role.toLowerCase().includes(roleSearchQuery.toLowerCase()))
+                              : roles;
+                            
+                            if (filteredRoles.length === 0) return null;
                             
                             return (
                               <div key={category}>
                                 <h3 className="text-sm font-semibold text-gray-900 mb-3 capitalize">{category.replace(/_/g, ' ')}</h3>
                                 <div className="flex flex-wrap gap-2">
-                                  {roles.map((role) => {
+                                  {filteredRoles.map((role) => {
                                     const isSelected = (projectForm.roles_needed || []).includes(role);
                                     return (
                                       <button
@@ -890,15 +917,31 @@ export default function ClientPostProject() {
                         <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What skills are required?</h2>
                         <p className="text-gray-600 mb-8">Select the specific skills needed for this project</p>
 
-                        <div className="space-y-6">
+                        <div className="mb-6">
+                          <input
+                            type="text"
+                            placeholder="Search skills..."
+                            value={skillSearchQuery}
+                            onChange={(e) => setSkillSearchQuery(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                          />
+                        </div>
+
+                        <div className="space-y-6 max-h-96 overflow-y-auto">
                           {Object.entries(filmIndustrySkills).map(([category, skills]) => {
                             if (!Array.isArray(skills)) return null;
+                            
+                            const filteredSkills = skillSearchQuery 
+                              ? skills.filter(skill => skill.toLowerCase().includes(skillSearchQuery.toLowerCase()))
+                              : skills;
+                            
+                            if (filteredSkills.length === 0) return null;
                             
                             return (
                               <div key={category}>
                                 <h3 className="text-sm font-semibold text-gray-900 mb-3 capitalize">{category.replace(/_/g, ' ')}</h3>
                                 <div className="flex flex-wrap gap-2">
-                                  {skills.map((skill) => {
+                                  {filteredSkills.map((skill) => {
                                     const isSelected = (projectForm.skills_needed || []).includes(skill);
                                     return (
                                       <button
