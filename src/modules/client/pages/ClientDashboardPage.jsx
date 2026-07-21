@@ -210,18 +210,20 @@ export default function ClientDashboard() {
   }));
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
-      <main className="w-full">
-        <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="bg-white min-h-screen">
+      <main className="w-full max-w-7xl mx-auto">
+        <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-10">
           {/* Header Section */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back, {user?.full_name?.split(' ')[0] || 'Client'}</h1>
-              <p className="text-gray-500 mt-1 text-sm sm:text-base">Manage your projects and connect with creative talent</p>
+              <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Dashboard</p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+                Welcome back, {user?.full_name?.split(' ')[0] || 'Client'}
+              </h1>
             </div>
-            <div className="flex gap-2 sm:gap-3">
+            <div className="flex gap-3">
               <Button
-                className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/20 transition-all text-sm sm:text-base"
+                className="bg-black hover:bg-gray-800 text-white shadow-xl shadow-black/10 transition-all text-sm font-medium px-6 py-2.5"
                 onClick={() => openProjectModal()}
               >
                 <Plus className="w-4 h-4 mr-2" />
@@ -229,7 +231,7 @@ export default function ClientDashboard() {
               </Button>
               <Button
                 variant="outline"
-                className="border-gray-300 hover:bg-gray-50 transition-all text-sm sm:text-base"
+                className="border-gray-900 hover:bg-gray-50 transition-all text-sm font-medium px-6 py-2.5"
                 onClick={() => openJobModal()}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
@@ -239,18 +241,27 @@ export default function ClientDashboard() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {stats.map((stat, idx) => {
               const Icon = stat.icon;
+              const gradients = [
+                'from-gray-100 to-gray-200',
+                'from-zinc-100 to-zinc-200',
+                'from-slate-100 to-slate-200',
+                'from-neutral-100 to-neutral-200'
+              ];
               return (
-                <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
-                      <Icon className="w-6 h-6 text-white" />
+                <div key={idx} className="group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gray-50 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`w-11 h-11 bg-gradient-to-br ${gradients[idx]} rounded-lg flex items-center justify-center`}>
+                        <Icon className="w-5 h-5 text-gray-700" />
+                      </div>
+                      <span className="text-3xl font-bold text-gray-900">{stat.value}</span>
                     </div>
-                    <span className="text-3xl font-bold text-gray-900">{stat.value}</span>
+                    <p className="text-sm font-medium text-gray-600">{stat.label}</p>
                   </div>
-                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
                 </div>
               );
             })}
@@ -258,38 +269,38 @@ export default function ClientDashboard() {
 
           {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Activity</h3>
+            <div className="lg:col-span-2 bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="text-base font-semibold text-gray-900 mb-6">Project Activity</h3>
               <ClientActivityChart data={monthBuckets} />
             </div>
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Status</h3>
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="text-base font-semibold text-gray-900 mb-6">Project Status</h3>
               <ClientStatusDonut data={statusData} />
             </div>
           </div>
 
           {/* Recent Applications */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Applications</h3>
+          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+            <h3 className="text-base font-semibold text-gray-900 mb-6">Recent Applications</h3>
             <ClientRecentApplications applications={applications} projects={projects} jobs={jobs} />
           </div>
 
           {/* Projects & Jobs Section */}
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Your Projects & Jobs</h2>
+              <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Your Projects & Jobs</h2>
             </div>
 
             {projects.length === 0 && jobs.length === 0 ? (
-              <div className="bg-white rounded-2xl p-16 text-center border-2 border-dashed border-gray-200 shadow-sm">
-                <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <FolderKanban className="w-10 h-10 text-amber-600" />
+              <div className="bg-gray-50 rounded-xl p-16 text-center border border-dashed border-gray-300">
+                <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                  <FolderKanban className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No projects or jobs yet</h3>
-                <p className="text-gray-500 mb-6 max-w-md mx-auto">Start by posting your first project or job to connect with talented creators</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No projects or jobs yet</h3>
+                <p className="text-gray-500 mb-6 max-w-md mx-auto text-sm">Start by posting your first project or job to connect with talented creators</p>
                 <div className="flex gap-3 justify-center">
                   <Button 
-                    className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/20" 
+                    className="bg-black hover:bg-gray-800 text-white shadow-lg shadow-black/10" 
                     onClick={() => openProjectModal()}
                   >
                     <Plus className="w-4 h-4 mr-2" />
@@ -297,7 +308,7 @@ export default function ClientDashboard() {
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="border-gray-300 hover:bg-gray-50"
+                    className="border-gray-900 hover:bg-gray-50"
                     onClick={() => openJobModal()}
                   >
                     <Briefcase className="w-4 h-4 mr-2" />
@@ -306,16 +317,16 @@ export default function ClientDashboard() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {/* Project Cards */}
                 {projects.map((project) => (
                   <ClientProjectCard key={project.id} project={project} onEdit={() => openProjectModal(project)} onDelete={handleDeleteProject} />
                 ))}
                 {/* Job Cards */}
                 {jobs.map((job) => (
-                  <div key={job.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-lg transition-all group">
+                  <div key={job.id} className="group bg-white rounded-xl p-5 border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs font-bold bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-full">Job</span>
+                      <span className="text-xs font-semibold bg-gray-900 text-white px-2.5 py-1 rounded-md">Job</span>
                       <button
                         onClick={() => handleDeleteJob(job.id)}
                         className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -323,7 +334,7 @@ export default function ClientDashboard() {
                         <X className="w-4 h-4" />
                       </button>
                     </div>
-                    <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 text-lg">{job.title}</h3>
+                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-base">{job.title}</h3>
                     <p className="text-sm text-gray-500 mb-4 line-clamp-2">{job.description}</p>
                     <div className="flex items-center justify-between text-sm pt-4 border-t border-gray-100">
                       <span className="font-semibold text-gray-900">€{job.budget || 'TBD'}</span>

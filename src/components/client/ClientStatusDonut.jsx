@@ -1,24 +1,22 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
-const COLORS = ['#111827', '#D97706', '#9CA3AF', '#10B981', '#EF4444'];
+const COLORS = ['#1f2937', '#374151', '#4b5563', '#6b7280', '#9ca3af'];
 
 export default function ClientStatusDonut({ data }) {
   const hasData = data.some((d) => d.value > 0);
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-5">
-      <h3 className="font-bold text-gray-900 mb-1">Project Status</h3>
-      <p className="text-xs text-gray-400 mb-4">Breakdown of all your projects</p>
+    <div>
       {hasData ? (
         <ResponsiveContainer width="100%" height={220}>
           <PieChart>
-            <Pie data={data} dataKey="value" nameKey="name" innerRadius={55} outerRadius={80} paddingAngle={3}>
+            <Pie data={data} dataKey="value" nameKey="name" innerRadius={50} outerRadius={75} paddingAngle={2}>
               {data.map((entry, index) => (
                 <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }} />
-            <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+            <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+            <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
           </PieChart>
         </ResponsiveContainer>
       ) : (

@@ -507,18 +507,6 @@ const artistRoutes = [
     guard: ArtistGuard
   },
   {
-    path: '/Network',
-    component: () => import('@/modules/network/pages/NetworkPage'),
-    layout: DashboardLayout,
-    guard: ArtistGuard
-  },
-  {
-    path: '/SupportTickets',
-    component: () => import('@/modules/support/pages/SupportTicketsPage'),
-    layout: DashboardLayout,
-    guard: ArtistGuard
-  },
-  {
     path: '/ArtistSubscriptionCheckout',
     component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
     layout: DashboardLayout,
@@ -725,7 +713,20 @@ const backerRoutes = [
 ];
 
 // Protected routes (auth required, no specific role) — shared across artist/team/client/backer
-const protectedRoutes = [];
+const protectedRoutes = [
+  {
+    path: '/Network',
+    component: () => import('@/modules/network/pages/NetworkPage'),
+    layout: DashboardLayout,
+    guard: AuthGuard
+  },
+  {
+    path: '/SupportTickets',
+    component: () => import('@/modules/support/pages/SupportTicketsPage'),
+    layout: DashboardLayout,
+    guard: AuthGuard
+  }
+];
 
 // Combine all routes
 export const routes = [
