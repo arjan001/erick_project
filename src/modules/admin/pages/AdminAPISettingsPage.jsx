@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { Key, Save, Plus, Trash2, Copy, RefreshCw, Shield, Clock, AlertTriangle, CheckCircle, ToggleLeft, ToggleRight, Code, Eye, EyeOff } from 'lucide-react';
+import { Key, Save, Plus, Trash2, Copy, RefreshCw, Shield, Clock, AlertTriangle, CheckCircle, ToggleLeft, ToggleRight, Code, Eye, EyeOff, Bot } from 'lucide-react';
 
 export default function AdminAPISettingsPage() {
   const { success, error } = useToast();
@@ -41,6 +41,14 @@ export default function AdminAPISettingsPage() {
     clientSecret: '',
     apiKey: '',
     scopes: ['https://www.googleapis.com/auth/drive.readonly']
+  });
+
+  const [chatGPTSettings, setChatGPTSettings] = useState({
+    enabled: false,
+    apiKey: '',
+    model: 'gpt-4',
+    temperature: 0.7,
+    maxTokens: 2000
   });
 
   const [showAddKeyModal, setShowAddKeyModal] = useState(false);
@@ -312,6 +320,93 @@ export default function AdminAPISettingsPage() {
                         <li>Add your redirect URL to Authorized redirect URIs</li>
                         <li>Copy Client ID, Client Secret, and API Key here</li>
                       </ol>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ChatGPT Integration */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Bot className="w-5 h-5 mr-2" />
+                ChatGPT Integration
+              </h2>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium text-gray-900">Enable ChatGPT</div>
+                    <div className="text-sm text-gray-500">Use ChatGPT for content generation and analysis</div>
+                  </div>
+                  <button
+                    onClick={() => setChatGPTSettings({ ...chatGPTSettings, enabled: !chatGPTSettings.enabled })}
+                    className="p-2"
+                  >
+                    {chatGPTSettings.enabled ? <ToggleRight className="w-6 h-6 text-green-600" /> : <ToggleLeft className="w-6 h-6 text-gray-400" />}
+                  </button>
+                </div>
+                {chatGPTSettings.enabled && (
+                  <div className="pt-4 border-t border-gray-200 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+                      <input
+                        type="password"
+                        value={chatGPTSettings.apiKey}
+                        onChange={(e) => setChatGPTSettings({ ...chatGPTSettings, apiKey: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+                        placeholder="sk-..."
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="underline">OpenAI Platform</a></p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                      <select
+                        value={chatGPTSettings.model}
+                        onChange={(e) => setChatGPTSettings({ ...chatGPTSettings, model: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+                      >
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Temperature</label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="2"
+                        step="0.1"
+                        value={chatGPTSettings.temperature}
+                        onChange={(e) => setChatGPTSettings({ ...chatGPTSettings, temperature: parseFloat(e.target.value) })}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>0 (Focused)</span>
+                        <span>{chatGPTSettings.temperature}</span>
+                        <span>2 (Creative)</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Max Tokens</label>
+                      <input
+                        type="number"
+                        min="100"
+                        max="8000"
+                        value={chatGPTSettings.maxTokens}
+                        onChange={(e) => setChatGPTSettings({ ...chatGPTSettings, maxTokens: parseInt(e.target.value) })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Maximum response length (100-8000)</p>
+                    </div>
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <h4 className="text-sm font-semibold text-green-900 mb-2">Use Cases:</h4>
+                      <ul className="text-xs text-green-800 space-y-1 ml-4 list-disc">
+                        <li>Auto-generate project descriptions</li>
+                        <li>Analyze and match job applications</li>
+                        <li>Generate context for search</li>
+                        <li>Content suggestions and optimization</li>
+                      </ul>
                     </div>
                   </div>
                 )}

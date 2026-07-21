@@ -88,10 +88,12 @@ const getStepsForProjectType = (projectType) => {
     { id: 2, name: 'Usage' },
     { id: 3, name: 'Visual Direction' },
     { id: 4, name: 'Location' },
-    { id: 5, name: 'Departments' },
-    { id: 6, name: 'Timeline' },
-    { id: 7, name: 'Budget' },
-    { id: 8, name: 'Details' },
+    { id: 5, name: 'Roles Needed' },
+    { id: 6, name: 'Skills Required' },
+    { id: 7, name: 'Team Type' },
+    { id: 8, name: 'Timeline' },
+    { id: 9, name: 'Budget' },
+    { id: 10, name: 'Details' },
   ];
 };
 
@@ -125,11 +127,14 @@ export default function ClientPostProject() {
     location_city: '',
     is_remote: false,
     departments_needed: [],
+    roles_needed: [],
+    skills_needed: [],
+    team_type: '',
     timeline_start: '',
     timeline_end: '',
     budget_range: '',
+    custom_budget: '',
     requirements: '',
-    skills_needed: [],
     funding_stage: '',
     seeking_partners: [],
     rights_collaboration_notes: '',
@@ -170,9 +175,13 @@ export default function ClientPostProject() {
         location_city: editingProject.location_city || '',
         is_remote: editingProject.is_remote || false,
         departments_needed: editingProject.departments_needed || [],
+        roles_needed: editingProject.roles_needed || [],
+        skills_needed: editingProject.skills_needed || [],
+        team_type: editingProject.team_type || '',
         timeline_start: editingProject.timeline_start || '',
         timeline_end: editingProject.timeline_deadline || '',
         budget_range: editingProject.budget_range || '',
+        custom_budget: editingProject.custom_budget || '',
         requirements: editingProject.notes || '',
         funding_stage: editingProject.funding_stage || '',
         seeking_partners: editingProject.seeking_partners || [],
@@ -195,9 +204,13 @@ export default function ClientPostProject() {
         location_city: '',
         is_remote: false,
         departments_needed: [],
+        roles_needed: [],
+        skills_needed: [],
+        team_type: '',
         timeline_start: '',
         timeline_end: '',
         budget_range: '',
+        custom_budget: '',
         requirements: '',
         funding_stage: '',
         seeking_partners: [],
@@ -232,6 +245,24 @@ export default function ClientPostProject() {
       updateForm('visual_direction_clips', current.filter(id => id !== clipId));
     } else if (current.length < 3) {
       updateForm('visual_direction_clips', [...current, clipId]);
+    }
+  };
+
+  const toggleRole = (role) => {
+    const current = projectForm.roles_needed || [];
+    if (current.includes(role)) {
+      updateForm('roles_needed', current.filter(r => r !== role));
+    } else {
+      updateForm('roles_needed', [...current, role]);
+    }
+  };
+
+  const toggleSkill = (skill) => {
+    const current = projectForm.skills_needed || [];
+    if (current.includes(skill)) {
+      updateForm('skills_needed', current.filter(s => s !== skill));
+    } else {
+      updateForm('skills_needed', [...current, skill]);
     }
   };
 
@@ -443,8 +474,8 @@ export default function ClientPostProject() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <div className="min-h-screen bg-white overflow-x-hidden">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 w-full">
         <Button
           variant="ghost"
           onClick={() => navigate('/ClientDashboard')}
@@ -461,11 +492,11 @@ export default function ClientPostProject() {
         </div>
 
         {/* Progress Bar */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-6">
+        <div className="mb-12 overflow-x-auto">
+          <div className="flex items-center justify-between min-w-max mb-6">
             {STEPS.map((step, index) => (
               <React.Fragment key={step.id}>
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center flex-shrink-0">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                       step.id < currentStep
@@ -480,7 +511,7 @@ export default function ClientPostProject() {
                   <span className="hidden sm:block text-xs text-gray-600 mt-3 text-center max-w-[100px] font-medium">{step.name}</span>
                 </div>
                 {index < STEPS.length - 1 && (
-                  <div className={`flex-1 h-0.5 mx-3 rounded-full transition-all ${
+                  <div className={`flex-1 h-0.5 mx-3 rounded-full transition-all min-w-[40px] ${
                     step.id < currentStep ? 'bg-gray-900' : 'bg-gray-200'
                   }`} />
                 )}
@@ -805,33 +836,144 @@ export default function ClientPostProject() {
                       </div>
                     );
 
-                  case 'Departments':
+                  case 'Roles Needed':
                     return (
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What services do you need?</h2>
-                        <p className="text-gray-600 mb-8">Select all departments required</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What roles do you need?</h2>
+                        <p className="text-gray-600 mb-8">Select the specific roles required for your project</p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {DEPARTMENTS.map((dept) => {
-                            const Icon = dept.icon;
-                            const isSelected = (projectForm.departments_needed || []).includes(dept.value);
+                        <div className="space-y-6">
+                          {Object.entries(filmIndustryRoles).map(([category, roles]) => {
+                            if (category === 'equipment' || category === 'software' || category === 'delivery_types') return null;
+                            if (!Array.isArray(roles)) return null;
+                            
                             return (
-                              <button
-                                key={dept.value}
-                                type="button"
-                                onClick={() => toggleDepartment(dept.value)}
-                                className={`p-4 rounded-lg border-2 transition-all text-left ${
-                                  isSelected
-                                    ? 'border-gray-900 bg-gray-50'
-                                    : 'border-gray-200 hover:border-gray-300 bg-white'
-                                }`}
-                              >
-                                <Icon className={`w-6 h-6 mb-2 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
-                                <h3 className="text-base font-semibold mb-1 text-gray-900">{dept.label}</h3>
-                                <p className="text-xs text-gray-500">{dept.description}</p>
-                              </button>
+                              <div key={category}>
+                                <h3 className="text-sm font-semibold text-gray-900 mb-3 capitalize">{category.replace(/_/g, ' ')}</h3>
+                                <div className="flex flex-wrap gap-2">
+                                  {roles.map((role) => {
+                                    const isSelected = (projectForm.roles_needed || []).includes(role);
+                                    return (
+                                      <button
+                                        key={role}
+                                        type="button"
+                                        onClick={() => toggleRole(role)}
+                                        className={`px-3 py-2 rounded-full text-sm border transition-all ${
+                                          isSelected
+                                            ? 'border-gray-900 bg-gray-900 text-white'
+                                            : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                        }`}
+                                      >
+                                        {role}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
                             );
                           })}
+                        </div>
+
+                        {(projectForm.roles_needed || []).length > 0 && (
+                          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                            <p className="text-sm text-gray-600">
+                              <span className="font-semibold">Selected roles:</span> {(projectForm.roles_needed || []).length}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+
+                  case 'Skills Required':
+                    return (
+                      <div>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What skills are required?</h2>
+                        <p className="text-gray-600 mb-8">Select the specific skills needed for this project</p>
+
+                        <div className="space-y-6">
+                          {Object.entries(filmIndustrySkills).map(([category, skills]) => {
+                            if (!Array.isArray(skills)) return null;
+                            
+                            return (
+                              <div key={category}>
+                                <h3 className="text-sm font-semibold text-gray-900 mb-3 capitalize">{category.replace(/_/g, ' ')}</h3>
+                                <div className="flex flex-wrap gap-2">
+                                  {skills.map((skill) => {
+                                    const isSelected = (projectForm.skills_needed || []).includes(skill);
+                                    return (
+                                      <button
+                                        key={skill}
+                                        type="button"
+                                        onClick={() => toggleSkill(skill)}
+                                        className={`px-3 py-2 rounded-full text-xs border transition-all ${
+                                          isSelected
+                                            ? 'border-gray-900 bg-gray-900 text-white'
+                                            : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                        }`}
+                                      >
+                                        {skill}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {(projectForm.skills_needed || []).length > 0 && (
+                          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                            <p className="text-sm text-gray-600">
+                              <span className="font-semibold">Selected skills:</span> {(projectForm.skills_needed || []).length}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+
+                  case 'Team Type':
+                    return (
+                      <div>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Team or Solo?</h2>
+                        <p className="text-gray-600 mb-8">Do you need a full team or individual freelancers?</p>
+
+                        <div className="space-y-3">
+                          <button
+                            type="button"
+                            onClick={() => updateForm('team_type', 'team')}
+                            className={`w-full p-4 border-2 rounded-xl text-left transition-all ${
+                              projectForm.team_type === 'team'
+                                ? 'border-gray-900 bg-gray-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div className="font-semibold text-gray-900">Full Team / Studio</div>
+                            <div className="text-xs text-gray-500 mt-1">A complete team or production company to handle the project</div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateForm('team_type', 'solo')}
+                            className={`w-full p-4 border-2 rounded-xl text-left transition-all ${
+                              projectForm.team_type === 'solo'
+                                ? 'border-gray-900 bg-gray-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div className="font-semibold text-gray-900">Individual Freelancers</div>
+                            <div className="text-xs text-gray-500 mt-1">Hire individual artists for specific roles</div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateForm('team_type', 'flexible')}
+                            className={`w-full p-4 border-2 rounded-xl text-left transition-all ${
+                              projectForm.team_type === 'flexible'
+                                ? 'border-gray-900 bg-gray-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div className="font-semibold text-gray-900">Flexible</div>
+                            <div className="text-xs text-gray-500 mt-1">Open to both teams and individual freelancers</div>
+                          </button>
                         </div>
                       </div>
                     );
@@ -885,14 +1027,17 @@ export default function ClientPostProject() {
                         <p className="text-gray-600 mb-2">This helps us match you with the right teams</p>
                         <p className="text-sm text-gray-500 mb-8">Optional - you can discuss exact numbers later</p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                           {BUDGET_RANGES.map((range) => {
                             const isSelected = projectForm.budget_range === range.value;
                             return (
                               <button
                                 key={range.value}
                                 type="button"
-                                onClick={() => updateForm('budget_range', range.value)}
+                                onClick={() => {
+                                  updateForm('budget_range', range.value);
+                                  updateForm('custom_budget', '');
+                                }}
                                 className={`p-4 rounded-lg border-2 transition-all text-left ${
                                   isSelected
                                     ? 'border-gray-900 bg-gray-50'
@@ -905,6 +1050,23 @@ export default function ClientPostProject() {
                               </button>
                             );
                           })}
+                        </div>
+
+                        <div className="border-t border-gray-200 pt-6">
+                          <label className="block text-sm font-semibold text-gray-900 mb-3">Or specify custom budget</label>
+                          <div className="flex items-center gap-3">
+                            <DollarSign className="w-5 h-5 text-gray-500" />
+                            <Input
+                              type="number"
+                              placeholder="Enter custom amount"
+                              value={projectForm.custom_budget}
+                              onChange={(e) => {
+                                updateForm('custom_budget', e.target.value);
+                                updateForm('budget_range', 'custom');
+                              }}
+                              className="flex-1"
+                            />
+                          </div>
                         </div>
                       </div>
                     );
