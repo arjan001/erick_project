@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, X, Plus } from 'lucide-react';
 
-const SKILL_SUGGESTIONS = [
+const DEFAULT_SKILL_SUGGESTIONS = [
   'After Effects', 'Adobe Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'Concept Art', 'Creative Direction', 
   'Editing', 'Color Grading', 'Motion Graphics', 'VFX', '3D Animation', 'Maya', 'Cinema 4D', 'Blender',
   'Sound Design', 'Pro Tools', 'Cinematography', 'Lighting Design', 'Set Design', 'Art Direction',
@@ -12,7 +12,7 @@ const SKILL_SUGGESTIONS = [
   'Green Screen', 'Chroma Keying', 'Color Correction', 'Grading', 'Audio Mixing', 'Music Composition'
 ];
 
-export default function SkillsExperienceTagInput({ selected = [], onChange, placeholder = "Search skills..." }) {
+export default function SkillsExperienceTagInput({ selected = [], onChange, placeholder = "Search skills...", suggestions = DEFAULT_SKILL_SUGGESTIONS }) {
   const [query, setQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const containerRef = useRef(null);
@@ -46,7 +46,7 @@ export default function SkillsExperienceTagInput({ selected = [], onChange, plac
     }
   };
 
-  const filteredSuggestions = SKILL_SUGGESTIONS.filter(s => 
+  const filteredSuggestions = suggestions.filter(s => 
     s.toLowerCase().includes(query.toLowerCase()) && !selected.includes(s)
   ).slice(0, 15);
 

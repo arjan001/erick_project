@@ -151,6 +151,9 @@ export default function ClientPostProject() {
   const [roleSearchQuery, setRoleSearchQuery] = useState('');
   const [skillSearchQuery, setSkillSearchQuery] = useState('');
 
+  // Flatten filmIndustrySkills into a single array for the skills input
+  const allSkills = Object.values(filmIndustrySkills).flat();
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/SignIn');
@@ -951,6 +954,7 @@ export default function ClientPostProject() {
                           selected={projectForm.skills_needed || []}
                           onChange={(skills) => updateForm('skills_needed', skills)}
                           placeholder="Search skills..."
+                          suggestions={allSkills}
                         />
 
                         {(projectForm.skills_needed || []).length > 0 && (
