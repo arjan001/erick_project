@@ -150,9 +150,83 @@ export default function ClientPostProject() {
 
   const [roleSearchQuery, setRoleSearchQuery] = useState('');
   const [skillSearchQuery, setSkillSearchQuery] = useState('');
+  const [hasDraft, setHasDraft] = useState(false);
 
   // Flatten filmIndustrySkills into a single array for the skills input
   const allSkills = Object.values(filmIndustrySkills).flat();
+
+  // Auto-save form to localStorage
+  useEffect(() => {
+    if (!isEditing) {
+      localStorage.setItem('projectDraft', JSON.stringify({
+        ...projectForm,
+        currentStep
+      }));
+    }
+  }, [projectForm, currentStep, isEditing]);
+
+  // Load draft from localStorage on mount (if not editing)
+  useEffect(() => {
+    if (!isEditing) {
+      const savedDraft = localStorage.getItem('projectDraft');
+      if (savedDraft) {
+        try {
+          const draft = JSON.parse(savedDraft);
+          // Only load draft if it has some content
+          if (draft.title || draft.description || draft.project_type) {
+            setProjectForm(draft);
+            setCurrentStep(draft.currentStep || 1);
+            setHasDraft(true);
+          }
+        } catch (e) {
+          console.error('Error loading draft:', e);
+        }
+      }
+    }
+  }, [isEditing]);
+
+  // Clear draft on successful submission
+  const clearDraft = () => {
+    localStorage.removeItem('projectDraft');
+    setHasDraft(false);
+  };
+
+  // Manually clear draft (for user to start fresh)
+  const handleClearDraft = () => {
+    if (confirm('Are you sure you want to clear your draft? This cannot be undone.')) {
+      clearDraft();
+      setProjectForm({
+        title: '',
+        description: '',
+        project_type: '',
+        usage: [],
+        visual_direction_clips: [],
+        location_country: '',
+        location_city: '',
+        is_remote: false,
+        departments_needed: [],
+        roles_needed: [],
+        skills_needed: [],
+        team_type: '',
+        timeline_start: '',
+        timeline_end: '',
+        budget_range: '',
+        custom_budget: '',
+        payment_type: '',
+        hourly_rate: '',
+        daily_rate: '',
+        fixed_budget: '',
+        requirements: '',
+        funding_stage: '',
+        seeking_partners: [],
+        rights_collaboration_notes: '',
+        open_to_backing: false,
+        backing_types: [],
+        backing_notes: ''
+      });
+      setCurrentStep(1);
+    }
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -256,24 +330,6 @@ export default function ClientPostProject() {
       updateForm('visual_direction_clips', current.filter(id => id !== clipId));
     } else if (current.length < 3) {
       updateForm('visual_direction_clips', [...current, clipId]);
-    }
-  };
-
-  const toggleRole = (role) => {
-    const current = projectForm.roles_needed || [];
-    if (current.includes(role)) {
-      updateForm('roles_needed', current.filter(r => r !== role));
-    } else {
-      updateForm('roles_needed', [...current, role]);
-    }
-  };
-
-  const toggleSkill = (skill) => {
-    const current = projectForm.skills_needed || [];
-    if (current.includes(skill)) {
-      updateForm('skills_needed', current.filter(s => s !== skill));
-    } else {
-      updateForm('skills_needed', [...current, skill]);
     }
   };
 
@@ -499,6 +555,9 @@ export default function ClientPostProject() {
         await Project.create(projectData);
         success('Project Posted', 'Your project has been submitted successfully');
         
+        // Clear draft after successful submission
+        clearDraft();
+        
         // Trigger confetti celebration
         confetti({
           particleCount: 150,
@@ -531,8 +590,28 @@ export default function ClientPostProject() {
 
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{isEditing ? 'Edit Your Project' : 'Post a New Project'}</h1>
-          <p className="text-gray-500 text-base">{isEditing ? 'Update your project details' : 'Share your project details to connect with talented creators'}</p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{isEditing ? 'Edit Your Project' : 'Post a New Project'}</h1>
+              <p className="text-gray-500 text-base">{isEditing ? 'Update your project details' : 'Share your project details to connect with talented creators'}</p>
+            </div>
+            {hasDraft && !isEditing && (
+              <button
+                onClick={handleClearDraft}
+                className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-2"
+              >
+                <X className="w-4 h-4" />
+                Clear Draft
+              </button>
+            )}
+          </div>
+          {hasDraft && !isEditing && (
+            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-sm text-amber-800">
+                <span className="font-medium">Draft restored:</span> Your previous progress has been automatically saved. You can continue where you left off or clear the draft to start fresh.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Progress Bar */}
@@ -950,12 +1029,52 @@ export default function ClientPostProject() {
                         <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What skills are required?</h2>
                         <p className="text-gray-600 mb-8">Select the specific skills needed for this project</p>
 
-                        <SkillsExperienceTagInput
-                          selected={projectForm.skills_needed || []}
-                          onChange={(skills) => updateForm('skills_needed', skills)}
-                          placeholder="Search skills..."
-                          suggestions={allSkills}
-                        />
+                        <div className="mb-6">
+                          <input
+                            type="text"
+                            placeholder="Search skills..."
+                            value={skillSearchQuery}
+                            onChange={(e) => setSkillSearchQuery(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                          />
+                        </div>
+
+                        <div className="space-y-6 max-h-96 overflow-y-auto">
+                          {Object.entries(filmIndustrySkills).map(([category, skills]) => {
+                            if (!Array.isArray(skills)) return null;
+                            
+                            const filteredSkills = skillSearchQuery 
+                              ? skills.filter(skill => skill.toLowerCase().includes(skillSearchQuery.toLowerCase()))
+                              : skills;
+                            
+                            if (filteredSkills.length === 0) return null;
+                            
+                            return (
+                              <div key={category}>
+                                <h3 className="text-sm font-semibold text-gray-900 mb-3 capitalize">{category.replace(/_/g, ' ')}</h3>
+                                <div className="flex flex-wrap gap-2">
+                                  {filteredSkills.map((skill) => {
+                                    const isSelected = (projectForm.skills_needed || []).includes(skill);
+                                    return (
+                                      <button
+                                        key={skill}
+                                        type="button"
+                                        onClick={() => toggleSkill(skill)}
+                                        className={`px-3 py-2 rounded-full text-sm border transition-all ${
+                                          isSelected
+                                            ? 'border-gray-900 bg-gray-900 text-white'
+                                            : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                        }`}
+                                      >
+                                        {skill}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
 
                         {(projectForm.skills_needed || []).length > 0 && (
                           <div className="mt-6 p-4 bg-gray-50 rounded-lg">

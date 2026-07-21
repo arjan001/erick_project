@@ -74,25 +74,25 @@ export default function ClientAnalytics() {
   ];
 
   return (
-    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Analytics</h1>
       <p className="text-gray-600 mb-6 sm:mb-8">Track your project and job performance</p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {statCards.map((stat) => (
-          <div key={stat.label} className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2">
-              <div className={`w-8 h-8 sm:w-9 sm:h-9 ${stat.color} rounded-md flex items-center justify-center`}>
-                <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+          <div key={stat.label} className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 hover:shadow-lg transition-all hover:border-gray-300">
+            <div className="flex items-start justify-between mb-4">
+              <div className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center`}>
+                <stat.icon className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl sm:text-2xl font-bold text-gray-900">{stat.value}</span>
+              <span className="text-3xl sm:text-4xl font-bold text-gray-900">{stat.value}</span>
             </div>
-            <p className="text-[10px] sm:text-xs font-medium text-gray-600">{stat.label}</p>
+            <p className="text-sm font-medium text-gray-600">{stat.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6">
+      <div className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6">
         <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Performance Overview</h2>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -103,9 +103,9 @@ export default function ClientAnalytics() {
                 : 0}%
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-3">
             <div
-              className="bg-green-500 h-2 rounded-full"
+              className="bg-black h-3 rounded-full transition-all"
               style={{
                 width: `${stats.totalApplications > 0
                   ? (stats.acceptedApplications / stats.totalApplications) * 100
