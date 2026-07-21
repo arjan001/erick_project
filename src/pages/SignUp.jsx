@@ -6,6 +6,7 @@ import { AlertCircle } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { Link } from 'react-router-dom';
 import { features } from '@/lib/settings';
+import { supabase } from '@/lib/supabase';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -45,6 +46,28 @@ export default function SignUp() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [registrationEnabled, setRegistrationEnabled] = useState(true);
   const navigate = useNavigate();
+
+  const handleGoogleSignUp = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/SignUp`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
+      });
+      if (error) throw error;
+    } catch (err) {
+      console.error('Google signup error:', err);
+      setError(err.message || 'Failed to sign up with Google');
+      setLoading(false);
+    }
+  };
 
   // Check if registration is enabled
   useEffect(() => {
@@ -336,9 +359,7 @@ export default function SignUp() {
               type="button"
               className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-4 rounded-md flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
-              onClick={() => {
-                alert('Google OAuth with Clerk - Coming soon');
-              }}
+              onClick={handleGoogleSignUp}
             >
               <GoogleIcon />
               <span>Sign up with Google</span>
