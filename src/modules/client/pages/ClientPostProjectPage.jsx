@@ -11,6 +11,7 @@ import filmIndustryRoles from '@/data/filmIndustryRoles.json';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import confetti from 'canvas-confetti';
+import SkillsExperienceTagInput from '@/components/SkillsExperienceTagInput';
 
 const PROJECT_TYPES = [
   { value: 'commercial', label: 'Commercial', icon: Tv, description: 'Brand campaigns and advertising' },
@@ -134,6 +135,10 @@ export default function ClientPostProject() {
     timeline_end: '',
     budget_range: '',
     custom_budget: '',
+    payment_type: '',
+    hourly_rate: '',
+    daily_rate: '',
+    fixed_budget: '',
     requirements: '',
     funding_stage: '',
     seeking_partners: [],
@@ -378,7 +383,7 @@ export default function ClientPostProject() {
       case 'Timeline':
         return projectForm.timeline_start !== '';
       case 'Budget':
-        return projectForm.budget_range !== '' || projectForm.custom_budget !== '';
+        return projectForm.budget_range !== '' || projectForm.custom_budget !== '' || projectForm.payment_type !== '';
       case 'Details':
         return projectForm.title !== '' && projectForm.description !== '';
       default:
@@ -424,6 +429,10 @@ export default function ClientPostProject() {
         timeline_deadline: projectForm.timeline_end || undefined,
         budget_range: projectForm.budget_range,
         budget_custom: projectForm.custom_budget,
+        payment_type: projectForm.payment_type,
+        hourly_rate: projectForm.hourly_rate || undefined,
+        daily_rate: projectForm.daily_rate || undefined,
+        fixed_budget: projectForm.fixed_budget || undefined,
         notes: projectForm.requirements,
         funding_stage: projectForm.funding_stage,
         seeking_partners: projectForm.seeking_partners,
@@ -436,28 +445,49 @@ export default function ClientPostProject() {
       };
 
       // Get client_id from clients table
+      let clientId = null;
+      
+      // Try to get existing client profile
       const { data: clientData, error: clientError } = await supabase
         .from('clients')
         .select('id')
         .eq('user_id', authUser.id)
-        .single();
+        .maybeSingle();
 
-      if (clientError || !clientData) {
-        // Fallback: try project_owners table
+      if (!clientError && clientData) {
+        clientId = clientData.id;
+      } else {
+        // Try project_owners table as fallback
         const { data: ownerData, error: ownerError } = await supabase
           .from('project_owners')
           .select('id')
           .eq('user_id', authUser.id)
-          .single();
+          .maybeSingle();
 
-        if (ownerError || !ownerData) {
-          throw new Error('Client profile not found. Please complete your profile first.');
+        if (!ownerError && ownerData) {
+          clientId = ownerData.id;
+        } else {
+          // Create client profile if it doesn't exist
+          const { data: newClient, error: createError } = await supabase
+            .from('clients')
+            .insert({
+              user_id: authUser.id,
+              email: authUser.email,
+              company_name: authUser.full_name || 'Individual'
+            })
+            .select('id')
+            .single();
+
+          if (createError) {
+            console.error('Error creating client profile:', createError);
+            throw new Error('Could not create client profile. Please contact support.');
+          }
+
+          clientId = newClient.id;
         }
-
-        projectData.client_id = ownerData.id;
-      } else {
-        projectData.client_id = clientData.id;
       }
+
+      projectData.client_id = clientId;
 
       if (isEditing && editingProject) {
         await Project.update(editingProject.id, projectData);
@@ -917,52 +947,11 @@ export default function ClientPostProject() {
                         <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What skills are required?</h2>
                         <p className="text-gray-600 mb-8">Select the specific skills needed for this project</p>
 
-                        <div className="mb-6">
-                          <input
-                            type="text"
-                            placeholder="Search skills..."
-                            value={skillSearchQuery}
-                            onChange={(e) => setSkillSearchQuery(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                          />
-                        </div>
-
-                        <div className="space-y-6 max-h-96 overflow-y-auto">
-                          {Object.entries(filmIndustrySkills).map(([category, skills]) => {
-                            if (!Array.isArray(skills)) return null;
-                            
-                            const filteredSkills = skillSearchQuery 
-                              ? skills.filter(skill => skill.toLowerCase().includes(skillSearchQuery.toLowerCase()))
-                              : skills;
-                            
-                            if (filteredSkills.length === 0) return null;
-                            
-                            return (
-                              <div key={category}>
-                                <h3 className="text-sm font-semibold text-gray-900 mb-3 capitalize">{category.replace(/_/g, ' ')}</h3>
-                                <div className="flex flex-wrap gap-2">
-                                  {filteredSkills.map((skill) => {
-                                    const isSelected = (projectForm.skills_needed || []).includes(skill);
-                                    return (
-                                      <button
-                                        key={skill}
-                                        type="button"
-                                        onClick={() => toggleSkill(skill)}
-                                        className={`px-3 py-2 rounded-full text-xs border transition-all ${
-                                          isSelected
-                                            ? 'border-gray-900 bg-gray-900 text-white'
-                                            : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
-                                        }`}
-                                      >
-                                        {skill}
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
+                        <SkillsExperienceTagInput
+                          selected={projectForm.skills_needed || []}
+                          onChange={(skills) => updateForm('skills_needed', skills)}
+                          placeholder="Search skills..."
+                        />
 
                         {(projectForm.skills_needed || []).length > 0 && (
                           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
@@ -1066,49 +1055,142 @@ export default function ClientPostProject() {
                   case 'Budget':
                     return (
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Budget Range</h2>
-                        <p className="text-gray-600 mb-2">This helps us match you with the right teams</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Budget & Payment</h2>
+                        <p className="text-gray-600 mb-2">Set your budget and payment structure</p>
                         <p className="text-sm text-gray-500 mb-8">Optional - you can discuss exact numbers later</p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                          {BUDGET_RANGES.map((range) => {
-                            const isSelected = projectForm.budget_range === range.value;
-                            return (
+                        {/* Payment Type Selection */}
+                        <div className="mb-6">
+                          <label className="block text-sm font-semibold text-gray-900 mb-3">Payment Type</label>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {[
+                              { value: 'hourly', label: 'Hourly', description: 'Pay per hour' },
+                              { value: 'daily', label: 'Daily', description: 'Pay per day' },
+                              { value: 'fixed', label: 'Fixed Price', description: 'One-time payment' },
+                              { value: 'negotiable', label: 'Negotiable', description: 'Discuss later' }
+                            ].map((type) => (
                               <button
-                                key={range.value}
+                                key={type.value}
                                 type="button"
                                 onClick={() => {
-                                  updateForm('budget_range', range.value);
-                                  updateForm('custom_budget', '');
+                                  updateForm('payment_type', type.value);
+                                  if (type.value !== 'fixed') {
+                                    updateForm('fixed_budget', '');
+                                  }
+                                  if (type.value !== 'hourly') {
+                                    updateForm('hourly_rate', '');
+                                  }
+                                  if (type.value !== 'daily') {
+                                    updateForm('daily_rate', '');
+                                  }
                                 }}
-                                className={`p-4 rounded-lg border-2 transition-all text-left ${
-                                  isSelected
+                                className={`p-3 border-2 rounded-lg text-center transition-all ${
+                                  projectForm.payment_type === type.value
                                     ? 'border-gray-900 bg-gray-50'
                                     : 'border-gray-200 hover:border-gray-300 bg-white'
                                 }`}
                               >
-                                <DollarSign className={`w-6 h-6 mb-2 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
-                                <h3 className="text-base font-semibold mb-1 text-gray-900">{range.label}</h3>
-                                <p className="text-xs text-gray-500">{range.description}</p>
+                                <div className="font-semibold text-sm text-gray-900">{type.label}</div>
+                                <div className="text-xs text-gray-500 mt-1">{type.description}</div>
                               </button>
-                            );
-                          })}
+                            ))}
+                          </div>
                         </div>
 
+                        {/* Payment Amount Fields */}
+                        {projectForm.payment_type === 'hourly' && (
+                          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <label className="block text-sm font-semibold text-gray-900 mb-2">Hourly Rate</label>
+                            <div className="flex items-center gap-3">
+                              <DollarSign className="w-5 h-5 text-gray-500" />
+                              <Input
+                                type="number"
+                                placeholder="Enter hourly rate"
+                                value={projectForm.hourly_rate}
+                                onChange={(e) => updateForm('hourly_rate', e.target.value)}
+                                className="flex-1"
+                              />
+                              <span className="text-sm text-gray-500">/ hour</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {projectForm.payment_type === 'daily' && (
+                          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <label className="block text-sm font-semibold text-gray-900 mb-2">Daily Rate</label>
+                            <div className="flex items-center gap-3">
+                              <DollarSign className="w-5 h-5 text-gray-500" />
+                              <Input
+                                type="number"
+                                placeholder="Enter daily rate"
+                                value={projectForm.daily_rate}
+                                onChange={(e) => updateForm('daily_rate', e.target.value)}
+                                className="flex-1"
+                              />
+                              <span className="text-sm text-gray-500">/ day</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {projectForm.payment_type === 'fixed' && (
+                          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <label className="block text-sm font-semibold text-gray-900 mb-2">Fixed Budget</label>
+                            <div className="flex items-center gap-3">
+                              <DollarSign className="w-5 h-5 text-gray-500" />
+                              <Input
+                                type="number"
+                                placeholder="Enter fixed budget"
+                                value={projectForm.fixed_budget}
+                                onChange={(e) => updateForm('fixed_budget', e.target.value)}
+                                className="flex-1"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Budget Range Presets */}
                         <div className="border-t border-gray-200 pt-6">
-                          <label className="block text-sm font-semibold text-gray-900 mb-3">Or specify custom budget</label>
-                          <div className="flex items-center gap-3">
-                            <DollarSign className="w-5 h-5 text-gray-500" />
-                            <Input
-                              type="number"
-                              placeholder="Enter custom amount"
-                              value={projectForm.custom_budget}
-                              onChange={(e) => {
-                                updateForm('custom_budget', e.target.value);
-                                updateForm('budget_range', 'custom');
-                              }}
-                              className="flex-1"
-                            />
+                          <label className="block text-sm font-semibold text-gray-900 mb-3">Or select budget range</label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {BUDGET_RANGES.map((range) => {
+                              const isSelected = projectForm.budget_range === range.value;
+                              return (
+                                <button
+                                  key={range.value}
+                                  type="button"
+                                  onClick={() => {
+                                    updateForm('budget_range', range.value);
+                                    updateForm('custom_budget', '');
+                                  }}
+                                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                                    isSelected
+                                      ? 'border-gray-900 bg-gray-50'
+                                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                                  }`}
+                                >
+                                  <DollarSign className={`w-6 h-6 mb-2 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
+                                  <h3 className="text-base font-semibold mb-1 text-gray-900">{range.label}</h3>
+                                  <p className="text-xs text-gray-500">{range.description}</p>
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          <div className="mt-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Or specify custom budget</label>
+                            <div className="flex items-center gap-3">
+                              <DollarSign className="w-5 h-5 text-gray-500" />
+                              <Input
+                                type="number"
+                                placeholder="Enter custom amount"
+                                value={projectForm.custom_budget}
+                                onChange={(e) => {
+                                  updateForm('custom_budget', e.target.value);
+                                  updateForm('budget_range', 'custom');
+                                }}
+                                className="flex-1"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>

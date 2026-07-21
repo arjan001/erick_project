@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CountrySelector from '@/components/CountrySelector';
 import { formatSocialMediaUrl } from '@/lib/socialMediaUtils';
-import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2 } from 'lucide-react';
+import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2, FolderOpen, Users, CreditCard, Lock, Settings as SettingsIcon } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
@@ -205,9 +205,13 @@ export default function ClientProfilePage() {
         {/* Tabs */}
         <div className="border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="flex gap-4 sm:gap-8">
-              <button onClick={() => setActiveTab('profile')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'profile' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Profile</button>
-              <button onClick={() => setActiveTab('settings')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'settings' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Account Settings</button>
+            <div className="flex gap-4 sm:gap-8 overflow-x-auto">
+              <button onClick={() => setActiveTab('profile')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'profile' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Profile</button>
+              <button onClick={() => setActiveTab('projects')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'projects' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Projects</button>
+              <button onClick={() => setActiveTab('team')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'team' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Team</button>
+              <button onClick={() => setActiveTab('billing')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'billing' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Billing</button>
+              <button onClick={() => setActiveTab('settings')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'settings' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Account Settings</button>
+              <button onClick={() => setActiveTab('security')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'security' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Security</button>
             </div>
           </div>
         </div>
@@ -337,6 +341,100 @@ export default function ClientProfilePage() {
                     ) : (
                       <p className="text-gray-900 flex-1">{owner?.youtube || 'Not set'}</p>
                     )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'projects' && (
+            <div className="max-w-4xl space-y-6">
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2"><FolderOpen className="w-4 h-4 text-gray-400" /> My Projects</h3>
+                <p className="text-gray-600 text-sm mb-4">View and manage all your posted projects</p>
+                <div className="text-center py-8 text-gray-500">
+                  <FolderOpen className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>No projects yet</p>
+                  <Button onClick={() => window.location.href = '/ClientPostProject'} className="mt-4 bg-black text-white hover:bg-gray-800">Post Your First Project</Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'team' && (
+            <div className="max-w-4xl space-y-6">
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2"><Users className="w-4 h-4 text-gray-400" /> Team Members</h3>
+                <p className="text-gray-600 text-sm mb-4">Manage team members who can access your account</p>
+                <div className="text-center py-8 text-gray-500">
+                  <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>No team members added</p>
+                  <Button className="mt-4 bg-black text-white hover:bg-gray-800">Invite Team Member</Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'billing' && (
+            <div className="max-w-4xl space-y-6">
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2"><CreditCard className="w-4 h-4 text-gray-400" /> Billing Information</h3>
+                <p className="text-gray-600 text-sm mb-4">Manage payment methods and billing history</p>
+                <div className="space-y-4">
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-gray-900">Payment Methods</p>
+                        <p className="text-sm text-gray-500">No payment methods added</p>
+                      </div>
+                      <Button variant="outline" className="text-sm">Add Payment Method</Button>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-gray-900">Billing History</p>
+                        <p className="text-sm text-gray-500">No billing history</p>
+                      </div>
+                      <Button variant="outline" className="text-sm">View Invoices</Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'security' && (
+            <div className="max-w-4xl space-y-6">
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2"><Lock className="w-4 h-4 text-gray-400" /> Security Settings</h3>
+                <div className="space-y-4">
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-gray-900">Password</p>
+                        <p className="text-sm text-gray-500">Last changed 30 days ago</p>
+                      </div>
+                      <Button variant="outline" className="text-sm">Change Password</Button>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-gray-900">Two-Factor Authentication</p>
+                        <p className="text-sm text-gray-500">Add an extra layer of security</p>
+                      </div>
+                      <Button variant="outline" className="text-sm">Enable 2FA</Button>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-gray-900">Active Sessions</p>
+                        <p className="text-sm text-gray-500">Manage your active login sessions</p>
+                      </div>
+                      <Button variant="outline" className="text-sm">View Sessions</Button>
+                    </div>
                   </div>
                 </div>
               </div>
