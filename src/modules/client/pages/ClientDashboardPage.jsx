@@ -224,7 +224,7 @@ export default function ClientDashboard() {
             <div className="flex gap-3">
               <Button
                 className="bg-black hover:bg-gray-800 text-white shadow-xl shadow-black/10 transition-all text-sm font-medium px-6 py-2.5"
-                onClick={() => openProjectModal()}
+                onClick={() => navigate('/ClientPostProject')}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Post Project

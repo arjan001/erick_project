@@ -443,70 +443,68 @@ export default function ClientPostProject() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <Button
           variant="ghost"
           onClick={() => navigate('/ClientDashboard')}
-          className="mb-4 sm:mb-6 text-gray-600 hover:text-gray-900"
+          className="mb-8 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Dashboard
         </Button>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-4 sm:px-8 py-4 sm:py-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">{isEditing ? 'Edit Your Project' : 'Post a New Project'}</h1>
-            <p className="text-gray-300 text-sm sm:text-base">{isEditing ? 'Update your project details' : 'Share your project details to connect with talented creators'}</p>
+        {/* Header */}
+        <div className="mb-10">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{isEditing ? 'Edit Your Project' : 'Post a New Project'}</h1>
+          <p className="text-gray-500 text-base">{isEditing ? 'Update your project details' : 'Share your project details to connect with talented creators'}</p>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            {STEPS.map((step, index) => (
+              <React.Fragment key={step.id}>
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                      step.id < currentStep
+                        ? 'bg-gray-900 text-white'
+                        : step.id === currentStep
+                        ? 'bg-gray-900 text-white ring-4 ring-gray-900/10'
+                        : 'bg-gray-200 text-gray-500'
+                    }`}
+                  >
+                    {step.id < currentStep ? <Check className="w-5 h-5" /> : step.id}
+                  </div>
+                  <span className="hidden sm:block text-xs text-gray-600 mt-3 text-center max-w-[100px] font-medium">{step.name}</span>
+                </div>
+                {index < STEPS.length - 1 && (
+                  <div className={`flex-1 h-0.5 mx-3 rounded-full transition-all ${
+                    step.id < currentStep ? 'bg-gray-900' : 'bg-gray-200'
+                  }`} />
+                )}
+              </React.Fragment>
+            ))}
           </div>
+          <div className="text-center text-sm text-gray-500">
+            Step {currentStep} of {STEPS.length}
+          </div>
+        </div>
 
-          <div className="p-4 sm:p-6">
-            {/* Progress Bar */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                {STEPS.map((step, index) => (
-                  <React.Fragment key={step.id}>
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                          step.id < currentStep
-                            ? 'bg-amber-600 text-white'
-                            : step.id === currentStep
-                            ? 'bg-amber-600 text-white ring-4 ring-amber-600/20'
-                            : 'bg-gray-200 text-gray-500'
-                        }`}
-                      >
-                        {step.id < currentStep ? <Check className="w-5 h-5" /> : step.id}
-                      </div>
-                      <span className="hidden sm:block text-xs text-gray-600 mt-2 text-center max-w-[80px]">{step.name}</span>
-                    </div>
-                    {index < STEPS.length - 1 && (
-                      <div className={`flex-1 h-1 mx-2 rounded-full transition-all ${
-                        step.id < currentStep ? 'bg-amber-600' : 'bg-gray-200'
-                      }`} />
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
-              <div className="text-center text-sm text-gray-600">
-                Step {currentStep} of {STEPS.length}
-              </div>
-            </div>
-
-            {/* Step Content */}
-            <div className="bg-gray-50 rounded-2xl p-6 sm:p-8 mb-8 border border-gray-200 min-h-[400px]">
-              {(() => {
-                const currentStepName = STEPS[currentStep - 1]?.name;
+        {/* Step Content */}
+        <div className="mb-12">
+          {(() => {
+            const currentStepName = STEPS[currentStep - 1]?.name;
 
                 switch (currentStepName) {
                   case 'Project Type':
                     return (
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What type of project?</h2>
-                        <p className="text-gray-600 mb-8">Select the format that best describes your production</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-gray-900">What type of project?</h2>
+                        <p className="text-gray-500 mb-10">Select the format that best describes your production</p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                           {PROJECT_TYPES.map((type) => {
                             const Icon = type.icon;
                             const isSelected = projectForm.project_type === type.value;
@@ -517,13 +515,13 @@ export default function ClientPostProject() {
                                 onClick={() => updateForm('project_type', type.value)}
                                 className={`p-6 rounded-xl border-2 transition-all text-left ${
                                   isSelected
-                                    ? 'border-amber-600 bg-amber-600/10'
-                                    : 'border-gray-300 hover:border-gray-400 bg-white'
+                                    ? 'border-gray-900 bg-gray-50'
+                                    : 'border-gray-200 hover:border-gray-300 bg-white'
                                 }`}
                               >
-                                <Icon className={`w-8 h-8 mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
-                                <h3 className="text-lg font-semibold mb-1 text-black">{type.label}</h3>
-                                <p className="text-sm text-gray-600">{type.description}</p>
+                                <Icon className={`w-8 h-8 mb-3 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
+                                <h3 className="text-lg font-semibold mb-1 text-gray-900">{type.label}</h3>
+                                <p className="text-sm text-gray-500">{type.description}</p>
                               </button>
                             );
                           })}
@@ -534,8 +532,8 @@ export default function ClientPostProject() {
                   case 'Funding Details':
                     return (
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Funding & Partnership Details</h2>
-                        <p className="text-gray-600 mb-8">Share information about what you're seeking</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-gray-900">Funding & Partnership Details</h2>
+                        <p className="text-gray-500 mb-10">Share information about what you're seeking</p>
 
                         <div className="space-y-8">
                           <div>
@@ -622,13 +620,13 @@ export default function ClientPostProject() {
                                 onClick={() => toggleUsage(option.value)}
                                 className={`p-6 rounded-xl border-2 transition-all text-left ${
                                   isSelected
-                                    ? 'border-amber-600 bg-amber-600/10'
-                                    : 'border-gray-300 hover:border-gray-400 bg-white'
+                                    ? 'border-gray-900 bg-gray-50'
+                                    : 'border-gray-200 hover:border-gray-300 bg-white'
                                 }`}
                               >
-                                <Icon className={`w-8 h-8 mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
-                                <h3 className="text-lg font-semibold mb-1 text-black">{option.label}</h3>
-                                <p className="text-sm text-gray-600">{option.description}</p>
+                                <Icon className={`w-8 h-8 mb-3 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
+                                <h3 className="text-lg font-semibold mb-1 text-gray-900">{option.label}</h3>
+                                <p className="text-sm text-gray-500">{option.description}</p>
                               </button>
                             );
                           })}
@@ -640,9 +638,9 @@ export default function ClientPostProject() {
                     const selectedCount = (projectForm.visual_direction_clips || []).length;
                     return (
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Visual Direction</h2>
-                        <p className="text-gray-600 mb-2">Select 1-3 examples that match your vision</p>
-                        <p className="text-sm text-amber-600 mb-8">{selectedCount}/3 selected</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-gray-900">Visual Direction</h2>
+                        <p className="text-gray-500 mb-2">Select 1-3 examples that match your vision</p>
+                        <p className="text-sm text-gray-900 mb-8">{selectedCount}/3 selected</p>
 
                         {loadingClips ? (
                           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -687,7 +685,7 @@ export default function ClientPostProject() {
                                   } transition-opacity`} />
 
                                   {selected && (
-                                    <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center">
+                                    <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center">
                                       <span className="text-white font-bold text-sm">{selectionIndex + 1}</span>
                                     </div>
                                   )}
@@ -705,7 +703,7 @@ export default function ClientPostProject() {
                                   )}
 
                                   <div className={`absolute inset-0 border-2 rounded-lg transition-all ${
-                                    selected ? 'border-amber-600' : 'border-transparent group-hover:border-zinc-600'
+                                    selected ? 'border-gray-900' : 'border-transparent group-hover:border-gray-600'
                                   }`} />
                                 </button>
                               );
@@ -824,13 +822,13 @@ export default function ClientPostProject() {
                                 onClick={() => toggleDepartment(dept.value)}
                                 className={`p-5 rounded-xl border-2 transition-all text-left ${
                                   isSelected
-                                    ? 'border-amber-600 bg-amber-600/10'
-                                    : 'border-gray-300 hover:border-gray-400 bg-white'
+                                    ? 'border-gray-900 bg-gray-50'
+                                    : 'border-gray-200 hover:border-gray-300 bg-white'
                                 }`}
                               >
-                                <Icon className={`w-7 h-7 mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
-                                <h3 className="text-base font-semibold mb-1 text-black">{dept.label}</h3>
-                                <p className="text-sm text-gray-600">{dept.description}</p>
+                                <Icon className={`w-7 h-7 mb-3 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
+                                <h3 className="text-base font-semibold mb-1 text-gray-900">{dept.label}</h3>
+                                <p className="text-sm text-gray-500">{dept.description}</p>
                               </button>
                             );
                           })}
@@ -897,13 +895,13 @@ export default function ClientPostProject() {
                                 onClick={() => updateForm('budget_range', range.value)}
                                 className={`p-5 rounded-xl border-2 transition-all text-left ${
                                   isSelected
-                                    ? 'border-amber-600 bg-amber-600/10'
-                                    : 'border-gray-300 hover:border-gray-400 bg-white'
+                                    ? 'border-gray-900 bg-gray-50'
+                                    : 'border-gray-200 hover:border-gray-300 bg-white'
                                 }`}
                               >
-                                <DollarSign className={`w-7 h-7 mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
-                                <h3 className="text-base font-semibold mb-1 text-black">{range.label}</h3>
-                                <p className="text-sm text-gray-600">{range.description}</p>
+                                <DollarSign className={`w-7 h-7 mb-3 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
+                                <h3 className="text-base font-semibold mb-1 text-gray-900">{range.label}</h3>
+                                <p className="text-sm text-gray-500">{range.description}</p>
                               </button>
                             );
                           })}
@@ -995,42 +993,40 @@ export default function ClientPostProject() {
                     return null;
                 }
               })()}
-            </div>
+        </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleBack}
-                disabled={currentStep === 1}
-                className="border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
-              >
-                <ChevronLeft className="w-5 h-5 mr-2" />
-                Back
-              </Button>
+        {/* Navigation Buttons */}
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={handleBack}
+            disabled={currentStep === 1}
+            className="border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
+          >
+            <ChevronLeft className="w-5 h-5 mr-2" />
+            Back
+          </Button>
 
-              {currentStep < STEPS.length ? (
-                <Button
-                  size="lg"
-                  onClick={handleNext}
-                  disabled={!canProceed()}
-                  className="bg-amber-600 hover:bg-amber-700 text-white order-1 sm:order-2"
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  size="lg"
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="bg-amber-600 hover:bg-amber-700 text-white order-1 sm:order-2"
-                >
-                  {loading ? 'Submitting...' : 'Post Project'}
-                </Button>
-              )}
-            </div>
-          </div>
+          {currentStep < STEPS.length ? (
+            <Button
+              size="lg"
+              onClick={handleNext}
+              disabled={!canProceed()}
+              className="bg-gray-900 hover:bg-gray-800 text-white order-1 sm:order-2"
+            >
+              Next
+            </Button>
+          ) : (
+            <Button
+              size="lg"
+              onClick={handleSubmit}
+              disabled={loading}
+              className="bg-gray-900 hover:bg-gray-800 text-white order-1 sm:order-2"
+            >
+              {loading ? 'Submitting...' : 'Post Project'}
+            </Button>
+          )}
         </div>
       </div>
     </div>
