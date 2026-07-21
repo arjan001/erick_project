@@ -151,7 +151,7 @@ export default function BackerProfile() {
     }
   };
 
-  if (loading || !user) {
+  if (loading || !authUser) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
@@ -200,8 +200,8 @@ export default function BackerProfile() {
                   </Button>
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-gray-900">{backer?.organization_name || user.full_name}</h2>
-                  <p className="text-sm text-gray-500 mt-1">{user.email}</p>
+                  <h2 className="text-2xl font-bold text-gray-900">{backer?.organization_name || authUser?.full_name}</h2>
+                  <p className="text-sm text-gray-500 mt-1">{authUser?.email}</p>
                   <div className="mt-4 flex gap-3">
                     <Button onClick={() => setEditing(!editing)} variant={editing ? 'outline' : 'default'} className={editing ? '' : 'bg-black text-white hover:bg-gray-800'}>
                       {editing ? <X className="w-4 h-4 mr-2" /> : <Edit2 className="w-4 h-4 mr-2" />}

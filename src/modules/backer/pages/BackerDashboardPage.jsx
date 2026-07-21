@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Backer, BackedProject, Deal } from '@/lib/supabaseEntities';
 import DashboardStatCard from '@/components/DashboardStatCard';
-import { DollarSign, TrendingUp, Film, Plus, Eye, Edit2, X, ArrowUpRight, ArrowDownRight, Target, Zap, Briefcase } from 'lucide-react';
+import { DollarSign, TrendingUp, Film, Plus, Eye, Edit2, X, ArrowUpRight, ArrowDownRight, Target, Zap, Briefcase, PieChart, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { createPageUrl } from '@/shared/utils/routing';
@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/useToast.jsx';
 import { confirmDialog } from '@/lib/sweetAlert';
 import InviteCodeCard from '@/components/InviteCodeCard';
 import { useAuth } from '@/lib/AuthContext';
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 export default function BackerDashboardPage() {
   const navigate = useNavigate();
@@ -148,6 +149,25 @@ export default function BackerDashboardPage() {
   const averageDealSize = backedProjects.length > 0 ? (totalInvested / backedProjects.length).toFixed(0) : 0;
   const activeDeals = deals.filter(d => d.status === 'active').length;
 
+  // Prepare data for charts
+  const investmentByStatus = [
+    { name: 'Active', value: activeInvestments, color: '#10b981' },
+    { name: 'Completed', value: completedInvestments, color: '#3b82f6' },
+    { name: 'Withdrawn', value: backedProjects.filter(p => p.status === 'withdrawn').length, color: '#6b7280' }
+  ];
+
+  const monthlyInvestments = backedProjects.reduce((acc, p) => {
+    const month = new Date(p.investment_date).toLocaleString('default', { month: 'short' });
+    acc[month] = (acc[month] || 0) + (p.investment_amount || 0);
+    return acc;
+  }, {});
+
+  const investmentTrendData = Object.entries(monthlyInvestments)
+    .slice(-6)
+    .map(([month, amount]) => ({ month, amount }));
+
+  const COLORS = ['#10b981', '#3b82f6', '#6b7280', '#f59e0b', '#ef4444'];
+
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -157,60 +177,122 @@ export default function BackerDashboardPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-6">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Investor Dashboard</h1>
           <p className="text-gray-600">Welcome back, {backer?.organization_name || authUser?.full_name || 'Investor'}</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <DashboardStatCard icon={DollarSign} label={`${backedProjects.length} investments`} value={`$${totalInvested.toLocaleString()}`} iconBg="bg-green-50" iconColor="text-green-600" />
-          <DashboardStatCard icon={totalROI >= 0 ? ArrowUpRight : ArrowDownRight} label={`${roiPercentage}% return`} value={`$${totalROI.toLocaleString()}`} iconBg={totalROI >= 0 ? 'bg-green-50' : 'bg-red-50'} iconColor={totalROI >= 0 ? 'text-green-600' : 'text-red-600'} />
+        {/* Stats Cards - Smaller and themed */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <DashboardStatCard icon={DollarSign} label={`${backedProjects.length} investments`} value={`$${totalInvested.toLocaleString()}`} iconBg="bg-emerald-50" iconColor="text-emerald-600" />
+          <DashboardStatCard icon={totalROI >= 0 ? ArrowUpRight : ArrowDownRight} label={`${roiPercentage}% return`} value={`$${totalROI.toLocaleString()}`} iconBg={totalROI >= 0 ? 'bg-emerald-50' : 'bg-red-50'} iconColor={totalROI >= 0 ? 'text-emerald-600' : 'text-red-600'} />
           <DashboardStatCard icon={Target} label={`${completedInvestments} completed`} value={activeInvestments} iconBg="bg-blue-50" iconColor="text-blue-600" />
           <DashboardStatCard icon={Zap} label="Per investment" value={`$${Number(averageDealSize).toLocaleString()}`} iconBg="bg-gray-100" iconColor="text-gray-900" />
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl('BackerProjects'))}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Film className="w-6 h-6 text-green-600" />
+        {/* Analytics Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Investment Status Doughnut Chart */}
+          <Card className="border-gray-200">
+            <CardHeader>
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <PieChart className="w-4 h-4" />
+                Investment Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPieChart>
+                    <Pie
+                      data={investmentByStatus}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {investmentByStatus.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Investment Trend Bar Chart */}
+          <Card className="border-gray-200">
+            <CardHeader>
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Investment Trend
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={investmentTrendData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
+                    <YAxis stroke="#6b7280" fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
+                      itemStyle={{ color: '#fff' }}
+                    />
+                    <Bar dataKey="amount" fill="#1f2937" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions - Smaller cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-gray-200" onClick={() => navigate(createPageUrl('BackerProjects'))}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                  <Film className="w-5 h-5 text-emerald-600" />
                 </div>
                 <div>
-                  <div className="font-bold text-gray-900">Browse Projects</div>
-                  <div className="text-sm text-gray-600">Discover new opportunities</div>
+                  <div className="font-semibold text-gray-900 text-sm">Browse Projects</div>
+                  <div className="text-xs text-gray-600">Discover opportunities</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl('BackerDeals'))}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Briefcase className="w-6 h-6 text-blue-600" />
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-gray-200" onClick={() => navigate(createPageUrl('BackerDeals'))}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <div className="font-bold text-gray-900">Manage Deals</div>
-                  <div className="text-sm text-gray-600">{activeDeals} active deals</div>
+                  <div className="font-semibold text-gray-900 text-sm">Manage Deals</div>
+                  <div className="text-xs text-gray-600">{activeDeals} active deals</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(createPageUrl('BackerAnalytics'))}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-gray-900" />
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-gray-200" onClick={() => navigate(createPageUrl('BackerAnalytics'))}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-gray-900" />
                 </div>
                 <div>
-                  <div className="font-bold text-gray-900">View Analytics</div>
-                  <div className="text-sm text-gray-600">Track performance</div>
+                  <div className="font-semibold text-gray-900 text-sm">View Analytics</div>
+                  <div className="text-xs text-gray-600">Track performance</div>
                 </div>
               </div>
             </CardContent>

@@ -16,7 +16,7 @@ const MENU_ITEMS = [
   { label: 'Deals', icon: Briefcase, href: 'BackerDeals' },
   { label: 'Messages', icon: MessageSquare, href: 'Messages', showBadge: true },
   { label: 'Network', icon: Share2, href: 'Network' },
-  { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets' },
+  { label: 'Support', icon: Ticket, href: 'SupportTickets' },
   { label: 'Analytics', icon: BarChart3, href: 'BackerAnalytics' },
   { label: 'Banking', icon: CreditCard, href: 'BackerBanking' },
   { label: 'Partners', icon: Users, href: 'BackerPartners' },
