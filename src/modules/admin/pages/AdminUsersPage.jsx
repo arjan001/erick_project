@@ -38,6 +38,7 @@ export default function AdminUsersPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSuspendDialog, setShowSuspendDialog] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
@@ -184,7 +185,7 @@ export default function AdminUsersPage() {
             <h1 className="text-3xl font-bold text-gray-900">System Admin Users</h1>
             <p className="text-gray-600 mt-1">Create and manage system admin users with role-based permissions</p>
           </div>
-          <Button onClick={() => setShowAddDialog(true)} className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200">
+          <Button onClick={() => setShowAddDialog(true)} className="bg-gray-900 text-white hover:bg-gray-800 shadow-lg">
             <Plus className="w-4 h-4 mr-2" />
             Add User
           </Button>
@@ -198,8 +199,8 @@ export default function AdminUsersPage() {
                 <p className="text-xs text-gray-500">Total Users</p>
                 <p className="text-xl font-bold text-gray-900">{users.length}</p>
               </div>
-              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                <User className="w-5 h-5 text-indigo-600" />
+              <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                <User className="w-5 h-5 text-gray-600" />
               </div>
             </div>
           </div>
@@ -231,8 +232,8 @@ export default function AdminUsersPage() {
                 <p className="text-xs text-gray-500">Roles</p>
                 <p className="text-xl font-bold text-gray-900">{roles.length}</p>
               </div>
-              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                <Shield className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                <Shield className="w-5 h-5 text-gray-600" />
               </div>
             </div>
           </div>
@@ -342,10 +343,10 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowRoleDialog(true); }} className="p-2 hover:bg-indigo-50" title="Assign Role">
-                          <Key className="w-4 h-4 text-indigo-600" />
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowRoleDialog(true); }} className="p-2 hover:bg-gray-100" title="Assign Role">
+                          <Key className="w-4 h-4 text-gray-600" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedUser(user)} className="p-2 hover:bg-gray-100" title="View Details">
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowDetailDialog(true); }} className="p-2 hover:bg-gray-100" title="View Details">
                           <Eye className="w-4 h-4 text-gray-600" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => { setEditingUser(user); setShowEditDialog(true); }} className="p-2 hover:bg-gray-100" title="Edit User">
@@ -588,7 +589,7 @@ export default function AdminUsersPage() {
               } finally {
                 setSaving(false);
               }
-            }} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 rounded-xl">
+            }} disabled={saving} className="bg-gray-900 hover:bg-gray-800 rounded-xl">
               {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
               Assign Role
             </Button>
@@ -597,16 +598,16 @@ export default function AdminUsersPage() {
       </Dialog>
 
       {/* View User Details Dialog */}
-      {selectedUser && (
+      {showDetailDialog && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 flex items-center justify-between">
+            <div className="bg-gray-900 p-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">User Details</h2>
-              <button onClick={() => setSelectedUser(null)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
+              <button onClick={() => setShowDetailDialog(false)} className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                <div className="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                   {selectedUser.first_name?.[0] || selectedUser.email?.[0] || 'U'}
                 </div>
                 <div>
@@ -629,7 +630,7 @@ export default function AdminUsersPage() {
               </div>
             </div>
             <div className="p-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setSelectedUser(null)} className="rounded-xl">Close</Button>
+              <Button variant="outline" onClick={() => setShowDetailDialog(false)} className="rounded-xl">Close</Button>
             </div>
           </div>
         </div>
