@@ -27,7 +27,7 @@ export default function AdminProjectsPage() {
     status: 'submitted'
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Debounce search query
   useEffect(() => {
