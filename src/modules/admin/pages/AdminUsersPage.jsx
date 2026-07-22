@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Search, Plus, Edit, Trash2, Shield, User, Mail, Eye, X, ChevronLeft, ChevronRight, Loader2, MoreVertical, Ban, CheckCircle, AlertTriangle } from 'lucide-react';
 
 const PAGE_SIZE = 10;
@@ -380,6 +380,7 @@ export default function AdminUsersPage() {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="text-xl">Create New System User</DialogTitle>
+            <DialogDescription>Create a new admin user with specified role and permissions.</DialogDescription>
           </DialogHeader>
           <div className="space-y-5 py-4">
             <div className="grid grid-cols-2 gap-4">
@@ -447,6 +448,7 @@ export default function AdminUsersPage() {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="text-xl">Edit User</DialogTitle>
+            <DialogDescription>Update user details and role assignment.</DialogDescription>
           </DialogHeader>
           <div className="space-y-5 py-4">
             <div className="grid grid-cols-2 gap-4">

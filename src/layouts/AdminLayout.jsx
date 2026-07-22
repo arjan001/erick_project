@@ -5,37 +5,40 @@ import { useAuth } from '@/lib/AuthContext';
 
 const navItems = [
   { path: '/Admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { path: '/Admin/Artists', label: 'Artists', icon: Users },
-  { path: '/TeamAdmin', label: 'Teams', icon: FolderKanban },
-  { path: '/ProjectAdmin', label: 'Projects', icon: FolderKanban },
-  { path: '/Admin/UserManagement', label: 'Users', icon: Users },
+  { path: '/Admin/UserManagement', label: 'System Admin Users', icon: Users },
   { path: '/Admin/RolesPermissions', label: 'Roles & Permissions', icon: Shield },
   { path: '/Admin/Invites', label: 'Invites', icon: Mail },
-  { path: '/Admin/Analytics', label: 'Analytics Dashboard', icon: BarChart3 },
-  { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: FileText },
-  { path: '/Admin/Maintenance', label: 'Maintenance Mode', icon: AlertTriangle },
-  { path: '/Admin/Settings', label: 'Settings', icon: Settings },
-  { path: '/Admin/Ticker', label: 'Marquee/Ticker', icon: ScrollText },
+  { path: '/Admin/Clients', label: 'Clients', icon: Users },
+  { path: '/Admin/Artists', label: 'Artists', icon: Users },
+  { path: '/Admin/Teams', label: 'Teams', icon: FolderKanban },
+  { path: '/Admin/Backers', label: 'Backers', icon: DollarSign },
+  { path: '/Admin/Projects', label: 'Projects', icon: FolderKanban },
+  { path: '/Admin/Jobs', label: 'Jobs', icon: FileText },
   { path: '/Admin/Categories', label: 'Categories', icon: Grid3x3 },
-  { path: '/Admin/FeaturedWork', label: 'Featured Work', icon: Star },
-  { path: '/Admin/SuccessStories', label: 'Success Stories', icon: Trophy },
-  { path: '/Admin/RecentProjects', label: 'Recent Projects', icon: Clock },
+  { path: '/Admin/Ticker', label: 'Marquee / Ticker', icon: ScrollText },
+  { path: '/Admin/Messages', label: 'Messages', icon: Mail },
+  { path: '/Admin/Notifications', label: 'Notifications', icon: Bell },
   { path: '/Admin/SEOCMS', label: 'SEO & CMS', icon: FileText },
   { path: '/Admin/ImageStorage', label: 'Image Storage', icon: Image },
   { path: '/Admin/LoginProviders', label: 'Login Providers', icon: Shield },
   { path: '/Admin/APISettings', label: 'API Settings', icon: Database },
   { path: '/Admin/PaymentSettings', label: 'Payment Settings', icon: CreditCard },
-  { path: '/Admin/FinanceDashboard', label: 'Finance', icon: DollarSign },
-  { path: '/Admin/Subscriptions', label: 'Subscription Plans', icon: CreditCard },
+  { path: '/Admin/GeneralSettings', label: 'General Settings', icon: Settings },
+  { path: '/Admin/Analytics', label: 'Analytics Dashboard', icon: BarChart3 },
+  { path: '/Admin/FinanceDashboard', label: 'Finance Dashboard', icon: DollarSign },
+  { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: FileText },
+  { path: '/Admin/FeaturedWork', label: 'Featured Work', icon: Star },
+  { path: '/Admin/SuccessStories', label: 'Success Stories', icon: Trophy },
+  { path: '/Admin/RecentProjects', label: 'Recent Projects', icon: Clock },
 ];
 
 const navGroups = [
-  { label: 'Overview', items: ['/Admin', '/Admin/Artists', '/TeamAdmin', '/ProjectAdmin'] },
-  { label: 'Content', items: ['/Admin/Ticker', '/Admin/Categories', '/Admin/FeaturedWork', '/Admin/SuccessStories', '/Admin/RecentProjects', '/Admin/SEOCMS'] },
-  { label: 'Users', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
-  { label: 'Finance', items: ['/Admin/FinanceDashboard', '/Admin/Subscriptions'] },
-  { label: 'Integrations', items: ['/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
-  { label: 'System', items: ['/Admin/Maintenance', '/Admin/Settings', '/Admin/ImageStorage', '/Admin/Analytics', '/Admin/AuditLogs'] },
+  { label: 'Main', items: ['/Admin'] },
+  { label: 'User Management', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
+  { label: 'Content Management', items: ['/Admin/Clients', '/Admin/Artists', '/Admin/Teams', '/Admin/Backers', '/Admin/Projects', '/Admin/Jobs', '/Admin/Categories', '/Admin/Ticker'] },
+  { label: 'Communication', items: ['/Admin/Messages', '/Admin/Notifications'] },
+  { label: 'Integrations', items: ['/Admin/SEOCMS', '/Admin/ImageStorage', '/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
+  { label: 'System', items: ['/Admin/GeneralSettings', '/Admin/Analytics', '/Admin/FinanceDashboard', '/Admin/AuditLogs', '/Admin/FeaturedWork', '/Admin/SuccessStories', '/Admin/RecentProjects'] },
 ];
 
 export default function AdminLayout({ children }) {
@@ -82,9 +85,9 @@ export default function AdminLayout({ children }) {
   })).filter(group => group.items.length > 0);
 
   return (
-    <div className="min-h-screen bg-[#f5f6fa] flex lg:flex-row flex-col">
+    <div className="min-h-screen bg-[#f5f6fa] flex">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative h-screen lg:h-auto`}>
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed h-screen`}>
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100 flex-shrink-0">
           <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
@@ -98,18 +101,21 @@ export default function AdminLayout({ children }) {
           </button>
         </div>
 
-        {/* User - hide when collapsed */}
+        {/* User Profile - hide when collapsed */}
         {sidebarOpen && (
           <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-            <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/Admin/UserManagement')}
+              className="flex items-center gap-3 w-full hover:bg-gray-50 rounded-lg p-2 transition-colors"
+            >
               <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
                 {user?.email?.[0]?.toUpperCase() || 'A'}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 text-left">
                 <div className="text-xs font-semibold text-gray-800 truncate">{user?.full_name || 'Admin'}</div>
                 <div className="text-[10px] text-gray-400 truncate">{user?.email}</div>
               </div>
-            </div>
+            </button>
           </div>
         )}
 
@@ -132,40 +138,34 @@ export default function AdminLayout({ children }) {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
           {sidebarOpen ? (
-            // Expanded state - show full navigation with groups
+            // Expanded state - show section headers with items
             filteredNavGroups.map((group) => (
-              <div key={group.label} className="mb-2">
-                <button
-                  onClick={() => toggleGroup(group.label)}
-                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                >
-                  <span className="text-xs font-semibold uppercase tracking-wider">{group.label}</span>
-                  <ChevronRight className={`w-4 h-4 transition-transform ${expandedGroups[group.label] ? 'rotate-90' : ''}`} />
-                </button>
-                {expandedGroups[group.label] && (
-                  <div className="mt-1 space-y-1 pl-2">
-                    {group.items.map((path) => {
-                      const item = getNavItem(path);
-                      if (!item) return null;
-                      const Icon = item.icon;
-                      const active = isActive(path, item.exact);
-                      return (
-                        <Link
-                          key={path}
-                          to={path}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-                            active
-                              ? 'bg-indigo-100 text-indigo-700 font-semibold'
-                              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" />
-                          <span className="flex-1 text-left">{item.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
+              <div key={group.label} className="mb-4">
+                <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
+                  {group.label}
+                </div>
+                <div className="space-y-1">
+                  {group.items.map((path) => {
+                    const item = getNavItem(path);
+                    if (!item) return null;
+                    const Icon = item.icon;
+                    const active = isActive(path, item.exact);
+                    return (
+                      <Link
+                        key={path}
+                        to={path}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                          active
+                            ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span className="flex-1 text-left">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
             ))
           ) : (
@@ -230,7 +230,7 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* Main */}
-      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 lg:ml-2`}>
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-16'}`}>
         {/* Top Bar */}
         <header className="bg-white border-b border-gray-100 flex-shrink-0"
           style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>

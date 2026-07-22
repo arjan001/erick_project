@@ -1289,3 +1289,152 @@ CREATE POLICY "Authenticated update own files" ON storage.objects FOR UPDATE
 
 CREATE POLICY "Authenticated delete own files" ON storage.objects FOR DELETE
   USING (bucket_id IN ('profile-photos', 'portfolio-clips', 'project-images', 'team-logos', 'backer-logos', 'message-attachments', 'shop-images') AND auth.uid() = owner);
+
+-- ============================================
+-- ROLES & PERMISSIONS
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS permissions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    permission_key VARCHAR(100) UNIQUE NOT NULL,
+    permission_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    module VARCHAR(100) NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    resource VARCHAR(100),
+    category VARCHAR(100),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_permissions_key ON permissions(permission_key);
+CREATE INDEX IF NOT EXISTS idx_permissions_module ON permissions(module);
+CREATE INDEX IF NOT EXISTS idx_permissions_category ON permissions(category);
+
+CREATE TABLE IF NOT EXISTS roles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    role_key VARCHAR(50) UNIQUE NOT NULL,
+    role_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    is_system_role BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_roles_key ON roles(role_key);
+
+CREATE TABLE IF NOT EXISTS role_permissions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    role_id UUID NOT NULL,
+    permission_id UUID NOT NULL,
+    granted_by UUID,
+    granted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(role_id, permission_id),
+    CONSTRAINT fk_role_permissions_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+    CONSTRAINT fk_role_permissions_permission FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE,
+    CONSTRAINT fk_role_permissions_granted_by FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_role_permissions_role ON role_permissions(role_id);
+CREATE INDEX IF NOT EXISTS idx_role_permissions_permission ON role_permissions(permission_id);
+
+CREATE TABLE IF NOT EXISTS user_roles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL,
+    role_id UUID NOT NULL,
+    assigned_by UUID,
+    assigned_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP WITH TIME ZONE,
+    is_active BOOLEAN DEFAULT TRUE,
+    UNIQUE(user_id, role_id),
+    CONSTRAINT fk_user_roles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_roles_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_roles_assigned_by FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_roles_user ON user_roles(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_roles_role ON user_roles(role_id);
+CREATE INDEX IF NOT EXISTS idx_user_roles_active ON user_roles(is_active);
+
+-- ============================================
+-- INTEGRATIONS SETTINGS
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS integrations_settings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    integration_name VARCHAR(100) UNIQUE NOT NULL,
+    settings JSONB NOT NULL,
+    is_enabled BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_integrations_settings_name ON integrations_settings(integration_name);
+
+-- ============================================
+-- API SETTINGS
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS api_keys (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    public_key VARCHAR(100) UNIQUE NOT NULL,
+    secret_key VARCHAR(255) NOT NULL,
+    scopes TEXT[] DEFAULT ARRAY['read'],
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'revoked', 'expired')),
+    created_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_used_at TIMESTAMP WITH TIME ZONE,
+    expires_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_keys_public ON api_keys(public_key);
+CREATE INDEX IF NOT EXISTS idx_api_keys_status ON api_keys(status);
+CREATE INDEX IF NOT EXISTS idx_api_keys_created_by ON api_keys(created_by);
+
+CREATE TABLE IF NOT EXISTS rate_limiting_settings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    enabled BOOLEAN DEFAULT true,
+    requests_per_minute INTEGER DEFAULT 100,
+    requests_per_hour INTEGER DEFAULT 1000,
+    requests_per_day INTEGER DEFAULT 10000,
+    burst_limit INTEGER DEFAULT 20,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS api_configuration (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    enable_cors BOOLEAN DEFAULT true,
+    allowed_origins TEXT[] DEFAULT ARRAY['https://studio22.com', 'https://www.studio22.com'],
+    enable_api_key_auth BOOLEAN DEFAULT true,
+    enable_jwt_auth BOOLEAN DEFAULT true,
+    jwt_expiration_seconds INTEGER DEFAULT 3600,
+    enable_webhooks BOOLEAN DEFAULT true,
+    webhook_secret VARCHAR(255),
+    enable_api_versioning BOOLEAN DEFAULT true,
+    current_version VARCHAR(10) DEFAULT 'v1',
+    enable_logging BOOLEAN DEFAULT true,
+    log_retention_days INTEGER DEFAULT 30,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS api_usage_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    api_key_id UUID REFERENCES api_keys(id) ON DELETE SET NULL,
+    endpoint VARCHAR(255) NOT NULL,
+    method VARCHAR(10) NOT NULL,
+    status_code INTEGER NOT NULL,
+    response_time_ms INTEGER,
+    ip_address INET,
+    user_agent TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_usage_logs_api_key ON api_usage_logs(api_key_id);
+CREATE INDEX IF NOT EXISTS idx_api_usage_logs_created_at ON api_usage_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_api_usage_logs_endpoint ON api_usage_logs(endpoint);

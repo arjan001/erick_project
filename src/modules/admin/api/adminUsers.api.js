@@ -214,13 +214,16 @@ export const adminUsersApi = {
 
       if (error) {
         console.error('Error fetching roles:', error);
+        console.error('Error details:', error.message, error.code, error.hint);
         throw error;
       }
       
       console.log('Fetched roles:', data);
+      console.log('Number of roles:', data?.length);
       return data || [];
     } catch (error) {
       console.error('getAllRoles error:', error);
+      console.error('Error message:', error.message);
       return [];
     }
   }

@@ -59,33 +59,64 @@ export default function AdminSidebar() {
   }, [user]);
 
   const menuItems = [
-    { path: '/Admin', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/Admin/UserManagement', label: 'System Admin Users', icon: Users },
-    { path: '/Admin/RolesPermissions', label: 'Roles & Permissions', icon: Shield },
-    { path: '/Admin/Invites', label: 'Invites', icon: Mail },
-    { path: '/Admin/Clients', label: 'Clients', icon: Building },
-    { path: '/Admin/Artists', label: 'Artists', icon: Users },
-    { path: '/Admin/Teams', label: 'Teams', icon: Building },
-    { path: '/Admin/Backers', label: 'Backers', icon: DollarSign },
-    { path: '/Admin/Projects', label: 'Projects', icon: FolderKanban },
-    { path: '/Admin/Jobs', label: 'Jobs', icon: Briefcase },
-    { path: '/Admin/Categories', label: 'Categories', icon: LayoutGrid },
-    { path: '/Admin/Ticker', label: 'Marquee / Ticker', icon: Radio },
-    { path: '/Admin/Messages', label: 'Messages', icon: MessageSquare, showBadge: true },
-    { path: '/Admin/Notifications', label: 'Notifications', icon: Bell, showNotificationBadge: true },
-    { path: '/Admin/Products', label: 'Products', icon: Package },
-    { path: '/Admin/Orders', label: 'Orders', icon: ShoppingCart },
-    { path: '/Admin/ShopSettings', label: 'Shop Settings', icon: Store },
-    { path: '/Admin/GeneralSettings', label: 'General Settings', icon: Settings },
-    { path: '/Admin/SEOCMS', label: 'SEO & CMS', icon: Search },
-    { path: '/Admin/ImageStorage', label: 'Image Storage', icon: HardDrive },
-    { path: '/Admin/LoginProviders', label: 'Login Providers', icon: Lock },
-    { path: '/Admin/APISettings', label: 'API Settings', icon: Key },
-    { path: '/Admin/PaymentSettings', label: 'Payment Settings', icon: CreditCard },
-    { path: '/Admin/Analytics', label: 'Analytics Dashboard', icon: BarChart3 },
-    { path: '/Admin/FinanceDashboard', label: 'Finance Dashboard', icon: DollarSign },
-    { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: Activity },
+    {
+      section: 'Main',
+      items: [
+        { path: '/Admin', label: 'Dashboard', icon: LayoutDashboard },
+      ]
+    },
+    {
+      section: 'User Management',
+      items: [
+        { path: '/Admin/UserManagement', label: 'System Admin Users', icon: Users },
+        { path: '/Admin/RolesPermissions', label: 'Roles & Permissions', icon: Shield },
+        { path: '/Admin/Invites', label: 'Invites', icon: Mail },
+      ]
+    },
+    {
+      section: 'Content Management',
+      items: [
+        { path: '/Admin/Clients', label: 'Clients', icon: Building },
+        { path: '/Admin/Artists', label: 'Artists', icon: Users },
+        { path: '/Admin/Teams', label: 'Teams', icon: Building },
+        { path: '/Admin/Backers', label: 'Backers', icon: DollarSign },
+        { path: '/Admin/Projects', label: 'Projects', icon: FolderKanban },
+        { path: '/Admin/Jobs', label: 'Jobs', icon: Briefcase },
+        { path: '/Admin/Categories', label: 'Categories', icon: LayoutGrid },
+        { path: '/Admin/Ticker', label: 'Marquee / Ticker', icon: Radio },
+      ]
+    },
+    {
+      section: 'Communication',
+      items: [
+        { path: '/Admin/Messages', label: 'Messages', icon: MessageSquare, showBadge: true },
+        { path: '/Admin/Notifications', label: 'Notifications', icon: Bell, showNotificationBadge: true },
+      ]
+    },
+    {
+      section: 'Integrations',
+      items: [
+        { path: '/Admin/SEOCMS', label: 'SEO & CMS', icon: Search },
+        { path: '/Admin/ImageStorage', label: 'Image Storage', icon: HardDrive },
+        { path: '/Admin/LoginProviders', label: 'Login Providers', icon: Lock },
+        { path: '/Admin/APISettings', label: 'API Settings', icon: Key },
+        { path: '/Admin/PaymentSettings', label: 'Payment Settings', icon: CreditCard },
+      ]
+    },
+    {
+      section: 'System',
+      items: [
+        { path: '/Admin/GeneralSettings', label: 'General Settings', icon: Settings },
+        { path: '/Admin/Analytics', label: 'Analytics Dashboard', icon: BarChart3 },
+        { path: '/Admin/FinanceDashboard', label: 'Finance Dashboard', icon: DollarSign },
+        { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: Activity },
+      ]
+    }
   ];
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
@@ -110,7 +141,7 @@ export default function AdminSidebar() {
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="hidden lg:flex p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            {isCollapsed ? <ChevronLeft className="w-5 h-5 rotate-180" /> : <ChevronLeft className="w-5 h-5" />}
+            {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           </button>
           <button
             onClick={() => setMobileSidebarOpen(false)}
@@ -121,33 +152,58 @@ export default function AdminSidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-        {menuItems.map((item) => (
+      {/* User Profile - hide when collapsed */}
+      {!isCollapsed && (
+        <div className="px-4 py-3 border-b border-gray-100">
           <button
-            key={item.path}
-            onClick={() => navigate(item.path)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-              isActive(item.path)
-                ? 'bg-indigo-100 text-indigo-700 font-semibold'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-            }`}
+            onClick={() => navigate('/Admin/UserManagement')}
+            className="flex items-center gap-3 w-full hover:bg-gray-50 rounded-lg p-2 transition-colors"
           >
-            <item.icon className="w-4 h-4 flex-shrink-0" />
-            {!isCollapsed && (
-              <span className="flex-1 text-left">{item.label}</span>
-            )}
-            {item.showBadge && unreadMessageCount > 0 && !isCollapsed && (
-              <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
-                {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
-              </span>
-            )}
-            {item.showNotificationBadge && unreadNotificationCount > 0 && !isCollapsed && (
-              <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
-                {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
-              </span>
-            )}
+            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
+              {user?.email?.[0]?.toUpperCase() || 'A'}
+            </div>
+            <div className="min-w-0 text-left">
+              <div className="text-xs font-semibold text-gray-800 truncate">{user?.full_name || 'Admin'}</div>
+              <div className="text-[10px] text-gray-400 truncate">{user?.email}</div>
+            </div>
           </button>
+        </div>
+      )}
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-4 px-2">
+        {menuItems.map((section) => (
+          <div key={section.section} className="mb-4">
+            <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
+              {section.section}
+            </div>
+            <div className="space-y-1">
+              {section.items.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                    isActive(item.path)
+                      ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {item.showBadge && unreadMessageCount > 0 && (
+                    <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                      {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                    </span>
+                  )}
+                  {item.showNotificationBadge && unreadNotificationCount > 0 && (
+                    <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                      {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
 

@@ -45,13 +45,10 @@ const DEMO_ACCOUNTS = {
 
 export default function SignIn() {
   const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'update_password'
-  const [loginMethod, setLoginMethod] = useState('password'); // 'otp' | 'password'
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [signupStep, setSignupStep] = useState(1); // 1: name, 2: email, 3: password, 4: role, 5: success
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -431,54 +428,8 @@ export default function SignIn() {
                 </div>
               </div>
 
-              {/* Login Method Toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1">
-                <button
-                  type="button"
-                  onClick={() => { setLoginMethod('otp'); setOtpSent(false); setMessage(''); setError(''); }}
-                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${loginMethod === 'otp' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                  <Key className="w-4 h-4 inline mr-1" />
-                  OTP Login
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setLoginMethod('password'); setOtpSent(false); setMessage(''); setError(''); }}
-                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${loginMethod === 'password' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                  <Lock className="w-4 h-4 inline mr-1" />
-                  Password
-                </button>
-              </div>
-
-              {/* OTP Login Form */}
-              {loginMethod === 'otp' && (
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                        placeholder="you@example.com" disabled={loading || otpSent}
-                        className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white" />
-                    </div>
-                  </div>
-                  {otpSent ? (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-sm text-green-700">OTP sent! Check your email to sign in. No password needed.</p>
-                    </div>
-                  ) : (
-                    <button type="submit" disabled={loading}
-                      className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
-                      {loading ? 'Sending...' : 'Send OTP'}
-                    </button>
-                  )}
-                </form>
-              )}
-
               {/* Password Login Form */}
-              {loginMethod === 'password' && (
-                <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1.5">Email</label>
                     <div className="relative">
@@ -510,7 +461,6 @@ export default function SignIn() {
                     {loading ? 'Signing in...' : 'Sign in'}
                   </button>
                 </form>
-              )}
             </div>
           )}
 
