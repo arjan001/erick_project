@@ -1,24 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { Key, Save, Plus, Trash2, Copy, RefreshCw, Shield, Clock, AlertTriangle, CheckCircle, ToggleLeft, ToggleRight, Code, Eye, EyeOff, Bot } from 'lucide-react';
+import { apiSettingsApi } from '../api/apiSettings.api';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function AdminAPISettingsPage() {
   const { success, error } = useToast();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showSecrets, setShowSecrets] = useState({});
   
-  const [apiKeys, setApiKeys] = useState([
-    { id: 1, name: 'Production API Key', key: 'sk_live_1234567890abcdef', secret: 'sk_live_secret_xyz', created: '2026-06-01', lastUsed: '2026-06-28', status: 'active' },
-    { id: 2, name: 'Test API Key', key: 'sk_test_0987654321fedcba', secret: 'sk_test_secret_abc', created: '2026-06-15', lastUsed: '2026-06-27', status: 'active' }
-  ]);
-
+  const [apiKeys, setApiKeys] = useState([]);
   const [rateLimits, setRateLimits] = useState({
     enabled: true,
     requestsPerMinute: 100,
     requestsPerHour: 1000,
     requestsPerDay: 10000,
-    burstLimit: 20
+    burstLimit: 20,
+    id: null
   });
 
   const [apiSettings, setApiSettings] = useState({
@@ -32,7 +33,8 @@ export default function AdminAPISettingsPage() {
     enableAPIVersioning: true,
     currentVersion: 'v1',
     enableLogging: true,
-    logRetentionDays: 30
+    logRetentionDays: 30,
+    id: null
   });
 
   const [googleDriveSettings, setGoogleDriveSettings] = useState({
@@ -40,7 +42,8 @@ export default function AdminAPISettingsPage() {
     clientId: '',
     clientSecret: '',
     apiKey: '',
-    scopes: ['https://www.googleapis.com/auth/drive.readonly']
+    scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+    id: null
   });
 
   const [chatGPTSettings, setChatGPTSettings] = useState({
@@ -48,19 +51,145 @@ export default function AdminAPISettingsPage() {
     apiKey: '',
     model: 'gpt-4',
     temperature: 0.7,
-    maxTokens: 2000
+    maxTokens: 2000,
+    id: null
   });
 
   const [showAddKeyModal, setShowAddKeyModal] = useState(false);
   const [newKeyForm, setNewKeyForm] = useState({
     name: '',
-    scopes: ['read', 'write']
+    scopes: ['read']
   });
+
+  // Fetch all data on mount
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      const [keysData, rateLimitData, apiConfigData, integrationsData] = await Promise.all([
+        apiSettingsApi.getAllApiKeys(),
+        apiSettingsApi.getRateLimitingSettings(),
+        apiSettingsApi.getApiConfiguration(),
+        apiSettingsApi.getAllIntegrations()
+      ]);
+
+      setApiKeys(keysData || []);
+      
+      if (rateLimitData) {
+        setRateLimits({
+          enabled: rateLimitData.enabled,
+          requestsPerMinute: rateLimitData.requests_per_minute,
+          requestsPerHour: rateLimitData.requests_per_hour,
+          requestsPerDay: rateLimitData.requests_per_day,
+          burstLimit: rateLimitData.burst_limit,
+          id: rateLimitData.id
+        });
+      }
+
+      if (apiConfigData) {
+        setApiSettings({
+          enableCORS: apiConfigData.enable_cors,
+          allowedOrigins: apiConfigData.allowed_origins || [],
+          enableAPIKeyAuth: apiConfigData.enable_api_key_auth,
+          enableJWTAuth: apiConfigData.enable_jwt_auth,
+          jwtExpiration: apiConfigData.jwt_expiration_seconds,
+          enableWebhooks: apiConfigData.enable_webhooks,
+          webhookSecret: apiConfigData.webhook_secret || '',
+          enableAPIVersioning: apiConfigData.enable_api_versioning,
+          currentVersion: apiConfigData.current_version,
+          enableLogging: apiConfigData.enable_logging,
+          logRetentionDays: apiConfigData.log_retention_days,
+          id: apiConfigData.id
+        });
+      }
+
+      // Parse integrations
+      if (integrationsData) {
+        const googleDrive = integrationsData.find(i => i.integration_name === 'google_drive');
+        const chatgpt = integrationsData.find(i => i.integration_name === 'chatgpt');
+
+        if (googleDrive) {
+          setGoogleDriveSettings({
+            enabled: googleDrive.is_enabled,
+            clientId: googleDrive.settings?.client_id || '',
+            clientSecret: googleDrive.settings?.client_secret || '',
+            apiKey: googleDrive.settings?.api_key || '',
+            scopes: googleDrive.settings?.scopes || ['https://www.googleapis.com/auth/drive.readonly'],
+            id: googleDrive.id
+          });
+        }
+
+        if (chatgpt) {
+          setChatGPTSettings({
+            enabled: chatgpt.is_enabled,
+            apiKey: chatgpt.settings?.api_key || '',
+            model: chatgpt.settings?.model || 'gpt-4',
+            temperature: chatgpt.settings?.temperature || 0.7,
+            maxTokens: chatgpt.settings?.max_tokens || 2000,
+            id: chatgpt.id
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching API settings data:', err);
+      error('Error', 'Failed to load API settings');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSaveSettings = async () => {
     setSaving(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Save rate limiting settings
+      if (rateLimits.id) {
+        await apiSettingsApi.updateRateLimitingSettings({
+          id: rateLimits.id,
+          enabled: rateLimits.enabled,
+          requests_per_minute: rateLimits.requestsPerMinute,
+          requests_per_hour: rateLimits.requestsPerHour,
+          requests_per_day: rateLimits.requestsPerDay,
+          burst_limit: rateLimits.burstLimit
+        });
+      }
+
+      // Save API configuration
+      if (apiSettings.id) {
+        await apiSettingsApi.updateApiConfiguration({
+          id: apiSettings.id,
+          enable_cors: apiSettings.enableCORS,
+          allowed_origins: apiSettings.allowedOrigins,
+          enable_api_key_auth: apiSettings.enableAPIKeyAuth,
+          enable_jwt_auth: apiSettings.enableJWTAuth,
+          jwt_expiration_seconds: apiSettings.jwtExpiration,
+          enable_webhooks: apiSettings.enableWebhooks,
+          webhook_secret: apiSettings.webhookSecret,
+          enable_api_versioning: apiSettings.enableAPIVersioning,
+          current_version: apiSettings.currentVersion,
+          enable_logging: apiSettings.enableLogging,
+          log_retention_days: apiSettings.logRetentionDays
+        });
+      }
+
+      // Save Google Drive settings
+      await apiSettingsApi.updateIntegrationSettings('google_drive', {
+        client_id: googleDriveSettings.clientId,
+        client_secret: googleDriveSettings.clientSecret,
+        api_key: googleDriveSettings.apiKey,
+        scopes: googleDriveSettings.scopes
+      }, googleDriveSettings.enabled);
+
+      // Save ChatGPT settings
+      await apiSettingsApi.updateIntegrationSettings('chatgpt', {
+        api_key: chatGPTSettings.apiKey,
+        model: chatGPTSettings.model,
+        temperature: chatGPTSettings.temperature,
+        max_tokens: chatGPTSettings.maxTokens
+      }, chatGPTSettings.enabled);
+
       success('Saved', 'API settings saved successfully');
     } catch (err) {
       console.error('Error saving settings:', err);
@@ -72,19 +201,16 @@ export default function AdminAPISettingsPage() {
 
   const handleCreateAPIKey = async () => {
     try {
-      const newKey = {
-        id: Date.now(),
+      const newKey = await apiSettingsApi.createApiKey({
         name: newKeyForm.name,
-        key: `sk_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 15)}`,
-        secret: `sk_secret_${Math.random().toString(36).substring(2, 20)}`,
-        created: new Date().toISOString(),
-        lastUsed: null,
-        status: 'active'
-      };
+        scopes: newKeyForm.scopes,
+        created_by: user?.id
+      });
+      
       setApiKeys([...apiKeys, newKey]);
       success('Created', 'API key created successfully');
       setShowAddKeyModal(false);
-      setNewKeyForm({ name: '', scopes: ['read', 'write'] });
+      setNewKeyForm({ name: '', scopes: ['read'] });
     } catch (err) {
       console.error('Error creating API key:', err);
       error('Failed', 'Failed to create API key');
@@ -93,6 +219,7 @@ export default function AdminAPISettingsPage() {
 
   const handleDeleteAPIKey = async (keyId) => {
     try {
+      await apiSettingsApi.deleteApiKey(keyId);
       setApiKeys(apiKeys.filter(k => k.id !== keyId));
       success('Deleted', 'API key deleted successfully');
     } catch (err) {
@@ -103,6 +230,7 @@ export default function AdminAPISettingsPage() {
 
   const handleRevokeAPIKey = async (keyId) => {
     try {
+      await apiSettingsApi.revokeApiKey(keyId);
       setApiKeys(apiKeys.map(k => k.id === keyId ? { ...k, status: 'revoked' } : k));
       success('Revoked', 'API key revoked successfully');
     } catch (err) {
@@ -119,6 +247,14 @@ export default function AdminAPISettingsPage() {
   const toggleSecretVisibility = (keyId) => {
     setShowSecrets(prev => ({ ...prev, [keyId]: !prev[keyId] }));
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <RefreshCw className="w-8 h-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -166,8 +302,8 @@ export default function AdminAPISettingsPage() {
                       <div>
                         <div className="text-gray-500">Public Key</div>
                         <div className="flex items-center gap-2">
-                          <code className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{key.key}</code>
-                          <Button variant="ghost" size="sm" onClick={() => handleCopyKey(key.key)}>
+                          <code className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{key.public_key}</code>
+                          <Button variant="ghost" size="sm" onClick={() => handleCopyKey(key.public_key)}>
                             <Copy className="w-3 h-3" />
                           </Button>
                         </div>
@@ -176,7 +312,7 @@ export default function AdminAPISettingsPage() {
                         <div className="text-gray-500">Secret Key</div>
                         <div className="flex items-center gap-2">
                           <code className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                            {showSecrets[key.id] ? key.secret : '•'.repeat(20)}
+                            {showSecrets[key.id] ? key.secret_key : '•'.repeat(20)}
                           </code>
                           <Button variant="ghost" size="sm" onClick={() => toggleSecretVisibility(key.id)}>
                             {showSecrets[key.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
@@ -185,11 +321,16 @@ export default function AdminAPISettingsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                      <span>Created: {new Date(key.created).toLocaleDateString()}</span>
-                      <span>Last Used: {key.lastUsed ? new Date(key.lastUsed).toLocaleDateString() : 'Never'}</span>
+                      <span>Created: {new Date(key.created_at).toLocaleDateString()}</span>
+                      <span>Last Used: {key.last_used_at ? new Date(key.last_used_at).toLocaleDateString() : 'Never'}</span>
                     </div>
                   </div>
                 ))}
+                {apiKeys.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No API keys created yet. Click "Generate API Key" to create one.
+                  </div>
+                )}
               </div>
             </div>
 
