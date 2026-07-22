@@ -174,7 +174,7 @@ export default function AdminProjectsPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearchQuery, filterStatus]);
+  }, [debouncedSearchQuery, filterStatus, itemsPerPage]);
 
   if (loading) {
     return (
@@ -221,7 +221,7 @@ export default function AdminProjectsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3 flex-wrap">
             <div className="relative">
@@ -231,21 +231,31 @@ export default function AdminProjectsPage() {
                 placeholder="Search projects..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-sm"
               />
             </div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-sm"
             >
               <option value="all">All Status</option>
               {STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
             </select>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => setItemsPerPage(parseInt(e.target.value))}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-sm"
+            >
+              <option value={5}>5 per page</option>
+              <option value={10}>10 per page</option>
+              <option value={25}>25 per page</option>
+              <option value={50}>50 per page</option>
+            </select>
           </div>
           <Button
             onClick={() => setShowCreateModal(true)}
-            className="bg-black text-white hover:bg-gray-800"
+            className="bg-black text-white hover:bg-gray-800 rounded-lg"
           >
             <Plus className="w-4 h-4 mr-2" />
             Create Project
@@ -255,104 +265,104 @@ export default function AdminProjectsPage() {
 
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timeline</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Project</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Owner</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Budget</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Timeline</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Submitted</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-100">
               {paginatedProjects.length === 0 && (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500">No projects found</td></tr>
+                <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-500">No projects found</td></tr>
               )}
               {paginatedProjects.map(project => (
-                <tr key={project.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <div className="text-sm font-medium text-gray-900">{project.title || 'Untitled'}</div>
-                    <div className="text-xs text-gray-500 capitalize">{project.project_type?.replace('_', ' ')}</div>
-                    <div className="flex flex-wrap gap-1 mt-1">
+                <tr key={project.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-semibold text-gray-900">{project.title || 'Untitled'}</div>
+                    <div className="text-xs text-gray-500 capitalize mt-1">{project.project_type?.replace('_', ' ')}</div>
+                    <div className="flex flex-wrap gap-1 mt-2">
                       {project.is_featured && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800">
                           <Star className="w-3 h-3 mr-0.5" />
                           Featured
                         </span>
                       )}
                       {isPopularProject(project.budget) && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-800">
                           <Flame className="w-3 h-3 mr-0.5" />
                           Popular
                         </span>
                       )}
                       {isNewProject(project.created_at) && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800">
                           <Sparkles className="w-3 h-3 mr-0.5" />
                           New
                         </span>
                       )}
                       {project.open_to_backing && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800">
                           <DollarSign className="w-3 h-3 mr-0.5" />
                           Seeking Backing
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="text-sm text-gray-600">{project.project_owner_name || 'N/A'}</div>
-                    <div className="text-xs text-gray-500">{project.project_owner_company || ''}</div>
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-medium text-gray-900">{project.project_owner_name || 'N/A'}</div>
+                    <div className="text-xs text-gray-500 mt-1">{project.project_owner_company || ''}</div>
                   </td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                  <td className="px-6 py-4 text-sm font-semibold text-gray-900">
                     {project.budget ? `$${project.budget.toLocaleString()}` : project.budget_range?.replace(/_/g, ' ') || 'N/A'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-6 py-4 text-sm text-gray-600">
                     {project.is_remote ? (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5" />
                         Remote
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5" />
                         {[project.location_city, project.location_country].filter(Boolean).join(', ') || 'N/A'}
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-6 py-4 text-sm text-gray-600">
                     {project.timeline_start || project.timeline_deadline ? (
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5" />
                         {project.timeline_start ? new Date(project.timeline_start).toLocaleDateString() : 'N/A'}
                         {project.timeline_deadline && ` - ${new Date(project.timeline_deadline).toLocaleDateString()}`}
                       </div>
                     ) : 'N/A'}
                   </td>
-                  <td className="px-4 py-3">{getStatusBadge(project.status)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{project.created_at ? new Date(project.created_at).toLocaleDateString() : 'N/A'}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4">{getStatusBadge(project.status)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{project.created_at ? new Date(project.created_at).toLocaleDateString() : 'N/A'}</td>
+                  <td className="px-6 py-4">
                     <div className="flex items-center gap-1">
                       <Button 
                         variant="ghost" 
                         size="sm" 
                         onClick={() => handleToggleFeatured(project.id, project.is_featured)} 
                         title={project.is_featured ? "Unfeature" : "Feature"}
-                        className={`p-1 ${project.is_featured ? 'text-yellow-600' : 'text-gray-400'}`}
+                        className={`p-2 rounded-lg ${project.is_featured ? 'text-yellow-600 hover:bg-yellow-50' : 'text-gray-400 hover:bg-gray-100'}`}
                       >
                         <Star className={`w-4 h-4 ${project.is_featured ? 'fill-current' : ''}`} />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedProject(project)} title="View Details" className="p-1">
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedProject(project)} title="View Details" className="p-2 rounded-lg text-gray-400 hover:bg-gray-100">
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleVerify(project.id, project.status)} title="Toggle Verified" className="p-1">
+                      <Button variant="ghost" size="sm" onClick={() => handleVerify(project.id, project.status)} title="Toggle Verified" className="p-2 rounded-lg text-gray-400 hover:bg-gray-100">
                         {project.status === 'verified' ? <XCircle className="w-4 h-4 text-red-600" /> : <CheckCircle className="w-4 h-4 text-green-600" />}
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteProject(project.id)} title="Delete" className="p-1">
-                        <Trash2 className="w-4 h-4 text-red-600" />
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteProject(project.id)} title="Delete" className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600">
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </td>
@@ -364,7 +374,7 @@ export default function AdminProjectsPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50">
             <div className="text-sm text-gray-600">
               Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredProjects.length)} of {filteredProjects.length} projects
             </div>
@@ -374,27 +384,52 @@ export default function AdminProjectsPage() {
                 size="sm"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-3"
+                className="px-3 rounded-lg"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handlePageChange(page)}
-                  className={`px-3 ${currentPage === page ? 'bg-black text-white hover:bg-gray-800' : ''}`}
-                >
-                  {page}
-                </Button>
-              ))}
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`px-3 rounded-lg ${currentPage === pageNum ? 'bg-black text-white hover:bg-gray-800' : ''}`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+              {totalPages > 5 && (
+                <>
+                  <span className="text-gray-400">...</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(totalPages)}
+                    className="px-3 rounded-lg"
+                  >
+                    {totalPages}
+                  </Button>
+                </>
+              )}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-3"
+                className="px-3 rounded-lg"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
