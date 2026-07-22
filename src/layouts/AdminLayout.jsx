@@ -230,7 +230,7 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* Main */}
-      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${sidebarOpen ? 'lg:mx-[17.5625rem]' : 'lg:mx-[5.5625rem]'}`}>
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${sidebarOpen ? 'lg:ml-[17.5625rem] lg:mr-6' : 'lg:ml-[5.5625rem] lg:mr-6'}`}>
         {/* Top Bar */}
         <header className="bg-white border-b border-gray-100 flex-shrink-0"
           style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>
