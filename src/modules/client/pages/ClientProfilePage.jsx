@@ -232,25 +232,6 @@ export default function ClientProfilePage() {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!owner) return;
-    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone and will permanently delete all your data including projects, jobs, and applications.')) {
-      return;
-    }
-    
-    try {
-      await ProjectOwner.delete(owner.id);
-      localStorage.removeItem('studio22_user');
-      success('Account Deleted', 'Your account has been permanently deleted');
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 2000);
-    } catch (err) {
-      console.error('Error deleting account:', err);
-      toastError('Delete Failed', 'Failed to delete account. Please try again.');
-    }
-  };
-
   // Project CRUD operations
   const handleEditProject = (project) => {
     window.location.href = `/ClientPostProject?edit=${project.id}`;
