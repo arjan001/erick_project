@@ -289,9 +289,9 @@ export default function AdminDashboardPage() {
           <h3 className="text-sm font-semibold text-gray-800 mb-4">Pending Actions</h3>
           <div className="space-y-3">
             {[
-              { label: 'Projects awaiting verification', count: pendingProjects, href: '/AdminProjects', color: 'bg-amber-100 text-amber-700' },
-              { label: 'Open jobs to review', count: openJobs, href: '/AdminJobs', color: 'bg-blue-100 text-blue-700' },
-              { label: 'Featured projects', count: featuredProjects, href: '/AdminProjects', color: 'bg-yellow-100 text-yellow-700' },
+              { label: 'Projects awaiting verification', count: pendingProjects, href: '/Admin/Projects', color: 'bg-amber-100 text-amber-700' },
+              { label: 'Open jobs to review', count: openJobs, href: '/Admin/Jobs', color: 'bg-blue-100 text-blue-700' },
+              { label: 'Featured projects', count: featuredProjects, href: '/Admin/Projects', color: 'bg-yellow-100 text-yellow-700' },
             ].map((item) => (
               <a key={item.label} href={item.href}
                 className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors group">
