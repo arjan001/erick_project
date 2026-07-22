@@ -8,7 +8,7 @@ export const adminUsersApi = {
       .from('users')
       .select(`
         *,
-        user_roles!user_roles_user_id_fkey (
+        user_roles!fk_user_roles_user (
           role_id,
           roles (
             id,
@@ -25,13 +25,17 @@ export const adminUsersApi = {
       console.error('Error fetching users:', error);
       throw error;
     }
+    console.log('Fetched users:', data);
+    console.log('Number of users:', data?.length);
     return data;
   },
 
   // Create a new system user
   createUser: async (userData) => {
     const { email, password, first_name, last_name, role_key } = userData;
-    
+
+    console.log('Creating user with data:', { email, first_name, last_name, role_key });
+
     // 1. Create user in Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
@@ -46,7 +50,12 @@ export const adminUsersApi = {
       }
     });
 
-    if (authError) throw authError;
+    if (authError) {
+      console.error('Auth error:', authError);
+      throw authError;
+    }
+
+    console.log('Auth user created:', authData.user?.id);
 
     // 2. Create user record in users table
     const { data: userRecord, error: userError } = await supabase
@@ -63,7 +72,12 @@ export const adminUsersApi = {
       .select()
       .single();
 
-    if (userError) throw userError;
+    if (userError) {
+      console.error('User record error:', userError);
+      throw userError;
+    }
+
+    console.log('User record created:', userRecord);
 
     // 3. Assign role from roles/permissions system
     if (role_key) {
@@ -88,6 +102,7 @@ export const adminUsersApi = {
     // Log audit event
     await auditLogger.users.create(userRecord.id, email);
 
+    console.log('User creation complete');
     return userRecord;
   },
 
