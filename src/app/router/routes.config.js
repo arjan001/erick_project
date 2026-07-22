@@ -511,6 +511,12 @@ const artistRoutes = [
     component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
     layout: DashboardLayout,
     guard: ArtistGuard
+  },
+  {
+    path: '/Network',
+    component: () => import('@/modules/network/pages/NetworkPage'),
+    layout: DashboardLayout,
+    guard: ArtistGuard
   }
 ];
 
