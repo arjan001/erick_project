@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Shield, Settings, Search, HardDrive, Mail, Lock, Key, CreditCard, DollarSign, Activity, ChevronLeft, LogOut, Briefcase, FolderKanban, Building, MessageSquare, Package, ShoppingCart, Store, Radio, LayoutGrid, BarChart3, Bell, X } from 'lucide-react';
+import { LayoutDashboard, Users, Shield, Settings, Search, HardDrive, Mail, Lock, Key, CreditCard, DollarSign, Activity, ChevronLeft, ChevronRight, LogOut, Briefcase, FolderKanban, Building, MessageSquare, Package, ShoppingCart, Store, Radio, LayoutGrid, BarChart3, Bell, X } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useSidebar } from '@/layouts/DashboardLayout';
 import { Message, Notification } from '@/lib/supabaseEntities';
@@ -132,7 +132,7 @@ export default function AdminSidebar() {
       <div className="p-3 border-b border-gray-100 flex items-center justify-between">
         {!isCollapsed && (
           <div>
-            <h1 className="text-xl font-black bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent">22.</h1>
+            <h1 className="text-xl font-black bg-gradient-to-br from-gray-900 to-gray-700 bg-clip-text text-transparent">22.</h1>
             <p className="text-sm text-gray-500">Admin Panel</p>
           </div>
         )}
@@ -173,30 +173,46 @@ export default function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2">
         {menuItems.map((section) => (
-          <div key={section.section} className="mb-4">
-            <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
-              {section.section}
-            </div>
-            <div className="space-y-1">
+          <div key={section.section} className={`${isCollapsed ? 'mb-2' : 'mb-4'}`}>
+            {!isCollapsed && (
+              <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
+                {section.section}
+              </div>
+            )}
+            <div className={`${isCollapsed ? 'space-y-2' : 'space-y-1'}`}>
               {section.items.map((item) => (
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                  className={`relative w-full flex items-center justify-center rounded-xl text-sm transition-colors ${
+                    isCollapsed ? 'px-2 py-2 gap-0' : 'px-3 py-2.5 gap-3'
+                  } ${
                     isActive(item.path)
-                      ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                      ? 'bg-gray-900 text-white font-semibold'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
-                  <item.icon className="w-4 h-4" />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {item.showBadge && unreadMessageCount > 0 && (
+                  <item.icon className="w-4 h-4 flex-shrink-0" />
+                  {!isCollapsed && (
+                    <span className="flex-1 text-left">{item.label}</span>
+                  )}
+                  {!isCollapsed && item.showBadge && unreadMessageCount > 0 && (
                     <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
                       {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
                     </span>
                   )}
-                  {item.showNotificationBadge && unreadNotificationCount > 0 && (
+                  {!isCollapsed && item.showNotificationBadge && unreadNotificationCount > 0 && (
                     <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                      {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                    </span>
+                  )}
+                  {isCollapsed && item.showBadge && unreadMessageCount > 0 && (
+                    <span className="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                    </span>
+                  )}
+                  {isCollapsed && item.showNotificationBadge && unreadNotificationCount > 0 && (
+                    <span className="absolute top-1 right-1 bg-orange-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                       {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
                     </span>
                   )}
