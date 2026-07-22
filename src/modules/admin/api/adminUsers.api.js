@@ -206,12 +206,22 @@ export const adminUsersApi = {
 
   // Get all available roles
   getAllRoles: async () => {
-    const { data, error } = await supabase
-      .from('roles')
-      .select('*')
-      .order('role_name');
+    try {
+      const { data, error } = await supabase
+        .from('roles')
+        .select('*')
+        .order('role_name');
 
-    if (error) throw error;
-    return data;
+      if (error) {
+        console.error('Error fetching roles:', error);
+        throw error;
+      }
+      
+      console.log('Fetched roles:', data);
+      return data || [];
+    } catch (error) {
+      console.error('getAllRoles error:', error);
+      return [];
+    }
   }
 };

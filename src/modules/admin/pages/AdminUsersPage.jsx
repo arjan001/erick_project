@@ -61,8 +61,10 @@ export default function AdminUsersPage() {
       ]);
       setUsers(usersData || []);
       setRoles(rolesData || []);
+      console.log('Fetched data - Users:', usersData?.length, 'Roles:', rolesData?.length);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setRoles([]); // Ensure roles is set to empty array on error
     } finally {
       setLoading(false);
     }
