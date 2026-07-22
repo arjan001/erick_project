@@ -198,6 +198,32 @@ export default function SignIn() {
       if (supaError) throw supaError;
       const userRole = data.user?.user_metadata?.role || 'artist';
       const fullName = data.user?.user_metadata?.full_name || data.user?.email?.split('@')[0] || 'User';
+      
+      // Check account status for clients/project_owners
+      if (userRole === 'client' || userRole === 'project_owner') {
+        try {
+          const owners = await ProjectOwner.filter({ email: data.user.email });
+          if (owners.length > 0) {
+            const owner = owners[0];
+            if (owner.is_suspended) {
+              await supabase.auth.signOut();
+              setError('This account has been suspended. Please contact support for assistance.');
+              setLoading(false);
+              return;
+            }
+            if (owner.deletion_requested_at) {
+              await supabase.auth.signOut();
+              setError('This account has been requested for deletion and no longer exists. Please contact support if this is an error.');
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (dbError) {
+          console.error('Error checking account status:', dbError);
+          // Continue with login even if status check fails
+        }
+      }
+      
       const userData = { id: data.user.id, email: data.user.email, full_name: fullName, role: userRole };
       login(userData);
       window.location.href = ROLE_REDIRECTS[userRole] || '/';

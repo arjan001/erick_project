@@ -51,6 +51,11 @@ export default function ClientProfilePage() {
   const [securitySettings, setSecuritySettings] = useState(null);
   const [activeSessions, setActiveSessions] = useState([]);
   const [loadingSecurity, setLoadingSecurity] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const [formData, setFormData] = useState({
     company: '', phone: '', website: '', bio: '', linkedin: '', instagram: '', twitter: '', youtube: '',
@@ -360,6 +365,151 @@ export default function ClientProfilePage() {
       toastError('Revoke Failed', err.message || 'Failed to revoke session');
     }
   };
+
+  const handleChangePassword = async () => {
+    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      toastError('Validation Error', 'Please fill in all password fields');
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toastError('Validation Error', 'New passwords do not match');
+      return;
+    }
+    if (passwordForm.newPassword.length < 8) {
+      toastError('Validation Error', 'Password must be at least 8 characters');
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordForm.newPassword
+      });
+      
+      if (error) throw error;
+      
+      // Update password last changed in security settings
+      if (securitySettings) {
+        await SecuritySettings.update(securitySettings.id, {
+          password_last_changed: new Date().toISOString()
+        });
+      } else {
+        await SecuritySettings.create({
+          client_id: owner.id,
+          password_last_changed: new Date().toISOString()
+        });
+      }
+      
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setShowPasswordModal(false);
+      success('Password Changed', 'Your password has been updated successfully');
+    } catch (err) {
+      console.error('Error changing password:', err);
+      toastError('Password Change Failed', err.message || 'Failed to change password');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!confirm('Are you sure you want to delete your account? This action cannot be undone. Your account will be suspended for 90 days before permanent deletion.')) return;
+    
+    setDeletingAccount(true);
+    try {
+      // Mark account for deletion (suspend it)
+      const deletionDate = new Date();
+      deletionDate.setDate(deletionDate.getDate() + 90);
+      
+      await ProjectOwner.update(owner.id, {
+        is_suspended: true,
+        deletion_requested_at: new Date().toISOString(),
+        scheduled_deletion_date: deletionDate.toISOString()
+      });
+      
+      // Log out the user
+      await supabase.auth.signOut();
+      localStorage.removeItem('studio22_user');
+      
+      success('Account Deletion Requested', 'Your account has been suspended and will be permanently deleted in 90 days');
+      window.location.href = '/SignIn';
+    } catch (err) {
+      console.error('Error deleting account:', err);
+      toastError('Delete Failed', err.message || 'Failed to delete account');
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
+  // Track current session
+  useEffect(() => {
+    const trackCurrentSession = async () => {
+      if (!owner?.id) return;
+      
+      try {
+        // Get device info
+        const userAgent = navigator.userAgent;
+        let browser = 'Unknown';
+        let deviceType = 'Desktop';
+        
+        if (userAgent.includes('Chrome')) browser = 'Chrome';
+        else if (userAgent.includes('Firefox')) browser = 'Firefox';
+        else if (userAgent.includes('Safari')) browser = 'Safari';
+        else if (userAgent.includes('Edge')) browser = 'Edge';
+        
+        if (userAgent.includes('Mobile') || userAgent.includes('Android') || userAgent.includes('iPhone')) {
+          deviceType = 'Mobile';
+        } else if (userAgent.includes('Tablet') || userAgent.includes('iPad')) {
+          deviceType = 'Tablet';
+        }
+        
+        // Get IP address (using a free API)
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        const ipAddress = ipData.ip;
+        
+        // Get location (using a free API)
+        const locationResponse = await fetch(`https://ipapi.co/${ipAddress}/json/`);
+        const locationData = await locationResponse.json();
+        
+        // Check if session already exists
+        const existingSessions = await ActiveSession.filter({ 
+          client_id: owner.id,
+          ip_address: ipAddress 
+        });
+        
+        const sessionData = {
+          client_id: owner.id,
+          session_token: user?.id || 'current',
+          ip_address: ipAddress,
+          user_agent: userAgent,
+          device_type: deviceType,
+          browser: browser,
+          location_country: locationData.country_name || 'Unknown',
+          location_city: locationData.city || 'Unknown',
+          last_activity: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
+        };
+        
+        if (existingSessions.length > 0) {
+          // Update existing session
+          await ActiveSession.update(existingSessions[0].id, {
+            last_activity: new Date().toISOString()
+          });
+        } else {
+          // Create new session
+          await ActiveSession.create(sessionData);
+        }
+      } catch (err) {
+        console.error('Error tracking session:', err);
+      }
+    };
+    
+    trackCurrentSession();
+    
+    // Update session activity every 5 minutes
+    const interval = setInterval(trackCurrentSession, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [owner, user]);
 
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -820,7 +970,13 @@ export default function ClientProfilePage() {
                             : 'Never'}
                         </p>
                       </div>
-                      <Button variant="outline" className="text-sm">Change Password</Button>
+                      <Button 
+                        variant="outline" 
+                        className="text-sm"
+                        onClick={() => setShowPasswordModal(true)}
+                      >
+                        Change Password
+                      </Button>
                     </div>
                   </div>
 
@@ -874,7 +1030,7 @@ export default function ClientProfilePage() {
                                   {session.browser} • {session.location_country || 'Unknown Location'}
                                 </p>
                                 <p className="text-xs text-gray-400">
-                                  Last active: {new Date(session.last_activity).toLocaleString()}
+                                  IP: {session.ip_address || 'Unknown'} • Last active: {new Date(session.last_activity).toLocaleString()}
                                 </p>
                               </div>
                             </div>
@@ -912,7 +1068,7 @@ export default function ClientProfilePage() {
               <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
                 <h3 className="font-bold text-red-900 text-base mb-4 flex items-center gap-2"><Trash2 className="w-4 h-4 text-red-600" /> Danger Zone</h3>
                 <p className="text-sm text-red-700 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
-                <Button onClick={handleDeleteAccount} variant="outline" className="w-full border-red-600 text-red-600 hover:bg-red-600 hover:text-white rounded-lg py-2.5">Delete Account</Button>
+                <Button onClick={() => setShowDeleteModal(true)} variant="outline" className="w-full border-red-600 text-red-600 hover:bg-red-600 hover:text-white rounded-lg py-2.5">Delete Account</Button>
               </div>
             </div>
           )}
@@ -977,6 +1133,105 @@ export default function ClientProfilePage() {
                 <Button variant="outline" onClick={() => setShowInviteModal(false)}>Cancel</Button>
                 <Button onClick={handleInviteTeamMember} className="bg-black text-white hover:bg-gray-800">Send Invitation</Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Password Change Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Change Password</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Current Password</label>
+                <Input
+                  type="password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                  placeholder="Enter current password"
+                  className="rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">New Password</label>
+                <Input
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  placeholder="Enter new password (min 8 characters)"
+                  className="rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Confirm New Password</label>
+                <Input
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                  placeholder="Confirm new password"
+                  className="rounded-lg"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleChangePassword}
+                disabled={changingPassword}
+                className="flex-1 bg-black text-white hover:bg-gray-800"
+              >
+                {changingPassword ? 'Changing...' : 'Change Password'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 text-red-900">Delete Account</h3>
+            <div className="space-y-4">
+              <p className="text-gray-600">
+                Are you sure you want to delete your account? This action cannot be undone.
+              </p>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-800 font-medium">What will happen:</p>
+                <ul className="text-sm text-red-700 mt-2 list-disc list-inside space-y-1">
+                  <li>Your account will be suspended immediately</li>
+                  <li>You will be logged out of all devices</li>
+                  <li>Your account will be permanently deleted after 90 days</li>
+                  <li>You will not be able to recover your account</li>
+                </ul>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteAccount}
+                disabled={deletingAccount}
+                className="flex-1 bg-red-600 text-white hover:bg-red-700"
+              >
+                {deletingAccount ? 'Processing...' : 'Delete Account'}
+              </Button>
             </div>
           </div>
         </div>

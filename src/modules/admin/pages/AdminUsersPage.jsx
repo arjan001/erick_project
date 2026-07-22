@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Search, Plus, Edit, Trash2, Shield, User, Mail, Eye, X, ChevronLeft, ChevronRight, Loader2, MoreVertical, Ban, CheckCircle } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Shield, User, Mail, Eye, X, ChevronLeft, ChevronRight, Loader2, MoreVertical, Ban, CheckCircle, AlertTriangle } from 'lucide-react';
 
 const PAGE_SIZE = 10;
 
@@ -285,16 +285,36 @@ export default function AdminUsersPage() {
               {paginatedUsers.map((user) => {
                 const statusStyle = getStatusStyle(user.is_active);
                 const StatusIcon = statusStyle.icon;
+                const hasDeletionRequest = user.deletion_requested_at || user.scheduled_deletion_date;
                 return (
-                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={user.id} className={`hover:bg-gray-50 transition-colors ${hasDeletionRequest ? 'bg-red-50' : ''}`}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
-                          {user.first_name?.[0] || user.email?.[0] || 'U'}
+                        <div className="relative">
+                          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                            {user.first_name?.[0] || user.email?.[0] || 'U'}
+                          </div>
+                          {hasDeletionRequest && (
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse flex items-center justify-center">
+                              <AlertTriangle className="w-2.5 h-2.5 text-white" />
+                            </div>
+                          )}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{user.first_name} {user.last_name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-gray-900">{user.first_name} {user.last_name}</p>
+                            {hasDeletionRequest && (
+                              <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full font-medium">
+                                Deletion Requested
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-gray-500">{user.email}</p>
+                          {hasDeletionRequest && user.scheduled_deletion_date && (
+                            <p className="text-xs text-red-600 mt-1">
+                              Deleting on {new Date(user.scheduled_deletion_date).toLocaleDateString()}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </td>

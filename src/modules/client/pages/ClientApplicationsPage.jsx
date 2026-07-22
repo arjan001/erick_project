@@ -721,7 +721,7 @@ export default function ClientApplications() {
                   }}
                   className="flex items-center gap-2"
                 >
-                  {sortBy === 'score' && sortOrder === 'desc' ? <TrendingUp className="w-4 h-4" : <TrendingUp className="w-4 h-4" style={{ transform: 'rotate(180deg)' }} />}
+                  {sortBy === 'score' && sortOrder === 'desc' ? <TrendingUp className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" style={{ transform: 'rotate(180deg)' }} />}
                   Sort by Score
                 </Button>
               </div>
