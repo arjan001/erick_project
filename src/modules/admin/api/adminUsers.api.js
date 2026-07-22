@@ -159,6 +159,8 @@ export const adminUsersApi = {
 
   // Delete user
   deleteUser: async (userId) => {
+    console.log('Deleting user:', userId);
+
     // Get user email before deletion for audit log
     const { data: user } = await supabase
       .from('users')
@@ -166,22 +168,31 @@ export const adminUsersApi = {
       .eq('id', userId)
       .single();
 
-    // Delete from Supabase Auth
-    await supabase.auth.admin.deleteUser(userId);
-    
     // Delete from users table (cascade will handle user_roles)
     const { error } = await supabase
       .from('users')
       .delete()
       .eq('id', userId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error deleting user from database:', error);
+      throw error;
+    }
+
+    // Delete from Supabase Auth (after database delete to avoid auth errors)
+    try {
+      await supabase.auth.admin.deleteUser(userId);
+    } catch (authError) {
+      console.error('Error deleting user from auth:', authError);
+      // Continue even if auth deletion fails - database record is deleted
+    }
 
     // Log audit event
     if (user) {
       await auditLogger.users.delete(userId, user.email);
     }
 
+    console.log('User deleted successfully');
     return true;
   },
 
