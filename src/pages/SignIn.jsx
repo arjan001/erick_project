@@ -45,7 +45,7 @@ const DEMO_ACCOUNTS = {
 
 export default function SignIn() {
   const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'update_password'
-  const [loginMethod, setLoginMethod] = useState('otp'); // 'otp' | 'password'
+  const [loginMethod, setLoginMethod] = useState('password'); // 'otp' | 'password'
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [signupStep, setSignupStep] = useState(1); // 1: name, 2: email, 3: password, 4: role, 5: success
   const [email, setEmail] = useState('');
@@ -162,7 +162,7 @@ export default function SignIn() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/SignIn`,
+          redirectTo: `${window.location.origin}/`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
