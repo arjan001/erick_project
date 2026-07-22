@@ -333,6 +333,24 @@ export default function ClientPostProject() {
     }
   };
 
+  const toggleRole = (role) => {
+    const current = projectForm.roles_needed || [];
+    if (current.includes(role)) {
+      updateForm('roles_needed', current.filter(r => r !== role));
+    } else {
+      updateForm('roles_needed', [...current, role]);
+    }
+  };
+
+  const toggleSkill = (skill) => {
+    const current = projectForm.skills_needed || [];
+    if (current.includes(skill)) {
+      updateForm('skills_needed', current.filter(s => s !== skill));
+    } else {
+      updateForm('skills_needed', [...current, skill]);
+    }
+  };
+
   const fetchLocationSuggestions = async (query) => {
     if (!query || query.length < 2) {
       setLocationSuggestions([]);
