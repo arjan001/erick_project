@@ -227,6 +227,36 @@ export default function Home({ editMode = false }) {
     'Translating into a film concept'
   ];
 
+  const normalizeUrl = (url) => {
+    if (!url || url.trim() === '') return url;
+    let normalized = url.trim();
+    
+    // Remove any existing protocol
+    if (normalized.startsWith('http://')) {
+      normalized = normalized.substring(7);
+    } else if (normalized.startsWith('https://')) {
+      normalized = normalized.substring(8);
+    }
+    
+    // Remove leading www. if present to standardize
+    if (normalized.startsWith('www.')) {
+      normalized = normalized.substring(4);
+    }
+    
+    // Add https:// prefix
+    return 'https://' + normalized;
+  };
+
+  const handleUrlChange = (e) => {
+    const rawValue = e.target.value;
+    // Only normalize if it looks like a domain (contains a dot and no spaces)
+    if (rawValue.includes('.') && !rawValue.includes(' ')) {
+      setProjectUrl(normalizeUrl(rawValue));
+    } else {
+      setProjectUrl(rawValue);
+    }
+  };
+
   const handleExtract = async () => {
     if (!projectUrl) return;
 
@@ -322,13 +352,10 @@ export default function Home({ editMode = false }) {
   const handleQuickSubmit = async (e) => {
     e.preventDefault();
     
-    // Normalize URL if provided (add https:// if missing)
+    // Normalize URL if provided
     let normalizedUrl = projectUrl;
     if (projectUrl && projectUrl.trim() !== '') {
-      normalizedUrl = projectUrl.trim();
-      if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
-        normalizedUrl = 'https://' + normalizedUrl;
-      }
+      normalizedUrl = normalizeUrl(projectUrl);
     }
     
     // If we have URL analysis data, it's already saved to localStorage
@@ -342,7 +369,7 @@ export default function Home({ editMode = false }) {
       sessionStorage.setItem('quickProjectCategory', projectCategory);
       sessionStorage.setItem('quickProjectAttachments', JSON.stringify(attachments));
     } else {
-      // Update existing analyzed project with attachments
+      // Update existing analyzed project with attachments and normalized URL
       saveAnalyzedProjectToStorage({
         ...analyzedProject,
         url: normalizedUrl,
@@ -1001,7 +1028,7 @@ export default function Home({ editMode = false }) {
               <Input
                 type="url"
                 value={projectUrl}
-                onChange={(e) => setProjectUrl(e.target.value)}
+                onChange={handleUrlChange}
                 placeholder="Paste your website or project URL (optional)"
                 className="w-full px-4 py-3 pr-32 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-transparent h-11"
               />
