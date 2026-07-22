@@ -3,10 +3,20 @@
 -- Description: Add tables for team members, billing, and security settings
 
 -- ============================================
+-- DROP EXISTING TABLES IF THEY EXIST WITH WRONG SCHEMA
+-- ============================================
+
+DROP TABLE IF EXISTS active_sessions CASCADE;
+DROP TABLE IF EXISTS security_settings CASCADE;
+DROP TABLE IF EXISTS invoices CASCADE;
+DROP TABLE IF EXISTS billing_info CASCADE;
+DROP TABLE IF EXISTS team_members CASCADE;
+
+-- ============================================
 -- TEAM MEMBERS TABLE
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS team_members (
+CREATE TABLE team_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   client_id UUID NOT NULL REFERENCES project_owners(id) ON DELETE CASCADE,
   email VARCHAR(255) NOT NULL,
@@ -21,15 +31,15 @@ CREATE TABLE IF NOT EXISTS team_members (
 );
 
 -- Index for team members
-CREATE INDEX IF NOT EXISTS idx_team_members_client_id ON team_members(client_id);
-CREATE INDEX IF NOT EXISTS idx_team_members_email ON team_members(email);
-CREATE INDEX IF NOT EXISTS idx_team_members_status ON team_members(status);
+CREATE INDEX idx_team_members_client_id ON team_members(client_id);
+CREATE INDEX idx_team_members_email ON team_members(email);
+CREATE INDEX idx_team_members_status ON team_members(status);
 
 -- ============================================
 -- BILLING INFORMATION TABLE
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS billing_info (
+CREATE TABLE billing_info (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   client_id UUID NOT NULL REFERENCES project_owners(id) ON DELETE CASCADE,
   payment_method_type VARCHAR(50) CHECK (payment_method_type IN ('card', 'bank_account', 'paypal')),
@@ -41,14 +51,14 @@ CREATE TABLE IF NOT EXISTS billing_info (
 );
 
 -- Index for billing info
-CREATE INDEX IF NOT EXISTS idx_billing_info_client_id ON billing_info(client_id);
-CREATE INDEX IF NOT EXISTS idx_billing_info_status ON billing_info(status);
+CREATE INDEX idx_billing_info_client_id ON billing_info(client_id);
+CREATE INDEX idx_billing_info_status ON billing_info(status);
 
 -- ============================================
 -- INVOICES TABLE
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS invoices (
+CREATE TABLE invoices (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   client_id UUID NOT NULL REFERENCES project_owners(id) ON DELETE CASCADE,
   invoice_number VARCHAR(100) UNIQUE NOT NULL,
@@ -63,15 +73,15 @@ CREATE TABLE IF NOT EXISTS invoices (
 );
 
 -- Index for invoices
-CREATE INDEX IF NOT EXISTS idx_invoices_client_id ON invoices(client_id);
-CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
-CREATE INDEX IF NOT EXISTS idx_invoices_due_date ON invoices(due_date);
+CREATE INDEX idx_invoices_client_id ON invoices(client_id);
+CREATE INDEX idx_invoices_status ON invoices(status);
+CREATE INDEX idx_invoices_due_date ON invoices(due_date);
 
 -- ============================================
 -- SECURITY SETTINGS TABLE
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS security_settings (
+CREATE TABLE security_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   client_id UUID NOT NULL REFERENCES project_owners(id) ON DELETE CASCADE,
   two_factor_enabled BOOLEAN DEFAULT false,
@@ -86,13 +96,13 @@ CREATE TABLE IF NOT EXISTS security_settings (
 );
 
 -- Index for security settings
-CREATE INDEX IF NOT EXISTS idx_security_settings_client_id ON security_settings(client_id);
+CREATE INDEX idx_security_settings_client_id ON security_settings(client_id);
 
 -- ============================================
 -- ACTIVE SESSIONS TABLE
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS active_sessions (
+CREATE TABLE active_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   client_id UUID NOT NULL REFERENCES project_owners(id) ON DELETE CASCADE,
   session_token VARCHAR(255) UNIQUE NOT NULL,
@@ -108,9 +118,9 @@ CREATE TABLE IF NOT EXISTS active_sessions (
 );
 
 -- Index for active sessions
-CREATE INDEX IF NOT EXISTS idx_active_sessions_client_id ON active_sessions(client_id);
-CREATE INDEX IF NOT EXISTS idx_active_sessions_token ON active_sessions(session_token);
-CREATE INDEX IF NOT EXISTS idx_active_sessions_expires_at ON active_sessions(expires_at);
+CREATE INDEX idx_active_sessions_client_id ON active_sessions(client_id);
+CREATE INDEX idx_active_sessions_token ON active_sessions(session_token);
+CREATE INDEX idx_active_sessions_expires_at ON active_sessions(expires_at);
 
 -- ============================================
 -- COMMENTS FOR DOCUMENTATION

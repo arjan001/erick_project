@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { supabase } from '@/lib/supabase';
 import { ProjectOwner, Project, TeamMember, BillingInfo, Invoice, SecuritySettings, ActiveSession } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CountrySelector from '@/components/CountrySelector';
 import { formatSocialMediaUrl } from '@/lib/socialMediaUtils';
-import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2, FolderOpen, Users, CreditCard, Lock, Settings as SettingsIcon, Plus, Eye, MoreVertical, UserPlus, FileText, Monitor } from 'lucide-react';
+import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2, FolderOpen, Users, CreditCard, Lock, Settings as SettingsIcon, Plus, Eye, MoreVertical, UserPlus, FileText, Monitor, MapPin, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
@@ -426,8 +427,8 @@ export default function ClientProfilePage() {
           {activeTab === 'profile' && (
             <div className="space-y-8">
               {/* Profile Header */}
-              <div className="flex items-start gap-8">
-                <div className="relative">
+              <div className="flex flex-col sm:flex-row items-start gap-6 sm:gap-8">
+                <div className="relative mx-auto sm:mx-0">
                   <div className="w-32 h-32 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden">
                     {previewUrl ? (
                       <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -446,16 +447,20 @@ export default function ClientProfilePage() {
                     <input type="file" accept="image/*,.gif,.jpg,.jpeg,.png,.jfif,.webp,.bmp,.tiff" onChange={handleLogoUpload} disabled={uploadingLogo} className="hidden" />
                   </label>
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 text-center sm:text-left">
                   <h2 className="text-2xl font-bold text-gray-900">{formData.company || user.full_name}</h2>
                   <p className="text-sm text-gray-500 mt-1">{user.email}</p>
-                  <div className="mt-4 flex gap-3">
+                  <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
                     <Button onClick={() => setEditing(!editing)} variant={editing ? 'outline' : 'default'} className={editing ? '' : 'bg-black text-white hover:bg-gray-800'}>
                       {editing ? <X className="w-4 h-4 mr-2" /> : <Edit2 className="w-4 h-4 mr-2" />}
                       {editing ? 'Cancel' : 'Edit Profile'}
                     </Button>
                     <Button onClick={() => setShowBioModal(true)} variant="outline">
                       Edit Bio
+                    </Button>
+                    <Button onClick={() => {/* Add share functionality */}} variant="outline" className="gap-2">
+                      <Share2 className="w-4 h-4" />
+                      Share Profile
                     </Button>
                   </div>
                 </div>
@@ -479,7 +484,7 @@ export default function ClientProfilePage() {
                       <Input type="url" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} placeholder="https://yourcompany.com" className="rounded-lg" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">City</label>
+                      <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" />City</label>
                       <Input value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} className="rounded-lg" />
                     </div>
                     <div>
@@ -514,7 +519,15 @@ export default function ClientProfilePage() {
               {/* Social Links */}
               <div className="bg-gray-50 rounded-2xl p-6">
                 <h3 className="font-semibold text-gray-900 mb-4">Social Links</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3">
+                    <Globe className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                    {editing ? (
+                      <Input className="rounded-lg flex-1" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} placeholder="Website URL" />
+                    ) : (
+                      <p className="text-gray-900 flex-1">{owner?.website || 'Not set'}</p>
+                    )}
+                  </div>
                   <div className="flex items-center gap-3">
                     <Linkedin className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
