@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Search, Plus, Edit, Trash2, Shield, User, Mail, Eye, X, ChevronLeft, ChevronRight, Loader2, MoreVertical, Ban, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Shield, User, Mail, Eye, X, ChevronLeft, ChevronRight, Loader2, MoreVertical, Ban, CheckCircle, AlertTriangle, Key } from 'lucide-react';
 
 const PAGE_SIZE = 10;
 
@@ -37,6 +37,7 @@ export default function AdminUsersPage() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSuspendDialog, setShowSuspendDialog] = useState(false);
+  const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
@@ -44,8 +45,7 @@ export default function AdminUsersPage() {
     email: '',
     password: '',
     first_name: '',
-    last_name: '',
-    role_key: ''
+    last_name: ''
   });
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function AdminUsersPage() {
     try {
       await adminUsersApi.createUser(newUserForm);
       setShowAddDialog(false);
-      setNewUserForm({ email: '', password: '', first_name: '', last_name: '', role_key: '' });
+      setNewUserForm({ email: '', password: '', first_name: '', last_name: '' });
       await fetchData();
     } catch (error) {
       console.error('Error creating user:', error);
@@ -336,16 +336,19 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedUser(user)} className="p-2 hover:bg-gray-100">
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowRoleDialog(true); }} className="p-2 hover:bg-indigo-50" title="Assign Role">
+                          <Key className="w-4 h-4 text-indigo-600" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedUser(user)} className="p-2 hover:bg-gray-100" title="View Details">
                           <Eye className="w-4 h-4 text-gray-600" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => { setEditingUser(user); setShowEditDialog(true); }} className="p-2 hover:bg-gray-100">
+                        <Button variant="ghost" size="sm" onClick={() => { setEditingUser(user); setShowEditDialog(true); }} className="p-2 hover:bg-gray-100" title="Edit User">
                           <Edit className="w-4 h-4 text-gray-600" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowSuspendDialog(true); }} className="p-2 hover:bg-amber-50">
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowSuspendDialog(true); }} className="p-2 hover:bg-amber-50" title={user.is_active ? 'Suspend User' : 'Activate User'}>
                           <Ban className="w-4 h-4 text-amber-600" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowDeleteDialog(true); }} className="p-2 hover:bg-red-50">
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowDeleteDialog(true); }} className="p-2 hover:bg-red-50" title="Delete User">
                           <Trash2 className="w-4 h-4 text-red-600" />
                         </Button>
                       </div>
@@ -380,7 +383,7 @@ export default function AdminUsersPage() {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="text-xl">Create New System User</DialogTitle>
-            <DialogDescription>Create a new admin user with specified role and permissions.</DialogDescription>
+            <DialogDescription>Register a new admin user. Roles can be assigned after creation.</DialogDescription>
           </DialogHeader>
           <div className="space-y-5 py-4">
             <div className="grid grid-cols-2 gap-4">
@@ -418,19 +421,6 @@ export default function AdminUsersPage() {
                 onChange={(e) => setNewUserForm({ ...newUserForm, password: e.target.value })}
                 className="rounded-xl"
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Role</Label>
-              <Select value={newUserForm.role_key} onValueChange={(value) => setNewUserForm({ ...newUserForm, role_key: value })}>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map(role => (
-                    <SelectItem key={role.role_key} value={role.role_key}>{role.role_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
           <DialogFooter>
@@ -543,6 +533,58 @@ export default function AdminUsersPage() {
             <Button onClick={handleSuspendUser} disabled={saving} className={selectedUser?.is_active ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"}>
               {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
               {selectedUser?.is_active ? 'Suspend' : 'Activate'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Role Assignment Dialog */}
+      <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Assign Role</DialogTitle>
+            <DialogDescription>Assign a role to {selectedUser?.first_name} {selectedUser?.last_name}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Current Role</Label>
+              <div className="px-3 py-2 bg-gray-50 rounded-lg">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleBadge(getUserRole(selectedUser))}`}>
+                  {getUserRoleName(selectedUser)}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Assign New Role</Label>
+              <Select value={selectedUser?.user_roles?.[0]?.roles?.role_key || ''} onValueChange={(value) => setEditingUser({ ...selectedUser, role_key: value })}>
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.map(role => (
+                    <SelectItem key={role.role_key} value={role.role_key}>{role.role_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRoleDialog(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={async () => {
+              setSaving(true);
+              try {
+                await adminUsersApi.updateUser(selectedUser.id, { role_key: editingUser?.role_key });
+                setShowRoleDialog(false);
+                await fetchData();
+              } catch (error) {
+                console.error('Error assigning role:', error);
+                alert('Failed to assign role: ' + error.message);
+              } finally {
+                setSaving(false);
+              }
+            }} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 rounded-xl">
+              {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Assign Role
             </Button>
           </DialogFooter>
         </DialogContent>
