@@ -8,7 +8,7 @@ export const adminUsersApi = {
       .from('users')
       .select(`
         *,
-        user_roles (
+        user_roles!user_roles_user_id_fkey (
           role_id,
           roles (
             id,
@@ -20,8 +20,11 @@ export const adminUsersApi = {
       `)
       .eq('role', 'admin') // Only fetch system admin users
       .order('created_at', { ascending: false });
-    
-    if (error) throw error;
+
+    if (error) {
+      console.error('Error fetching users:', error);
+      throw error;
+    }
     return data;
   },
 

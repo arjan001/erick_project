@@ -134,9 +134,9 @@ export default function AdminUsersPage() {
     const matchesSearch = user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const userRoleKey = user.user_roles?.[0]?.roles?.role_key;
+    const userRoleKey = user?.user_roles?.[0]?.roles?.role_key || 'admin';
     const matchesRole = filterRole === 'all' || userRoleKey === filterRole;
-    const matchesStatus = filterStatus === 'all' || 
+    const matchesStatus = filterStatus === 'all' ||
                           (filterStatus === 'active' && user.is_active) ||
                           (filterStatus === 'suspended' && !user.is_active);
     return matchesSearch && matchesRole && matchesStatus;
@@ -146,11 +146,17 @@ export default function AdminUsersPage() {
   const paginatedUsers = filteredUsers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const getUserRole = (user) => {
-    return user.user_roles?.[0]?.roles?.role_key || 'admin';
+    if (!user || !user.user_roles || !user.user_roles[0] || !user.user_roles[0].roles) {
+      return 'admin';
+    }
+    return user.user_roles[0].roles.role_key || 'admin';
   };
 
   const getUserRoleName = (user) => {
-    return user.user_roles?.[0]?.roles?.role_name || 'Administrator';
+    if (!user || !user.user_roles || !user.user_roles[0] || !user.user_roles[0].roles) {
+      return 'Administrator';
+    }
+    return user.user_roles[0].roles.role_name || 'Administrator';
   };
 
   const getRoleBadge = (roleKey) => {
