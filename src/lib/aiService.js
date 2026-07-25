@@ -233,6 +233,45 @@ Please regenerate the locations as an array of location suggestions with:
 - reqs: Array of requirements for filming at this location
 
 Generate locations that match the user's preferences and production brief.`;
+  } else if (section === 'technicalRequirements') {
+    prompt = `Regenerate the technical requirements section based on the following user request: "${feedback}"
+
+Current technical requirements data:
+${JSON.stringify(currentData.technicalRequirements || {}, null, 2)}
+
+The user may be requesting:
+- Specific camera equipment (ARRI, Sony, RED, etc.)
+- Lighting adjustments (LED, budget-friendly, cinema lights)
+- Audio equipment changes (boom mics, wireless systems, recorders)
+- Equipment additions (drone, gimbal, cinema lenses)
+- Equipment reductions (remove gimbal, simplify setup)
+- Budget-friendly alternatives
+
+Please regenerate the technical requirements as an object with:
+- camera: Array of [label, value] pairs for camera specs
+- lighting: Array of lighting equipment items
+- audio: Array of audio equipment items
+
+Adjust equipment based on the user's request and project category while maintaining professional standards.`;
+  } else if (section === 'productionSchedule') {
+    prompt = `Regenerate the production schedule section based on the following user request: "${feedback}"
+
+Current production schedule data:
+${JSON.stringify(currentData.productionSchedule || [], null, 2)}
+
+The user may be requesting:
+- Timeline changes (Quick 1-2 days, Standard 3-5 days, Extended 2-4 weeks)
+- Sequence adjustments (move tasks, swap days, reorder phases)
+- Phase duration changes (reduce pre-production, extend post-production)
+- Specific task additions or removals
+- Milestone additions (client reviews, casting days)
+
+Please regenerate the production schedule as an array of phases with:
+- name: Phase name (Pre-Production, Production, Post-Production)
+- days: Duration for the phase
+- items: Array of tasks in sequence
+
+Adjust the schedule based on the user's timeline preference and sequence modifications while maintaining logical production workflow.`;
   } else if (section === 'overviewBrief') {
     prompt = `Regenerate the overviewBrief section based on the following feedback: "${feedback}"
 

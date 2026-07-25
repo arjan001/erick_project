@@ -749,7 +749,7 @@ function StepLocations({ data, onRegenerate }) {
   );
 }
 
-function StepTechnicalRequirements({ data, onRegenerate }) {
+function StepTechnicalRequirements({ data, onRegenerate, projectCategory }) {
   const [suggestion, setSuggestion] = useState('');
 
   const cameraRows = data?.camera || [
@@ -775,7 +775,8 @@ function StepTechnicalRequirements({ data, onRegenerate }) {
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      onRegenerate('technicalRequirements', suggestion);
+      const prompt = `${suggestion}. Current project category: ${projectCategory || 'commercial'}. Adjust equipment accordingly.`;
+      onRegenerate('technicalRequirements', prompt);
       setSuggestion('');
     }
   };
@@ -785,7 +786,7 @@ function StepTechnicalRequirements({ data, onRegenerate }) {
       <div style={{ marginBottom: 24 }}>
         <PendingBadge />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Technical Requirements</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>AI-generated equipment and technical specifications</p>
+        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>AI-generated equipment based on {projectCategory || 'production'} category and team needs</p>
       </div>
 
       <Card>
@@ -840,12 +841,12 @@ function StepTechnicalRequirements({ data, onRegenerate }) {
       </Card>
 
       <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Customize Equipment (optional)</div>
         <div style={{ position: 'relative' }}>
           <textarea
             value={suggestion}
             onChange={(e) => setSuggestion(e.target.value)}
-            placeholder="e.g., 'Need ARRI camera package', 'Add more LED lighting', 'Budget-friendly options'"
+            placeholder="e.g., 'Need ARRI Alexa Mini instead', 'Reduce lighting to budget-friendly LEDs', 'Add drone with gimbal', 'Need extra boom mics for larger team', 'Remove gimbal for static shots', 'Add cinema lenses package'"
             style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
           />
           <button 
@@ -861,8 +862,15 @@ function StepTechnicalRequirements({ data, onRegenerate }) {
   );
 }
 
-function StepProductionSchedule({ data, onRegenerate }) {
+function StepProductionSchedule({ data, onRegenerate, projectCategory }) {
   const [suggestion, setSuggestion] = useState('');
+  const [selectedTimeline, setSelectedTimeline] = useState('standard');
+
+  const timelineOptions = [
+    { id: 'quick', name: 'Quick', days: '1-2 days', desc: 'Social media or simple ads', color: '#dbeafe' },
+    { id: 'standard', name: 'Standard', days: '3-5 days', desc: 'Commercial production', color: '#fef3c7' },
+    { id: 'extended', name: 'Extended', days: '2-4 weeks', desc: 'Movie or complex projects', color: '#dcfce7' }
+  ];
 
   const phases = data || [
     {
@@ -916,9 +924,16 @@ function StepProductionSchedule({ data, onRegenerate }) {
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      onRegenerate('productionSchedule', suggestion);
+      const prompt = `${suggestion}. Current project category: ${projectCategory || 'commercial'}. Selected timeline: ${selectedTimeline}. Adjust schedule accordingly.`;
+      onRegenerate('productionSchedule', prompt);
       setSuggestion('');
     }
+  };
+
+  const handleTimelineSelect = (timelineId, timelineName) => {
+    setSelectedTimeline(timelineId);
+    const prompt = `Change to ${timelineName} timeline (${timelineName === 'Quick' ? '1-2 days for social media/simple ads' : timelineName === 'Standard' ? '3-5 days for commercial production' : '2-4 weeks for movie/complex projects'}). ${suggestion || 'Adjust the production schedule phases and tasks accordingly.'}`;
+    onRegenerate('productionSchedule', prompt);
   };
 
   return (
@@ -926,7 +941,30 @@ function StepProductionSchedule({ data, onRegenerate }) {
       <div style={{ marginBottom: 24 }}>
         <PendingBadge />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Production Schedule</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>AI-generated comprehensive timeline and milestones</p>
+        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>AI-generated timeline options based on {projectCategory || 'production'} complexity</p>
+      </div>
+
+      {/* Timeline Options */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
+        {timelineOptions.map(option => (
+          <button
+            key={option.id}
+            onClick={() => handleTimelineSelect(option.id, option.name)}
+            style={{
+              padding: '14px',
+              border: `2px solid ${selectedTimeline === option.id ? '#10b981' : '#e5e7eb'}`,
+              borderRadius: 10,
+              background: selectedTimeline === option.id ? option.color : '#fff',
+              cursor: 'pointer',
+              textAlign: 'center',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>{option.name}</div>
+            <div style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>{option.days}</div>
+            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>{option.desc}</div>
+          </button>
+        ))}
       </div>
 
       <Card>
@@ -954,12 +992,12 @@ function StepProductionSchedule({ data, onRegenerate }) {
       </Card>
 
       <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Customize Schedule (optional)</div>
         <div style={{ position: 'relative' }}>
           <textarea
             value={suggestion}
             onChange={(e) => setSuggestion(e.target.value)}
-            placeholder="e.g., 'Extend pre-production to 4 weeks', 'Add more production days', 'Faster turnaround needed'"
+            placeholder="e.g., 'Move location scouting before script breakdown', 'Add casting day before production', 'Reduce pre-production to 7 days', 'Extend post-production for more color grading', 'Swap day 1 and day 2 shooting order', 'Add client review milestone'"
             style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
           />
           <button 
@@ -1545,8 +1583,8 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     <StepRolesTeam data={aiData?.rolesTeam} onRegenerate={handleRegenerate} selectedBudgetPackage={activePackage} />,
     <StepScreeningQuestions data={aiData?.screeningQuestions} onRegenerate={handleRegenerate} />,
     <StepLocations data={aiData?.locations} onRegenerate={handleRegenerate} />,
-    <StepTechnicalRequirements data={aiData?.technicalRequirements} onRegenerate={handleRegenerate} />,
-    <StepProductionSchedule data={aiData?.productionSchedule} onRegenerate={handleRegenerate} />,
+    <StepTechnicalRequirements data={aiData?.technicalRequirements} onRegenerate={handleRegenerate} projectCategory={projectCategory} />,
+    <StepProductionSchedule data={aiData?.productionSchedule} onRegenerate={handleRegenerate} projectCategory={projectCategory} />,
     <StepCreativeDirection data={aiData?.creativeDirection} onRegenerate={handleRegenerate} />,
     <StepDeliverables data={aiData?.deliverables} onRegenerate={handleRegenerate} />,
   ];
