@@ -150,12 +150,54 @@ Return the response as a structured JSON object with all sections populated.`;
  * @returns {Promise<Object>} Updated section data
  */
 export async function regenerateSection(section, currentData, feedback = '') {
-  const prompt = `Regenerate the "${section}" section of this production plan based on the following feedback: "${feedback}"
+  let prompt = '';
+
+  if (section === 'budgetBreakdown') {
+    prompt = `Regenerate the budget breakdown section based on the following user request: "${feedback}"
+
+Current budget data:
+${JSON.stringify(currentData.budgetBreakdown || [], null, 2)}
+
+The user may be requesting:
+- A specific package (Conservative, Standard, Premium)
+- Custom budget amount
+- Specific crew size (solo, small team, full crew)
+- Number of shooting days
+- Focus on specific production phase (pre-production, production, post-production)
+- Cost reduction or increase
+
+Please regenerate the budget breakdown as an array of 3 packages (Conservative, Standard, Premium) with:
+- name: Package name
+- price: Total price
+- desc: Description of what's included
+- pre: Pre-production cost
+- prod: Production cost  
+- post: Post-production cost
+- highlight: true for the recommended package
+
+Adjust the packages based on the user's request while keeping realistic cost breakdowns across production phases.`;
+  } else if (section === 'overviewBrief') {
+    prompt = `Regenerate the overviewBrief section based on the following feedback: "${feedback}"
+
+Current data for this section:
+${JSON.stringify(currentData.overviewBrief || {}, null, 2)}
+
+Please provide an improved version of this section as a JSON object with:
+- title: Project title
+- description: Professional narrative focusing on brand strategy, audience, and positioning
+- initialIdea: Action-oriented directive with specific visual techniques, platforms, and CTAs
+- category: The project category
+- tags: Array of 10 relevant tags
+
+Ensure description and initialIdea are based on the same concept but use different wording.`;
+  } else {
+    prompt = `Regenerate the "${section}" section of this production plan based on the following feedback: "${feedback}"
 
 Current data for this section:
 ${JSON.stringify(currentData[section] || {}, null, 2)}
 
 Please provide an improved version of this section as a JSON object.`;
+  }
 
   try {
     const response = await fetch(OPENAI_API_URL, {

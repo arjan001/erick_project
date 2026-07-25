@@ -351,6 +351,12 @@ function StepBudgetBreakdown({ data, onRegenerate }) {
     }
   };
 
+  const handlePackageSelect = (pkgIndex, pkgName) => {
+    setActivePackage(pkgIndex);
+    const prompt = `I want the ${pkgName} package. ${suggestion || ''}`;
+    onRegenerate('budgetBreakdown', prompt);
+  };
+
   return (
     <>
       <div style={{ marginBottom: 24 }}>
@@ -361,7 +367,7 @@ function StepBudgetBreakdown({ data, onRegenerate }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
         {pkgs.map((pkg, i) => (
-          <div key={pkg.name} onClick={() => setActivePackage(i)} style={{ padding: '16px', border: `2px solid ${activePackage === i ? '#10b981' : '#e5e7eb'}`, borderRadius: 12, background: '#fff', cursor: 'pointer' }}>
+          <div key={pkg.name} onClick={() => handlePackageSelect(i, pkg.name)} style={{ padding: '16px', border: `2px solid ${activePackage === i ? '#10b981' : '#e5e7eb'}`, borderRadius: 12, background: '#fff', cursor: 'pointer' }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: '#111', marginBottom: 4 }}>{pkg.name}</div>
             <div style={{ fontSize: 20, fontWeight: 700, color: pkg.highlight ? '#10b981' : '#111' }}>{pkg.price}</div>
           </div>
@@ -399,12 +405,12 @@ function StepBudgetBreakdown({ data, onRegenerate }) {
       </Card>
 
       <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Customize Budget (optional)</div>
         <div style={{ position: 'relative' }}>
           <textarea
             value={suggestion}
             onChange={(e) => setSuggestion(e.target.value)}
-            placeholder="e.g., 'Lower the costs', 'Increase premium package', 'Add more detail to explanations'"
+            placeholder="e.g., 'I want Premium package with solo director', 'Budget around €20,000', 'Need 5-day shoot with full crew', 'Focus on post-production quality', 'Reduce costs with smaller team'"
             style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
           />
           <button 
