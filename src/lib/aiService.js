@@ -16,9 +16,21 @@ Project Details:
 - Category: ${projectData.category || 'Commercial'}
 - Description: ${projectData.description || 'Not provided'}
 - Budget: ${projectData.budget || 'Not specified'}
+- Title: ${projectData.title || 'Untitled Project'}
 
 Please generate a detailed production plan with the following sections:
-1. Overview & Brief - Project overview and creative brief
+
+1. overviewBrief - Must include:
+   - title: Project title
+   - description: A professional, narrative-style production brief that describes the project's strategic approach, target audience, and brand positioning. This should be written in a formal, professional tone suitable for client presentations.
+   - initialIdea: An action-oriented directive that describes what to create, including specific visual techniques, platform distribution strategy, and call-to-action elements. This should be more direct and instructional than the description.
+   - category: The project category
+   - tags: An array of 10 relevant tags based on the project context
+
+   CRITICAL: The description and initialIdea must be based on the SAME core concept but use COMPLETELY DIFFERENT wording and structure:
+   - description: Professional narrative focusing on brand strategy, audience, and positioning
+   - initialIdea: Action-oriented directive with specific visual techniques, platforms, and CTAs
+
 2. Budget Breakdown - Cost estimates across production phases (Conservative, Standard, Premium packages)
 3. Roles & Team - Required personnel and team composition
 4. Screening Questions - 8 evaluation questions for talent screening with preferred answers

@@ -196,13 +196,34 @@ function Card({ children, highlight = false }) {
 
 /* ─── STEP CONTENT COMPONENTS ───────────────────────────────────────────── */
 
-function StepOverviewBrief({ data, onRegenerate }) {
+function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
   const [suggestion, setSuggestion] = useState('');
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+
+  const projectCategories = [
+    { value: 'commercial', label: 'Commercial' },
+    { value: 'music_video', label: 'Music Video' },
+    { value: 'short_film', label: 'Short Film' },
+    { value: 'documentary', label: 'Documentary' },
+    { value: 'branded_content', label: 'Branded Content' },
+    { value: 'corporate_video', label: 'Corporate Video' },
+    { value: 'event_coverage', label: 'Event Coverage' },
+    { value: 'product_demo', label: 'Product Demo' },
+    { value: 'social_media', label: 'Social Media' },
+    { value: 'animation', label: 'Animation' }
+  ];
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
       onRegenerate('overviewBrief', suggestion);
       setSuggestion('');
+    }
+  };
+
+  const handleCategorySelect = (category) => {
+    setShowCategoryDropdown(false);
+    if (onCategoryChange) {
+      onCategoryChange(category);
     }
   };
 
@@ -254,7 +275,29 @@ function StepOverviewBrief({ data, onRegenerate }) {
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 12 }}>PROJECT TYPE &amp; TAGS</div>
           <div style={{ marginBottom: 8 }}>
             <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 6 }}>MAIN CATEGORY</div>
-            <button style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>{category}</button>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <button 
+                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                {category} <span style={{ fontSize: 10 }}>▼</span>
+              </button>
+              {showCategoryDropdown && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 10, minWidth: 180, maxHeight: 300, overflowY: 'auto' }}>
+                  {projectCategories.map(cat => (
+                    <button
+                      key={cat.value}
+                      onClick={() => handleCategorySelect(cat.value)}
+                      style={{ width: '100%', padding: '8px 12px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, color: '#374151', cursor: 'pointer', hover: { background: '#f3f4f6' } }}
+                      onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                      onMouseLeave={(e) => e.target.style.background = 'none'}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div style={{ marginTop: 14 }}>
             <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 8 }}>TAGS (UP TO 10)</div>
@@ -1208,7 +1251,7 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     }
   };
 
-  const handleGenerateProductionPlan = () => {
+  const handleGenerateProductionPlan = async () => {
     const updatedProjectData = {
       ...projectData,
       url: projectUrl,
@@ -1216,8 +1259,8 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
       description: projectDescription
     };
     
-    // Set aiData to trigger the main modal and reset to step 0
-    setAIData(updatedProjectData);
+    // Load AI production plan and transition to main modal
+    await loadAIProductionPlan(updatedProjectData);
     setCurrentStep(0);
     setApproved(new Set());
   };
@@ -1439,8 +1482,28 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     );
   }
 
+  const handleCategoryChange = async (newCategory) => {
+    if (!aiData) return;
+    
+    setProjectCategory(newCategory);
+    setLoading(true);
+    try {
+      const result = await regenerateSection('overviewBrief', { ...aiData, category: newCategory }, 'Change category to ' + newCategory);
+      if (result.success) {
+        setAIData(prev => ({
+          ...prev,
+          overviewBrief: result.data
+        }));
+      }
+    } catch (err) {
+      console.error('Category change error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const stepComponents = [
-    <StepOverviewBrief data={aiData?.overviewBrief} onRegenerate={handleRegenerate} />,
+    <StepOverviewBrief data={aiData?.overviewBrief} onRegenerate={handleRegenerate} onCategoryChange={handleCategoryChange} />,
     <StepBudgetBreakdown data={aiData?.budgetBreakdown} onRegenerate={handleRegenerate} />,
     <StepRolesTeam data={aiData?.rolesTeam} onRegenerate={handleRegenerate} />,
     <StepScreeningQuestions data={aiData?.screeningQuestions} onRegenerate={handleRegenerate} />,
