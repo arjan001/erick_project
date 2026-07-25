@@ -32,6 +32,12 @@ export default function ClientDashboard() {
   const [showAIModal, setShowAIModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
 
+  // Clear any stored AI context when dashboard loads
+  useEffect(() => {
+    localStorage.removeItem('studio22_ai_modal_context');
+    localStorage.removeItem('studio22_ai_modal_draft');
+  }, []);
+
   useEffect(() => {
     if (isLoadingAuth) return;
     if (!isAuthenticated) { navigate('/SignIn'); return; }
@@ -119,6 +125,11 @@ export default function ClientDashboard() {
       console.error('Error creating AI job:', err);
       toastError('Creation Failed', 'Failed to create AI-generated job');
     }
+  };
+
+  const openProjectModal = (project = null) => {
+    setEditingProject(project);
+    setShowProjectModal(true);
   };
 
   if (isLoadingAuth || loading) {

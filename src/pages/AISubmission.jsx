@@ -1123,22 +1123,60 @@ export default function AISubmission() {
       setLoading(true);
       setError(null);
       
-      // Generate production plan in background
-      generateProductionPlan({
-        url: contextData.url,
-        category: contextData.category,
-        description: contextData.description
-      }).then(result => {
-        if (result.success) {
-          setAIData(result.data);
-        } else {
-          setError(result.error);
-        }
-      }).catch(err => {
-        setError(err.message);
-      }).finally(() => {
-        setLoading(false);
-      });
+      // If brief was already generated, use it; otherwise generate full plan
+      if (analyzedProject.brief && analyzedProject.brief.description) {
+        // Initialize with pre-generated brief and generate remaining sections
+        const partialData = {
+          overviewBrief: analyzedProject.brief,
+          budgetBreakdown: null,
+          roles: null,
+          questions: null,
+          locations: null,
+          technical: null,
+          schedule: null,
+          creativeDirection: null,
+          deliverables: null
+        };
+        setAIData(partialData);
+        
+        // Generate remaining sections
+        generateProductionPlan({
+          url: contextData.url,
+          category: contextData.category,
+          description: contextData.description
+        }).then(result => {
+          if (result.success) {
+            // Merge with existing brief
+            setAIData(prev => ({
+              ...result.data,
+              overviewBrief: prev.overviewBrief
+            }));
+          } else {
+            setError(result.error);
+          }
+        }).catch(err => {
+          setError(err.message);
+        }).finally(() => {
+          setLoading(false);
+        });
+      } else {
+        // Generate full production plan
+        generateProductionPlan({
+          url: contextData.url,
+          category: contextData.category,
+          description: contextData.description
+        }).then(result => {
+          if (result.success) {
+            setAIData(result.data);
+          } else {
+            setError(result.error);
+          }
+        }).catch(err => {
+          setError(err.message);
+        }).finally(() => {
+          setLoading(false);
+        });
+      }
     }
   }, []);
 

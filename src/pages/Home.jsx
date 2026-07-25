@@ -283,15 +283,36 @@ export default function Home({ editMode = false }) {
         setProjectDescription(analysisResult.rawAnalysis);
         setExtractProgress(progressSteps.length - 1);
         
-        // Save to localStorage for SubmitProject page
-        saveAnalyzedProjectToStorage({
-          url: analysisResult.url,
-          analysis: analysisResult,
-          brief: null, // Skip brief generation for speed
-          projectType: projectCategory,
-          additionalNotes: projectDescription,
-          attachments: attachments
-        });
+        // Generate overviewBrief content immediately after analysis
+        try {
+          const { generateProductionPlan } = await import('@/lib/aiService.js');
+          const briefResult = await generateProductionPlan({
+            url: analysisResult.url,
+            category: projectCategory,
+            description: analysisResult.rawAnalysis
+          });
+          
+          // Save to localStorage for SubmitProject page with generated brief
+          saveAnalyzedProjectToStorage({
+            url: analysisResult.url,
+            analysis: analysisResult,
+            brief: briefResult.success ? briefResult.data?.overviewBrief : null,
+            projectType: projectCategory,
+            additionalNotes: projectDescription,
+            attachments: attachments
+          });
+        } catch (briefError) {
+          console.error('Brief generation error:', briefError);
+          // Save without brief if generation fails
+          saveAnalyzedProjectToStorage({
+            url: analysisResult.url,
+            analysis: analysisResult,
+            brief: null,
+            projectType: projectCategory,
+            additionalNotes: projectDescription,
+            attachments: attachments
+          });
+        }
         
         setTimeout(() => {
           setExtractProgress(null);

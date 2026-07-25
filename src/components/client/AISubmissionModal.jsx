@@ -1424,10 +1424,11 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
       if (result.success) {
         setAIData(result.data);
       } else {
-        setError(result.error);
+        setError(result.error || 'Failed to generate production plan');
       }
     } catch (err) {
-      setError(err.message);
+      console.error('AI generation error:', err);
+      setError(err.message || 'Failed to generate production plan');
     } finally {
       setLoading(false);
     }
@@ -1576,6 +1577,7 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   useEffect(() => {
     if (!open) {
       localStorage.removeItem('studio22_ai_modal_draft');
+      localStorage.removeItem('studio22_ai_modal_context');
     }
   }, [open]);
 
