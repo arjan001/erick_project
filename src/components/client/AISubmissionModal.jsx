@@ -1496,10 +1496,6 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
 
   // Initialize modal with proper loading state
   useEffect(() => {
-    if (open && !aiData) {
-      // Modal just opened, initialize with empty state to show input form
-      setAIData({ url: '', category: 'commercial', description: '' });
-    }
     if (!open) {
       // Modal closed, reset state
       setAIData(null);
@@ -1511,17 +1507,8 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   }, [open]);
 
   // When aiData is an object (not the initial data), load the actual production plan
-  useEffect(() => {
-    // Only auto-generate if we have actual project data with a URL or description
-    if (aiData && typeof aiData === 'object' && !aiData.url && !aiData.description && aiData.overviewBrief) {
-      // This is actual AI data, no need to regenerate
-      return;
-    }
-    if (aiData && typeof aiData === 'object' && (aiData.url || aiData.description) && !aiData.overviewBrief) {
-      // This is the initial data with actual content, generate the production plan
-      loadAIProductionPlan(aiData);
-    }
-  }, [aiData]);
+
+  if (!open) return null;
 
   if (loading) {
     return (
@@ -1551,7 +1538,15 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   }
 
   // Show URL input if no AI data yet
-  if (!aiData || (typeof aiData === 'object' && (aiData.url || aiData.category === 'commercial'))) {
+  if (!aiData || (typeof aiData === 'object' && !aiData.overviewBrief && !aiData.budgetBreakdown)) {
+    // Only show input form if modal is explicitly open and we have no AI data
+    if (!open) return null;
+    
+    // Don't show input form if we just have empty initial data from parent
+    if (aiData && aiData.url === '' && aiData.category === 'commercial' && aiData.description === '') {
+      return null;
+    }
+    
     // Show input form
     return (
       <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>

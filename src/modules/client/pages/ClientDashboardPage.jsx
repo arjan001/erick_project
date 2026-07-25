@@ -104,7 +104,12 @@ export default function ClientDashboard() {
     // Process AI-generated data and create job directly
     setShowAIModal(false);
     
-    if (!projectOwner) return;
+    if (!projectOwner) {
+      console.error('No project owner found');
+      toastError('Error', 'Failed to create job: No project owner');
+      return;
+    }
+    
     try {
       const newJob = await Job.create({
         client_email: user.email,
