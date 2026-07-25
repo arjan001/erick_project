@@ -201,16 +201,16 @@ function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   const projectCategories = [
-    { value: 'commercial', label: 'Commercial' },
-    { value: 'music_video', label: 'Music Video' },
-    { value: 'short_film', label: 'Short Film' },
-    { value: 'documentary', label: 'Documentary' },
-    { value: 'branded_content', label: 'Branded Content' },
-    { value: 'corporate_video', label: 'Corporate Video' },
-    { value: 'event_coverage', label: 'Event Coverage' },
-    { value: 'product_demo', label: 'Product Demo' },
-    { value: 'social_media', label: 'Social Media' },
-    { value: 'animation', label: 'Animation' }
+    { value: 'commercial', label: 'Commercial', icon: Film },
+    { value: 'music_video', label: 'Music Video', icon: Music },
+    { value: 'short_film', label: 'Short Film', icon: Clapperboard },
+    { value: 'documentary', label: 'Documentary', icon: Video },
+    { value: 'branded_content', label: 'Branded Content', icon: Briefcase },
+    { value: 'corporate_video', label: 'Corporate Video', icon: Building },
+    { value: 'event_coverage', label: 'Event Coverage', icon: Calendar },
+    { value: 'product_demo', label: 'Product Demo', icon: Package },
+    { value: 'social_media', label: 'Social Media', icon: Share },
+    { value: 'animation', label: 'Animation', icon: SparklesIcon }
   ];
 
   const handleRegenerate = () => {
@@ -255,7 +255,39 @@ function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151' }}>PRODUCTION BRIEF</div>
-            <span style={{ background: '#111', color: '#fff', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4 }}>{category}</span>
+            <div style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                style={{ background: '#111', color: '#fff', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+              >
+                {(() => {
+                  const selectedCategory = projectCategories.find(cat => cat.value === category);
+                  const Icon = selectedCategory?.icon || Film;
+                  return <><Icon size={12} /><span>{selectedCategory?.label}</span></>;
+                })()}
+              </button>
+              {showCategoryDropdown && (
+                <div
+                  style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: '4px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', minWidth: '150px', zIndex: 100 }}
+                >
+                  {projectCategories.map((cat) => {
+                    const Icon = cat.icon;
+                    return (
+                      <button
+                        key={cat.value}
+                        type="button"
+                        onClick={() => handleCategorySelect(cat.value)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', fontSize: 12, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                      >
+                        <Icon size={12} />
+                        <span>{cat.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
           <button style={{ background: 'none', border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 10px', fontSize: 12, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
             <EditIcon size={12} /> Edit
@@ -1401,6 +1433,38 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     }
   };
 
+  const handleCategoryChange = async (newCategory) => {
+    setProjectCategory(newCategory);
+    setLoading(true);
+    
+    // Update context in localStorage
+    const contextData = {
+      url: projectUrl,
+      category: newCategory,
+      description: projectDescription,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('studio22_ai_modal_context', JSON.stringify(contextData));
+    
+    // Regenerate production plan with new category
+    try {
+      const result = await generateProductionPlan({
+        url: projectUrl,
+        category: newCategory,
+        description: projectDescription
+      });
+      if (result.success) {
+        setAIData(result.data);
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRegenerate = async (section, suggestion) => {
     if (!aiData) return;
     
@@ -1642,26 +1706,6 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
       </div>
     );
   }
-
-  const handleCategoryChange = async (newCategory) => {
-    if (!aiData) return;
-    
-    setProjectCategory(newCategory);
-    setLoading(true);
-    try {
-      const result = await regenerateSection('overviewBrief', { ...aiData, category: newCategory }, 'Change category to ' + newCategory);
-      if (result.success) {
-        setAIData(prev => ({
-          ...prev,
-          overviewBrief: result.data
-        }));
-      }
-    } catch (err) {
-      console.error('Category change error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const stepComponents = [
     <StepOverviewBrief data={aiData?.overviewBrief} onRegenerate={handleRegenerate} onCategoryChange={handleCategoryChange} />,
