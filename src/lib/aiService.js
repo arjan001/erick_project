@@ -80,7 +80,10 @@ Return the response as a structured JSON object with all sections populated.`;
       data: {
         overviewBrief: {
           title: projectData?.title || 'AI Generated Project',
-          description: projectData?.description || 'AI-generated project description based on your requirements.'
+          description: projectData?.description || 'AI-generated project description based on your requirements.',
+          initialIdea: projectData?.description || `Create a high-impact commercial for ${projectData?.title || 'your brand'} showcasing their bespoke artisanal floral arrangements. Target affluent lifestyle enthusiasts and event planners with key selling points like premium, sustainably sourced blooms and custom design artistry.`,
+          category: projectData?.category || 'commercial',
+          tags: ['bespoke', 'floristry', 'artisanal', 'sustainable', 'luxury', 'floraldesign', 'eventplanning', 'cinematic', 'modern', 'premium']
         },
         budgetBreakdown: [
           { name: 'Conservative', price: '€5,000', desc: 'Essential coverage with single-camera setup', pre: '€2,000', prod: '€2,000', post: '€1,000', highlight: false },
@@ -91,30 +94,35 @@ Return the response as a structured JSON object with all sections populated.`;
           team: ['Director', 'Cinematographer', 'Gaffer', 'Sound Mixer', 'Editor', 'Colorist', 'Production Assistant']
         },
         screeningQuestions: [
-          { q: 'What is your experience with similar projects?', options: ['Less than 1 year', '1-3 years', '3-5 years', '5+ years'], preferred: 3 },
-          { q: 'Are you available for the entire project duration?', options: ['Yes', 'No', 'Maybe'], preferred: 0 }
+          { q: 'If a key element for a shoot is suddenly unavailable on the day, how do you handle it?', options: ['Cancel the shoot immediately', 'Assess the situation and brainstorm alternatives', 'Tell the client it is not my problem', 'Wait for the client to decide'], preferred: 1 },
+          { q: "What is your process for creating a video that feels 'exclusive' and 'high-end'?", options: ['Use bright colours and fast transitions', 'Focus on slow, intentional details', "Copy a popular video style", 'Make the video as long as possible'], preferred: 1 },
+          { q: 'How do you handle receiving feedback that you disagree with?', options: ['Tell the client their idea is wrong', 'Ignore the feedback', 'Listen and offer collaborative solution', 'Immediately quit the project'], preferred: 2 },
         ],
         locations: [
-          { name: 'Studio Location', type: 'Indoor', desc: 'Professional studio setup', reqs: ['Lighting equipment', 'Sound proofing'] },
-          { name: 'Outdoor Location', type: 'Outdoor', desc: 'Natural lighting setup', reqs: ['Weather backup', 'Permits'] }
+          { name: 'Minimalist Art Gallery', type: 'Indoor', typeColor: '#dbeafe', typeText: '#1d4ed8', desc: 'Premium, gallery-like canvas that makes colors pop.', reqs: ['Controlled climate', 'Lighting rig permission', 'Furniture removal'] },
+          { name: 'Botanical Conservatory', type: 'Hybrid', typeColor: '#fef3c7', typeText: '#92400e', desc: 'Lush, organic backdrop reinforcing sustainability.', reqs: ['Temperature regulation', 'Reflector panels', 'Filming permit'] },
+          { name: 'Luxury Penthouse Terrace', type: 'Outdoor', typeColor: '#dcfce7', typeText: '#166534', desc: 'High-end urban terrace suggesting exclusive lifestyle.', reqs: ['Weather backup', 'Portable power', 'Equipment access'] },
         ],
         technicalRequirements: {
-          camera: '4K Cinema Camera',
-          lighting: 'Professional LED lighting kit',
-          audio: 'High-quality audio recording equipment'
+          camera: [['Camera Type', 'Sony FX6 Cinema Line'], ['Resolution', '4K DCI 10-bit 4:2:2 XAVC-I'], ['Frame Rate', '24fps for cinematic, 120fps for high-speed'], ['Lenses', 'Sony FE 35mm f/1.4 GM, 50mm f/1.2 GM, 90mm f/2.8 Macro G OSS'], ['Camera Support', 'DJI RS3 Pro Gimbal and Sachtler Ace XL Tripod']],
+          lighting: ['Aputure LS 600d Pro for high-output key light', 'Aputure Light Dome II for soft portrait lighting', '2x Aputure Amaran 200x Bi-Color for rim lighting', 'Aputure MC RGBWW for accent colors', '4x4 Scrim Jim Cine Kit for diffusion'],
+          audio: ['Sennheiser MKH 416 shotgun microphone', 'Rode Wireless PRO lavalier system', 'Zoom F6 MultiTrack Field Recorder', 'Rycote Softie Windshield']
         },
-        productionSchedule: {
-          preProduction: '2 weeks',
-          production: '1 week',
-          postProduction: '3 weeks'
-        },
+        productionSchedule: [
+          { name: 'Pre-Production', days: '14 days', items: ['Finalize creative concept', 'Scout locations', 'Secure talent', 'Confirm equipment rentals', 'Draft shot list', 'Production meetings', 'Location permits', 'Contract crew', 'Coordinate logistics'] },
+          { name: 'Production', days: '3 days', items: ['Day 1: Studio scenes', 'Day 2: Location shoot', 'Day 3: Detail shots', 'Daily call/wrap times', 'Crew breaks', 'Contingency plans', 'Footage review', 'BTS documentation', 'Equipment check-in'] },
+          { name: 'Post-Production', days: '21 days', items: ['Transfer and backup footage', 'Assemble rough cut', 'Client review', 'Editorial notes', 'Color grading', 'Motion graphics', 'Sound design', 'Music licensing', 'Final review', 'Export files', 'Archive project'] },
+        ],
         creativeDirection: {
-          style: 'Modern and professional',
-          mood: 'Energetic and engaging',
-          references: 'High-end commercial aesthetics'
+          moodTags: ['Energetic', 'Aspirational', 'Modern', 'Dynamic', 'Confident'],
+          visualStyle: 'Clean, modern aesthetic with high contrast. Focus on product detail with shallow depth of field.',
+          cinematographyNotes: 'Strategic camera movements that serve the story. Motivated lighting that creates depth and dimension.',
+          toneMood: 'Aspirational yet authentic, avoiding overt luxury clichés.',
+          referenceStyle: 'Nike commercial aesthetic. Apple product launch feel. Quick cuts with impact.'
         },
         deliverables: {
-          primary: ['4K video files', 'Social media versions', 'Raw footage']
+          primary: ['4K video files', 'Social media versions', 'Raw footage'],
+          timeline: '3-4 weeks from final approval'
         }
       },
       isMock: true

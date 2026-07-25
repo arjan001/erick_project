@@ -196,41 +196,117 @@ function Card({ children, highlight = false }) {
 
 /* ─── STEP CONTENT COMPONENTS ───────────────────────────────────────────── */
 
-function StepOverviewBrief() {
+function StepOverviewBrief({ data, onRegenerate }) {
+  const [suggestion, setSuggestion] = useState('');
+
+  const handleRegenerate = () => {
+    if (suggestion.trim()) {
+      onRegenerate('overviewBrief', suggestion);
+      setSuggestion('');
+    }
+  };
+
+  const initialIdea = data?.initialIdea || `Create a high-impact commercial for ${data?.title || 'your brand'} showcasing their bespoke artisanal floral arrangements. Target affluent lifestyle enthusiasts and event planners with key selling points like premium, sustainably sourced blooms and custom design artistry.`;
+  const productionBrief = data?.description || 'AI-generated production brief based on your requirements.';
+  const category = data?.category || 'commercial';
+  const tags = data?.tags || ['bespoke', 'floristry', 'artisanal', 'sustainable', 'luxury', 'floraldesign', 'eventplanning', 'cinematic', 'modern', 'premium'];
+
   return (
     <>
       <div style={{ marginBottom: 24 }}>
         <PendingBadge />
-        <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Overview &amp; Brief</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>AI-generated project overview and creative brief</p>
+        <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Production Brief</h1>
+        <p style={{ color: '#6b7280', fontSize: 14 }}>Comprehensive overview of the project</p>
       </div>
 
-      <Card highlight>
-        <div style={{ fontSize: 16, fontWeight: 600, color: '#111', marginBottom: 12 }}>Project Overview</div>
-        <p style={{ fontSize: 14, color: '#374151', lineHeight: 1.7, margin: 0 }}>
-          Bloom &amp; Vine is a luxury floral design studio specializing in bespoke, sustainable arrangements for high-end events and brand collaborations. The brand identity centers on artistry, exclusivity, and environmental consciousness. This video project aims to showcase their craftsmanship through cinematic storytelling that highlights the delicate beauty of their floral creations while communicating their commitment to sustainable luxury.
-        </p>
-      </Card>
-
+      {/* Initial Idea */}
       <Card>
-        <div style={{ fontSize: 16, fontWeight: 600, color: '#111', marginBottom: 12 }}>Creative Brief</div>
+        <div style={{ borderLeft: '3px solid #10b981', paddingLeft: 14, marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 8 }}>INITIAL IDEA</div>
+        </div>
         <p style={{ fontSize: 14, color: '#374151', lineHeight: 1.7, margin: 0 }}>
-          The video will follow a narrative arc that begins with the sourcing of premium, locally-grown flowers, transitions to the meticulous design process in their studio, and culminates in the final installation at an exclusive event. Visual style will be elegant and refined, using shallow depth of field to emphasize texture and color. The tone should be aspirational yet authentic, avoiding overt luxury clichés in favor of genuine artistry and craftsmanship. Sound design will incorporate subtle ambient sounds of nature and studio work to create an immersive experience.
+          {initialIdea}
         </p>
       </Card>
 
-      <SuggestionBox placeholder="e.g., 'Make it more energetic', 'Focus on sustainability', 'Add more brand story'" />
+      {/* Production Brief */}
+      <Card>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151' }}>PRODUCTION BRIEF</div>
+            <span style={{ background: '#111', color: '#fff', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4 }}>{category}</span>
+          </div>
+          <button style={{ background: 'none', border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 10px', fontSize: 12, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <EditIcon size={12} /> Edit
+          </button>
+        </div>
+        <div style={{ borderLeft: '3px solid #10b981', paddingLeft: 14 }}>
+          <p style={{ fontSize: 13.5, color: '#374151', lineHeight: 1.75, margin: 0 }}>
+            <strong style={{ color: '#10b981' }}>INTRODUCTION</strong>{' '}
+            {productionBrief}
+          </p>
+        </div>
+      </Card>
+
+      {/* Project Type & Tags */}
+      <Card>
+        <div style={{ borderLeft: '3px solid #10b981', paddingLeft: 14, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 12 }}>PROJECT TYPE &amp; TAGS</div>
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 6 }}>MAIN CATEGORY</div>
+            <button style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>{category}</button>
+          </div>
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 8 }}>TAGS (UP TO 10)</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {tags.slice(0, 10).map(tag => (
+                <span key={tag} style={{ background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: 20, padding: '4px 10px', fontSize: 12, color: '#374151', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  {tag} <XIcon size={10} />
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ position: 'relative' }}>
+          <textarea
+            value={suggestion}
+            onChange={(e) => setSuggestion(e.target.value)}
+            placeholder="e.g., 'Make it more professional', 'Focus on budget-friendly approach', 'Add more detail about locations'"
+            style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+          />
+          <button 
+            onClick={handleRegenerate}
+            disabled={!suggestion.trim()}
+            style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: suggestion.trim() ? 'pointer' : 'not-allowed', opacity: suggestion.trim() ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <RefreshIcon size={12} /> Regenerate
+          </button>
+        </div>
+      </div>
     </>
   );
 }
 
-function StepBudgetBreakdown() {
+function StepBudgetBreakdown({ data, onRegenerate }) {
   const [activePackage, setActivePackage] = useState(1);
-  const pkgs = [
+  const [suggestion, setSuggestion] = useState('');
+
+  const pkgs = data || [
     { name: 'Conservative', price: '€5,000', desc: 'Essential coverage with single-camera setup and basic post-production.', pre: '€2,000', prod: '€2,000', post: '€1,000', highlight: false },
     { name: 'Standard', price: '€14,000', desc: 'Professional multi-camera production with enhanced lighting and color grading.', pre: '€4,000', prod: '€6,000', post: '€4,000', highlight: true },
     { name: 'Premium', price: '€40,000', desc: 'Full-scale production with cinema equipment, aerial shots, and premium post-production.', pre: '€10,000', prod: '€20,000', post: '€10,000', highlight: false },
   ];
+
+  const handleRegenerate = () => {
+    if (suggestion.trim()) {
+      onRegenerate('budgetBreakdown', suggestion);
+      setSuggestion('');
+    }
+  };
 
   return (
     <>
@@ -275,23 +351,49 @@ function StepBudgetBreakdown() {
       <Card>
         <div style={{ fontSize: 14, fontWeight: 600, color: '#111', marginBottom: 8 }}>Budget Reasoning</div>
         <p style={{ fontSize: 13.5, color: '#6b7280', lineHeight: 1.7, margin: 0 }}>
-          Costs are driven primarily by crew size, the quality of rental cinema equipment, the number of shooting days required for high-end floral styling, and the depth of post-production polish (VFX and color) needed for the luxury market.
+          Costs are driven primarily by crew size, the quality of rental cinema equipment, the number of shooting days required, and the depth of post-production polish needed for the project.
         </p>
       </Card>
 
-      <SuggestionBox placeholder="e.g., 'Lower the costs', 'Increase premium package', 'Add more detail to explanations'" />
+      <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ position: 'relative' }}>
+          <textarea
+            value={suggestion}
+            onChange={(e) => setSuggestion(e.target.value)}
+            placeholder="e.g., 'Lower the costs', 'Increase premium package', 'Add more detail to explanations'"
+            style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+          />
+          <button 
+            onClick={handleRegenerate}
+            disabled={!suggestion.trim()}
+            style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: suggestion.trim() ? 'pointer' : 'not-allowed', opacity: suggestion.trim() ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <RefreshIcon size={12} /> Regenerate
+          </button>
+        </div>
+      </div>
     </>
   );
 }
 
-function StepRolesTeam() {
+function StepRolesTeam({ data, onRegenerate }) {
   const [activePackage, setActivePackage] = useState(1);
+  const [suggestion, setSuggestion] = useState('');
+
   const pkgs = [
     { label: 'Conservative', price: '€5,000' },
     { label: 'Standard', price: '€14,000' },
     { label: 'Premium', price: '€40,000' },
   ];
-  const roles = ['Director', 'Cinematographer', 'Gaffer', 'Sound Mixer', 'Editor', 'Colorist', 'Production Assistant'];
+  const roles = data?.team || ['Director', 'Cinematographer', 'Gaffer', 'Sound Mixer', 'Editor', 'Colorist', 'Production Assistant'];
+
+  const handleRegenerate = () => {
+    if (suggestion.trim()) {
+      onRegenerate('rolesTeam', suggestion);
+      setSuggestion('');
+    }
+  };
 
   return (
     <>
@@ -317,16 +419,16 @@ function StepRolesTeam() {
             <UsersIcon size={16} />
             <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.8, color: '#374151' }}>STANDARD PACKAGE TEAM</span>
           </div>
-          <span style={{ background: '#111', color: '#fff', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 5 }}>7 professionals</span>
+          <span style={{ background: '#111', color: '#fff', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 5 }}>{roles.length} professionals</span>
         </div>
 
         <div style={{ background: '#f0fdf9', border: '1px solid #d1fae5', borderRadius: 9, padding: '14px 18px', marginBottom: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111' }}>Team Composition</div>
-              <div style={{ fontSize: 12, color: '#10b981', marginTop: 3 }}>This package requires 7 specialized professionals</div>
+              <div style={{ fontSize: 12, color: '#10b981', marginTop: 3 }}>This package requires {roles.length} specialized professionals</div>
             </div>
-            <span style={{ background: '#10b981', color: '#fff', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 5 }}>7 professionals</span>
+            <span style={{ background: '#10b981', color: '#fff', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 5 }}>{roles.length} professionals</span>
           </div>
         </div>
 
@@ -343,25 +445,44 @@ function StepRolesTeam() {
         </div>
       </Card>
 
-      <SuggestionBox placeholder="e.g., 'Need less experienced team', 'Add sound designer', 'Change to solo producer'" />
+      <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ position: 'relative' }}>
+          <textarea
+            value={suggestion}
+            onChange={(e) => setSuggestion(e.target.value)}
+            placeholder="e.g., 'Need less experienced team', 'Add sound designer', 'Change to solo producer'"
+            style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+          />
+          <button 
+            onClick={handleRegenerate}
+            disabled={!suggestion.trim()}
+            style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: suggestion.trim() ? 'pointer' : 'not-allowed', opacity: suggestion.trim() ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <RefreshIcon size={12} /> Regenerate
+          </button>
+        </div>
+      </div>
     </>
   );
 }
 
-function StepScreeningQuestions() {
-  const questions = [
+function StepScreeningQuestions({ data, onRegenerate }) {
+  const [suggestion, setSuggestion] = useState('');
+
+  const questions = data || [
     {
-      q: 'If a key floral element for a shoot is suddenly unavailable on the day, how do you handle it?',
+      q: 'If a key element for a shoot is suddenly unavailable on the day, how do you handle it?',
       options: [
         'Cancel the shoot immediately until everything is perfect.',
-        'Assess the situation and brainstorm creative alternatives that still match the luxury idea.',
+        'Assess the situation and brainstorm creative alternatives that still match the vision.',
         'Tell the client it is not my problem and proceed with whatever is left.',
         'Wait for the client to arrive and let them decide what to do.',
       ],
       preferred: 1,
     },
     {
-      q: "What is your process for creating a video that feels 'exclusive' and 'high-end' for a luxury brand?",
+      q: "What is your process for creating a video that feels 'exclusive' and 'high-end'?",
       options: [
         'Use as many bright colours and fast transitions as possible.',
         'Focus on capturing slow, intentional details and elegant, refined moments.',
@@ -380,57 +501,14 @@ function StepScreeningQuestions() {
       ],
       preferred: 2,
     },
-    {
-      q: 'When working as part of a larger team, how do you ensure everyone stays on the same page?',
-      options: [
-        'I let everyone work independently and hope for the best at the end.',
-        'I provide clear instructions and check in regularly to make sure we are all moving in the same direction.',
-        'I only talk to the lead person and let the rest handle the rest of the team.',
-        'I would talk to team members so I can focus entirely on my own tasks.',
-      ],
-      preferred: 1,
-    },
-    {
-      q: 'If a client has a limited budget, how do you decide where to spend the money?',
-      options: [
-        'Spread the money equally across all parts of the project, even if it makes everything look average.',
-        "Identify the 'must-haves' that directly support the core message and invest most of the budget there.",
-        'Spend as much as possible on the most expensive equipment available.',
-        'Cut the budget for the creative concept and focus entirely on extras.',
-      ],
-      preferred: 1,
-    },
-    {
-      q: 'You realise a specific shot will take twice as long to complete as planned, putting the whole day behind. What do you do?',
-      options: [
-        'Panic and rush the rest of the work.',
-        'Work overtime without informing anyone and hope no one notices.',
-        'Communicate the delay to the client, explain the impact, and present options to adjust the plan.',
-        'Keep working on the shot until it is perfect, regardless of the deadline.',
-      ],
-      preferred: 2,
-    },
-    {
-      q: "How do you manage client expectations when they have a vision that might not fit their current budget?",
-      options: [
-        'Tell them I can do it for free just to keep them happy.',
-        "Actively explain the limitations and offer alternative creative options that fit the budget while maintaining the brand's quality.",
-        "Take their money and then tell them I can't deliver the result after the work has started.",
-        'Ignore everything and complain about the budget later.',
-      ],
-      preferred: 1,
-    },
-    {
-      q: 'When starting a new project for a brand, what is the first thing you look for?',
-      options: [
-        'A list of the newest gadgets I can use.',
-        "The brand's identity, their target audience, and what makes them unique in their market.",
-        'The fastest way to finish the work so I can move to the next project.',
-        'Which of my friends can help me with the work.',
-      ],
-      preferred: 1,
-    },
   ];
+
+  const handleRegenerate = () => {
+    if (suggestion.trim()) {
+      onRegenerate('screeningQuestions', suggestion);
+      setSuggestion('');
+    }
+  };
 
   return (
     <>
@@ -476,19 +554,38 @@ function StepScreeningQuestions() {
         ))}
       </Card>
 
-      <SuggestionBox placeholder="e.g., 'Add question about equipment', 'Make questions simpler', 'Focus more on creativity'" />
+      <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ position: 'relative' }}>
+          <textarea
+            value={suggestion}
+            onChange={(e) => setSuggestion(e.target.value)}
+            placeholder="e.g., 'Add question about equipment', 'Make questions simpler', 'Focus more on creativity'"
+            style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+          />
+          <button 
+            onClick={handleRegenerate}
+            disabled={!suggestion.trim()}
+            style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: suggestion.trim() ? 'pointer' : 'not-allowed', opacity: suggestion.trim() ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <RefreshIcon size={12} /> Regenerate
+          </button>
+        </div>
+      </div>
     </>
   );
 }
 
-function StepLocations() {
-  const locations = [
+function StepLocations({ data, onRegenerate }) {
+  const [suggestion, setSuggestion] = useState('');
+
+  const locations = data || [
     {
       name: 'Minimalist Art Gallery with Floor-to-Ceiling Windows',
       type: 'Indoor',
       typeColor: '#dbeafe',
       typeText: '#1d4ed8',
-      desc: 'The stark white walls and clean architectural lines provide a premium, gallery-like canvas that makes the colors of the floral arrangements pop. This environment emphasizes the \'bespoke artistry\' aspect of the brand, appealing to an affluent demographic.',
+      desc: 'The stark white walls and clean architectural lines provide a premium, gallery-like canvas that makes the colors of the floral arrangements pop.',
       reqs: ['Controlled climate for delicate flowers', 'Permission for lighting rig setup', 'Minimalist furniture removal'],
     },
     {
@@ -496,7 +593,7 @@ function StepLocations() {
       type: 'Hybrid',
       typeColor: '#fef3c7',
       typeText: '#92400e',
-      desc: 'This location offers a lush, organic backdrop that reinforces the brand\'s commitment to sustainability and nature. The natural diffused light filtered through glass creates a dreamlike, high-end cinematic aesthetic perfect for close-ups of floral textures.',
+      desc: 'This location offers a lush, organic backdrop that reinforces the brand\'s commitment to sustainability and nature.',
       reqs: ['Temperature regulation for floral freshness', 'Reflector panels for lighting balance', 'Permit for professional filming'],
     },
     {
@@ -504,18 +601,17 @@ function StepLocations() {
       type: 'Outdoor',
       typeColor: '#dcfce7',
       typeText: '#166534',
-      desc: 'A high-end urban terrace suggests an exclusive lifestyle and provides a dramatic juxtaposition between delicate blooms and the concrete city. It captures the \'sophisticated narrative\' by positioning the product in the center of a wealthy, aspirational urban environment.',
+      desc: 'A high-end urban terrace suggests an exclusive lifestyle and provides a dramatic juxtaposition between delicate blooms and the concrete city.',
       reqs: ['Weather backup plan', 'Portable power stations', 'Access for heavy equipment loading'],
     },
-    {
-      name: 'High-End Cyclorama Photography Studio',
-      type: 'Studio',
-      typeColor: '#ede9fe',
-      typeText: '#5b21b6',
-      desc: 'A clean, infinity-wall studio allows for total control over lighting and composition, essential for isolating the floral arrangements as the hero of the frame. This is the most practical choice for achieving a \'polished, commercial\' look that aligns with high-end luxury advertising.',
-      reqs: ['High-output lighting kit', 'Macro lenses for detailed texture capture', 'Multiple colored backdrops'],
-    },
   ];
+
+  const handleRegenerate = () => {
+    if (suggestion.trim()) {
+      onRegenerate('locations', suggestion);
+      setSuggestion('');
+    }
+  };
 
   return (
     <>
@@ -551,32 +647,58 @@ function StepLocations() {
         ))}
       </Card>
 
-      <RequestModBox placeholder="e.g., 'Add indoor backup location', 'Need more urban locations', 'Focus on natural settings'" />
+      <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ position: 'relative' }}>
+          <textarea
+            value={suggestion}
+            onChange={(e) => setSuggestion(e.target.value)}
+            placeholder="e.g., 'Add indoor backup location', 'Need more urban locations', 'Focus on natural settings'"
+            style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+          />
+          <button 
+            onClick={handleRegenerate}
+            disabled={!suggestion.trim()}
+            style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: suggestion.trim() ? 'pointer' : 'not-allowed', opacity: suggestion.trim() ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <RefreshIcon size={12} /> Regenerate
+          </button>
+        </div>
+      </div>
     </>
   );
 }
 
-function StepTechnicalRequirements() {
-  const cameraRows = [
+function StepTechnicalRequirements({ data, onRegenerate }) {
+  const [suggestion, setSuggestion] = useState('');
+
+  const cameraRows = data?.camera || [
     ['Camera Type', 'Sony FX6 Cinema Line'],
     ['Resolution', '4K DCI 10-bit 4:2:2 XAVC-I'],
-    ['Frame Rate', '24fps for cinematic narrative, 120fps for high-speed macro floral movement'],
+    ['Frame Rate', '24fps for cinematic narrative, 120fps for high-speed'],
     ['Lenses', 'Sony FE 35mm f/1.4 GM, 50mm f/1.2 GM, and 90mm f/2.8 Macro G OSS'],
     ['Camera Support', 'DJI RS3 Pro Gimbal and Sachtler Ace XL Fluid Head Tripod'],
   ];
-  const lightingItems = [
+  const lightingItems = data?.lighting || [
     'Aputure LS 600d Pro for high-output daylight balanced key light',
     'Aputure Light Dome II for soft, wrap-around portrait lighting',
     '2x Aputure Amaran 200x Bi-Color for adjustable rim and background texture lighting',
-    'Aputure MC RGBWW lights for subtle accent color highlights on petals',
+    'Aputure MC RGBWW lights for subtle accent color highlights',
     '4x4 Scrim Jim Cine Kit for diffusing harsh sunlight in outdoor locations',
   ];
-  const audioItems = [
-    'Sennheiser MKH 416 shotgun microphone for crisp ambient floral shots',
+  const audioItems = data?.audio || [
+    'Sennheiser MKH 416 shotgun microphone for crisp ambient shots',
     'Rode Wireless PRO lavalier system for clean interview recording',
     'Zoom F6 MultiTrack Field Recorder for high-fidelity audio capture',
     'Rycote Softie Windshield for suppressing movement artifacts',
   ];
+
+  const handleRegenerate = () => {
+    if (suggestion.trim()) {
+      onRegenerate('technicalRequirements', suggestion);
+      setSuggestion('');
+    }
+  };
 
   return (
     <>
@@ -637,61 +759,87 @@ function StepTechnicalRequirements() {
         </div>
       </Card>
 
-      <RequestModBox placeholder="e.g., 'Need ARRI camera package', 'Add more LED lighting', 'Budget-friendly options'" />
+      <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ position: 'relative' }}>
+          <textarea
+            value={suggestion}
+            onChange={(e) => setSuggestion(e.target.value)}
+            placeholder="e.g., 'Need ARRI camera package', 'Add more LED lighting', 'Budget-friendly options'"
+            style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+          />
+          <button 
+            onClick={handleRegenerate}
+            disabled={!suggestion.trim()}
+            style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: suggestion.trim() ? 'pointer' : 'not-allowed', opacity: suggestion.trim() ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <RefreshIcon size={12} /> Regenerate
+          </button>
+        </div>
+      </div>
     </>
   );
 }
 
-function StepProductionSchedule() {
-  const phases = [
+function StepProductionSchedule({ data, onRegenerate }) {
+  const [suggestion, setSuggestion] = useState('');
+
+  const phases = data || [
     {
       name: 'Pre-Production',
       days: '14 days',
       items: [
-        'Finalize creative concept and script breakdown for brand narrative',
-        'Scout luxury greenhouse and studio locations for floral setups',
-        'Secure talent for lifestyle segments and sign release forms',
-        'Confirm cinema camera and specialized macro lens rental packages',
-        'Draft detailed shot list and 2D storyboard panels',
-        'Conduct production meetings with key crew and client lead',
-        'Apply for location permits and secure comprehensive production insurance',
-        'Contract lead cinematographer, gaffer, and floral stylist',
-        'Coordinate transport for floral assets and catering logistics',
+        'Finalize creative concept and script breakdown',
+        'Scout locations for production',
+        'Secure talent and sign release forms',
+        'Confirm camera and equipment rental packages',
+        'Draft detailed shot list and storyboard panels',
+        'Conduct production meetings with key crew',
+        'Apply for location permits and insurance',
+        'Contract lead cinematographer and crew',
+        'Coordinate logistics and catering',
       ],
     },
     {
       name: 'Production',
       days: '3 days',
       items: [
-        'Day 1: Setup and shoot intricate floral composition shots at main studio',
-        'Day 2: Lifestyle location shoot for client interaction sequences',
-        'Day 3: Macro-cinematography for brand texture and detail shots',
-        'Establish 06:00 call times and 19:00 wrap times daily',
-        'Manage one-hour crew lunch breaks and scheduled rest periods',
-        'Implement contingency plan for indoor studio lighting for weather shifts',
-        'Conduct end-of-day review of footage to ensure all story beats met',
-        'Document behind-the-scenes content for social media teaser usage',
-        'Perform daily equipment check-in and inventory reconciliation',
+        'Day 1: Setup and shoot main studio scenes',
+        'Day 2: Lifestyle location shoot',
+        'Day 3: Detail shots and coverage',
+        'Establish call times and wrap times daily',
+        'Manage crew breaks and rest periods',
+        'Implement contingency plans for weather',
+        'Conduct end-of-day footage review',
+        'Document behind-the-scenes content',
+        'Daily equipment check-in',
       ],
     },
     {
       name: 'Post-Production',
       days: '21 days',
       items: [
-        'Transfer raw footage to server and verify redundant file backups',
-        'Assemble rough cut focusing on pacing and brand narrative',
-        'Submit first edit for initial client review and feedback',
+        'Transfer footage and verify backups',
+        'Assemble rough cut focusing on pacing',
+        'Submit first edit for client review',
         'Implement editorial notes and finalize picture lock',
-        'Conduct professional color grading sessions for high-end look',
-        'Apply motion graphics for Bloom & Vine logo and CTA overlays',
-        'Perform sound design, mixing, and audio level balancing',
-        'Secure music licensing and integrate final score',
-        'Conduct final review session and obtain client sign-off',
-        'Export master files in 4K and optimized social formats',
-        'Archive final project files and raw footage on long-term storage',
+        'Conduct professional color grading sessions',
+        'Apply motion graphics and overlays',
+        'Perform sound design and mixing',
+        'Secure music licensing and integrate score',
+        'Conduct final review and client sign-off',
+        'Export master files in multiple formats',
+        'Archive project files and footage',
       ],
     },
   ];
+
+  const handleRegenerate = () => {
+    if (suggestion.trim()) {
+      onRegenerate('productionSchedule', suggestion);
+      setSuggestion('');
+    }
+  };
 
   return (
     <>
@@ -725,13 +873,43 @@ function StepProductionSchedule() {
         ))}
       </Card>
 
-      <RequestModBox placeholder="e.g., 'Extend pre-production to 4 weeks', 'Add more production days', 'Faster turnaround needed'" />
+      <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ position: 'relative' }}>
+          <textarea
+            value={suggestion}
+            onChange={(e) => setSuggestion(e.target.value)}
+            placeholder="e.g., 'Extend pre-production to 4 weeks', 'Add more production days', 'Faster turnaround needed'"
+            style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+          />
+          <button 
+            onClick={handleRegenerate}
+            disabled={!suggestion.trim()}
+            style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: suggestion.trim() ? 'pointer' : 'not-allowed', opacity: suggestion.trim() ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <RefreshIcon size={12} /> Regenerate
+          </button>
+        </div>
+      </div>
     </>
   );
 }
 
-function StepCreativeDirection() {
-  const moodTags = ['Energetic', 'Aspirational', 'Modern', 'Dynamic', 'Confident'];
+function StepCreativeDirection({ data, onRegenerate }) {
+  const [suggestion, setSuggestion] = useState('');
+
+  const moodTags = data?.moodTags || ['Energetic', 'Aspirational', 'Modern', 'Dynamic', 'Confident'];
+  const visualStyle = data?.visualStyle || 'Clean, modern aesthetic with high contrast. Focus on product detail with shallow depth of field.';
+  const cinematographyNotes = data?.cinematographyNotes || 'Strategic camera movements that serve the story. Motivated lighting that creates depth and dimension.';
+  const toneMood = data?.toneMood || 'Aspirational yet authentic, avoiding overt luxury clichés in favor of genuine artistry.';
+  const referenceStyle = data?.referenceStyle || 'Nike commercial aesthetic. Apple product launch feel. Quick cuts with impact.';
+
+  const handleRegenerate = () => {
+    if (suggestion.trim()) {
+      onRegenerate('creativeDirection', suggestion);
+      setSuggestion('');
+    }
+  };
 
   return (
     <>
@@ -757,13 +935,13 @@ function StepCreativeDirection() {
         <div style={{ marginBottom: 24, paddingBottom: 24, borderBottom: '1px solid #f3f4f6' }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 10 }}>VISUAL STYLE</div>
           <p style={{ fontSize: 13.5, color: '#374151', lineHeight: 1.7, margin: 0 }}>
-            Clean, modern aesthetic with high contrast. Focus on product detail with shallow depth of field. Dynamic camera movements to match athletic energy.
+            {visualStyle}
           </p>
         </div>
         <div style={{ marginBottom: 24, paddingBottom: 24, borderBottom: '1px solid #f3f4f6' }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 10 }}>CINEMATOGRAPHY NOTES</div>
           <p style={{ fontSize: 13.5, color: '#374151', lineHeight: 1.7, margin: 0 }}>
-            Strategic camera movements that serve the story. Motivated lighting that creates depth and dimension. Intentional framing that guides the viewer's eye. Color temperature choices that enhance the emotional tone. Shot composition that balances negative space with subject matter.
+            {cinematographyNotes}
           </p>
         </div>
         <div style={{ marginBottom: 24, paddingBottom: 24, borderBottom: '1px solid #f3f4f6' }}>
@@ -777,15 +955,46 @@ function StepCreativeDirection() {
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 10 }}>REFERENCE STYLE</div>
           <p style={{ fontSize: 13.5, color: '#374151', lineHeight: 1.7, margin: 0 }}>
-            Nike commercial aesthetic. Apple product launch feel. Quick cuts with impact. Slow motion for key moments. Close-ups that reveal texture and craftsmanship.
+            {referenceStyle}
           </p>
         </div>
       </Card>
+
+      <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ position: 'relative' }}>
+          <textarea
+            value={suggestion}
+            onChange={(e) => setSuggestion(e.target.value)}
+            placeholder="e.g., 'Make it more energetic', 'Focus on sustainability', 'Add more brand story'"
+            style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+          />
+          <button 
+            onClick={handleRegenerate}
+            disabled={!suggestion.trim()}
+            style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: suggestion.trim() ? 'pointer' : 'not-allowed', opacity: suggestion.trim() ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <RefreshIcon size={12} /> Regenerate
+          </button>
+        </div>
+      </div>
     </>
   );
 }
 
-function StepDeliverables() {
+function StepDeliverables({ data, onRegenerate }) {
+  const [suggestion, setSuggestion] = useState('');
+
+  const primaryDeliverables = data?.primary || ['4K video files', 'Social media versions', 'Raw footage'];
+  const deliveryTimeline = data?.timeline || '3-4 weeks from final approval';
+
+  const handleRegenerate = () => {
+    if (suggestion.trim()) {
+      onRegenerate('deliverables', suggestion);
+      setSuggestion('');
+    }
+  };
+
   return (
     <>
       <div style={{ marginBottom: 24 }}>
@@ -799,12 +1008,20 @@ function StepDeliverables() {
           <PackageIcon size={20} />
           <span style={{ fontSize: 16, fontWeight: 600, color: '#111' }}>Primary Deliverables</span>
         </div>
+        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {primaryDeliverables.map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: '#374151' }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', flexShrink: 0 }} />
+              {item}
+            </div>
+          ))}
+        </div>
       </Card>
 
       <div style={{ background: '#f0fdf9', border: '1px solid #6ee7b7', borderRadius: 12, padding: '18px 24px', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <FileTextIcon size={18} />
-          <span style={{ fontSize: 15, fontWeight: 600, color: '#111' }}>Delivery Timeline</span>
+          <span style={{ fontSize: 15, fontWeight: 600, color: '#111' }}>Delivery Timeline: {deliveryTimeline}</span>
         </div>
       </div>
 
@@ -812,10 +1029,16 @@ function StepDeliverables() {
         <div style={{ fontSize: 14, fontWeight: 600, color: '#111', marginBottom: 12 }}>Modify Deliverables (optional)</div>
         <div style={{ position: 'relative' }}>
           <textarea
+            value={suggestion}
+            onChange={(e) => setSuggestion(e.target.value)}
             placeholder="e.g., 'Add vertical formats', 'Include podcast audio versions', 'Add Spanish subtitles'"
             style={{ width: '100%', minHeight: 80, border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
           />
-          <button style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button 
+            onClick={handleRegenerate}
+            disabled={!suggestion.trim()}
+            style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: suggestion.trim() ? 'pointer' : 'not-allowed', opacity: suggestion.trim() ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
             <RefreshIcon size={12} /> Regenerate
           </button>
         </div>
@@ -993,8 +1216,10 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
       description: projectDescription
     };
     
-    // Set aiData to trigger the main modal
+    // Set aiData to trigger the main modal and reset to step 0
     setAIData(updatedProjectData);
+    setCurrentStep(0);
+    setApproved(new Set());
   };
 
   const loadAIProductionPlan = async (data) => {
@@ -1015,12 +1240,12 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     }
   };
 
-  const handleRegenerate = async (section) => {
+  const handleRegenerate = async (section, suggestion) => {
     if (!aiData) return;
     
     setLoading(true);
     try {
-      const result = await regenerateSection(section, aiData, 'User requested regeneration');
+      const result = await regenerateSection(section, aiData, suggestion);
       if (result.success) {
         setAIData(prev => ({
           ...prev,
@@ -1215,15 +1440,15 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   }
 
   const stepComponents = [
-    <StepOverviewBrief data={aiData?.overviewBrief} onRegenerate={() => handleRegenerate('overviewBrief')} />,
-    <StepBudgetBreakdown data={aiData?.budgetBreakdown} onRegenerate={() => handleRegenerate('budgetBreakdown')} />,
-    <StepRolesTeam data={aiData?.rolesTeam} onRegenerate={() => handleRegenerate('rolesTeam')} />,
-    <StepScreeningQuestions data={aiData?.screeningQuestions} onRegenerate={() => handleRegenerate('screeningQuestions')} />,
-    <StepLocations data={aiData?.locations} onRegenerate={() => handleRegenerate('locations')} />,
-    <StepTechnicalRequirements data={aiData?.technicalRequirements} onRegenerate={() => handleRegenerate('technicalRequirements')} />,
-    <StepProductionSchedule data={aiData?.productionSchedule} onRegenerate={() => handleRegenerate('productionSchedule')} />,
-    <StepCreativeDirection data={aiData?.creativeDirection} onRegenerate={() => handleRegenerate('creativeDirection')} />,
-    <StepDeliverables data={aiData?.deliverables} onRegenerate={() => handleRegenerate('deliverables')} />,
+    <StepOverviewBrief data={aiData?.overviewBrief} onRegenerate={handleRegenerate} />,
+    <StepBudgetBreakdown data={aiData?.budgetBreakdown} onRegenerate={handleRegenerate} />,
+    <StepRolesTeam data={aiData?.rolesTeam} onRegenerate={handleRegenerate} />,
+    <StepScreeningQuestions data={aiData?.screeningQuestions} onRegenerate={handleRegenerate} />,
+    <StepLocations data={aiData?.locations} onRegenerate={handleRegenerate} />,
+    <StepTechnicalRequirements data={aiData?.technicalRequirements} onRegenerate={handleRegenerate} />,
+    <StepProductionSchedule data={aiData?.productionSchedule} onRegenerate={handleRegenerate} />,
+    <StepCreativeDirection data={aiData?.creativeDirection} onRegenerate={handleRegenerate} />,
+    <StepDeliverables data={aiData?.deliverables} onRegenerate={handleRegenerate} />,
   ];
 
   const progressPct = Math.round(((approved.size) / STEPS.length) * 100);
