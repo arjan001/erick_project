@@ -1759,7 +1759,7 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   }
 
   const stepComponents = [
-    <StepOverviewBrief data={aiData?.overviewBrief} onRegenerate={handleRegenerate} onCategoryChange={handleCategoryChange} />,
+    <StepOverviewBrief data={aiData?.overviewBrief} projectCategory={projectCategory} onRegenerate={handleRegenerate} onCategoryChange={handleCategoryChange} />,
     <StepBudgetBreakdown data={aiData?.budgetBreakdown} onRegenerate={handleRegenerate} />,
     <StepRolesTeam data={aiData?.rolesTeam} onRegenerate={handleRegenerate} selectedBudgetPackage={activePackage} />,
     <StepScreeningQuestions data={aiData?.screeningQuestions} onRegenerate={handleRegenerate} />,

@@ -247,6 +247,13 @@ function StepOverviewBrief({ data, projectCategory, onRegenerate, loading, isApp
     { value: 'social_media', label: 'Social Media', icon: Share },
     { value: 'animation', label: 'Animation', icon: SparklesIcon }
   ];
+
+  const handleCategorySelect = (categoryValue) => {
+    setShowCategoryDropdown(false);
+    if (onCategoryChange) {
+      onCategoryChange(categoryValue);
+    }
+  };
   
   const handleSaveEdit = () => {
     setIsEditing(false);
@@ -317,10 +324,7 @@ function StepOverviewBrief({ data, projectCategory, onRegenerate, loading, isApp
                       <button
                         key={cat.value}
                         type="button"
-                        onClick={() => {
-                          onCategoryChange && onCategoryChange(cat.value);
-                          setShowCategoryDropdown(false);
-                        }}
+                        onClick={() => handleCategorySelect(cat.value)}
                         style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', fontSize: 12, color: '#374151', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                       >
                         <Icon size={12} />
