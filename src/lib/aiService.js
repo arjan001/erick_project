@@ -100,16 +100,43 @@ Return the response as a structured JSON object with all sections populated.`;
           category: projectData?.category || 'commercial',
           tags: generateDynamicTags(projectData?.category || 'commercial', projectData?.description || '')
         },
-        budgetBreakdown: generateDynamicBudget(projectData?.category || 'commercial'),
-        rolesTeam: {
-          team: generateDynamicRoles(projectData?.category || 'commercial')
+        budgetBreakdown: {
+          packages: generateDynamicBudget(projectData?.category || 'commercial'),
+          reasoning: 'Costs are driven primarily by crew size, the quality of rental cinema equipment, the number of shooting days required, and the depth of post-production polish needed for the project.'
         },
-        screeningQuestions: generateDynamicQuestions(projectData?.category || 'commercial'),
-        locations: generateDynamicLocations(projectData?.category || 'commercial'),
-        technicalRequirements: generateDynamicTechnical(projectData?.category || 'commercial'),
-        productionSchedule: generateDynamicSchedule(projectData?.category || 'commercial'),
-        creativeDirection: generateDynamicCreative(projectData?.category || 'commercial'),
-        deliverables: generateDynamicDeliverables(projectData?.category || 'commercial')
+        roles: {
+          packages: [
+            { name: 'Conservative', price: '€5,000', teamSize: '3-4', roles: generateDynamicRoles(projectData?.category || 'commercial').slice(0, 4) },
+            { name: 'Standard', price: '€14,000', teamSize: '5-7', roles: generateDynamicRoles(projectData?.category || 'commercial') },
+            { name: 'Premium', price: '€40,000', teamSize: '8-12', roles: [...generateDynamicRoles(projectData?.category || 'commercial'), 'Art Director', 'Colorist', 'Sound Designer'] }
+          ],
+          roles: generateDynamicRoles(projectData?.category || 'commercial')
+        },
+        questions: {
+          questions: generateDynamicQuestions(projectData?.category || 'commercial')
+        },
+        locations: {
+          locations: generateDynamicLocations(projectData?.category || 'commercial')
+        },
+        technical: {
+          camera: generateDynamicTechnical(projectData?.category || 'commercial').camera,
+          lighting: generateDynamicTechnical(projectData?.category || 'commercial').lighting,
+          audio: generateDynamicTechnical(projectData?.category || 'commercial').audio
+        },
+        schedule: {
+          phases: generateDynamicSchedule(projectData?.category || 'commercial')
+        },
+        creativeDirection: {
+          visualStyle: generateDynamicCreative(projectData?.category || 'commercial').visualStyle,
+          cinematography: generateDynamicCreative(projectData?.category || 'commercial').cinematographyNotes,
+          moodTags: generateDynamicCreative(projectData?.category || 'commercial').moodTags,
+          referenceStyle: generateDynamicCreative(projectData?.category || 'commercial').referenceStyle,
+          image: null
+        },
+        deliverables: {
+          deliverables: generateDynamicDeliverables(projectData?.category || 'commercial').primary,
+          formats: generateDynamicDeliverables(projectData?.category || 'commercial').formats
+        }
       },
       isMock: true
     };
@@ -136,9 +163,39 @@ function generateDynamicTags(category, description) {
 
 function generateDynamicBudget(category) {
   const baseBudgets = [
-    { name: 'Conservative', price: '€5,000', desc: 'Essential coverage with efficient setup', pre: '€2,000', prod: '€2,000', post: '€1,000', highlight: false },
-    { name: 'Standard', price: '€14,000', desc: 'Professional production with enhanced quality', pre: '€4,000', prod: '€6,000', post: '€4,000', highlight: true },
-    { name: 'Premium', price: '€40,000', desc: 'Full-scale production with premium equipment', pre: '€10,000', prod: '€20,000', post: '€10,000', highlight: false }
+    { 
+      name: 'Conservative', 
+      price: '€5,000', 
+      description: 'Essential coverage with efficient setup',
+      breakdown: {
+        'Pre-Production': '€2,000',
+        'Production': '€2,000',
+        'Post-Production': '€1,000'
+      },
+      highlight: false 
+    },
+    { 
+      name: 'Standard', 
+      price: '€14,000', 
+      description: 'Professional production with enhanced quality',
+      breakdown: {
+        'Pre-Production': '€4,000',
+        'Production': '€6,000',
+        'Post-Production': '€4,000'
+      },
+      highlight: true 
+    },
+    { 
+      name: 'Premium', 
+      price: '€40,000', 
+      description: 'Full-scale production with premium equipment',
+      breakdown: {
+        'Pre-Production': '€10,000',
+        'Production': '€20,000',
+        'Post-Production': '€10,000'
+      },
+      highlight: false 
+    }
   ];
   return baseBudgets;
 }
