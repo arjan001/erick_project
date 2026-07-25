@@ -9,6 +9,8 @@ const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
  * @returns {Promise<Object>} AI-generated production plan data
  */
 export async function generateProductionPlan(projectData) {
+  console.log('generateProductionPlan called with:', projectData);
+  
   const prompt = `You are an expert film production planner for Studio22, a professional video production company that creates high-quality commercial videos, music videos, short films, documentaries, branded content, corporate videos, event coverage, product demos, social media content, and animation projects.
 
 Studio22's Analysis Process:
@@ -86,6 +88,7 @@ Please generate a detailed production plan with the following sections:
 Return the response as a structured JSON object with all sections populated with SPECIFIC, REAL content based on the project details provided. DO NOT use generic placeholder text.`;
 
   try {
+    console.log('Calling OpenAI API...');
     const response = await fetch(OPENAI_API_URL, {
       method: 'POST',
       headers: {
@@ -109,6 +112,8 @@ Return the response as a structured JSON object with all sections populated with
       })
     });
 
+    console.log('OpenAI response status:', response.status);
+
     if (!response.ok) {
       const error = await response.json();
       console.error('OpenAI API error:', error);
@@ -116,10 +121,13 @@ Return the response as a structured JSON object with all sections populated with
     }
 
     const data = await response.json();
+    console.log('OpenAI response data received');
     const content = data.choices[0].message.content;
+    console.log('Content length:', content.length);
     
     // Parse the JSON response
     const productionPlan = JSON.parse(content);
+    console.log('Parsed production plan successfully');
     
     return {
       success: true,
@@ -128,57 +136,66 @@ Return the response as a structured JSON object with all sections populated with
     };
   } catch (error) {
     console.error('AI generation error:', error);
+    console.log('Falling back to mock data generation...');
     
     // If API call fails, return dynamic mock data based on project data
+    const mockData = {
+      overviewBrief: {
+        title: projectData?.title || 'AI Generated Project',
+        description: projectData?.description 
+          ? `${projectData.description} This professional ${projectData?.category || 'commercial'} video production will elevate brand presence in the competitive market. The project will showcase core offerings, targeting the intended audience who value quality and authenticity. By leveraging cinematic techniques and strategic storytelling, we aim to communicate the key value propositions effectively.`
+          : `${projectData?.title || 'The brand'} requires a professional ${projectData?.category || 'commercial'} video production to elevate their brand presence in the competitive market. The project will showcase their core offerings, targeting the intended audience who value quality and authenticity. By leveraging cinematic techniques and strategic storytelling, we aim to communicate the key value propositions effectively. The final output will serve as a powerful tool for brand engagement and conversion across digital platforms.`,
+        initialIdea: projectData?.description
+          ? `Based on the analyzed content: ${projectData.description.substring(0, 200)}... Create a compelling ${projectData?.category || 'commercial'} showcasing key features. Use modern, cinematic visuals with strategic camera movements to highlight important elements. Include clear brand messaging and strong call-to-action throughout. Designed for multi-platform distribution including social media and digital channels to maximize reach and engagement.`
+          : `Create a compelling ${projectData?.category || 'commercial'} showcasing the key features and benefits of ${projectData?.title || 'the product'}. Use modern, cinematic visuals with strategic camera movements to highlight important elements. Include clear brand messaging and strong call-to-action throughout. Designed for multi-platform distribution including social media and digital channels to maximize reach and engagement.`,
+        introduction: `This ${projectData?.category || 'commercial'} project represents a strategic opportunity to connect with the target audience through compelling visual storytelling. The production will focus on delivering measurable results while maintaining brand consistency and creative excellence.`,
+        category: projectData?.category || 'commercial',
+        tags: generateDynamicTags(projectData?.category || 'commercial', projectData?.description || '')
+      },
+      budgetBreakdown: {
+        packages: generateDynamicBudget(projectData?.category || 'commercial'),
+        reasoning: 'Costs are driven primarily by crew size, the quality of rental cinema equipment, the number of shooting days required, and the depth of post-production polish needed for the project.'
+      },
+      roles: {
+        packages: [
+          { name: 'Conservative', price: '€5,000', teamSize: '3-4', roles: generateDynamicRoles(projectData?.category || 'commercial').slice(0, 4) },
+          { name: 'Standard', price: '€14,000', teamSize: '5-7', roles: generateDynamicRoles(projectData?.category || 'commercial') },
+          { name: 'Premium', price: '€40,000', teamSize: '8-12', roles: [...generateDynamicRoles(projectData?.category || 'commercial'), 'Art Director', 'Colorist', 'Sound Designer'] }
+        ],
+        roles: generateDynamicRoles(projectData?.category || 'commercial')
+      },
+      questions: {
+        questions: generateDynamicQuestions(projectData?.category || 'commercial')
+      },
+      locations: {
+        locations: generateDynamicLocations(projectData?.category || 'commercial')
+      },
+      technical: {
+        camera: generateDynamicTechnical(projectData?.category || 'commercial').camera,
+        lighting: generateDynamicTechnical(projectData?.category || 'commercial').lighting,
+        audio: generateDynamicTechnical(projectData?.category || 'commercial').audio
+      },
+      schedule: {
+        phases: generateDynamicSchedule(projectData?.category || 'commercial')
+      },
+      creativeDirection: {
+        visualStyle: generateDynamicCreative(projectData?.category || 'commercial').visualStyle,
+        cinematography: generateDynamicCreative(projectData?.category || 'commercial').cinematographyNotes,
+        moodTags: generateDynamicCreative(projectData?.category || 'commercial').moodTags,
+        referenceStyle: generateDynamicCreative(projectData?.category || 'commercial').referenceStyle,
+        image: null
+      },
+      deliverables: {
+        deliverables: generateDynamicDeliverables(projectData?.category || 'commercial').primary,
+        formats: generateDynamicDeliverables(projectData?.category || 'commercial').formats
+      }
+    };
+    
+    console.log('Generated mock data:', mockData);
+    
     return {
       success: true,
-      data: {
-        overviewBrief: {
-          title: projectData?.title || 'AI Generated Project',
-          description: `${projectData?.title || 'The brand'} requires a professional ${projectData?.category || 'commercial'} video production to elevate their brand presence in the competitive market. The project will showcase their core offerings, targeting the intended audience who value quality and authenticity. By leveraging cinematic techniques and strategic storytelling, we aim to communicate the key value propositions effectively. The final output will serve as a powerful tool for brand engagement and conversion across digital platforms.`,
-          initialIdea: `Create a compelling ${projectData?.category || 'commercial'} showcasing the key features and benefits of ${projectData?.title || 'the product'}. Use modern, cinematic visuals with strategic camera movements to highlight important elements. Include clear brand messaging and strong call-to-action throughout. Designed for multi-platform distribution including social media and digital channels to maximize reach and engagement.`,
-          introduction: `This ${projectData?.category || 'commercial'} project represents a strategic opportunity to connect with the target audience through compelling visual storytelling. The production will focus on delivering measurable results while maintaining brand consistency and creative excellence.`,
-          category: projectData?.category || 'commercial',
-          tags: generateDynamicTags(projectData?.category || 'commercial', projectData?.description || '')
-        },
-        budgetBreakdown: {
-          packages: generateDynamicBudget(projectData?.category || 'commercial'),
-          reasoning: 'Costs are driven primarily by crew size, the quality of rental cinema equipment, the number of shooting days required, and the depth of post-production polish needed for the project.'
-        },
-        roles: {
-          packages: [
-            { name: 'Conservative', price: '€5,000', teamSize: '3-4', roles: generateDynamicRoles(projectData?.category || 'commercial').slice(0, 4) },
-            { name: 'Standard', price: '€14,000', teamSize: '5-7', roles: generateDynamicRoles(projectData?.category || 'commercial') },
-            { name: 'Premium', price: '€40,000', teamSize: '8-12', roles: [...generateDynamicRoles(projectData?.category || 'commercial'), 'Art Director', 'Colorist', 'Sound Designer'] }
-          ],
-          roles: generateDynamicRoles(projectData?.category || 'commercial')
-        },
-        questions: {
-          questions: generateDynamicQuestions(projectData?.category || 'commercial')
-        },
-        locations: {
-          locations: generateDynamicLocations(projectData?.category || 'commercial')
-        },
-        technical: {
-          camera: generateDynamicTechnical(projectData?.category || 'commercial').camera,
-          lighting: generateDynamicTechnical(projectData?.category || 'commercial').lighting,
-          audio: generateDynamicTechnical(projectData?.category || 'commercial').audio
-        },
-        schedule: {
-          phases: generateDynamicSchedule(projectData?.category || 'commercial')
-        },
-        creativeDirection: {
-          visualStyle: generateDynamicCreative(projectData?.category || 'commercial').visualStyle,
-          cinematography: generateDynamicCreative(projectData?.category || 'commercial').cinematographyNotes,
-          moodTags: generateDynamicCreative(projectData?.category || 'commercial').moodTags,
-          referenceStyle: generateDynamicCreative(projectData?.category || 'commercial').referenceStyle,
-          image: null
-        },
-        deliverables: {
-          deliverables: generateDynamicDeliverables(projectData?.category || 'commercial').primary,
-          formats: generateDynamicDeliverables(projectData?.category || 'commercial').formats
-        }
-      },
+      data: mockData,
       isMock: true
     };
   }
