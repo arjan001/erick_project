@@ -516,12 +516,6 @@ const artistRoutes = [
     component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
     layout: DashboardLayout,
     guard: ArtistGuard
-  },
-  {
-    path: '/Network',
-    component: () => import('@/modules/network/pages/NetworkPage'),
-    layout: DashboardLayout,
-    guard: ArtistGuard
   }
 ];
 
@@ -564,12 +558,6 @@ const clientRoutes = [
     guard: ClientGuard
   },
   {
-    path: '/Network',
-    component: () => import('@/modules/network/pages/NetworkPage'),
-    layout: DashboardLayout,
-    guard: ClientGuard
-  },
-  {
     path: '/SupportTickets',
     component: () => import('@/modules/support/pages/SupportTicketsPage'),
     layout: DashboardLayout,
@@ -606,12 +594,6 @@ const teamRoutes = [
   {
     path: '/TeamMessages',
     component: () => import('@/modules/team/pages/TeamMessagesPage'),
-    layout: DashboardLayout,
-    guard: TeamGuard
-  },
-  {
-    path: '/Network',
-    component: () => import('@/modules/network/pages/NetworkPage'),
     layout: DashboardLayout,
     guard: TeamGuard
   },
@@ -700,12 +682,6 @@ const backerRoutes = [
   {
     path: '/Messages',
     component: () => import('@/modules/messages/pages/MessagesPage'),
-    layout: DashboardLayout,
-    guard: BackerGuard
-  },
-  {
-    path: '/Network',
-    component: () => import('@/modules/network/pages/NetworkPage'),
     layout: DashboardLayout,
     guard: BackerGuard
   },

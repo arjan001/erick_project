@@ -1429,9 +1429,19 @@ export default function AISubmission() {
     return (
       <div style={{ minHeight: '100vh', background: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
         <div style={{ background: '#fff', borderRadius: 12, maxWidth: '500px', width: '100%', padding: 32, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-          <div style={{ marginBottom: 24 }}>
-            <h2 style={{ fontSize: 24, fontWeight: 600, color: '#111', margin: '0 0 8px' }}>AI Production Plan</h2>
-            <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>Describe your project and let AI generate a complete production plan</p>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
+            <button
+              onClick={() => navigate(-1)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, marginRight: 12, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <div>
+              <h2 style={{ fontSize: 24, fontWeight: 600, color: '#111', margin: '0 0 8px' }}>AI Production Plan</h2>
+              <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>Describe your project and let AI generate a complete production plan</p>
+            </div>
           </div>
           
           {/* URL Input */}
@@ -1546,6 +1556,27 @@ export default function AISubmission() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'sans-serif', color: '#111', background: '#fff' }}>
+
+      {/* Header with back button */}
+      <div style={{ padding: '16px 24px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <button
+            onClick={() => navigate(-1)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, marginRight: 12, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <div>
+            <h1 style={{ fontSize: 20, fontWeight: 600, color: '#111', margin: 0 }}>AI Production Plan</h1>
+            <p style={{ fontSize: 13, color: '#6b7280', margin: 0 }}>Review and approve each section</p>
+          </div>
+        </div>
+        <div style={{ fontSize: 13, color: '#6b7280' }}>
+          Progress: {progressPct}%
+        </div>
+      </div>
 
       {/* Loading indicator overlay */}
       {loading && (
