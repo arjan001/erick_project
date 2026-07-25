@@ -1361,6 +1361,15 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   };
 
   const handleGenerateProductionPlan = async () => {
+    // Save context to localStorage before generating
+    const contextData = {
+      url: projectUrl,
+      category: projectCategory,
+      description: projectDescription,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('studio22_ai_modal_context', JSON.stringify(contextData));
+    
     const updatedProjectData = {
       ...projectData,
       url: projectUrl,
@@ -1420,14 +1429,50 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     }
   };
 
+  // Initialize modal with proper loading state
+  useEffect(() => {
+    if (open && !aiData) {
+      // Modal just opened, initialize with empty state to show input form
+      setAIData({ url: '', category: 'commercial', description: '' });
+    }
+    if (!open) {
+      // Modal closed, reset state
+      setAIData(null);
+      setCurrentStep(0);
+      setApproved(new Set());
+      setLoading(false);
+      setError(null);
+    }
+  }, [open]);
+
+  // Load saved context from localStorage on mount
+  useEffect(() => {
+    const savedContext = localStorage.getItem('studio22_ai_modal_context');
+    if (savedContext) {
+      try {
+        const context = JSON.parse(savedContext);
+        // Only restore if it's recent (within 1 hour)
+        const contextAge = Date.now() - new Date(context.timestamp).getTime();
+        if (contextAge < 3600000) {
+          setProjectUrl(context.url || '');
+          setProjectCategory(context.category || 'commercial');
+          setProjectDescription(context.description || '');
+        }
+      } catch (err) {
+        console.error('Error loading saved context:', err);
+      }
+    }
+  }, []);
+
   // When aiData is an object (not the initial data), load the actual production plan
   useEffect(() => {
-    if (aiData && typeof aiData === 'object' && !aiData.url) {
+    // Only auto-generate if we have actual project data with a URL or description
+    if (aiData && typeof aiData === 'object' && !aiData.url && !aiData.description && aiData.overviewBrief) {
       // This is actual AI data, no need to regenerate
       return;
     }
-    if (aiData && typeof aiData === 'object' && aiData.url) {
-      // This is the initial data, generate the production plan
+    if (aiData && typeof aiData === 'object' && (aiData.url || aiData.description) && !aiData.overviewBrief) {
+      // This is the initial data with actual content, generate the production plan
       loadAIProductionPlan(aiData);
     }
   }, [aiData]);
@@ -1460,13 +1505,20 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   }
 
   // Show URL input if no AI data yet
-  if (!aiData || (typeof aiData === 'object' && aiData.url)) {
+  if (!aiData || (typeof aiData === 'object' && (aiData.url || aiData.category === 'commercial'))) {
+    // Show input form
     return (
       <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>
         <div style={{ background: '#fff', borderRadius: 12, maxWidth: '500px', width: '100%', padding: 32 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
             <h2 style={{ fontSize: 20, fontWeight: 600, color: '#111', margin: 0 }}>AI Production Plan</h2>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              style={{ background: '#f3f4f6', border: '1px solid #e5e7eb', cursor: 'pointer', padding: 8, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
               <XIcon size={20} />
             </button>
           </div>

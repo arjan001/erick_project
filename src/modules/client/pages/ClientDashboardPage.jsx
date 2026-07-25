@@ -324,3 +324,8 @@ export default function ClientDashboard() {
     </div>
   );
 }
+
+function openProjectModal(project = null) {
+  setEditingProject(project);
+  setShowProjectModal(true);
+}
