@@ -1,6 +1,6 @@
 // AI Service for ChatGPT/OpenAI API integration
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+const OPENAI_API_KEY = import.meta.env.CHAT_GPT_API_KEY;
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 
 /**
@@ -9,7 +9,12 @@ const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
  * @returns {Promise<Object>} AI-generated production plan data
  */
 export async function generateProductionPlan(projectData) {
-  const prompt = `You are an expert film production planner. Generate a comprehensive production plan for the following project:
+  const prompt = `You are an expert film production planner for Studio22, a professional video production company that creates high-quality commercial videos, music videos, short films, documentaries, branded content, corporate videos, event coverage, product demos, social media content, and animation projects.
+
+Studio22's Analysis Process:
+- We analyze client websites and brand materials to understand their visual identity, target audience, and brand positioning
+- We extract key information about the client's products/services, brand voice, and marketing goals
+- We use this analysis to create tailored production plans that align with the client's brand and objectives
 
 Project Details:
 - URL: ${projectData.url || 'Not provided'}
@@ -18,31 +23,67 @@ Project Details:
 - Budget: ${projectData.budget || 'Not specified'}
 - Title: ${projectData.title || 'Untitled Project'}
 
+IMPORTANT INSTRUCTIONS:
+1. Generate REAL, SPECIFIC content based on the project details provided - DO NOT use generic placeholder text
+2. If the description contains specific information about the client's brand, products, or goals, incorporate that into ALL sections
+3. Make the budget breakdown realistic for the project category and scope
+4. Suggest locations that would actually work for this specific project type
+5. Recommend equipment appropriate for the production category
+6. Create a timeline that makes sense for the project's complexity
+7. Develop creative direction that aligns with the brand's visual identity (if known from the description)
+8. Suggest deliverables that match modern distribution needs for this project type
+
 Please generate a detailed production plan with the following sections:
 
 1. overviewBrief - Must include:
-   - title: Project title
-   - description: A professional, narrative-style production brief that describes the project's strategic approach, target audience, and brand positioning. This should be written in a formal, professional tone suitable for client presentations. Focus on the WHY and WHO - why this project matters and who it's for.
-   - initialIdea: An action-oriented directive that describes WHAT to create, including specific visual techniques, platform distribution strategy, and call-to-action elements. This should be more direct and instructional than the description. Focus on the HOW and WHERE - how to execute and where to distribute.
+   - title: Project title (use the actual project title or create a relevant one based on the description)
+   - description: A professional, narrative-style production brief that describes the project's strategic approach, target audience, and brand positioning. This should be written in a formal, professional tone suitable for client presentations. Focus on the WHY and WHO - why this project matters and who it's for. MUST be specific to the project, not generic.
+   - initialIdea: An action-oriented directive that describes WHAT to create, including specific visual techniques, platform distribution strategy, and call-to-action elements. This should be more direct and instructional than the description. Focus on the HOW and WHERE - how to execute and where to distribute. MUST be specific to the project.
    - introduction: A concise summary paragraph that bridges the strategic vision with the creative execution
    - category: The project category
-   - tags: An array of 10 relevant tags based on the project context
+   - tags: An array of 10 relevant tags based on the project context (NOT generic tags like "professional", "quality" - use specific tags relevant to the actual project)
 
    CRITICAL: The description and initialIdea must be based on the SAME core concept but use COMPLETELY DIFFERENT wording and structure:
    - description: Professional narrative focusing on brand strategy, audience, and positioning (e.g., "Bloom & Vine requires a high-impact commercial video to elevate their brand presence...")
    - initialIdea: Action-oriented directive with specific visual techniques, platforms, and CTAs (e.g., "Create a high-impact commercial for Bloom & Vine showcasing their bespoke artisanal floral arrangements...")
-   - introduction: Bridge paragraph that connects strategy to execution (e.g., "Bloom & Vine requires a high-impact commercial video... By leveraging cinematic visuals...")
+   - introduction: Bridge paragraph that connects strategy to execution
 
-2. Budget Breakdown - Cost estimates across production phases (Conservative, Standard, Premium packages)
-3. Roles & Team - Required personnel and team composition
-4. Screening Questions - 8 evaluation questions for talent screening with preferred answers
-5. Locations & Places - 4 suggested filming locations with requirements
-6. Technical Requirements - Camera, lighting, and audio equipment specifications
-7. Production Schedule - Pre-production, production, and post-production timeline
-8. Creative Direction - Visual style, cinematography notes, tone & mood, reference style
-9. Deliverables - Primary deliverables and modification options
+2. budgetBreakdown - Cost estimates across production phases with 3 packages (Conservative, Standard, Premium). Each package must have:
+   - name: Package name
+   - price: Total price in EUR
+   - description: Description of what's included
+   - breakdown: Object with pre-production, production, and post-production costs
+   - highlight: true for the recommended package
 
-Return the response as a structured JSON object with all sections populated.`;
+3. roles - Required personnel and team composition with:
+   - packages: Array of 3 team packages (Conservative, Standard, Premium) with name, price, teamSize, and roles array
+   - roles: Array of all required roles for this project type
+
+4. questions - 8 evaluation questions for talent screening with:
+   - questions: Array of question objects, each with q (question text), options (4 possible answers), preferred (index of preferred answer), and weight (importance 1-5)
+
+5. locations - 4 suggested filming locations with:
+   - locations: Array of location objects with name, type (Indoor/Outdoor), typeColor, typeText, description, and requirements array
+
+6. technical - Camera, lighting, and audio equipment specifications with:
+   - camera: Array of [label, value] pairs
+   - lighting: Array of lighting equipment items
+   - audio: Array of audio equipment items
+
+7. schedule - Pre-production, production, and post-production timeline with:
+   - phases: Array of phase objects with name, duration, description, and tasks array
+
+8. creativeDirection - Visual style, cinematography notes, tone & mood, reference style with:
+   - visualStyle: Description of visual style
+   - cinematography: Cinematography approach and techniques
+   - moodTags: Array of 5-7 mood tags
+   - referenceStyle: Reference style description
+
+9. deliverables - Primary deliverables and modification options with:
+   - deliverables: Array of primary deliverables
+   - formats: Array of video format specifications
+
+Return the response as a structured JSON object with all sections populated with SPECIFIC, REAL content based on the project details provided. DO NOT use generic placeholder text.`;
 
   try {
     const response = await fetch(OPENAI_API_URL, {

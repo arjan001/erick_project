@@ -1530,7 +1530,7 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
 
   // Save AI-generated data to localStorage whenever it changes
   useEffect(() => {
-    if (aiData && aiData.overviewBrief) {
+    if (aiData && aiData.overviewBrief && aiData.overviewBrief.description && aiData.overviewBrief.description.length > 100) {
       const draftData = {
         aiData,
         currentStep,
@@ -1551,8 +1551,8 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
       try {
         const draft = JSON.parse(savedDraft);
         const draftAge = Date.now() - new Date(draft.timestamp).getTime();
-        // Restore draft if it's less than 24 hours old
-        if (draftAge < 86400000 && draft.aiData && draft.aiData.overviewBrief) {
+        // Restore draft if it's less than 24 hours old AND has real AI data (not just empty structure)
+        if (draftAge < 86400000 && draft.aiData && draft.aiData.overviewBrief && draft.aiData.overviewBrief.description && draft.aiData.overviewBrief.description.length > 100) {
           setAIData(draft.aiData);
           setCurrentStep(draft.currentStep || 0);
           setApproved(new Set(draft.approved || []));
@@ -1560,9 +1560,14 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
           setProjectCategory(draft.projectCategory || 'commercial');
           setProjectDescription(draft.projectDescription || '');
           console.log('Modal: Restored draft from', new Date(draft.timestamp).toLocaleString());
+        } else {
+          // Draft is too old or doesn't have real data, clear it
+          localStorage.removeItem('studio22_ai_modal_draft');
+          console.log('Modal: Draft was stale or incomplete, cleared it');
         }
       } catch (err) {
         console.error('Error loading saved draft:', err);
+        localStorage.removeItem('studio22_ai_modal_draft');
       }
     }
   }, []);

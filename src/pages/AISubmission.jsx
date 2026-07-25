@@ -170,16 +170,31 @@ function PendingBadge({ isApproved = false }) {
   );
 }
 
-function SuggestionBox({ label = 'Suggestions (optional)', placeholder = "e.g., 'Make it more professional', 'Focus on budget-friendly approach', 'Add more detail about locations'" }) {
+function SuggestionBox({ label = 'Suggestions (optional)', placeholder = "e.g., 'Make it more professional', 'Focus on budget-friendly approach', 'Add more detail about locations'", onRegenerate }) {
+  const [suggestion, setSuggestion] = useState('');
+
+  const handleRegenerate = () => {
+    if (onRegenerate && suggestion.trim()) {
+      onRegenerate(suggestion);
+      setSuggestion('');
+    }
+  };
+
   return (
     <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
       <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>{label}</div>
       <div style={{ position: 'relative' }}>
         <textarea
           placeholder={placeholder}
+          value={suggestion}
+          onChange={(e) => setSuggestion(e.target.value)}
           style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
         />
-        <button style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button 
+          onClick={handleRegenerate}
+          disabled={!suggestion.trim()}
+          style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: suggestion.trim() ? 'pointer' : 'not-allowed', opacity: suggestion.trim() ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: 6 }}
+        >
           <RefreshIcon size={12} /> Regenerate
         </button>
       </div>
@@ -379,7 +394,7 @@ function StepOverviewBrief({ data, projectCategory, onRegenerate, loading, isApp
         </div>
       </Card>
 
-      <SuggestionBox />
+      <SuggestionBox onRegenerate={onRegenerate} />
     </>
   );
 }
@@ -453,7 +468,7 @@ function StepBudgetBreakdown({ data, projectCategory, onRegenerate, loading, isA
         </Card>
       )}
 
-      <SuggestionBox placeholder="e.g., 'Lower the costs', 'Increase premium package', 'Add more detail to explanations'" />
+      <SuggestionBox placeholder="e.g., 'Lower the costs', 'Increase premium package', 'Add more detail to explanations'" onRegenerate={onRegenerate} />
     </>
   );
 }
@@ -547,7 +562,7 @@ function StepRolesTeam({ data, projectCategory, onRegenerate, loading, isApprove
         </div>
       </Card>
 
-      <SuggestionBox placeholder="e.g., 'Need less experienced team', 'Add sound designer', 'Change to solo producer'" />
+      <SuggestionBox placeholder="e.g., 'Need less experienced team', 'Add sound designer', 'Change to solo producer'" onRegenerate={onRegenerate} />
     </>
   );
 }
@@ -615,7 +630,7 @@ function StepScreeningQuestions({ data, projectCategory, onRegenerate, loading, 
         )}
       </Card>
 
-      <SuggestionBox placeholder="e.g., 'Add question about equipment', 'Make questions simpler', 'Focus more on creativity'" />
+      <SuggestionBox placeholder="e.g., 'Add question about equipment', 'Make questions simpler', 'Focus more on creativity'" onRegenerate={onRegenerate} />
     </>
   );
 }
@@ -764,7 +779,7 @@ function StepTechnicalRequirements({ data, projectCategory, onRegenerate, loadin
         </Card>
       )}
 
-      <SuggestionBox placeholder="e.g., 'Add drone shots', 'Change camera model', 'Add more lighting options'" />
+      <SuggestionBox placeholder="e.g., 'Add drone shots', 'Change camera model', 'Add more lighting options'" onRegenerate={onRegenerate} />
     </>
   );
 }
@@ -820,7 +835,7 @@ function StepProductionSchedule({ data, projectCategory, onRegenerate, loading, 
         </Card>
       )}
 
-      <SuggestionBox placeholder="e.g., 'Shorten timeline', 'Add more phases', 'Adjust milestone dates'" />
+      <SuggestionBox placeholder="e.g., 'Shorten timeline', 'Add more phases', 'Adjust milestone dates'" onRegenerate={onRegenerate} />
     </>
   );
 }
@@ -1098,18 +1113,6 @@ export default function AISubmission() {
       };
       localStorage.setItem('studio22_ai_modal_context', JSON.stringify(contextData));
       
-      // Initialize with empty data structure to show steps immediately
-      setAIData({
-        overviewBrief: { initialIdea: contextData.description, description: contextData.description, tags: [], introduction: '' },
-        budgetBreakdown: { packages: [], reasoning: '' },
-        roles: { packages: [], roles: [] },
-        questions: { questions: [] },
-        locations: { locations: [] },
-        technical: { camera: [], lighting: [], audio: [] },
-        schedule: { phases: [] },
-        creativeDirection: { visualStyle: '', cinematography: '', moodTags: [], referenceStyle: '', image: null },
-        deliverables: { deliverables: [], formats: [] }
-      });
       setCurrentStep(0);
       setApproved(new Set());
       
@@ -1135,9 +1138,10 @@ export default function AISubmission() {
     }
   }, []);
 
-  // Check authentication on page load
+  // Check authentication on page load - but don't redirect if we have analyzed project data
   useEffect(() => {
-    if (!isLoadingAuth && !isAuthenticated) {
+    const analyzedProject = localStorage.getItem('studio22_analyzed_project');
+    if (!isLoadingAuth && !isAuthenticated && !analyzedProject) {
       sessionStorage.setItem('redirectAfterLogin', '/AIsubmission');
       navigate('/SignIn');
     }
@@ -1145,7 +1149,7 @@ export default function AISubmission() {
 
   // Save AI-generated data to localStorage whenever it changes
   useEffect(() => {
-    if (aiData) {
+    if (aiData && aiData.overviewBrief && aiData.overviewBrief.description && aiData.overviewBrief.description.length > 100) {
       const draftData = {
         aiData,
         currentStep,
@@ -1166,8 +1170,8 @@ export default function AISubmission() {
       try {
         const draft = JSON.parse(savedDraft);
         const draftAge = Date.now() - new Date(draft.timestamp).getTime();
-        // Restore draft if it's less than 24 hours old
-        if (draftAge < 86400000 && draft.aiData) {
+        // Restore draft if it's less than 24 hours old AND has real AI data (not just empty structure)
+        if (draftAge < 86400000 && draft.aiData && draft.aiData.overviewBrief && draft.aiData.overviewBrief.description && draft.aiData.overviewBrief.description.length > 100) {
           setAIData(draft.aiData);
           setCurrentStep(draft.currentStep || 0);
           setApproved(new Set(draft.approved || []));
@@ -1175,9 +1179,14 @@ export default function AISubmission() {
           setProjectCategory(draft.projectCategory || 'commercial');
           setProjectDescription(draft.projectDescription || '');
           console.log('Restored draft from', new Date(draft.timestamp).toLocaleString());
+        } else {
+          // Draft is too old or doesn't have real data, clear it
+          localStorage.removeItem('studio22_ai_submission_draft');
+          console.log('Draft was stale or incomplete, cleared it');
         }
       } catch (err) {
         console.error('Error loading saved draft:', err);
+        localStorage.removeItem('studio22_ai_submission_draft');
       }
     }
   }, []);
