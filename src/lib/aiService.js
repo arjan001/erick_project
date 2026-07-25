@@ -1,6 +1,6 @@
 // AI Service for ChatGPT/OpenAI API integration
 
-const OPENAI_API_KEY = import.meta.env.CHAT_GPT_API_KEY;
+const OPENAI_API_KEY = import.meta.env.VITE_CHAT_GPT_API_KEY;
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 
 /**
