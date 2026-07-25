@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { generateProductionPlan, regenerateSection } from '../../lib/aiService';
 import { analyzeWebsiteUrl } from '../../lib/urlAnalysisService';
+import { Film, Music, Video, Clapperboard, Briefcase, Building, Calendar, Package, Share, Sparkles as SparklesIcon, Loader, CheckCircle2 } from 'lucide-react';
 
 /* ─── ICONS ─────────────────────────────────────────────────────────────── */
 function CheckIcon({ size = 14 }) {
@@ -866,9 +867,12 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   const [aiData, setAIData] = useState(null);
   const [error, setError] = useState(null);
   const [projectUrl, setProjectUrl] = useState(projectData?.url || '');
+  const [projectDescription, setProjectDescription] = useState('');
   const [projectCategory, setProjectCategory] = useState(projectData?.category || 'commercial');
   const [analyzing, setAnalyzing] = useState(false);
   const [extractProgress, setExtractProgress] = useState(null);
+  const [regenerating, setRegenerating] = useState(false);
+  const previousCategoryRef = useRef(projectCategory);
 
   const progressSteps = [
     'Fetching site content',
@@ -877,12 +881,69 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     'Translating into a film concept'
   ];
 
-  useEffect(() => {
-    if (open && projectData && !aiData && !projectUrl) {
-      // Auto-generate if no URL provided
-      loadAIProductionPlan();
+  const projectCategories = [
+    { value: 'commercial', label: 'Commercial', icon: Film },
+    { value: 'music_video', label: 'Music Video', icon: Music },
+    { value: 'short_film', label: 'Short Film', icon: Clapperboard },
+    { value: 'documentary', label: 'Documentary', icon: Video },
+    { value: 'branded_content', label: 'Branded Content', icon: Briefcase },
+    { value: 'corporate_video', label: 'Corporate Video', icon: Building },
+    { value: 'event_coverage', label: 'Event Coverage', icon: Calendar },
+    { value: 'product_demo', label: 'Product Demo', icon: Package },
+    { value: 'social_media', label: 'Social Media', icon: Share },
+    { value: 'animation', label: 'Animation', icon: SparklesIcon }
+  ];
+
+  const normalizeUrl = (url) => {
+    if (!url || url.trim() === '') return url;
+    let normalized = url.trim();
+    
+    if (normalized.startsWith('http://')) {
+      normalized = normalized.substring(7);
+    } else if (normalized.startsWith('https://')) {
+      normalized = normalized.substring(8);
     }
-  }, [open, projectData]);
+    
+    if (normalized.startsWith('www.')) {
+      normalized = normalized.substring(4);
+    }
+    
+    return 'https://' + normalized;
+  };
+
+  const handleUrlChange = (e) => {
+    const rawValue = e.target.value;
+    if (rawValue.includes('.') && !rawValue.includes(' ')) {
+      setProjectUrl(normalizeUrl(rawValue));
+    } else {
+      setProjectUrl(rawValue);
+    }
+  };
+
+  // Auto-regenerate analysis when category changes (if URL exists)
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (previousCategoryRef.current !== projectCategory && projectUrl && projectUrl.trim() !== '') {
+        try {
+          setRegenerating(true);
+          
+          const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory);
+          
+          if (analysisResult.success && analysisResult.rawAnalysis) {
+            setProjectDescription(analysisResult.rawAnalysis);
+          }
+        } catch (err) {
+          console.error('Regeneration error:', err);
+        } finally {
+          setRegenerating(false);
+        }
+      }
+      
+      previousCategoryRef.current = projectCategory;
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [projectCategory, projectUrl]);
 
   const handleAnalyzeUrl = async () => {
     if (!projectUrl) return;
@@ -903,19 +964,11 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
       clearInterval(progressInterval);
 
       if (analysisResult.success && analysisResult.rawAnalysis) {
+        setProjectDescription(analysisResult.rawAnalysis);
         setExtractProgress(progressSteps.length - 1);
         
-        // Update projectData with analysis and then generate production plan
-        const updatedProjectData = {
-          ...projectData,
-          url: projectUrl,
-          category: projectCategory,
-          description: analysisResult.rawAnalysis
-        };
-
         setTimeout(() => {
           setExtractProgress(null);
-          loadAIProductionPlan(updatedProjectData);
         }, 600);
       } else {
         console.error('Extract error:', analysisResult.error);
@@ -932,7 +985,19 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     }
   };
 
-  const loadAIProductionPlan = async (data = projectData) => {
+  const handleGenerateProductionPlan = () => {
+    const updatedProjectData = {
+      ...projectData,
+      url: projectUrl,
+      category: projectCategory,
+      description: projectDescription
+    };
+    
+    // Set aiData to trigger the main modal
+    setAIData(updatedProjectData);
+  };
+
+  const loadAIProductionPlan = async (data) => {
     setLoading(true);
     setError(null);
     
@@ -978,6 +1043,18 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     }
   };
 
+  // When aiData is an object (not the initial data), load the actual production plan
+  useEffect(() => {
+    if (aiData && typeof aiData === 'object' && !aiData.url) {
+      // This is actual AI data, no need to regenerate
+      return;
+    }
+    if (aiData && typeof aiData === 'object' && aiData.url) {
+      // This is the initial data, generate the production plan
+      loadAIProductionPlan(aiData);
+    }
+  }, [aiData]);
+
   if (loading) {
     return (
       <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
@@ -1006,80 +1083,132 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   }
 
   // Show URL input if no AI data yet
-  if (!aiData) {
+  if (!aiData || (typeof aiData === 'object' && aiData.url)) {
     return (
       <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>
-        <div style={{ background: '#fff', borderRadius: 12, maxWidth: '600px', width: '100%', padding: 40 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
-            <div>
-              <h2 style={{ fontSize: 28, fontWeight: 600, color: '#111', margin: 0 }}>AI Production Plan</h2>
-              <p style={{ fontSize: 14, color: '#6b7280', marginTop: 4 }}>Generate a production plan using AI</p>
-            </div>
+        <div style={{ background: '#fff', borderRadius: 12, maxWidth: '500px', width: '100%', padding: 32 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 600, color: '#111', margin: 0 }}>AI Production Plan</h2>
             <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
-              <XIcon size={24} />
+              <XIcon size={20} />
             </button>
           </div>
           
-          <div style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #ffedd5 100%)', border: '1px solid #fcd34d', borderRadius: 12, padding: 24, marginBottom: 24 }}>
-            <div style={{ fontSize: 16, fontWeight: 600, color: '#111', marginBottom: 12 }}>Project URL (Optional)</div>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+          {/* URL Input */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ position: 'relative' }}>
               <input
-                type="text"
+                type="url"
                 value={projectUrl}
-                onChange={(e) => setProjectUrl(e.target.value)}
-                placeholder="https://your-brand.com"
-                style={{ flex: 1, padding: '14px 18px', border: '1px solid #e5e7eb', borderRadius: 10, fontSize: 15, outline: 'none' }}
+                onChange={handleUrlChange}
+                placeholder="Paste your website or project URL (optional)"
+                style={{ width: '100%', padding: '12px 16px', paddingRight: 100, border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, color: '#000', outline: 'none' }}
               />
               <button
                 onClick={handleAnalyzeUrl}
                 disabled={!projectUrl || analyzing}
-                style={{ padding: '14px 28px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: !projectUrl || analyzing ? 'not-allowed' : 'pointer', opacity: !projectUrl || analyzing ? 0.6 : 1 }}
+                style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', padding: '6px 12px', background: '#000', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: !projectUrl || analyzing ? 'not-allowed' : 'pointer', opacity: !projectUrl || analyzing ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 4 }}
               >
+                <SparklesIcon size={12} />
                 {analyzing ? 'Analyzing...' : 'Analyze'}
               </button>
             </div>
+          </div>
 
-            {extractProgress !== null && (
-              <div style={{ marginTop: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                  <div style={{ width: 20, height: 20, border: '2px solid #e5e7eb', borderTopColor: '#10b981', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                  <span style={{ fontSize: 14, color: '#374151' }}>{progressSteps[extractProgress]}</span>
+          {/* Progress Indicator */}
+          {extractProgress !== null && (
+            <div style={{ padding: 12, background: '#eff6ff', borderRadius: 8, border: '1px solid #bfdbfe', marginBottom: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {progressSteps.map((step, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                    {idx < extractProgress && (
+                      <CheckCircle2 size={16} style={{ color: '#16a34a', flexShrink: 0 }} />
+                    )}
+                    {idx === extractProgress && (
+                      <Loader size={16} style={{ color: '#2563eb', flexShrink: 0, animation: 'spin 1s linear infinite' }} />
+                    )}
+                    {idx > extractProgress && (
+                      <div style={{ width: 16, height: 16, border: '2px solid #d1d5db', borderRadius: '50%', flexShrink: 0 }} />
+                    )}
+                    <span style={{ color: idx <= extractProgress ? '#1f2937' : '#6b7280' }}>
+                      {step}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Description with Category Selector */}
+          <div style={{ position: 'relative', border: '1px solid #d1d5db', borderRadius: 8, marginBottom: 16 }}>
+            <div style={{ position: 'absolute', top: 8, right: 12, zIndex: 10 }}>
+              {regenerating && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#4b5563', background: 'rgba(255,255,255,0.9)', padding: '4px 8px', borderRadius: 4 }}>
+                  <Loader size={12} style={{ animation: 'spin 1s linear infinite' }} />
+                  <span>Reanalyzing...</span>
                 </div>
-                <div style={{ width: '100%', height: 8, background: '#e5e7eb', borderRadius: 4, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', background: '#10b981', borderRadius: 4, transition: 'width 0.3s', width: `${((extractProgress + 1) / progressSteps.length) * 100}%` }} />
+              )}
+            </div>
+            <textarea
+              value={projectDescription}
+              onChange={(e) => setProjectDescription(e.target.value)}
+              placeholder="Describe your project in one sentence..."
+              rows={3}
+              style={{ width: '100%', padding: '16px', paddingBottom: 48, color: '#000', fontSize: 14, outline: 'none', resize: 'none', border: 'none', borderRadius: 8 }}
+            />
+            
+            {/* Bottom Bar with Category Selector */}
+            <div style={{ position: 'absolute', bottom: 8, left: 12, right: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const dropdown = document.getElementById('category-dropdown');
+                    dropdown.classList.toggle('hidden');
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#4b5563', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, padding: '4px 8px', cursor: 'pointer' }}
+                >
+                  {(() => {
+                    const selectedCategory = projectCategories.find(cat => cat.value === projectCategory);
+                    const Icon = selectedCategory?.icon || Film;
+                    return <Icon size={12} style={{ color: '#6b7280' }} />;
+                  })()}
+                  <span>{projectCategories.find(cat => cat.value === projectCategory)?.label}</span>
+                </button>
+                <div
+                  id="category-dropdown"
+                  className="hidden"
+                  style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 4, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', zIndex: 100, minWidth: 150 }}
+                >
+                  {projectCategories.map((cat) => {
+                    const Icon = cat.icon;
+                    return (
+                      <button
+                        key={cat.value}
+                        type="button"
+                        onClick={() => {
+                          setProjectCategory(cat.value);
+                          document.getElementById('category-dropdown').classList.add('hidden');
+                        }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', border: 'none', background: 'none', cursor: 'pointer', fontSize: 12, color: '#374151', textAlign: 'left' }}
+                      >
+                        <Icon size={12} style={{ color: '#6b7280' }} />
+                        <span>{cat.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-            )}
-
-            <div style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 16, fontWeight: 600, color: '#111', marginBottom: 12 }}>Project Category</div>
-              <select
-                value={projectCategory}
-                onChange={(e) => setProjectCategory(e.target.value)}
-                style={{ width: '100%', padding: '14px 18px', border: '1px solid #e5e7eb', borderRadius: 10, fontSize: 15, outline: 'none' }}
-              >
-                <option value="commercial">Commercial</option>
-                <option value="music_video">Music Video</option>
-                <option value="short_film">Short Film</option>
-                <option value="documentary">Documentary</option>
-                <option value="branded_content">Branded Content</option>
-                <option value="corporate_video">Corporate Video</option>
-                <option value="event_coverage">Event Coverage</option>
-                <option value="product_demo">Product Demo</option>
-                <option value="social_media">Social Media</option>
-                <option value="animation">Animation</option>
-              </select>
             </div>
           </div>
 
-          <div style={{ textAlign: 'center' }}>
-            <button
-              onClick={() => loadAIProductionPlan()}
-              style={{ padding: '16px 32px', background: '#111', color: '#fff', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 600, cursor: 'pointer' }}
-            >
-              Generate Without URL
-            </button>
-          </div>
+          {/* Generate Production Plan Button */}
+          <button
+            onClick={handleGenerateProductionPlan}
+            style={{ width: '100%', padding: '12px 24px', background: '#000', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+          >
+            Generate Production Plan
+          </button>
         </div>
       </div>
     );
