@@ -1304,15 +1304,15 @@ export default function AISubmission() {
     
     // Initialize with empty data structure to show steps immediately
     setAIData({
-      overviewBrief: { initialIdea: projectDescription, description: projectDescription, tags: [], introduction: '' },
+      overviewBrief: { initialIdea: projectDescription, description: projectDescription, tags: [], introduction: '', category: projectCategory, title: '' },
       budgetBreakdown: { packages: [], reasoning: '' },
-      roles: { packages: [], roles: [] },
+      roles: { packages: [], team: [] },
       questions: { questions: [] },
       locations: { locations: [] },
-      technical: { camera: [], lighting: [], audio: [] },
-      schedule: { phases: [] },
-      creativeDirection: { visualStyle: '', cinematography: '', moodTags: [], referenceStyle: '', image: null },
-      deliverables: { deliverables: [], formats: [] }
+      technicalRequirements: { camera: [], lighting: [], audio: [] },
+      productionSchedule: { phases: [] },
+      creativeDirection: { visualStyle: '', cinematographyNotes: '', moodTags: [], toneMood: '', referenceStyle: '', generatedImage: null },
+      deliverables: { primary: [], formats: [], additional: [], timeline: '' }
     });
     setCurrentStep(0);
     setApproved(new Set());

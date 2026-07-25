@@ -50,11 +50,14 @@ Please generate a detailed production plan with the following sections:
    - introduction: Bridge paragraph that connects strategy to execution
 
 2. budgetBreakdown - Cost estimates across production phases with 3 packages (Conservative, Standard, Premium). Each package must have:
-   - name: Package name
-   - price: Total price in EUR
-   - description: Description of what's included
-   - breakdown: Object with pre-production, production, and post-production costs
+   - name: Package name (e.g., "Conservative Package", "Standard Package", "Premium Package")
+   - price: Total price in EUR (e.g., "€5,000")
+   - desc: Description of what's included in this package
+   - pre: Pre-production cost (e.g., "€2,000")
+   - prod: Production cost (e.g., "€8,000")
+   - post: Post-production cost (e.g., "€4,000")
    - highlight: true for the recommended package
+   - reasoning: Overall budget reasoning explaining cost drivers
 
 3. roles - Required personnel and team composition with:
    - packages: Array of 3 team packages (Conservative, Standard, Premium) with name, price, teamSize, and roles array
@@ -114,8 +117,10 @@ Return the response as a structured JSON object with all sections populated with
                   properties: {
                     name: { type: "string" },
                     price: { type: "string" },
-                    description: { type: "string" },
-                    breakdown: { type: "object" },
+                    desc: { type: "string" },
+                    pre: { type: "string" },
+                    prod: { type: "string" },
+                    post: { type: "string" },
                     highlight: { type: "boolean" }
                   }
                 }
@@ -208,17 +213,16 @@ Return the response as a structured JSON object with all sections populated with
               cinematographyNotes: { type: "string" },
               moodTags: { type: "array", items: { type: "string" } },
               toneMood: { type: "string" },
-              referenceStyle: { type: "string" },
-              generatedImage: { type: ["string", "null"] }
+              referenceStyle: { type: "string" }
             }
           },
           deliverables: {
             type: "object",
             properties: {
               primary: { type: "array", items: { type: "string" } },
+              timeline: { type: "string" },
               formats: { type: "array", items: { type: "string" } },
-              additional: { type: "array", items: { type: "string" } },
-              timeline: { type: "string" }
+              additional: { type: "array", items: { type: "string" } }
             }
           }
         },
@@ -245,6 +249,7 @@ Return the response as a structured JSON object with all sections populated with
     }
     
     console.log('Parsed production plan successfully');
+    console.log('Generated tags:', productionPlan.overviewBrief?.tags);
     
     return {
       success: true,
@@ -300,14 +305,13 @@ Return the response as a structured JSON object with all sections populated with
         cinematographyNotes: generateDynamicCreative(projectData?.category || 'commercial').cinematographyNotes,
         moodTags: generateDynamicCreative(projectData?.category || 'commercial').moodTags,
         toneMood: generateDynamicCreative(projectData?.category || 'commercial').toneMood,
-        referenceStyle: generateDynamicCreative(projectData?.category || 'commercial').referenceStyle,
-        generatedImage: null
+        referenceStyle: generateDynamicCreative(projectData?.category || 'commercial').referenceStyle
       },
       deliverables: {
         primary: generateDynamicDeliverables(projectData?.category || 'commercial').primary,
+        timeline: generateDynamicDeliverables(projectData?.category || 'commercial').timeline,
         formats: generateDynamicDeliverables(projectData?.category || 'commercial').formats,
-        additional: generateDynamicDeliverables(projectData?.category || 'commercial').additional,
-        timeline: generateDynamicDeliverables(projectData?.category || 'commercial').timeline
+        additional: generateDynamicDeliverables(projectData?.category || 'commercial').additional
       }
     };
     
@@ -342,36 +346,30 @@ function generateDynamicTags(category, description) {
 function generateDynamicBudget(category) {
   const baseBudgets = [
     { 
-      name: 'Conservative', 
+      name: 'Conservative Package', 
       price: '€5,000', 
-      description: 'Essential coverage with efficient setup',
-      breakdown: {
-        'Pre-Production': '€2,000',
-        'Production': '€2,000',
-        'Post-Production': '€1,000'
-      },
+      desc: 'Includes a one-man band videographer, basic lighting kit, one day of shooting at the studio, and essential editing.',
+      pre: '€500',
+      prod: '€3,500',
+      post: '€1,000',
       highlight: false 
     },
     { 
-      name: 'Standard', 
+      name: 'Standard Package', 
       price: '€14,000', 
-      description: 'Professional production with enhanced quality',
-      breakdown: {
-        'Pre-Production': '€4,000',
-        'Production': '€6,000',
-        'Post-Production': '€4,000'
-      },
+      desc: 'Includes a 5-person professional crew, rental cinema cameras, two days of filming, professional lighting, and color grading.',
+      pre: '€2,000',
+      prod: '€8,000',
+      post: '€4,000',
       highlight: true 
     },
     { 
-      name: 'Premium', 
+      name: 'Premium Package', 
       price: '€40,000', 
-      description: 'Full-scale production with premium equipment',
-      breakdown: {
-        'Pre-Production': '€10,000',
-        'Production': '€20,000',
-        'Post-Production': '€10,000'
-      },
+      desc: 'Includes a large crew, high-end cinema package, specialized motion control equipment, four days of production, and post-production with advanced VFX and sound design.',
+      pre: '€6,000',
+      prod: '€25,000',
+      post: '€9,000',
       highlight: false 
     }
   ];
