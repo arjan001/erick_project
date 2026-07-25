@@ -101,6 +101,8 @@ export default function ClientDashboard() {
   };
 
   const handleAIComplete = async (aiData) => {
+    console.log('handleAIComplete called with aiData:', aiData);
+    
     // Process AI-generated data and create job directly
     setShowAIModal(false);
     
@@ -110,7 +112,27 @@ export default function ClientDashboard() {
       return;
     }
     
+    if (!user) {
+      console.error('No user found');
+      toastError('Error', 'Failed to create job: No user');
+      return;
+    }
+    
     try {
+      console.log('Creating job with data:', {
+        client_email: user.email,
+        title: aiData?.overviewBrief?.title || 'AI Generated Job',
+        description: aiData?.overviewBrief?.description || '',
+        job_type: 'director',
+        employment_type: '',
+        location: aiData?.locations?.[0]?.name || '',
+        budget: parseFloat(aiData?.budgetBreakdown?.[1]?.price?.replace(/[^\d]/g, '')) || 0,
+        duration: '',
+        required_skills: [],
+        status: 'open',
+        created_date: new Date().toISOString()
+      });
+      
       const newJob = await Job.create({
         client_email: user.email,
         title: aiData?.overviewBrief?.title || 'AI Generated Job',
@@ -124,6 +146,8 @@ export default function ClientDashboard() {
         status: 'open',
         created_date: new Date().toISOString()
       });
+      
+      console.log('Job created successfully:', newJob);
       setJobs((prev) => [...prev, newJob]);
       success('Job Created', 'AI-generated job created successfully');
     } catch (err) {

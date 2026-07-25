@@ -1485,12 +1485,18 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     }
   };
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     setApproved(prev => new Set([...prev, currentStep]));
     if (currentStep < STEPS.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      onSubmit(aiData);
+      try {
+        await onSubmit(aiData);
+        // Modal will be closed by parent's handleAIComplete
+      } catch (err) {
+        console.error('Error submitting AI data:', err);
+        setError('Failed to submit AI-generated data');
+      }
     }
   };
 
