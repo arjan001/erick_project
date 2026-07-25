@@ -80,8 +80,8 @@ Return the response as a structured JSON object with all sections populated.`;
       data: {
         overviewBrief: {
           title: projectData?.title || 'AI Generated Project',
-          description: projectData?.description || 'AI-generated project description based on your requirements.',
-          initialIdea: projectData?.description || `Create a high-impact commercial for ${projectData?.title || 'your brand'} showcasing their bespoke artisanal floral arrangements. Target affluent lifestyle enthusiasts and event planners with key selling points like premium, sustainably sourced blooms and custom design artistry.`,
+          description: projectData?.description || 'Bloom & Vine requires a high-impact commercial video to elevate their brand presence in the luxury floral market. The project will feature their bespoke artisanal floral arrangements, targeting affluent lifestyle enthusiasts and event planners who value exclusivity. By leveraging cinematic visuals and a sophisticated narrative, we aim to showcase their commitment to sustainability and custom design artistry. The final output will serve as a powerful tool to drive conversions through their digital platforms.',
+          initialIdea: projectData?.description || `Create a high-impact commercial for ${projectData?.title || 'Bloom & Vine'} showcasing their bespoke artisanal floral arrangements. Target affluent lifestyle enthusiasts and event planners with key selling points like premium, sustainably sourced blooms and custom design artistry. Use modern, cinematic visuals featuring slow-motion macro product shots of petals unfurling alongside elegant, high-end lifestyle scenes. Include signature brand colors and prominent logo placement throughout the edit, ending with a strong CTA to visit the website for same-day delivery. Designed for Instagram, TikTok, and premium digital platform distribution.`,
           category: projectData?.category || 'commercial',
           tags: ['bespoke', 'floristry', 'artisanal', 'sustainable', 'luxury', 'floraldesign', 'eventplanning', 'cinematic', 'modern', 'premium']
         },
