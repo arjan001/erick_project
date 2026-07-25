@@ -1,10 +1,9 @@
 // AI Service for ChatGPT/OpenAI API integration
 
-const OPENAI_API_KEY = import.meta.env.VITE_CHAT_GPT_API_KEY;
-const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+import { base44 } from '@/api/base44Client';
 
 /**
- * Generate production plan using ChatGPT
+ * Generate production plan using ChatGPT via Base44
  * @param {Object} projectData - Project information (url, category, description, etc.)
  * @returns {Promise<Object>} AI-generated production plan data
  */
@@ -88,51 +87,169 @@ Please generate a detailed production plan with the following sections:
 Return the response as a structured JSON object with all sections populated with SPECIFIC, REAL content based on the project details provided. DO NOT use generic placeholder text.`;
 
   try {
-    console.log('Calling OpenAI API...');
-    const response = await fetch(OPENAI_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert film production planner who creates detailed, professional production plans. Always respond with valid JSON.'
+    console.log('Calling Base44 AI with ChatGPT...');
+    const response = await base44.integrations.Core.InvokeLLM({
+      prompt: prompt,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          overviewBrief: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              description: { type: "string" },
+              initialIdea: { type: "string" },
+              introduction: { type: "string" },
+              category: { type: "string" },
+              tags: { type: "array", items: { type: "string" } }
+            }
           },
-          {
-            role: 'user',
-            content: prompt
+          budgetBreakdown: {
+            type: "object",
+            properties: {
+              packages: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    price: { type: "string" },
+                    description: { type: "string" },
+                    breakdown: { type: "object" },
+                    highlight: { type: "boolean" }
+                  }
+                }
+              },
+              reasoning: { type: "string" }
+            }
+          },
+          roles: {
+            type: "object",
+            properties: {
+              packages: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    price: { type: "string" },
+                    teamSize: { type: "string" },
+                    roles: { type: "array", items: { type: "string" } }
+                  }
+                }
+              },
+              team: { type: "array", items: { type: "string" } }
+            }
+          },
+          questions: {
+            type: "object",
+            properties: {
+              questions: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    q: { type: "string" },
+                    options: { type: "array", items: { type: "string" } },
+                    preferred: { type: "number" },
+                    weight: { type: "number" }
+                  }
+                }
+              }
+            }
+          },
+          locations: {
+            type: "object",
+            properties: {
+              locations: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    type: { type: "string" },
+                    typeColor: { type: "string" },
+                    typeText: { type: "string" },
+                    desc: { type: "string" },
+                    reqs: { type: "array", items: { type: "string" } }
+                  }
+                }
+              }
+            }
+          },
+          technicalRequirements: {
+            type: "object",
+            properties: {
+              camera: { type: "array", items: { type: "array", items: { type: "string" } } },
+              lighting: { type: "array", items: { type: "string" } },
+              audio: { type: "array", items: { type: "string" } }
+            }
+          },
+          productionSchedule: {
+            type: "object",
+            properties: {
+              phases: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    days: { type: "string" },
+                    items: { type: "array", items: { type: "string" } }
+                  }
+                }
+              }
+            }
+          },
+          creativeDirection: {
+            type: "object",
+            properties: {
+              visualStyle: { type: "string" },
+              cinematographyNotes: { type: "string" },
+              moodTags: { type: "array", items: { type: "string" } },
+              toneMood: { type: "string" },
+              referenceStyle: { type: "string" },
+              generatedImage: { type: ["string", "null"] }
+            }
+          },
+          deliverables: {
+            type: "object",
+            properties: {
+              primary: { type: "array", items: { type: "string" } },
+              formats: { type: "array", items: { type: "string" } },
+              additional: { type: "array", items: { type: "string" } },
+              timeline: { type: "string" }
+            }
           }
-        ],
-        temperature: 0.7,
-        max_tokens: 4000
-      })
+        },
+        required: ["overviewBrief", "budgetBreakdown", "roles", "questions", "locations", "technicalRequirements", "productionSchedule", "creativeDirection", "deliverables"]
+      },
+      temperature: 0.7,
+      max_tokens: 4000
     });
 
-    console.log('OpenAI response status:', response.status);
+    console.log('Base44 response received');
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('OpenAI API error:', error);
-      throw new Error(`OpenAI API error: ${error.error?.message || response.statusText}`);
+    if (!response?.data?.content) {
+      throw new Error('Failed to generate production plan - no content in response');
     }
 
-    const data = await response.json();
-    console.log('OpenAI response data received');
-    const content = data.choices[0].message.content;
-    console.log('Content length:', content.length);
+    let productionPlan;
+    try {
+      productionPlan = typeof response.data.content === 'string' 
+        ? JSON.parse(response.data.content) 
+        : response.data.content;
+    } catch (parseError) {
+      console.error('Error parsing production plan JSON:', parseError);
+      throw new Error('Failed to parse generated production plan');
+    }
     
-    // Parse the JSON response
-    const productionPlan = JSON.parse(content);
     console.log('Parsed production plan successfully');
     
     return {
       success: true,
       data: productionPlan,
-      rawResponse: content
+      rawResponse: response.data.content
     };
   } catch (error) {
     console.error('AI generation error:', error);
@@ -162,7 +279,7 @@ Return the response as a structured JSON object with all sections populated with
           { name: 'Standard', price: '€14,000', teamSize: '5-7', roles: generateDynamicRoles(projectData?.category || 'commercial') },
           { name: 'Premium', price: '€40,000', teamSize: '8-12', roles: [...generateDynamicRoles(projectData?.category || 'commercial'), 'Art Director', 'Colorist', 'Sound Designer'] }
         ],
-        roles: generateDynamicRoles(projectData?.category || 'commercial')
+        team: generateDynamicRoles(projectData?.category || 'commercial')
       },
       questions: {
         questions: generateDynamicQuestions(projectData?.category || 'commercial')
@@ -170,24 +287,27 @@ Return the response as a structured JSON object with all sections populated with
       locations: {
         locations: generateDynamicLocations(projectData?.category || 'commercial')
       },
-      technical: {
+      technicalRequirements: {
         camera: generateDynamicTechnical(projectData?.category || 'commercial').camera,
         lighting: generateDynamicTechnical(projectData?.category || 'commercial').lighting,
         audio: generateDynamicTechnical(projectData?.category || 'commercial').audio
       },
-      schedule: {
+      productionSchedule: {
         phases: generateDynamicSchedule(projectData?.category || 'commercial')
       },
       creativeDirection: {
         visualStyle: generateDynamicCreative(projectData?.category || 'commercial').visualStyle,
-        cinematography: generateDynamicCreative(projectData?.category || 'commercial').cinematographyNotes,
+        cinematographyNotes: generateDynamicCreative(projectData?.category || 'commercial').cinematographyNotes,
         moodTags: generateDynamicCreative(projectData?.category || 'commercial').moodTags,
+        toneMood: generateDynamicCreative(projectData?.category || 'commercial').toneMood,
         referenceStyle: generateDynamicCreative(projectData?.category || 'commercial').referenceStyle,
-        image: null
+        generatedImage: null
       },
       deliverables: {
-        deliverables: generateDynamicDeliverables(projectData?.category || 'commercial').primary,
-        formats: generateDynamicDeliverables(projectData?.category || 'commercial').formats
+        primary: generateDynamicDeliverables(projectData?.category || 'commercial').primary,
+        formats: generateDynamicDeliverables(projectData?.category || 'commercial').formats,
+        additional: generateDynamicDeliverables(projectData?.category || 'commercial').additional,
+        timeline: generateDynamicDeliverables(projectData?.category || 'commercial').timeline
       }
     };
     
@@ -522,39 +642,31 @@ Please provide an improved version of this section as a JSON object.`;
   }
 
   try {
-    const response = await fetch(OPENAI_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert film production planner. Always respond with valid JSON.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-        response_format: { type: 'json_object' }
-      })
+    console.log(`Regenerating section "${section}" via Base44 AI...`);
+    const response = await base44.integrations.Core.InvokeLLM({
+      prompt: prompt,
+      response_format: { type: 'json_object' },
+      temperature: 0.7,
+      max_tokens: 2000
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`OpenAI API error: ${error.error?.message || response.statusText}`);
+    console.log('Base44 regeneration response received');
+
+    if (!response?.data?.content) {
+      throw new Error('Failed to regenerate section - no content in response');
     }
 
-    const data = await response.json();
-    const content = data.choices[0].message.content;
+    let updatedSection;
+    try {
+      updatedSection = typeof response.data.content === 'string' 
+        ? JSON.parse(response.data.content) 
+        : response.data.content;
+    } catch (parseError) {
+      console.error('Error parsing regenerated section JSON:', parseError);
+      throw new Error('Failed to parse regenerated section');
+    }
     
-    const updatedSection = JSON.parse(content);
+    console.log('Regenerated section successfully');
     
     return {
       success: true,
