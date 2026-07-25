@@ -1311,7 +1311,7 @@ export default function AISubmission() {
       locations: { locations: [] },
       technicalRequirements: { camera: [], lighting: [], audio: [] },
       productionSchedule: { phases: [] },
-      creativeDirection: { visualStyle: '', cinematographyNotes: '', moodTags: [], toneMood: '', referenceStyle: '', generatedImage: null },
+      creativeDirection: { visualStyle: '', cinematographyNotes: '', moodTags: [], toneMood: '', referenceStyle: '' },
       deliverables: { primary: [], formats: [], additional: [], timeline: '' }
     });
     setCurrentStep(0);

@@ -478,11 +478,11 @@ Please regenerate the budget breakdown as an array of 3 packages (Conservative, 
 - highlight: true for the recommended package
 
 Adjust the packages based on the user's request while keeping realistic cost breakdowns across production phases.`;
-  } else if (section === 'rolesTeam') {
+  } else if (section === 'roles') {
     prompt = `Regenerate the roles and team section based on the following user request: "${feedback}"
 
 Current team data:
-${JSON.stringify(currentData.rolesTeam || {}, null, 2)}
+${JSON.stringify(currentData.roles || {}, null, 2)}
 
 The user may be requesting:
 - Specific number of team members (add/remove crew)
@@ -491,14 +491,15 @@ The user may be requesting:
 - Pricing adjustments based on team composition
 
 Please regenerate the team data as an object with:
-- team: Array of required roles
+- packages: Array of 3 team packages with name, price, teamSize, and roles array
+- team: Array of all required roles
 - Adjust the team composition based on the user's request
 - Consider pricing implications of team size changes`;
-  } else if (section === 'screeningQuestions') {
+  } else if (section === 'questions') {
     prompt = `Regenerate the screening questions section based on the following user request: "${feedback}"
 
 Current questions data:
-${JSON.stringify(currentData.screeningQuestions || [], null, 2)}
+${JSON.stringify(currentData.questions || {}, null, 2)}
 
 The user may be requesting:
 - Questions about specific skills (equipment, creativity, availability)
@@ -507,17 +508,15 @@ The user may be requesting:
 - More specific or simpler questions
 - Different focus areas
 
-Please regenerate the screening questions as an array of questions with:
-- q: The question text
-- options: Array of 4 possible answers
-- preferred: Index of the preferred answer (0-3)
+Please regenerate the screening questions as an object with:
+- questions: Array of question objects with q (question text), options (4 possible answers), preferred (index of preferred answer), and weight (importance 1-5)
 
 Generate questions that are relevant to the production requirements and user's feedback.`;
   } else if (section === 'locations') {
     prompt = `Regenerate the locations section based on the following user request: "${feedback}"
 
 Current locations data:
-${JSON.stringify(currentData.locations || [], null, 2)}
+${JSON.stringify(currentData.locations || {}, null, 2)}
 
 The user may be requesting:
 - Specific location types (warehouse, beach, rooftop, studio, cafe)
@@ -526,13 +525,8 @@ The user may be requesting:
 - Backup locations
 - Natural vs urban settings
 
-Please regenerate the locations as an array of location suggestions with:
-- name: Location name
-- type: Indoor/Outdoor/Hybrid/Studio
-- typeColor: Color code for type badge
-- typeText: Color code for type text
-- desc: Description of the location
-- reqs: Array of requirements for filming at this location
+Please regenerate the locations as an object with:
+- locations: Array of location suggestions with name, type (Indoor/Outdoor/Hybrid/Studio), typeColor, typeText, description, and requirements array
 
 Generate locations that match the user's preferences and production brief.`;
   } else if (section === 'technicalRequirements') {
@@ -559,7 +553,7 @@ Adjust equipment based on the user's request and project category while maintain
     prompt = `Regenerate the production schedule section based on the following user request: "${feedback}"
 
 Current production schedule data:
-${JSON.stringify(currentData.productionSchedule || [], null, 2)}
+${JSON.stringify(currentData.productionSchedule || {}, null, 2)}
 
 The user may be requesting:
 - Timeline changes (Quick 1-2 days, Standard 3-5 days, Extended 2-4 weeks)
@@ -568,10 +562,8 @@ The user may be requesting:
 - Specific task additions or removals
 - Milestone additions (client reviews, casting days)
 
-Please regenerate the production schedule as an array of phases with:
-- name: Phase name (Pre-Production, Production, Post-Production)
-- days: Duration for the phase
-- items: Array of tasks in sequence
+Please regenerate the production schedule as an object with:
+- phases: Array of phase objects with name, duration, description, and tasks array
 
 Adjust the schedule based on the user's timeline preference and sequence modifications while maintaining logical production workflow.`;
   } else if (section === 'creativeDirection') {
@@ -585,7 +577,6 @@ The user may be requesting:
 - Different mood (aspirational, authentic, playful, dramatic, etc.)
 - Different reference style (Nike, Apple, cinematic, documentary, etc.)
 - Different cinematography approach (handheld, static, drone, etc.)
-- Image regeneration with different aesthetic
 
 Please regenerate the creative direction as an object with:
 - moodTags: Array of 5 mood tags
@@ -593,7 +584,6 @@ Please regenerate the creative direction as an object with:
 - cinematographyNotes: Cinematography approach and techniques
 - toneMood: Overall tone and mood description
 - referenceStyle: Reference style description
-- generatedImage: Base64 encoded image URL (placeholder for AI image generation)
 
 Adjust the creative direction based on the user's request while maintaining consistency with the production brief.`;
   } else if (section === 'deliverables') {

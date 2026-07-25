@@ -483,7 +483,7 @@ function StepRolesTeam({ data, onRegenerate, selectedBudgetPackage }) {
   const handleRegenerate = () => {
     if (suggestion.trim()) {
       const prompt = `${suggestion}. Current package: ${pkgs[activePackage].label}. Adjust team composition and pricing accordingly.`;
-      onRegenerate('rolesTeam', prompt);
+      onRegenerate('roles', prompt);
       setSuggestion('');
     }
   };
@@ -491,7 +491,7 @@ function StepRolesTeam({ data, onRegenerate, selectedBudgetPackage }) {
   const handlePackageSelect = (pkgIndex, pkgLabel) => {
     setActivePackage(pkgIndex);
     const prompt = `Change to ${pkgLabel} package. Adjust team composition and pricing for ${pkgLabel} tier. ${suggestion || ''}`;
-    onRegenerate('rolesTeam', prompt);
+    onRegenerate('roles', prompt);
   };
 
   return (
@@ -639,7 +639,7 @@ function StepScreeningQuestions({ data, onRegenerate }) {
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      onRegenerate('screeningQuestions', suggestion);
+      onRegenerate('questions', suggestion);
       setSuggestion('');
     }
   };
@@ -1548,8 +1548,8 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   const stepComponents = [
     <StepOverviewBrief data={aiData?.overviewBrief} projectCategory={projectCategory} onRegenerate={handleRegenerate} onCategoryChange={handleCategoryChange} />,
     <StepBudgetBreakdown data={aiData?.budgetBreakdown} onRegenerate={handleRegenerate} />,
-    <StepRolesTeam data={aiData?.rolesTeam} onRegenerate={handleRegenerate} selectedBudgetPackage={activePackage} />,
-    <StepScreeningQuestions data={aiData?.screeningQuestions} onRegenerate={handleRegenerate} />,
+    <StepRolesTeam data={aiData?.roles} onRegenerate={handleRegenerate} selectedBudgetPackage={activePackage} />,
+    <StepScreeningQuestions data={aiData?.questions} onRegenerate={handleRegenerate} />,
     <StepLocations data={aiData?.locations} onRegenerate={handleRegenerate} />,
     <StepTechnicalRequirements data={aiData?.technicalRequirements} onRegenerate={handleRegenerate} projectCategory={projectCategory} />,
     <StepProductionSchedule data={aiData?.productionSchedule} onRegenerate={handleRegenerate} projectCategory={projectCategory} />,
