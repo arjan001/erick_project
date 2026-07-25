@@ -162,10 +162,10 @@ const STEPS = [
 ];
 
 /* ─── SHARED UI ─────────────────────────────────────────────────────────── */
-function PendingBadge() {
+function PendingBadge({ isApproved = false }) {
   return (
-    <span style={{ background: '#fef3c7', color: '#92400e', fontSize: 12, fontWeight: 500, padding: '3px 10px', borderRadius: 20, display: 'inline-block' }}>
-      Pending Review
+    <span style={{ background: isApproved ? '#d1fae5' : '#fef3c7', color: isApproved ? '#065f46' : '#92400e', fontSize: 12, fontWeight: 500, padding: '3px 10px', borderRadius: 20, display: 'inline-block' }}>
+      {isApproved ? 'Approved' : 'Pending Review'}
     </span>
   );
 }
@@ -214,13 +214,13 @@ function Card({ children, highlight = false }) {
 
 /* ─── STEP CONTENT COMPONENTS ───────────────────────────────────────────── */
 
-function StepOverviewBrief({ data, projectCategory, onRegenerate, loading }) {
+function StepOverviewBrief({ data, projectCategory, onRegenerate, loading, isApproved }) {
   if (!data) return null;
   
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <PendingBadge />
+        <PendingBadge isApproved={isApproved} />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Production Brief</h1>
         <p style={{ color: '#6b7280', fontSize: 14 }}>Comprehensive overview of the project</p>
       </div>
@@ -294,14 +294,14 @@ function StepOverviewBrief({ data, projectCategory, onRegenerate, loading }) {
   );
 }
 
-function StepBudgetBreakdown({ data, projectCategory, onRegenerate, loading }) {
+function StepBudgetBreakdown({ data, projectCategory, onRegenerate, loading, isApproved }) {
   if (!data) return null;
   const packages = data.packages || [];
 
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <PendingBadge />
+        <PendingBadge isApproved={isApproved} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 12 }}>
           <div>
             <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '0 0 4px' }}>Budget Breakdown</h1>
@@ -362,7 +362,7 @@ function StepBudgetBreakdown({ data, projectCategory, onRegenerate, loading }) {
   );
 }
 
-function StepRolesTeam({ data, projectCategory, onRegenerate, loading }) {
+function StepRolesTeam({ data, projectCategory, onRegenerate, loading, isApproved }) {
   if (!data) return null;
   const [activePackage, setActivePackage] = useState(0);
   const packages = data.packages || [];
@@ -371,7 +371,7 @@ function StepRolesTeam({ data, projectCategory, onRegenerate, loading }) {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <PendingBadge />
+        <PendingBadge isApproved={isApproved} />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Roles &amp; Team</h1>
         <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Required talent and experience levels</p>
       </div>
@@ -447,14 +447,14 @@ function StepRolesTeam({ data, projectCategory, onRegenerate, loading }) {
   );
 }
 
-function StepScreeningQuestions({ data, projectCategory, onRegenerate, loading }) {
+function StepScreeningQuestions({ data, projectCategory, onRegenerate, loading, isApproved }) {
   if (!data) return null;
   const questions = data.questions || [];
 
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <PendingBadge />
+        <PendingBadge isApproved={isApproved} />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Screening Questions</h1>
         <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Talent evaluation questionnaire</p>
       </div>
@@ -512,14 +512,14 @@ function StepScreeningQuestions({ data, projectCategory, onRegenerate, loading }
   );
 }
 
-function StepLocations({ data, projectCategory, onRegenerate, loading }) {
+function StepLocations({ data, projectCategory, onRegenerate, loading, isApproved }) {
   if (!data) return null;
   const locations = data.locations || [];
 
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <PendingBadge />
+        <PendingBadge isApproved={isApproved} />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Locations &amp; Shooting Places</h1>
         <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>AI-suggested filming locations based on your production brief</p>
       </div>
@@ -567,7 +567,7 @@ function StepLocations({ data, projectCategory, onRegenerate, loading }) {
   );
 }
 
-function StepTechnicalRequirements({ data, projectCategory, onRegenerate, loading }) {
+function StepTechnicalRequirements({ data, projectCategory, onRegenerate, loading, isApproved }) {
   if (!data) return null;
   const cameraRows = data.camera || [];
   const lightingItems = data.lighting || [];
@@ -576,7 +576,7 @@ function StepTechnicalRequirements({ data, projectCategory, onRegenerate, loadin
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <PendingBadge />
+        <PendingBadge isApproved={isApproved} />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Technical Requirements</h1>
         <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Camera, lighting, and audio specifications</p>
       </div>
@@ -641,14 +641,14 @@ function StepTechnicalRequirements({ data, projectCategory, onRegenerate, loadin
   );
 }
 
-function StepProductionSchedule({ data, projectCategory, onRegenerate, loading }) {
+function StepProductionSchedule({ data, projectCategory, onRegenerate, loading, isApproved }) {
   if (!data) return null;
   const phases = data.phases || [];
 
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <PendingBadge />
+        <PendingBadge isApproved={isApproved} />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Production Schedule</h1>
         <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Timeline and key milestones</p>
       </div>
@@ -692,7 +692,7 @@ function StepProductionSchedule({ data, projectCategory, onRegenerate, loading }
   );
 }
 
-function StepCreativeDirection({ data, productionBrief, projectCategory, onRegenerate, loading }) {
+function StepCreativeDirection({ data, productionBrief, projectCategory, onRegenerate, loading, isApproved }) {
   if (!data) return null;
   const [imageLoading, setImageLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState(data.image || null);
@@ -715,7 +715,7 @@ function StepCreativeDirection({ data, productionBrief, projectCategory, onRegen
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <PendingBadge />
+        <PendingBadge isApproved={isApproved} />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Creative Direction</h1>
         <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Visual style and creative approach</p>
       </div>
@@ -786,7 +786,7 @@ function StepCreativeDirection({ data, productionBrief, projectCategory, onRegen
   );
 }
 
-function StepDeliverables({ data, projectCategory, productionBrief, onRegenerate, loading }) {
+function StepDeliverables({ data, projectCategory, productionBrief, onRegenerate, loading, isApproved }) {
   if (!data) return null;
   const deliverables = data.deliverables || [];
   const formats = data.formats || [];
@@ -794,7 +794,7 @@ function StepDeliverables({ data, projectCategory, productionBrief, onRegenerate
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <PendingBadge />
+        <PendingBadge isApproved={isApproved} />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Deliverables</h1>
         <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Complete production specifications and outputs</p>
       </div>
@@ -1097,15 +1097,15 @@ export default function AISubmission() {
 
   // Dynamic step components based on AI data
   const stepComponents = aiData ? [
-    <StepOverviewBrief data={aiData.overviewBrief} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('overviewBrief', s)} loading={loading} />,
-    <StepBudgetBreakdown data={aiData.budgetBreakdown} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('budgetBreakdown', s)} loading={loading} />,
-    <StepRolesTeam data={aiData.roles} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('roles', s)} loading={loading} />,
-    <StepScreeningQuestions data={aiData.questions} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('questions', s)} loading={loading} />,
-    <StepLocations data={aiData.locations} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('locations', s)} loading={loading} />,
-    <StepTechnicalRequirements data={aiData.technical} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('technical', s)} loading={loading} />,
-    <StepProductionSchedule data={aiData.schedule} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('schedule', s)} loading={loading} />,
-    <StepCreativeDirection data={aiData.creativeDirection} productionBrief={aiData.overviewBrief?.description} projectCategory={projectCategory} onRegenerate={() => handleRegenerate('creativeDirection', 'regenerate style')} loading={loading} />,
-    <StepDeliverables data={aiData.deliverables} projectCategory={projectCategory} productionBrief={aiData.overviewBrief?.description} onRegenerate={(s) => handleRegenerate('deliverables', s)} loading={loading} />
+    <StepOverviewBrief data={aiData.overviewBrief} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('overviewBrief', s)} loading={loading} isApproved={approved.has(0)} />,
+    <StepBudgetBreakdown data={aiData.budgetBreakdown} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('budgetBreakdown', s)} loading={loading} isApproved={approved.has(1)} />,
+    <StepRolesTeam data={aiData.roles} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('roles', s)} loading={loading} isApproved={approved.has(2)} />,
+    <StepScreeningQuestions data={aiData.questions} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('questions', s)} loading={loading} isApproved={approved.has(3)} />,
+    <StepLocations data={aiData.locations} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('locations', s)} loading={loading} isApproved={approved.has(4)} />,
+    <StepTechnicalRequirements data={aiData.technical} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('technical', s)} loading={loading} isApproved={approved.has(5)} />,
+    <StepProductionSchedule data={aiData.schedule} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('schedule', s)} loading={loading} isApproved={approved.has(6)} />,
+    <StepCreativeDirection data={aiData.creativeDirection} productionBrief={aiData.overviewBrief?.description} projectCategory={projectCategory} onRegenerate={() => handleRegenerate('creativeDirection', 'regenerate style')} loading={loading} isApproved={approved.has(7)} />,
+    <StepDeliverables data={aiData.deliverables} projectCategory={projectCategory} productionBrief={aiData.overviewBrief?.description} onRegenerate={(s) => handleRegenerate('deliverables', s)} loading={loading} isApproved={approved.has(8)} />
   ] : [];
 
   const progressPct = Math.round(((approved.size) / STEPS.length) * 100);
