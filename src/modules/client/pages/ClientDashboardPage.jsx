@@ -8,8 +8,8 @@ import ClientStatusDonut from '@/components/client/ClientStatusDonut';
 import ClientRecentApplications from '@/components/client/ClientRecentApplications';
 import ClientProjectCard from '@/components/client/ClientProjectCard';
 import ClientJobRow from '@/components/client/ClientJobRow';
-import ClientJobModal from '@/components/client/ClientJobModal';
 import ClientPostProjectModal from '@/components/client/ClientPostProjectModal';
+import AISubmissionModal from '@/components/client/AISubmissionModal';
 import { Plus, Briefcase, Send, MessageSquare, FolderKanban, X, MapPin, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import InviteCodeCard from '@/components/InviteCodeCard';
@@ -29,10 +29,8 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
 
   const [showProjectModal, setShowProjectModal] = useState(false);
-  const [showJobModal, setShowJobModal] = useState(false);
-  const [editingJob, setEditingJob] = useState(null);
+  const [showAIModal, setShowAIModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
-  const [jobForm, setJobForm] = useState({ title: '', description: '', job_type: 'director', employment_type: '', location: '', budget: '', duration: '', required_skills: '' });
 
   useEffect(() => {
     if (isLoadingAuth) return;
@@ -96,82 +94,31 @@ export default function ClientDashboard() {
     }
   };
 
-  const handleCreateJob = async () => {
+  const handleAIComplete = async (aiData) => {
+    // Process AI-generated data and create job directly
+    setShowAIModal(false);
+    
     if (!projectOwner) return;
     try {
       const newJob = await Job.create({
         client_email: user.email,
-        title: jobForm.title,
-        description: jobForm.description,
-        job_type: jobForm.job_type,
-        employment_type: jobForm.employment_type,
-        location: jobForm.location,
-        budget: parseFloat(jobForm.budget) || 0,
-        duration: jobForm.duration,
-        required_skills: jobForm.required_skills.split(',').map((s) => s.trim()).filter((s) => s),
+        title: aiData?.overviewBrief?.title || 'AI Generated Job',
+        description: aiData?.overviewBrief?.description || '',
+        job_type: 'director',
+        employment_type: '',
+        location: aiData?.locations?.[0]?.name || '',
+        budget: parseFloat(aiData?.budgetBreakdown?.[1]?.price?.replace(/[^\d]/g, '')) || 0,
+        duration: '',
+        required_skills: [],
         status: 'open',
         created_date: new Date().toISOString()
       });
       setJobs((prev) => [...prev, newJob]);
-      setShowJobModal(false);
-      setJobForm({ title: '', description: '', job_type: 'director', employment_type: '', location: '', budget: '', duration: '', required_skills: '' });
-      success('Job Created', 'Job created successfully');
+      success('Job Created', 'AI-generated job created successfully');
     } catch (err) {
-      console.error('Error creating job:', err);
-      toastError('Creation Failed', 'Failed to create job');
+      console.error('Error creating AI job:', err);
+      toastError('Creation Failed', 'Failed to create AI-generated job');
     }
-  };
-
-  const handleUpdateJob = async () => {
-    if (!editingJob) return;
-    try {
-      const updatedJob = await Job.update(editingJob.id, {
-        title: jobForm.title,
-        description: jobForm.description,
-        job_type: jobForm.job_type,
-        employment_type: jobForm.employment_type,
-        location: jobForm.location,
-        budget: parseFloat(jobForm.budget) || 0,
-        duration: jobForm.duration,
-        required_skills: jobForm.required_skills.split(',').map((s) => s.trim()).filter((s) => s)
-      });
-      setJobs((prev) => prev.map((j) => (j.id === editingJob.id ? updatedJob : j)));
-      setShowJobModal(false);
-      setEditingJob(null);
-      setJobForm({ title: '', description: '', job_type: 'director', employment_type: '', location: '', budget: '', duration: '', required_skills: '' });
-      success('Job Updated', 'Job updated successfully');
-    } catch (err) {
-      console.error('Error updating job:', err);
-      toastError('Update Failed', 'Failed to update job');
-    }
-  };
-
-  const openProjectModal = (project = null) => {
-    if (project) {
-      navigate('/ClientPostProject', { state: { editingProject: project } });
-    } else {
-      navigate('/ClientPostProject');
-    }
-  };
-
-  const openJobModal = (job = null) => {
-    if (job) {
-      setEditingJob(job);
-      setJobForm({
-        title: job.title || '',
-        description: job.description || '',
-        job_type: job.job_type || 'director',
-        employment_type: job.employment_type || '',
-        location: job.location || '',
-        budget: job.budget || '',
-        duration: job.duration || '',
-        required_skills: Array.isArray(job.required_skills) ? job.required_skills.join(', ') : (job.required_skills || '')
-      });
-    } else {
-      setEditingJob(null);
-      setJobForm({ title: '', description: '', job_type: 'director', employment_type: '', location: '', budget: '', duration: '', required_skills: '' });
-    }
-    setShowJobModal(true);
   };
 
   if (isLoadingAuth || loading) {
@@ -232,7 +179,7 @@ export default function ClientDashboard() {
               <Button
                 variant="outline"
                 className="border-gray-900 hover:bg-gray-50 transition-all text-sm font-medium px-6 py-2.5"
-                onClick={() => openJobModal()}
+                onClick={() => setShowAIModal(true)}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Post with AI
@@ -309,10 +256,10 @@ export default function ClientDashboard() {
                   <Button 
                     variant="outline" 
                     className="border-gray-900 hover:bg-gray-50"
-                    onClick={() => openJobModal()}
+                    onClick={() => setShowAIModal(true)}
                   >
-                    <Briefcase className="w-4 h-4 mr-2" />
-                    Post Job
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Post with AI
                   </Button>
                 </div>
               </div>
@@ -362,13 +309,17 @@ export default function ClientDashboard() {
         editingProject={editingProject}
       />
 
-      <ClientJobModal
-        open={showJobModal}
-        editing={!!editingJob}
-        form={jobForm}
-        setForm={setJobForm}
-        onClose={() => setShowJobModal(false)}
-        onSubmit={editingJob ? handleUpdateJob : handleCreateJob}
+      <AISubmissionModal
+        open={showAIModal}
+        onClose={() => setShowAIModal(false)}
+        onSubmit={handleAIComplete}
+        projectData={{
+          url: '',
+          category: 'commercial',
+          description: '',
+          budget: '',
+          title: ''
+        }}
       />
     </div>
   );

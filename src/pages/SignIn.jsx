@@ -187,7 +187,10 @@ export default function SignIn() {
         if (acc.role === 'team') {
           localStorage.setItem('studio22_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: email, role: 'team_admin' }));
         }
-        window.location.href = ROLE_REDIRECTS[acc.role] || '/';
+        // Check for redirect destination
+        const redirectDest = sessionStorage.getItem('redirectAfterLogin');
+        sessionStorage.removeItem('redirectAfterLogin');
+        window.location.href = redirectDest || ROLE_REDIRECTS[acc.role] || '/';
         return;
       }
       // 2. Supabase auth
@@ -223,7 +226,10 @@ export default function SignIn() {
       
       const userData = { id: data.user.id, email: data.user.email, full_name: fullName, role: userRole };
       login(userData);
-      window.location.href = ROLE_REDIRECTS[userRole] || '/';
+      // Check for redirect destination
+      const redirectDest = sessionStorage.getItem('redirectAfterLogin');
+      sessionStorage.removeItem('redirectAfterLogin');
+      window.location.href = redirectDest || ROLE_REDIRECTS[userRole] || '/';
     } catch (err) {
       setError(err.message || 'Invalid email or password');
     } finally {

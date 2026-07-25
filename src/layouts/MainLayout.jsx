@@ -45,7 +45,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
   }, []);
 
   // MainLayout is only used for public pages — dashboard pages use DashboardLayout
-  const shouldHideMenus = false;
+  const shouldHideMenus = location.pathname === '/AIsubmission';
 
   const categoryInfo = {
     commercial: {

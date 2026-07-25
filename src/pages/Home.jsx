@@ -377,7 +377,7 @@ export default function Home({ editMode = false }) {
       });
     }
     
-    navigate('/SubmitProject');
+    navigate('/AIsubmission');
   };
 
   const handleFileUpload = async (e) => {
@@ -1178,10 +1178,10 @@ export default function Home({ editMode = false }) {
             </div>
             <Button
               type="submit"
-              className="w-full bg-black text-white hover:bg-gray-800 py-4 text-lg font-semibold"
+              className="w-full bg-black text-white hover:bg-gray-800 py-3 text-sm font-medium"
             >
-              <Send className="w-5 h-5 mr-2" />
-              Submit
+              <Send className="w-4 h-4 mr-2" />
+              Generate Production Plan
             </Button>
           </form>
         </div>

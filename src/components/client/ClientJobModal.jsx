@@ -5,6 +5,7 @@ import { Sparkles, Loader, X, Paperclip, Upload, CheckCircle2 } from 'lucide-rea
 import filmIndustryRoles from '@/data/filmIndustryRoles.json';
 import { analyzeWebsiteUrl, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService';
 import { base44 } from '@/api/base44Client';
+import AISubmissionModal from './AISubmissionModal';
 
 // Flatten roles from JSON for display
 const ROLES_OPTIONS = Object.values(filmIndustryRoles)
@@ -44,6 +45,7 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
   const [extractProgress, setExtractProgress] = useState(null);
   const [attachments, setAttachments] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [showAIModal, setShowAIModal] = useState(false);
   const fileInputRef = useRef(null);
   const previousCategoryRef = useRef(projectCategory);
 
@@ -80,6 +82,7 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
 
         setTimeout(() => {
           setExtractProgress(null);
+          setShowAIModal(true);
         }, 600);
       } else {
         console.error('Extract error:', analysisResult.error);
@@ -92,6 +95,12 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
     } finally {
       setExtracting(false);
     }
+  };
+
+  const handleAIComplete = (aiData) => {
+    // Process AI-generated data and populate form
+    setShowAIModal(false);
+    onSubmit();
   };
 
   const handleFileUpload = async (e) => {
@@ -157,6 +166,23 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
   };
 
   if (!open) return null;
+  
+  // Show AI Modal when active
+  if (showAIModal) {
+    return <AISubmissionModal 
+      open={showAIModal} 
+      onClose={() => setShowAIModal(false)} 
+      onSubmit={handleAIComplete}
+      projectData={{
+        url: projectUrl,
+        category: projectCategory,
+        description: form.description,
+        budget: form.budget,
+        title: form.title
+      }}
+    />;
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">

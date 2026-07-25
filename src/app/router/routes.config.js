@@ -127,6 +127,11 @@ const publicRoutes = [
     layout: MainLayout
   },
   {
+    path: '/AIsubmission',
+    component: () => import('@/pages/AISubmission'),
+    layout: MainLayout
+  },
+  {
     path: '/BackedProjects',
     component: () => import('@/pages/BackedProjects'),
     layout: MainLayout

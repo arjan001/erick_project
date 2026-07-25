@@ -1,16 +1,19 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export function AuthGuard({ children }) {
   const { isAuthenticated, isLoadingAuth } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (!isLoadingAuth && !isAuthenticated) {
-      navigate('/');
+      // Store the intended destination for redirect after login
+      sessionStorage.setItem('redirectAfterLogin', location.pathname);
+      navigate('/SignIn');
     }
-  }, [isAuthenticated, isLoadingAuth, navigate]);
+  }, [isAuthenticated, isLoadingAuth, navigate, location]);
 
   if (isLoadingAuth) {
     return (
