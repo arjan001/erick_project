@@ -1279,6 +1279,7 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   const [analyzing, setAnalyzing] = useState(false);
   const [extractProgress, setExtractProgress] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [activePackage, setActivePackage] = useState(1);
   const previousCategoryRef = useRef(projectCategory);
 
   const progressSteps = [
