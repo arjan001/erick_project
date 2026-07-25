@@ -908,6 +908,7 @@ export default function AISubmission() {
   const [analyzing, setAnalyzing] = useState(false);
   const [extractProgress, setExtractProgress] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [hasAnalyzedProject, setHasAnalyzedProject] = useState(false);
   const previousCategoryRef = useRef(projectCategory);
 
   const progressSteps = [
@@ -948,13 +949,58 @@ export default function AISubmission() {
     }
   }, []);
 
-  // Load analyzed project from Home page
+  // Load analyzed project from Home page and auto-generate
   useEffect(() => {
     const analyzedProject = JSON.parse(localStorage.getItem('studio22_analyzed_project') || 'null');
     if (analyzedProject) {
+      setHasAnalyzedProject(true);
       setProjectUrl(analyzedProject.url || '');
       setProjectCategory(analyzedProject.projectType || 'commercial');
       setProjectDescription(analyzedProject.additionalNotes || analyzedProject.analysis?.rawAnalysis || '');
+      
+      // Auto-trigger production plan generation immediately
+      const contextData = {
+        url: analyzedProject.url || '',
+        category: analyzedProject.projectType || 'commercial',
+        description: analyzedProject.additionalNotes || analyzedProject.analysis?.rawAnalysis || '',
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem('studio22_ai_modal_context', JSON.stringify(contextData));
+      
+      // Initialize with empty data structure to show steps immediately
+      setAIData({
+        overviewBrief: { initialIdea: contextData.description, description: contextData.description, tags: [], introduction: '' },
+        budgetBreakdown: { packages: [], reasoning: '' },
+        roles: { packages: [], roles: [] },
+        questions: { questions: [] },
+        locations: { locations: [] },
+        technical: { camera: [], lighting: [], audio: [] },
+        schedule: { phases: [] },
+        creativeDirection: { visualStyle: '', cinematography: '', moodTags: [], referenceStyle: '', image: null },
+        deliverables: { deliverables: [], formats: [] }
+      });
+      setCurrentStep(0);
+      setApproved(new Set());
+      
+      setLoading(true);
+      setError(null);
+      
+      // Generate production plan in background
+      generateProductionPlan({
+        url: contextData.url,
+        category: contextData.category,
+        description: contextData.description
+      }).then(result => {
+        if (result.success) {
+          setAIData(result.data);
+        } else {
+          setError(result.error);
+        }
+      }).catch(err => {
+        setError(err.message);
+      }).finally(() => {
+        setLoading(false);
+      });
     }
   }, []);
 
@@ -1122,8 +1168,8 @@ export default function AISubmission() {
     return null;
   }
 
-  // Show input form if no AI data yet
-  if (!aiData) {
+  // Show input form if no AI data yet AND no analyzed project from Home page
+  if (!aiData && !hasAnalyzedProject) {
     return (
       <div style={{ minHeight: '100vh', background: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
         <div style={{ background: '#fff', borderRadius: 12, maxWidth: '500px', width: '100%', padding: 32, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
