@@ -1637,7 +1637,29 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
             <h2 style={{ fontSize: 20, fontWeight: 600, color: '#111', margin: 0 }}>AI Production Plan</h2>
             <p style={{ fontSize: 13, color: '#6b7280', margin: '4px 0 0' }}>Review and approve AI-generated production details</p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            style={{ 
+              background: '#f3f4f6', 
+              border: '1px solid #e5e7eb', 
+              cursor: 'pointer', 
+              padding: 8, 
+              borderRadius: 6, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = '#e5e7eb';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = '#f3f4f6';
+            }}
+          >
             <XIcon size={20} />
           </button>
         </div>
