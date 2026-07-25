@@ -1013,8 +1013,9 @@ function StepProductionSchedule({ data, onRegenerate, projectCategory }) {
   );
 }
 
-function StepCreativeDirection({ data, onRegenerate }) {
-  const [suggestion, setSuggestion] = useState('');
+function StepCreativeDirection({ data, onRegenerate, productionBrief }) {
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState(data?.generatedImage || null);
 
   const moodTags = data?.moodTags || ['Energetic', 'Aspirational', 'Modern', 'Dynamic', 'Confident'];
   const visualStyle = data?.visualStyle || 'Clean, modern aesthetic with high contrast. Focus on product detail with shallow depth of field.';
@@ -1022,10 +1023,13 @@ function StepCreativeDirection({ data, onRegenerate }) {
   const toneMood = data?.toneMood || 'Aspirational yet authentic, avoiding overt luxury clichés in favor of genuine artistry.';
   const referenceStyle = data?.referenceStyle || 'Nike commercial aesthetic. Apple product launch feel. Quick cuts with impact.';
 
-  const handleRegenerate = () => {
-    if (suggestion.trim()) {
-      onRegenerate('creativeDirection', suggestion);
-      setSuggestion('');
+  const handleRegenerate = async () => {
+    setIsGeneratingImage(true);
+    try {
+      // Regenerate both content and image with different style
+      await onRegenerate('creativeDirection', 'Regenerate with different visual style and mood');
+    } finally {
+      setIsGeneratingImage(false);
     }
   };
 
@@ -1034,19 +1038,26 @@ function StepCreativeDirection({ data, onRegenerate }) {
       <div style={{ marginBottom: 24 }}>
         <PendingBadge />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Creative Direction</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Visual style, tone, and artistic approach</p>
+        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>AI-generated visual style, mood, and artistic approach based on production brief</p>
       </div>
 
-      <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 16, height: 260, background: 'linear-gradient(135deg, #1a0a0a 0%, #3d1a0a 30%, #2d4a1a 70%, #1a2a0a 100%)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-        <div style={{ position: 'absolute', left: 0, top: 0, width: '50%', height: '100%', background: 'linear-gradient(135deg, #8b2252 0%, #c0392b 30%, #e8a0b0 50%, #f5e0d0 70%, #d4e8a0 90%)', opacity: 0.85 }} />
-        <div style={{ position: 'relative', zIndex: 2, padding: '30px 40px', textAlign: 'right' }}>
-          <div style={{ fontSize: 34, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: -0.5, textTransform: 'uppercase' }}>
-            ARTISTRY<br />IN BLOOM
+      {/* AI-Generated Mood Board Image */}
+      <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 16, height: 260, background: isGeneratingImage ? '#f3f4f6' : (generatedImage ? `url(${generatedImage})` : 'linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 70%, #1a1a2e 100%)'), backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {isGeneratingImage ? (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12 }}>
+            <div style={{ width: 40, height: 40, border: '3px solid #10b981', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            <div style={{ fontSize: 14, color: '#6b7280', fontWeight: 500 }}>Generating creative direction...</div>
           </div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginTop: 14, lineHeight: 1.7, textTransform: 'uppercase', letterSpacing: 1 }}>
-            LUXURIOUS.<br />SUSTAINABLE.<br />CUSTOM DESIGN.
+        ) : !generatedImage ? (
+          <div style={{ position: 'relative', zIndex: 2, padding: '30px 40px', textAlign: 'center' }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: '#fff', lineHeight: 1.2, letterSpacing: -0.5 }}>
+              CREATIVE DIRECTION
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: '#e0e0e0', marginTop: 12, lineHeight: 1.6 }}>
+              AI-generated mood board will appear here
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       <Card>
@@ -1078,37 +1089,29 @@ function StepCreativeDirection({ data, onRegenerate }) {
         </div>
       </Card>
 
-      <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
-        <div style={{ position: 'relative' }}>
-          <textarea
-            value={suggestion}
-            onChange={(e) => setSuggestion(e.target.value)}
-            placeholder="e.g., 'Make it more energetic', 'Focus on sustainability', 'Add more brand story'"
-            style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
-          />
-          <button 
-            onClick={handleRegenerate}
-            disabled={!suggestion.trim()}
-            style={{ position: 'absolute', bottom: 10, right: 10, background: '#111', color: '#fff', border: 'none', borderRadius: 7, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: suggestion.trim() ? 'pointer' : 'not-allowed', opacity: suggestion.trim() ? 1 : 0.5, display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            <RefreshIcon size={12} /> Regenerate
-          </button>
-        </div>
-      </div>
+      <button
+        onClick={handleRegenerate}
+        disabled={isGeneratingImage}
+        style={{ width: '100%', marginTop: 24, padding: '14px 24px', background: '#111', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: isGeneratingImage ? 'not-allowed' : 'pointer', opacity: isGeneratingImage ? 0.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+      >
+        <RefreshIcon size={14} /> {isGeneratingImage ? 'Regenerating...' : 'Regenerate Style & Image'}
+      </button>
     </>
   );
 }
 
-function StepDeliverables({ data, onRegenerate }) {
+function StepDeliverables({ data, onRegenerate, projectCategory, productionBrief }) {
   const [suggestion, setSuggestion] = useState('');
 
   const primaryDeliverables = data?.primary || ['4K video files', 'Social media versions', 'Raw footage'];
   const deliveryTimeline = data?.timeline || '3-4 weeks from final approval';
+  const formats = data?.formats || ['16:9 (YouTube/TV)', '9:16 (TikTok/Reels)', '1:1 (Instagram)', '4:5 (Facebook)'];
+  const additionalItems = data?.additional || ['Project files', 'Color grades', 'Audio stems', 'Motion graphics'];
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      onRegenerate('deliverables', suggestion);
+      const prompt = `${suggestion}. Current project category: ${projectCategory || 'commercial'}. Adjust deliverables accordingly.`;
+      onRegenerate('deliverables', prompt);
       setSuggestion('');
     }
   };
@@ -1118,15 +1121,15 @@ function StepDeliverables({ data, onRegenerate }) {
       <div style={{ marginBottom: 24 }}>
         <PendingBadge />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Deliverables</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Complete production specifications and outputs</p>
+        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>AI-generated complete production specifications and outputs based on {projectCategory || 'production'} requirements</p>
       </div>
 
       <Card>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <PackageIcon size={20} />
           <span style={{ fontSize: 16, fontWeight: 600, color: '#111' }}>Primary Deliverables</span>
         </div>
-        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {primaryDeliverables.map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: '#374151' }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', flexShrink: 0 }} />
@@ -1136,21 +1139,52 @@ function StepDeliverables({ data, onRegenerate }) {
         </div>
       </Card>
 
+      <Card>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <div style={{ width: 20, height: 20, borderRadius: 5, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 12, fontWeight: 700 }}>▢</span>
+          </div>
+          <span style={{ fontSize: 16, fontWeight: 600, color: '#111' }}>Video Formats</span>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {formats.map((format, i) => (
+            <span key={i} style={{ background: '#f0fdf9', border: '1px solid #d1fae5', borderRadius: 20, padding: '6px 12px', fontSize: 12.5, color: '#374151', fontWeight: 500 }}>
+              {format}
+            </span>
+          ))}
+        </div>
+      </Card>
+
+      <Card>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <FileTextIcon size={20} />
+          <span style={{ fontSize: 16, fontWeight: 600, color: '#111' }}>Additional Items</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {additionalItems.map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, color: '#374151' }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#6b7280', flexShrink: 0 }} />
+              {item}
+            </div>
+          ))}
+        </div>
+      </Card>
+
       <div style={{ background: '#f0fdf9', border: '1px solid #6ee7b7', borderRadius: 12, padding: '18px 24px', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <FileTextIcon size={18} />
+          <CalendarIcon size={18} />
           <span style={{ fontSize: 15, fontWeight: 600, color: '#111' }}>Delivery Timeline: {deliveryTimeline}</span>
         </div>
       </div>
 
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '18px 24px', marginBottom: 16 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: '#111', marginBottom: 12 }}>Modify Deliverables (optional)</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: '#111', marginBottom: 12 }}>Customize Deliverables (optional)</div>
         <div style={{ position: 'relative' }}>
           <textarea
             value={suggestion}
             onChange={(e) => setSuggestion(e.target.value)}
-            placeholder="e.g., 'Add vertical formats', 'Include podcast audio versions', 'Add Spanish subtitles'"
-            style={{ width: '100%', minHeight: 80, border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+            placeholder="e.g., 'Add vertical formats for TikTok', 'Include podcast audio versions', 'Add Spanish subtitles', 'Remove raw footage', 'Add 8K resolution', 'Include behind-the-scenes footage', 'Add animated logo versions'"
+            style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
           />
           <button 
             onClick={handleRegenerate}
@@ -1585,8 +1619,8 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     <StepLocations data={aiData?.locations} onRegenerate={handleRegenerate} />,
     <StepTechnicalRequirements data={aiData?.technicalRequirements} onRegenerate={handleRegenerate} projectCategory={projectCategory} />,
     <StepProductionSchedule data={aiData?.productionSchedule} onRegenerate={handleRegenerate} projectCategory={projectCategory} />,
-    <StepCreativeDirection data={aiData?.creativeDirection} onRegenerate={handleRegenerate} />,
-    <StepDeliverables data={aiData?.deliverables} onRegenerate={handleRegenerate} />,
+    <StepCreativeDirection data={aiData?.creativeDirection} onRegenerate={handleRegenerate} productionBrief={aiData?.overviewBrief?.description} />,
+    <StepDeliverables data={aiData?.deliverables} onRegenerate={handleRegenerate} projectCategory={projectCategory} productionBrief={aiData?.overviewBrief?.description} />,
   ];
 
   const progressPct = Math.round(((approved.size) / STEPS.length) * 100);

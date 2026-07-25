@@ -86,60 +86,126 @@ Return the response as a structured JSON object with all sections populated.`;
   } catch (error) {
     console.error('AI generation error:', error);
     
-    // If API call fails, return mock data for testing
+    // If API call fails, return dynamic mock data based on project data
     return {
       success: true,
       data: {
         overviewBrief: {
           title: projectData?.title || 'AI Generated Project',
-          description: projectData?.description || 'Bloom & Vine requires a high-impact commercial video to elevate their brand presence in the luxury floral market. The project will feature their bespoke artisanal floral arrangements, targeting affluent lifestyle enthusiasts and event planners who value exclusivity. By leveraging cinematic visuals and a sophisticated narrative, we aim to showcase their commitment to sustainability and custom design artistry. The final output will serve as a powerful tool to drive conversions through their digital platforms.',
-          initialIdea: projectData?.description || `Create a high-impact commercial for ${projectData?.title || 'Bloom & Vine'} showcasing their bespoke artisanal floral arrangements. Target affluent lifestyle enthusiasts and event planners with key selling points like premium, sustainably sourced blooms and custom design artistry. Use modern, cinematic visuals featuring slow-motion macro product shots of petals unfurling alongside elegant, high-end lifestyle scenes. Include signature brand colors and prominent logo placement throughout the edit, ending with a strong CTA to visit the website for same-day delivery. Designed for Instagram, TikTok, and premium digital platform distribution.`,
+          description: projectData?.description || `This ${projectData?.category || 'commercial'} project requires a professional video production to elevate brand presence. The project will showcase the core product/service, targeting the intended audience with compelling visuals and narrative. By leveraging cinematic techniques and strategic storytelling, we aim to communicate the key value propositions effectively. The final output will serve as a powerful tool for brand engagement and conversion.`,
+          initialIdea: projectData?.description || `Create a compelling ${projectData?.category || 'commercial'} showcasing the key features and benefits. Use modern, cinematic visuals with strategic camera movements to highlight important elements. Include clear brand messaging and strong call-to-action throughout. Designed for multi-platform distribution including social media and digital channels.`,
           category: projectData?.category || 'commercial',
-          tags: ['bespoke', 'floristry', 'artisanal', 'sustainable', 'luxury', 'floraldesign', 'eventplanning', 'cinematic', 'modern', 'premium']
+          tags: generateDynamicTags(projectData?.category || 'commercial', projectData?.description || '')
         },
-        budgetBreakdown: [
-          { name: 'Conservative', price: '€5,000', desc: 'Essential coverage with single-camera setup', pre: '€2,000', prod: '€2,000', post: '€1,000', highlight: false },
-          { name: 'Standard', price: '€14,000', desc: 'Professional multi-camera production', pre: '€4,000', prod: '€6,000', post: '€4,000', highlight: true },
-          { name: 'Premium', price: '€40,000', desc: 'Full-scale production with cinema equipment', pre: '€10,000', prod: '€20,000', post: '€10,000', highlight: false }
-        ],
+        budgetBreakdown: generateDynamicBudget(projectData?.category || 'commercial'),
         rolesTeam: {
-          team: ['Director', 'Cinematographer', 'Gaffer', 'Sound Mixer', 'Editor', 'Colorist', 'Production Assistant']
+          team: generateDynamicRoles(projectData?.category || 'commercial')
         },
-        screeningQuestions: [
-          { q: 'If a key element for a shoot is suddenly unavailable on the day, how do you handle it?', options: ['Cancel the shoot immediately', 'Assess the situation and brainstorm alternatives', 'Tell the client it is not my problem', 'Wait for the client to decide'], preferred: 1 },
-          { q: "What is your process for creating a video that feels 'exclusive' and 'high-end'?", options: ['Use bright colours and fast transitions', 'Focus on slow, intentional details', "Copy a popular video style", 'Make the video as long as possible'], preferred: 1 },
-          { q: 'How do you handle receiving feedback that you disagree with?', options: ['Tell the client their idea is wrong', 'Ignore the feedback', 'Listen and offer collaborative solution', 'Immediately quit the project'], preferred: 2 },
-        ],
-        locations: [
-          { name: 'Minimalist Art Gallery', type: 'Indoor', typeColor: '#dbeafe', typeText: '#1d4ed8', desc: 'Premium, gallery-like canvas that makes colors pop.', reqs: ['Controlled climate', 'Lighting rig permission', 'Furniture removal'] },
-          { name: 'Botanical Conservatory', type: 'Hybrid', typeColor: '#fef3c7', typeText: '#92400e', desc: 'Lush, organic backdrop reinforcing sustainability.', reqs: ['Temperature regulation', 'Reflector panels', 'Filming permit'] },
-          { name: 'Luxury Penthouse Terrace', type: 'Outdoor', typeColor: '#dcfce7', typeText: '#166534', desc: 'High-end urban terrace suggesting exclusive lifestyle.', reqs: ['Weather backup', 'Portable power', 'Equipment access'] },
-        ],
-        technicalRequirements: {
-          camera: [['Camera Type', 'Sony FX6 Cinema Line'], ['Resolution', '4K DCI 10-bit 4:2:2 XAVC-I'], ['Frame Rate', '24fps for cinematic, 120fps for high-speed'], ['Lenses', 'Sony FE 35mm f/1.4 GM, 50mm f/1.2 GM, 90mm f/2.8 Macro G OSS'], ['Camera Support', 'DJI RS3 Pro Gimbal and Sachtler Ace XL Tripod']],
-          lighting: ['Aputure LS 600d Pro for high-output key light', 'Aputure Light Dome II for soft portrait lighting', '2x Aputure Amaran 200x Bi-Color for rim lighting', 'Aputure MC RGBWW for accent colors', '4x4 Scrim Jim Cine Kit for diffusion'],
-          audio: ['Sennheiser MKH 416 shotgun microphone', 'Rode Wireless PRO lavalier system', 'Zoom F6 MultiTrack Field Recorder', 'Rycote Softie Windshield']
-        },
-        productionSchedule: [
-          { name: 'Pre-Production', days: '14 days', items: ['Finalize creative concept', 'Scout locations', 'Secure talent', 'Confirm equipment rentals', 'Draft shot list', 'Production meetings', 'Location permits', 'Contract crew', 'Coordinate logistics'] },
-          { name: 'Production', days: '3 days', items: ['Day 1: Studio scenes', 'Day 2: Location shoot', 'Day 3: Detail shots', 'Daily call/wrap times', 'Crew breaks', 'Contingency plans', 'Footage review', 'BTS documentation', 'Equipment check-in'] },
-          { name: 'Post-Production', days: '21 days', items: ['Transfer and backup footage', 'Assemble rough cut', 'Client review', 'Editorial notes', 'Color grading', 'Motion graphics', 'Sound design', 'Music licensing', 'Final review', 'Export files', 'Archive project'] },
-        ],
-        creativeDirection: {
-          moodTags: ['Energetic', 'Aspirational', 'Modern', 'Dynamic', 'Confident'],
-          visualStyle: 'Clean, modern aesthetic with high contrast. Focus on product detail with shallow depth of field.',
-          cinematographyNotes: 'Strategic camera movements that serve the story. Motivated lighting that creates depth and dimension.',
-          toneMood: 'Aspirational yet authentic, avoiding overt luxury clichés.',
-          referenceStyle: 'Nike commercial aesthetic. Apple product launch feel. Quick cuts with impact.'
-        },
-        deliverables: {
-          primary: ['4K video files', 'Social media versions', 'Raw footage'],
-          timeline: '3-4 weeks from final approval'
-        }
+        screeningQuestions: generateDynamicQuestions(projectData?.category || 'commercial'),
+        locations: generateDynamicLocations(projectData?.category || 'commercial'),
+        technicalRequirements: generateDynamicTechnical(projectData?.category || 'commercial'),
+        productionSchedule: generateDynamicSchedule(projectData?.category || 'commercial'),
+        creativeDirection: generateDynamicCreative(projectData?.category || 'commercial'),
+        deliverables: generateDynamicDeliverables(projectData?.category || 'commercial')
       },
       isMock: true
     };
   }
+}
+
+// Helper functions to generate dynamic mock data based on project category
+function generateDynamicTags(category, description) {
+  const baseTags = ['professional', 'quality', 'creative', 'modern'];
+  const categoryTags = {
+    commercial: ['brand', 'marketing', 'conversion', 'premium'],
+    music_video: ['music', 'artist', 'rhythm', 'visual'],
+    short_film: ['story', 'narrative', 'cinematic', 'emotional'],
+    documentary: ['authentic', 'real', 'informative', 'compelling'],
+    branded_content: ['brand', 'story', 'engaging', 'strategic'],
+    corporate_video: ['business', 'professional', 'corporate', 'clear'],
+    event_coverage: ['live', 'event', 'coverage', 'dynamic'],
+    product_demo: ['product', 'demonstration', 'features', 'clear'],
+    social_media: ['social', 'engaging', 'viral', 'trending'],
+    animation: ['animated', 'creative', 'visual', 'motion']
+  };
+  return [...baseTags, ...(categoryTags[category] || categoryTags.commercial)].slice(0, 10);
+}
+
+function generateDynamicBudget(category) {
+  const baseBudgets = [
+    { name: 'Conservative', price: '€5,000', desc: 'Essential coverage with efficient setup', pre: '€2,000', prod: '€2,000', post: '€1,000', highlight: false },
+    { name: 'Standard', price: '€14,000', desc: 'Professional production with enhanced quality', pre: '€4,000', prod: '€6,000', post: '€4,000', highlight: true },
+    { name: 'Premium', price: '€40,000', desc: 'Full-scale production with premium equipment', pre: '€10,000', prod: '€20,000', post: '€10,000', highlight: false }
+  ];
+  return baseBudgets;
+}
+
+function generateDynamicRoles(category) {
+  const baseRoles = ['Director', 'Cinematographer', 'Sound Mixer', 'Editor'];
+  const categoryRoles = {
+    commercial: ['Gaffer', 'Production Assistant'],
+    music_video: ['Choreographer', 'Art Director'],
+    short_film: ['Script Supervisor', 'Location Manager'],
+    documentary: ['Researcher', 'Interviewer'],
+    branded_content: ['Brand Strategist', 'Art Director'],
+    corporate_video: ['Teleprompter Operator', 'Production Coordinator'],
+    event_coverage: ['Live Stream Engineer', 'Multi-camera Director'],
+    product_demo: ['Product Specialist', 'Lighting Designer'],
+    social_media: ['Social Media Manager', 'Content Creator'],
+    animation: ['Animator', 'Motion Designer']
+  };
+  return [...baseRoles, ...(categoryRoles[category] || categoryRoles.commercial)];
+}
+
+function generateDynamicQuestions(category) {
+  return [
+    { q: 'How do you handle unexpected challenges during production?', options: ['Cancel immediately', 'Adapt and find solutions', 'Ignore the problem', 'Wait for instructions'], preferred: 1 },
+    { q: 'What is your approach to maintaining quality standards?', options: ['Cut corners to save time', 'Focus on details and excellence', 'Follow minimum requirements', 'Depends on budget'], preferred: 1 },
+    { q: 'How do you collaborate with clients and team members?', options: ['Work independently', 'Communicate clearly and collaborate', 'Follow client demands blindly', 'Avoid feedback'], preferred: 1 }
+  ];
+}
+
+function generateDynamicLocations(category) {
+  const baseLocations = [
+    { name: 'Professional Studio Space', type: 'Indoor', typeColor: '#dbeafe', typeText: '#1d4ed8', desc: 'Controlled environment with professional lighting and equipment access.', reqs: ['Studio rental', 'Equipment setup', 'Climate control'] },
+    { name: 'Urban Location Setting', type: 'Outdoor', typeColor: '#dcfce7', typeText: '#166534', desc: 'Dynamic urban backdrop that adds authenticity and energy.', reqs: ['Location permit', 'Weather contingency', 'Power access'] }
+  ];
+  return baseLocations;
+}
+
+function generateDynamicTechnical(category) {
+  return {
+    camera: [['Camera Type', 'Professional Cinema Camera'], ['Resolution', '4K UHD'], ['Frame Rate', '24/25/30/60fps'], ['Lenses', 'Prime and zoom lens kit'], ['Camera Support', 'Professional tripod and stabilization']],
+    lighting: ['Professional lighting kit', 'Soft boxes and diffusers', 'LED panels for color control', 'Reflectors and bounce cards'],
+    audio: ['Professional shotgun microphone', 'Wireless lavalier system', 'Field recorder', 'Wind protection equipment']
+  };
+}
+
+function generateDynamicSchedule(category) {
+  return [
+    { name: 'Pre-Production', days: '7-14 days', items: ['Concept development', 'Location scouting', 'Crew assembly', 'Equipment planning', 'Permits and logistics'] },
+    { name: 'Production', days: '1-5 days', items: ['Setup and preparation', 'Principal photography', 'Coverage capture', 'Daily reviews', 'Equipment management'] },
+    { name: 'Post-Production', days: '14-21 days', items: ['Footage organization', 'Editorial assembly', 'Client review and revisions', 'Color grading', 'Final delivery preparation'] }
+  ];
+}
+
+function generateDynamicCreative(category) {
+  return {
+    moodTags: ['Professional', 'Engaging', 'Modern', 'Dynamic', 'Compelling'],
+    visualStyle: 'Contemporary aesthetic with clean composition and professional lighting.',
+    cinematographyNotes: 'Strategic camera movements that enhance storytelling. Professional lighting techniques for optimal image quality.',
+    toneMood: 'Professional yet approachable, balancing sophistication with accessibility.',
+    referenceStyle: 'Modern commercial aesthetic with cinematic quality.'
+  };
+}
+
+function generateDynamicDeliverables(category) {
+  return {
+    primary: ['4K master files', 'Social media optimized versions', 'Project files'],
+    formats: ['16:9 (standard)', '9:16 (vertical)', '1:1 (square)'],
+    additional: ['Color grades', 'Audio mixes', 'Motion graphics'],
+    timeline: '2-4 weeks from final approval'
+  };
 }
 
 /**
@@ -272,6 +338,48 @@ Please regenerate the production schedule as an array of phases with:
 - items: Array of tasks in sequence
 
 Adjust the schedule based on the user's timeline preference and sequence modifications while maintaining logical production workflow.`;
+  } else if (section === 'creativeDirection') {
+    prompt = `Regenerate the creative direction section based on the following user request: "${feedback}"
+
+Current creative direction data:
+${JSON.stringify(currentData.creativeDirection || {}, null, 2)}
+
+The user may be requesting:
+- Different visual style (energetic, minimalist, cinematic, documentary, etc.)
+- Different mood (aspirational, authentic, playful, dramatic, etc.)
+- Different reference style (Nike, Apple, cinematic, documentary, etc.)
+- Different cinematography approach (handheld, static, drone, etc.)
+- Image regeneration with different aesthetic
+
+Please regenerate the creative direction as an object with:
+- moodTags: Array of 5 mood tags
+- visualStyle: Description of visual style
+- cinematographyNotes: Cinematography approach and techniques
+- toneMood: Overall tone and mood description
+- referenceStyle: Reference style description
+- generatedImage: Base64 encoded image URL (placeholder for AI image generation)
+
+Adjust the creative direction based on the user's request while maintaining consistency with the production brief.`;
+  } else if (section === 'deliverables') {
+    prompt = `Regenerate the deliverables section based on the following user request: "${feedback}"
+
+Current deliverables data:
+${JSON.stringify(currentData.deliverables || {}, null, 2)}
+
+The user may be requesting:
+- Different video formats (vertical, square, cinematic, etc.)
+- Additional deliverables (behind-the-scenes, audio versions, subtitles, etc.)
+- Format removals (remove raw footage, remove specific formats)
+- Resolution changes (4K, 8K, HD, etc.)
+- Timeline adjustments (faster delivery, extended timeline)
+
+Please regenerate the deliverables as an object with:
+- primary: Array of primary deliverables
+- formats: Array of video format specifications
+- additional: Array of additional items
+- timeline: Delivery timeline description
+
+Adjust the deliverables based on the user's request and project category while maintaining professional standards.`;
   } else if (section === 'overviewBrief') {
     prompt = `Regenerate the overviewBrief section based on the following feedback: "${feedback}"
 
