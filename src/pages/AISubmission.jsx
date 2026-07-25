@@ -1143,6 +1143,45 @@ export default function AISubmission() {
     }
   }, [isAuthenticated, isLoadingAuth, navigate]);
 
+  // Save AI-generated data to localStorage whenever it changes
+  useEffect(() => {
+    if (aiData) {
+      const draftData = {
+        aiData,
+        currentStep,
+        approved: Array.from(approved),
+        projectUrl,
+        projectCategory,
+        projectDescription,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem('studio22_ai_submission_draft', JSON.stringify(draftData));
+    }
+  }, [aiData, currentStep, approved, projectUrl, projectCategory, projectDescription]);
+
+  // Load saved draft from localStorage on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('studio22_ai_submission_draft');
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        const draftAge = Date.now() - new Date(draft.timestamp).getTime();
+        // Restore draft if it's less than 24 hours old
+        if (draftAge < 86400000 && draft.aiData) {
+          setAIData(draft.aiData);
+          setCurrentStep(draft.currentStep || 0);
+          setApproved(new Set(draft.approved || []));
+          setProjectUrl(draft.projectUrl || '');
+          setProjectCategory(draft.projectCategory || 'commercial');
+          setProjectDescription(draft.projectDescription || '');
+          console.log('Restored draft from', new Date(draft.timestamp).toLocaleString());
+        }
+      } catch (err) {
+        console.error('Error loading saved draft:', err);
+      }
+    }
+  }, []);
+
   const normalizeUrl = (url) => {
     if (!url || url.trim() === '') return url;
     let normalized = url.trim();
@@ -1201,6 +1240,9 @@ export default function AISubmission() {
   };
 
   const handleGenerateProductionPlan = async () => {
+    // Clear any existing draft when starting fresh
+    localStorage.removeItem('studio22_ai_submission_draft');
+    
     const contextData = {
       url: projectUrl,
       category: projectCategory,

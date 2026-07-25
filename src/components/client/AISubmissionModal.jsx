@@ -1528,6 +1528,52 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     }
   }, []);
 
+  // Save AI-generated data to localStorage whenever it changes
+  useEffect(() => {
+    if (aiData && aiData.overviewBrief) {
+      const draftData = {
+        aiData,
+        currentStep,
+        approved: Array.from(approved),
+        projectUrl,
+        projectCategory,
+        projectDescription,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem('studio22_ai_modal_draft', JSON.stringify(draftData));
+    }
+  }, [aiData, currentStep, approved, projectUrl, projectCategory, projectDescription]);
+
+  // Load saved draft from localStorage on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('studio22_ai_modal_draft');
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        const draftAge = Date.now() - new Date(draft.timestamp).getTime();
+        // Restore draft if it's less than 24 hours old
+        if (draftAge < 86400000 && draft.aiData && draft.aiData.overviewBrief) {
+          setAIData(draft.aiData);
+          setCurrentStep(draft.currentStep || 0);
+          setApproved(new Set(draft.approved || []));
+          setProjectUrl(draft.projectUrl || '');
+          setProjectCategory(draft.projectCategory || 'commercial');
+          setProjectDescription(draft.projectDescription || '');
+          console.log('Modal: Restored draft from', new Date(draft.timestamp).toLocaleString());
+        }
+      } catch (err) {
+        console.error('Error loading saved draft:', err);
+      }
+    }
+  }, []);
+
+  // Clear draft when modal closes
+  useEffect(() => {
+    if (!open) {
+      localStorage.removeItem('studio22_ai_modal_draft');
+    }
+  }, [open]);
+
   // When aiData is an object (not the initial data), load the actual production plan
   useEffect(() => {
     // Only auto-generate if we have actual project data with a URL or description
