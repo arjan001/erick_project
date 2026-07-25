@@ -426,22 +426,29 @@ function StepBudgetBreakdown({ data, onRegenerate }) {
   );
 }
 
-function StepRolesTeam({ data, onRegenerate }) {
-  const [activePackage, setActivePackage] = useState(1);
+function StepRolesTeam({ data, onRegenerate, selectedBudgetPackage }) {
+  const [activePackage, setActivePackage] = useState(selectedBudgetPackage || 1);
   const [suggestion, setSuggestion] = useState('');
 
   const pkgs = [
-    { label: 'Conservative', price: '€5,000' },
-    { label: 'Standard', price: '€14,000' },
-    { label: 'Premium', price: '€40,000' },
+    { label: 'Conservative', price: '€5,000', teamSize: '3-4' },
+    { label: 'Standard', price: '€14,000', teamSize: '5-7' },
+    { label: 'Premium', price: '€40,000', teamSize: '8-12' },
   ];
   const roles = data?.team || ['Director', 'Cinematographer', 'Gaffer', 'Sound Mixer', 'Editor', 'Colorist', 'Production Assistant'];
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      onRegenerate('rolesTeam', suggestion);
+      const prompt = `${suggestion}. Current package: ${pkgs[activePackage].label}. Adjust team composition and pricing accordingly.`;
+      onRegenerate('rolesTeam', prompt);
       setSuggestion('');
     }
+  };
+
+  const handlePackageSelect = (pkgIndex, pkgLabel) => {
+    setActivePackage(pkgIndex);
+    const prompt = `Change to ${pkgLabel} package. Adjust team composition and pricing for ${pkgLabel} tier (${pkgLabel === 'Conservative' ? '3-4 team members' : pkgLabel === 'Standard' ? '5-7 team members' : '8-12 team members'}). ${suggestion || ''}`;
+    onRegenerate('rolesTeam', prompt);
   };
 
   return (
@@ -454,10 +461,11 @@ function StepRolesTeam({ data, onRegenerate }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
         {pkgs.map((pkg, i) => (
-          <button key={pkg.label} onClick={() => setActivePackage(i)}
+          <button key={pkg.label} onClick={() => handlePackageSelect(i, pkg.label)}
             style={{ padding: '14px', border: `2px solid ${activePackage === i ? '#10b981' : '#e5e7eb'}`, borderRadius: 10, background: '#fff', cursor: 'pointer', textAlign: 'center' }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>{pkg.label}</div>
             <div style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>{pkg.price}</div>
+            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>{pkg.teamSize} team</div>
           </button>
         ))}
       </div>
@@ -466,7 +474,7 @@ function StepRolesTeam({ data, onRegenerate }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <UsersIcon size={16} />
-            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.8, color: '#374151' }}>STANDARD PACKAGE TEAM</span>
+            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.8, color: '#374151' }}>{pkgs[activePackage].label.toUpperCase()} PACKAGE TEAM</span>
           </div>
           <span style={{ background: '#111', color: '#fff', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 5 }}>{roles.length} professionals</span>
         </div>
@@ -495,12 +503,12 @@ function StepRolesTeam({ data, onRegenerate }) {
       </Card>
 
       <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Customize Team (optional)</div>
         <div style={{ position: 'relative' }}>
           <textarea
             value={suggestion}
             onChange={(e) => setSuggestion(e.target.value)}
-            placeholder="e.g., 'Need less experienced team', 'Add sound designer', 'Change to solo producer'"
+            placeholder="e.g., 'I want two extra boom arm mic operators', 'Need 1 less gaffer', 'Add drone operator', 'Solo director only', 'Full crew of 10 people', 'Remove production assistant'"
             style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
           />
           <button 
@@ -564,7 +572,7 @@ function StepScreeningQuestions({ data, onRegenerate }) {
       <div style={{ marginBottom: 24 }}>
         <PendingBadge />
         <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Screening Questions</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Talent evaluation questionnaire</p>
+        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>AI-generated talent evaluation based on production requirements</p>
       </div>
 
       <Card>
@@ -604,12 +612,12 @@ function StepScreeningQuestions({ data, onRegenerate }) {
       </Card>
 
       <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Customize Questions (optional)</div>
         <div style={{ position: 'relative' }}>
           <textarea
             value={suggestion}
             onChange={(e) => setSuggestion(e.target.value)}
-            placeholder="e.g., 'Add question about equipment', 'Make questions simpler', 'Focus more on creativity'"
+            placeholder="e.g., 'Add question about equipment experience', 'Focus more on creativity', 'Include questions about availability', 'Add technical skill assessment', 'Make questions more specific to commercial work'"
             style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
           />
           <button 
@@ -627,6 +635,7 @@ function StepScreeningQuestions({ data, onRegenerate }) {
 
 function StepLocations({ data, onRegenerate }) {
   const [suggestion, setSuggestion] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   const locations = data || [
     {
@@ -662,6 +671,12 @@ function StepLocations({ data, onRegenerate }) {
     }
   };
 
+  const handleLocationSelect = (locationIndex, locationName) => {
+    setSelectedLocation(locationIndex);
+    const prompt = `I want to shoot at ${locationName}. ${suggestion || 'Use this as the primary location and adjust other suggestions accordingly.'}`;
+    onRegenerate('locations', prompt);
+  };
+
   return (
     <>
       <div style={{ marginBottom: 24 }}>
@@ -672,13 +687,29 @@ function StepLocations({ data, onRegenerate }) {
 
       <Card>
         {locations.map((loc, i) => (
-          <div key={i} style={{ paddingBottom: i < locations.length - 1 ? 24 : 0, marginBottom: i < locations.length - 1 ? 24 : 0, borderBottom: i < locations.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
+          <div 
+            key={i} 
+            onClick={() => handleLocationSelect(i, loc.name)}
+            style={{ 
+              paddingBottom: i < locations.length - 1 ? 24 : 0, 
+              marginBottom: i < locations.length - 1 ? 24 : 0, 
+              borderBottom: i < locations.length - 1 ? '1px solid #f3f4f6' : 'none',
+              cursor: 'pointer',
+              padding: '8px',
+              borderRadius: 8,
+              background: selectedLocation === i ? '#f0fdf9' : 'transparent',
+              border: selectedLocation === i ? '2px solid #10b981' : 'transparent'
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
-              <div style={{ marginTop: 2, color: '#10b981' }}><PinIcon size={16} /></div>
+              <div style={{ marginTop: 2, color: selectedLocation === i ? '#10b981' : '#6b7280' }}><PinIcon size={16} /></div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                   <span style={{ fontSize: 14.5, fontWeight: 600, color: '#111' }}>{loc.name}</span>
                   <span style={{ background: loc.typeColor, color: loc.typeText, fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20 }}>{loc.type}</span>
+                  {selectedLocation === i && (
+                    <span style={{ background: '#10b981', color: '#fff', fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 20 }}>Selected</span>
+                  )}
                 </div>
                 <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.65, margin: '0 0 12px' }}>{loc.desc}</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
@@ -697,12 +728,12 @@ function StepLocations({ data, onRegenerate }) {
       </Card>
 
       <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggestions (optional)</div>
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 10 }}>Suggest Locations (optional)</div>
         <div style={{ position: 'relative' }}>
           <textarea
             value={suggestion}
             onChange={(e) => setSuggestion(e.target.value)}
-            placeholder="e.g., 'Add indoor backup location', 'Need more urban locations', 'Focus on natural settings'"
+            placeholder="e.g., 'I want to shoot in a warehouse in Brooklyn', 'Need a beach location in California', 'Suggest rooftop locations in downtown', 'Add indoor studio backup', 'Focus on natural outdoor settings', 'Need vintage cafe interior'"
             style={{ width: '100%', minHeight: 80, border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
           />
           <button 
@@ -1511,7 +1542,7 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   const stepComponents = [
     <StepOverviewBrief data={aiData?.overviewBrief} onRegenerate={handleRegenerate} onCategoryChange={handleCategoryChange} />,
     <StepBudgetBreakdown data={aiData?.budgetBreakdown} onRegenerate={handleRegenerate} />,
-    <StepRolesTeam data={aiData?.rolesTeam} onRegenerate={handleRegenerate} />,
+    <StepRolesTeam data={aiData?.rolesTeam} onRegenerate={handleRegenerate} selectedBudgetPackage={activePackage} />,
     <StepScreeningQuestions data={aiData?.screeningQuestions} onRegenerate={handleRegenerate} />,
     <StepLocations data={aiData?.locations} onRegenerate={handleRegenerate} />,
     <StepTechnicalRequirements data={aiData?.technicalRequirements} onRegenerate={handleRegenerate} />,

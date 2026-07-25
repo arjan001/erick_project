@@ -176,6 +176,63 @@ Please regenerate the budget breakdown as an array of 3 packages (Conservative, 
 - highlight: true for the recommended package
 
 Adjust the packages based on the user's request while keeping realistic cost breakdowns across production phases.`;
+  } else if (section === 'rolesTeam') {
+    prompt = `Regenerate the roles and team section based on the following user request: "${feedback}"
+
+Current team data:
+${JSON.stringify(currentData.rolesTeam || {}, null, 2)}
+
+The user may be requesting:
+- Specific number of team members (add/remove crew)
+- Specific roles (e.g., "two extra boom arm mic operators", "solo director only")
+- Package change (Conservative/Standard/Premium with different team sizes)
+- Pricing adjustments based on team composition
+
+Please regenerate the team data as an object with:
+- team: Array of required roles
+- Adjust the team composition based on the user's request
+- Consider pricing implications of team size changes`;
+  } else if (section === 'screeningQuestions') {
+    prompt = `Regenerate the screening questions section based on the following user request: "${feedback}"
+
+Current questions data:
+${JSON.stringify(currentData.screeningQuestions || [], null, 2)}
+
+The user may be requesting:
+- Questions about specific skills (equipment, creativity, availability)
+- Questions tailored to production type (commercial, music video, etc.)
+- Technical skill assessments
+- More specific or simpler questions
+- Different focus areas
+
+Please regenerate the screening questions as an array of questions with:
+- q: The question text
+- options: Array of 4 possible answers
+- preferred: Index of the preferred answer (0-3)
+
+Generate questions that are relevant to the production requirements and user's feedback.`;
+  } else if (section === 'locations') {
+    prompt = `Regenerate the locations section based on the following user request: "${feedback}"
+
+Current locations data:
+${JSON.stringify(currentData.locations || [], null, 2)}
+
+The user may be requesting:
+- Specific location types (warehouse, beach, rooftop, studio, cafe)
+- Geographic preferences (Brooklyn, California, downtown, etc.)
+- Indoor/outdoor preferences
+- Backup locations
+- Natural vs urban settings
+
+Please regenerate the locations as an array of location suggestions with:
+- name: Location name
+- type: Indoor/Outdoor/Hybrid/Studio
+- typeColor: Color code for type badge
+- typeText: Color code for type text
+- desc: Description of the location
+- reqs: Array of requirements for filming at this location
+
+Generate locations that match the user's preferences and production brief.`;
   } else if (section === 'overviewBrief') {
     prompt = `Regenerate the overviewBrief section based on the following feedback: "${feedback}"
 
