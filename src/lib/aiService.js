@@ -22,14 +22,16 @@ Please generate a detailed production plan with the following sections:
 
 1. overviewBrief - Must include:
    - title: Project title
-   - description: A professional, narrative-style production brief that describes the project's strategic approach, target audience, and brand positioning. This should be written in a formal, professional tone suitable for client presentations.
-   - initialIdea: An action-oriented directive that describes what to create, including specific visual techniques, platform distribution strategy, and call-to-action elements. This should be more direct and instructional than the description.
+   - description: A professional, narrative-style production brief that describes the project's strategic approach, target audience, and brand positioning. This should be written in a formal, professional tone suitable for client presentations. Focus on the WHY and WHO - why this project matters and who it's for.
+   - initialIdea: An action-oriented directive that describes WHAT to create, including specific visual techniques, platform distribution strategy, and call-to-action elements. This should be more direct and instructional than the description. Focus on the HOW and WHERE - how to execute and where to distribute.
+   - introduction: A concise summary paragraph that bridges the strategic vision with the creative execution
    - category: The project category
    - tags: An array of 10 relevant tags based on the project context
 
    CRITICAL: The description and initialIdea must be based on the SAME core concept but use COMPLETELY DIFFERENT wording and structure:
-   - description: Professional narrative focusing on brand strategy, audience, and positioning
-   - initialIdea: Action-oriented directive with specific visual techniques, platforms, and CTAs
+   - description: Professional narrative focusing on brand strategy, audience, and positioning (e.g., "Bloom & Vine requires a high-impact commercial video to elevate their brand presence...")
+   - initialIdea: Action-oriented directive with specific visual techniques, platforms, and CTAs (e.g., "Create a high-impact commercial for Bloom & Vine showcasing their bespoke artisanal floral arrangements...")
+   - introduction: Bridge paragraph that connects strategy to execution (e.g., "Bloom & Vine requires a high-impact commercial video... By leveraging cinematic visuals...")
 
 2. Budget Breakdown - Cost estimates across production phases (Conservative, Standard, Premium packages)
 3. Roles & Team - Required personnel and team composition
@@ -92,8 +94,9 @@ Return the response as a structured JSON object with all sections populated.`;
       data: {
         overviewBrief: {
           title: projectData?.title || 'AI Generated Project',
-          description: projectData?.description || `This ${projectData?.category || 'commercial'} project requires a professional video production to elevate brand presence. The project will showcase the core product/service, targeting the intended audience with compelling visuals and narrative. By leveraging cinematic techniques and strategic storytelling, we aim to communicate the key value propositions effectively. The final output will serve as a powerful tool for brand engagement and conversion.`,
-          initialIdea: projectData?.description || `Create a compelling ${projectData?.category || 'commercial'} showcasing the key features and benefits. Use modern, cinematic visuals with strategic camera movements to highlight important elements. Include clear brand messaging and strong call-to-action throughout. Designed for multi-platform distribution including social media and digital channels.`,
+          description: `${projectData?.title || 'The brand'} requires a professional ${projectData?.category || 'commercial'} video production to elevate their brand presence in the competitive market. The project will showcase their core offerings, targeting the intended audience who value quality and authenticity. By leveraging cinematic techniques and strategic storytelling, we aim to communicate the key value propositions effectively. The final output will serve as a powerful tool for brand engagement and conversion across digital platforms.`,
+          initialIdea: `Create a compelling ${projectData?.category || 'commercial'} showcasing the key features and benefits of ${projectData?.title || 'the product'}. Use modern, cinematic visuals with strategic camera movements to highlight important elements. Include clear brand messaging and strong call-to-action throughout. Designed for multi-platform distribution including social media and digital channels to maximize reach and engagement.`,
+          introduction: `This ${projectData?.category || 'commercial'} project represents a strategic opportunity to connect with the target audience through compelling visual storytelling. The production will focus on delivering measurable results while maintaining brand consistency and creative excellence.`,
           category: projectData?.category || 'commercial',
           tags: generateDynamicTags(projectData?.category || 'commercial', projectData?.description || '')
         },
