@@ -1510,77 +1510,6 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     }
   }, [open]);
 
-  // Load saved context from localStorage on mount
-  useEffect(() => {
-    const savedContext = localStorage.getItem('studio22_ai_modal_context');
-    if (savedContext) {
-      try {
-        const context = JSON.parse(savedContext);
-        // Only restore if it's recent (within 1 hour)
-        const contextAge = Date.now() - new Date(context.timestamp).getTime();
-        if (contextAge < 3600000) {
-          setProjectUrl(context.url || '');
-          setProjectCategory(context.category || 'commercial');
-          setProjectDescription(context.description || '');
-        }
-      } catch (err) {
-        console.error('Error loading saved context:', err);
-      }
-    }
-  }, []);
-
-  // Save AI-generated data to localStorage whenever it changes
-  useEffect(() => {
-    if (aiData && aiData.overviewBrief && aiData.overviewBrief.description && aiData.overviewBrief.description.length > 100) {
-      const draftData = {
-        aiData,
-        currentStep,
-        approved: Array.from(approved),
-        projectUrl,
-        projectCategory,
-        projectDescription,
-        timestamp: new Date().toISOString()
-      };
-      localStorage.setItem('studio22_ai_modal_draft', JSON.stringify(draftData));
-    }
-  }, [aiData, currentStep, approved, projectUrl, projectCategory, projectDescription]);
-
-  // Load saved draft from localStorage on mount
-  useEffect(() => {
-    const savedDraft = localStorage.getItem('studio22_ai_modal_draft');
-    if (savedDraft) {
-      try {
-        const draft = JSON.parse(savedDraft);
-        const draftAge = Date.now() - new Date(draft.timestamp).getTime();
-        // Restore draft if it's less than 24 hours old AND has real AI data (not just empty structure)
-        if (draftAge < 86400000 && draft.aiData && draft.aiData.overviewBrief && draft.aiData.overviewBrief.description && draft.aiData.overviewBrief.description.length > 100) {
-          setAIData(draft.aiData);
-          setCurrentStep(draft.currentStep || 0);
-          setApproved(new Set(draft.approved || []));
-          setProjectUrl(draft.projectUrl || '');
-          setProjectCategory(draft.projectCategory || 'commercial');
-          setProjectDescription(draft.projectDescription || '');
-          console.log('Modal: Restored draft from', new Date(draft.timestamp).toLocaleString());
-        } else {
-          // Draft is too old or doesn't have real data, clear it
-          localStorage.removeItem('studio22_ai_modal_draft');
-          console.log('Modal: Draft was stale or incomplete, cleared it');
-        }
-      } catch (err) {
-        console.error('Error loading saved draft:', err);
-        localStorage.removeItem('studio22_ai_modal_draft');
-      }
-    }
-  }, []);
-
-  // Clear draft when modal closes
-  useEffect(() => {
-    if (!open) {
-      localStorage.removeItem('studio22_ai_modal_draft');
-      localStorage.removeItem('studio22_ai_modal_context');
-    }
-  }, [open]);
-
   // When aiData is an object (not the initial data), load the actual production plan
   useEffect(() => {
     // Only auto-generate if we have actual project data with a URL or description
@@ -1749,12 +1678,20 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
           </div>
 
           {/* Generate Production Plan Button */}
-          <button
-            onClick={handleGenerateProductionPlan}
-            style={{ width: '100%', padding: '12px 24px', background: '#000', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
-          >
-            Generate Production Plan
-          </button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              onClick={onClose}
+              style={{ flex: 1, padding: '12px 24px', background: '#fff', color: '#374151', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleGenerateProductionPlan}
+              style={{ flex: 1, padding: '12px 24px', background: '#000', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+            >
+              Generate Production Plan
+            </button>
+          </div>
         </div>
       </div>
     );
