@@ -373,31 +373,60 @@ export default function Home({ editMode = false }) {
   const handleQuickSubmit = async (e) => {
     e.preventDefault();
     
+    // Show loading state
+    setExtracting(true);
+    
     // Normalize URL if provided
     let normalizedUrl = projectUrl;
     if (projectUrl && projectUrl.trim() !== '') {
       normalizedUrl = normalizeUrl(projectUrl);
     }
     
-    // If we have URL analysis data, it's already saved to localStorage
-    // If not, save basic data
-    const analyzedProject = JSON.parse(localStorage.getItem('studio22_analyzed_project') || 'null');
-    
-    if (!analyzedProject) {
+    // If we have URL but no analysis yet, analyze it first
+    if (projectUrl && projectUrl.trim() !== '' && !projectDescription) {
+      try {
+        const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory);
+        
+        if (analysisResult.success && analysisResult.rawAnalysis) {
+          setProjectDescription(analysisResult.rawAnalysis);
+          
+          // Save to localStorage for AISubmission page
+          saveAnalyzedProjectToStorage({
+            url: analysisResult.url,
+            analysis: analysisResult,
+            brief: null,
+            projectType: projectCategory,
+            additionalNotes: projectDescription,
+            attachments: attachments
+          });
+        }
+      } catch (error) {
+        console.error('Analysis failed:', error);
+      }
+    } else if (projectDescription) {
+      // If we already have description, save it
+      const analyzedProject = JSON.parse(localStorage.getItem('studio22_analyzed_project') || 'null');
+      
+      saveAnalyzedProjectToStorage({
+        ...analyzedProject,
+        url: normalizedUrl,
+        analysis: analyzedProject?.analysis || null,
+        brief: null,
+        projectType: projectCategory,
+        additionalNotes: projectDescription,
+        attachments: attachments
+      });
+    } else {
       // Save basic data if no URL analysis was done
       sessionStorage.setItem('quickProjectUrl', normalizedUrl);
       sessionStorage.setItem('quickProjectDescription', projectDescription);
       sessionStorage.setItem('quickProjectCategory', projectCategory);
       sessionStorage.setItem('quickProjectAttachments', JSON.stringify(attachments));
-    } else {
-      // Update existing analyzed project with attachments and normalized URL
-      saveAnalyzedProjectToStorage({
-        ...analyzedProject,
-        url: normalizedUrl,
-        attachments: attachments
-      });
     }
     
+    setExtracting(false);
+    
+    // Navigate to AISubmission
     navigate('/AIsubmission');
   };
 

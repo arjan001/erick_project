@@ -103,6 +103,16 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
   const [imagePreview, setImagePreview] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const [projectForm, setProjectForm] = useState({
     title: '',
@@ -402,32 +412,36 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div 
-        className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" 
+        className={`bg-white rounded-2xl shadow-2xl overflow-y-auto ${
+          isMobile ? 'w-full max-h-[100vh] h-full' : 'max-w-3xl w-full max-h-[90vh]'
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-5 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-gradient-to-r from-gray-900 to-gray-800 px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between z-10">
           <div>
-            <h2 className="text-xl font-bold text-white">{isEditing ? 'Edit Project' : 'Post a New Project'}</h2>
-            <p className="text-gray-300 text-sm">{isEditing ? 'Update your project details' : 'Share your project details to connect with talented creators'}</p>
+            <h2 className={`font-bold text-white ${isMobile ? 'text-lg' : 'text-xl'}`}>{isEditing ? 'Edit Project' : 'Post a New Project'}</h2>
+            <p className={`text-gray-300 ${isMobile ? 'text-xs' : 'text-sm'}`}>{isEditing ? 'Update your project details' : 'Share your project details to connect with talented creators'}</p>
           </div>
           <button
             onClick={onClose}
             className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className={`w-5 h-5`} />
           </button>
         </div>
 
-        <div className="p-6">
+        <div className={`p-4 sm:p-6`}>
           {/* Progress Bar */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-4">
               {STEPS.map((step, index) => (
                 <React.Fragment key={step.id}>
                   <div className="flex flex-col items-center">
                     <div
-                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                      className={`rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                        isMobile ? 'w-7 h-7' : 'w-8 h-10 sm:h-10'
+                      } ${
                         step.id < currentStep
                           ? 'bg-amber-600 text-white'
                           : step.id === currentStep
@@ -435,25 +449,25 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                           : 'bg-gray-200 text-gray-500'
                       }`}
                     >
-                      {step.id < currentStep ? <Check className="w-5 h-5" /> : step.id}
+                      {step.id < currentStep ? <Check className={isMobile ? 'w-4 h-4' : 'w-5 h-5'} /> : step.id}
                     </div>
-                    <span className="hidden sm:block text-xs text-gray-600 mt-2 text-center max-w-[80px]">{step.name}</span>
+                    <span className={`${isMobile ? 'text-[10px]' : 'text-xs'} text-gray-600 mt-2 text-center max-w-[${isMobile ? '50px' : '80px'}]`}>{step.name}</span>
                   </div>
                   {index < STEPS.length - 1 && (
-                    <div className={`flex-1 h-1 mx-2 rounded-full transition-all ${
+                    <div className={`flex-1 h-1 mx-1 sm:mx-2 rounded-full transition-all ${
                       step.id < currentStep ? 'bg-amber-600' : 'bg-gray-200'
                     }`} />
                   )}
                 </React.Fragment>
               ))}
             </div>
-            <div className="text-center text-sm text-gray-600">
+            <div className={`text-center ${isMobile ? 'text-xs' : 'text-sm'} text-gray-600`}>
               Step {currentStep} of {STEPS.length}
             </div>
           </div>
 
           {/* Step Content */}
-          <div className="bg-gray-50 rounded-2xl p-6 sm:p-8 mb-8 border border-gray-200 min-h-[400px]">
+          <div className="bg-gray-50 rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 border border-gray-200 min-h-[300px] sm:min-h-[400px]">
             {(() => {
               const currentStepName = STEPS[currentStep - 1]?.name;
 
@@ -461,10 +475,10 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                 case 'Project Type':
                   return (
                     <div>
-                      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What type of project?</h2>
-                      <p className="text-gray-600 mb-8">Select the format that best describes your production</p>
+                      <h2 className={`font-bold mb-3 text-black ${isMobile ? 'text-xl' : 'text-2xl sm:text-3xl'}`}>What type of project?</h2>
+                      <p className={`text-gray-600 mb-6 sm:mb-8 ${isMobile ? 'text-sm' : ''}`}>Select the format that best describes your production</p>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
                         {PROJECT_TYPES.map((type) => {
                           const Icon = type.icon;
                           const isSelected = projectForm.project_type === type.value;
@@ -473,15 +487,15 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                               key={type.value}
                               type="button"
                               onClick={() => updateForm('project_type', type.value)}
-                              className={`p-6 rounded-xl border-2 transition-all text-left ${
+                              className={`p-4 sm:p-6 rounded-xl border-2 transition-all text-left ${
                                 isSelected
                                   ? 'border-amber-600 bg-amber-600/10'
                                   : 'border-gray-300 hover:border-gray-400 bg-white'
                               }`}
                             >
-                              <Icon className={`w-8 h-8 mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
-                              <h3 className="text-lg font-semibold mb-1 text-black">{type.label}</h3>
-                              <p className="text-sm text-gray-600">{type.description}</p>
+                              <Icon className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 sm:mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
+                              <h3 className={`font-semibold mb-1 text-black ${isMobile ? 'text-base' : 'text-lg'}`}>{type.label}</h3>
+                              <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>{type.description}</p>
                             </button>
                           );
                         })}
@@ -492,13 +506,13 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                 case 'Funding Details':
                   return (
                     <div>
-                      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Funding & Partnership Details</h2>
-                      <p className="text-gray-600 mb-8">Share information about what you're seeking</p>
+                      <h2 className={`font-bold mb-3 text-black ${isMobile ? 'text-xl' : 'text-2xl sm:text-3xl'}`}>Funding & Partnership Details</h2>
+                      <p className={`text-gray-600 mb-6 sm:mb-8 ${isMobile ? 'text-sm' : ''}`}>Share information about what you're seeking</p>
 
-                      <div className="space-y-8">
+                      <div className="space-y-6 sm:space-y-8">
                         <div>
-                          <label className="text-base font-semibold mb-3 block">Current Production Stage</label>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <label className={`font-semibold mb-3 block ${isMobile ? 'text-sm' : 'text-base'}`}>Current Production Stage</label>
+                          <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
                             {FUNDING_STAGES.map((stage) => {
                               const isSelected = projectForm.funding_stage === stage.value;
                               return (
@@ -506,13 +520,13 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                                   key={stage.value}
                                   type="button"
                                   onClick={() => updateForm('funding_stage', stage.value)}
-                                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                                  className={`p-3 sm:p-4 rounded-lg border-2 transition-all text-left ${
                                     isSelected
                                       ? 'border-black bg-black/5'
                                       : 'border-gray-300 hover:border-gray-400 bg-white'
                                   }`}
                                 >
-                                  <span className={`font-medium ${isSelected ? 'text-black' : 'text-gray-700'}`}>
+                                  <span className={`font-medium ${isSelected ? 'text-black' : 'text-gray-700'} ${isMobile ? 'text-sm' : ''}`}>
                                     {stage.label}
                                   </span>
                                 </button>
@@ -522,23 +536,23 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                         </div>
 
                         <div>
-                          <label className="text-base font-semibold mb-3 block">What are you seeking?</label>
-                          <p className="text-sm text-gray-600 mb-4">Select all that apply</p>
+                          <label className={`font-semibold mb-3 block ${isMobile ? 'text-sm' : 'text-base'}`}>What are you seeking?</label>
+                          <p className={`text-gray-600 mb-4 ${isMobile ? 'text-xs' : 'text-sm'}`}>Select all that apply</p>
                           <div className="space-y-3">
                             {SEEKING_OPTIONS.map((option) => {
                               const isChecked = (projectForm.seeking_partners || []).includes(option.value);
                               return (
                                 <label
                                   key={option.value}
-                                  className="flex items-center gap-3 p-4 rounded-lg border border-gray-300 hover:bg-gray-50 cursor-pointer transition-colors"
+                                  className="flex items-center gap-3 p-3 sm:p-4 rounded-lg border border-gray-300 hover:bg-gray-50 cursor-pointer transition-colors"
                                 >
                                   <input
                                     type="checkbox"
                                     checked={isChecked}
                                     onChange={() => toggleSeekingPartner(option.value)}
-                                    className="w-4 h-4"
+                                    className={`w-4 h-4`}
                                   />
-                                  <span className="font-medium text-gray-800">{option.label}</span>
+                                  <span className={`font-medium text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{option.label}</span>
                                 </label>
                               );
                             })}
@@ -546,17 +560,17 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                         </div>
 
                         <div>
-                          <label className="text-base font-semibold mb-3 block">
+                          <label className={`font-semibold mb-3 block ${isMobile ? 'text-sm' : 'text-base'}`}>
                             Rights & Collaboration Structure <span className="text-gray-500 font-normal">(Optional)</span>
                           </label>
-                          <p className="text-sm text-gray-600 mb-3">
+                          <p className={`text-gray-600 mb-3 ${isMobile ? 'text-xs' : 'text-sm'}`}>
                             Share any relevant details about rights, equity, collaboration terms, or partnership expectations
                           </p>
                           <textarea
                             value={projectForm.rights_collaboration_notes || ''}
                             onChange={(e) => updateForm('rights_collaboration_notes', e.target.value)}
                             placeholder="Example: Seeking 30% co-production investment in exchange for distribution rights in specific territories..."
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none min-h-[120px]"
+                            className={`w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none ${isMobile ? 'min-h-[100px] text-sm' : 'min-h-[120px]'}`}
                           />
                         </div>
                       </div>
@@ -566,10 +580,10 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                 case 'Usage':
                   return (
                     <div>
-                      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Where will this be used?</h2>
-                      <p className="text-gray-600 mb-8">Select all that apply</p>
+                      <h2 className={`font-bold mb-3 text-black ${isMobile ? 'text-xl' : 'text-2xl sm:text-3xl'}`}>Where will this be used?</h2>
+                      <p className={`text-gray-600 mb-6 sm:mb-8 ${isMobile ? 'text-sm' : ''}`}>Select all that apply</p>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
                         {USAGE_OPTIONS.map((option) => {
                           const Icon = option.icon;
                           const isSelected = (projectForm.usage || []).includes(option.value);
@@ -578,15 +592,15 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                               key={option.value}
                               type="button"
                               onClick={() => toggleUsage(option.value)}
-                              className={`p-6 rounded-xl border-2 transition-all text-left ${
+                              className={`p-4 sm:p-6 rounded-xl border-2 transition-all text-left ${
                                 isSelected
                                   ? 'border-amber-600 bg-amber-600/10'
                                   : 'border-gray-300 hover:border-gray-400 bg-white'
                               }`}
                             >
-                              <Icon className={`w-8 h-8 mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
-                              <h3 className="text-lg font-semibold mb-1 text-black">{option.label}</h3>
-                              <p className="text-sm text-gray-600">{option.description}</p>
+                              <Icon className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 sm:mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
+                              <h3 className={`font-semibold mb-1 text-black ${isMobile ? 'text-base' : 'text-lg'}`}>{option.label}</h3>
+                              <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>{option.description}</p>
                             </button>
                           );
                         })}
@@ -597,14 +611,14 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                 case 'Visual Direction':
                   return (
                     <div>
-                      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Visual Direction</h2>
-                      <p className="text-gray-600 mb-2">Select up to 3 examples that match your vision</p>
-                      <p className="text-sm text-gray-500 mb-8">This step is optional - you can skip it</p>
+                      <h2 className={`font-bold mb-3 text-black ${isMobile ? 'text-xl' : 'text-2xl sm:text-3xl'}`}>Visual Direction</h2>
+                      <p className={`text-gray-600 mb-2 ${isMobile ? 'text-sm' : ''}`}>Select up to 3 examples that match your vision</p>
+                      <p className={`text-gray-500 mb-6 sm:mb-8 ${isMobile ? 'text-xs' : 'text-sm'}`}>This step is optional - you can skip it</p>
 
-                      <div className="bg-gray-100 p-8 rounded-xl text-center">
-                        <Wand2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">Visual direction clips will be loaded from the portfolio library.</p>
-                        <p className="text-sm text-gray-500 mt-2">For now, you can skip this step.</p>
+                      <div className="bg-gray-100 p-6 sm:p-8 rounded-xl text-center">
+                        <Wand2 className={`text-gray-400 mx-auto mb-4 ${isMobile ? 'w-10 h-10' : 'w-12 h-12'}`} />
+                        <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>Visual direction clips will be loaded from the portfolio library.</p>
+                        <p className={`text-gray-500 mt-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>For now, you can skip this step.</p>
                       </div>
                     </div>
                   );
@@ -612,16 +626,16 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                 case 'Location':
                   return (
                     <div>
-                      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Where is production?</h2>
-                      <p className="text-gray-600 mb-8">Help us find teams in your area</p>
+                      <h2 className={`font-bold mb-3 text-black ${isMobile ? 'text-xl' : 'text-2xl sm:text-3xl'}`}>Where is production?</h2>
+                      <p className={`text-gray-600 mb-6 sm:mb-8 ${isMobile ? 'text-sm' : ''}`}>Help us find teams in your area</p>
 
-                      <div className="space-y-6">
+                      <div className="space-y-4 sm:space-y-6">
                         <div>
-                          <label className="text-base mb-3 block">Country</label>
+                          <label className={`mb-3 block ${isMobile ? 'text-sm' : 'text-base'}`}>Country</label>
                           <select
                             value={projectForm.location_country}
                             onChange={(e) => updateForm('location_country', e.target.value)}
-                            className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-black focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20"
+                            className={`w-full bg-white border border-gray-300 rounded-lg px-3 sm:px-4 py-3 text-black focus:border-amber-600 focus:ring-2 focus:ring-amber-600/20 ${isMobile ? 'text-sm' : ''}`}
                           >
                             <option value="">Select a country</option>
                             {['Netherlands', 'Belgium', 'France', 'Spain', 'Germany', 'Italy', 'United Kingdom', 'Austria', 'Luxembourg', 'Portugal', 'Switzerland', 'Other'].map(country => (
@@ -631,16 +645,16 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                         </div>
 
                         <div>
-                          <label className="text-base mb-3 block">City</label>
+                          <label className={`mb-3 block ${isMobile ? 'text-sm' : 'text-base'}`}>City</label>
                           <Input
                             value={projectForm.location_city}
                             onChange={(e) => updateForm('location_city', e.target.value)}
                             placeholder="e.g., Amsterdam, Barcelona, Paris"
-                            className="bg-white border-gray-300 text-black h-12"
+                            className={`bg-white border-gray-300 text-black ${isMobile ? 'h-10 text-sm' : 'h-12'}`}
                           />
                         </div>
 
-                        <div className="flex items-center gap-3 p-4 bg-gray-100 rounded-lg border border-gray-200">
+                        <div className="flex items-center gap-3 p-3 sm:p-4 bg-gray-100 rounded-lg border border-gray-200">
                           <input
                             type="checkbox"
                             id="remote"
@@ -648,7 +662,7 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                             onChange={(e) => updateForm('is_remote', e.target.checked)}
                             className="w-4 h-4"
                           />
-                          <label htmlFor="remote" className="text-base cursor-pointer">
+                          <label htmlFor="remote" className={`cursor-pointer ${isMobile ? 'text-sm' : 'text-base'}`}>
                             Remote production possible
                           </label>
                         </div>
@@ -659,10 +673,10 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                 case 'Departments':
                   return (
                     <div>
-                      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What services do you need?</h2>
-                      <p className="text-gray-600 mb-8">Select all departments required</p>
+                      <h2 className={`font-bold mb-3 text-black ${isMobile ? 'text-xl' : 'text-2xl sm:text-3xl'}`}>What services do you need?</h2>
+                      <p className={`text-gray-600 mb-6 sm:mb-8 ${isMobile ? 'text-sm' : ''}`}>Select all departments required</p>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
                         {DEPARTMENTS.map((dept) => {
                           const Icon = dept.icon;
                           const isSelected = (projectForm.departments_needed || []).includes(dept.value);
@@ -671,15 +685,15 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                               key={dept.value}
                               type="button"
                               onClick={() => toggleDepartment(dept.value)}
-                              className={`p-5 rounded-xl border-2 transition-all text-left ${
+                              className={`p-4 sm:p-5 rounded-xl border-2 transition-all text-left ${
                                 isSelected
                                   ? 'border-amber-600 bg-amber-600/10'
                                   : 'border-gray-300 hover:border-gray-400 bg-white'
                               }`}
                             >
-                              <Icon className={`w-7 h-7 mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
-                              <h3 className="text-base font-semibold mb-1 text-black">{dept.label}</h3>
-                              <p className="text-sm text-gray-600">{dept.description}</p>
+                              <Icon className={`w-6 h-6 sm:w-7 sm:h-7 mb-2 sm:mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
+                              <h3 className={`font-semibold mb-1 text-black ${isMobile ? 'text-sm' : 'text-base'}`}>{dept.label}</h3>
+                              <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>{dept.description}</p>
                             </button>
                           );
                         })}
@@ -690,38 +704,38 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                 case 'Timeline':
                   return (
                     <div>
-                      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Timeline</h2>
-                      <p className="text-gray-600 mb-8">When do you need this project?</p>
+                      <h2 className={`font-bold mb-3 text-black ${isMobile ? 'text-xl' : 'text-2xl sm:text-3xl'}`}>Timeline</h2>
+                      <p className={`text-gray-600 mb-6 sm:mb-8 ${isMobile ? 'text-sm' : ''}`}>When do you need this project?</p>
 
-                      <div className="space-y-6">
+                      <div className="space-y-4 sm:space-y-6">
                         <div>
-                          <label className="text-base mb-3 flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
+                          <label className={`mb-3 flex items-center gap-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
+                            <Calendar className={`w-4 h-4`} />
                             Expected Start Date
                           </label>
                           <Input
                             type="date"
                             value={projectForm.timeline_start}
                             onChange={(e) => updateForm('timeline_start', e.target.value)}
-                            className="bg-white border-gray-300 text-black h-12"
+                            className={`bg-white border-gray-300 text-black ${isMobile ? 'h-10 text-sm' : 'h-12'}`}
                           />
                         </div>
 
                         <div>
-                          <label className="text-base mb-3 flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
+                          <label className={`mb-3 flex items-center gap-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
+                            <Calendar className={`w-4 h-4`} />
                             Delivery Deadline
                           </label>
                           <Input
                             type="date"
                             value={projectForm.timeline_end}
                             onChange={(e) => updateForm('timeline_end', e.target.value)}
-                            className="bg-white border-gray-300 text-black h-12"
+                            className={`bg-white border-gray-300 text-black ${isMobile ? 'h-10 text-sm' : 'h-12'}`}
                           />
                         </div>
 
-                        <div className="p-4 bg-gray-100 rounded-lg border border-gray-200">
-                          <p className="text-sm text-gray-600">
+                        <div className={`p-3 sm:p-4 bg-gray-100 rounded-lg border border-gray-200`}>
+                          <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
                             💡 We recommend booking teams at least 4-6 weeks in advance for best availability
                           </p>
                         </div>
@@ -732,11 +746,11 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                 case 'Budget':
                   return (
                     <div>
-                      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Budget Range</h2>
-                      <p className="text-gray-600 mb-2">This helps us match you with the right teams</p>
-                      <p className="text-sm text-gray-500 mb-8">Optional - you can discuss exact numbers later</p>
+                      <h2 className={`font-bold mb-3 text-black ${isMobile ? 'text-xl' : 'text-2xl sm:text-3xl'}`}>Budget Range</h2>
+                      <p className={`text-gray-600 mb-2 ${isMobile ? 'text-sm' : ''}`}>This helps us match you with the right teams</p>
+                      <p className={`text-gray-500 mb-6 sm:mb-8 ${isMobile ? 'text-xs' : 'text-sm'}`}>Optional - you can discuss exact numbers later</p>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
                         {BUDGET_RANGES.map((range) => {
                           const isSelected = projectForm.budget_range === range.value;
                           return (
@@ -744,15 +758,15 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                               key={range.value}
                               type="button"
                               onClick={() => updateForm('budget_range', range.value)}
-                              className={`p-5 rounded-xl border-2 transition-all text-left ${
+                              className={`p-4 sm:p-5 rounded-xl border-2 transition-all text-left ${
                                 isSelected
                                   ? 'border-amber-600 bg-amber-600/10'
                                   : 'border-gray-300 hover:border-gray-400 bg-white'
                               }`}
                             >
-                              <DollarSign className={`w-7 h-7 mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
-                              <h3 className="text-base font-semibold mb-1 text-black">{range.label}</h3>
-                              <p className="text-sm text-gray-600">{range.description}</p>
+                              <DollarSign className={`w-6 h-6 sm:w-7 sm:h-7 mb-2 sm:mb-3 ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
+                              <h3 className={`font-semibold mb-1 text-black ${isMobile ? 'text-sm' : 'text-base'}`}>{range.label}</h3>
+                              <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>{range.description}</p>
                             </button>
                           );
                         })}
@@ -763,32 +777,32 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                 case 'Details':
                   return (
                     <div>
-                      <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Project Details</h2>
-                      <p className="text-gray-600 mb-8">Tell us more about your project</p>
+                      <h2 className={`font-bold mb-3 text-black ${isMobile ? 'text-xl' : 'text-2xl sm:text-3xl'}`}>Project Details</h2>
+                      <p className={`text-gray-600 mb-6 sm:mb-8 ${isMobile ? 'text-sm' : ''}`}>Tell us more about your project</p>
 
-                      <div className="space-y-6">
+                      <div className="space-y-4 sm:space-y-6">
                         <div>
-                          <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4" />
+                          <label className={`block text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2 ${isMobile ? 'text-xs' : ''}`}>
+                            <ImageIcon className={`w-4 h-4`} />
                             Project Image (Optional)
                           </label>
                           <div className="relative">
                             {imagePreview ? (
-                              <div className="relative h-40 rounded-xl overflow-hidden">
+                              <div className={`relative rounded-xl overflow-hidden ${isMobile ? 'h-32' : 'h-40'}`}>
                                 <img src={imagePreview} alt="Project preview" className="w-full h-full object-cover" />
                                 <button
                                   type="button"
                                   onClick={() => { setImagePreview(null); }}
                                   className="absolute top-2 right-2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
                                 >
-                                  <X className="w-4 h-4" />
+                                  <X className={`w-4 h-4`} />
                                 </button>
                               </div>
                             ) : (
-                              <div className="border-2 border-dashed border-gray-300 rounded-xl h-40 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
-                                <Upload className="w-10 h-10 text-gray-400 mb-2" />
-                                <p className="text-sm text-gray-600">Click to upload project image</p>
-                                <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</p>
+                              <div className={`border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer ${isMobile ? 'h-32' : 'h-40'}`}>
+                                <Upload className={`text-gray-400 mb-2 ${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
+                                <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Click to upload project image</p>
+                                <p className={`text-gray-400 mt-1 ${isMobile ? 'text-[10px]' : 'text-xs'}`}>PNG, JPG up to 5MB</p>
                                 <input
                                   type="file"
                                   accept="image/*"
@@ -803,37 +817,37 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                         </div>
 
                         <div>
-                          <label className="block text-sm font-semibold text-gray-900 mb-2">Project Title</label>
+                          <label className={`block text-sm font-semibold text-gray-900 mb-2 ${isMobile ? 'text-xs' : ''}`}>Project Title</label>
                           <Input
                             type="text"
                             value={projectForm.title}
                             onChange={(e) => updateForm('title', e.target.value)}
                             placeholder="Enter project title"
                             required
-                            className="h-11"
+                            className={`${isMobile ? 'h-10 text-sm' : 'h-11'}`}
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-semibold text-gray-900 mb-2">Project Description</label>
+                          <label className={`block text-sm font-semibold text-gray-900 mb-2 ${isMobile ? 'text-xs' : ''}`}>Project Description</label>
                           <textarea
                             value={projectForm.description}
                             onChange={(e) => updateForm('description', e.target.value)}
                             placeholder="Describe your project in detail..."
-                            rows={4}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+                            rows={isMobile ? 3 : 4}
+                            className={`w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none ${isMobile ? 'text-sm' : ''}`}
                             required
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-semibold text-gray-900 mb-2">Additional Requirements</label>
+                          <label className={`block text-sm font-semibold text-gray-900 mb-2 ${isMobile ? 'text-xs' : ''}`}>Additional Requirements</label>
                           <textarea
                             value={projectForm.requirements}
                             onChange={(e) => updateForm('requirements', e.target.value)}
                             placeholder="Any specific requirements or preferences..."
-                            rows={3}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+                            rows={isMobile ? 2 : 3}
+                            className={`w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none ${isMobile ? 'text-sm' : ''}`}
                           />
                         </div>
                       </div>
@@ -847,21 +861,21 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
           </div>
 
           {/* Navigation Buttons */}
-          <div className="flex gap-3">
+          <div className={`flex gap-3 ${isMobile ? 'flex-col' : ''}`}>
             <Button
               variant="outline"
-              size="lg"
+              size={isMobile ? 'default' : 'lg'}
               onClick={handleBack}
               disabled={currentStep === 1}
               className="border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
             >
-              <ArrowLeft className="w-5 h-5 mr-2" />
+              <ArrowLeft className={`mr-2 ${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
               Back
             </Button>
 
             {currentStep < STEPS.length ? (
               <Button
-                size="lg"
+                size={isMobile ? 'default' : 'lg'}
                 onClick={handleNext}
                 disabled={!canProceed()}
                 className="bg-amber-600 hover:bg-amber-700 text-white order-1 sm:order-2"
@@ -870,7 +884,7 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
               </Button>
             ) : (
               <Button
-                size="lg"
+                size={isMobile ? 'default' : 'lg'}
                 onClick={handleSubmit}
                 disabled={loading}
                 className="bg-amber-600 hover:bg-amber-700 text-white order-1 sm:order-2"

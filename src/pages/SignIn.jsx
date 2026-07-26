@@ -90,24 +90,24 @@ export default function SignIn() {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
-  setError('');
-  setLoading(true);
-  try {
-    const { error: supaError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/SignIn?mode=reset`,
-    });
-    if (supaError) throw supaError;
-    setMessage('Password reset email sent! Check your inbox (including spam folder).');
-    setTimeout(() => {
-      setShowForgotPassword(false);
-      setMessage('');
-    }, 4000);
-  } catch (err) {
-    console.error('Password reset error:', err);
-    setError(err.message || 'Failed to send reset email. Please check your email address.');
-  } finally {
-    setLoading(false);
-  }
+    setError('');
+    setLoading(true);
+    try {
+      const { error: supaError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/SignIn`,
+      });
+      if (supaError) throw supaError;
+      setMessage('Password reset email sent! Check your inbox (including spam folder).');
+      setTimeout(() => {
+        setShowForgotPassword(false);
+        setMessage('');
+      }, 4000);
+    } catch (err) {
+      console.error('Password reset error:', err);
+      setError(err.message || 'Failed to send reset email. Please check your email address.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSendOtp = async (e) => {
@@ -141,12 +141,15 @@ export default function SignIn() {
     try {
       const { error: supaError } = await supabase.auth.updateUser({ password: newPassword });
       if (supaError) throw supaError;
-      setMessage('Password updated! You can now sign in with your new password.');
-      setMode('login');
-      setNewPassword('');
-      setConfirmNewPassword('');
+      setMessage('Password updated successfully! You can now sign in with your new password.');
+      setTimeout(() => {
+        setMode('login');
+        setNewPassword('');
+        setConfirmNewPassword('');
+        setMessage('');
+      }, 3000);
     } catch (err) {
-      setError(err.message || 'Failed to update password');
+      setError(err.message || 'Failed to update password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -611,6 +614,13 @@ export default function SignIn() {
           {/* Update Password Form (after clicking reset link in email) */}
           {mode === 'update_password' && (
             <form onSubmit={handleUpdatePassword} className="space-y-4">
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Key className="w-5 h-5 text-amber-600" />
+                  <h3 className="text-sm font-semibold text-gray-900">Set your new password</h3>
+                </div>
+                <p className="text-xs text-gray-500">Create a strong password for your account</p>
+              </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1.5">New password</label>
                 <div className="relative">
@@ -636,6 +646,10 @@ export default function SignIn() {
               <button type="submit" disabled={loading}
                 className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:opacity-50 transition-all">
                 {loading ? 'Updating...' : 'Update password'}
+              </button>
+              <button type="button" onClick={() => { setMode('login'); setNewPassword(''); setConfirmNewPassword(''); setError(''); setMessage(''); }}
+                className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                Back to sign in
               </button>
             </form>
           )}
@@ -677,7 +691,7 @@ export default function SignIn() {
       {/* Forgot Password Modal */}
       {showForgotPassword && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 relative shadow-2xl">
+          <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-6 relative shadow-2xl">
             <button onClick={() => { setShowForgotPassword(false); setError(''); setMessage(''); }} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
               <X className="w-5 h-5" />
             </button>

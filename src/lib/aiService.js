@@ -54,8 +54,12 @@ Please generate a detailed production plan with the following sections:
    - price: Total price in EUR (e.g., "€5,000")
    - desc: Description of what's included in this package
    - pre: Pre-production cost (e.g., "€2,000")
+   - preDetails: Detailed description of pre-production activities (e.g., "Full pre-production planning, detailed script development, location scouting, casting coordination, production schedule")
    - prod: Production cost (e.g., "€8,000")
+   - prodDetails: Detailed description of production activities (e.g., "2-day shoot with 5-person crew (Director, DP, Gaffer, Sound, PA), cinema camera package, professional lighting, audio recording")
    - post: Post-production cost (e.g., "€4,000")
+   - postDetails: Detailed description of post-production activities (e.g., "Professional editing, color grading, sound design, motion graphics, multi-format delivery")
+   - team: List of team members with counts (e.g., "Director (1), Cinematographer (1), Gaffer (1), Sound Mixer (1), Production Assistant (1), Editor (1), Colorist (1)")
    - highlight: true for the recommended package
    - reasoning: Overall budget reasoning explaining cost drivers
 
@@ -119,8 +123,12 @@ Return the response as a structured JSON object with all sections populated with
                     price: { type: "string" },
                     desc: { type: "string" },
                     pre: { type: "string" },
+                    preDetails: { type: "string" },
                     prod: { type: "string" },
+                    prodDetails: { type: "string" },
                     post: { type: "string" },
+                    postDetails: { type: "string" },
+                    team: { type: "string" },
                     highlight: { type: "boolean" }
                   }
                 }
@@ -350,8 +358,12 @@ function generateDynamicBudget(category) {
       price: '€5,000', 
       desc: 'Includes a one-man band videographer, basic lighting kit, one day of shooting at the studio, and essential editing.',
       pre: '€500',
+      preDetails: 'Project planning, basic script outline, location scouting, shot list preparation',
       prod: '€3,500',
+      prodDetails: '1-day shoot with solo videographer, basic lighting kit, essential audio equipment',
       post: '€1,000',
+      postDetails: 'Basic editing, color correction, audio mixing, final export in standard formats',
+      team: 'Director/Videographer (1), Editor (1)',
       highlight: false 
     },
     { 
@@ -359,8 +371,12 @@ function generateDynamicBudget(category) {
       price: '€14,000', 
       desc: 'Includes a 5-person professional crew, rental cinema cameras, two days of filming, professional lighting, and color grading.',
       pre: '€2,000',
+      preDetails: 'Full pre-production planning, detailed script development, location scouting, casting coordination, production schedule',
       prod: '€8,000',
+      prodDetails: '2-day shoot with 5-person crew (Director, DP, Gaffer, Sound, PA), cinema camera package, professional lighting, audio recording',
       post: '€4,000',
+      postDetails: 'Professional editing, color grading, sound design, motion graphics, multi-format delivery',
+      team: 'Director (1), Cinematographer (1), Gaffer (1), Sound Mixer (1), Production Assistant (1), Editor (1), Colorist (1)',
       highlight: true 
     },
     { 
@@ -368,8 +384,12 @@ function generateDynamicBudget(category) {
       price: '€40,000', 
       desc: 'Includes a large crew, high-end cinema package, specialized motion control equipment, four days of production, and post-production with advanced VFX and sound design.',
       pre: '€6,000',
+      preDetails: 'Comprehensive pre-production with creative development, detailed storyboards, full casting, location scouting with permits, production design, equipment testing',
       prod: '€25,000',
+      prodDetails: '4-day shoot with 8-12 person crew, ARRI/RED cinema package, motion control, drone operations, specialized lighting, full audio team, art department',
       post: '€9,000',
+      postDetails: 'Advanced post-production with VFX, 3D animation, professional color grading, Dolby Atmos sound design, multiple deliverable formats',
+      team: 'Director (1), Cinematographer (1), 1st AC (1), Gaffer (1), Key Grip (1), Sound Mixer (1), Boom Operator (1), Production Designer (1), Art Director (1), VFX Artist (1), Colorist (1), Sound Designer (1), Editor (1)',
       highlight: false 
     }
   ];
@@ -473,8 +493,12 @@ Please regenerate the budget breakdown as an array of 3 packages (Conservative, 
 - price: Total price
 - desc: Description of what's included
 - pre: Pre-production cost
+- preDetails: Detailed description of pre-production activities (e.g., "Full pre-production planning, detailed script development, location scouting, casting coordination, production schedule")
 - prod: Production cost  
+- prodDetails: Detailed description of production activities (e.g., "2-day shoot with 5-person crew (Director, DP, Gaffer, Sound, PA), cinema camera package, professional lighting, audio recording")
 - post: Post-production cost
+- postDetails: Detailed description of post-production activities (e.g., "Professional editing, color grading, sound design, motion graphics, multi-format delivery")
+- team: List of team members with counts (e.g., "Director (1), Cinematographer (1), Gaffer (1), Sound Mixer (1), Production Assistant (1), Editor (1), Colorist (1)")
 - highlight: true for the recommended package
 
 Adjust the packages based on the user's request while keeping realistic cost breakdowns across production phases.`;

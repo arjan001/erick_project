@@ -186,9 +186,20 @@ function RequestModBox({ placeholder }) {
   );
 }
 
-function Card({ children, highlight = false }) {
+function Card({ children, highlight = false, style = {} }) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
-    <div style={{ background: highlight ? '#f0fdf9' : '#fff', border: `1px solid ${highlight ? '#6ee7b7' : '#e5e7eb'}`, borderRadius: 12, padding: '20px 24px', marginBottom: 16 }}>
+    <div style={{ background: highlight ? '#f0fdf9' : '#fff', border: `1px solid ${highlight ? '#6ee7b7' : '#e5e7eb'}`, borderRadius: 12, padding: isMobile ? '16px' : '20px 24px', marginBottom: 16, ...style }}>
       {children}
     </div>
   );
@@ -199,6 +210,16 @@ function Card({ children, highlight = false }) {
 function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
   const [suggestion, setSuggestion] = useState('');
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const projectCategories = [
     { value: 'commercial', label: 'Commercial', icon: Film },
@@ -234,37 +255,37 @@ function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: isMobile ? 16 : 24 }}>
         <PendingBadge />
-        <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Production Brief</h1>
-        <p style={{ color: '#6b7280', fontSize: 14 }}>Comprehensive overview of the project</p>
+        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Production Brief</h1>
+        <p style={{ color: '#6b7280', fontSize: isMobile ? 12 : 14 }}>Comprehensive overview of the project</p>
       </div>
 
       {/* Initial Idea */}
       <Card>
-        <div style={{ borderLeft: '3px solid #10b981', paddingLeft: 14, marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 8 }}>INITIAL IDEA</div>
+        <div style={{ borderLeft: '3px solid #10b981', paddingLeft: isMobile ? 10 : 14, marginBottom: 12 }}>
+          <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 8 }}>INITIAL IDEA</div>
         </div>
-        <p style={{ fontSize: 14, color: '#374151', lineHeight: 1.7, margin: 0 }}>
+        <p style={{ fontSize: isMobile ? 13 : 14, color: '#374151', lineHeight: 1.7, margin: 0 }}>
           {initialIdea}
         </p>
       </Card>
 
       {/* Production Brief */}
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151' }}>PRODUCTION BRIEF</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 8 : 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 700, letterSpacing: 1, color: '#374151' }}>PRODUCTION BRIEF</div>
             <div style={{ position: 'relative' }}>
               <button
                 type="button"
                 onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                style={{ background: '#111', color: '#fff', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                style={{ background: '#111', color: '#fff', fontSize: isMobile ? 10 : 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
               >
                 {(() => {
                   const selectedCategory = projectCategories.find(cat => cat.value === category);
                   const Icon = selectedCategory?.icon || Film;
-                  return <><Icon size={12} /><span>{selectedCategory?.label}</span></>;
+                  return <><Icon size={isMobile ? 10 : 12} /><span>{selectedCategory?.label}</span></>;
                 })()}
               </button>
               {showCategoryDropdown && (
@@ -289,12 +310,12 @@ function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
               )}
             </div>
           </div>
-          <button style={{ background: 'none', border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 10px', fontSize: 12, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-            <EditIcon size={12} /> Edit
+          <button style={{ background: 'none', border: '1px solid #d1d5db', borderRadius: 6, padding: '4px 10px', fontSize: isMobile ? 11 : 12, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <EditIcon size={isMobile ? 10 : 12} /> Edit
           </button>
         </div>
-        <div style={{ borderLeft: '3px solid #10b981', paddingLeft: 14 }}>
-          <p style={{ fontSize: 13.5, color: '#374151', lineHeight: 1.75, margin: 0 }}>
+        <div style={{ borderLeft: '3px solid #10b981', paddingLeft: isMobile ? 10 : 14 }}>
+          <p style={{ fontSize: isMobile ? 12.5 : 13.5, color: '#374151', lineHeight: 1.75, margin: 0 }}>
             <strong style={{ color: '#10b981' }}>INTRODUCTION</strong>{' '}
             {productionBrief}
           </p>
@@ -303,14 +324,14 @@ function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
 
       {/* Project Type & Tags */}
       <Card>
-        <div style={{ borderLeft: '3px solid #10b981', paddingLeft: 14, marginBottom: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 12 }}>PROJECT TYPE &amp; TAGS</div>
+        <div style={{ borderLeft: '3px solid #10b981', paddingLeft: isMobile ? 10 : 14, marginBottom: 16 }}>
+          <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 12 }}>PROJECT TYPE &amp; TAGS</div>
           <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 6 }}>MAIN CATEGORY</div>
+            <div style={{ fontSize: isMobile ? 10 : 11, color: '#6b7280', marginBottom: 6 }}>MAIN CATEGORY</div>
             <div style={{ position: 'relative', display: 'inline-block' }}>
               <button 
                 onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, padding: isMobile ? '5px 12px' : '6px 14px', fontSize: isMobile ? 12 : 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
               >
                 {category} <span style={{ fontSize: 10 }}>▼</span>
               </button>
@@ -369,11 +390,57 @@ function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
 function StepBudgetBreakdown({ data, onRegenerate }) {
   const [activePackage, setActivePackage] = useState(1);
   const [suggestion, setSuggestion] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const packages = data?.packages || [
-    { name: 'Conservative Package', price: '€5,000', desc: 'Includes a one-man band videographer, basic lighting kit, one day of shooting at the studio, and essential editing.', pre: '€500', prod: '€3,500', post: '€1,000', highlight: false },
-    { name: 'Standard Package', price: '€14,000', desc: 'Includes a 5-person professional crew, rental cinema cameras, two days of filming, professional lighting, and color grading.', pre: '€2,000', prod: '€8,000', post: '€4,000', highlight: true },
-    { name: 'Premium Package', price: '€40,000', desc: 'Includes a large crew, high-end cinema package, specialized motion control equipment, four days of production, and post-production with advanced VFX and sound design.', pre: '€6,000', prod: '€25,000', post: '€9,000', highlight: false },
+    { 
+      name: 'Conservative Package', 
+      price: '€5,000', 
+      desc: 'Includes a one-man band videographer, basic lighting kit, one day of shooting at the studio, and essential editing.', 
+      pre: '€500', 
+      preDetails: 'Project planning, basic script outline, location scouting, shot list preparation',
+      prod: '€3,500', 
+      prodDetails: '1-day shoot with solo videographer, basic lighting kit, essential audio equipment',
+      post: '€1,000', 
+      postDetails: 'Basic editing, color correction, audio mixing, final export in standard formats',
+      team: 'Director/Videographer (1), Editor (1)',
+      highlight: false 
+    },
+    { 
+      name: 'Standard Package', 
+      price: '€14,000', 
+      desc: 'Includes a 5-person professional crew, rental cinema cameras, two days of filming, professional lighting, and color grading.', 
+      pre: '€2,000', 
+      preDetails: 'Full pre-production planning, detailed script development, location scouting, casting coordination, production schedule',
+      prod: '€8,000', 
+      prodDetails: '2-day shoot with 5-person crew (Director, DP, Gaffer, Sound, PA), cinema camera package, professional lighting, audio recording',
+      post: '€4,000', 
+      postDetails: 'Professional editing, color grading, sound design, motion graphics, multi-format delivery',
+      team: 'Director (1), Cinematographer (1), Gaffer (1), Sound Mixer (1), Production Assistant (1), Editor (1), Colorist (1)',
+      highlight: true 
+    },
+    { 
+      name: 'Premium Package', 
+      price: '€40,000', 
+      desc: 'Includes a large crew, high-end cinema package, specialized motion control equipment, four days of production, and post-production with advanced VFX and sound design.', 
+      pre: '€6,000', 
+      preDetails: 'Comprehensive pre-production with creative development, detailed storyboards, full casting, location scouting with permits, production design, equipment testing',
+      prod: '€25,000', 
+      prodDetails: '4-day shoot with 8-12 person crew, ARRI/RED cinema package, motion control, drone operations, specialized lighting, full audio team, art department',
+      post: '€9,000', 
+      postDetails: 'Advanced post-production with VFX, 3D animation, professional color grading, Dolby Atmos sound design, multiple deliverable formats',
+      team: 'Director (1), Cinematographer (1), 1st AC (1), Gaffer (1), Key Grip (1), Sound Mixer (1), Boom Operator (1), Production Designer (1), Art Director (1), VFX Artist (1), Colorist (1), Sound Designer (1), Editor (1)',
+      highlight: false 
+    },
   ];
 
   const handleRegenerate = () => {
@@ -399,15 +466,15 @@ function StepBudgetBreakdown({ data, onRegenerate }) {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: isMobile ? 16 : 24 }}>
         <PendingBadge />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 12, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 8 : 0 }}>
           <div>
-            <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '0 0 4px' }}>Budget Breakdown</h1>
-            <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Three package options with clear explanations</p>
+            <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 300, color: '#111', margin: '0 0 4px' }}>Budget Breakdown</h1>
+            <p style={{ color: '#6b7280', fontSize: isMobile ? 12 : 14, margin: 0 }}>Three package options with clear explanations</p>
           </div>
-          <button onClick={handleEdit} style={{ background: 'none', border: '1px solid #d1d5db', borderRadius: 7, padding: '5px 12px', fontSize: 13, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-            <PencilIcon /> Edit
+          <button onClick={handleEdit} style={{ background: 'none', border: '1px solid #d1d5db', borderRadius: 7, padding: '5px 12px', fontSize: isMobile ? 12 : 13, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <PencilIcon size={isMobile ? 12 : 13} /> Edit
           </button>
         </div>
       </div>
@@ -419,22 +486,41 @@ function StepBudgetBreakdown({ data, onRegenerate }) {
           onClick={() => handlePackageSelect(i, pkg.name)}
           style={{ cursor: 'pointer', border: activePackage === i ? '2px solid #10b981' : undefined }}
         >
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 10, background: pkg.highlight ? '#d1fae5' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <PackageIcon size={18} />
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: isMobile ? 10 : 14, flexDirection: isMobile ? 'column' : 'row' }}>
+            <div style={{ width: isMobile ? 32 : 38, height: isMobile ? 32 : 38, borderRadius: 10, background: pkg.highlight ? '#d1fae5' : '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <PackageIcon size={isMobile ? 16 : 18} />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 16, fontWeight: 600, color: '#111', marginBottom: 4 }}>{pkg.name}</div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: pkg.highlight ? '#10b981' : '#111', marginBottom: 6 }}>{pkg.price}</div>
-              <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 16px', lineHeight: 1.6 }}>{pkg.desc}</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-                {[['PRE-PRODUCTION', pkg.pre], ['PRODUCTION', pkg.prod], ['POST-PRODUCTION', pkg.post]].map(([label, val]) => (
-                  <div key={label}>
-                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: pkg.highlight ? '#10b981' : '#9ca3af', marginBottom: 2 }}>{label}</div>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: pkg.highlight ? '#10b981' : '#111' }}>{val}</div>
-                  </div>
-                ))}
+              <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 600, color: '#111', marginBottom: 4 }}>{pkg.name}</div>
+              <div style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: pkg.highlight ? '#10b981' : '#111', marginBottom: 6 }}>{pkg.price}</div>
+              <p style={{ fontSize: isMobile ? 12 : 13, color: '#6b7280', margin: '0 0 16px', lineHeight: 1.6 }}>{pkg.desc}</p>
+              
+              {/* Detailed breakdown */}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: isMobile ? 8 : 12, marginBottom: 12 }}>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: pkg.highlight ? '#10b981' : '#9ca3af', marginBottom: 4 }}>PRE-PRODUCTION</div>
+                  <div style={{ fontSize: isMobile ? 14 : 15, fontWeight: 600, color: pkg.highlight ? '#10b981' : '#111', marginBottom: 4 }}>{pkg.pre}</div>
+                  <div style={{ fontSize: isMobile ? 10 : 11, color: '#6b7280', lineHeight: 1.4 }}>{pkg.preDetails || 'Planning, script, location scouting'}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: pkg.highlight ? '#10b981' : '#9ca3af', marginBottom: 4 }}>PRODUCTION</div>
+                  <div style={{ fontSize: isMobile ? 14 : 15, fontWeight: 600, color: pkg.highlight ? '#10b981' : '#111', marginBottom: 4 }}>{pkg.prod}</div>
+                  <div style={{ fontSize: isMobile ? 10 : 11, color: '#6b7280', lineHeight: 1.4 }}>{pkg.prodDetails || 'Crew, equipment, filming days'}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: pkg.highlight ? '#10b981' : '#9ca3af', marginBottom: 4 }}>POST-PRODUCTION</div>
+                  <div style={{ fontSize: isMobile ? 14 : 15, fontWeight: 600, color: pkg.highlight ? '#10b981' : '#111', marginBottom: 4 }}>{pkg.post}</div>
+                  <div style={{ fontSize: isMobile ? 10 : 11, color: '#6b7280', lineHeight: 1.4 }}>{pkg.postDetails || 'Editing, color grading, sound design'}</div>
+                </div>
               </div>
+
+              {/* Team/Personnel details */}
+              {pkg.team && (
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #f3f4f6' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: pkg.highlight ? '#10b981' : '#9ca3af', marginBottom: 6 }}>TEAM & PERSONNEL</div>
+                  <div style={{ fontSize: isMobile ? 10 : 11, color: '#6b7280', lineHeight: 1.5 }}>{pkg.team}</div>
+                </div>
+              )}
             </div>
           </div>
         </Card>
@@ -472,6 +558,16 @@ function StepBudgetBreakdown({ data, onRegenerate }) {
 function StepRolesTeam({ data, onRegenerate, selectedBudgetPackage }) {
   const [activePackage, setActivePackage] = useState(selectedBudgetPackage || 1);
   const [suggestion, setSuggestion] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const pkgs = data?.packages || [
     { label: 'Conservative', price: '€5,000' },
@@ -496,50 +592,50 @@ function StepRolesTeam({ data, onRegenerate, selectedBudgetPackage }) {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: isMobile ? 16 : 24 }}>
         <PendingBadge />
-        <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Roles &amp; Team</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Required talent and experience levels</p>
+        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Roles &amp; Team</h1>
+        <p style={{ color: '#6b7280', fontSize: isMobile ? 12 : 14, margin: 0 }}>Required talent and experience levels</p>
       </div>
 
       {/* Package tabs */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: isMobile ? 8 : 12, marginBottom: 20 }}>
         {pkgs.map((pkg, i) => (
           <button key={pkg.label} onClick={() => handlePackageSelect(i, pkg.label)}
-            style={{ padding: '14px', border: `2px solid ${activePackage === i ? '#10b981' : '#e5e7eb'}`, borderRadius: 10, background: '#fff', cursor: 'pointer', textAlign: 'center' }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>{pkg.label}</div>
-            <div style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>{pkg.price}</div>
+            style={{ padding: isMobile ? '10px' : '14px', border: `2px solid ${activePackage === i ? '#10b981' : '#e5e7eb'}`, borderRadius: 10, background: '#fff', cursor: 'pointer', textAlign: 'center' }}>
+            <div style={{ fontSize: isMobile ? 13 : 14, fontWeight: 600, color: '#111' }}>{pkg.label}</div>
+            <div style={{ fontSize: isMobile ? 12 : 13, color: '#6b7280', marginTop: 2 }}>{pkg.price}</div>
           </button>
         ))}
       </div>
 
       {/* Team section */}
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 8 : 0, alignItems: isMobile ? 'flex-start' : 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <UsersIcon size={16} />
-            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.8, color: '#374151' }}>{pkgs[activePackage].label.toUpperCase()} PACKAGE TEAM</span>
+            <UsersIcon size={isMobile ? 14 : 16} />
+            <span style={{ fontSize: isMobile ? 11 : 12, fontWeight: 700, letterSpacing: 0.8, color: '#374151' }}>{pkgs[activePackage].label.toUpperCase()} PACKAGE TEAM</span>
           </div>
-          <span style={{ background: '#111', color: '#fff', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 5 }}>{roles.length} professionals</span>
+          <span style={{ background: '#111', color: '#fff', fontSize: isMobile ? 10 : 11, fontWeight: 600, padding: '3px 10px', borderRadius: 5 }}>{roles.length} professionals</span>
         </div>
 
-        <div style={{ background: '#f0fdf9', border: '1px solid #d1fae5', borderRadius: 9, padding: '14px 18px', marginBottom: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ background: '#f0fdf9', border: '1px solid #d1fae5', borderRadius: 9, padding: isMobile ? '12px 14px' : '14px 18px', marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 8 : 0, alignItems: isMobile ? 'flex-start' : 'center' }}>
             <div>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111' }}>Team Composition</div>
-              <div style={{ fontSize: 12, color: '#10b981', marginTop: 3 }}>This package requires {roles.length} specialized professionals</div>
+              <div style={{ fontSize: isMobile ? 12.5 : 13.5, fontWeight: 600, color: '#111' }}>Team Composition</div>
+              <div style={{ fontSize: isMobile ? 11 : 12, color: '#10b981', marginTop: 3 }}>This package requires {roles.length} specialized professionals</div>
             </div>
-            <span style={{ background: '#10b981', color: '#fff', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 5 }}>{roles.length} professionals</span>
+            <span style={{ background: '#10b981', color: '#fff', fontSize: isMobile ? 10 : 11, fontWeight: 600, padding: '3px 10px', borderRadius: 5 }}>{roles.length} professionals</span>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-          <UsersIcon size={14} />
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.8, color: '#9ca3af' }}>REQUIRED ROLES</span>
+          <UsersIcon size={isMobile ? 12 : 14} />
+          <span style={{ fontSize: isMobile ? 10 : 11, fontWeight: 700, letterSpacing: 0.8, color: '#9ca3af' }}>REQUIRED ROLES</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: isMobile ? 8 : 10 }}>
           {roles.map(role => (
-            <div key={role} style={{ background: '#f0fdf9', border: '1px solid #d1fae5', borderRadius: 8, padding: '10px 14px', fontSize: 13.5, color: '#111', fontWeight: 500 }}>
+            <div key={role} style={{ background: '#f0fdf9', border: '1px solid #d1fae5', borderRadius: 8, padding: isMobile ? '8px 12px' : '10px 14px', fontSize: isMobile ? 12.5 : 13.5, color: '#111', fontWeight: 500 }}>
               {role}
             </div>
           ))}
@@ -553,6 +649,16 @@ function StepRolesTeam({ data, onRegenerate, selectedBudgetPackage }) {
 
 function StepScreeningQuestions({ data, onRegenerate }) {
   const [suggestion, setSuggestion] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const questions = data?.questions || [
     {
@@ -646,30 +752,30 @@ function StepScreeningQuestions({ data, onRegenerate }) {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: isMobile ? 16 : 24 }}>
         <PendingBadge />
-        <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Screening Questions</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Talent evaluation questionnaire</p>
+        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Screening Questions</h1>
+        <p style={{ color: '#6b7280', fontSize: isMobile ? 12 : 14, margin: 0 }}>Talent evaluation questionnaire</p>
       </div>
 
       <Card>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.8, color: '#374151' }}>QUESTIONS</span>
+          <span style={{ fontSize: isMobile ? 10 : 11, fontWeight: 700, letterSpacing: 0.8, color: '#374151' }}>QUESTIONS</span>
         </div>
         {questions.map((item, qi) => (
-          <div key={qi} style={{ marginBottom: 24, paddingBottom: 24, borderBottom: qi < questions.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111', flex: 1, paddingRight: 12 }}>
+          <div key={qi} style={{ marginBottom: isMobile ? 20 : 24, paddingBottom: isMobile ? 20 : 24, borderBottom: qi < questions.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 4 : 0 }}>
+              <div style={{ fontSize: isMobile ? 12.5 : 13.5, fontWeight: 600, color: '#111', flex: 1, paddingRight: isMobile ? 0 : 12 }}>
                 Question {qi + 1} &nbsp; {item.q}
               </div>
-              <span style={{ fontSize: 11, color: '#9ca3af', flexShrink: 0 }}>Weight {item.weight || 4}</span>
+              <span style={{ fontSize: isMobile ? 10 : 11, color: '#9ca3af', flexShrink: 0 }}>Weight {item.weight || 4}</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 6 : 7 }}>
               {item.options.map((opt, oi) => (
                 <div key={oi} style={{
-                  padding: '9px 14px',
+                  padding: isMobile ? '8px 12px' : '9px 14px',
                   borderRadius: 8,
-                  fontSize: 13,
+                  fontSize: isMobile ? 12 : 13,
                   border: `1px solid ${oi === item.preferred ? '#6ee7b7' : 'transparent'}`,
                   background: oi === item.preferred ? '#f0fdf9' : '#f9fafb',
                   color: '#374151',
@@ -679,7 +785,7 @@ function StepScreeningQuestions({ data, onRegenerate }) {
                 }}>
                   {opt}
                   {oi === item.preferred && (
-                    <span style={{ background: '#10b981', color: '#fff', fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 20, marginLeft: 10, flexShrink: 0 }}>Preferred</span>
+                    <span style={{ background: '#10b981', color: '#fff', fontSize: isMobile ? 9 : 10, fontWeight: 600, padding: '2px 8px', borderRadius: 20, marginLeft: 10, flexShrink: 0 }}>Preferred</span>
                   )}
                 </div>
               ))}
@@ -695,6 +801,16 @@ function StepScreeningQuestions({ data, onRegenerate }) {
 
 function StepLocations({ data, onRegenerate }) {
   const [suggestion, setSuggestion] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const locations = data?.locations || [
     {
@@ -740,30 +856,30 @@ function StepLocations({ data, onRegenerate }) {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: isMobile ? 16 : 24 }}>
         <PendingBadge />
-        <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Locations &amp; Shooting Places</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>AI-suggested filming locations based on your production brief</p>
+        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Locations &amp; Shooting Places</h1>
+        <p style={{ color: '#6b7280', fontSize: isMobile ? 12 : 14, margin: 0 }}>AI-suggested filming locations based on your production brief</p>
       </div>
 
       <Card>
         {locations.map((loc, i) => (
-          <div key={i} style={{ paddingBottom: i < locations.length - 1 ? 24 : 0, marginBottom: i < locations.length - 1 ? 24 : 0, borderBottom: i < locations.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
-              <div style={{ marginTop: 2, color: '#10b981' }}><PinIcon size={16} /></div>
+          <div key={i} style={{ paddingBottom: i < locations.length - 1 ? isMobile ? 20 : 24 : 0, marginBottom: i < locations.length - 1 ? isMobile ? 20 : 24 : 0, borderBottom: i < locations.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: isMobile ? 10 : 12, marginBottom: 8, flexDirection: isMobile ? 'column' : 'row' }}>
+              <div style={{ marginTop: isMobile ? 0 : 2, color: '#10b981' }}><PinIcon size={isMobile ? 14 : 16} /></div>
               <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 14.5, fontWeight: 600, color: '#111' }}>{loc.name}</span>
-                  <span style={{ background: loc.typeColor, color: loc.typeText, fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20 }}>{loc.type}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: isMobile ? 13.5 : 14.5, fontWeight: 600, color: '#111' }}>{loc.name}</span>
+                  <span style={{ background: loc.typeColor, color: loc.typeText, fontSize: isMobile ? 10 : 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20 }}>{loc.type}</span>
                 </div>
-                <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.65, margin: '0 0 12px' }}>{loc.desc}</p>
+                <p style={{ fontSize: isMobile ? 12 : 13, color: '#6b7280', lineHeight: 1.65, margin: '0 0 12px' }}>{loc.desc}</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
-                  <PinIcon size={12} />
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: '#9ca3af' }}>REQUIREMENTS</span>
+                  <PinIcon size={isMobile ? 10 : 12} />
+                  <span style={{ fontSize: isMobile ? 9 : 10, fontWeight: 700, letterSpacing: 0.8, color: '#9ca3af' }}>REQUIREMENTS</span>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 6 : 7 }}>
                   {loc.reqs.map(req => (
-                    <span key={req} style={{ background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: 20, padding: '4px 10px', fontSize: 12, color: '#374151' }}>{req}</span>
+                    <span key={req} style={{ background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: 20, padding: isMobile ? '3px 8px' : '4px 10px', fontSize: isMobile ? 11 : 12, color: '#374151' }}>{req}</span>
                   ))}
                 </div>
               </div>
@@ -779,6 +895,16 @@ function StepLocations({ data, onRegenerate }) {
 
 function StepTechnicalRequirements({ data, onRegenerate, projectCategory }) {
   const [suggestion, setSuggestion] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const cameraRows = data?.camera || [
     ['Camera Type', 'Sony FX6 Cinema Line'],
@@ -810,40 +936,40 @@ function StepTechnicalRequirements({ data, onRegenerate, projectCategory }) {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: isMobile ? 16 : 24 }}>
         <PendingBadge />
-        <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Technical Requirements</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>AI-generated equipment and technical specifications</p>
+        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Technical Requirements</h1>
+        <p style={{ color: '#6b7280', fontSize: isMobile ? 12 : 14, margin: 0 }}>AI-generated equipment and technical specifications</p>
       </div>
 
       <Card>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 9, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <CameraIcon size={18} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 10, marginBottom: isMobile ? 14 : 18 }}>
+          <div style={{ width: isMobile ? 32 : 36, height: isMobile ? 32 : 36, borderRadius: 9, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CameraIcon size={isMobile ? 16 : 18} />
           </div>
-          <span style={{ fontSize: 16, fontWeight: 600, color: '#111' }}>Camera &amp; Format</span>
+          <span style={{ fontSize: isMobile ? 15 : 16, fontWeight: 600, color: '#111' }}>Camera &amp; Format</span>
         </div>
         <div>
           {cameraRows.map(([label, val], i) => (
-            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderTop: i > 0 ? '1px solid #f3f4f6' : 'none' }}>
-              <span style={{ fontSize: 13.5, color: '#6b7280' }}>{label}</span>
-              <span style={{ fontSize: 13.5, color: '#111', fontWeight: 500, textAlign: 'right', maxWidth: '60%' }}>{val}</span>
+            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: isMobile ? '10px 0' : '12px 0', borderTop: i > 0 ? '1px solid #f3f4f6' : 'none', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 4 : 0 }}>
+              <span style={{ fontSize: isMobile ? 12.5 : 13.5, color: '#6b7280' }}>{label}</span>
+              <span style={{ fontSize: isMobile ? 12.5 : 13.5, color: '#111', fontWeight: 500, textAlign: isMobile ? 'left' : 'right', maxWidth: isMobile ? '100%' : '60%' }}>{val}</span>
             </div>
           ))}
         </div>
       </Card>
 
       <Card>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 9, background: '#fefce8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <LightbulbIcon size={18} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 10, marginBottom: isMobile ? 14 : 16 }}>
+          <div style={{ width: isMobile ? 32 : 36, height: isMobile ? 32 : 36, borderRadius: 9, background: '#fefce8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <LightbulbIcon size={isMobile ? 16 : 18} />
           </div>
-          <span style={{ fontSize: 16, fontWeight: 600, color: '#111' }}>Lighting Setup</span>
+          <span style={{ fontSize: isMobile ? 15 : 16, fontWeight: 600, color: '#111' }}>Lighting Setup</span>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 8 : 9 }}>
           {lightingItems.map(item => (
-            <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13.5, color: '#374151', lineHeight: 1.5 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', marginTop: 5, flexShrink: 0 }} />
+            <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: isMobile ? 8 : 10, fontSize: isMobile ? 12.5 : 13.5, color: '#374151', lineHeight: 1.5 }}>
+              <div style={{ width: isMobile ? 6 : 8, height: isMobile ? 6 : 8, borderRadius: '50%', background: '#f59e0b', marginTop: isMobile ? 4 : 5, flexShrink: 0 }} />
               {item}
             </div>
           ))}
@@ -851,16 +977,16 @@ function StepTechnicalRequirements({ data, onRegenerate, projectCategory }) {
       </Card>
 
       <Card>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 9, background: '#f0fdf9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <MicIcon size={18} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 10, marginBottom: isMobile ? 14 : 16 }}>
+          <div style={{ width: isMobile ? 32 : 36, height: isMobile ? 32 : 36, borderRadius: 9, background: '#f0fdf9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <MicIcon size={isMobile ? 16 : 18} />
           </div>
-          <span style={{ fontSize: 16, fontWeight: 600, color: '#111' }}>Audio Requirements</span>
+          <span style={{ fontSize: isMobile ? 15 : 16, fontWeight: 600, color: '#111' }}>Audio Requirements</span>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 8 : 9 }}>
           {audioItems.map(item => (
-            <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13.5, color: '#374151', lineHeight: 1.5 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', marginTop: 5, flexShrink: 0 }} />
+            <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: isMobile ? 8 : 10, fontSize: isMobile ? 12.5 : 13.5, color: '#374151', lineHeight: 1.5 }}>
+              <div style={{ width: isMobile ? 6 : 8, height: isMobile ? 6 : 8, borderRadius: '50%', background: '#10b981', marginTop: isMobile ? 4 : 5, flexShrink: 0 }} />
               {item}
             </div>
           ))}
@@ -874,6 +1000,16 @@ function StepTechnicalRequirements({ data, onRegenerate, projectCategory }) {
 
 function StepProductionSchedule({ data, onRegenerate }) {
   const [suggestion, setSuggestion] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const phases = data?.phases || [
     {
@@ -934,28 +1070,28 @@ function StepProductionSchedule({ data, onRegenerate }) {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: isMobile ? 16 : 24 }}>
         <PendingBadge />
-        <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Production Schedule</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>AI-generated comprehensive timeline and milestones</p>
+        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Production Schedule</h1>
+        <p style={{ color: '#6b7280', fontSize: isMobile ? 12 : 14, margin: 0 }}>AI-generated comprehensive timeline and milestones</p>
       </div>
 
       <Card>
         {phases.map((phase, pi) => (
-          <div key={phase.name} style={{ marginBottom: pi < phases.length - 1 ? 28 : 0, paddingBottom: pi < phases.length - 1 ? 28 : 0, borderBottom: pi < phases.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f0fdf9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <CalendarIcon size={16} />
+          <div key={phase.name} style={{ marginBottom: pi < phases.length - 1 ? isMobile ? 24 : 28 : 0, paddingBottom: pi < phases.length - 1 ? isMobile ? 24 : 28 : 0, borderBottom: pi < phases.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 12 : 14, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 8 : 0, alignItems: isMobile ? 'flex-start' : 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 10 }}>
+                <div style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, borderRadius: 8, background: '#f0fdf9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <CalendarIcon size={isMobile ? 14 : 16} />
                 </div>
-                <span style={{ fontSize: 15, fontWeight: 700, color: '#111' }}>{phase.name}</span>
+                <span style={{ fontSize: isMobile ? 14 : 15, fontWeight: 700, color: '#111' }}>{phase.name}</span>
               </div>
-              <span style={{ background: '#f0fdf9', color: '#10b981', border: '1px solid #d1fae5', fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>{phase.days}</span>
+              <span style={{ background: '#f0fdf9', color: '#10b981', border: '1px solid #d1fae5', fontSize: isMobile ? 11 : 12, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>{phase.days}</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 7 : 8 }}>
               {phase.items.map(item => (
-                <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#374151', lineHeight: 1.55 }}>
-                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', marginTop: 5, flexShrink: 0 }} />
+                <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: isMobile ? 8 : 10, fontSize: isMobile ? 12.5 : 13, color: '#374151', lineHeight: 1.55 }}>
+                  <div style={{ width: isMobile ? 6 : 7, height: isMobile ? 6 : 7, borderRadius: '50%', background: '#10b981', marginTop: isMobile ? 4 : 5, flexShrink: 0 }} />
                   {item}
                 </div>
               ))}
@@ -970,54 +1106,65 @@ function StepProductionSchedule({ data, onRegenerate }) {
 }
 
 function StepCreativeDirection({ data, onRegenerate }) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const moodTags = data?.moodTags || ['Energetic', 'Aspirational', 'Modern', 'Dynamic', 'Confident'];
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: isMobile ? 16 : 24 }}>
         <PendingBadge />
-        <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Creative Direction</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Visual style, tone, and artistic approach</p>
+        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Creative Direction</h1>
+        <p style={{ color: '#6b7280', fontSize: isMobile ? 12 : 14, margin: 0 }}>Visual style, tone, and artistic approach</p>
       </div>
 
       {/* Hero image */}
-      <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 16, height: 260, background: 'linear-gradient(135deg, #1a0a0a 0%, #3d1a0a 30%, #2d4a1a 70%, #1a2a0a 100%)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+      <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: isMobile ? 12 : 16, height: isMobile ? 180 : 260, background: 'linear-gradient(135deg, #1a0a0a 0%, #3d1a0a 30%, #2d4a1a 70%, #1a2a0a 100%)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
         {/* Floral decorative elements */}
         <div style={{ position: 'absolute', left: 0, top: 0, width: '50%', height: '100%', background: 'linear-gradient(135deg, #8b2252 0%, #c0392b 30%, #e8a0b0 50%, #f5e0d0 70%, #d4e8a0 90%)', opacity: 0.85 }} />
-        <div style={{ position: 'relative', zIndex: 2, padding: '30px 40px', textAlign: 'right' }}>
-          <div style={{ fontSize: 34, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: -0.5, textTransform: 'uppercase' }}>
+        <div style={{ position: 'relative', zIndex: 2, padding: isMobile ? '20px 24px' : '30px 40px', textAlign: 'right' }}>
+          <div style={{ fontSize: isMobile ? 24 : 34, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: -0.5, textTransform: 'uppercase' }}>
             ARTISTRY<br />IN BLOOM
           </div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginTop: 14, lineHeight: 1.7, textTransform: 'uppercase', letterSpacing: 1 }}>
+          <div style={{ fontSize: isMobile ? 12 : 16, fontWeight: 700, color: '#fff', marginTop: isMobile ? 10 : 14, lineHeight: 1.7, textTransform: 'uppercase', letterSpacing: 1 }}>
             LUXURIOUS.<br />SUSTAINABLE.<br />CUSTOM DESIGN.
           </div>
         </div>
       </div>
 
       <Card>
-        <div style={{ marginBottom: 24, paddingBottom: 24, borderBottom: '1px solid #f3f4f6' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 10 }}>VISUAL STYLE</div>
-          <p style={{ fontSize: 13.5, color: '#374151', lineHeight: 1.7, margin: 0 }}>
+        <div style={{ marginBottom: isMobile ? 20 : 24, paddingBottom: isMobile ? 20 : 24, borderBottom: '1px solid #f3f4f6' }}>
+          <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: isMobile ? 8 : 10 }}>VISUAL STYLE</div>
+          <p style={{ fontSize: isMobile ? 12.5 : 13.5, color: '#374151', lineHeight: 1.7, margin: 0 }}>
             Clean, modern aesthetic with high contrast. Focus on product detail with shallow depth of field. Dynamic camera movements to match athletic energy.
           </p>
         </div>
-        <div style={{ marginBottom: 24, paddingBottom: 24, borderBottom: '1px solid #f3f4f6' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 10 }}>CINEMATOGRAPHY NOTES</div>
-          <p style={{ fontSize: 13.5, color: '#374151', lineHeight: 1.7, margin: 0 }}>
+        <div style={{ marginBottom: isMobile ? 20 : 24, paddingBottom: isMobile ? 20 : 24, borderBottom: '1px solid #f3f4f6' }}>
+          <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: isMobile ? 8 : 10 }}>CINEMATOGRAPHY NOTES</div>
+          <p style={{ fontSize: isMobile ? 12.5 : 13.5, color: '#374151', lineHeight: 1.7, margin: 0 }}>
             Strategic camera movements that serve the story. Motivated lighting that creates depth and dimension. Intentional framing that guides the viewer's eye. Color temperature choices that enhance the emotional tone. Shot composition that balances negative space with subject matter.
           </p>
         </div>
-        <div style={{ marginBottom: 24, paddingBottom: 24, borderBottom: '1px solid #f3f4f6' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 12 }}>TONE &amp; MOOD</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ marginBottom: isMobile ? 20 : 24, paddingBottom: isMobile ? 20 : 24, borderBottom: '1px solid #f3f4f6' }}>
+          <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: isMobile ? 10 : 12 }}>TONE &amp; MOOD</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 6 : 8 }}>
             {moodTags.map(tag => (
-              <span key={tag} style={{ border: '1px solid #d1d5db', borderRadius: 20, padding: '5px 14px', fontSize: 13, color: '#374151' }}>{tag}</span>
+              <span key={tag} style={{ border: '1px solid #d1d5db', borderRadius: 20, padding: isMobile ? '4px 12px' : '5px 14px', fontSize: isMobile ? 12 : 13, color: '#374151' }}>{tag}</span>
             ))}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: 10 }}>REFERENCE STYLE</div>
-          <p style={{ fontSize: 13.5, color: '#374151', lineHeight: 1.7, margin: 0 }}>
+          <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 700, letterSpacing: 1, color: '#374151', marginBottom: isMobile ? 8 : 10 }}>REFERENCE STYLE</div>
+          <p style={{ fontSize: isMobile ? 12.5 : 13.5, color: '#374151', lineHeight: 1.7, margin: 0 }}>
             Nike commercial aesthetic. Apple product launch feel. Quick cuts with impact. Slow motion for key moments. Close-ups that reveal texture and craftsmanship.
           </p>
         </div>
@@ -1028,6 +1175,16 @@ function StepCreativeDirection({ data, onRegenerate }) {
 
 function StepDeliverables({ data, onRegenerate }) {
   const [suggestion, setSuggestion] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
@@ -1038,34 +1195,34 @@ function StepDeliverables({ data, onRegenerate }) {
 
   return (
     <>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: isMobile ? 16 : 24 }}>
         <PendingBadge />
-        <h1 style={{ fontSize: 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Deliverables</h1>
-        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Complete production specifications and outputs</p>
+        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 300, color: '#111', margin: '12px 0 4px' }}>Deliverables</h1>
+        <p style={{ color: '#6b7280', fontSize: isMobile ? 12 : 14, margin: 0 }}>Complete production specifications and outputs</p>
       </div>
 
       <Card>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <PackageIcon size={20} />
-          <span style={{ fontSize: 16, fontWeight: 600, color: '#111' }}>Primary Deliverables</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 10 }}>
+          <PackageIcon size={isMobile ? 18 : 20} />
+          <span style={{ fontSize: isMobile ? 15 : 16, fontWeight: 600, color: '#111' }}>Primary Deliverables</span>
         </div>
       </Card>
 
-      <div style={{ background: '#f0fdf9', border: '1px solid #6ee7b7', borderRadius: 12, padding: '18px 24px', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <FileTextIcon size={18} />
-          <span style={{ fontSize: 15, fontWeight: 600, color: '#111' }}>Delivery Timeline</span>
+      <div style={{ background: '#f0fdf9', border: '1px solid #6ee7b7', borderRadius: 12, padding: isMobile ? '14px 20px' : '18px 24px', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 10 }}>
+          <FileTextIcon size={isMobile ? 16 : 18} />
+          <span style={{ fontSize: isMobile ? 14 : 15, fontWeight: 600, color: '#111' }}>Delivery Timeline</span>
         </div>
       </div>
 
-      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '18px 24px', marginBottom: 16 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: '#111', marginBottom: 12 }}>Modify Deliverables (optional)</div>
+      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: isMobile ? '14px 20px' : '18px 24px', marginBottom: 16 }}>
+        <div style={{ fontSize: isMobile ? 13 : 14, fontWeight: 600, color: '#111', marginBottom: isMobile ? 10 : 12 }}>Modify Deliverables (optional)</div>
         <div style={{ position: 'relative' }}>
           <textarea
             value={suggestion}
             onChange={(e) => setSuggestion(e.target.value)}
             placeholder="e.g., 'Add vertical formats', 'Include podcast audio versions', 'Add Spanish subtitles'"
-            style={{ width: '100%', minHeight: 80, border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+            style={{ width: '100%', minHeight: isMobile ? 70 : 80, border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', fontSize: isMobile ? 12 : 13, color: '#444', resize: 'vertical', background: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
           />
           <button 
             onClick={handleRegenerate}
@@ -1081,32 +1238,32 @@ function StepDeliverables({ data, onRegenerate }) {
 }
 
 /* ─── BOTTOM ACTION BAR ─────────────────────────────────────────────────── */
-function BottomBar({ step, onApprove }) {
+function BottomBar({ step, onApprove, isMobile = false }) {
   const isLast = step === 8;
 
   if (isLast) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 32px', borderTop: '1px solid #e5e7eb', background: '#fff', flexShrink: 0 }}>
-        <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', color: '#374151', fontSize: 13.5, fontWeight: 500, cursor: 'pointer' }}>
-          <RefreshIcon size={14} /> Regenerate
+      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 10, padding: isMobile ? '12px 16px' : '14px 32px', borderTop: '1px solid #e5e7eb', background: '#fff', flexShrink: 0, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+        <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: isMobile ? '8px 14px' : '9px 18px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', color: '#374151', fontSize: isMobile ? 12 : 13.5, fontWeight: 500, cursor: 'pointer', flex: isMobile ? 1 : 'auto' }}>
+          <RefreshIcon size={isMobile ? 12 : 14} /> Regenerate
         </button>
-        <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', border: '1px solid #fca5a5', borderRadius: 8, background: '#fff', color: '#ef4444', fontSize: 13.5, fontWeight: 500, cursor: 'pointer' }}>
-          <XIcon size={14} /> Reject
+        <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: isMobile ? '8px 14px' : '9px 18px', border: '1px solid #fca5a5', borderRadius: 8, background: '#fff', color: '#ef4444', fontSize: isMobile ? 12 : 13.5, fontWeight: 500, cursor: 'pointer', flex: isMobile ? 1 : 'auto' }}>
+          <XIcon size={isMobile ? 12 : 14} /> Reject
         </button>
-        <button onClick={onApprove} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 22px', border: 'none', borderRadius: 8, background: '#10b981', color: '#fff', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
-          <CheckIcon size={14} /> Approve Section
+        <button onClick={onApprove} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: isMobile ? '8px 16px' : '9px 22px', border: 'none', borderRadius: 8, background: '#10b981', color: '#fff', fontSize: isMobile ? 12 : 13.5, fontWeight: 600, cursor: 'pointer', flex: isMobile ? 1 : 'auto' }}>
+          <CheckIcon size={isMobile ? 12 : 14} /> Approve Section
         </button>
       </div>
     );
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 32px', borderTop: '1px solid #e5e7eb', background: '#fff', flexShrink: 0 }}>
-      <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', color: '#374151', fontSize: 13.5, fontWeight: 500, cursor: 'pointer' }}>
-        <PencilIcon size={13} /> Edit
+    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 10, padding: isMobile ? '12px 16px' : '14px 32px', borderTop: '1px solid #e5e7eb', background: '#fff', flexShrink: 0, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+      <button style={{ display: 'flex', alignItems: 'center', gap: 7, padding: isMobile ? '8px 14px' : '9px 18px', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', color: '#374151', fontSize: isMobile ? 12 : 13.5, fontWeight: 500, cursor: 'pointer', flex: isMobile ? 1 : 'auto' }}>
+        <PencilIcon size={isMobile ? 12 : 13} /> Edit
       </button>
-      <button onClick={onApprove} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 22px', border: 'none', borderRadius: 8, background: '#10b981', color: '#fff', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
-        <CheckIcon size={14} /> Approve Section
+      <button onClick={onApprove} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: isMobile ? '8px 16px' : '9px 22px', border: 'none', borderRadius: 8, background: '#10b981', color: '#fff', fontSize: isMobile ? 12 : 13.5, fontWeight: 600, cursor: 'pointer', flex: isMobile ? 1 : 'auto' }}>
+        <CheckIcon size={isMobile ? 12 : 14} /> Approve Section
       </button>
     </div>
   );
@@ -1126,7 +1283,19 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   const [extractProgress, setExtractProgress] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
   const [activePackage, setActivePackage] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const previousCategoryRef = useRef(projectCategory);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const progressSteps = [
     'Fetching site content',
@@ -1562,14 +1731,28 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
   if (!open) return null;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}>
-      <div style={{ background: '#fff', borderRadius: 12, maxWidth: '98vw', width: '1400px', maxHeight: '98vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: isMobile ? 0 : 20 }}>
+      <div style={{ background: '#fff', borderRadius: isMobile ? 0 : 12, maxWidth: isMobile ? '100vw' : '98vw', width: isMobile ? '100vw' : '1400px', maxHeight: isMobile ? '100vh' : '98vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
-          <div>
-            <h2 style={{ fontSize: 20, fontWeight: 600, color: '#111', margin: 0 }}>AI Production Plan</h2>
-            <p style={{ fontSize: 13, color: '#6b7280', margin: '4px 0 0' }}>Review and approve AI-generated production details</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '12px 16px' : '16px 24px', borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 0 }}>
+            {isMobile && (
+              <button 
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+              >
+                <svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <line x1={3} y1={12} x2={21} y2={12} />
+                  <line x1={3} y1={6} x2={21} y2={6} />
+                  <line x1={3} y1={18} x2={21} y2={18} />
+                </svg>
+              </button>
+            )}
+            <div>
+              <h2 style={{ fontSize: isMobile ? 16 : 20, fontWeight: 600, color: '#111', margin: 0 }}>AI Production Plan</h2>
+              <p style={{ fontSize: isMobile ? 11 : 13, color: '#6b7280', margin: '4px 0 0' }}>Review and approve AI-generated production details</p>
+            </div>
           </div>
           <button 
             onClick={(e) => {
@@ -1580,7 +1763,7 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
               background: '#f3f4f6', 
               border: '1px solid #e5e7eb', 
               cursor: 'pointer', 
-              padding: 8, 
+              padding: isMobile ? 6 : 8, 
               borderRadius: 6, 
               display: 'flex', 
               alignItems: 'center', 
@@ -1594,15 +1777,37 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
               e.target.style.background = '#f3f4f6';
             }}
           >
-            <XIcon size={20} />
+            <XIcon size={isMobile ? 18 : 20} />
           </button>
         </div>
 
+        {/* Mobile Sidebar Overlay */}
+        {isMobile && sidebarOpen && (
+          <div 
+            onClick={() => setSidebarOpen(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 60 }}
+          />
+        )}
+
         {/* Body */}
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
 
           {/* Sidebar */}
-          <aside style={{ width: 224, borderRight: '1px solid #e5e7eb', background: '#fff', display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
+          <aside style={{ 
+            width: isMobile ? 280 : 224, 
+            borderRight: '1px solid #e5e7eb', 
+            background: '#fff', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            flexShrink: 0, 
+            overflowY: 'auto',
+            position: isMobile ? 'fixed' : 'relative',
+            left: isMobile ? (sidebarOpen ? 0 : -280) : 0,
+            top: isMobile ? 0 : 'auto',
+            bottom: isMobile ? 0 : 'auto',
+            zIndex: isMobile ? 70 : 1,
+            transition: 'left 0.3s ease'
+          }}>
             <div style={{ padding: '18px 18px 14px' }}>
               <div style={{ fontWeight: 700, fontSize: 14, color: '#111', marginBottom: 3 }}>Production Plan</div>
               <div style={{ fontSize: 12, color: '#9ca3af' }}>Review and approve each section</div>
@@ -1668,11 +1873,11 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
 
           {/* Main Content */}
           <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '28px 28px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '28px 28px' }}>
               {stepComponents[currentStep]}
             </div>
 
-            <BottomBar step={currentStep} onApprove={handleApprove} onClose={onClose} />
+            <BottomBar step={currentStep} onApprove={handleApprove} onClose={onClose} isMobile={isMobile} />
           </main>
         </div>
       </div>
