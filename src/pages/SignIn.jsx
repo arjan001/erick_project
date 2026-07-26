@@ -75,16 +75,61 @@ export default function SignIn() {
     const ref = searchParams.get('ref');
     if (ref) setInviteCode(ref);
     if (searchParams.get('mode') === 'signup') setMode('signup');
+    
+    // Also check for manual mode override for testing
+    if (searchParams.get('mode') === 'reset') {
+      console.log('Manual mode override: reset');
+      setMode('update_password');
+    }
   }, [searchParams]);
 
   // If the user arrived via a "reset password" email link, Supabase fires a
   // PASSWORD_RECOVERY event — switch to the "set a new password" form.
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+    const checkForPasswordReset = () => {
+      // Check URL parameters for password reset
+      const urlParams = new URLSearchParams(window.location.search);
+      const hash = window.location.hash;
+      
+      console.log('Checking for password reset...');
+      console.log('URL hash:', hash);
+      console.log('URL search:', window.location.search);
+      
+      // Check for recovery type in hash or query params
+      const isRecovery = hash.includes('type=recovery') || urlParams.get('type') === 'recovery';
+      // Also check for access_token which indicates a password reset flow
+      const hasAccessToken = hash.includes('access_token');
+      
+      if (isRecovery || hasAccessToken) {
+        console.log('Password recovery detected in URL, forcing update_password mode');
         setMode('update_password');
       }
+    };
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state change:', event, session?.user?.email);
+      
+      if (event === 'PASSWORD_RECOVERY') {
+        console.log('PASSWORD_RECOVERY event detected, switching to update_password mode');
+        setMode('update_password');
+      }
+      
+      if (event === 'SIGNED_IN') {
+        // Check if this sign-in is from a password reset
+        const hash = window.location.hash;
+        const urlParams = new URLSearchParams(window.location.search);
+        const isRecovery = hash.includes('type=recovery') || urlParams.get('type') === 'recovery';
+        const hasAccessToken = hash.includes('access_token');
+        
+        if (isRecovery || hasAccessToken) {
+          console.log('Signed in via recovery link, switching to update_password mode');
+          setMode('update_password');
+        }
+      }
     });
+
+    checkForPasswordReset();
     return () => subscription.unsubscribe();
   }, []);
 
@@ -93,18 +138,24 @@ export default function SignIn() {
     setError('');
     setLoading(true);
     try {
+      // Use the current origin (works for both localhost and production)
+      const redirectUrl = `${window.location.origin}/SignIn`;
+      console.log('Sending password reset email with redirect URL:', redirectUrl);
+      console.log('Current origin:', window.location.origin);
+      
       const { error: supaError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/SignIn`,
+        redirectTo: redirectUrl,
       });
       if (supaError) throw supaError;
-      setMessage('Password reset email sent! Check your inbox (including spam folder).');
+      
+      setMessage('Password reset email sent! Check your inbox (including spam folder). Click the link in the email to reset your password.');
       setTimeout(() => {
         setShowForgotPassword(false);
         setMessage('');
-      }, 4000);
+      }, 6000);
     } catch (err) {
       console.error('Password reset error:', err);
-      setError(err.message || 'Failed to send reset email. Please check your email address.');
+      setError(err.message || 'Failed to send reset email. Please check your email address and ensure your redirect URL is configured in Supabase.');
     } finally {
       setLoading(false);
     }
@@ -399,6 +450,14 @@ export default function SignIn() {
             <p className="text-sm text-gray-500 mt-1">
               {mode === 'login' ? 'Sign in to Studio22' : mode === 'signup' ? 'Join the creative network' : mode === 'update_password' ? 'Choose a new password for your account' : 'We\'ll send you a reset link'}
             </p>
+            {/* Debug info - remove in production */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+                <div>Mode: {mode}</div>
+                <div>URL hash: {window.location.hash.substring(0, 50)}...</div>
+                <div>URL search: {window.location.search}</div>
+              </div>
+            )}
           </div>
 
           {/* Messages */}
