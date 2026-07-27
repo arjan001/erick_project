@@ -382,9 +382,10 @@ export default function Home({ editMode = false }) {
       normalizedUrl = normalizeUrl(projectUrl);
     }
     
-    // If we have URL but no analysis yet, analyze it first
-    if (projectUrl && projectUrl.trim() !== '' && !projectDescription) {
-      try {
+    try {
+      // If we have URL but no analysis yet, analyze it first
+      if (projectUrl && projectUrl.trim() !== '' && !projectDescription) {
+        console.log('Analyzing URL before navigation...');
         const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory);
         
         if (analysisResult.success && analysisResult.rawAnalysis) {
@@ -399,35 +400,52 @@ export default function Home({ editMode = false }) {
             additionalNotes: projectDescription,
             attachments: attachments
           });
+          console.log('Analysis saved to localStorage, navigating to AISubmission');
+        } else {
+          console.error('Analysis failed:', analysisResult.error);
+          // Still navigate even if analysis fails
+          sessionStorage.setItem('quickProjectUrl', normalizedUrl);
+          sessionStorage.setItem('quickProjectDescription', projectDescription);
+          sessionStorage.setItem('quickProjectCategory', projectCategory);
+          sessionStorage.setItem('quickProjectAttachments', JSON.stringify(attachments));
         }
-      } catch (error) {
-        console.error('Analysis failed:', error);
+      } else if (projectDescription) {
+        // If we already have description, save it
+        const analyzedProject = JSON.parse(localStorage.getItem('studio22_analyzed_project') || 'null');
+        
+        saveAnalyzedProjectToStorage({
+          ...analyzedProject,
+          url: normalizedUrl,
+          analysis: analyzedProject?.analysis || null,
+          brief: null,
+          projectType: projectCategory,
+          additionalNotes: projectDescription,
+          attachments: attachments
+        });
+        console.log('Description saved to localStorage, navigating to AISubmission');
+      } else {
+        // Save basic data if no URL analysis was done
+        sessionStorage.setItem('quickProjectUrl', normalizedUrl);
+        sessionStorage.setItem('quickProjectDescription', projectDescription);
+        sessionStorage.setItem('quickProjectCategory', projectCategory);
+        sessionStorage.setItem('quickProjectAttachments', JSON.stringify(attachments));
+        console.log('Basic data saved to sessionStorage, navigating to AISubmission');
       }
-    } else if (projectDescription) {
-      // If we already have description, save it
-      const analyzedProject = JSON.parse(localStorage.getItem('studio22_analyzed_project') || 'null');
       
-      saveAnalyzedProjectToStorage({
-        ...analyzedProject,
-        url: normalizedUrl,
-        analysis: analyzedProject?.analysis || null,
-        brief: null,
-        projectType: projectCategory,
-        additionalNotes: projectDescription,
-        attachments: attachments
-      });
-    } else {
-      // Save basic data if no URL analysis was done
+      // Navigate to AISubmission
+      console.log('Navigating to /AIsubmission');
+      navigate('/AIsubmission');
+    } catch (error) {
+      console.error('Error in handleQuickSubmit:', error);
+      // Still navigate even if there's an error
       sessionStorage.setItem('quickProjectUrl', normalizedUrl);
       sessionStorage.setItem('quickProjectDescription', projectDescription);
       sessionStorage.setItem('quickProjectCategory', projectCategory);
       sessionStorage.setItem('quickProjectAttachments', JSON.stringify(attachments));
+      navigate('/AIsubmission');
+    } finally {
+      setExtracting(false);
     }
-    
-    setExtracting(false);
-    
-    // Navigate to AISubmission
-    navigate('/AIsubmission');
   };
 
   const handleFileUpload = async (e) => {

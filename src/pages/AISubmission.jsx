@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../lib/AuthContext';
 import { generateProductionPlan, regenerateSection } from '../lib/aiService';
 import { Film, Music, Clapperboard, Video, Briefcase, Building, Calendar, Package, Share, Sparkles as SparklesIcon, CheckCircle2, Loader } from 'lucide-react';
 
@@ -1046,7 +1045,6 @@ function BottomBar({ step, onApprove }) {
 /* ─── MAIN APP ──────────────────────────────────────────────────────────── */
 export default function AISubmission() {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoadingAuth } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [approved, setApproved] = useState(new Set());
   const [loading, setLoading] = useState(false);
@@ -1180,14 +1178,7 @@ export default function AISubmission() {
     }
   }, []);
 
-  // Check authentication on page load - but don't redirect if we have analyzed project data
-  useEffect(() => {
-    const analyzedProject = localStorage.getItem('studio22_analyzed_project');
-    if (!isLoadingAuth && !isAuthenticated && !analyzedProject) {
-      sessionStorage.setItem('redirectAfterLogin', '/AIsubmission');
-      navigate('/SignIn');
-    }
-  }, [isAuthenticated, isLoadingAuth, navigate]);
+  // No authentication check - users can use analyze tool without logging in
 
   // Save AI-generated data to localStorage whenever it changes
   useEffect(() => {
@@ -1412,17 +1403,7 @@ export default function AISubmission() {
 
   const progressPct = Math.round(((approved.size) / STEPS.length) * 100);
 
-  if (isLoadingAuth) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: 32, height: 32, border: '4px solid #e2e8f0', borderTopColor: '#1e293b', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
+  // No authentication loading check - users can use analyze tool without logging in
 
   // Show input form if no AI data yet AND no analyzed project from Home page
   if (!aiData && !hasAnalyzedProject) {
