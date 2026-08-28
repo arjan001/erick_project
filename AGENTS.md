@@ -23,6 +23,17 @@ Without them the UI still renders but API calls will fail. Placeholders in `.env
 ## Vite config notes
 - `vite.config.js` has `logLevel: 'error'`, so Vite does not print its startup banner — the server is running even if logs look empty.
 - `server.host: true` + `server.allowedHosts: true` were added so the preview's external hostname is accepted.
+- VitePWA plugin is conditionally enabled (production only) to avoid service worker interference in dev.
+- Service worker registration in `src/main.jsx` is gated behind `import.meta.env.PROD`.
+
+## Critical runtime fix
+- `src/lib/supabase.js` — `createClient()` throws `"supabaseUrl is required"` when `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` are missing. Added fallback placeholder values so the app boots without credentials. The AuthContext's `getSession()` resolves quickly with null when using the placeholder URL.
+
+## Landing page redesign
+- The landing page (`src/pages/Home.jsx`) was redesigned with a dark, cinematic film-industry aesthetic.
+- New components in `src/components/landing/`: `Hero.jsx` (parallax), `Stats.jsx`, `FeaturedJobs.jsx`, `Disciplines.jsx`, `HowItWorks.jsx`, `CTA.jsx`.
+- `MainLayout.jsx` was updated to show a transparent header with white text over the dark hero on the Home page only (other pages unchanged).
+- Color scheme: `#0A0A0A` background, `#C9A962` gold accent, white text — no AI gradients.
 
 ## Verification
 ```bash

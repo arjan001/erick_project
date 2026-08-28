@@ -5,6 +5,8 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import viteCompression from 'vite-plugin-compression'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const isProd = process.env.NODE_ENV === 'production'
+
 // https://vite.dev/config/
 export default defineConfig({
   logLevel: 'error', // Suppress warnings, only show errors
@@ -40,8 +42,8 @@ export default defineConfig({
       threshold: 10240,
       deleteOriginFile: false
     }),
-    // PWA support
-    VitePWA({
+    // PWA support — only enabled for production builds
+    ...(isProd ? [VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
@@ -94,7 +96,7 @@ export default defineConfig({
           }
         ]
       }
-    })
+    })] : [])
   ],
   build: {
     // Optimize chunk splitting

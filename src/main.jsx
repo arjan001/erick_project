@@ -12,8 +12,8 @@ logWebVitals()
 // Start performance monitoring
 startPerformanceMonitoring()
 
-// Register service worker
-if ('serviceWorker' in navigator) {
+// Register service worker (production only — disabled in dev to avoid preview issues)
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
       .then((registration) => {

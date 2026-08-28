@@ -23,6 +23,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
   });
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   const { logout } = useAuth();
+  const isHomePage = currentPageName === 'Home';
 
   React.useEffect(() => {
     const justLoggedIn = sessionStorage.getItem('studio22_just_logged_in');
@@ -88,7 +89,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
   ];
 
   return (
-    <div className={`min-h-screen bg-white text-[#212121] ${exploreOpen ? 'overflow-hidden' : ''}`}>
+    <div className={`min-h-screen ${isHomePage ? 'bg-[#0A0A0A]' : 'bg-white'} text-[#212121] ${exploreOpen ? 'overflow-hidden' : ''}`}>
       {/* Loading Screen */}
       {showLoadingScreen && (
         <div className="fixed inset-0 bg-white z-[100] flex items-center justify-center">
@@ -99,10 +100,10 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
       )}
 
       {/* Top Banner */}
-      {!shouldHideMenus && <TopBanner />}
+      {!shouldHideMenus && !isHomePage && <TopBanner />}
 
       {/* Main Header (Awwwards Style) */}
-      {!shouldHideMenus && (<header className={`fixed top-[40px] left-0 right-0 z-[40] transition-colors ${exploreOpen ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
+      {!shouldHideMenus && (<header className={`fixed ${isHomePage ? 'top-0' : 'top-[40px]'} left-0 right-0 z-[40] transition-colors ${exploreOpen ? 'bg-transparent' : isHomePage ? 'bg-transparent' : 'bg-white border-b border-gray-200'}`}>
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="flex items-center justify-between h-[60px]">
             {/* Left Navigation */}
@@ -112,26 +113,26 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                 to="/" 
                 className="hover:opacity-70 transition-opacity"
               >
-                <span className="text-2xl font-black tracking-tighter text-[#1a1a1a]">22.</span>
+                <span className={`text-2xl font-black tracking-tighter ${isHomePage ? 'text-white' : 'text-[#1a1a1a]'}`}>22.</span>
               </Link>
 
               {/* Main Nav */}
               <nav className="hidden lg:flex items-center gap-6">
                 {!exploreOpen && (
                     <>
-                      <Link to={createPageUrl('Projects')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
+                      <Link to={createPageUrl('Projects')} className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}>
                         Projects
                       </Link>
-                    <Link to={createPageUrl('ApplyArtist')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
+                    <Link to={createPageUrl('ApplyArtist')} className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}>
                       For Artists
                     </Link>
-                    <Link to={createPageUrl('ApplyTeam')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
+                    <Link to={createPageUrl('ApplyTeam')} className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}>
                       For Teams
                     </Link>
                     <div className="relative">
                       <button 
                         onClick={() => setAcademyOpen(!academyOpen)}
-                        className="flex items-center gap-1 text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors"
+                        className={`flex items-center gap-1 text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}
                       >
                         Backed <ChevronDown className="w-3 h-3" />
                         <span className="inline-block w-1.5 h-1.5 bg-amber-600 rounded-sm"></span>
@@ -147,7 +148,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                         </div>
                       )}
                     </div>
-                    <Link to={createPageUrl('Categories')} className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 transition-colors">
+                    <Link to={createPageUrl('Categories')} className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}>
                       Categories
                     </Link>
                   </>
@@ -166,7 +167,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             <div className="flex items-center gap-3">
               {!user ? (
                 <Link to={createPageUrl('SignIn')}>
-                  <Button variant="ghost" size="sm" className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent">
+                  <Button variant="ghost" size="sm" className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white hover:bg-transparent' : 'text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent'}`}>
                     Sign In
                   </Button>
                 </Link>
@@ -190,7 +191,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
               {!user && (
                 <button
                   onClick={() => setExploreOpen(true)}
-                  className="px-4 py-2 bg-black text-white hover:bg-gray-800 font-bold text-sm rounded-md transition-colors"
+                  className={`px-4 py-2 ${isHomePage ? 'bg-[#C9A962] text-black hover:bg-[#D4B575]' : 'bg-black text-white hover:bg-gray-800'} font-bold text-sm rounded-md transition-colors`}
                 >
                   Post a Project
                 </button>
@@ -259,7 +260,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
       )}
 
       {/* Main Content */}
-      <main className={shouldHideMenus ? 'pt-0 pb-0' : 'pt-[100px] pb-0'}>
+      <main className={shouldHideMenus ? 'pt-0 pb-0' : isHomePage ? 'pt-0 pb-0' : 'pt-[100px] pb-0'}>
         {children}
       </main>
 
