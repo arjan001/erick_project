@@ -1,0 +1,22 @@
+{
+  "previewPort": 3000,
+  "healthPath": "/",
+  "startCommand": "docker compose -f docker-compose.base44.yml up -d",
+  "secrets": [
+    {
+      "name": "VITE_BASE44_APP_ID",
+      "description": "Base44 app ID for the @base44/sdk client (from Base44 builder Settings).",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "VITE_BASE44_APP_BASE_URL",
+      "description": "Base44 backend base URL (e.g. https://api.base44.app).",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "VITE_PUBLISHABLE_KEY",
+      "description": "Base44 publishable key for SDK authentication (from Base44 builder Settings/API keys).",
+      "requiredAtBoot": false
+    }
+  ]
+}
