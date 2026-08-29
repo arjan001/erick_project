@@ -97,7 +97,7 @@ const publicRoutes = [
   {
     path: '/',
     component: () => import('@/pages/Home'),
-    layout: MainLayout,
+    layout: null,
     guard: HomeGuard,
     exact: true
   },
