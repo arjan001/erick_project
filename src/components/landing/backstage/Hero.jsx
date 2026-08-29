@@ -44,20 +44,22 @@ export default function Hero() {
           {/* Left: copy + stats */}
           <div>
             <h1 className="font-serif text-3xl font-bold leading-[1.1] tracking-tight text-black md:text-5xl">
-              The place to get hired for{' '}
-              <span className="relative inline-block">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={roleIdx}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -12 }}
-                    transition={{ duration: 0.4 }}
-                    className="text-[#4F46E5]"
-                  >
-                    {rotatingRoles[roleIdx]}
-                  </motion.span>
-                </AnimatePresence>
+              <span className="block">The place to</span>
+              <span className="block">get hired for{' '}
+                <span className="relative inline-block">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={roleIdx}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -12 }}
+                      transition={{ duration: 0.4 }}
+                      className="text-[#4F46E5]"
+                    >
+                      {rotatingRoles[roleIdx]}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
               </span>
             </h1>
 
