@@ -181,6 +181,15 @@
 
 }
 
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+
+.font-serif {
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
 .note-editable:empty:before {
   content: attr(data-placeholder);
   color: #9ca3af;

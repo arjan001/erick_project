@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, MoreVertical } from 'lucide-react';
+import { ChevronDown, MoreVertical, Star, Handshake } from 'lucide-react';
 
 const NewBadge = ({ className = '' }) => (
   <span
@@ -12,6 +12,16 @@ const NewBadge = ({ className = '' }) => (
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
+  const joinRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (joinRef.current && !joinRef.current.contains(e.target)) setJoinOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-black/5 bg-white">
@@ -31,9 +41,6 @@ export default function Navbar() {
             <button className="flex items-center gap-1 text-sm font-medium text-black/80 hover:text-black">
               Find Talent <ChevronDown className="h-3.5 w-3.5" />
             </button>
-            <button className="flex items-center gap-1 text-sm font-medium text-black/80 hover:text-black">
-              Resources <ChevronDown className="h-3.5 w-3.5" />
-            </button>
             <Link to="/ApplyArtist" className="text-sm font-medium text-black/80 hover:text-black">
               Agents
             </Link>
@@ -52,15 +59,51 @@ export default function Navbar() {
             Grow with UGC
             <ChevronDown className="h-3.5 w-3.5" />
           </button>
+
+          {/* Join with dropdown */}
+          <div className="relative" ref={joinRef}>
+            <button
+              onClick={() => setJoinOpen(!joinOpen)}
+              className="flex items-center gap-1 rounded-full bg-[#4F46E5] px-5 py-2 text-sm font-semibold text-white hover:bg-[#4338CA]"
+            >
+              Join
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${joinOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {joinOpen && (
+              <div className="absolute right-0 top-full mt-2 w-72 overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/5">
+                <Link
+                  to="/SignIn"
+                  onClick={() => setJoinOpen(false)}
+                  className="flex items-start gap-3 px-4 py-4 hover:bg-black/[0.03]"
+                >
+                  <Star className="mt-0.5 h-5 w-5 shrink-0 text-[#5842D3]" />
+                  <div>
+                    <p className="text-sm font-bold text-black">I'm Talent</p>
+                    <p className="text-xs text-black/50">Build your profile and start submitting today</p>
+                  </div>
+                </Link>
+                <div className="h-px bg-black/5" />
+                <Link
+                  to="/SignIn?mode=employer"
+                  onClick={() => setJoinOpen(false)}
+                  className="flex items-start gap-3 px-4 py-4 hover:bg-black/[0.03]"
+                >
+                  <Handshake className="mt-0.5 h-5 w-5 shrink-0 text-[#5842D3]" />
+                  <div>
+                    <p className="text-sm font-bold text-black">I'm Hiring</p>
+                    <p className="text-xs text-black/50">Find top talent for your next project</p>
+                  </div>
+                </Link>
+              </div>
+            )}
+          </div>
+
           <Link
-            to="/SignIn"
-            className="rounded-full bg-[#4F46E5] px-5 py-2 text-sm font-semibold text-white hover:bg-[#4338CA]"
+            to="/SubmitProject"
+            className="rounded-full border border-black/80 bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-black/[0.03]"
           >
-            Join
-          </Link>
-          <button className="rounded-full border border-black/80 bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-black/[0.03]">
             Post a Job
-          </button>
+          </Link>
           <Link to="/SignIn" className="text-sm font-semibold text-black hover:underline">
             Sign in
           </Link>
@@ -87,14 +130,13 @@ export default function Navbar() {
           <div className="flex flex-col gap-3">
             <Link to="/Jobs" className="text-sm font-medium text-black">Find Jobs</Link>
             <span className="text-sm font-medium text-black">Find Talent</span>
-            <span className="text-sm font-medium text-black">Resources</span>
             <Link to="/ApplyArtist" className="text-sm font-medium text-black">Agents</Link>
             <Link to="/Network" className="flex items-center gap-1.5 text-sm font-medium text-black">
               Community <NewBadge />
             </Link>
             <div className="mt-2 flex flex-col gap-2">
               <Link to="/SignIn" className="rounded-full bg-[#4F46E5] px-5 py-2 text-center text-sm font-semibold text-white">Join</Link>
-              <button className="rounded-full border border-black/80 px-5 py-2 text-sm font-semibold text-black">Post a Job</button>
+              <Link to="/SubmitProject" className="rounded-full border border-black/80 px-5 py-2 text-center text-sm font-semibold text-black">Post a Job</Link>
               <Link to="/SignIn" className="text-center text-sm font-semibold text-black">Sign in</Link>
             </div>
           </div>
