@@ -23,7 +23,7 @@ export default function CTASection() {
             It's time to make your move.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base text-white/80">
-            No matter what type of work you do, Backstage has the most jobs, the best tools,
+            No matter what type of work you do, Eric Rabar has the most jobs, the best tools,
             and expert advice to help you get hired.
           </p>
 

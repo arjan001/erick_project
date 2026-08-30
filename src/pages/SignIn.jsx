@@ -264,6 +264,25 @@ export default function SignIn() {
 
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
+      {/* Demo credentials banner */}
+      <div className="fixed left-1/2 top-4 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/90 px-3 py-2 shadow-lg">
+        <span className="hidden text-xs text-white/60 sm:inline">Quick login:</span>
+        {DEMO_BUTTONS.map((d) => (
+          <button
+            key={d.email}
+            onClick={() => {
+              setEmail(d.email);
+              setPassword(d.email);
+              setUserType(d.email.includes('client') ? 'employer' : 'talent');
+              setTimeout(() => handleLogin({ preventDefault: () => {} }), 100);
+            }}
+            className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
+          >
+            <img src={d.avatar} alt="" className="h-5 w-5 rounded-full object-cover" />
+            {d.label}
+          </button>
+        ))}
+      </div>
       {/* LEFT PANEL */}
       <div className={`flex flex-1 flex-col justify-center px-8 py-12 lg:px-16 ${isEmployer ? 'bg-black' : 'bg-[#F7F5F0]'}`}>
         {isEmployer ? (
@@ -276,7 +295,7 @@ export default function SignIn() {
             </div>
             <div className="flex items-center gap-3">
               <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop"
+                src="https://images.unsplash.com/photo-1500916434205-0c77489c6cf7?w=80&h=80&fit=crop"
                 alt="Dan Cangelosi"
                 className="h-12 w-12 rounded-full object-cover"
               />
@@ -339,7 +358,7 @@ export default function SignIn() {
         <div className="w-full max-w-sm">
           {/* Logo */}
           <Link to="/" className="mb-8 inline-block">
-            <span className="text-xl font-extrabold uppercase tracking-tight text-black">Backstage</span>
+            <span className="text-xl font-extrabold uppercase tracking-tight text-black">Eric Rabar</span>
           </Link>
 
           {/* Mode toggle (I'm Talent / I'm Hiring) */}
@@ -542,7 +561,7 @@ export default function SignIn() {
               {/* Terms for employer */}
               {isEmployer && (
                 <p className="mt-4 text-center text-xs text-black/40">
-                  By continuing, you agree that you have read and agree to the Backstage{' '}
+                  By continuing, you agree that you have read and agree to the Eric Rabar{' '}
                   <a href="#" className="text-[#4B4ACF] hover:underline">Terms of Service</a> and{' '}
                   <a href="#" className="text-[#4B4ACF] hover:underline">Privacy Policy</a>, and that you are currently at least 18 years old.
                 </p>

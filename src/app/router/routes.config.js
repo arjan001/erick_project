@@ -102,6 +102,11 @@ const publicRoutes = [
     exact: true
   },
   {
+    path: '/FindJobs',
+    component: () => import('@/pages/FindJobsPage'),
+    layout: null,
+  },
+  {
     path: '/Projects',
     component: () => import('@/modules/projects/pages/ProjectsPage'),
     layout: MainLayout

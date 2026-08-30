@@ -6,7 +6,7 @@ const features = [
   { icon: UserCircle, text: 'Create multiple profiles to showcase your different specialties.' },
   { icon: Upload, text: 'Upload unlimited media—photos, videos, and audio.' },
   { icon: Bell, text: 'Never miss a job with custom job searches with instant alerts.' },
-  { icon: Smartphone, text: 'Apply anywhere with the top-rated Backstage iOS app.' },
+  { icon: Smartphone, text: 'Apply anywhere with the top-rated Eric Rabar iOS app.' },
 ];
 
 export default function HowItWorks() {
@@ -40,7 +40,7 @@ export default function HowItWorks() {
             <div className="p-8 md:p-10">
               <h3 className="text-2xl font-bold text-black">Get discovered, get booked!</h3>
               <p className="mt-3 text-sm leading-relaxed text-[#4B5563]">
-                Every day, actors, models, voice artists, and creators get booked on Backstage.
+                Every day, actors, models, voice artists, and creators get booked on Eric Rabar.
                 It's more than gigs—it's your path to a thriving career. Find jobs, get expert
                 guidance, and access the tools you need to succeed!
               </p>

@@ -114,7 +114,7 @@ export default function Hero() {
               className="relative aspect-[4/5] overflow-hidden rounded-3xl shadow-2xl"
             >
               <img
-                src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&h=1000&fit=crop"
+                src="https://images.unsplash.com/photo-1517457373958-b7bdd0783f68?w=800&h=1000&fit=crop"
                 alt="Production set"
                 className="h-full w-full object-cover"
               />

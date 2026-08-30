@@ -11,9 +11,9 @@ const news = [
 
 const videos = [
   { thumb: 'https://images.unsplash.com/photo-1574732669271-a745c0e2b0e2?w=400&h=225&fit=crop', title: "In the Room With 'Love Story' Casting Directors Courtney Bright + Nicole Daniels", duration: '15:35' },
-  { thumb: 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=400&h=225&fit=crop', title: "Backstage With: Chase Stokes on 'Stranger Things' + the Final Season of 'Outer Banks'", duration: '19:54' },
+  { thumb: 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=400&h=225&fit=crop', title: "Eric Rabar With: Chase Stokes on 'Stranger Things' + the Final Season of 'Outer Banks'", duration: '19:54' },
   { thumb: 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=400&h=225&fit=crop', title: "Andrew Garfield + Claire Foy on Acting, Imagination, and 'The Magic Faraway Tree'", duration: '04:51' },
-  { thumb: 'https://images.unsplash.com/photo-1502685104226-ee32348fef25?w=400&h=225&fit=crop', title: "Backstage with: Rufus Sewell on 'The Diplomat' + His Way into Hal Wyler", duration: '16:00' },
+  { thumb: 'https://images.unsplash.com/photo-1502685104226-ee32348fef25?w=400&h=225&fit=crop', title: "Eric Rabar with: Rufus Sewell on 'The Diplomat' + His Way into Hal Wyler", duration: '16:00' },
 ];
 
 export default function NewsAndVideos() {
@@ -65,7 +65,7 @@ export default function NewsAndVideos() {
               <div className="relative aspect-video overflow-hidden rounded-2xl bg-black">
                 <img src={v.thumb} alt="" className="h-full w-full object-cover opacity-80" />
                 <div className="absolute left-3 top-3 text-xs font-bold uppercase tracking-wide text-white/90">
-                  Backstage
+                  Eric Rabar
                 </div>
                 <div className="absolute bottom-3 right-3 rounded bg-black/70 px-1.5 py-0.5 text-xs font-medium text-white">
                   {v.duration}

@@ -37,6 +37,27 @@ const jobs = [
     body: 'Casting a national commercial campaign for a major consumer brand.',
     location: 'New York, NY',
   },
+  {
+    title: 'Broadway Musical — Ensemble',
+    project: 'Hamilton Revival',
+    detail: 'Ensemble / Singer-Dancer...',
+    body: 'Casting ensemble performers for an upcoming Broadway musical revival.',
+    location: 'New York, NY',
+  },
+  {
+    title: 'UGC Creator — Tech Reviews',
+    project: 'TechBrand',
+    detail: 'Creator / On-Camera, Remote...',
+    body: 'Seeking UGC creators to produce authentic tech product review content.',
+    location: 'Remote',
+  },
+  {
+    title: 'Voiceover — Audiobook Narration',
+    project: 'Penguin Audio',
+    detail: 'Narrator / Voiceover, Remote...',
+    body: 'Casting a voiceover artist for audiobook narration of a contemporary fiction title.',
+    location: 'Remote',
+  },
 ];
 
 export default function FeaturedJobs() {
@@ -147,7 +168,7 @@ export default function FeaturedJobs() {
             Helping creatives across all specialties
           </p>
           <h2 className="mt-3 font-serif text-3xl font-bold text-black md:text-5xl">
-            How Backstage works <span className="text-[#4b55ff]">for you</span>
+            How Eric Rabar works <span className="text-[#4b55ff]">for you</span>
           </h2>
         </div>
       </div>

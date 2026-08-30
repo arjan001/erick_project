@@ -136,7 +136,7 @@ export default function Footer() {
 
         {/* Legal */}
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
-          <p className="text-xs text-white/40">© 2026 Backstage. All rights reserved.</p>
+          <p className="text-xs text-white/40">© 2026 Eric Rabar. All rights reserved.</p>
           <div className="flex gap-6">
             <a href="#" className="text-xs text-white/40 hover:text-white">Terms of Service</a>
             <a href="#" className="text-xs text-white/40 hover:text-white">Privacy Policy</a>
