@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, BadgeCheck } from 'lucide-react';
 import RoleToggle from './RoleToggle';
 
 const tabs = [
@@ -111,7 +111,10 @@ export default function FeaturedJobs() {
                 style={{ maxWidth: 'calc(33.333% - 1.25rem)' }}
               >
                 <div className="flex items-start justify-between gap-4">
-                  <h3 className="text-lg font-bold text-black">{job.title}</h3>
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="text-lg font-bold text-black">{job.title}</h3>
+                    <BadgeCheck className="h-5 w-5 shrink-0 text-[#4f46e5]" />
+                  </div>
                   <div className="flex items-center gap-2 rounded-xl bg-[#F3F2EF] px-3 py-2">
                     <div>
                       <p className="text-sm font-bold text-black">{job.project}</p>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, MapPin } from 'lucide-react';
+import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, BadgeCheck } from 'lucide-react';
 import Navbar from '@/components/landing/backstage/Navbar';
 import Footer from '@/components/landing/backstage/Footer';
 import Marquee from '@/components/landing/backstage/Marquee';
@@ -214,7 +214,12 @@ export default function FindJobsPage() {
                   {/* Top row: badge + icons */}
                   <div className="flex items-center justify-between">
                     {job.featured ? (
-                      <span className="rounded-full bg-[#e11d48] px-3 py-1 text-xs font-bold text-white">Featured</span>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-[#e11d48] px-3 py-1 text-xs font-bold text-white">Featured</span>
+                        <span className="flex items-center gap-1 rounded-full bg-[#4f46e5]/10 px-2.5 py-1 text-xs font-bold text-[#4f46e5]">
+                          <BadgeCheck className="h-3.5 w-3.5" /> Verified
+                        </span>
+                      </div>
                     ) : (
                       <span />
                     )}
