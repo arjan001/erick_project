@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, SlidersHorizontal, ChevronDown, ChevronRight, MapPin, Clock, Share2, Heart, Star } from 'lucide-react';
+import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, MapPin } from 'lucide-react';
 import Navbar from '@/components/landing/backstage/Navbar';
 import Footer from '@/components/landing/backstage/Footer';
 import Marquee from '@/components/landing/backstage/Marquee';
@@ -85,7 +85,7 @@ const filterOptions = {
 function FilterDropdown({ label, options, value, onChange }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="relative">
+    <div className="relative min-w-[150px]">
       <button
         onClick={() => setOpen(!open)}
         className="flex w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-black/70 hover:border-gray-300"
@@ -96,12 +96,12 @@ function FilterDropdown({ label, options, value, onChange }) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full z-20 mt-1 w-full rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+          <div className="absolute left-0 top-full z-20 mt-1 w-full min-w-[180px] rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
             {options.map((opt) => (
               <button
                 key={opt}
                 onClick={() => { onChange(opt === options[0] ? '' : opt); setOpen(false); }}
-                className={`block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${value === opt ? 'font-bold text-[#4F46E5]' : 'text-black/70'}`}
+                className={`block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${value === opt ? 'font-bold text-[#4f46e5]' : 'text-black/70'}`}
               >
                 {opt}
               </button>
@@ -131,7 +131,7 @@ export default function FindJobsPage() {
     });
   }, [search, filters]);
 
-  const totalPages = Math.ceil(filtered.length / perPage);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const pageJobs = filtered.slice((page - 1) * perPage, page * perPage);
 
   const toggleSave = (id) => {
@@ -143,23 +143,23 @@ export default function FindJobsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
+    <div className="min-h-screen bg-[#f9fafb]">
       <Marquee />
       <Navbar />
 
       {/* Filter bar */}
-      <div className="border-b border-gray-200 bg-[#F7F7F7]">
-        <div className="mx-auto max-w-[1400px] px-4 py-4 lg:px-8">
+      <div className="border-b border-gray-200 bg-white">
+        <div className="mx-auto max-w-[1400px] px-4 py-3 lg:px-8">
           <div className="flex flex-wrap items-center gap-3">
             <FilterDropdown label="Job location" options={filterOptions.location} value={filters.location} onChange={(v) => setFilters({ ...filters, location: v })} />
             <FilterDropdown label="Job Type" options={filterOptions.jobType} value={filters.jobType} onChange={(v) => setFilters({ ...filters, jobType: v })} />
             <FilterDropdown label="Gender" options={filterOptions.gender} value={filters.gender} onChange={(v) => setFilters({ ...filters, gender: v })} />
             <FilterDropdown label="Age" options={filterOptions.age} value={filters.age} onChange={(v) => setFilters({ ...filters, age: v })} />
             <div className="flex-1" />
-            <button className="flex items-center gap-2 rounded-lg bg-[#4F46E5] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]">
+            <button className="flex items-center gap-2 rounded-lg bg-[#4f46e5] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]">
               <Search className="h-4 w-4" /> Search
             </button>
-            <button className="flex items-center justify-center rounded-lg bg-gray-200 px-3 py-2.5 hover:bg-gray-300">
+            <button className="flex items-center justify-center rounded-lg bg-gray-100 px-3 py-2.5 hover:bg-gray-200">
               <SlidersHorizontal className="h-4 w-4 text-black/60" />
             </button>
             <button className="flex items-center gap-2 rounded-lg border border-[#00D09C] bg-white px-4 py-2.5 text-sm font-semibold text-[#00a37e] hover:bg-[#00D09C]/10">
@@ -170,25 +170,23 @@ export default function FindJobsPage() {
       </div>
 
       {/* Main content */}
-      <div className="mx-auto max-w-[1400px] px-4 py-8 lg:px-8">
-        {/* Header */}
+      <div className="mx-auto max-w-[1400px] px-4 py-6 lg:px-8">
+        {/* Header + toggle */}
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold text-black">
-              Showing {filtered.length.toLocaleString()} jobs with {Math.floor(filtered.length / 3).toLocaleString()} productions near {filters.location || 'All Locations'}
-            </h1>
-          </div>
+          <h1 className="text-lg font-bold text-black">
+            Showing 13,688 jobs with 4,341 productions near <span className="underline">{filters.location || 'All Locations'}</span>
+          </h1>
           {/* Productions/Roles toggle */}
-          <div className="inline-flex items-center rounded-full bg-[#4F46E5]/10 p-1">
+          <div className="inline-flex items-center rounded-full bg-[#4f46e5]/10 p-1">
             <button
               onClick={() => setView('productions')}
-              className={`rounded-full px-4 py-1.5 text-sm font-semibold ${view === 'productions' ? 'bg-[#4F46E5] text-white' : 'text-[#4F46E5]'}`}
+              className={`rounded-full px-5 py-1.5 text-sm font-semibold transition-colors ${view === 'productions' ? 'bg-[#4f46e5] text-white' : 'text-[#4f46e5]'}`}
             >
               Productions
             </button>
             <button
               onClick={() => setView('roles')}
-              className={`rounded-full px-4 py-1.5 text-sm font-semibold ${view === 'roles' ? 'bg-[#4F46E5] text-white' : 'text-[#4F46E5]'}`}
+              className={`rounded-full px-5 py-1.5 text-sm font-semibold transition-colors ${view === 'roles' ? 'bg-[#4f46e5] text-white' : 'text-[#4f46e5]'}`}
             >
               Roles
             </button>
@@ -207,55 +205,70 @@ export default function FindJobsPage() {
         </div>
 
         {/* Job cards */}
-        <div className="mt-6 space-y-4">
+        <div className="mt-5 space-y-4">
           {pageJobs.map((job) => (
-            <div key={job.id} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    {job.featured && (
+            <div key={job.id} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md lg:p-6">
+              <div className="flex items-start gap-6">
+                {/* Left: main content */}
+                <div className="min-w-0 flex-1">
+                  {/* Top row: badge + icons */}
+                  <div className="flex items-center justify-between">
+                    {job.featured ? (
                       <span className="rounded-full bg-[#e11d48] px-3 py-1 text-xs font-bold text-white">Featured</span>
+                    ) : (
+                      <span />
                     )}
-                    <h2 className="text-lg font-bold text-black">{job.title}</h2>
+                    <div className="flex items-center gap-2">
+                      <button className="rounded-full p-1.5 hover:bg-gray-100">
+                        <Share2 className="h-4 w-4 text-black/40" />
+                      </button>
+                      <button onClick={() => toggleSave(job.id)} className="rounded-full p-1.5 hover:bg-gray-100">
+                        <Heart className={`h-4 w-4 ${savedJobs.has(job.id) ? 'fill-[#e11d48] text-[#e11d48]' : 'text-black/40'}`} />
+                      </button>
+                    </div>
                   </div>
-                  <p className="mt-2 text-sm text-black/50">
+
+                  {/* Title */}
+                  <h2 className="mt-3 text-xl font-bold text-black">{job.title}</h2>
+
+                  {/* Meta */}
+                  <p className="mt-1.5 text-sm text-black/50">
                     {job.pay} • {job.location} • Posted: {job.posted}
                   </p>
+
+                  {/* Description */}
                   <p className="mt-3 text-sm leading-relaxed text-black/70">
                     {job.description.slice(0, 180)}...{' '}
-                    <button onClick={() => setSelectedJob(job)} className="font-semibold text-[#4F46E5] hover:underline">view more</button>
+                    <button onClick={() => setSelectedJob(job)} className="font-semibold text-[#4f46e5] hover:underline">view more</button>
                   </p>
+
+                  {/* Tags */}
                   <div className="mt-3 flex flex-wrap gap-2">
                     {job.tags.map((t) => (
                       <span key={t} className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-black/60">{t}</span>
                     ))}
                   </div>
+
+                  {/* CTA */}
                   <button
                     onClick={() => setSelectedJob(job)}
-                    className="mt-4 rounded-full bg-[#4F46E5] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]"
+                    className="mt-4 rounded-full bg-[#4f46e5] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]"
                   >
                     View Details & Apply
                   </button>
                 </div>
 
                 {/* Right sidebar: roles */}
-                <div className="hidden w-56 shrink-0 space-y-3 border-l border-gray-100 pl-4 md:block">
+                <div className="hidden w-56 shrink-0 space-y-3 border-l border-gray-100 pl-5 md:block">
                   {job.roles.map((r, i) => (
                     <div key={i} className="rounded-xl border border-gray-200 p-3">
                       <p className="text-sm font-bold text-black">{r.title}</p>
-                      <p className="text-xs text-black/50">{r.pay}</p>
-                      <button className="mt-2 w-full rounded-full bg-[#4F46E5] py-1.5 text-xs font-semibold text-white hover:bg-[#4338CA]">
+                      <p className="mt-0.5 text-xs text-black/50">{r.pay}</p>
+                      <button className="mt-2 w-full rounded-full bg-[#4f46e5] py-1.5 text-xs font-semibold text-white hover:bg-[#4338CA]">
                         Apply
                       </button>
                     </div>
                   ))}
-                  <button
-                    onClick={() => toggleSave(job.id)}
-                    className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 py-2 text-xs font-medium text-black/60 hover:bg-gray-50"
-                  >
-                    <Heart className={`h-3.5 w-3.5 ${savedJobs.has(job.id) ? 'fill-[#e11d48] text-[#e11d48]' : ''}`} />
-                    {savedJobs.has(job.id) ? 'Saved' : 'Save Job'}
-                  </button>
                 </div>
               </div>
             </div>
@@ -272,26 +285,22 @@ export default function FindJobsPage() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-center gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={`flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                  p === page ? 'bg-[#4F46E5] text-white' : 'bg-white text-black/60 hover:bg-gray-100'
-                }`}
-              >
-                {p}
-              </button>
-            ))}
-            {page < totalPages && (
-              <button onClick={() => setPage(page + 1)} className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-black/60 hover:bg-gray-100">
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        )}
+        <div className="mt-8 flex items-center justify-center gap-2">
+          {Array.from({ length: 12 }, (_, i) => i + 1).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPage(p)}
+              className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-sm font-medium transition-colors ${
+                p === page ? 'bg-[#4f46e5] text-white' : 'bg-white text-black/60 hover:bg-gray-100'
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+          <button onClick={() => setPage((p) => Math.min(12, p + 1))} className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-black/60 hover:bg-gray-100">
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
 
         {/* Discover section */}
         <div className="mt-12 rounded-2xl bg-gray-900 p-8">

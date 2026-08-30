@@ -1,6 +1,7 @@
 import React from 'react';
 import SEOMetaTags from '@/components/SEOMetaTags';
 import Navbar from '@/components/landing/backstage/Navbar';
+import Marquee from '@/components/landing/backstage/Marquee';
 import Hero from '@/components/landing/backstage/Hero';
 import TrustBar from '@/components/landing/backstage/TrustBar';
 import JobSearch from '@/components/landing/backstage/JobSearch';
@@ -29,6 +30,7 @@ export default function Home() {
         }}
       />
 
+      <Marquee />
       <Navbar />
       <main>
         <Hero />
