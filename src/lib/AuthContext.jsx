@@ -1,66 +1,50 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Artist, Team, ProjectOwner, Backer, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
 import auditLogger from '@/lib/auditLogger';
 
 const AuthContext = createContext();
 
-function buildUserFromSupabase(supaUser) {
-  if (!supaUser) return null;
-  const meta = supaUser.user_metadata || {};
+/**
+ * Build the app-level user object from a Base44 auth user.
+ * Base44 users expose email / full_name / role plus any custom schema fields.
+ * The app-specific role (artist/team/client/backer) is resolved from the
+ * linked entity records when available; otherwise we fall back to metadata
+ * stored on the user or a sensible default.
+ */
+function buildUser(base44User, appRole) {
+  if (!base44User) return null;
   return {
-    id: supaUser.id,
-    email: supaUser.email,
-    full_name: meta.full_name || meta.name || supaUser.email?.split('@')[0] || 'User',
-    role: meta.role || 'artist',
-    is_system_user: meta.is_system_user || false,
-    // Present only for invited team members — links them to their team's workspace
-    // instead of the team owner's own account (matched by contact_email).
-    team_id: meta.team_id || null,
+    id: base44User.id,
+    email: base44User.email,
+    full_name: base44User.full_name || base44User.email?.split('@')[0] || 'User',
+    role: appRole || base44User.role || 'artist',
+    is_system_user: base44User._app_role === 'admin' || base44User.role === 'admin',
+    team_id: base44User.team_id || null,
   };
 }
 
-// Fetch user permissions from roles/permissions system
-async function fetchUserPermissions(userId) {
+// Resolve the app role (artist/team/client/backer) for a logged-in Base44
+// user by checking which entity profile exists for their email.
+async function resolveAppRole(email) {
+  if (!email) return 'artist';
   try {
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select(`
-        roles (
-          role_permissions (
-            permissions (
-              permission_key,
-              permission_name,
-              module,
-              action,
-              resource
-            )
-          )
-        )
-      `)
-      .eq('user_id', userId)
-      .eq('is_active', true);
-
-    if (error) throw error;
-
-    // Flatten permissions
-    const permissions = [];
-    data.forEach(userRole => {
-      if (userRole.roles?.role_permissions) {
-        userRole.roles.role_permissions.forEach(rp => {
-          if (rp.permissions) {
-            permissions.push(rp.permissions.permission_key);
-          }
-        });
-      }
-    });
-
-    return permissions;
-  } catch (error) {
-    console.error('Error fetching permissions:', error);
-    return [];
-  }
+    const artists = await Artist.filter({ email });
+    if (artists && artists.length > 0) return 'artist';
+  } catch { /* ignore */ }
+  try {
+    const teams = await Team.filter({ contact_email: email });
+    if (teams && teams.length > 0) return 'team';
+  } catch { /* ignore */ }
+  try {
+    const owners = await ProjectOwner.filter({ email });
+    if (owners && owners.length > 0) return 'client';
+  } catch { /* ignore */ }
+  try {
+    const backers = await Backer.filter({ contact_email: email });
+    if (backers && backers.length > 0) return 'backer';
+  } catch { /* ignore */ }
+  return 'artist';
 }
 
 // Generate a unique invite/referral code for each new user
@@ -92,18 +76,18 @@ async function grantProSubscription(email) {
   }
 }
 
-// Ensure an entity profile exists for new Supabase users
-async function ensureProfile(supaUser) {
-  if (!supaUser) return;
-  const role = supaUser.user_metadata?.role || 'artist';
-  const full_name = supaUser.user_metadata?.full_name || supaUser.email?.split('@')[0] || 'User';
-  const referredBy = supaUser.user_metadata?.referred_by || null;
+// Ensure an entity profile exists for new users
+async function ensureProfile(user) {
+  if (!user?.email) return;
+  const role = user.role || 'artist';
+  const full_name = user.full_name || user.email?.split('@')[0] || 'User';
+  const referredBy = user.referred_by || null;
   try {
     if (role === 'artist') {
-      const existing = await Artist.filter({ email: supaUser.email });
+      const existing = await Artist.filter({ email: user.email });
       if (!existing || existing.length === 0) {
         await Artist.create({
-          email: supaUser.email,
+          email: user.email,
           full_name,
           role: 'director',
           status: 'pending',
@@ -113,15 +97,15 @@ async function ensureProfile(supaUser) {
         });
       }
     } else if (role === 'team') {
-      if (supaUser.user_metadata?.team_id) return;
-      const existing = await Team.filter({ contact_email: supaUser.email });
+      if (user.team_id) return;
+      const existing = await Team.filter({ contact_email: user.email });
       if (!existing || existing.length === 0) {
         await Team.create({
-          team_name: supaUser.user_metadata?.team_name || full_name,
+          team_name: user.team_name || full_name,
           team_code: 'TM' + Date.now().toString().slice(-4),
-          contact_email: supaUser.email,
+          contact_email: user.email,
           contact_name: full_name,
-          phone: supaUser.user_metadata?.phone || '',
+          phone: user.phone || '',
           city: '',
           country: '',
           status: 'pending',
@@ -131,20 +115,20 @@ async function ensureProfile(supaUser) {
         });
       }
     } else if (role === 'backer') {
-      const existing = await Backer.filter({ contact_email: supaUser.email });
+      const existing = await Backer.filter({ contact_email: user.email });
       if (!existing || existing.length === 0) {
         await Backer.create({
           organization_name: full_name,
-          contact_email: supaUser.email,
+          contact_email: user.email,
           invite_code: generateInviteCode(),
           referred_by: referredBy,
         });
       }
     } else if (role === 'client' || role === 'project_owner') {
-      const existing = await ProjectOwner.filter({ email: supaUser.email });
+      const existing = await ProjectOwner.filter({ email: user.email });
       if (!existing || existing.length === 0) {
         await ProjectOwner.create({
-          email: supaUser.email,
+          email: user.email,
           full_name,
           invite_code: generateInviteCode(),
           referred_by: referredBy,
@@ -152,9 +136,8 @@ async function ensureProfile(supaUser) {
       }
     }
 
-    // Grant free Pro subscription if user was referred by an invite code
     if (referredBy) {
-      await grantProSubscription(supaUser.email);
+      await grantProSubscription(user.email);
     }
   } catch (err) {
     console.error('ensureProfile error:', err);
@@ -202,73 +185,47 @@ export const AuthProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, [user?.email]);
 
-  const applySession = async (supaUser) => {
-    const u = buildUserFromSupabase(supaUser);
-    if (u) {
-      setUser(u);
-      setIsAuthenticated(true);
-      localStorage.setItem('studio22_user', JSON.stringify(u));
-      
-      // Fetch permissions for system users
-      if (u.is_system_user) {
-        const userPermissions = await fetchUserPermissions(u.id);
-        setPermissions(userPermissions);
-      }
-    }
-    return u;
-  };
-
   useEffect(() => {
-    // Fallback to localStorage demo session first (works without supabase)
+    // 1. Fallback to localStorage demo session first (works without a Base44 login)
     const stored = localStorage.getItem('studio22_user');
+    let demoUser = null;
     if (stored) {
       try {
-        const parsed = JSON.parse(stored);
-        setUser(parsed);
+        demoUser = JSON.parse(stored);
+        setUser(demoUser);
         setIsAuthenticated(true);
       } catch {
         localStorage.removeItem('studio22_user');
       }
     }
 
-    if (!isSupabaseConfigured()) {
-      setIsLoadingAuth(false);
-      return;
-    }
-
-    // Check Supabase session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        applySession(session.user);
-        ensureProfile(session.user);
-      }
-      setIsLoadingAuth(false);
-    }).catch(() => setIsLoadingAuth(false));
-
-    // Listen for Supabase auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        await applySession(session.user);
-        if (event === 'SIGNED_IN') {
-          ensureProfile(session.user);
+    // 2. Check for a real Base44 auth session
+    (async () => {
+      try {
+        const authed = await base44.auth.isAuthenticated();
+        if (authed) {
+          const me = await base44.auth.me();
+          const appRole = demoUser?.role || await resolveAppRole(me.email);
+          const u = buildUser(me, appRole);
+          setUser(u);
+          setIsAuthenticated(true);
+          localStorage.setItem('studio22_user', JSON.stringify(u));
+          if (me._app_role === 'admin' || me.role === 'admin') {
+            setPermissions(['*']);
+          }
         }
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setPermissions([]);
-        setIsAuthenticated(false);
-        localStorage.removeItem('studio22_user');
+      } catch (err) {
+        console.error('Base44 auth check failed:', err);
+      } finally {
+        setIsLoadingAuth(false);
       }
-    });
-
-    return () => subscription.unsubscribe();
+    })();
   }, []);
 
   const login = async (userData) => {
     setUser(userData);
     setIsAuthenticated(true);
     localStorage.setItem('studio22_user', JSON.stringify(userData));
-    
-    // Log login event
     await auditLogger.auth.login(userData.email);
   };
 
@@ -277,49 +234,25 @@ export const AuthProvider = ({ children }) => {
     const updatedUser = { ...user, full_name: newName };
     setUser(updatedUser);
     localStorage.setItem('studio22_user', JSON.stringify(updatedUser));
-    
-    // Also update Supabase metadata
     try {
-      const { data: { user: supaUser } } = await supabase.auth.getUser();
-      if (supaUser) {
-        await supabase.auth.updateUser({
-          data: { full_name: newName }
-        });
-      }
+      await base44.auth.updateMe({ full_name: newName });
     } catch (err) {
-      console.error('Error updating Supabase metadata:', err);
+      console.error('Error updating Base44 user metadata:', err);
     }
   };
 
-  const hasPermission = (permissionKey) => {
-    return permissions.includes(permissionKey);
-  };
-
-  const hasAnyPermission = (permissionKeys) => {
-    return permissionKeys.some(key => permissions.includes(key));
-  };
-
-  const hasAllPermissions = (permissionKeys) => {
-    return permissionKeys.every(key => permissions.includes(key));
-  };
-
-  const hasModuleAccess = (module) => {
-    return permissions.some(p => p.startsWith(`${module}.`));
-  };
+  const hasPermission = (permissionKey) => permissions.includes('*') || permissions.includes(permissionKey);
+  const hasAnyPermission = (permissionKeys) => permissions.includes('*') || permissionKeys.some(key => permissions.includes(key));
+  const hasAllPermissions = (permissionKeys) => permissions.includes('*') || permissionKeys.every(key => permissions.includes(key));
+  const hasModuleAccess = (module) => permissions.includes('*') || permissions.some(p => p.startsWith(`${module}.`));
 
   const logout = async (shouldRedirect = true) => {
     const userEmail = user?.email;
-    
-    // 1. Sign out from Supabase (both local + global to kill all sessions/tokens)
+    // 1. Sign out from Base44 (clears the stored token + auth header)
     try {
-      await supabase.auth.signOut({ scope: 'global' });
+      base44.auth.logout();
     } catch (e) {
-      console.error('signOut error:', e);
-    }
-    try {
-      await supabase.auth.signOut({ scope: 'local' });
-    } catch (e) {
-      // ignore
+      console.error('base44 logout error:', e);
     }
     // 2. Clear all React state
     setUser(null);
@@ -341,12 +274,10 @@ export const AuthProvider = ({ children }) => {
       document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
       document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + window.location.hostname;
     });
-    
     // 5. Log logout event
     if (userEmail) {
-      await auditLogger.auth.logout(userEmail);
+      try { await auditLogger.auth.logout(userEmail); } catch { /* ignore */ }
     }
-    
     // 6. Redirect to landing page
     if (shouldRedirect) {
       window.location.href = '/';

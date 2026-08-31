@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { AlertCircle } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { Link } from 'react-router-dom';
-import { features } from '@/lib/settings';
-import { supabase } from '@/lib/supabase';
+import { base44 } from '@/api/base44Client';
+import { Artist, Team, Backer, ProjectOwner, Invite, Connection } from '@/lib/supabaseEntities';
+import { useAuth } from '@/lib/AuthContext';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -29,57 +30,42 @@ const GoogleIcon = () => (
   </svg>
 );
 
+const ROLE_REDIRECTS = {
+  artist: '/artistdashboard',
+  team: '/teamdashboard',
+  client: '/clientdashboard',
+  backer: '/backerdashboard',
+  admin: '/admin',
+};
+
 export default function SignUp() {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'artist',
-    inviteCode: ''
+  const { login } = useAuth();
+  const [formData, setFormData] = useState(() => {
+    const roleParam = new URLSearchParams(window.location.search).get('role');
+    return {
+      firstName: '',
+      lastName: '',
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      role: ['artist', 'team', 'client', 'backer'].includes(roleParam) ? roleParam : 'artist',
+      inviteCode: ''
+    };
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [inviteCodeValid, setInviteCodeValid] = useState(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [registrationEnabled, setRegistrationEnabled] = useState(true);
+  // OTP verification step (Base44 registration sends a code to the user's email)
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
   const navigate = useNavigate();
 
-  const handleGoogleSignUp = async () => {
+  const handleGoogleSignUp = () => {
     setError('');
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/SignUp`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
-      });
-      if (error) throw error;
-    } catch (err) {
-      console.error('Google signup error:', err);
-      setError(err.message || 'Failed to sign up with Google');
-      setLoading(false);
-    }
+    base44.auth.loginWithProvider('google', '/SignUp');
   };
-
-  // Check if registration is enabled
-  useEffect(() => {
-    const checkRegistration = async () => {
-      const enabled = await features.isRegistrationEnabled();
-      setRegistrationEnabled(enabled);
-      if (!enabled) {
-        navigate('/SignIn');
-      }
-    };
-    checkRegistration();
-  }, [navigate]);
 
   // Check for invite code in URL query params or from invite landing
   useEffect(() => {
@@ -97,20 +83,14 @@ export default function SignUp() {
       return;
     }
     try {
-      const { Invite } = await import('@/lib/supabaseEntities');
       const invites = await Invite.filter({ code: code });
-      const validInvite = invites?.find(i => 
-        i.status === 'active' && 
+      const validInvite = invites?.find(i =>
+        i.status === 'active' &&
         (i.max_uses === null || i.uses_count < i.max_uses)
       );
-      if (validInvite) {
-        setInviteCodeValid(true);
-      } else {
-        setInviteCodeValid(false);
-      }
+      setInviteCodeValid(!!validInvite);
     } catch (err) {
       console.error('Error validating invite code:', err);
-      // Don't show error for optional invite code
       setInviteCodeValid(null);
     }
   };
@@ -125,6 +105,7 @@ export default function SignUp() {
     }
   };
 
+  // Step 1: register the account with Base44 (sends an OTP to the user's email)
   const handleSignUp = async (e) => {
     e.preventDefault();
     setError('');
@@ -133,62 +114,96 @@ export default function SignUp() {
       setError('Passwords do not match');
       return;
     }
-
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters');
       return;
     }
 
     setLoading(true);
-
     try {
-      // Import Supabase entities and email service
-      const { Artist, Team, Backer, ProjectOwner } = await import('@/lib/supabaseEntities');
-      const { supabase } = await import('@/lib/supabase');
-      const emailService = await import('@/shared/services/emailService');
-
-      // Create Supabase auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      await base44.auth.register({
         email: formData.email,
         password: formData.password,
-        options: {
-          emailConfirm: false, // Disable email verification
-          data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            username: formData.username,
-            role: formData.role,
-            referred_by: formData.inviteCode || null
-          }
-        }
+        referral_code: formData.inviteCode || null,
+      });
+      setOtpSent(true);
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 2: verify the OTP code, then log in and create the profile entity
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!otpCode || otpCode.length < 4) {
+      setError('Please enter the verification code sent to your email');
+      return;
+    }
+    setLoading(true);
+    try {
+      // Verify the email — this authenticates the user (token stored by the SDK)
+      await base44.auth.verifyOtp({
+        email: formData.email,
+        otpCode: otpCode,
       });
 
-      if (authError) {
-        setError(authError.message);
-        return;
-      }
-
-      // Create role-specific record in database
-      const userData = {
-        email: formData.email,
-        full_name: `${formData.firstName} ${formData.lastName}`,
-        invite_code: formData.inviteCode || null,
-        referred_by: formData.inviteCode || null
+      const me = await base44.auth.me();
+      const fullName = `${formData.firstName} ${formData.lastName}`.trim() || formData.email.split('@')[0];
+      const appUser = {
+        id: me.id,
+        email: me.email,
+        full_name: fullName,
+        username: formData.username || `${formData.firstName}${formData.lastName}`.toLowerCase(),
+        role: formData.role,
+        referred_by: formData.inviteCode || null,
       };
+
+      // Create the role-specific profile record in the Base44 database
+      const profileData = {
+        email: formData.email,
+        full_name: fullName,
+        invite_code: formData.inviteCode || null,
+        referred_by: formData.inviteCode || null,
+      };
+      try {
+        if (formData.role === 'artist') {
+          await Artist.create({ ...profileData, username: formData.username, role: 'artist' });
+        } else if (formData.role === 'team') {
+          await Team.create({
+            ...profileData,
+            contact_email: formData.email,
+            team_name: fullName,
+            specialties: [],
+          });
+        } else if (formData.role === 'client') {
+          await ProjectOwner.create({ ...profileData, company: fullName });
+        } else if (formData.role === 'backer') {
+          await Backer.create({
+            ...profileData,
+            contact_email: formData.email,
+            organization_name: fullName,
+            interests: [],
+          });
+        }
+      } catch (profileErr) {
+        console.error('Profile creation error:', profileErr);
+        // Don't block the user — the auth account exists, profile can be retried
+      }
 
       // Mark invite as used if valid and auto-connect users
       if (formData.inviteCode && inviteCodeValid) {
         try {
-          const { Invite, Connection } = await import('@/lib/supabaseEntities');
           const invites = await Invite.filter({ code: formData.inviteCode });
           const validInvite = invites?.[0];
           if (validInvite) {
-            await Invite.update(validInvite.id, { 
+            await Invite.update(validInvite.id, {
               used_by_email: formData.email,
-              uses_count: (validInvite.uses_count || 0) + 1
+              uses_count: (validInvite.uses_count || 0) + 1,
             });
-
-            // Auto-connect new user with invite creator
             if (validInvite.creator_email) {
               try {
                 await Connection.create({
@@ -196,12 +211,10 @@ export default function SignUp() {
                   requester_type: validInvite.creator_type || 'artist',
                   recipient_email: formData.email,
                   recipient_type: formData.role,
-                  status: 'accepted'
+                  status: 'accepted',
                 });
-                console.log('Auto-connected user with invite creator:', validInvite.creator_email);
               } catch (connErr) {
                 console.error('Error creating auto-connection:', connErr);
-                // Don't block signup if connection fails
               }
             }
           }
@@ -210,123 +223,35 @@ export default function SignUp() {
         }
       }
 
-      switch (formData.role) {
-        case 'artist':
-          await Artist.create({
-            ...userData,
-            username: formData.username,
-            role: 'artist'
-          });
-          break;
-        case 'team':
-          await Team.create({
-            ...userData,
-            contact_email: formData.email,
-            team_name: `${formData.firstName} ${formData.lastName}`,
-            specialties: []
-          });
-          break;
-        case 'client':
-          await ProjectOwner.create({
-            ...userData,
-            company: `${formData.firstName} ${formData.lastName}`
-          });
-          break;
-        case 'backer':
-          await Backer.create({
-            ...userData,
-            contact_email: formData.email,
-            organization_name: `${formData.firstName} ${formData.lastName}`,
-            interests: []
-          });
-          break;
-      }
-
-      // Send login credentials email
-      try {
-        await emailService.default.sendLoginCredentialsEmail(
-          formData.email,
-          `${formData.firstName} ${formData.lastName}`
-        );
-      } catch (emailError) {
-        console.error('Failed to send email:', emailError);
-        // Don't block signup if email fails
-      }
-
-      // Store user in localStorage for demo
-      const user = {
-        id: authData.user?.id || formData.email,
-        email: formData.email,
-        full_name: `${formData.firstName} ${formData.lastName}`,
-        username: formData.username || `${formData.firstName}${formData.lastName}`.toLowerCase(),
-        role: formData.role,
-        referred_by: formData.inviteCode || null
-      };
-      localStorage.setItem('studio22_user', JSON.stringify(user));
+      // Persist the session locally and redirect
+      await login(appUser);
       sessionStorage.setItem('studio22_just_logged_in', 'true');
 
-      // Auto-login since email verification is disabled
-      try {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ 
-          email: formData.email, 
-          password: formData.password 
-        });
-        if (!signInError && signInData.user) {
-          // Show invite acceptance modal if valid code was used
-          if (formData.inviteCode && inviteCodeValid) {
-            setShowInviteModal(true);
-            return;
-          }
-          
-          // Redirect based on role
-          const redirects = {
-            artist: '/artistdashboard',
-            team: '/teamdashboard',
-            client: '/clientdashboard',
-            backer: '/backerdashboard',
-            admin: '/admin'
-          };
-          window.location.href = createPageUrl(redirects[formData.role]?.replace('/', '') || 'Home');
-          return;
-        }
-      } catch (loginErr) {
-        console.error('Auto-login failed:', loginErr);
-      }
-
-      // Show invite acceptance modal if valid code was used
       if (formData.inviteCode && inviteCodeValid) {
         setShowInviteModal(true);
         return;
       }
-
-      // Redirect based on role
-      const redirects = {
-        artist: '/artistdashboard',
-        team: '/teamdashboard',
-        client: '/clientdashboard',
-        backer: '/backerdashboard',
-        admin: '/admin'
-      };
-
-      window.location.href = createPageUrl(redirects[formData.role]?.replace('/', '') || 'Home');
+      window.location.href = createPageUrl(ROLE_REDIRECTS[formData.role]?.replace('/', '') || 'Home');
     } catch (err) {
-      console.error('Sign up error:', err);
-      setError('Sign up error. Please try again.');
+      console.error('OTP verification error:', err);
+      setError(err.message || 'Invalid or expired verification code. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleResendOtp = async () => {
+    setError('');
+    try {
+      await base44.auth.resendOtp(formData.email);
+    } catch (err) {
+      setError(err.message || 'Could not resend the code. Please try again.');
+    }
+  };
+
   const handleInviteModalClose = () => {
     setShowInviteModal(false);
-    const redirects = {
-      artist: '/artistdashboard',
-      team: '/teamdashboard',
-      client: '/clientdashboard',
-      backer: '/backerdashboard',
-      admin: '/admin'
-    };
-    window.location.href = createPageUrl(redirects[formData.role]?.replace('/', '') || 'Home');
+    window.location.href = createPageUrl(ROLE_REDIRECTS[formData.role]?.replace('/', '') || 'Home');
   };
 
   return (
@@ -341,170 +266,228 @@ export default function SignUp() {
             </Link>
           </div>
 
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create account</h1>
-            <p className="text-gray-600">Join Studio22 Creative Network</p>
-          </div>
+          {otpSent ? (
+            <>
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Verify your email</h1>
+                <p className="text-gray-600">
+                  We sent a verification code to <span className="font-semibold">{formData.email}</span>. Enter it below to activate your account.
+                </p>
+              </div>
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleVerifyOtp} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Verification code</label>
+                  <Input
+                    type="text"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.trim())}
+                    placeholder="Enter code"
+                    className="w-full tracking-widest"
+                    disabled={loading}
+                    autoFocus
+                    required
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3"
+                  disabled={loading}
+                >
+                  {loading ? 'Verifying...' : 'Verify & continue'}
+                </Button>
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  className="w-full text-sm text-gray-600 hover:text-black"
+                  disabled={loading}
+                >
+                  Didn't get a code? Resend
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); }}
+                  className="w-full text-sm text-gray-500 hover:text-black"
+                >
+                  Back to sign up
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Create account</h1>
+                <p className="text-gray-600">Join Studio22 Creative Network</p>
+              </div>
+
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleSignUp} className="space-y-5">
+                {/* Google Sign Up Button */}
+                <button
+                  type="button"
+                  className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-4 rounded-md flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading}
+                  onClick={handleGoogleSignUp}
+                >
+                  <GoogleIcon />
+                  <span>Sign up with Google</span>
+                </button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">First Name</label>
+                    <Input
+                      type="text"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      placeholder="John"
+                      className="w-full"
+                      disabled={loading}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Last Name</label>
+                    <Input
+                      type="text"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      placeholder="Doe"
+                      className="w-full"
+                      disabled={loading}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {formData.role === 'artist' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Username <span className="text-gray-500">(for profile sharing)</span></label>
+                    <Input
+                      type="text"
+                      value={formData.username}
+                      onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') })}
+                      placeholder="johndoe"
+                      className="w-full"
+                      disabled={loading}
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Your profile will be accessible at studio22.com/username</p>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="john@example.com"
+                    className="w-full"
+                    disabled={loading}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Password</label>
+                  <Input
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="Min 6 characters"
+                    className="w-full"
+                    disabled={loading}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Confirm Password</label>
+                  <Input
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    placeholder="Confirm password"
+                    className="w-full"
+                    disabled={loading}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">I am a...</label>
+                  <select
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    disabled={loading}
+                  >
+                    <option value="artist">Artist</option>
+                    <option value="team">Team</option>
+                    <option value="client">Client</option>
+                    <option value="backer">Backer</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Invite Code (optional)</label>
+                  <Input
+                    type="text"
+                    value={formData.inviteCode}
+                    onChange={handleInviteCodeChange}
+                    placeholder="e.g., S22-ABC123"
+                    className="w-full uppercase"
+                    disabled={loading}
+                    maxLength={10}
+                  />
+                  {inviteCodeValid === true && (
+                    <p className="text-xs text-green-600 mt-1">✓ Valid invite code - you'll get a free Pro subscription!</p>
+                  )}
+                  {inviteCodeValid === false && (
+                    <p className="text-xs text-red-600 mt-1">✗ Invalid invite code</p>
+                  )}
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3"
+                  disabled={loading}
+                >
+                  {loading ? 'Creating account...' : 'Create account'}
+                </Button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <span className="text-sm text-gray-600">Already have an account? </span>
+                <Link to={createPageUrl('SignIn')} className="text-sm text-black font-medium hover:underline">
+                  Sign in
+                </Link>
+              </div>
+            </>
           )}
-
-          <form onSubmit={handleSignUp} className="space-y-5">
-            {/* Google Sign Up Button */}
-            <button
-              type="button"
-              className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-4 rounded-md flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
-              onClick={handleGoogleSignUp}
-            >
-              <GoogleIcon />
-              <span>Sign up with Google</span>
-            </button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with email</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">First Name</label>
-                <Input
-                  type="text"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  placeholder="John"
-                  className="w-full"
-                  disabled={loading}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Last Name</label>
-                <Input
-                  type="text"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  placeholder="Doe"
-                  className="w-full"
-                  disabled={loading}
-                  required
-                />
-              </div>
-            </div>
-
-            {formData.role === 'artist' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Username <span className="text-gray-500">(for profile sharing)</span></label>
-                <Input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') })}
-                  placeholder="johndoe"
-                  className="w-full"
-                  disabled={loading}
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">Your profile will be accessible at studio22.com/username</p>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="john@example.com"
-                className="w-full"
-                disabled={loading}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Password</label>
-              <Input
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="Min 6 characters"
-                className="w-full"
-                disabled={loading}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Confirm Password</label>
-              <Input
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                placeholder="Confirm password"
-                className="w-full"
-                disabled={loading}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">I am a...</label>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                disabled={loading}
-              >
-                <option value="artist">Artist</option>
-                <option value="team">Team</option>
-                <option value="client">Client</option>
-                <option value="backer">Backer</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Invite Code (optional)</label>
-              <Input
-                type="text"
-                value={formData.inviteCode}
-                onChange={handleInviteCodeChange}
-                placeholder="e.g., S22-ABC123"
-                className="w-full uppercase"
-                disabled={loading}
-                maxLength={10}
-              />
-              {inviteCodeValid === true && (
-                <p className="text-xs text-green-600 mt-1">✓ Valid invite code - you'll get a free Pro subscription!</p>
-              )}
-              {inviteCodeValid === false && (
-                <p className="text-xs text-red-600 mt-1">✗ Invalid invite code</p>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3"
-              disabled={loading}
-            >
-              {loading ? 'Creating account...' : 'Create account'}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <span className="text-sm text-gray-600">Already have an account? </span>
-            <Link to={createPageUrl('SignIn')} className="text-sm text-black font-medium hover:underline">
-              Sign in
-            </Link>
-          </div>
         </div>
       </div>
 

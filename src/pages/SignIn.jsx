@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { base44 } from '@/api/base44Client';
 import { Artist, Team, Backer, ProjectOwner, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
 
 const GoogleIcon = () => (
@@ -76,66 +76,28 @@ export default function SignIn() {
     if (searchParams.get('mode') === 'employer') setUserType('employer');
   }, [searchParams]);
 
-  // Password recovery listener
+  // Password recovery listener — detect a reset token in the URL (Base44
+  // password-reset emails link back here with a token to complete the flow).
   useEffect(() => {
-    const checkForPasswordReset = () => {
-      const hash = window.location.hash;
-      const urlParams = new URLSearchParams(window.location.search);
-      const isRecovery = hash.includes('type=recovery') || urlParams.get('type') === 'recovery';
-      const hasAccessToken = hash.includes('access_token');
-      if (isRecovery || hasAccessToken) {
-        setModeOverride('update_password');
-      }
-    };
-
-    checkForPasswordReset();
-
-    if (!isSupabaseConfigured()) return;
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setModeOverride('update_password');
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    const hash = window.location.hash;
+    const urlParams = new URLSearchParams(window.location.search);
+    const isRecovery = hash.includes('type=recovery') || urlParams.get('type') === 'recovery';
+    const hasToken = hash.includes('token') || urlParams.get('token') || hash.includes('access_token');
+    if (isRecovery || hasToken) {
+      setModeOverride('update_password');
+    }
   }, []);
 
   const effectiveMode = modeOverride || mode;
 
-  const handleGoogleLogin = async () => {
-    if (!isSupabaseConfigured()) { setError('OAuth login is not configured yet. Use the demo accounts above.'); return; }
+  const handleGoogleLogin = () => {
     setError('');
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-          queryParams: { access_type: 'offline', prompt: 'consent' },
-        },
-      });
-      if (error) throw error;
-    } catch (err) {
-      setError(err.message || 'Failed to sign in with Google');
-      setLoading(false);
-    }
+    base44.auth.loginWithProvider('google', '/');
   };
 
-  const handleAppleLogin = async () => {
-    if (!isSupabaseConfigured()) { setError('OAuth login is not configured yet. Use the demo accounts above.'); return; }
+  const handleAppleLogin = () => {
     setError('');
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
-        options: { redirectTo: `${window.location.origin}/` },
-      });
-      if (error) throw error;
-    } catch (err) {
-      setError(err.message || 'Failed to sign in with Apple');
-      setLoading(false);
-    }
+    base44.auth.loginWithProvider('apple', '/');
   };
 
   const handleLogin = async (e) => {
@@ -143,6 +105,7 @@ export default function SignIn() {
     setError('');
     setLoading(true);
     try {
+      // Demo accounts (localStorage only — no Base44 account needed)
       if (DEMO_ACCOUNTS[email] && password === email) {
         const acc = DEMO_ACCOUNTS[email];
         login({ id: email, email, full_name: acc.name, role: acc.role });
@@ -154,34 +117,45 @@ export default function SignIn() {
         window.location.href = redirectDest || ROLE_REDIRECTS[acc.role] || '/';
         return;
       }
-      if (!isSupabaseConfigured()) {
-        setError('Invalid credentials. Use the demo accounts shown above (email = password).');
-        setLoading(false);
-        return;
-      }
-      const { data, error: supaError } = await supabase.auth.signInWithPassword({ email, password });
-      if (supaError) throw supaError;
-      const userRole = data.user?.user_metadata?.role || 'artist';
-      const fullName = data.user?.user_metadata?.full_name || data.user?.email?.split('@')[0] || 'User';
 
-      if (userRole === 'client' || userRole === 'project_owner') {
-        try {
-          const owners = await ProjectOwner.filter({ email: data.user.email });
-          if (owners.length > 0) {
-            const owner = owners[0];
-            if (owner.is_suspended) {
-              await supabase.auth.signOut();
-              setError('This account has been suspended. Please contact support for assistance.');
-              setLoading(false);
-              return;
+      // Real Base44 email/password login
+      const { user } = await base44.auth.loginViaEmailPassword(email, password);
+
+      // Resolve the app role from the linked entity profile
+      let userRole = 'artist';
+      let fullName = user.full_name || user.email?.split('@')[0] || 'User';
+      try {
+        const artists = await Artist.filter({ email: user.email });
+        if (artists && artists.length > 0) {
+          userRole = 'artist';
+        } else {
+          const teams = await Team.filter({ contact_email: user.email });
+          if (teams && teams.length > 0) {
+            userRole = 'team';
+            if (teams[0].team_name) fullName = teams[0].team_name;
+          } else {
+            const owners = await ProjectOwner.filter({ email: user.email });
+            if (owners && owners.length > 0) {
+              userRole = 'client';
+              if (owners[0].is_suspended) {
+                base44.auth.logout();
+                setError('This account has been suspended. Please contact support for assistance.');
+                setLoading(false);
+                return;
+              }
+            } else {
+              const backers = await Backer.filter({ contact_email: user.email });
+              if (backers && backers.length > 0) userRole = 'backer';
             }
           }
-        } catch (dbError) {
-          console.error('Error checking account status:', dbError);
         }
+      } catch (dbError) {
+        console.error('Error resolving user role:', dbError);
       }
 
-      login({ id: data.user.id, email: data.user.email, full_name: fullName, role: userRole });
+      if (user.role === 'admin') userRole = 'admin';
+
+      login({ id: user.id, email: user.email, full_name: fullName, role: userRole });
       const redirectDest = sessionStorage.getItem('redirectAfterLogin');
       sessionStorage.removeItem('redirectAfterLogin');
       window.location.href = redirectDest || ROLE_REDIRECTS[userRole] || '/';
@@ -194,62 +168,18 @@ export default function SignIn() {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    setError('');
-
-    if (!email || !email.includes('@')) { setError('Please enter a valid email'); return; }
-    if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
-    if (!isSupabaseConfigured()) { setError('Sign-up is not available yet. Use the demo accounts above to log in.'); return; }
-
-    setLoading(true);
-    try {
-      const finalRole = userType === 'employer' ? 'client' : 'artist';
-      const fullName = `${firstName} ${lastName}`.trim() || email.split('@')[0];
-
-      const { data, error: supaError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailConfirm: false,
-          data: { full_name: fullName, role: finalRole },
-        },
-      });
-      if (supaError) throw supaError;
-
-      const userData = { email, full_name: fullName };
-      if (finalRole === 'artist') {
-        await Artist.create({ ...userData, role: 'artist' });
-      } else {
-        await ProjectOwner.create({ ...userData, company: fullName });
-      }
-
-      if (data.user && !data.session) {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (!signInError && signInData.user) {
-          const userRole = signInData.user?.user_metadata?.role || finalRole;
-          login({ id: signInData.user.id, email: signInData.user.email, full_name: fullName, role: userRole });
-          navigate(ROLE_REDIRECTS[userRole] || '/');
-          return;
-        }
-      }
-      setMessage('Account created! You can now sign in.');
-      setMode('login');
-    } catch (err) {
-      setError(err.message || 'Sign up failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    // The full sign-up flow (with email verification) lives on the dedicated
+    // SignUp page — send the user there with their chosen role preselected.
+    const role = userType === 'employer' ? 'client' : 'artist';
+    navigate(`/SignUp${role === 'client' ? '?role=client' : ''}`);
   };
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setError('');
-    if (!isSupabaseConfigured()) { setError('Password reset is not available yet.'); return; }
     setLoading(true);
     try {
-      const { error: supaError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/SignIn`,
-      });
-      if (supaError) throw supaError;
+      await base44.auth.resetPasswordRequest(email);
       setMessage('Password reset email sent! Check your inbox.');
       setTimeout(() => { setShowForgotPassword(false); setMessage(''); }, 6000);
     } catch (err) {
@@ -264,11 +194,19 @@ export default function SignIn() {
     setError('');
     if (newPassword.length < 6) { setError('Password must be at least 6 characters'); return; }
     if (newPassword !== confirmNewPassword) { setError('Passwords do not match'); return; }
-    if (!isSupabaseConfigured()) { setError('Password update is not available yet.'); return; }
     setLoading(true);
     try {
-      const { error: supaError } = await supabase.auth.updateUser({ password: newPassword });
-      if (supaError) throw supaError;
+      // Base44 delivers a reset token via the email link; parse it from the URL.
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const resetToken = urlParams.get('token') || hashParams.get('token');
+      if (resetToken) {
+        await base44.auth.resetPassword({ resetToken, newPassword });
+      } else {
+        // No token — fall back to changing the password for the current session
+        const me = await base44.auth.me();
+        await base44.auth.changePassword({ userId: me.id, currentPassword: password, newPassword });
+      }
       setMessage('Password updated successfully! You can now sign in.');
       setModeOverride(null);
       setMode('login');
