@@ -37,6 +37,12 @@ const DEMO_ACCOUNTS = {
   'admin@studio22.com': { role: 'admin', name: 'Admin User' },
 };
 
+const DEMO_BUTTONS = [
+  { email: 'admin@studio22.com', label: 'Admin', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AD&backgroundColor=4f46e5' },
+  { email: 'client@client.com', label: 'Client', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CL&backgroundColor=0a0b2e' },
+  { email: 'artist@artist.com', label: 'Artist', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AR&backgroundColor=00a37e' },
+];
+
 const talentBenefits = [
   { icon: Newspaper, text: 'Thousands of fresh jobs every week.' },
   { icon: ShieldCheck, text: 'Jobs vetted to meet our community guidelines.' },
@@ -82,19 +88,23 @@ export default function SignIn() {
       }
     };
 
+    checkForPasswordReset();
+
+    if (!isSupabaseConfigured()) return;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setModeOverride('update_password');
       }
     });
 
-    checkForPasswordReset();
     return () => subscription.unsubscribe();
   }, []);
 
   const effectiveMode = modeOverride || mode;
 
   const handleGoogleLogin = async () => {
+    if (!isSupabaseConfigured()) { setError('OAuth login is not configured yet. Use the demo accounts above.'); return; }
     setError('');
     setLoading(true);
     try {
@@ -113,6 +123,7 @@ export default function SignIn() {
   };
 
   const handleAppleLogin = async () => {
+    if (!isSupabaseConfigured()) { setError('OAuth login is not configured yet. Use the demo accounts above.'); return; }
     setError('');
     setLoading(true);
     try {
@@ -141,6 +152,11 @@ export default function SignIn() {
         const redirectDest = sessionStorage.getItem('redirectAfterLogin');
         sessionStorage.removeItem('redirectAfterLogin');
         window.location.href = redirectDest || ROLE_REDIRECTS[acc.role] || '/';
+        return;
+      }
+      if (!isSupabaseConfigured()) {
+        setError('Invalid credentials. Use the demo accounts shown above (email = password).');
+        setLoading(false);
         return;
       }
       const { data, error: supaError } = await supabase.auth.signInWithPassword({ email, password });
@@ -182,6 +198,7 @@ export default function SignIn() {
 
     if (!email || !email.includes('@')) { setError('Please enter a valid email'); return; }
     if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
+    if (!isSupabaseConfigured()) { setError('Sign-up is not available yet. Use the demo accounts above to log in.'); return; }
 
     setLoading(true);
     try {
@@ -226,6 +243,7 @@ export default function SignIn() {
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setError('');
+    if (!isSupabaseConfigured()) { setError('Password reset is not available yet.'); return; }
     setLoading(true);
     try {
       const { error: supaError } = await supabase.auth.resetPasswordForEmail(email, {
@@ -246,6 +264,7 @@ export default function SignIn() {
     setError('');
     if (newPassword.length < 6) { setError('Password must be at least 6 characters'); return; }
     if (newPassword !== confirmNewPassword) { setError('Passwords do not match'); return; }
+    if (!isSupabaseConfigured()) { setError('Password update is not available yet.'); return; }
     setLoading(true);
     try {
       const { error: supaError } = await supabase.auth.updateUser({ password: newPassword });

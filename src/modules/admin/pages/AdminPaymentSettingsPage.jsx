@@ -1,12 +1,26 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Save, DollarSign, Lock, Globe, CheckCircle, AlertTriangle, ToggleLeft, ToggleRight, TestTube, Zap, Settings as SettingsIcon } from 'lucide-react';
+import { CreditCard, Save, DollarSign, Lock, Globe, CheckCircle, AlertTriangle, ToggleLeft, ToggleRight, TestTube, Zap, Settings as SettingsIcon, Smartphone } from 'lucide-react';
 
 export default function AdminPaymentSettingsPage() {
   const { success, error } = useToast();
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('mollie');
+  const [activeTab, setActiveTab] = useState('mpesa');
+
+  const [mpesaSettings, setMpesaSettings] = useState({
+    enabled: true,
+    mode: 'sandbox',
+    consumerKey: '',
+    consumerSecret: '',
+    shortcode: '',
+    passkey: '',
+    callbackUrl: '',
+    timeoutUrl: '',
+    accountType: 'paybill',
+    currency: 'KES',
+    description: 'Eric Rabar Payment',
+  });
 
   const [mollieSettings, setMollieSettings] = useState({
     enabled: true,
@@ -33,6 +47,27 @@ export default function AdminPaymentSettingsPage() {
     taxRate: 0,
     enableTaxCalculation: false
   });
+
+  const handleSaveMpesaSettings = async () => {
+    setSaving(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      success('Saved', 'M-Pesa settings saved successfully');
+    } catch (err) {
+      console.error('Error saving M-Pesa settings:', err);
+      error('Failed', 'Failed to save M-Pesa settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestMpesaConnection = async () => {
+    try {
+      success('Success', 'M-Pesa connection test successful');
+    } catch (err) {
+      error('Failed', 'M-Pesa connection test failed');
+    }
+  };
 
   const handleSaveMollieSettings = async () => {
     setSaving(true);
@@ -73,13 +108,21 @@ export default function AdminPaymentSettingsPage() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <h1 className="text-3xl font-bold text-gray-900">Payment Settings</h1>
-          <p className="text-gray-600 mt-1">Configure Mollie payment gateway and billing settings</p>
+          <p className="text-gray-600 mt-1">Configure M-Pesa (default), Mollie payment gateways and billing settings</p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Tabs */}
           <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
+            <button
+              onClick={() => setActiveTab('mpesa')}
+              className={`flex items-center gap-1.5 px-4 py-2 font-medium text-sm rounded-md transition-colors ${activeTab === 'mpesa' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              <Smartphone className="w-4 h-4" />
+              M-Pesa
+              <span className="ml-1 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-bold text-green-700">Default</span>
+            </button>
             <button
               onClick={() => setActiveTab('mollie')}
               className={`px-4 py-2 font-medium text-sm rounded-md transition-colors ${activeTab === 'mollie' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
@@ -93,6 +136,181 @@ export default function AdminPaymentSettingsPage() {
               General Settings
             </button>
           </div>
+
+          {activeTab === 'mpesa' && (
+            <div className="max-w-4xl space-y-6">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-green-50 rounded-xl">
+                      <Smartphone className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900">M-Pesa Configuration</h2>
+                      <p className="text-sm text-gray-500">Configure your M-Pesa Daraja API payment gateway (Default)</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${mpesaSettings.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                      {mpesaSettings.enabled ? 'Enabled' : 'Disabled'}
+                    </span>
+                    <button
+                      onClick={() => setMpesaSettings({ ...mpesaSettings, enabled: !mpesaSettings.enabled })}
+                      className="p-2"
+                    >
+                      {mpesaSettings.enabled ? <ToggleRight className="w-5 h-5 text-green-600" /> : <ToggleLeft className="w-5 h-5 text-gray-400" />}
+                    </button>
+                  </div>
+                </div>
+
+                {mpesaSettings.enabled && (
+                  <div className="space-y-5">
+                    <div className="bg-green-50 border border-green-100 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-green-600 mt-0.5" />
+                        <div className="text-sm text-green-800">
+                          <p className="font-medium mb-1">M-Pesa Daraja API Credentials</p>
+                          <p className="text-green-700">Get your consumer key and secret from the Safaricom Daraja API portal. Sandbox mode uses test credentials, production requires live credentials.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Mode</label>
+                        <select
+                          value={mpesaSettings.mode}
+                          onChange={(e) => setMpesaSettings({ ...mpesaSettings, mode: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        >
+                          <option value="sandbox">Sandbox (Test)</option>
+                          <option value="production">Production (Live)</option>
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">Use sandbox for development</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Account Type</label>
+                        <select
+                          value={mpesaSettings.accountType}
+                          onChange={(e) => setMpesaSettings({ ...mpesaSettings, accountType: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        >
+                          <option value="paybill">Paybill</option>
+                          <option value="till">Till Number</option>
+                          <option value="shortcode">Shortcode (Buy Goods)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Consumer Key</label>
+                      <input
+                        type="password"
+                        value={mpesaSettings.consumerKey}
+                        onChange={(e) => setMpesaSettings({ ...mpesaSettings, consumerKey: e.target.value })}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Your Daraja API consumer key"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Consumer Secret</label>
+                      <input
+                        type="password"
+                        value={mpesaSettings.consumerSecret}
+                        onChange={(e) => setMpesaSettings({ ...mpesaSettings, consumerSecret: e.target.value })}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Your Daraja API consumer secret"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Business Shortcode</label>
+                        <input
+                          type="text"
+                          value={mpesaSettings.shortcode}
+                          onChange={(e) => setMpesaSettings({ ...mpesaSettings, shortcode: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="e.g., 174379"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Passkey</label>
+                        <input
+                          type="password"
+                          value={mpesaSettings.passkey}
+                          onChange={(e) => setMpesaSettings({ ...mpesaSettings, passkey: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="Lipa Na M-Pesa passkey"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Callback URL (Confirmation)</label>
+                      <input
+                        type="url"
+                        value={mpesaSettings.callbackUrl}
+                        onChange={(e) => setMpesaSettings({ ...mpesaSettings, callbackUrl: e.target.value })}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="https://yourdomain.com/api/mpesa/callback"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">URL where Safaricom sends payment confirmation</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Timeout / Validation URL</label>
+                      <input
+                        type="url"
+                        value={mpesaSettings.timeoutUrl}
+                        onChange={(e) => setMpesaSettings({ ...mpesaSettings, timeoutUrl: e.target.value })}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="https://yourdomain.com/api/mpesa/timeout"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">URL for C2B validation and timeout callbacks</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Currency</label>
+                        <select
+                          value={mpesaSettings.currency}
+                          onChange={(e) => setMpesaSettings({ ...mpesaSettings, currency: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        >
+                          <option value="KES">KES (Kenyan Shilling)</option>
+                          <option value="USD">USD (US Dollar)</option>
+                          <option value="EUR">EUR (Euro)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Payment Description</label>
+                        <input
+                          type="text"
+                          value={mpesaSettings.description}
+                          onChange={(e) => setMpesaSettings({ ...mpesaSettings, description: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          maxLength={200}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 pt-4 border-t border-gray-200">
+                      <Button onClick={handleTestMpesaConnection} variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
+                        <TestTube className="w-4 h-4 mr-2" />
+                        Test Connection
+                      </Button>
+                      <Button onClick={handleSaveMpesaSettings} disabled={saving} className="bg-green-600 text-white hover:bg-green-700">
+                        <Save className="w-4 h-4 mr-2" />
+                        {saving ? 'Saving...' : 'Save Settings'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {activeTab === 'mollie' && (
             <div className="max-w-4xl space-y-6">

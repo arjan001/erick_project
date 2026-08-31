@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Artist, Team, ProjectOwner, Backer, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
 import auditLogger from '@/lib/auditLogger';
 
@@ -219,26 +219,31 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Check Supabase session first
+    // Fallback to localStorage demo session first (works without supabase)
+    const stored = localStorage.getItem('studio22_user');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setUser(parsed);
+        setIsAuthenticated(true);
+      } catch {
+        localStorage.removeItem('studio22_user');
+      }
+    }
+
+    if (!isSupabaseConfigured()) {
+      setIsLoadingAuth(false);
+      return;
+    }
+
+    // Check Supabase session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         applySession(session.user);
         ensureProfile(session.user);
-      } else {
-        // Fallback to localStorage demo session
-        const stored = localStorage.getItem('studio22_user');
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            setUser(parsed);
-            setIsAuthenticated(true);
-          } catch {
-            localStorage.removeItem('studio22_user');
-          }
-        }
       }
       setIsLoadingAuth(false);
-    });
+    }).catch(() => setIsLoadingAuth(false));
 
     // Listen for Supabase auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {

@@ -105,15 +105,16 @@ export default function FeaturedJobs() {
                   opacity: i === active ? 1 : 0.5,
                 }}
                 transition={{ duration: 0.3 }}
-                className={`w-full shrink-0 rounded-3xl bg-white p-7 shadow-sm ${
+                className={`w-full max-w-full shrink-0 rounded-3xl bg-white p-5 shadow-sm md:max-w-[calc(50%-1.25rem)] md:p-7 lg:max-w-[calc(33.333%-1.25rem)] ${
                   i === active ? 'ring-1 ring-black/5' : ''
                 }`}
-                style={{ maxWidth: 'calc(33.333% - 1.25rem)' }}
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-1.5">
+                  <div>
+                    <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-[#e11d48] px-2.5 py-0.5 text-xs font-bold text-white">
+                      <BadgeCheck className="h-3 w-3" /> Featured
+                    </span>
                     <h3 className="text-lg font-bold text-black">{job.title}</h3>
-                    <BadgeCheck className="h-5 w-5 shrink-0 text-[#4f46e5]" />
                   </div>
                   <div className="flex items-center gap-2 rounded-xl bg-[#F3F2EF] px-3 py-2">
                     <div>
