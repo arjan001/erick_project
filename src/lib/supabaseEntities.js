@@ -1,5 +1,5 @@
 /**
- * Entity access layer — Studio22
+ * Entity access layer — Eric Rabar
  *
  * Previously backed by Supabase; now delegates to the Base44 SDK
  * (base44.entities) so the whole app reads/writes the Base44 database.

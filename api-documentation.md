@@ -1,4 +1,4 @@
-# Studio22 API Documentation
+# Eric Rabar API Documentation
 
 **Version**: 1.0  
 **Last Updated**: July 1, 2026  
@@ -25,7 +25,7 @@
 
 ## Overview
 
-Studio22 uses **Supabase** as its backend database and authentication provider. The API layer provides a unified interface for interacting with the database through entity abstractions that maintain compatibility with the previous Base44 architecture.
+Eric Rabar uses **Supabase** as its backend database and authentication provider. The API layer provides a unified interface for interacting with the database through entity abstractions that maintain compatibility with the previous Base44 architecture.
 
 ### Technology Stack
 
@@ -103,7 +103,7 @@ const result = await authApi.login({
 // client@client.com (role: client)
 // project@project.com (role: project_owner)
 // backer@backer.com (role: backer)
-// admin@studio22.com (role: admin)
+// admin@ericrabar.com (role: admin)
 
 // Logout
 authApi.logout();
@@ -1514,4 +1514,4 @@ For issues or questions:
 
 **Document Version**: 1.0  
 **Last Updated**: July 1, 2026  
-**Maintained By**: Studio22 Development Team
+**Maintained By**: Eric Rabar Development Team

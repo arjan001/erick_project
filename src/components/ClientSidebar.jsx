@@ -28,7 +28,7 @@ export default function ClientSidebar() {
   const { logout } = useAuth();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
+    const storedUser = localStorage.getItem('ericrabar_user');
     setUser(storedUser ? JSON.parse(storedUser) : null);
   }, []);
 
@@ -116,18 +116,18 @@ export default function ClientSidebar() {
 
   return (
     <aside
-      className={`h-full bg-white shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative ${
+      className={`h-full bg-[#0A0A0A] shadow-[2px_0_12px_rgba(0,0,0,0.3)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative ${
         mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       } ${expanded ? 'w-64' : 'w-20'}`}
     >
       {/* Logo + Toggle */}
-      <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100">
-        <Link to="/" className="font-black text-xl text-black">
+      <div className="h-16 flex items-center justify-between px-3 border-b border-[#1a1a1a]">
+        <Link to="/" className="font-black text-xl text-[#C9A962]">
           22.
         </Link>
         <button
           onClick={toggle}
-          className="p-1.5 rounded-lg hover:bg-gray-100 hover:text-black transition-colors text-gray-400"
+          className="p-1.5 rounded-lg hover:bg-white/5 hover:text-[#C9A962] transition-colors text-gray-500"
         >
           {expanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
@@ -145,7 +145,7 @@ export default function ClientSidebar() {
                 <Link
                   to={createPageUrl(item.href)}
                   className={`flex items-center justify-center w-full p-2 rounded-lg transition-all ${
-                    isActive ? 'bg-gray-100 text-black font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                    isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
                   }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
@@ -166,9 +166,9 @@ export default function ClientSidebar() {
                   )}
                 </Link>
                 {/* Tooltip */}
-                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-[#1a1a1a] text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
                   {item.label}
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-[#1a1a1a] rotate-45"></div>
                 </div>
               </div>
             );
@@ -179,7 +179,7 @@ export default function ClientSidebar() {
               key={item.href}
               to={createPageUrl(item.href)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                isActive ? 'bg-gray-100 text-black font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
@@ -205,28 +205,28 @@ export default function ClientSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-gray-100 p-2 space-y-1">
+      <div className="border-t border-[#1a1a1a] p-2 space-y-1">
         {!expanded ? (
           <div className="relative group">
             <div className="flex items-center justify-center w-full p-2 rounded-xl">
-              <div className="w-8 h-8 bg-gray-100 ring-2 ring-gray-50 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-gray-700">
+              <div className="w-8 h-8 bg-[#1a1a1a] ring-2 ring-[#222] rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-gray-700">
                 {user?.full_name?.charAt(0) || 'C'}
               </div>
             </div>
             {/* Tooltip */}
-            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-[#1a1a1a] text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
               {user?.full_name || 'Client'}
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-[#1a1a1a] rotate-45"></div>
             </div>
           </div>
         ) : (
           <div className="flex items-center gap-3 px-3 py-2 rounded-xl">
-            <div className="w-8 h-8 bg-gray-100 ring-2 ring-gray-50 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-gray-700">
+            <div className="w-8 h-8 bg-[#1a1a1a] ring-2 ring-[#222] rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-gray-700">
               {user?.full_name?.charAt(0) || 'C'}
             </div>
             <div className="text-left flex-1 min-w-0">
-              <div className="font-medium text-gray-900 text-xs truncate">{user?.full_name || 'Client'}</div>
-              <div className="text-xs text-gray-500 truncate">{user?.email}</div>
+              <div className="font-medium text-white text-xs truncate">{user?.full_name || 'Client'}</div>
+              <div className="text-xs text-gray-400 truncate">{user?.email}</div>
             </div>
           </div>
         )}
@@ -234,20 +234,20 @@ export default function ClientSidebar() {
           <div className="relative group">
             <button
               onClick={handleLogout}
-              className="flex items-center justify-center w-full p-2 rounded-lg text-red-500 hover:bg-red-50 transition-all"
+              className="flex items-center justify-center w-full p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-all"
             >
               <LogOut className="w-4 h-4 flex-shrink-0" />
             </button>
             {/* Tooltip */}
-            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-[#1a1a1a] text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
               Logout
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-[#1a1a1a] rotate-45"></div>
             </div>
           </div>
         ) : (
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 transition-all text-sm font-medium"
+            className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-red-500 hover:bg-red-500/10 transition-all text-sm font-medium"
           >
             <LogOut className="w-4 h-4 flex-shrink-0" />
             Logout

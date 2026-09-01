@@ -50,7 +50,7 @@ async function resolveAppRole(email) {
 // Generate a unique invite/referral code for each new user
 function generateInviteCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = 'S22-';
+  let code = 'ER-';
   for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
   return code;
 }
@@ -187,7 +187,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // 1. Fallback to localStorage demo session first (works without a Base44 login)
-    const stored = localStorage.getItem('studio22_user');
+    const stored = localStorage.getItem('ericrabar_user');
     let demoUser = null;
     if (stored) {
       try {
@@ -195,7 +195,7 @@ export const AuthProvider = ({ children }) => {
         setUser(demoUser);
         setIsAuthenticated(true);
       } catch {
-        localStorage.removeItem('studio22_user');
+        localStorage.removeItem('ericrabar_user');
       }
     }
 
@@ -209,7 +209,7 @@ export const AuthProvider = ({ children }) => {
           const u = buildUser(me, appRole);
           setUser(u);
           setIsAuthenticated(true);
-          localStorage.setItem('studio22_user', JSON.stringify(u));
+          localStorage.setItem('ericrabar_user', JSON.stringify(u));
           if (me._app_role === 'admin' || me.role === 'admin') {
             setPermissions(['*']);
           }
@@ -225,7 +225,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (userData) => {
     setUser(userData);
     setIsAuthenticated(true);
-    localStorage.setItem('studio22_user', JSON.stringify(userData));
+    localStorage.setItem('ericrabar_user', JSON.stringify(userData));
     await auditLogger.auth.login(userData.email);
   };
 
@@ -233,7 +233,7 @@ export const AuthProvider = ({ children }) => {
     if (!user) return;
     const updatedUser = { ...user, full_name: newName };
     setUser(updatedUser);
-    localStorage.setItem('studio22_user', JSON.stringify(updatedUser));
+    localStorage.setItem('ericrabar_user', JSON.stringify(updatedUser));
     try {
       await base44.auth.updateMe({ full_name: newName });
     } catch (err) {
@@ -259,11 +259,11 @@ export const AuthProvider = ({ children }) => {
     setPermissions([]);
     setIsAuthenticated(false);
     // 3. Clear every piece of stored auth/session data
-    localStorage.removeItem('studio22_user');
-    localStorage.removeItem('studio22_team');
-    localStorage.removeItem('studio22_sidebar_expanded');
-    sessionStorage.removeItem('studio22_just_logged_in');
-    sessionStorage.removeItem('studio22_onboarding_seen');
+    localStorage.removeItem('ericrabar_user');
+    localStorage.removeItem('ericrabar_team');
+    localStorage.removeItem('ericrabar_sidebar_expanded');
+    sessionStorage.removeItem('ericrabar_just_logged_in');
+    sessionStorage.removeItem('ericrabar_onboarding_seen');
     // Nuke any lingering Supabase keys in localStorage/sessionStorage
     Object.keys(localStorage).forEach(k => { if (k.startsWith('sb-')) localStorage.removeItem(k); });
     Object.keys(sessionStorage).forEach(k => { if (k.startsWith('sb-')) sessionStorage.removeItem(k); });

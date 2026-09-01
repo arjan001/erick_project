@@ -8,6 +8,9 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Artist, Team, Backer, ProjectOwner, Invite, Connection } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
+import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete';
+import { ALL_FILM_ROLES } from '@/lib/filmRoles';
+import skillsAndRoles from '@/lib/skillsAndRoles.json';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -50,9 +53,13 @@ export default function SignUp() {
       password: '',
       confirmPassword: '',
       role: ['artist', 'team', 'client', 'backer'].includes(roleParam) ? roleParam : 'artist',
-      inviteCode: ''
+      inviteCode: '',
+      selectedRoles: [],
+      selectedSkills: [],
     };
   });
+
+  const ALL_SKILLS = Object.values(skillsAndRoles.film_roles_by_category || {}).flat();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [inviteCodeValid, setInviteCodeValid] = useState(null);
@@ -171,7 +178,7 @@ export default function SignUp() {
       };
       try {
         if (formData.role === 'artist') {
-          await Artist.create({ ...profileData, username: formData.username, role: 'artist' });
+          await Artist.create({ ...profileData, username: formData.username, role: 'artist', secondary_roles: formData.selectedRoles, skills: formData.selectedSkills });
         } else if (formData.role === 'team') {
           await Team.create({
             ...profileData,
@@ -225,7 +232,7 @@ export default function SignUp() {
 
       // Persist the session locally and redirect
       await login(appUser);
-      sessionStorage.setItem('studio22_just_logged_in', 'true');
+      sessionStorage.setItem('ericrabar_just_logged_in', 'true');
 
       if (formData.inviteCode && inviteCodeValid) {
         setShowInviteModal(true);
@@ -324,7 +331,7 @@ export default function SignUp() {
             <>
               <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Create account</h1>
-                <p className="text-gray-600">Join Studio22 Creative Network</p>
+                <p className="text-gray-600">Join Eric Rabar Creative Network</p>
               </div>
 
               {error && (
@@ -394,7 +401,7 @@ export default function SignUp() {
                       disabled={loading}
                       required
                     />
-                    <p className="text-xs text-gray-500 mt-1">Your profile will be accessible at studio22.com/username</p>
+                    <p className="text-xs text-gray-500 mt-1">Your profile will be accessible at ericrabar.com/username</p>
                   </div>
                 )}
 
@@ -452,13 +459,38 @@ export default function SignUp() {
                   </select>
                 </div>
 
+                {formData.role === 'artist' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Select Your Roles <span className="text-gray-500">(multi-select)</span></label>
+                      <MultiSelectAutocomplete
+                        options={ALL_FILM_ROLES}
+                        selected={formData.selectedRoles}
+                        onChange={(selected) => setFormData({ ...formData, selectedRoles: selected })}
+                        placeholder="Search and select your roles..."
+                        searchable={true}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Select Your Skills <span className="text-gray-500">(multi-select)</span></label>
+                      <MultiSelectAutocomplete
+                        options={ALL_SKILLS}
+                        selected={formData.selectedSkills}
+                        onChange={(selected) => setFormData({ ...formData, selectedSkills: selected })}
+                        placeholder="Search and select your skills..."
+                        searchable={true}
+                      />
+                    </div>
+                  </>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">Invite Code (optional)</label>
                   <Input
                     type="text"
                     value={formData.inviteCode}
                     onChange={handleInviteCodeChange}
-                    placeholder="e.g., S22-ABC123"
+                    placeholder="e.g., ER-ABC123"
                     className="w-full uppercase"
                     disabled={loading}
                     maxLength={10}
@@ -496,7 +528,7 @@ export default function SignUp() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <span className="text-9xl font-black tracking-tighter text-white/20">22.</span>
-            <p className="text-white/60 text-lg mt-4">Studio22 Creative Network</p>
+            <p className="text-white/60 text-lg mt-4">Eric Rabar Creative Network</p>
           </div>
         </div>
         {/* Decorative elements */}
@@ -514,7 +546,7 @@ export default function SignUp() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Invite Code Accepted!</h2>
-            <p className="text-gray-600 mb-6">Your Pro plan begins now. Welcome to Studio22!</p>
+            <p className="text-gray-600 mb-6">Your Pro plan begins now. Welcome to Eric Rabar!</p>
             <button
               onClick={handleInviteModalClose}
               className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3 rounded-xl transition-colors"

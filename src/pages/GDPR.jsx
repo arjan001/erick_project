@@ -25,7 +25,7 @@ export default function GDPR() {
               GDPR Overview
             </h2>
             <p className="text-gray-700 leading-relaxed">
-              Studio22 is committed to complying with the General Data Protection Regulation (GDPR) and protecting the personal data of our users within the European Union. This document outlines your rights under GDPR and how we handle your data.
+              Eric Rabar is committed to complying with the General Data Protection Regulation (GDPR) and protecting the personal data of our users within the European Union. This document outlines your rights under GDPR and how we handle your data.
             </p>
           </section>
 
@@ -135,7 +135,7 @@ export default function GDPR() {
             <p className="text-gray-700 leading-relaxed">
               For GDPR-related inquiries, please contact our Data Protection Officer at:
             </p>
-            <p className="text-gray-900 font-semibold mt-2">dpo@studio22.com</p>
+            <p className="text-gray-900 font-semibold mt-2">dpo@ericrabar.com</p>
           </section>
         </div>
       </div>

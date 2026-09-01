@@ -121,7 +121,7 @@ export default function TeamMessagesPage() {
   };
 
   const loadConversations = () => {
-    const saved = localStorage.getItem('studio22_team_conversations');
+    const saved = localStorage.getItem('ericrabar_team_conversations');
     if (saved) {
       setConversations(JSON.parse(saved));
     } else {
@@ -146,12 +146,12 @@ export default function TeamMessagesPage() {
         }
       ];
       setConversations(mockConversations);
-      localStorage.setItem('studio22_team_conversations', JSON.stringify(mockConversations));
+      localStorage.setItem('ericrabar_team_conversations', JSON.stringify(mockConversations));
     }
   };
 
   const loadMessages = (conversationId) => {
-    const saved = localStorage.getItem(`studio22_team_messages_${conversationId}`);
+    const saved = localStorage.getItem(`ericrabar_team_messages_${conversationId}`);
     if (saved) {
       setMessages(JSON.parse(saved));
     } else {
@@ -170,7 +170,7 @@ export default function TeamMessagesPage() {
         }
       ];
       setMessages(mockMessages);
-      localStorage.setItem(`studio22_team_messages_${conversationId}`, JSON.stringify(mockMessages));
+      localStorage.setItem(`ericrabar_team_messages_${conversationId}`, JSON.stringify(mockMessages));
     }
   };
 
@@ -186,7 +186,7 @@ export default function TeamMessagesPage() {
 
     setMessages([...messages, message]);
     localStorage.setItem(
-      `studio22_team_messages_${selectedConversation.id}`,
+      `ericrabar_team_messages_${selectedConversation.id}`,
       JSON.stringify([...messages, message])
     );
 

@@ -34,8 +34,8 @@ export default function ClientDashboard() {
 
   // Clear any stored AI context when dashboard loads
   useEffect(() => {
-    localStorage.removeItem('studio22_ai_modal_context');
-    localStorage.removeItem('studio22_ai_modal_draft');
+    localStorage.removeItem('ericrabar_ai_modal_context');
+    localStorage.removeItem('ericrabar_ai_modal_draft');
   }, []);
 
   useEffect(() => {

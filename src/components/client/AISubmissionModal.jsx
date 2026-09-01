@@ -1416,7 +1416,7 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
       description: projectDescription,
       timestamp: new Date().toISOString()
     };
-    localStorage.setItem('studio22_ai_modal_context', JSON.stringify(contextData));
+    localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData));
     
     const updatedProjectData = {
       ...projectData,
@@ -1461,7 +1461,7 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
       description: projectDescription,
       timestamp: new Date().toISOString()
     };
-    localStorage.setItem('studio22_ai_modal_context', JSON.stringify(contextData));
+    localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData));
     
     // Regenerate production plan with new category
     try {

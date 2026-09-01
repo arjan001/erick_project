@@ -104,7 +104,7 @@ export default function AdminJobsPage() {
         budget: parseFloat(createForm.budget) || 0,
         duration: createForm.duration,
         status: createForm.status,
-        client_email: user?.email || 'admin@studio22.com',
+        client_email: user?.email || 'admin@ericrabar.com',
         client_name: user?.full_name || 'Admin'
       });
       setJobs(prev => [newJob, ...prev]);

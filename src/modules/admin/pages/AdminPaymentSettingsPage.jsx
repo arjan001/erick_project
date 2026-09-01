@@ -30,7 +30,7 @@ export default function AdminPaymentSettingsPage() {
     webhookUrl: '',
     redirectUrl: '',
     currency: 'EUR',
-    description: 'Studio22 Payment',
+    description: 'Eric Rabar Payment',
     locale: 'en_US',
     captureMethod: 'automatic'
   });

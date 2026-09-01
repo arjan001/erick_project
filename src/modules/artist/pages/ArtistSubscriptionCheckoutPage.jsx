@@ -272,7 +272,7 @@ export default function ArtistSubscriptionCheckoutPage() {
   useEffect(() => {
     if (!subscriptionsEnabled) return;
 
-    const storedUser = localStorage.getItem('studio22_user');
+    const storedUser = localStorage.getItem('ericrabar_user');
     if (!storedUser) { window.location.href = '/signin'; return; }
     const userData = JSON.parse(storedUser);
     setUser(userData);

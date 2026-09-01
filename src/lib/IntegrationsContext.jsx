@@ -15,7 +15,7 @@ export const IntegrationsProvider = ({ children }) => {
     try {
       // In production, this would fetch from the integrations_settings table
       // For now, we'll use localStorage or environment variables
-      const savedSettings = localStorage.getItem('studio22_integrations');
+      const savedSettings = localStorage.getItem('ericrabar_integrations');
       if (savedSettings) {
         setIntegrations(JSON.parse(savedSettings));
       }
@@ -30,7 +30,7 @@ export const IntegrationsProvider = ({ children }) => {
     try {
       const updated = { ...integrations, [name]: settings };
       setIntegrations(updated);
-      localStorage.setItem('studio22_integrations', JSON.stringify(updated));
+      localStorage.setItem('ericrabar_integrations', JSON.stringify(updated));
       // In production, this would update the database
     } catch (err) {
       console.error('Error updating integration:', err);

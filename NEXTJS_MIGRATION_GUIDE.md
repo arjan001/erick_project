@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This document outlines the complete migration strategy for transitioning Studio22 from a React + Vite + Supabase client-side rendering (CSR) architecture to a Next.js server-side rendering (SSR) architecture with either Supabase or self-managed PostgreSQL as the backend.
+This document outlines the complete migration strategy for transitioning Eric Rabar from a React + Vite + Supabase client-side rendering (CSR) architecture to a Next.js server-side rendering (SSR) architecture with either Supabase or self-managed PostgreSQL as the backend.
 
 **Current Architecture:**
 - Frontend: React 18 + Vite (CSR)
@@ -268,8 +268,8 @@ This document outlines the complete migration strategy for transitioning Studio2
 
 **Create Next.js Project:**
 ```bash
-npx create-next-app@latest studio22-nextjs
-cd studio22-nextjs
+npx create-next-app@latest ericrabar-nextjs
+cd ericrabar-nextjs
 ```
 
 **Install Dependencies:**

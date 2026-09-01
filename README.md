@@ -1,8 +1,8 @@
-**Studio22**
+**Eric Rabar**
 
 **About**
 
-Studio22 is a creative production marketplace that connects film & video professionals with the people who need them. It brings together four kinds of members in one platform:
+Eric Rabar is a creative production marketplace that connects film & video professionals with the people who need them. It brings together four kinds of members in one platform:
 
 - **Creators (Artists)** — directors, cinematographers, editors, VFX/3D artists, sound designers, and other specialists who build a profile, showcase a portfolio, and apply to paid jobs.
 - **Teams** — production studios and crews who register as a group, list their members, equipment, and portfolio, and take on larger jobs together.

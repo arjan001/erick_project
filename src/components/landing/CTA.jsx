@@ -30,19 +30,19 @@ export default function CTA() {
           something great?
         </h2>
         <p className="mx-auto mt-6 max-w-lg text-lg text-gray-400">
-          Join Studio22 today. Post a project, build your portfolio, or find your
+          Join Eric Rabar today. Post a project, build your portfolio, or find your
           next crew.
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
-            to={createPageUrl('SubmitProject')}
+            to={createPageUrl('SignUp')}
             className="group flex items-center gap-2 rounded-lg bg-[#C9A962] px-8 py-3.5 text-sm font-semibold text-black transition-colors hover:bg-[#D4B575]"
           >
             Post a Project
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
-            to={createPageUrl('ApplyArtist')}
+            to={createPageUrl('SignUp')}
             className="rounded-lg border border-white/20 px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
           >
             Join as a Creator

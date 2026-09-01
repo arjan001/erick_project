@@ -1,8 +1,8 @@
-# Studio22 Deployment Guide
+# Eric Rabar Deployment Guide
 
 ## Overview
 
-This guide covers the deployment process for Studio22 to production environments.
+This guide covers the deployment process for Eric Rabar to production environments.
 
 ## Prerequisites
 
@@ -145,7 +145,7 @@ npm run build
 ```nginx
 server {
     listen 80;
-    server_name studio22.com www.studio22.com;
+    server_name ericrabar.com www.ericrabar.com;
     
     # Redirect to HTTPS
     return 301 https://$server_name$request_uri;
@@ -153,7 +153,7 @@ server {
 
 server {
     listen 443 ssl http2;
-    server_name studio22.com www.studio22.com;
+    server_name ericrabar.com www.ericrabar.com;
 
     # SSL Configuration
     ssl_certificate /path/to/ssl/certificate.crt;
@@ -162,7 +162,7 @@ server {
     ssl_ciphers HIGH:!aNULL:!MD5;
 
     # Root directory
-    root /var/www/studio22/dist;
+    root /var/www/ericrabar/dist;
     index index.html;
 
     # React Router support
@@ -188,19 +188,19 @@ server {
 
 ```apache
 <VirtualHost *:80>
-    ServerName studio22.com
-    Redirect permanent / https://studio22.com/
+    ServerName ericrabar.com
+    Redirect permanent / https://ericrabar.com/
 </VirtualHost>
 
 <VirtualHost *:443>
-    ServerName studio22.com
-    DocumentRoot /var/www/studio22/dist
+    ServerName ericrabar.com
+    DocumentRoot /var/www/ericrabar/dist
 
     SSLEngine on
     SSLCertificateFile /path/to/ssl/certificate.crt
     SSLCertificateKeyFile /path/to/ssl/private.key
 
-    <Directory /var/www/studio22/dist>
+    <Directory /var/www/ericrabar/dist>
         RewriteEngine On
         RewriteBase /
         RewriteRule ^index\.html$ - [L]
@@ -235,7 +235,7 @@ sudo apt-get install certbot python3-certbot-nginx
 
 2. Obtain certificate:
 ```bash
-sudo certbot --nginx -d studio22.com -d www.studio22.com
+sudo certbot --nginx -d ericrabar.com -d www.ericrabar.com
 ```
 
 3. Auto-renewal is configured automatically
@@ -247,7 +247,7 @@ sudo certbot --nginx -d studio22.com -d www.studio22.com
 3. Configure web server with certificate paths
 4. Test SSL configuration:
 ```bash
-openssl s_client -connect studio22.com:443
+openssl s_client -connect ericrabar.com:443
 ```
 
 ## CDN Configuration
@@ -464,7 +464,7 @@ npm run build
 For deployment issues:
 - Check documentation: `/docs`
 - Review error logs
-- Contact support: support@studio22.com
+- Contact support: support@ericrabar.com
 
 ---
 

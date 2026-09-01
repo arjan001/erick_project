@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Gift, MessageCircle, Briefcase, Star, ArrowRight, Share2, Copy, Check, CheckCircle } from 'lucide-react';
 
-// Use a simple SVG data URI for OG image representing Studio22 brand
-const OG_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630"%3E%3Crect fill="%23000" width="1200" height="630"/%3E%3Ctext x="50%25" y="45%25" dominant-baseline="middle" text-anchor="middle" fill="%23fff" font-size="72" font-weight="bold"%3EStudio22%3C/text%3E%3Ctext x="50%25" y="55%25" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="36"%3EPro Beta Invite%3C/text%3E%3C/svg%3E';
+// Use a simple SVG data URI for OG image representing Eric Rabar brand
+const OG_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630"%3E%3Crect fill="%23000" width="1200" height="630"/%3E%3Ctext x="50%25" y="45%25" dominant-baseline="middle" text-anchor="middle" fill="%23fff" font-size="72" font-weight="bold"%3EEric Rabar%3C/text%3E%3Ctext x="50%25" y="55%25" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="36"%3EPro Beta Invite%3C/text%3E%3C/svg%3E';
 
 function setMeta(attr, key, content) {
   let el = document.querySelector(`meta[${attr}="${key}"]`);
@@ -20,21 +20,21 @@ export default function InviteLanding() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const inviterName = searchParams.get('inviter') || 'Studio22';
+  const inviterName = searchParams.get('inviter') || 'Eric Rabar';
 
   useEffect(() => {
     const url = `${window.location.origin}/invite/${code}`;
-    document.title = `${inviterName} invited you to join Studio22 Pro Beta`;
-    setMeta('name', 'description', `${inviterName} has invited you to join Studio22 as a Pro Beta user. Connect with top film & creative talent, post projects, and grow your creative career.`);
-    setMeta('property', 'og:title', `${inviterName} invited you to join Studio22 Pro Beta`);
-    setMeta('property', 'og:description', `${inviterName} invites you to join Studio22 with invite code ${code}. Get Pro Beta access — more messages, more projects, priority features.`);
+    document.title = `${inviterName} invited you to join Eric Rabar Pro Beta`;
+    setMeta('name', 'description', `${inviterName} has invited you to join Eric Rabar as a Pro Beta user. Connect with top film & creative talent, post projects, and grow your creative career.`);
+    setMeta('property', 'og:title', `${inviterName} invited you to join Eric Rabar Pro Beta`);
+    setMeta('property', 'og:description', `${inviterName} invites you to join Eric Rabar with invite code ${code}. Get Pro Beta access — more messages, more projects, priority features.`);
     setMeta('property', 'og:image', OG_IMAGE);
     setMeta('property', 'og:url', url);
     setMeta('property', 'og:type', 'website');
-    setMeta('property', 'og:site_name', 'Studio22');
+    setMeta('property', 'og:site_name', 'Eric Rabar');
     setMeta('name', 'twitter:card', 'summary_large_image');
-    setMeta('name', 'twitter:title', `${inviterName} invited you to join Studio22 Pro Beta`);
-    setMeta('name', 'twitter:description', `${inviterName} invites you to join Studio22 with invite code ${code}. Get Pro Beta access free.`);
+    setMeta('name', 'twitter:title', `${inviterName} invited you to join Eric Rabar Pro Beta`);
+    setMeta('name', 'twitter:description', `${inviterName} invites you to join Eric Rabar with invite code ${code}. Get Pro Beta access free.`);
     setMeta('name', 'twitter:image', OG_IMAGE);
 
     // Schema.org structured data for SEO
@@ -48,8 +48,8 @@ export default function InviteLanding() {
     scriptEl.textContent = JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'InviteAction',
-      name: 'Studio22 Pro Beta Invite',
-      description: `${inviterName} invited you to join Studio22 as a Pro Beta user`,
+      name: 'Eric Rabar Pro Beta Invite',
+      description: `${inviterName} invited you to join Eric Rabar as a Pro Beta user`,
       url: url,
       agent: {
         '@type': 'Person',
@@ -62,7 +62,7 @@ export default function InviteLanding() {
   const signupUrl = `/SignIn?ref=${code}&mode=signup`;
 
   const handleShare = (platform) => {
-    const text = encodeURIComponent("You're invited to Studio22 — get free Pro Beta access!");
+    const text = encodeURIComponent("You're invited to Eric Rabar — get free Pro Beta access!");
     const url = encodeURIComponent(inviteUrl);
     if (platform === 'linkedin') {
       window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
@@ -107,7 +107,7 @@ export default function InviteLanding() {
           </div>
 
           <h1 className="text-5xl sm:text-6xl font-black text-gray-900 mb-4 tracking-tight">
-            {inviterName !== 'Studio22' ? `${inviterName} invited you` : "YOU'RE INVITED"}
+            {inviterName !== 'Eric Rabar' ? `${inviterName} invited you` : "YOU'RE INVITED"}
           </h1>
           <p className="text-2xl font-bold text-gray-900 mb-3">
             Pro Beta Release
@@ -175,7 +175,7 @@ export default function InviteLanding() {
 
       {/* Footer */}
       <div className="max-w-4xl mx-auto px-6 py-12 text-center border-t border-gray-200">
-        <p className="text-xs text-gray-500">Studio22 Creative Network — Connecting filmmakers, creators, and production teams worldwide.</p>
+        <p className="text-xs text-gray-500">Eric Rabar Creative Network — Connecting filmmakers, creators, and production teams worldwide.</p>
         <p className="text-xs text-gray-500 mt-2">
           Already have an account?{' '}
           <button onClick={() => navigate('/SignIn')} className="text-gray-900 font-semibold hover:underline">Sign in</button>

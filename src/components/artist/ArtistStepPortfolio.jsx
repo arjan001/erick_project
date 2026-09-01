@@ -77,7 +77,7 @@ export default function ArtistStepPortfolio({ data, updateData }) {
             className="mt-1"
           />
           <Label htmlFor="portfolioUsage" className="text-sm cursor-pointer leading-relaxed">
-            I agree to <strong>Studio22 using these clips</strong> as visual direction examples for clients
+            I agree to <strong>Eric Rabar using these clips</strong> as visual direction examples for clients
           </Label>
         </div>
       </div>

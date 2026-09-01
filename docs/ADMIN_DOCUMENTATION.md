@@ -1,8 +1,8 @@
-# Studio22 Admin Documentation
+# Eric Rabar Admin Documentation
 
 ## Overview
 
-The Studio22 Admin Panel provides comprehensive management capabilities for administrators to oversee all aspects of the platform. This document covers all admin features, permissions, and best practices.
+The Eric Rabar Admin Panel provides comprehensive management capabilities for administrators to oversee all aspects of the platform. This document covers all admin features, permissions, and best practices.
 
 ## Access Requirements
 
@@ -795,15 +795,15 @@ Create reusable message templates for:
 
 ### Admin Support Channels
 
-- Email: admin@studio22.com
+- Email: admin@ericrabar.com
 - Documentation: /docs
 - Status Page: /status
 
 ### Emergency Contacts
 
 For critical issues:
-- System Administrator: admin@studio22.com
-- Security Team: security@studio22.com
+- System Administrator: admin@ericrabar.com
+- Security Team: security@ericrabar.com
 
 ---
 

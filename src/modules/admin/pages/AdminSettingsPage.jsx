@@ -16,10 +16,10 @@ import { clearSettingsCache } from '@/lib/settings';
 export default function AdminSettingsPage() {
   const { success, error: toastError } = useToast();
   const [settings, setSettings] = useState({
-    siteName: 'Studio22',
-    siteUrl: 'https://studio22.com',
-    contactEmail: 'contact@studio22.com',
-    supportEmail: 'support@studio22.com',
+    siteName: 'Eric Rabar',
+    siteUrl: 'https://ericrabar.com',
+    contactEmail: 'contact@ericrabar.com',
+    supportEmail: 'support@ericrabar.com',
     maintenanceMode: false,
     enableRegistration: true,
     requireEmailVerification: true,
@@ -179,7 +179,7 @@ export default function AdminSettingsPage() {
               <h1 className="text-3xl font-bold text-gray-900">
                 Admin Settings
               </h1>
-              <p className="text-gray-600 mt-1">Configure all aspects of your Studio22 platform</p>
+              <p className="text-gray-600 mt-1">Configure all aspects of your Eric Rabar platform</p>
             </div>
             <Button 
               onClick={handleSave} 

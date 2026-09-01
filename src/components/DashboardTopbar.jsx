@@ -246,15 +246,15 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
 
 
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-gray-100 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-30 bg-[#0A0A0A] border-b border-[#1a1a1a] px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
       <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={() => setMobileSidebarOpen(true)}
-          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
+          className="lg:hidden p-2 rounded-lg hover:bg-white/5 transition-colors text-gray-400"
         >
           <Menu className="w-5 h-5" />
         </button>
-        {title && <h1 className="text-lg font-bold text-gray-900 truncate">{title}</h1>}
+        {title && <h1 className="text-lg font-bold text-white truncate">{title}</h1>}
       </div>
 
       <div className="flex-1 max-w-md sm:block hidden">
@@ -263,26 +263,26 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
           <input
             type="text"
             placeholder="Search or type command..."
-            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all"
+            className="w-full pl-9 pr-4 py-2 bg-[#1a1a1a] border border-[#222] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A962]/30 focus:border-[#C9A962] transition-all"
           />
         </div>
       </div>
 
       {/* Mobile search button */}
-      <button className="sm:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
+      <button className="sm:hidden p-2 rounded-lg hover:bg-white/5 transition-colors text-gray-400">
         <Search className="w-5 h-5" />
       </button>
 
       <div className="flex items-center gap-2 flex-shrink-0">
         {/* Back to Site Button */}
-        <Link to="/" className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-600">
+        <Link to="/" className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors text-gray-400">
           <Home className="w-4 h-4" />
           <span className="text-sm font-medium">Back to Site</span>
         </Link>
 
         {/* Messages Button */}
         <div className="relative">
-          <button onClick={handleOpenMessages} className="relative p-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-500">
+          <button onClick={handleOpenMessages} className="relative p-2 rounded-lg hover:bg-white/5 transition-colors text-gray-400">
             <MessageCircle className="w-5 h-5" />
             {unreadMessagesCount > 0 && (
               <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-black rounded-full text-white text-[10px] font-bold flex items-center justify-center">
@@ -294,10 +294,10 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
           {messagesOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setMessagesOpen(false)} />
-              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-lg z-20 max-h-96 flex flex-col">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
-                  <span className="font-semibold text-gray-900 text-sm">Messages</span>
-                  <Link to={createPageUrl('Messages')} onClick={() => setMessagesOpen(false)} className="text-xs text-gray-600 hover:underline">View all</Link>
+              <div className="absolute right-0 mt-2 w-80 bg-[#1a1a1a] border border-[#222] rounded-xl shadow-lg z-20 max-h-96 flex flex-col">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[#222]">
+                  <span className="font-semibold text-white text-sm">Messages</span>
+                  <Link to={createPageUrl('Messages')} onClick={() => setMessagesOpen(false)} className="text-xs text-[#C9A962] hover:underline">View all</Link>
                 </div>
                 <div className="overflow-y-auto flex-1">
                   {recentSenders.length === 0 ? (
@@ -308,17 +308,17 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
                         key={idx}
                         to={createPageUrl('Messages')}
                         onClick={() => setMessagesOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 border-b border-[#222] hover:bg-white/5 transition-colors"
                       >
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-[#222] flex items-center justify-center overflow-hidden flex-shrink-0">
                           {sender.avatar ? (
                             <img src={sender.avatar} alt={sender.name} className="w-full h-full object-cover" />
                           ) : (
-                            <span className="text-xs font-bold text-gray-600">{sender.name?.[0]?.toUpperCase()}</span>
+                            <span className="text-xs font-bold text-gray-400">{sender.name?.[0]?.toUpperCase()}</span>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{sender.name}</p>
+                          <p className="text-sm font-medium text-white truncate">{sender.name}</p>
                           <p className="text-xs text-gray-500 truncate">New message</p>
                         </div>
                       </Link>
@@ -332,7 +332,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
 
         {/* Notifications Button */}
         <div className="relative">
-          <button onClick={handleOpenNotifications} className="relative p-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-500">
+          <button onClick={handleOpenNotifications} className="relative p-2 rounded-lg hover:bg-white/5 transition-colors text-gray-400">
             <Bell className="w-5 h-5" />
             {unreadNotificationsCount > 0 && (
               <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-black rounded-full text-white text-[10px] font-bold flex items-center justify-center">
@@ -344,10 +344,10 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
           {notificationsOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setNotificationsOpen(false)} />
-              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-lg z-20 max-h-96 flex flex-col">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
+              <div className="absolute right-0 mt-2 w-80 bg-[#1a1a1a] border border-[#222] rounded-xl shadow-lg z-20 max-h-96 flex flex-col">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[#222]">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900 text-sm">Notifications</span>
+                    <span className="font-semibold text-white text-sm">Notifications</span>
                     {unreadNotificationsCount > 0 && (
                       <span className="min-w-[18px] h-5 px-1.5 bg-black rounded-full text-white text-[10px] font-bold flex items-center justify-center">
                         {unreadNotificationsCount}
@@ -358,14 +358,14 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
                     {unreadNotificationsCount > 0 && (
                       <button
                         onClick={handleMarkAllAsRead}
-                        className="text-xs text-gray-600 hover:text-black flex items-center gap-1 transition-colors"
+                        className="text-xs text-gray-400 hover:text-[#C9A962] flex items-center gap-1 transition-colors"
                         title="Mark all as read"
                       >
                         <CheckCheck className="w-3 h-3" />
                         Mark all read
                       </button>
                     )}
-                    <Link to={createPageUrl('Notifications')} onClick={() => setNotificationsOpen(false)} className="text-xs text-gray-600 hover:underline">View all</Link>
+                    <Link to={createPageUrl('Notifications')} onClick={() => setNotificationsOpen(false)} className="text-xs text-[#C9A962] hover:underline">View all</Link>
                   </div>
                 </div>
                 <div className="overflow-y-auto flex-1">
@@ -375,7 +375,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
                     notifications.map((notification) => (
                       <div
                         key={notification.id}
-                        className={`relative flex items-start gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${!notification.read ? 'bg-blue-50' : ''}`}
+                        className={`relative flex items-start gap-3 px-4 py-3 border-b border-[#222] hover:bg-white/5 transition-colors ${!notification.read ? 'bg-[#C9A962]/10' : ''}`}
                       >
                         <div
                           onClick={() => handleMarkAsRead(notification.id)}
@@ -386,8 +386,8 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900">{notification.title}</p>
-                          <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notification.message}</p>
+                          <p className="text-sm font-medium text-white">{notification.title}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{notification.message}</p>
                           <p className="text-[10px] text-gray-400 mt-1">{formatNotificationTime(notification.created_at)}</p>
                         </div>
                         <div className="flex flex-col items-center gap-1 flex-shrink-0">
@@ -417,16 +417,16 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
         <div className="relative">
           <button
             onClick={() => { setMenuOpen(!menuOpen); }}
-            className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-lg hover:bg-white/5 transition-colors"
           >
-            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center overflow-hidden flex-shrink-0">
               {artistProfile?.profile_photo_url || artistProfile?.team_logo_url ? (
                 <img src={artistProfile.profile_photo_url || artistProfile.team_logo_url} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <Users className="w-4 h-4 text-gray-600" />
+                <Users className="w-4 h-4 text-gray-500" />
               )}
             </div>
-            <span className="hidden md:block text-sm font-medium text-gray-700 max-w-[120px] truncate">
+            <span className="hidden md:block text-sm font-medium text-gray-300 max-w-[120px] truncate">
               {artistProfile?.full_name || artistProfile?.team_name || user?.full_name || 'User'}
             </span>
             <ChevronDown className="w-4 h-4 text-gray-400 hidden md:block" />
@@ -436,14 +436,14 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
             <>
               <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
               <div className="absolute right-0 mt-2 w-52 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-20">
-                <div className="px-4 py-2 border-b border-gray-50">
+                <div className="px-4 py-2 border-b border-[#222]">
                   <p className="text-sm font-semibold text-gray-900 truncate">{artistProfile?.full_name || artistProfile?.team_name || user?.full_name}</p>
                   <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                 </div>
                 <Link
                   to={createPageUrl(settingsPage)}
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-white/5"
                 >
                   <Settings className="w-4 h-4" /> Profile & Settings
                 </Link>

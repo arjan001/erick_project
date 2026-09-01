@@ -22,7 +22,7 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
       }),
     ],
     // Set release version for better error tracking
-    release: `studio22@${import.meta.env.VITE_APP_VERSION || '1.0.0'}`,
+    release: `ericrabar@${import.meta.env.VITE_APP_VERSION || '1.0.0'}`,
     
     // Filter out sensitive data
     beforeSend(event, hint) {

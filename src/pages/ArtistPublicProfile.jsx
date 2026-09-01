@@ -23,7 +23,7 @@ export default function ArtistPublicProfile() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
+    const storedUser = localStorage.getItem('ericrabar_user');
     if (storedUser) setViewer(JSON.parse(storedUser));
   }, []);
 

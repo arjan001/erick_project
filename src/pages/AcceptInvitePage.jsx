@@ -151,7 +151,7 @@ export default function AcceptInvitePage() {
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <CardTitle className="text-2xl">Join the Team</CardTitle>
           <CardDescription>
-            You've been invited to join Studio22 as a team member
+            You've been invited to join Eric Rabar as a team member
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -264,7 +264,7 @@ export default function AcceptInvitePage() {
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-500">
-            <p>By accepting, you agree to Studio22's Terms of Service</p>
+            <p>By accepting, you agree to Eric Rabar's Terms of Service</p>
           </div>
         </CardContent>
       </Card>

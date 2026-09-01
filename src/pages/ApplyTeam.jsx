@@ -151,14 +151,14 @@ export default function ApplyTeam() {
   return (
     <div className="min-h-screen bg-white py-8 lg:py-12">
       <SEOMetaTags
-        title="Join as Production Team | Studio22 Video Production Marketplace"
-        description="Register your production team, studio, or collective on Studio22 and connect with brands, agencies, and clients seeking professional video production services. Showcase your portfolio, manage your crew, and access premium commercial, music video, documentary, and branded content projects."
+        title="Join as Production Team | Eric Rabar Video Production Marketplace"
+        description="Register your production team, studio, or collective on Eric Rabar and connect with brands, agencies, and clients seeking professional video production services. Showcase your portfolio, manage your crew, and access premium commercial, music video, documentary, and branded content projects."
         keywords="production team registration, video production company, film studio, production collective, video production services, commercial production company, music video production, documentary production, film crew services, production team portfolio, creative studio, video production agency"
-        ogImage="https://studio22.com/og-apply-team.jpg"
+        ogImage="https://ericrabar.com/og-apply-team.jpg"
         ogType="website"
         schemaType="ProfilePage"
         schemaData={{
-          name: "Studio22 Team Application",
+          name: "Eric Rabar Team Application",
           description: "Register your production team on the premium video production marketplace",
           author: "oneplusafrica.com - OnePlusAfrica Tech Solution"
         }}

@@ -1,4 +1,4 @@
-# Studio22 End-to-End Test Plan
+# Eric Rabar End-to-End Test Plan
 
 **Version**: 1.0  
 **Last Updated**: July 1, 2026  
@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document outlines the comprehensive end-to-end testing strategy for Studio22, covering all critical user flows, API endpoints, and UI components.
+This document outlines the comprehensive end-to-end testing strategy for Eric Rabar, covering all critical user flows, API endpoints, and UI components.
 
 ### Testing Scope
 

@@ -27,7 +27,7 @@ export default function ArtistBankingPage() {
   });
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
+    const storedUser = localStorage.getItem('ericrabar_user');
     if (!storedUser) {
       window.location.href = '/signin';
       return;
@@ -38,7 +38,7 @@ export default function ArtistBankingPage() {
 
   const fetchData = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('studio22_user'));
+      const storedUser = JSON.parse(localStorage.getItem('ericrabar_user'));
       
       const artists = await base44.entities.Artist.filter({ email: storedUser.email });
       if (artists.length > 0) {

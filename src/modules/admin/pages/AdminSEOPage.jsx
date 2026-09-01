@@ -347,7 +347,7 @@ export default function AdminSEOPage() {
                 <Input
                   value={seoSettings.canonicalUrl}
                   onChange={(e) => setSeoSettings({ ...seoSettings, canonicalUrl: e.target.value })}
-                  placeholder="https://studio22.com"
+                  placeholder="https://ericrabar.com"
                 />
               </div>
               <div className="space-y-2">
@@ -470,7 +470,7 @@ export default function AdminSEOPage() {
                         <Input 
                           value={page.ogImage} 
                           className="text-sm border-gray-300"
-                          placeholder="https://studio22.com/og-home.jpg"
+                          placeholder="https://ericrabar.com/og-home.jpg"
                           onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, ogImage: e.target.value } : p))}
                         />
                       </div>
@@ -634,7 +634,7 @@ export default function AdminSEOPage() {
                 <Input
                   value={seoSettings.ogImage}
                   onChange={(e) => setSeoSettings({ ...seoSettings, ogImage: e.target.value })}
-                  placeholder="https://studio22.com/og-image.jpg"
+                  placeholder="https://ericrabar.com/og-image.jpg"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -679,7 +679,7 @@ export default function AdminSEOPage() {
                     <Input
                       value={seoSettings.twitterSite}
                       onChange={(e) => setSeoSettings({ ...seoSettings, twitterSite: e.target.value })}
-                      placeholder="@studio22"
+                      placeholder="@ericrabar"
                     />
                   </div>
                 </div>
@@ -689,7 +689,7 @@ export default function AdminSEOPage() {
                     <Input
                       value={seoSettings.twitterCreator}
                       onChange={(e) => setSeoSettings({ ...seoSettings, twitterCreator: e.target.value })}
-                      placeholder="@studio22"
+                      placeholder="@ericrabar"
                     />
                   </div>
                   <div className="space-y-2">
@@ -697,7 +697,7 @@ export default function AdminSEOPage() {
                     <Input
                       value={seoSettings.twitterImage}
                       onChange={(e) => setSeoSettings({ ...seoSettings, twitterImage: e.target.value })}
-                      placeholder="https://studio22.com/twitter-image.jpg"
+                      placeholder="https://ericrabar.com/twitter-image.jpg"
                     />
                   </div>
                 </div>
@@ -755,7 +755,7 @@ export default function AdminSEOPage() {
               </div>
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-600 mb-2">Sitemap will be available at:</p>
-                <code className="text-sm bg-white px-2 py-1 rounded">https://studio22.com/sitemap.xml</code>
+                <code className="text-sm bg-white px-2 py-1 rounded">https://ericrabar.com/sitemap.xml</code>
               </div>
             </CardContent>
           </Card>
@@ -789,7 +789,7 @@ export default function AdminSEOPage() {
                 <Input
                   value={seoSettings.organizationLogo}
                   onChange={(e) => setSeoSettings({ ...seoSettings, organizationLogo: e.target.value })}
-                  placeholder="https://studio22.com/logo.png"
+                  placeholder="https://ericrabar.com/logo.png"
                 />
               </div>
               <div className="space-y-2">
@@ -797,7 +797,7 @@ export default function AdminSEOPage() {
                 <Input
                   value={seoSettings.organizationUrl}
                   onChange={(e) => setSeoSettings({ ...seoSettings, organizationUrl: e.target.value })}
-                  placeholder="https://studio22.com"
+                  placeholder="https://ericrabar.com"
                 />
               </div>
               <div className="space-y-2">
@@ -806,7 +806,7 @@ export default function AdminSEOPage() {
                   value={seoSettings.sameAs.join(', ')}
                   onChange={(e) => setSeoSettings({ ...seoSettings, sameAs: e.target.value.split(',').map(s => s.trim()) })}
                   rows={3}
-                  placeholder="https://twitter.com/studio22, https://linkedin.com/company/studio22"
+                  placeholder="https://twitter.com/ericrabar, https://linkedin.com/company/ericrabar"
                 />
               </div>
             </CardContent>

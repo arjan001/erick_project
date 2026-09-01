@@ -17,11 +17,11 @@ export default function DashboardLayout({ children }) {
   const { user } = useAuth();
   // Persisted so the sidebar doesn't flicker open/closed when navigating between pages
   // (this layout remounts on every route change).
-  const [sidebarExpanded, setSidebarExpandedState] = useState(() => localStorage.getItem('studio22_sidebar_expanded') === 'true');
+  const [sidebarExpanded, setSidebarExpandedState] = useState(() => localStorage.getItem('ericrabar_sidebar_expanded') === 'true');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const setSidebarExpanded = (value) => {
     setSidebarExpandedState(value);
-    localStorage.setItem('studio22_sidebar_expanded', String(value));
+    localStorage.setItem('ericrabar_sidebar_expanded', String(value));
   };
 
   const isArtist = user?.role === 'artist' || user?.role === 'artist_admin';
@@ -34,7 +34,7 @@ export default function DashboardLayout({ children }) {
 
   return (
     <SidebarContext.Provider value={{ sidebarExpanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen }}>
-      <div className="h-screen bg-gray-50 flex overflow-hidden">
+      <div className="h-screen bg-[#0A0A0A] flex overflow-hidden">
         {/* Mobile overlay */}
         {mobileSidebarOpen && (
           <div 
@@ -46,7 +46,7 @@ export default function DashboardLayout({ children }) {
         {isTeam && <TeamSidebar />}
         {isClient && <ClientSidebar />}
         {isBacker && <BackerSidebar />}
-        <main className="flex-1 min-w-0 flex flex-col bg-gray-50 overflow-hidden lg:ml-4">
+        <main className="flex-1 min-w-0 flex flex-col bg-[#0F0F0F] overflow-hidden lg:ml-4">
           {hasSidebar && <DashboardTopbar settingsPage={settingsPage} />}
           <div className="flex-1 min-w-0 overflow-y-auto">{children}</div>
         </main>

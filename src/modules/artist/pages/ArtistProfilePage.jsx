@@ -41,7 +41,7 @@ export default function ArtistProfile() {
   const [testimonials, setTestimonials] = useState([]);
   const [activeTab, setActiveTab] = useState(() => {
     // Load saved tab from localStorage
-    const savedTab = localStorage.getItem('studio22_active_tab');
+    const savedTab = localStorage.getItem('ericrabar_active_tab');
     return savedTab || 'profile';
   });
   const [subscription, setSubscription] = useState(null);
@@ -67,7 +67,7 @@ export default function ArtistProfile() {
   
   const [portfolioForm, setPortfolioForm] = useState(() => {
     // Load draft from localStorage if exists
-    const savedDraft = localStorage.getItem('studio22_portfolio_draft');
+    const savedDraft = localStorage.getItem('ericrabar_portfolio_draft');
     if (savedDraft) {
       try {
         return JSON.parse(savedDraft);
@@ -86,12 +86,12 @@ export default function ArtistProfile() {
 
   // Auto-save portfolio form draft to localStorage
   useEffect(() => {
-    localStorage.setItem('studio22_portfolio_draft', JSON.stringify(portfolioForm));
+    localStorage.setItem('ericrabar_portfolio_draft', JSON.stringify(portfolioForm));
   }, [portfolioForm]);
 
   // Save active tab to localStorage
   useEffect(() => {
-    localStorage.setItem('studio22_active_tab', activeTab);
+    localStorage.setItem('ericrabar_active_tab', activeTab);
   }, [activeTab]);
 
   useEffect(() => {
@@ -421,7 +421,7 @@ export default function ArtistProfile() {
       setSelectedCoverImage(null);
       setSelectedVideoFile(null);
       setEditingPortfolio(null);
-      localStorage.removeItem('studio22_portfolio_draft'); // Clear draft after successful save
+      localStorage.removeItem('ericrabar_portfolio_draft'); // Clear draft after successful save
       success(editingPortfolio ? 'Portfolio Updated' : 'Portfolio Added', editingPortfolio ? 'Your portfolio clip has been updated' : 'Your portfolio clip has been submitted for approval');
     } catch (err) {
       console.error('Error adding portfolio clip:', err);

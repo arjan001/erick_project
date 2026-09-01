@@ -1,8 +1,8 @@
-# Studio22 - Project Scope and Milestones
+# Eric Rabar - Project Scope and Milestones
 
 ## Project Overview
 
-**Studio22** is a premium video production network platform connecting creators (artists), production teams, and clients (project owners) for collaborative film and video projects.
+**Eric Rabar** is a premium video production network platform connecting creators (artists), production teams, and clients (project owners) for collaborative film and video projects.
 
 ### Core Value Proposition
 - **For Artists**: Showcase portfolio, find jobs, build network, get discovered

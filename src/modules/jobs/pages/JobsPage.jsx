@@ -38,7 +38,7 @@ export default function Jobs() {
   const { success, error: toastError } = useToast();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
+    const storedUser = localStorage.getItem('ericrabar_user');
     if (!storedUser) {
       navigate('/signin');
       return;

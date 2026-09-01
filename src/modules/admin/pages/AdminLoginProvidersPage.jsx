@@ -14,7 +14,7 @@ export default function AdminLoginProvidersPage() {
       enabled: true,
       clientId: '',
       clientSecret: '',
-      redirectUri: 'https://studio22.com/auth/google/callback',
+      redirectUri: 'https://ericrabar.com/auth/google/callback',
       scopes: ['openid', 'profile', 'email']
     },
     {
@@ -24,7 +24,7 @@ export default function AdminLoginProvidersPage() {
       enabled: false,
       clientId: '',
       clientSecret: '',
-      redirectUri: 'https://studio22.com/auth/github/callback',
+      redirectUri: 'https://ericrabar.com/auth/github/callback',
       scopes: ['user:email']
     },
     {
@@ -34,7 +34,7 @@ export default function AdminLoginProvidersPage() {
       enabled: false,
       clientId: '',
       clientSecret: '',
-      redirectUri: 'https://studio22.com/auth/facebook/callback',
+      redirectUri: 'https://ericrabar.com/auth/facebook/callback',
       scopes: ['email', 'public_profile']
     },
     {
@@ -44,7 +44,7 @@ export default function AdminLoginProvidersPage() {
       enabled: false,
       clientId: '',
       clientSecret: '',
-      redirectUri: 'https://studio22.com/auth/linkedin/callback',
+      redirectUri: 'https://ericrabar.com/auth/linkedin/callback',
       scopes: ['r_liteprofile', 'r_emailaddress']
     },
     {
@@ -54,7 +54,7 @@ export default function AdminLoginProvidersPage() {
       enabled: false,
       clientId: '',
       clientSecret: '',
-      redirectUri: 'https://studio22.com/auth/twitter/callback',
+      redirectUri: 'https://ericrabar.com/auth/twitter/callback',
       scopes: ['tweet.read', 'users.read']
     }
   ]);
@@ -65,14 +65,14 @@ export default function AdminLoginProvidersPage() {
     smtpPort: 587,
     smtpUser: '',
     smtpPassword: '',
-    fromEmail: 'noreply@studio22.com',
-    fromName: 'Studio22',
+    fromEmail: 'noreply@ericrabar.com',
+    fromName: 'Eric Rabar',
     useTLS: true
   });
 
   const [twoFactorSettings, setTwoFactorSettings] = useState({
     enabled: false,
-    issuer: 'Studio22',
+    issuer: 'Eric Rabar',
     secretLength: 32,
     digits: 6,
     period: 30

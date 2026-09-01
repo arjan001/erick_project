@@ -564,7 +564,7 @@ export const saveAnalyzedProjectToStorage = (projectData) => {
       additionalNotes: projectData.additionalNotes,
       timestamp: new Date().toISOString()
     };
-    localStorage.setItem('studio22_analyzed_project', JSON.stringify(dataToSave));
+    localStorage.setItem('ericrabar_analyzed_project', JSON.stringify(dataToSave));
     return { success: true };
   } catch (error) {
     console.error('Error saving to localStorage:', error);
@@ -578,7 +578,7 @@ export const saveAnalyzedProjectToStorage = (projectData) => {
  */
 export const loadAnalyzedProjectFromStorage = () => {
   try {
-    const savedData = localStorage.getItem('studio22_analyzed_project');
+    const savedData = localStorage.getItem('ericrabar_analyzed_project');
     if (savedData) {
       return JSON.parse(savedData);
     }
@@ -594,7 +594,7 @@ export const loadAnalyzedProjectFromStorage = () => {
  */
 export const clearAnalyzedProjectFromStorage = () => {
   try {
-    localStorage.removeItem('studio22_analyzed_project');
+    localStorage.removeItem('ericrabar_analyzed_project');
     return { success: true };
   } catch (error) {
     console.error('Error clearing localStorage:', error);

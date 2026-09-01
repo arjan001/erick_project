@@ -1,5 +1,5 @@
 /**
- * Supabase client — Studio22
+ * Supabase client — Eric Rabar
  * Credentials are read from VITE_ env vars (Vite exposes only VITE_* to the browser).
  */
 

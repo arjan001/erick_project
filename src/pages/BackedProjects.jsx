@@ -51,14 +51,14 @@ export default function BackedProjects() {
   return (
     <div className="min-h-screen bg-white py-12">
       <SEOMetaTags
-        title="Backed Projects | Studio22 Film Funding & Co-Production"
-        description="Discover creative film and video projects seeking sponsorship, co-production partnerships, cultural support, and investment through Studio22. Connect with filmmakers, studios, and production companies across Europe for collaborative opportunities in commercials, music videos, documentaries, and feature films."
+        title="Backed Projects | Eric Rabar Film Funding & Co-Production"
+        description="Discover creative film and video projects seeking sponsorship, co-production partnerships, cultural support, and investment through Eric Rabar. Connect with filmmakers, studios, and production companies across Europe for collaborative opportunities in commercials, music videos, documentaries, and feature films."
         keywords="film funding, video production investment, co-production partnerships, film sponsorship, cultural support for films, documentary funding, short film backing, commercial production investment, film financing, video project investment, production partnerships, creative collaboration"
-        ogImage="https://studio22.com/og-backed-projects.jpg"
+        ogImage="https://ericrabar.com/og-backed-projects.jpg"
         ogType="website"
         schemaType="CollectionPage"
         schemaData={{
-          name: "Studio22 Backed Projects",
+          name: "Eric Rabar Backed Projects",
           description: "Film and video projects seeking funding and co-production partnerships",
           author: "oneplusafrica.com - OnePlusAfrica Tech Solution"
         }}
@@ -69,7 +69,7 @@ export default function BackedProjects() {
           <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-black">Projects Seeking Backing</h1>
           <p className="text-lg text-gray-600 max-w-2xl">
             Discover creative projects from studios and filmmakers across Europe looking for sponsorship, 
-            co-production partnerships, or cultural support. Studio22 facilitates introductions and collaboration 
+            co-production partnerships, or cultural support. Eric Rabar facilitates introductions and collaboration 
             without handling payments or equity arrangements.
           </p>
         </div>

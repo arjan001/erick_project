@@ -40,7 +40,7 @@ const SEOMetaTags = ({
   }, [location.pathname]);
 
   // Use props if provided, otherwise fall back to database data
-  const pageTitle = title || pageData?.meta_title || seoData?.site_title || 'Studio22';
+  const pageTitle = title || pageData?.meta_title || seoData?.site_title || 'Eric Rabar';
   const pageDescription = description || pageData?.meta_description || seoData?.site_description || '';
   const pageKeywords = keywords || pageData?.meta_keywords || seoData?.site_keywords || '';
   const pageOgImage = ogImage || pageData?.og_image || seoData?.og_image || '';
@@ -77,7 +77,7 @@ const SEOMetaTags = ({
       <meta property="og:description" content={pageDescription} />
       {pageOgImage && <meta property="og:image" content={pageOgImage} />}
       <meta property="og:locale" content={pageOgLocale} />
-      <meta property="og:site_name" content="Studio22" />
+      <meta property="og:site_name" content="Eric Rabar" />
       
       {/* Twitter Card */}
       <meta name="twitter:card" content={twitterCard} />

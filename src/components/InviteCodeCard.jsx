@@ -106,7 +106,7 @@ export default function InviteCodeCard() {
     fetchProfile();
   }, [user]);
 
-  const referralLink = `${window.location.origin}/invite/${inviteCode}?inviter=${encodeURIComponent(user?.full_name || 'Studio22')}&track=${trackingCode}`;
+  const referralLink = `${window.location.origin}/invite/${inviteCode}?inviter=${encodeURIComponent(user?.full_name || 'Eric Rabar')}&track=${trackingCode}`;
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(inviteCode);
@@ -155,7 +155,7 @@ export default function InviteCodeCard() {
 
       // Generate unique invite code
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let code = 'S22-';
+      let code = 'ER-';
       for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
       
       // Check if code already exists
@@ -166,7 +166,7 @@ export default function InviteCodeCard() {
         if (!existing || existing.length === 0) {
           isUnique = true;
         } else {
-          code = 'S22-';
+          code = 'ER-';
           for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
           attempts++;
         }
@@ -211,7 +211,7 @@ export default function InviteCodeCard() {
             <Gift className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Invite an artist to join Studio22 Pro Beta</h3>
+            <h3 className="font-semibold text-gray-900">Invite an artist to join Eric Rabar Pro Beta</h3>
             <p className="text-sm text-gray-500">Share your code and grow the network</p>
           </div>
         </div>

@@ -47,11 +47,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Studio22',
-        short_name: 'Studio22',
-        description: 'Creative Production Marketplace',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
+        name: 'Eric Rabar',
+        short_name: 'Eric Rabar',
+        description: 'The place to get hired for theater, film, and TV.',
+        theme_color: '#0A0A0A',
+        background_color: '#0A0A0A',
         display: 'standalone',
         icons: [
           {

@@ -36,7 +36,7 @@ export default function AdminProductsPage() {
           { id: 4, name: 'Camera Stabilizer', description: '3-axis gimbal stabilizer for smooth camera movement', price: 349, category: 'Accessories', stock: 25, sku: 'ACC-001', status: 'active', featured: false, images: ['gimbal1.jpg'], sold: 89 },
           { id: 5, name: 'Video Editing Software License', description: 'Annual license for professional video editing software', price: 199, category: 'Software', stock: 999, sku: 'SFT-001', status: 'active', featured: false, images: ['soft1.jpg'], sold: 234 },
           { id: 6, name: 'Studio Backdrop Kit', description: 'Complete backdrop kit with stands and multiple colors', price: 249, category: 'Studio Gear', stock: 18, sku: 'STU-001', status: 'inactive', featured: false, images: ['backdrop1.jpg'], sold: 56 },
-          { id: 7, name: 'Studio22 T-Shirt', description: 'Official Studio22 branded merchandise', price: 29, category: 'Merchandise', stock: 100, sku: 'MER-001', status: 'active', featured: false, images: ['shirt1.jpg'], sold: 312 },
+          { id: 7, name: 'Eric Rabar T-Shirt', description: 'Official Eric Rabar branded merchandise', price: 29, category: 'Merchandise', stock: 100, sku: 'MER-001', status: 'active', featured: false, images: ['shirt1.jpg'], sold: 312 },
           { id: 8, name: 'Tripod Kit', description: 'Heavy-duty tripod with fluid head for professional cameras', price: 599, category: 'Accessories', stock: 12, sku: 'ACC-002', status: 'active', featured: true, images: ['tripod1.jpg'], sold: 78 }
         ];
         setProducts(mockProducts);

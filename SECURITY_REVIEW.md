@@ -1,4 +1,4 @@
-# Studio22 Security Review
+# Eric Rabar Security Review
 
 **Version**: 1.0  
 **Last Updated**: July 1, 2026  
@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document outlines the comprehensive security review for Studio22, covering authentication, data protection, API security, infrastructure security, and compliance requirements.
+This document outlines the comprehensive security review for Eric Rabar, covering authentication, data protection, API security, infrastructure security, and compliance requirements.
 
 ### Security Goals
 
@@ -427,8 +427,8 @@ async function verifyApiKey(key, hash) {
 // Configure CORS in Supabase
 // Only allow specific origins
 const allowedOrigins = [
-  'https://studio22.com',
-  'https://www.studio22.com'
+  'https://ericrabar.com',
+  'https://www.ericrabar.com'
 ];
 
 // In Edge Functions
@@ -836,7 +836,7 @@ npm audit --audit-level=moderate
 snyk test
 
 # Trivy for Docker images
-trivy image studio22:latest
+trivy image ericrabar:latest
 ```
 
 ### Manual Security Testing

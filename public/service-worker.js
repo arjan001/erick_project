@@ -1,11 +1,11 @@
 /**
- * Studio22 Service Worker
+ * Eric Rabar Service Worker
  * Provides offline caching and performance optimization
  */
 
-const CACHE_NAME = 'studio22-v1';
-const STATIC_CACHE = 'studio22-static-v1';
-const API_CACHE = 'studio22-api-v1';
+const CACHE_NAME = 'ericrabar-v1';
+const STATIC_CACHE = 'ericrabar-static-v1';
+const API_CACHE = 'ericrabar-api-v1';
 
 // Static assets to cache on install
 const STATIC_ASSETS = [
@@ -163,7 +163,7 @@ self.addEventListener('message', (event) => {
 // Push notification event (for future implementation)
 self.addEventListener('push', (event) => {
   const options = {
-    body: event.data ? event.data.text() : 'Studio22 Notification',
+    body: event.data ? event.data.text() : 'Eric Rabar Notification',
     icon: '/favicon.ico',
     badge: '/favicon.ico',
     vibrate: [100, 50, 100],
@@ -174,7 +174,7 @@ self.addEventListener('push', (event) => {
   };
   
   event.waitUntil(
-    self.registration.showNotification('Studio22', options)
+    self.registration.showNotification('Eric Rabar', options)
   );
 });
 

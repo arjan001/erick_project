@@ -60,14 +60,14 @@ export default function Services() {
   return (
     <div className="min-h-screen bg-white">
       <SEOMetaTags
-        title="Video Production Services | Studio22 Full-Spectrum Production"
-        description="Studio22 offers comprehensive video production services including commercial production, film support, post-production, VFX and 3D animation, and creative direction. From concept to delivery, we handle every aspect of your production with curated teams across Europe."
+        title="Video Production Services | Eric Rabar Full-Spectrum Production"
+        description="Eric Rabar offers comprehensive video production services including commercial production, film support, post-production, VFX and 3D animation, and creative direction. From concept to delivery, we handle every aspect of your production with curated teams across Europe."
         keywords="video production services, commercial production, film production support, post-production services, video editing, color grading, sound design, VFX services, 3D animation, motion graphics, creative direction, production coordination, location scouting, video production company"
-        ogImage="https://studio22.com/og-services.jpg"
+        ogImage="https://ericrabar.com/og-services.jpg"
         ogType="website"
         schemaType="Service"
         schemaData={{
-          name: "Studio22 Production Services",
+          name: "Eric Rabar Production Services",
           description: "Full-spectrum video production services from concept to delivery",
           author: "oneplusafrica.com - OnePlusAfrica Tech Solution"
         }}
@@ -126,13 +126,13 @@ export default function Services() {
       {/* How It Works */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center mb-16 text-black">How Studio22 Works</h2>
+          <h2 className="text-4xl font-bold text-center mb-16 text-black">How Eric Rabar Works</h2>
           
           <div className="space-y-12">
             {[
               { step: '01', title: 'Submit Your Project', desc: 'Tell us about your production through our guided intake process' },
               { step: '02', title: 'We Curate Your Team', desc: 'Our network of vetted artists and teams across Europe is matched to your needs' },
-              { step: '03', title: 'Studio22 Manages', desc: 'We handle coordination, introductions, and logistics under the Studio22 brand' },
+              { step: '03', title: 'Eric Rabar Manages', desc: 'We handle coordination, introductions, and logistics under the Eric Rabar brand' },
               { step: '04', title: 'Production & Delivery', desc: 'Your project is executed to the highest standards with full support' }
             ].map((item, i) => (
               <div key={i} className="flex gap-6">

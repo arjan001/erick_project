@@ -65,7 +65,7 @@ export default function TeamSidebar() {
   }, [user]);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
+    const storedUser = localStorage.getItem('ericrabar_user');
     if (!storedUser) return;
     const user = JSON.parse(storedUser);
     const fetchTeam = async () => {
@@ -92,19 +92,19 @@ export default function TeamSidebar() {
 
   return (
     <aside
-      className={`h-full bg-white shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative ${
+      className={`h-full bg-[#0A0A0A] shadow-[2px_0_12px_rgba(0,0,0,0.3)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative ${
         mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       } ${expanded ? 'w-64' : 'w-20'}`}
     >
       {/* Logo + Toggle */}
-      <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100">
+      <div className="h-16 flex items-center justify-between px-3 border-b border-[#1a1a1a]">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
             <Building2 className="w-4 h-4 text-white" />
           </div>
           {expanded && (
             <div>
-              <div className="font-bold text-gray-900 text-sm">22.</div>
+              <div className="font-bold text-gray-900 text-sm">ER.</div>
               <div className="text-xs text-gray-500">Team Portal</div>
             </div>
           )}
@@ -129,7 +129,7 @@ export default function TeamSidebar() {
                 <button
                   onClick={() => navigate(createPageUrl(item.path))}
                   className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${
-                    isActive ? 'bg-gray-900 text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                    isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
                   }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
@@ -145,9 +145,9 @@ export default function TeamSidebar() {
                   )}
                 </button>
                 {/* Tooltip */}
-                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-[#1a1a1a] text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
                   {item.label}
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-[#1a1a1a] rotate-45"></div>
                 </div>
               </div>
             );
@@ -158,7 +158,7 @@ export default function TeamSidebar() {
               key={item.path}
               onClick={() => navigate(createPageUrl(item.path))}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
-                isActive ? 'bg-gray-900 text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
@@ -179,24 +179,24 @@ export default function TeamSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-gray-100 p-2 space-y-1">
+      <div className="border-t border-[#1a1a1a] p-2 space-y-1">
         {!expanded && team && (
           <div className="relative group">
             <div className="flex items-center justify-center w-full p-2 rounded-xl">
-              <div className="w-8 h-8 bg-gray-100 ring-2 ring-gray-50 rounded-full flex-shrink-0" />
+              <div className="w-8 h-8 bg-[#1a1a1a] ring-2 ring-[#222] rounded-full flex-shrink-0" />
             </div>
             {/* Tooltip */}
-            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-[#1a1a1a] text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
               {team.team_name}
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-[#1a1a1a] rotate-45"></div>
             </div>
           </div>
         )}
         {expanded && team && (
           <div className="flex items-center gap-3 px-3 py-2 rounded-xl">
-            <div className="w-8 h-8 bg-gray-100 ring-2 ring-gray-50 rounded-full flex-shrink-0" />
+            <div className="w-8 h-8 bg-[#1a1a1a] ring-2 ring-[#222] rounded-full flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="font-medium text-gray-900 text-xs truncate">{team.team_name}</div>
+              <div className="font-medium text-white text-xs truncate">{team.team_name}</div>
               <div className="text-xs text-gray-500">Team Admin</div>
             </div>
           </div>
@@ -205,20 +205,20 @@ export default function TeamSidebar() {
           <div className="relative group">
             <button
               onClick={handleLogout}
-              className="flex items-center justify-center w-full p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+              className="flex items-center justify-center w-full p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
             >
               <LogOut className="w-4 h-4 flex-shrink-0" />
             </button>
             {/* Tooltip */}
-            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-[#1a1a1a] text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
               Logout
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-[#1a1a1a] rotate-45"></div>
             </div>
           </div>
         ) : (
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 transition-colors text-sm font-medium"
+            className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-red-500 hover:bg-red-500/10 transition-colors text-sm font-medium"
           >
             <LogOut className="w-4 h-4 flex-shrink-0" />
             Logout

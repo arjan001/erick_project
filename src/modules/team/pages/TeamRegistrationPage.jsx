@@ -50,7 +50,7 @@ export default function TeamRegistrationPage() {
       });
 
       // Store team info in localStorage for demo
-      localStorage.setItem('studio22_team', JSON.stringify({
+      localStorage.setItem('ericrabar_team', JSON.stringify({
         ...team,
         role: 'team_admin'
       }));

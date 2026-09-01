@@ -25,7 +25,7 @@ export default function Contact() {
 
     try {
       await base44.integrations.Core.SendEmail({
-        to: 'hello@studio22.app',
+        to: 'hello@ericrabar.app',
         subject: `Contact Form: ${formData.subject}`,
         body: `
 Name: ${formData.name}
@@ -90,8 +90,8 @@ ${formData.message}
                   <Mail className="w-6 h-6 text-amber-600 flex-shrink-0" />
                   <div>
                     <p className="font-semibold mb-1 text-black">Email</p>
-                    <a href="mailto:hello@studio22.app" className="text-gray-600 hover:text-amber-600">
-                      hello@studio22.app
+                    <a href="mailto:hello@ericrabar.app" className="text-gray-600 hover:text-amber-600">
+                      hello@ericrabar.app
                     </a>
                   </div>
                 </div>
@@ -123,7 +123,7 @@ ${formData.message}
             <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
               <h3 className="font-semibold mb-4 text-black">Want to join our network?</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Apply as an artist or team to work on Studio22 projects
+                Apply as an artist or team to work on Eric Rabar projects
               </p>
               <div className="flex flex-col gap-2">
                 <Link to={createPageUrl('ApplyArtist')}>

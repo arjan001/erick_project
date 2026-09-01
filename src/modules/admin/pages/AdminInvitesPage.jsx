@@ -122,7 +122,7 @@ export default function AdminInvitesPage() {
               <Label>Invite Link</Label>
               <div className="flex gap-2">
                 <Input
-                  value="https://studio22.com/invite/abc123"
+                  value="https://ericrabar.com/invite/abc123"
                   readOnly
                   className="rounded-lg"
                 />

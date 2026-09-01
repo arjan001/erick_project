@@ -12,7 +12,7 @@ export default function ActivityFeedPage() {
   const [filter, setFilter] = useState('all'); // all, jobs, connections, endorsements, testimonials
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
+    const storedUser = localStorage.getItem('ericrabar_user');
     if (!storedUser) {
       window.location.href = '/';
       return;

@@ -13,7 +13,7 @@ export default function HeroShowcase() {
         </div>
         
         <h1 className="text-hero uppercase mb-8 tracking-tighter">
-          STUDIO22
+          ERIC RABAR
         </h1>
         
         <div className="flex items-center justify-center gap-3 mb-12">

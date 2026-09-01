@@ -1,6 +1,6 @@
 export const authApi = {
   getSession: async () => {
-    const stored = localStorage.getItem('studio22_user');
+    const stored = localStorage.getItem('ericrabar_user');
     if (stored) {
       try {
         const user = JSON.parse(stored);
@@ -22,7 +22,7 @@ export const authApi = {
       'client@client.com': { role: 'client', name: 'Client User' },
       'project@project.com': { role: 'project_owner', name: 'Jane Smith' },
       'backer@backer.com': { role: 'backer', name: 'Investment Group' },
-      'admin@studio22.com': { role: 'admin', name: 'Admin User' }
+      'admin@ericrabar.com': { role: 'admin', name: 'Admin User' }
     };
     
     const { email, password } = credentials;
@@ -34,8 +34,8 @@ export const authApi = {
         full_name: account.name,
         role: account.role
       };
-      localStorage.setItem('studio22_user', JSON.stringify(user));
-      sessionStorage.setItem('studio22_just_logged_in', 'true');
+      localStorage.setItem('ericrabar_user', JSON.stringify(user));
+      sessionStorage.setItem('ericrabar_just_logged_in', 'true');
       return {
         user,
         source: 'demo'
@@ -46,8 +46,8 @@ export const authApi = {
   },
   
   logout: (shouldRedirect = true) => {
-    localStorage.removeItem('studio22_user');
-    localStorage.removeItem('studio22_team');
+    localStorage.removeItem('ericrabar_user');
+    localStorage.removeItem('ericrabar_team');
     if (shouldRedirect) {
       window.location.href = '/SignIn';
     }

@@ -125,10 +125,10 @@ export const features = {
   getCacheTimeout: () => getSetting('cacheTimeout', 3600),
   
   // Get string settings
-  getSiteName: () => getSetting('siteName', 'Studio22'),
-  getSiteUrl: () => getSetting('siteUrl', 'https://studio22.com'),
-  getContactEmail: () => getSetting('contactEmail', 'contact@studio22.com'),
-  getSupportEmail: () => getSetting('supportEmail', 'support@studio22.com'),
+  getSiteName: () => getSetting('siteName', 'Eric Rabar'),
+  getSiteUrl: () => getSetting('siteUrl', 'https://ericrabar.com'),
+  getContactEmail: () => getSetting('contactEmail', 'contact@ericrabar.com'),
+  getSupportEmail: () => getSetting('supportEmail', 'support@ericrabar.com'),
   getDefaultCurrency: () => getSetting('defaultCurrency', 'EUR'),
   getAllowedFileTypes: () => getSetting('allowedFileTypes', 'jpg,jpeg,png,mp4,pdf'),
   getFeaturedCategories: () => getSetting('featuredCategories', ''),

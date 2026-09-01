@@ -13,7 +13,7 @@ export default function RequestIntroductionModal({ isOpen, onClose, projectTitle
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // In production, this would submit to a Studio22 function
+    // In production, this would submit to a Eric Rabar function
     setSubmitted(true);
     setTimeout(() => {
       onClose();
@@ -30,14 +30,14 @@ export default function RequestIntroductionModal({ isOpen, onClose, projectTitle
         <DialogHeader>
           <DialogTitle>Express Interest</DialogTitle>
           <DialogDescription>
-            Let Studio22 know you're interested in this project. We'll facilitate the introduction.
+            Let Eric Rabar know you're interested in this project. We'll facilitate the introduction.
           </DialogDescription>
         </DialogHeader>
 
         {submitted ? (
           <div className="py-8 text-center">
             <p className="text-green-600 font-semibold mb-2">✓ Interest Recorded</p>
-            <p className="text-sm text-gray-600">Studio22 will review and contact you soon.</p>
+            <p className="text-sm text-gray-600">Eric Rabar will review and contact you soon.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">

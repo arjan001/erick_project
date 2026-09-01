@@ -82,14 +82,14 @@ export default function Projects() {
   return (
     <div className="min-h-screen bg-white">
       <SEOMetaTags
-        title="Browse Video Production Projects | Studio22 Marketplace"
-        description="Discover and apply to verified video production projects from leading brands, agencies, and creators worldwide. Studio22 connects filmmakers, production teams, and creative professionals with commercial, music video, documentary, short film, and branded content opportunities."
+        title="Browse Video Production Projects | Eric Rabar Marketplace"
+        description="Discover and apply to verified video production projects from leading brands, agencies, and creators worldwide. Eric Rabar connects filmmakers, production teams, and creative professionals with commercial, music video, documentary, short film, and branded content opportunities."
         keywords="video production projects, film jobs, commercial production jobs, music video projects, documentary projects, short film opportunities, branded content projects, filmmaker jobs, production crew jobs, video production work, creative projects, film production opportunities"
-        ogImage="https://studio22.com/og-projects.jpg"
+        ogImage="https://ericrabar.com/og-projects.jpg"
         ogType="website"
         schemaType="CollectionPage"
         schemaData={{
-          name: "Studio22 Projects",
+          name: "Eric Rabar Projects",
           description: "Curated marketplace of video production projects for filmmakers and production teams",
           author: "oneplusafrica.com - OnePlusAfrica Tech Solution"
         }}
@@ -302,7 +302,7 @@ export default function Projects() {
       <section className="bg-black text-white py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">Have a project to share?</h2>
-          <p className="text-gray-300 mb-6">Post your production and connect with the Studio22 network.</p>
+          <p className="text-gray-300 mb-6">Post your production and connect with the Eric Rabar network.</p>
           <Button className="bg-white text-black hover:bg-gray-100">
             Post Your Project
           </Button>

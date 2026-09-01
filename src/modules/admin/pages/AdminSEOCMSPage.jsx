@@ -10,11 +10,11 @@ export default function AdminSEOCMSPage() {
   
   // SEO Settings
   const [seoSettings, setSeoSettings] = useState({
-    defaultTitle: 'Studio22 - Premium Video Production Network',
+    defaultTitle: 'Eric Rabar - Premium Video Production Network',
     defaultDescription: 'Connect with top video production artists, teams, and clients. Find jobs, showcase portfolio, and collaborate on amazing projects.',
     defaultKeywords: 'video production, film, cinematography, editing, vfx, artists, jobs, portfolio',
     ogImage: '',
-    twitterHandle: '@studio22',
+    twitterHandle: '@ericrabar',
     googleAnalyticsId: '',
     googleTagManagerId: '',
     facebookPixelId: '',
@@ -29,7 +29,7 @@ export default function AdminSEOCMSPage() {
       id: 'home',
       title: 'Home',
       slug: '/',
-      metaTitle: 'Studio22 - Premium Video Production Network',
+      metaTitle: 'Eric Rabar - Premium Video Production Network',
       metaDescription: 'Connect with top video production artists, teams, and clients.',
       metaKeywords: 'video production, film, artists',
       ogImage: '',
@@ -41,9 +41,9 @@ export default function AdminSEOCMSPage() {
       id: 'about',
       title: 'About Us',
       slug: '/about',
-      metaTitle: 'About Studio22 - Our Mission',
-      metaDescription: 'Learn about Studio22 and our mission to connect creators.',
-      metaKeywords: 'about, mission, studio22',
+      metaTitle: 'About Eric Rabar - Our Mission',
+      metaDescription: 'Learn about Eric Rabar and our mission to connect creators.',
+      metaKeywords: 'about, mission, ericrabar',
       ogImage: '',
       customHead: '',
       status: 'published',
@@ -53,7 +53,7 @@ export default function AdminSEOCMSPage() {
       id: 'pricing',
       title: 'Pricing',
       slug: '/pricing',
-      metaTitle: 'Pricing Plans - Studio22',
+      metaTitle: 'Pricing Plans - Eric Rabar',
       metaDescription: 'View our pricing plans for artists and clients.',
       metaKeywords: 'pricing, plans, subscription',
       ogImage: '',
@@ -70,7 +70,7 @@ export default function AdminSEOCMSPage() {
       name: 'Auto-Generate Meta Titles',
       description: 'Automatically generate meta titles from page content',
       enabled: true,
-      pattern: '{page_name} - Studio22'
+      pattern: '{page_name} - Eric Rabar'
     },
     {
       id: 'rule2',
@@ -117,7 +117,7 @@ export default function AdminSEOCMSPage() {
   // Navbar & Footer Settings
   const [navFooterSettings, setNavFooterSettings] = useState({
     // Navbar Settings
-    navbarLogo: 'Studio22',
+    navbarLogo: 'Eric Rabar',
     navbarLogoUrl: '',
     showNavbarLogo: true,
     navbarLinks: [
@@ -134,7 +134,7 @@ export default function AdminSEOCMSPage() {
     navbarTextColor: '#ffffff',
     
     // Footer Settings
-    footerLogo: 'Studio22',
+    footerLogo: 'Eric Rabar',
     footerLogoUrl: '',
     showFooterLogo: true,
     footerDescription: 'Premium video production network connecting artists, teams, and clients worldwide.',
@@ -171,17 +171,17 @@ export default function AdminSEOCMSPage() {
       }
     ],
     socialLinks: [
-      { id: 1, platform: 'twitter', url: 'https://twitter.com/studio22', icon: 'twitter' },
-      { id: 2, platform: 'facebook', url: 'https://facebook.com/studio22', icon: 'facebook' },
-      { id: 3, platform: 'instagram', url: 'https://instagram.com/studio22', icon: 'instagram' },
-      { id: 4, platform: 'linkedin', url: 'https://linkedin.com/company/studio22', icon: 'linkedin' },
-      { id: 5, platform: 'youtube', url: 'https://youtube.com/studio22', icon: 'youtube' }
+      { id: 1, platform: 'twitter', url: 'https://twitter.com/ericrabar', icon: 'twitter' },
+      { id: 2, platform: 'facebook', url: 'https://facebook.com/ericrabar', icon: 'facebook' },
+      { id: 3, platform: 'instagram', url: 'https://instagram.com/ericrabar', icon: 'instagram' },
+      { id: 4, platform: 'linkedin', url: 'https://linkedin.com/company/ericrabar', icon: 'linkedin' },
+      { id: 5, platform: 'youtube', url: 'https://youtube.com/ericrabar', icon: 'youtube' }
     ],
     footerBackgroundColor: '#000000',
     footerTextColor: '#ffffff',
     showNewsletter: true,
     newsletterPlaceholder: 'Enter your email',
-    copyrightText: '© 2026 Studio22. All rights reserved.',
+    copyrightText: '© 2026 Eric Rabar. All rights reserved.',
     showBackToTop: true
   });
 

@@ -1,8 +1,8 @@
-# Studio22 Performance Optimization Guide
+# Eric Rabar Performance Optimization Guide
 
 ## Overview
 
-This document outlines performance optimization strategies, best practices, and implementation guidelines for the Studio22 platform to ensure optimal user experience and system efficiency.
+This document outlines performance optimization strategies, best practices, and implementation guidelines for the Eric Rabar platform to ensure optimal user experience and system efficiency.
 
 ## Performance Goals
 
@@ -131,7 +131,7 @@ Review bundle analyzer output to identify large bundles.
 // Service Worker for caching
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open('studio22-v1').then((cache) => {
+    caches.open('ericrabar-v1').then((cache) => {
       return cache.addAll([
         '/',
         '/static/css/main.css',

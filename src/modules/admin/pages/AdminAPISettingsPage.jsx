@@ -24,7 +24,7 @@ export default function AdminAPISettingsPage() {
 
   const [apiSettings, setApiSettings] = useState({
     enableCORS: true,
-    allowedOrigins: ['https://studio22.com', 'https://www.studio22.com'],
+    allowedOrigins: ['https://ericrabar.com', 'https://www.ericrabar.com'],
     enableAPIKeyAuth: true,
     enableJWTAuth: true,
     jwtExpiration: 3600,

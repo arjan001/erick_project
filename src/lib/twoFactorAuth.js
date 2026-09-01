@@ -53,7 +53,7 @@ export async function enableTwoFactorAuth(userId, email) {
 
 // Generate QR code URL for authenticator apps
 function generateQRCode(secret, email) {
-  const issuer = 'Studio22';
+  const issuer = 'Eric Rabar';
   const account = email;
   return `otpauth://totp/${issuer}:${account}?secret=${secret}&issuer=${issuer}`;
 }

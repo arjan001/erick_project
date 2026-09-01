@@ -67,7 +67,7 @@ export default function ClientProfilePage() {
   const [profilePublic, setProfilePublic] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
+    const storedUser = localStorage.getItem('ericrabar_user');
     if (!storedUser) {
       window.location.href = '/';
       return;
@@ -409,7 +409,7 @@ export default function ClientProfilePage() {
       
       // Log out the user
       await supabase.auth.signOut();
-      localStorage.removeItem('studio22_user');
+      localStorage.removeItem('ericrabar_user');
       
       success('Account Deletion Requested', 'Your account has been suspended and will be permanently deleted in 90 days');
       window.location.href = '/SignIn';

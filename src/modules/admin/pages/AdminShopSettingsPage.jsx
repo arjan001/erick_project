@@ -9,9 +9,9 @@ export default function AdminShopSettingsPage() {
 
   const [shopSettings, setShopSettings] = useState({
     // General Shop Settings
-    shopName: 'Studio22 Market',
+    shopName: 'Eric Rabar Market',
     shopDescription: 'Premium video production equipment and merchandise',
-    shopEmail: 'shop@studio22.com',
+    shopEmail: 'shop@ericrabar.com',
     shopPhone: '+1-555-0123',
     shopAddress: '123 Studio Lane, Los Angeles, CA 90001',
     
@@ -54,8 +54,8 @@ export default function AdminShopSettingsPage() {
     
     // Notifications
     notifyNewOrder: true,
-    notifyLowStockEmail: 'admin@studio22.com',
-    notifyOutOfStockEmail: 'admin@studio22.com'
+    notifyLowStockEmail: 'admin@ericrabar.com',
+    notifyOutOfStockEmail: 'admin@ericrabar.com'
   });
 
   const handleSaveSettings = async () => {

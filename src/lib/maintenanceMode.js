@@ -27,7 +27,7 @@ export async function fetchMaintenanceSettings() {
         endTime: null,
         allowedIPs: [],
         showCountdown: true,
-        contactEmail: 'support@studio22.app',
+        contactEmail: 'support@ericrabar.app',
         template: 'default'
       };
     }
@@ -55,7 +55,7 @@ export async function fetchMaintenanceSettings() {
       endTime: settingsMap.maintenance_end_time || null,
       allowedIPs: settingsMap.maintenance_allowed_ips || [],
       showCountdown: settingsMap.maintenance_show_countdown !== false,
-      contactEmail: settingsMap.maintenance_contact_email || 'support@studio22.app',
+      contactEmail: settingsMap.maintenance_contact_email || 'support@ericrabar.app',
       template: settingsMap.maintenance_template || 'default'
     };
   } catch (error) {
@@ -67,7 +67,7 @@ export async function fetchMaintenanceSettings() {
       endTime: null,
       allowedIPs: [],
       showCountdown: true,
-      contactEmail: 'support@studio22.app',
+      contactEmail: 'support@ericrabar.app',
       template: 'default'
     };
   }
@@ -273,7 +273,7 @@ export const MAINTENANCE_TEMPLATES = {
 <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
 <p class="text-red-800 text-sm"><strong>Status:</strong> Our team is working to resolve this as quickly as possible.</p>
 </div>
-<p class="text-sm text-gray-500">For urgent inquiries, please contact us at support@studio22.app</p>`
+<p class="text-sm text-gray-500">For urgent inquiries, please contact us at support@ericrabar.app</p>`
   }
 };
 

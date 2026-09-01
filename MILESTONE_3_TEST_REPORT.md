@@ -1,6 +1,6 @@
-# Studio22 Milestone 3 Test Report
+# Eric Rabar Milestone 3 Test Report
 
-**Project**: Studio22  
+**Project**: Eric Rabar  
 **Milestone**: 3 - Admin Panel, Testing & Deployment  
 **Test Date**: July 13, 2026  
 **Tester**: Development Team  

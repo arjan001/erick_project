@@ -32,7 +32,7 @@ export const createTeamInvitation = async (teamId, email, role, inviterName, met
     const inviteUrl = `${window.location.origin}/accept-invite`;
     const emailResult = await sendTeamInvitationEmail(
       email,
-      'Studio22 Team', // Will be updated with actual team name
+      'Eric Rabar Team', // Will be updated with actual team name
       inviterName,
       token,
       inviteUrl

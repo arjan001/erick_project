@@ -75,7 +75,7 @@ export default function SubmitProject() {
   useEffect(() => {
     // Auto-fill owner email/name from logged-in user
     try {
-      const storedUser = JSON.parse(localStorage.getItem('studio22_user') || '{}');
+      const storedUser = JSON.parse(localStorage.getItem('ericrabar_user') || '{}');
       if (storedUser.email) setProjectData(prev => ({ ...prev, project_owner_email: storedUser.email }));
       if (storedUser.full_name) setProjectData(prev => ({ ...prev, project_owner_name: storedUser.full_name }));
     } catch (e) { /* ignore */ }

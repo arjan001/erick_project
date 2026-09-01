@@ -27,8 +27,8 @@ export default function ProjectPublic() {
 
   useEffect(() => {
     if (!project) return;
-    const title = `${(project.project_type || 'Project').replace(/_/g, ' ')} — Studio22`;
-    const desc = project.notes || `A ${(project.project_type || '').replace(/_/g, ' ')} project on Studio22, connecting clients with top creative talent.`;
+    const title = `${(project.project_type || 'Project').replace(/_/g, ' ')} — Eric Rabar`;
+    const desc = project.notes || `A ${(project.project_type || '').replace(/_/g, ' ')} project on Eric Rabar, connecting clients with top creative talent.`;
     document.title = title;
     setMeta('description', desc);
     setMeta('og:title', title, true);
@@ -52,7 +52,7 @@ export default function ProjectPublic() {
             {project.project_type?.replace(/_/g, ' ')}
           </span>
           <h1 className="text-2xl font-bold text-gray-900 mt-4 mb-2">
-            {project.project_owner_company || project.project_owner_name || 'Studio22 Project'}
+            {project.project_owner_company || project.project_owner_name || 'Eric Rabar Project'}
           </h1>
           <p className="text-gray-700 leading-relaxed mb-6">{project.notes || 'A new creative production project.'}</p>
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-8">

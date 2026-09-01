@@ -5,7 +5,7 @@
  */
 
 // Encryption key management (in production, this should be handled server-side)
-const ENCRYPTION_KEY = process.env.VITE_ENCRYPTION_KEY || 'studio22-default-key-change-in-production';
+const ENCRYPTION_KEY = process.env.VITE_ENCRYPTION_KEY || 'ericrabar-default-key-change-in-production';
 
 // Simple XOR-based encryption for demonstration
 // In production, use proper encryption like AES-256-GCM

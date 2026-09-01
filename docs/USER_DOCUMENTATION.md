@@ -1,14 +1,14 @@
-# Studio22 User Documentation
+# Eric Rabar User Documentation
 
 ## Overview
 
-Studio22 is a comprehensive platform connecting artists, teams, clients, backers, and project owners. This guide helps users navigate and utilize all platform features.
+Eric Rabar is a comprehensive platform connecting artists, teams, clients, backers, and project owners. This guide helps users navigate and utilize all platform features.
 
 ## Getting Started
 
 ### Registration
 
-1. Visit the Studio22 website
+1. Visit the Eric Rabar website
 2. Click "Sign Up" in the top right corner
 3. Select your user type:
    - Artist
@@ -776,7 +776,7 @@ Project owners showcase projects, seek funding, and manage backers.
 
 1. Check spam folder
 2. Verify email address is correct
-3. Add noreply@studio22.com to contacts
+3. Add noreply@ericrabar.com to contacts
 4. Check email settings
 5. Contact support
 
@@ -792,7 +792,7 @@ Project owners showcase projects, seek funding, and manage backers.
 
 #### Support Channels
 
-- Email: support@studio22.com
+- Email: support@ericrabar.com
 - Help Center: /help
 - FAQ: /faq
 - Live Chat: Available on dashboard
@@ -835,7 +835,7 @@ Project owners showcase projects, seek funding, and manage backers.
 
 ### Responsive Design
 
-Studio22 is fully responsive and works on:
+Eric Rabar is fully responsive and works on:
 - Desktop computers
 - Tablets
 - Mobile phones

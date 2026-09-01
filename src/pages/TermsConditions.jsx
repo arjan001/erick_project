@@ -22,7 +22,7 @@ export default function TermsConditions() {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Agreement to Terms</h2>
             <p className="text-gray-700 leading-relaxed">
-              By accessing or using Studio22, you agree to be bound by these Terms & Conditions. If you disagree with any part of these terms, you may not access our service.
+              By accessing or using Eric Rabar, you agree to be bound by these Terms & Conditions. If you disagree with any part of these terms, you may not access our service.
             </p>
           </section>
 
@@ -49,7 +49,7 @@ export default function TermsConditions() {
               Acceptable Use
             </h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              You agree to use Studio22 for lawful purposes only. You must not:
+              You agree to use Eric Rabar for lawful purposes only. You must not:
             </p>
             <ul className="space-y-3 text-gray-700">
               <li className="flex items-start gap-3">
@@ -81,7 +81,7 @@ export default function TermsConditions() {
               Intellectual Property
             </h2>
             <p className="text-gray-700 leading-relaxed">
-              The content, features, and functionality of Studio22 are owned by us and are protected by international copyright, trademark, and other intellectual property laws. You retain ownership of content you upload, but grant us a license to use, display, and distribute it as necessary to provide our services.
+              The content, features, and functionality of Eric Rabar are owned by us and are protected by international copyright, trademark, and other intellectual property laws. You retain ownership of content you upload, but grant us a license to use, display, and distribute it as necessary to provide our services.
             </p>
           </section>
 

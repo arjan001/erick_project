@@ -1,4 +1,4 @@
-# Studio22 — Base44 Dev Environment
+# Eric Rabar — Base44 Dev Environment
 
 ## Overview
 Vite + React (JSX) frontend that connects to a remote Base44 backend via `@base44/sdk`.

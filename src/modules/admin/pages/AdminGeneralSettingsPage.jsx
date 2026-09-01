@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Settings, Save, Globe, Bell, Shield, Clock, Users, Database, ToggleLeft, ToggleRight, Layers, ArrowRight, Mail, Send, CheckCircle2, Trash2, RefreshCw } from 'lucide-react';
 
 const DEFAULT_SETTINGS = {
-  site_name: 'Studio22',
+  site_name: 'Eric Rabar',
   site_description: 'Premium video production network',
-  site_url: 'https://studio22.com',
-  contact_email: 'contact@studio22.com',
-  support_email: 'support@studio22.com',
+  site_url: 'https://ericrabar.com',
+  contact_email: 'contact@ericrabar.com',
+  support_email: 'support@ericrabar.com',
   allow_registration: true,
   require_email_verification: true,
   default_user_role: 'artist',
@@ -48,7 +48,7 @@ const DEFAULT_SETTINGS = {
   email_sender_address: '',
   email_sender_name: '',
   brevo_api_key: '',
-  brevo_sender_name: 'Studio22',
+  brevo_sender_name: 'Eric Rabar',
   brevo_sms_enabled: false,
   brevo_email_enabled: false,
 };
@@ -400,11 +400,11 @@ export default function AdminGeneralSettingsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Sender Email</label>
-              <input type="email" value={settings.email_sender_address} onChange={(e) => handleChange('email_sender_address', e.target.value)} placeholder="hello@studio22.com" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent" />
+              <input type="email" value={settings.email_sender_address} onChange={(e) => handleChange('email_sender_address', e.target.value)} placeholder="hello@ericrabar.com" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Sender Name</label>
-              <input type="text" value={settings.email_sender_name} onChange={(e) => handleChange('email_sender_name', e.target.value)} placeholder="Studio22" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent" />
+              <input type="text" value={settings.email_sender_name} onChange={(e) => handleChange('email_sender_name', e.target.value)} placeholder="Eric Rabar" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent" />
             </div>
           </div>
         </div>
@@ -420,7 +420,7 @@ export default function AdminGeneralSettingsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Sender Name</label>
-              <input type="text" value={settings.brevo_sender_name} onChange={(e) => handleChange('brevo_sender_name', e.target.value)} placeholder="Studio22" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent" />
+              <input type="text" value={settings.brevo_sender_name} onChange={(e) => handleChange('brevo_sender_name', e.target.value)} placeholder="Eric Rabar" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent" />
               <p className="text-xs text-gray-500 mt-1">Max 11 characters for alphanumeric, 15 for numeric.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

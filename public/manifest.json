@@ -1,11 +1,11 @@
 {
-  "name": "Studio22",
-  "short_name": "Studio22",
-  "description": "Connect with Top Film & Creative Talent",
+  "name": "Eric Rabar",
+  "short_name": "Eric Rabar",
+  "description": "The place to get hired for theater, film, and TV. Find casting calls, auditions, and jobs.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
   "icons": [
     {
       "src": "/favicon.ico",

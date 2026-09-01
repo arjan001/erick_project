@@ -205,7 +205,7 @@ export default function TeamPublicProfile() {
         <div className="bg-gray-50 rounded-2xl p-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Collaborate?</h2>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Connect with {team.contact_name} ({team.team_code}) through Studio22 to bring your project to life.
+            Connect with {team.contact_name} ({team.team_code}) through Eric Rabar to bring your project to life.
           </p>
           <Link to={createPageUrl('SubmitProject')}>
             <Button size="lg" className="bg-black text-white hover:bg-gray-800">

@@ -34,11 +34,11 @@ const DEMO_ACCOUNTS = {
   'team@team.com': { role: 'team', name: 'Studio Team' },
   'client@client.com': { role: 'client', name: 'Client User' },
   'backer@backer.com': { role: 'backer', name: 'Investment Group' },
-  'admin@studio22.com': { role: 'admin', name: 'Admin User' },
+  'admin@ericrabar.com': { role: 'admin', name: 'Admin User' },
 };
 
 const DEMO_BUTTONS = [
-  { email: 'admin@studio22.com', label: 'Admin', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AD&backgroundColor=4f46e5' },
+  { email: 'admin@ericrabar.com', label: 'Admin', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AD&backgroundColor=4f46e5' },
   { email: 'client@client.com', label: 'Client', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CL&backgroundColor=0a0b2e' },
   { email: 'artist@artist.com', label: 'Artist', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AR&backgroundColor=00a37e' },
 ];
@@ -110,7 +110,7 @@ export default function SignIn() {
         const acc = DEMO_ACCOUNTS[email];
         login({ id: email, email, full_name: acc.name, role: acc.role });
         if (acc.role === 'team') {
-          localStorage.setItem('studio22_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: email, role: 'team_admin' }));
+          localStorage.setItem('ericrabar_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: email, role: 'team_admin' }));
         }
         const redirectDest = sessionStorage.getItem('redirectAfterLogin');
         sessionStorage.removeItem('redirectAfterLogin');

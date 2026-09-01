@@ -18,7 +18,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
   const [editMode, setEditMode] = useState(false);
   const [pressTimer, setPressTimer] = useState(null);
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem('studio22_user');
+    const storedUser = localStorage.getItem('ericrabar_user');
     return storedUser ? JSON.parse(storedUser) : null;
   });
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
@@ -26,10 +26,10 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
   const isHomePage = currentPageName === 'Home';
 
   React.useEffect(() => {
-    const justLoggedIn = sessionStorage.getItem('studio22_just_logged_in');
+    const justLoggedIn = sessionStorage.getItem('ericrabar_just_logged_in');
     if (justLoggedIn === 'true') {
       setShowLoadingScreen(true);
-      sessionStorage.removeItem('studio22_just_logged_in');
+      sessionStorage.removeItem('ericrabar_just_logged_in');
       setTimeout(() => {
         setShowLoadingScreen(false);
       }, 5000);
@@ -38,7 +38,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
 
   React.useEffect(() => {
     const handleStorageChange = () => {
-      const storedUser = localStorage.getItem('studio22_user');
+      const storedUser = localStorage.getItem('ericrabar_user');
       setUser(storedUser ? JSON.parse(storedUser) : null);
     };
     window.addEventListener('storage', handleStorageChange);
@@ -83,9 +83,9 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
 
   const bottomNav = [
     { name: 'Projects', href: 'Projects' },
-    { name: 'Creators', href: 'ApplyArtist' },
-    { name: 'Teams', href: 'ApplyTeam' },
-    ...(user ? [{ name: 'Dashboard', href: getDashboardUrl(), highlight: true }] : [{ name: 'Post Project', href: 'SubmitProject', highlight: true }]),
+    { name: 'Creators', href: 'SignUp' },
+    { name: 'Teams', href: 'SignUp' },
+    ...(user ? [{ name: 'Dashboard', href: getDashboardUrl(), highlight: true }] : [{ name: 'Post Project', href: 'SignUp', highlight: true }]),
   ];
 
   return (
@@ -123,10 +123,10 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                       <Link to={createPageUrl('Projects')} className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}>
                         Projects
                       </Link>
-                    <Link to={createPageUrl('ApplyArtist')} className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}>
+                    <Link to={createPageUrl('SignUp')} className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}>
                       For Artists
                     </Link>
-                    <Link to={createPageUrl('ApplyTeam')} className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}>
+                    <Link to={createPageUrl('SignUp')} className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}>
                       For Teams
                     </Link>
                     <div className="relative">
@@ -363,7 +363,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 mb-12">
             <div>
-              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Studio22</h3>
+              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Eric Rabar</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to={createPageUrl('Home')} className="hover:text-white">Platform</Link></li>
                 <li><Link to={createPageUrl('Services')} className="hover:text-white">About</Link></li>
@@ -373,7 +373,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             <div>
               <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">For Clients</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl('SubmitProject')} className="hover:text-white">Post a Project</Link></li>
+                <li><Link to={createPageUrl('SignUp')} className="hover:text-white">Post a Project</Link></li>
                 <li><Link to={createPageUrl('Home')} className="hover:text-white">Browse Creators</Link></li>
                 <li><Link to={createPageUrl('Services')} className="hover:text-white">How It Works</Link></li>
               </ul>
@@ -381,7 +381,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             <div>
               <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">For Artists</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl('ApplyArtist')} className="hover:text-white">Join as Artist</Link></li>
+                <li><Link to={createPageUrl('SignUp')} className="hover:text-white">Join as Artist</Link></li>
                 <li><Link to={createPageUrl('Home')} className="hover:text-white">Browse Projects</Link></li>
                 <li><Link to={createPageUrl('Work')} className="hover:text-white">Showcase Work</Link></li>
               </ul>
@@ -389,7 +389,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             <div>
               <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">For Teams</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl('ApplyTeam')} className="hover:text-white">Join as Team</Link></li>
+                <li><Link to={createPageUrl('SignUp')} className="hover:text-white">Join as Team</Link></li>
                 <li><Link to={createPageUrl('Home')} className="hover:text-white">Browse Projects</Link></li>
                 <li><Link to={createPageUrl('Services')} className="hover:text-white">Services</Link></li>
               </ul>
@@ -397,7 +397,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             <div>
               <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">For Backers</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to={createPageUrl('ApplyBacker')} className="hover:text-white">Join as Backer</Link></li>
+                <li><Link to={createPageUrl('SignUp')} className="hover:text-white">Join as Backer</Link></li>
                 <li><Link to={createPageUrl('BackedProjects')} className="hover:text-white">Projects Seeking Backing</Link></li>
                 <li><Link to={createPageUrl('HowBackingWorks')} className="hover:text-white">How Backing Works</Link></li>
               </ul>
@@ -416,7 +416,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
 
           <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="text-sm text-gray-400">
-              © 2026 Studio22. All rights reserved.
+              © 2026 Eric Rabar. All rights reserved.
             </div>
             <div className="flex gap-8">
               <a href="#" className="hover:text-white transition-colors">

@@ -59,7 +59,7 @@ export default function ArtistDashboard() {
         const artist = artists?.[0] || null;
         setArtistProfile(artist);
 
-        const alreadySeen = sessionStorage.getItem('studio22_onboarding_seen');
+        const alreadySeen = sessionStorage.getItem('ericrabar_onboarding_seen');
         const isIncomplete = artist && (!artist.based_in_country || artist.onboarding_completed === false);
         if (artist && isIncomplete && !alreadySeen) {
           setShowOnboarding(true);
@@ -189,7 +189,7 @@ export default function ArtistDashboard() {
       {showOnboarding && artistProfile && (
         <ArtistOnboardingFullModal
           user={user}
-          onClose={() => { sessionStorage.setItem('studio22_onboarding_seen', 'true'); setShowOnboarding(false); }}
+          onClose={() => { sessionStorage.setItem('ericrabar_onboarding_seen', 'true'); setShowOnboarding(false); }}
         />
       )}
     </div>

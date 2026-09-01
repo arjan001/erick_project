@@ -1081,7 +1081,7 @@ export default function AISubmission() {
 
   // Load saved context from localStorage on mount
   useEffect(() => {
-    const savedContext = localStorage.getItem('studio22_ai_modal_context');
+    const savedContext = localStorage.getItem('ericrabar_ai_modal_context');
     if (savedContext) {
       try {
         const context = JSON.parse(savedContext);
@@ -1099,7 +1099,7 @@ export default function AISubmission() {
 
   // Load analyzed project from Home page and auto-generate
   useEffect(() => {
-    const analyzedProject = JSON.parse(localStorage.getItem('studio22_analyzed_project') || 'null');
+    const analyzedProject = JSON.parse(localStorage.getItem('ericrabar_analyzed_project') || 'null');
     if (analyzedProject) {
       setHasAnalyzedProject(true);
       setProjectUrl(analyzedProject.url || '');
@@ -1113,7 +1113,7 @@ export default function AISubmission() {
         description: analyzedProject.additionalNotes || analyzedProject.analysis?.rawAnalysis || '',
         timestamp: new Date().toISOString()
       };
-      localStorage.setItem('studio22_ai_modal_context', JSON.stringify(contextData));
+      localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData));
       
       setCurrentStep(0);
       setApproved(new Set());
@@ -1192,13 +1192,13 @@ export default function AISubmission() {
         projectDescription,
         timestamp: new Date().toISOString()
       };
-      localStorage.setItem('studio22_ai_submission_draft', JSON.stringify(draftData));
+      localStorage.setItem('ericrabar_ai_submission_draft', JSON.stringify(draftData));
     }
   }, [aiData, currentStep, approved, projectUrl, projectCategory, projectDescription]);
 
   // Load saved draft from localStorage on mount
   useEffect(() => {
-    const savedDraft = localStorage.getItem('studio22_ai_submission_draft');
+    const savedDraft = localStorage.getItem('ericrabar_ai_submission_draft');
     if (savedDraft) {
       try {
         const draft = JSON.parse(savedDraft);
@@ -1214,12 +1214,12 @@ export default function AISubmission() {
           console.log('Restored draft from', new Date(draft.timestamp).toLocaleString());
         } else {
           // Draft is too old or doesn't have real data, clear it
-          localStorage.removeItem('studio22_ai_submission_draft');
+          localStorage.removeItem('ericrabar_ai_submission_draft');
           console.log('Draft was stale or incomplete, cleared it');
         }
       } catch (err) {
         console.error('Error loading saved draft:', err);
-        localStorage.removeItem('studio22_ai_submission_draft');
+        localStorage.removeItem('ericrabar_ai_submission_draft');
       }
     }
   }, []);
@@ -1283,7 +1283,7 @@ export default function AISubmission() {
 
   const handleGenerateProductionPlan = async () => {
     // Clear any existing draft when starting fresh
-    localStorage.removeItem('studio22_ai_submission_draft');
+    localStorage.removeItem('ericrabar_ai_submission_draft');
     
     const contextData = {
       url: projectUrl,
@@ -1291,7 +1291,7 @@ export default function AISubmission() {
       description: projectDescription,
       timestamp: new Date().toISOString()
     };
-    localStorage.setItem('studio22_ai_modal_context', JSON.stringify(contextData));
+    localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData));
     
     // Initialize with empty data structure to show steps immediately
     setAIData({
@@ -1339,7 +1339,7 @@ export default function AISubmission() {
       description: projectDescription,
       timestamp: new Date().toISOString()
     };
-    localStorage.setItem('studio22_ai_modal_context', JSON.stringify(contextData));
+    localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData));
     
     // Regenerate production plan with new category
     try {

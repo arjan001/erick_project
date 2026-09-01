@@ -217,7 +217,7 @@
 
 ---
 
-### 9. Merge branch 'main' of https://github.com/easyred/studio22
+### 9. Merge branch 'main' of https://github.com/easyred/ericrabar
 **Commit:** `7660cb6`  
 **Date:** July 12, 2026 at 17:43:30 +0300  
 **Author:** edwin

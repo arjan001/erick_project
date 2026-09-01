@@ -134,7 +134,7 @@ export default function TeamStepPortfolio({ data, updateData }) {
             className="mt-1"
           />
           <Label htmlFor="portfolioUsage" className="text-sm cursor-pointer leading-relaxed">
-            Studio22 can use these clips as visual direction examples
+            Eric Rabar can use these clips as visual direction examples
           </Label>
         </div>
       </div>

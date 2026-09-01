@@ -8,7 +8,7 @@ class AuthService {
   }
 
   loadSession() {
-    const stored = localStorage.getItem('studio22_user');
+    const stored = localStorage.getItem('ericrabar_user');
     if (stored) {
       try {
         const user = JSON.parse(stored);

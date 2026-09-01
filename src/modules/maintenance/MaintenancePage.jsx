@@ -12,7 +12,7 @@ export default function MaintenancePage() {
   const [endTime, setEndTime] = useState(null);
   const [timeRemaining, setTimeRemaining] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [contactEmail, setContactEmail] = useState('support@studio22.app');
+  const [contactEmail, setContactEmail] = useState('support@ericrabar.app');
 
   useEffect(() => {
     loadMaintenanceInfo();
@@ -99,7 +99,7 @@ export default function MaintenancePage() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-black rounded-2xl mb-4 shadow-lg">
               <span className="text-white text-3xl font-bold">22</span>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Studio22</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Eric Rabar</h1>
             <p className="text-gray-500 mt-2">Professional Creative Platform</p>
           </div>
 
@@ -152,7 +152,7 @@ export default function MaintenancePage() {
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-gray-200 text-center">
             <p className="text-sm text-gray-500">
-              © 2026 Studio22. All rights reserved.
+              © 2026 Eric Rabar. All rights reserved.
             </p>
           </div>
         </div>

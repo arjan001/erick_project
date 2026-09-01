@@ -10,7 +10,7 @@ export default function JobApplications() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
+    const storedUser = localStorage.getItem('ericrabar_user');
     if (!storedUser) {
       window.location.href = '/';
       return;

@@ -54,7 +54,7 @@ export default function Pricing() {
         <div className="text-center mb-16">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4">Transparent Pricing</h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Studio22 operates on project-based pricing. Every production is unique, but here are typical ranges
+            Eric Rabar operates on project-based pricing. Every production is unique, but here are typical ranges
           </p>
         </div>
 
@@ -100,7 +100,7 @@ export default function Pricing() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               'Curated team matching',
-              'Studio22 project management',
+              'Eric Rabar project management',
               'Quality assurance & oversight',
               'European network access',
               'Multi-language support',

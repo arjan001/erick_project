@@ -13,7 +13,7 @@ export default function JobInvitations() {
   const { success, error } = useToast();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('studio22_user');
+    const storedUser = localStorage.getItem('ericrabar_user');
     if (!storedUser) {
       window.location.href = '/';
       return;

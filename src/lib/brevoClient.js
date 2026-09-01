@@ -19,14 +19,14 @@ export const sendTeamInvitationEmail = async (email, teamName, inviterName, invi
       },
       body: JSON.stringify({
         sender: {
-          name: 'Studio22',
-          email: 'noreply@studio22.com'
+          name: 'Eric Rabar',
+          email: 'noreply@ericrabar.com'
         },
         to: [{
           email: email,
           name: email
         }],
-        subject: `You're invited to join ${teamName} on Studio22`,
+        subject: `You're invited to join ${teamName} on Eric Rabar`,
         htmlContent: `
           <!DOCTYPE html>
           <html>
@@ -46,27 +46,27 @@ export const sendTeamInvitationEmail = async (email, teamName, inviterName, invi
           <body>
             <div class="container">
               <div class="header">
-                <h1>Studio22</h1>
+                <h1>Eric Rabar</h1>
               </div>
               <div class="content">
                 <h2>You're Invited to Join a Team</h2>
                 <p>Hello,</p>
-                <p><strong>${inviterName}</strong> has invited you to join the <strong>${teamName}</strong> team on Studio22.</p>
-                <p>Studio22 is a platform for creative teams to collaborate on projects, manage tasks, and grow together.</p>
+                <p><strong>${inviterName}</strong> has invited you to join the <strong>${teamName}</strong> team on Eric Rabar.</p>
+                <p>Eric Rabar is a platform for creative teams to collaborate on projects, manage tasks, and grow together.</p>
                 <p>To accept this invitation and set up your account, click the button below:</p>
                 <p><a href="${inviteUrl}?token=${inviteToken}" class="button">Accept Invitation</a></p>
                 <p>This invitation will expire in 7 days.</p>
                 <p>If you have any questions, please contact your team administrator.</p>
               </div>
               <div class="footer">
-                <p>&copy; 2026 Studio22. All rights reserved.</p>
+                <p>&copy; 2026 Eric Rabar. All rights reserved.</p>
               </div>
             </div>
           </body>
           </html>
         `,
         textContent: `
-          You're invited to join ${teamName} on Studio22
+          You're invited to join ${teamName} on Eric Rabar
           
           ${inviterName} has invited you to join their team.
           
@@ -106,14 +106,14 @@ export const sendPasswordResetEmail = async (email, resetToken, resetUrl) => {
       },
       body: JSON.stringify({
         sender: {
-          name: 'Studio22',
-          email: 'noreply@studio22.com'
+          name: 'Eric Rabar',
+          email: 'noreply@ericrabar.com'
         },
         to: [{
           email: email,
           name: email
         }],
-        subject: 'Reset Your Studio22 Password',
+        subject: 'Reset Your Eric Rabar Password',
         htmlContent: `
           <!DOCTYPE html>
           <html>
@@ -133,26 +133,26 @@ export const sendPasswordResetEmail = async (email, resetToken, resetUrl) => {
           <body>
             <div class="container">
               <div class="header">
-                <h1>Studio22</h1>
+                <h1>Eric Rabar</h1>
               </div>
               <div class="content">
                 <h2>Reset Your Password</h2>
                 <p>Hello,</p>
-                <p>We received a request to reset your password for your Studio22 account.</p>
+                <p>We received a request to reset your password for your Eric Rabar account.</p>
                 <p>To reset your password, click the button below:</p>
                 <p><a href="${resetUrl}?token=${resetToken}" class="button">Reset Password</a></p>
                 <p>This link will expire in 1 hour.</p>
                 <p>If you didn't request this password reset, please ignore this email.</p>
               </div>
               <div class="footer">
-                <p>&copy; 2026 Studio22. All rights reserved.</p>
+                <p>&copy; 2026 Eric Rabar. All rights reserved.</p>
               </div>
             </div>
           </body>
           </html>
         `,
         textContent: `
-          Reset Your Studio22 Password
+          Reset Your Eric Rabar Password
           
           We received a request to reset your password.
           

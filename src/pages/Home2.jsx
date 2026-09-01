@@ -93,7 +93,7 @@ export default function Home2() {
               <span className="text-white font-black text-xl">S22</span>
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Studio22</h1>
+              <h1 className="text-3xl font-bold">Eric Rabar</h1>
               <p className="text-gray-500">Production Network</p>
             </div>
           </div>

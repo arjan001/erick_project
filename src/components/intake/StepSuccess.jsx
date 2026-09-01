@@ -18,7 +18,7 @@ export default function StepSuccess({ projectData }) {
         {/* Main Message */}
         <h1 className="text-4xl sm:text-5xl font-bold mb-4">Project Submitted</h1>
         <p className="text-xl text-gray-400 mb-12 max-w-lg mx-auto">
-          Thank you, {projectData.project_owner_name}. Your project is now being reviewed by the Studio22 team.
+          Thank you, {projectData.project_owner_name}. Your project is now being reviewed by the Eric Rabar team.
         </p>
 
         {/* What's Next */}
@@ -33,7 +33,7 @@ export default function StepSuccess({ projectData }) {
               <div>
                 <h3 className="font-semibold mb-1">Verification</h3>
                 <p className="text-sm text-gray-400">
-                  Our team will review your project within 24-48 hours to ensure it aligns with Studio22 standards.
+                  Our team will review your project within 24-48 hours to ensure it aligns with Eric Rabar standards.
                 </p>
               </div>
             </div>

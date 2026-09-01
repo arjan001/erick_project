@@ -68,7 +68,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-8 max-w-xl text-lg font-light leading-relaxed text-gray-400 md:text-xl"
         >
-          Studio22 connects directors, cinematographers, editors, and production
+          Eric Rabar connects directors, cinematographers, editors, and production
           teams with the people who need them. Curated. Verified. Ready to work.
         </motion.p>
 
@@ -79,14 +79,14 @@ export default function Hero() {
           className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
         >
           <Link
-            to={createPageUrl('SubmitProject')}
+            to={createPageUrl('SignUp')}
             className="group flex items-center gap-2 rounded-lg bg-[#C9A962] px-8 py-3.5 text-sm font-semibold text-black transition-colors hover:bg-[#D4B575]"
           >
             Post a Project
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
-            to={createPageUrl('ApplyArtist')}
+            to={createPageUrl('SignUp')}
             className="flex items-center gap-2 rounded-lg border border-white/20 px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
           >
             Join as a Creator

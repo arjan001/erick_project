@@ -1,8 +1,8 @@
-# Studio22 API Documentation
+# Eric Rabar API Documentation
 
 ## Overview
 
-Studio22 uses the Base44 API client for all backend operations. This document provides comprehensive information about the API structure, entities, and usage patterns.
+Eric Rabar uses the Base44 API client for all backend operations. This document provides comprehensive information about the API structure, entities, and usage patterns.
 
 ## Base Configuration
 
@@ -533,7 +533,7 @@ await sendTeamInvitationEmail(
 **Environment Variables:**
 - `VITE_BREVO_API_KEY` - Brevo API key
 - Brevo API URL: `https://api.brevo.com/v3/smtp/email`
-- Sender: `noreply@studio22.com`
+- Sender: `noreply@ericrabar.com`
 
 ## Error Handling
 

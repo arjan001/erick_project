@@ -53,7 +53,7 @@ export default function AdminMaintenancePage() {
     endTime: '',
     allowedIPs: '',
     showCountdown: true,
-    contactEmail: 'support@studio22.app',
+    contactEmail: 'support@ericrabar.app',
     template: 'default'
   });
 
@@ -177,7 +177,7 @@ export default function AdminMaintenancePage() {
         .insert({
           code: newCode.trim(),
           is_active: true,
-          created_by: localStorage.getItem('studio22_user') ? JSON.parse(localStorage.getItem('studio22_user')).email : 'admin',
+          created_by: localStorage.getItem('ericrabar_user') ? JSON.parse(localStorage.getItem('ericrabar_user')).email : 'admin',
           expires_at: codeExpiry || null
         });
       
@@ -360,7 +360,7 @@ export default function AdminMaintenancePage() {
                     <div className="inline-flex items-center justify-center w-10 h-10 bg-black rounded-lg mb-2">
                       <span className="text-white text-lg font-bold">22</span>
                     </div>
-                    <h1 className="text-lg font-bold text-gray-900">Studio22</h1>
+                    <h1 className="text-lg font-bold text-gray-900">Eric Rabar</h1>
                   </div>
                   <div className="prose prose-gray max-w-none text-xs">
                     <div dangerouslySetInnerHTML={{ __html: settings.message }} />
@@ -606,7 +606,7 @@ export default function AdminMaintenancePage() {
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl mb-4 shadow-lg">
                     <span className="text-black text-3xl font-bold">22</span>
                   </div>
-                  <h1 className="text-3xl font-bold text-white">Studio22</h1>
+                  <h1 className="text-3xl font-bold text-white">Eric Rabar</h1>
                   <p className="text-gray-400 mt-2">Professional Creative Platform</p>
                 </div>
                 <div className="prose prose-invert max-w-none">
@@ -637,7 +637,7 @@ export default function AdminMaintenancePage() {
                 </div>
                 <div className="mt-8 pt-6 border-t border-gray-700 text-center">
                   <p className="text-sm text-gray-500">
-                    © 2026 Studio22. All rights reserved.
+                    © 2026 Eric Rabar. All rights reserved.
                   </p>
                 </div>
               </div>

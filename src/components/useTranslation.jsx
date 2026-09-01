@@ -6,7 +6,7 @@ export function useTranslation() {
   const [translations, setTranslations] = useState({});
 
   useEffect(() => {
-    const savedLang = localStorage.getItem('studio22_language') || 'en';
+    const savedLang = localStorage.getItem('ericrabar_language') || 'en';
     setLang(savedLang);
     
     // In production, fetch from Translation entity
@@ -37,7 +37,7 @@ function getStaticTranslations(lang) {
       'hero.title': 'Production Excellence',
       'hero.subtitle': 'We assemble world-class teams for commercial, film, and creative productions across Europe',
       'hero.cta': 'Start a Production',
-      'footer.rights': 'Studio22. All rights reserved.',
+      'footer.rights': 'Eric Rabar. All rights reserved.',
     },
     nl: {
       'nav.home': 'Home',
@@ -52,7 +52,7 @@ function getStaticTranslations(lang) {
       'hero.title': 'Productie Excellence',
       'hero.subtitle': 'Wij stellen wereldklasse teams samen voor commerciële, film en creatieve producties in heel Europa',
       'hero.cta': 'Start een Productie',
-      'footer.rights': 'Studio22. Alle rechten voorbehouden.',
+      'footer.rights': 'Eric Rabar. Alle rechten voorbehouden.',
     },
     es: {
       'nav.home': 'Inicio',
@@ -67,7 +67,7 @@ function getStaticTranslations(lang) {
       'hero.title': 'Excelencia en Producción',
       'hero.subtitle': 'Reunimos equipos de clase mundial para producciones comerciales, cinematográficas y creativas en toda Europa',
       'hero.cta': 'Iniciar una Producción',
-      'footer.rights': 'Studio22. Todos los derechos reservados.',
+      'footer.rights': 'Eric Rabar. Todos los derechos reservados.',
     }
   };
 

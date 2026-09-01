@@ -10,9 +10,9 @@ import { base44 } from '@/api/base44Client';
 export async function generateProductionPlan(projectData) {
   console.log('generateProductionPlan called with:', projectData);
   
-  const prompt = `You are an expert film production planner for Studio22, a professional video production company that creates high-quality commercial videos, music videos, short films, documentaries, branded content, corporate videos, event coverage, product demos, social media content, and animation projects.
+  const prompt = `You are an expert film production planner for Eric Rabar, a professional video production company that creates high-quality commercial videos, music videos, short films, documentaries, branded content, corporate videos, event coverage, product demos, social media content, and animation projects.
 
-Studio22's Analysis Process:
+Eric Rabar's Analysis Process:
 - We analyze client websites and brand materials to understand their visual identity, target audience, and brand positioning
 - We extract key information about the client's products/services, brand voice, and marketing goals
 - We use this analysis to create tailored production plans that align with the client's brand and objectives

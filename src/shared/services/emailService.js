@@ -2,7 +2,7 @@
 // This service handles all email notifications sent to users
 
 const RESEND_API_KEY = 'your_resend_api_key';
-const FROM_EMAIL = 'noreply@studio22.com';
+const FROM_EMAIL = 'noreply@ericrabar.com';
 
 class EmailService {
   constructor() {
@@ -41,24 +41,24 @@ class EmailService {
 
   // Welcome email for new users
   async sendWelcomeEmail(userEmail, userName) {
-    const subject = 'Welcome to Studio22 Creative Network';
+    const subject = 'Welcome to Eric Rabar Creative Network';
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #000;">Welcome to Studio22, ${userName}!</h1>
+        <h1 style="color: #000;">Welcome to Eric Rabar, ${userName}!</h1>
         <p>We're excited to have you join our creative community.</p>
-        <p>Studio22 connects creative professionals with opportunities, backers, and collaborators.</p>
+        <p>Eric Rabar connects creative professionals with opportunities, backers, and collaborators.</p>
         <p>Get started by exploring projects, connecting with other creators, or posting your own work.</p>
-        <a href="${window.location.origin}" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px;">Visit Studio22</a>
+        <a href="${window.location.origin}" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px;">Visit Eric Rabar</a>
       </div>
     `;
-    const text = `Welcome to Studio22, ${userName}! We're excited to have you join our creative community. Visit ${window.location.origin} to get started.`;
+    const text = `Welcome to Eric Rabar, ${userName}! We're excited to have you join our creative community. Visit ${window.location.origin} to get started.`;
 
     return this.sendEmail({ to: userEmail, subject, html, text });
   }
 
   // OTP email for verification
   async sendOTPEmail(userEmail, otp) {
-    const subject = 'Your Studio22 Verification Code';
+    const subject = 'Your Eric Rabar Verification Code';
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #000;">Verify Your Email</h1>
@@ -68,7 +68,7 @@ class EmailService {
         <p>If you didn't request this code, please ignore this email.</p>
       </div>
     `;
-    const text = `Your Studio22 verification code is: ${otp}. This code will expire in 10 minutes. If you didn't request this code, please ignore this email.`;
+    const text = `Your Eric Rabar verification code is: ${otp}. This code will expire in 10 minutes. If you didn't request this code, please ignore this email.`;
 
     return this.sendEmail({ to: userEmail, subject, html, text });
   }
@@ -79,12 +79,12 @@ class EmailService {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #000;">Great News, ${userName}!</h1>
-        <p>Your project <strong>"${projectName}"</strong> has been approved and is now live on Studio22.</p>
+        <p>Your project <strong>"${projectName}"</strong> has been approved and is now live on Eric Rabar.</p>
         <p>Your project is now visible to potential backers and collaborators.</p>
         <a href="${window.location.origin}/projects" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px;">View Your Project</a>
       </div>
     `;
-    const text = `Great news, ${userName}! Your project "${projectName}" has been approved and is now live on Studio22. Visit ${window.location.origin}/projects to view it.`;
+    const text = `Great news, ${userName}! Your project "${projectName}" has been approved and is now live on Eric Rabar. Visit ${window.location.origin}/projects to view it.`;
 
     return this.sendEmail({ to: userEmail, subject, html, text });
   }
@@ -147,12 +147,12 @@ class EmailService {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #000;">New Connection Request</h1>
         <p>Hi ${userName},</p>
-        <p><strong>${requesterName}</strong> wants to connect with you on Studio22.</p>
+        <p><strong>${requesterName}</strong> wants to connect with you on Eric Rabar.</p>
         <p>Accept the connection to start collaborating.</p>
         <a href="${window.location.origin}/connections" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px;">View Requests</a>
       </div>
     `;
-    const text = `Hi ${userName}, ${requesterName} wants to connect with you on Studio22. Visit ${window.location.origin}/connections to view and accept requests.`;
+    const text = `Hi ${userName}, ${requesterName} wants to connect with you on Eric Rabar. Visit ${window.location.origin}/connections to view and accept requests.`;
 
     return this.sendEmail({ to: userEmail, subject, html, text });
   }
@@ -177,7 +177,7 @@ class EmailService {
 
   // Password reset email
   async sendPasswordResetEmail(userEmail, resetLink) {
-    const subject = 'Reset Your Studio22 Password';
+    const subject = 'Reset Your Eric Rabar Password';
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #000;">Reset Your Password</h1>
@@ -195,10 +195,10 @@ class EmailService {
 
   // Login credentials email for new users
   async sendLoginCredentialsEmail(userEmail, userName, tempPassword = null) {
-    const subject = 'Your Studio22 Account Credentials';
+    const subject = 'Your Eric Rabar Account Credentials';
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #000;">Welcome to Studio22!</h1>
+        <h1 style="color: #000;">Welcome to Eric Rabar!</h1>
         <p>Hi ${userName},</p>
         <p>Your account has been successfully created. Here are your login credentials:</p>
         <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -206,11 +206,11 @@ class EmailService {
           ${tempPassword ? `<p><strong>Password:</strong> ${tempPassword}</p>` : '<p><strong>Password:</strong> Use the password you created during signup</p>'}
         </div>
         <p>You can now log in to your account and complete your profile.</p>
-        <a href="${window.location.origin}/signin" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px;">Log In to Studio22</a>
+        <a href="${window.location.origin}/signin" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px;">Log In to Eric Rabar</a>
         <p style="margin-top: 20px; color: #666; font-size: 12px;">If you didn't create this account, please ignore this email.</p>
       </div>
     `;
-    const text = `Welcome to Studio22! Hi ${userName}, Your account has been successfully created. Email: ${userEmail}${tempPassword ? `, Password: ${tempPassword}` : '. Use the password you created during signup'}. Log in at ${window.location.origin}/signin to complete your profile. If you didn't create this account, please ignore this email.`;
+    const text = `Welcome to Eric Rabar! Hi ${userName}, Your account has been successfully created. Email: ${userEmail}${tempPassword ? `, Password: ${tempPassword}` : '. Use the password you created during signup'}. Log in at ${window.location.origin}/signin to complete your profile. If you didn't create this account, please ignore this email.`;
 
     return this.sendEmail({ to: userEmail, subject, html, text });
   }

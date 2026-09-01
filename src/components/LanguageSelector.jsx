@@ -18,18 +18,18 @@ export default function LanguageSelector() {
   const [currentLang, setCurrentLang] = useState('en');
 
   useEffect(() => {
-    const savedLang = localStorage.getItem('studio22_language');
+    const savedLang = localStorage.getItem('ericrabar_language');
     if (savedLang) {
       setCurrentLang(savedLang);
     } else {
       // First visit - could add modal for selection
-      localStorage.setItem('studio22_language', 'en');
+      localStorage.setItem('ericrabar_language', 'en');
     }
   }, []);
 
   const handleLanguageChange = (langCode) => {
     setCurrentLang(langCode);
-    localStorage.setItem('studio22_language', langCode);
+    localStorage.setItem('ericrabar_language', langCode);
     window.location.reload(); // Refresh to apply translations
   };
 

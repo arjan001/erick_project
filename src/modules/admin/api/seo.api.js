@@ -113,7 +113,7 @@ export const generateSitemap = async () => {
       throw new Error('Sitemap generation is disabled');
     }
 
-    const baseUrl = seoSettings.canonical_url || 'https://studio22.com';
+    const baseUrl = seoSettings.canonical_url || 'https://ericrabar.com';
     const defaultPriority = seoSettings.sitemap_priority || 0.8;
     const defaultChangeFreq = seoSettings.sitemap_change_freq || 'weekly';
 
@@ -212,14 +212,14 @@ export const generateSchemaForPage = async (slug) => {
       return null;
     }
 
-    const baseUrl = seoSettings.canonical_url || 'https://studio22.com';
+    const baseUrl = seoSettings.canonical_url || 'https://ericrabar.com';
     const pageUrl = pageMetadata?.canonical_url || `${baseUrl}${slug}`;
 
     // Organization schema
     const organizationSchema = {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: seoSettings.organization_name || 'Studio22',
+      name: seoSettings.organization_name || 'Eric Rabar',
       url: seoSettings.organization_url || baseUrl,
       logo: seoSettings.organization_logo || '',
       sameAs: seoSettings.same_as || []

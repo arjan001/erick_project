@@ -22,7 +22,7 @@ export default function PrivacyPolicy() {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Introduction</h2>
             <p className="text-gray-700 leading-relaxed">
-              Studio22 ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our creative network platform. Please read this policy carefully.
+              Eric Rabar ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our creative network platform. Please read this policy carefully.
             </p>
           </section>
 
@@ -122,7 +122,7 @@ export default function PrivacyPolicy() {
             <p className="text-gray-700 leading-relaxed">
               If you have any questions about this Privacy Policy, please contact us at:
             </p>
-            <p className="text-gray-900 font-semibold mt-2">privacy@studio22.com</p>
+            <p className="text-gray-900 font-semibold mt-2">privacy@ericrabar.com</p>
           </section>
         </div>
       </div>

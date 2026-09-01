@@ -28,7 +28,7 @@ export default function Imprint() {
               <div className="space-y-3">
                 <div>
                   <p className="font-semibold text-gray-900">Company Name</p>
-                  <p className="text-gray-700">Studio22 Creative Network GmbH</p>
+                  <p className="text-gray-700">Eric Rabar Creative Network GmbH</p>
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">Legal Form</p>
@@ -57,7 +57,7 @@ export default function Imprint() {
             </h2>
             <div className="bg-white p-6 rounded-lg border border-gray-200">
               <p className="text-gray-700">
-                Studio22 Creative Network GmbH<br />
+                Eric Rabar Creative Network GmbH<br />
                 Creative Street 123<br />
                 10115 Berlin<br />
                 Germany
@@ -75,7 +75,7 @@ export default function Imprint() {
                 <Mail className="w-5 h-5 text-gray-500" />
                 <div>
                   <p className="font-semibold text-gray-900">Email</p>
-                  <p className="text-gray-700">contact@studio22.com</p>
+                  <p className="text-gray-700">contact@ericrabar.com</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -89,7 +89,7 @@ export default function Imprint() {
                 <Globe className="w-5 h-5 text-gray-500" />
                 <div>
                   <p className="font-semibold text-gray-900">Website</p>
-                  <p className="text-gray-700">https://studio22.com</p>
+                  <p className="text-gray-700">https://ericrabar.com</p>
                 </div>
               </div>
             </div>
@@ -109,7 +109,7 @@ export default function Imprint() {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Disclaimer</h2>
             <p className="text-gray-700 leading-relaxed">
-              Studio22 accepts no liability for the accuracy, completeness, or timeliness of the information provided. The information contained on this website is for general information purposes only. Any reliance you place on such information is strictly at your own risk.
+              Eric Rabar accepts no liability for the accuracy, completeness, or timeliness of the information provided. The information contained on this website is for general information purposes only. Any reliance you place on such information is strictly at your own risk.
             </p>
           </section>
 

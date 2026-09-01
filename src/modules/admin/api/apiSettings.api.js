@@ -171,7 +171,7 @@ export const apiSettingsApi = {
       if (error.code === 'PGRST116') {
         return {
           enable_cors: true,
-          allowed_origins: ['https://studio22.com', 'https://www.studio22.com'],
+          allowed_origins: ['https://ericrabar.com', 'https://www.ericrabar.com'],
           enable_api_key_auth: true,
           enable_jwt_auth: true,
           jwt_expiration_seconds: 3600,

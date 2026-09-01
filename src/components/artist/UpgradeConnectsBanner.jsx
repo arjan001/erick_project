@@ -12,7 +12,7 @@ const MESSAGES = [
   { title: 'Unlock more opportunities', body: 'Upgrade for featured listing, priority support, and more monthly connects.' },
 ];
 
-const DISMISS_KEY = 'studio22_upgrade_banner_dismissed_at';
+const DISMISS_KEY = 'ericrabar_upgrade_banner_dismissed_at';
 const REAPPEAR_MS = 45 * 60 * 1000; // 45 minutes
 
 export default function UpgradeConnectsBanner() {

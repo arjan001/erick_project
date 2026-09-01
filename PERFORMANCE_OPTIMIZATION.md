@@ -1,4 +1,4 @@
-# Studio22 Performance Optimization Guide
+# Eric Rabar Performance Optimization Guide
 
 **Version**: 2.1  
 **Last Updated**: July 2, 2026  
@@ -85,7 +85,7 @@
 - Installed `vite-plugin-pwa` package
 - Updated `vite.config.js` with PWA configuration:
   - Auto-update registration
-  - PWA manifest for Studio22 (name, short_name, theme_color, icons)
+  - PWA manifest for Eric Rabar (name, short_name, theme_color, icons)
   - Workbox runtime caching strategies:
     - NetworkFirst for Supabase API (24h cache, 100 max entries)
     - CacheFirst for images (30-day cache, 200 max entries)
@@ -118,7 +118,7 @@
 
 ## Overview
 
-This document outlines performance optimization strategies for Studio22, covering build optimization, runtime performance, database optimization, and user experience improvements.
+This document outlines performance optimization strategies for Eric Rabar, covering build optimization, runtime performance, database optimization, and user experience improvements.
 
 ### Performance Goals
 
@@ -528,8 +528,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Studio22',
-        short_name: 'Studio22',
+        name: 'Eric Rabar',
+        short_name: 'Eric Rabar',
         theme_color: '#ffffff',
         icons: [
           {
