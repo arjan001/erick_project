@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Save, DollarSign, Lock, Globe, CheckCircle, AlertTriangle, ToggleLeft, ToggleRight, TestTube, Zap, Settings as SettingsIcon, Smartphone } from 'lucide-react';
+import { CreditCard, Save, DollarSign, Lock, Globe, CheckCircle, AlertTriangle, ToggleLeft, ToggleRight, TestTube, Zap, Settings as SettingsIcon, Smartphone, Loader2 } from 'lucide-react';
+import { getPaymentSettings, saveMpesaSettings, saveMollieSettings, saveGeneralPaymentSettings } from '@/modules/admin/api/payment.api';
+import { testMpesaConnection } from '@/services/mpesaService';
 
 export default function AdminPaymentSettingsPage() {
   const { success, error } = useToast();
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [testing, setTesting] = useState(false);
   const [activeTab, setActiveTab] = useState('mpesa');
 
   const [mpesaSettings, setMpesaSettings] = useState({
@@ -48,10 +52,38 @@ export default function AdminPaymentSettingsPage() {
     enableTaxCalculation: false
   });
 
+  // Load settings on mount
+  const loadSettings = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getPaymentSettings();
+      if (data) {
+        if (data.mpesa_settings) {
+          setMpesaSettings(prev => ({ ...prev, ...data.mpesa_settings }));
+        }
+        if (data.mollie_settings) {
+          setMollieSettings(prev => ({ ...prev, ...data.mollie_settings }));
+        }
+        if (data.general_settings) {
+          setPaymentSettings(prev => ({ ...prev, ...data.general_settings }));
+        }
+      }
+    } catch (err) {
+      console.error('Error loading payment settings:', err);
+      // Non-fatal — defaults are already set
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
+
   const handleSaveMpesaSettings = async () => {
     setSaving(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await saveMpesaSettings(mpesaSettings);
       success('Saved', 'M-Pesa settings saved successfully');
     } catch (err) {
       console.error('Error saving M-Pesa settings:', err);
@@ -62,17 +94,25 @@ export default function AdminPaymentSettingsPage() {
   };
 
   const handleTestMpesaConnection = async () => {
+    setTesting(true);
     try {
-      success('Success', 'M-Pesa connection test successful');
+      const result = await testMpesaConnection(mpesaSettings);
+      if (result.success) {
+        success('Success', result.message);
+      } else {
+        error('Failed', result.message);
+      }
     } catch (err) {
-      error('Failed', 'M-Pesa connection test failed');
+      error('Failed', err.message || 'M-Pesa connection test failed');
+    } finally {
+      setTesting(false);
     }
   };
 
   const handleSaveMollieSettings = async () => {
     setSaving(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await saveMollieSettings(mollieSettings);
       success('Saved', 'Mollie settings saved successfully');
     } catch (err) {
       console.error('Error saving Mollie settings:', err);
@@ -85,7 +125,7 @@ export default function AdminPaymentSettingsPage() {
   const handleSavePaymentSettings = async () => {
     setSaving(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await saveGeneralPaymentSettings(paymentSettings);
       success('Saved', 'Payment settings saved successfully');
     } catch (err) {
       console.error('Error saving payment settings:', err);
@@ -96,10 +136,24 @@ export default function AdminPaymentSettingsPage() {
   };
 
   const handleTestConnection = async () => {
+    setTesting(true);
     try {
-      success('Success', 'Mollie connection test successful');
+      if (!mollieSettings.apiKey) {
+        error('Missing', 'Mollie API key is required to test connection');
+        return;
+      }
+      const response = await fetch('https://api.mollie.com/v2/methods', {
+        headers: { Authorization: `Bearer ${mollieSettings.apiKey}` },
+      });
+      if (response.ok) {
+        success('Success', 'Mollie connection test successful');
+      } else {
+        error('Failed', `Mollie connection test failed (${response.status})`);
+      }
     } catch (err) {
-      error('Failed', 'Connection test failed');
+      error('Failed', err.message || 'Connection test failed');
+    } finally {
+      setTesting(false);
     }
   };
 
@@ -113,6 +167,15 @@ export default function AdminPaymentSettingsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+          {loading && (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+              <span className="ml-3 text-gray-500">Loading payment settings...</span>
+            </div>
+          )}
+
+          {!loading && (
+          <>
           {/* Tabs */}
           <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
             <button
@@ -297,9 +360,9 @@ export default function AdminPaymentSettingsPage() {
                     </div>
 
                     <div className="flex gap-3 pt-4 border-t border-gray-200">
-                      <Button onClick={handleTestMpesaConnection} variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
-                        <TestTube className="w-4 h-4 mr-2" />
-                        Test Connection
+                      <Button onClick={handleTestMpesaConnection} disabled={testing} variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
+                        {testing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <TestTube className="w-4 h-4 mr-2" />}
+                        {testing ? 'Testing...' : 'Test Connection'}
                       </Button>
                       <Button onClick={handleSaveMpesaSettings} disabled={saving} className="bg-green-600 text-white hover:bg-green-700">
                         <Save className="w-4 h-4 mr-2" />
@@ -469,9 +532,9 @@ export default function AdminPaymentSettingsPage() {
                     </div>
 
                     <div className="flex gap-3 pt-4 border-t border-gray-200">
-                      <Button onClick={handleTestConnection} variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
-                        <TestTube className="w-4 h-4 mr-2" />
-                        Test Connection
+                      <Button onClick={handleTestConnection} disabled={testing} variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
+                        {testing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <TestTube className="w-4 h-4 mr-2" />}
+                        {testing ? 'Testing...' : 'Test Connection'}
                       </Button>
                       <Button onClick={handleSaveMollieSettings} disabled={saving} className="bg-blue-600 text-white hover:bg-blue-700">
                         <Save className="w-4 h-4 mr-2" />
@@ -614,6 +677,8 @@ export default function AdminPaymentSettingsPage() {
                 </div>
               </div>
             </div>
+          )}
+          </>
           )}
       </div>
     </div>

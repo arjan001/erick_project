@@ -94,3 +94,7 @@ export const SecuritySettings = buildEntity('SecuritySettings');
 export const ActiveSession = buildEntity('ActiveSession');
 export const SupportTicket = buildEntity('SupportTicket');
 export const TicketResponse = buildEntity('TicketResponse');
+export const PaymentSettings = buildEntity('payment_settings');
+export const MpesaTransaction = buildEntity('mpesa_transactions');
+export const MpesaC2bCallback = buildEntity('mpesa_c2b_callbacks');
+export const MolliePayment = buildEntity('mollie_payments');

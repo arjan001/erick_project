@@ -41,5 +41,11 @@ curl -sf -H "Host: external-preview.example.com" http://localhost:3000/   # shou
 curl -sf -H "Host: external-preview.example.com" http://localhost:3000/src/main.jsx  # should return transformed JS
 ```
 
+## M-Pesa & Payment Gateway
+- `src/services/mpesaService.js` — Daraja API service: OAuth token, STK Push, STK query, callback parser, connection test.
+- `src/modules/admin/api/payment.api.js` — CRUD for `payment_settings` Base44 entity (M-Pesa, Mollie, general settings) and `mpesa_transactions` entity.
+- `src/modules/admin/pages/AdminPaymentSettingsPage.jsx` — Admin UI that loads settings on mount and persists via the API (no more stub saves).
+- `database/migrations/create_payment_tables.sql` + appended to `database/schema.sql` — tables: `payment_settings`, `mpesa_transactions`, `mpesa_c2b_callbacks`, `mollie_payments` with triggers for `updated_at`.
+
 ## Existing production compose
 `docker-compose.yml` and `Dockerfile` build a production nginx image — do NOT use these for development; they bake the source and don't support live reload.
