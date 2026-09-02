@@ -11,7 +11,6 @@ import RecentConversations from '@/components/artist/dashboard/RecentConversatio
 import ProfileCompletionRing from '@/components/artist/dashboard/ProfileCompletionRing';
 import ConnectsTrackerCard from '@/components/artist/dashboard/ConnectsTrackerCard';
 import QuickNotesCard from '@/components/artist/QuickNotesCard';
-import InviteCodeCard from '@/components/InviteCodeCard';
 import { Job, Application, Message, Notification, Artist, Subscription } from '@/lib/supabaseEntities';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -179,10 +178,6 @@ export default function ArtistDashboard() {
             </div>
           </div>
 
-          {/* Invite Code — full width */}
-          <div className="mt-5">
-            <InviteCodeCard />
-          </div>
         </div>
       </main>
 

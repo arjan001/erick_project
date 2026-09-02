@@ -78,8 +78,6 @@ export default function AdminSidebar() {
       items: [
         { path: '/Admin/Clients', label: 'Clients', icon: Building },
         { path: '/Admin/Artists', label: 'Artists', icon: Users },
-        { path: '/Admin/Teams', label: 'Teams', icon: Building },
-        { path: '/Admin/Backers', label: 'Backers', icon: DollarSign },
         { path: '/Admin/Projects', label: 'Projects', icon: FolderKanban },
         { path: '/Admin/Jobs', label: 'Jobs', icon: Briefcase },
         { path: '/Admin/Categories', label: 'Categories', icon: LayoutGrid },

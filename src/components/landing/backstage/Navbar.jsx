@@ -89,7 +89,7 @@ export default function Navbar() {
             </button>
             {joinOpen && (
               <div className="absolute right-0 top-full mt-2 w-72 overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/5">
-                <Link to="/SignIn" onClick={() => setJoinOpen(false)} className="flex items-start gap-3 px-4 py-4 hover:bg-black/[0.03]">
+                <Link to="/SignUp" onClick={() => setJoinOpen(false)} className="flex items-start gap-3 px-4 py-4 hover:bg-black/[0.03]">
                   <Star className="mt-0.5 h-5 w-5 shrink-0 text-[#5842D3]" />
                   <div>
                     <p className="text-sm font-bold text-black">I'm Talent</p>
@@ -97,7 +97,7 @@ export default function Navbar() {
                   </div>
                 </Link>
                 <div className="h-px bg-black/5" />
-                <Link to="/SignIn?mode=employer" onClick={() => setJoinOpen(false)} className="flex items-start gap-3 px-4 py-4 hover:bg-black/[0.03]">
+                <Link to="/SignUp?role=client" onClick={() => setJoinOpen(false)} className="flex items-start gap-3 px-4 py-4 hover:bg-black/[0.03]">
                   <Handshake className="mt-0.5 h-5 w-5 shrink-0 text-[#5842D3]" />
                   <div>
                     <p className="text-sm font-bold text-black">I'm Hiring</p>
@@ -133,7 +133,7 @@ export default function Navbar() {
           <div className="flex flex-col gap-3">
             <Link to="/FindJobs" className="text-sm font-medium text-black">Find Jobs</Link>
             <Link to="/SubmitProject" className="text-sm font-medium text-black">Find Talent</Link>
-            <Link to="/ApplyArtist" className="text-sm font-medium text-black">Agents</Link>
+            <Link to="/SignUp" className="text-sm font-medium text-black">Agents</Link>
             <Link to="/Network" className="flex items-center gap-1.5 text-sm font-medium text-black">Community <NewBadge /></Link>
             <div className="mt-2 flex flex-col gap-2">
               <Link to="/SignIn" className="rounded-full bg-[#4F46E5] px-5 py-2 text-center text-sm font-semibold text-white">Join</Link>

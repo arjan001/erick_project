@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { adminApi } from '../api/admin.api';
 import { Users, FolderKanban, Clock, CheckCircle, TrendingUp, TrendingDown, Activity, Briefcase, DollarSign, Star, MessageCircle, Building2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { Project, Job, Subscription, Artist, Team, Client, Backer } from '@/lib/supabaseEntities';
+import { Project, Job, Subscription, Artist, Client } from '@/lib/supabaseEntities';
 
 const COLORS = ['#1a1a1a', '#6b7280', '#d1d5db', '#374151'];
 
@@ -171,16 +171,6 @@ export default function AdminDashboardPage() {
           <div className="text-2xl font-bold text-gray-900">{featuredProjects}</div>
           <div className="text-sm text-gray-500 mt-0.5">Featured Projects</div>
           <div className="text-xs text-gray-400 mt-1">on landing page</div>
-        </div>
-        <div className="bg-white rounded-xl p-5 border border-gray-100" style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>
-          <div className="flex items-start justify-between mb-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Activity className="w-4 h-4 text-purple-600" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{totalBackers}</div>
-          <div className="text-sm text-gray-500 mt-0.5">Total Backers</div>
-          <div className="text-xs text-gray-400 mt-1">registered investors</div>
         </div>
         <div className="bg-white rounded-xl p-5 border border-gray-100" style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>
           <div className="flex items-start justify-between mb-3">

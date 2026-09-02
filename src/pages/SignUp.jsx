@@ -52,7 +52,7 @@ export default function SignUp() {
       email: '',
       password: '',
       confirmPassword: '',
-      role: ['artist', 'team', 'client', 'backer'].includes(roleParam) ? roleParam : 'artist',
+      role: ['artist', 'client'].includes(roleParam) ? roleParam : 'artist',
       inviteCode: '',
       selectedRoles: [],
       selectedSkills: [],
@@ -428,6 +428,7 @@ export default function SignUp() {
                     className="w-full"
                     disabled={loading}
                     required
+                d
                   />
                 </div>
 
@@ -453,9 +454,7 @@ export default function SignUp() {
                     disabled={loading}
                   >
                     <option value="artist">Artist</option>
-                    <option value="team">Team</option>
                     <option value="client">Client</option>
-                    <option value="backer">Backer</option>
                   </select>
                 </div>
 
@@ -552,6 +551,14 @@ export default function SignUp() {
               className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3 rounded-xl transition-colors"
             >
               Get Started
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+   Get Started
             </button>
           </div>
         </div>
