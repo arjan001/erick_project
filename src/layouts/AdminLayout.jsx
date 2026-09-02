@@ -35,7 +35,7 @@ const navItems = [
 const navGroups = [
   { label: 'Main', items: ['/Admin'] },
   { label: 'User Management', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
-  { label: 'Content Management', items: ['/Admin/Clients', '/Admin/Artists', '/Admin/Teams', '/Admin/Backers', '/Admin/Projects', '/Admin/Jobs', '/Admin/Categories', '/Admin/Ticker'] },
+  { label: 'Content Management', items: ['/Admin/Clients', '/Admin/Artists', '/Admin/Projects', '/Admin/Jobs', '/Admin/Categories', '/Admin/Ticker'] },
   { label: 'Communication', items: ['/Admin/Messages', '/Admin/Notifications'] },
   { label: 'Integrations', items: ['/Admin/SEOCMS', '/Admin/ImageStorage', '/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
   { label: 'System', items: ['/Admin/GeneralSettings', '/Admin/Analytics', '/Admin/FinanceDashboard', '/Admin/AuditLogs', '/Admin/FeaturedWork', '/Admin/SuccessStories', '/Admin/RecentProjects'] },
