@@ -5,6 +5,7 @@ import Footer from '@/components/landing/backstage/Footer';
 import ChatWidget from '@/components/landing/backstage/ChatWidget';
 import SEOMetaTags from '@/components/SEOMetaTags';
 import { Search, FileText, Users, Zap, Shield, TrendingUp, ArrowRight, Check } from 'lucide-react';
+import CreativeTeamCarousel from '@/components/landing/backstage/CreativeTeamCarousel';
 
 const stats = [
   { value: '195,348', label: 'CREATORS LOOKING FOR TALENT' },
@@ -99,6 +100,9 @@ export default function HiringTalent() {
           </div>
         </div>
       </section>
+
+      {/* Creative team sample carousel */}
+      <CreativeTeamCarousel />
 
       {/* Features */}
       <section className="px-4 py-16">

@@ -245,6 +245,11 @@ const publicRoutes = [
     path: '/HiringTalent',
     component: () => import('@/pages/HiringTalent'),
     layout: null
+  },
+  {
+    path: '/talent',
+    component: () => import('@/pages/TalentPage'),
+    layout: null
   }
 ];
 

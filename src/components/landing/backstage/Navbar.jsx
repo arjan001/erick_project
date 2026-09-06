@@ -48,14 +48,17 @@ export default function Navbar() {
               </button>
               {talentOpen && (
                 <div className="absolute left-0 top-full mt-2 w-56 overflow-hidden rounded-2xl bg-white py-2 shadow-xl ring-1 ring-black/5">
-                  <Link to="/FindJobs" onClick={() => setTalentOpen(false)} className="block px-4 py-3 text-sm font-medium text-black hover:bg-black/[0.03]">
-                    Search Talent Database
+                  <Link to="/talent" onClick={() => setTalentOpen(false)} className="block px-4 py-3 text-sm font-medium text-black hover:bg-black/[0.03]">
+                    Actors & Performers
                   </Link>
-                  <Link to="/SubmitProject" onClick={() => setTalentOpen(false)} className="block px-4 py-3 text-sm font-medium text-black hover:bg-black/[0.03]">
-                    Post a Job
+                  <Link to="/talent" onClick={() => setTalentOpen(false)} className="block px-4 py-3 text-sm font-medium text-black hover:bg-black/[0.03]">
+                    UGC Creators
                   </Link>
-                  <Link to="/FindJobs" onClick={() => setTalentOpen(false)} className="block px-4 py-3 text-sm font-medium text-black hover:bg-black/[0.03]">
-                    Why Eric Rabar?
+                  <Link to="/talent" onClick={() => setTalentOpen(false)} className="block px-4 py-3 text-sm font-medium text-black hover:bg-black/[0.03]">
+                    Voiceover Artists
+                  </Link>
+                  <Link to="/talent" onClick={() => setTalentOpen(false)} className="block px-4 py-3 text-sm font-medium text-black hover:bg-black/[0.03]">
+                    Crew
                   </Link>
                 </div>
               )}
