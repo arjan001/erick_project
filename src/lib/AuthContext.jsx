@@ -201,18 +201,29 @@ export const AuthProvider = ({ children }) => {
 
     // 2. Check for a real Base44 auth session
     (async () => {
+      // Safety timeout: never let the auth check block the app from rendering
+      const timeout = new Promise(resolve => setTimeout(() => resolve('timeout'), 5000));
       try {
-        const authed = await base44.auth.isAuthenticated();
-        if (authed) {
-          const me = await base44.auth.me();
-          const appRole = demoUser?.role || await resolveAppRole(me.email);
-          const u = buildUser(me, appRole);
-          setUser(u);
-          setIsAuthenticated(true);
-          localStorage.setItem('ericrabar_user', JSON.stringify(u));
-          if (me._app_role === 'admin' || me.role === 'admin') {
-            setPermissions(['*']);
-          }
+        const result = await Promise.race([
+          (async () => {
+            const authed = await base44.auth.isAuthenticated();
+            if (authed) {
+              const me = await base44.auth.me();
+              const appRole = demoUser?.role || await resolveAppRole(me.email);
+              const u = buildUser(me, appRole);
+              setUser(u);
+              setIsAuthenticated(true);
+              localStorage.setItem('ericrabar_user', JSON.stringify(u));
+              if (me._app_role === 'admin' || me.role === 'admin') {
+                setPermissions(['*']);
+              }
+            }
+            return 'done';
+          })(),
+          timeout,
+        ]);
+        if (result === 'timeout') {
+          console.warn('Auth check timed out after 5s — continuing without auth');
         }
       } catch (err) {
         console.error('Base44 auth check failed:', err);
