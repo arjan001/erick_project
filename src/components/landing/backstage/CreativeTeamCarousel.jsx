@@ -1,20 +1,32 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import TalentCard from './TalentCard';
-import { talentProfiles, talentTabs } from './talentData';
+import { talentProfiles } from './talentData';
 
 export default function CreativeTeamCarousel() {
-  const [activeTab, setActiveTab] = useState('actors');
   const scrollRef = useRef(null);
 
-  const scroll = (dir) => {
-    if (!scrollRef.current) return;
-    scrollRef.current.scrollBy({ left: dir * 320, behavior: 'smooth' });
-  };
+  // Duplicate the sample so the auto-scroll loops seamlessly
+  const sample = [...talentProfiles.slice(0, 8), ...talentProfiles.slice(0, 8)];
 
-  // Show first 8 profiles in the carousel sample
-  const sample = talentProfiles.slice(0, 8);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    let raf;
+    const tick = () => {
+      if (!el) return;
+      el.scrollLeft += 0.5; // slow continuous scroll
+      // loop back to start when we reach the halfway point (end of first set)
+      if (el.scrollLeft >= el.scrollWidth / 2) {
+        el.scrollLeft = 0;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   return (
     <section className="bg-[#F5F3EF] py-16 md:py-20">
@@ -26,58 +38,18 @@ export default function CreativeTeamCarousel() {
             A sample of our <span className="text-[#4F46E5]">creative team</span>
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-sm text-black/50 md:text-base">
-            Browse vetted performers, creators, and crew — filter by type to find the right match.
+            Browse vetted performers, creators, and crew — explore the full directory to find your match.
           </p>
         </div>
 
-        {/* Filter tabs */}
-        <div className="mt-8 flex justify-center">
-          <div className="flex items-center gap-1 overflow-x-auto rounded-full bg-black/[0.06] p-1">
-            {talentTabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-[#6366f1] text-white'
-                    : 'text-black/70 hover:text-black'
-                }`}
-              >
-                <span>{tab.icon}</span>
-                <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Carousel controls */}
-        <div className="mt-8 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-black">
-            {talentTabs.find((t) => t.id === activeTab)?.label}
-          </h3>
-          <div className="flex gap-2">
-            <button
-              onClick={() => scroll(-1)}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white hover:bg-black/5"
-            >
-              <ChevronLeft className="h-4 w-4 text-black" />
-            </button>
-            <button
-              onClick={() => scroll(1)}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white hover:bg-black/5"
-            >
-              <ChevronRight className="h-4 w-4 text-black" />
-            </button>
-          </div>
-        </div>
-
-        {/* Carousel */}
+        {/* Auto-scrolling carousel — no controls */}
         <div
           ref={scrollRef}
-          className="mt-6 flex gap-4 overflow-x-auto pb-4 [scrollbar-width:thin]"
+          className="mt-8 flex gap-4 overflow-x-scroll pb-4 [&::-webkit-scrollbar]:hidden"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {sample.map((profile) => (
-            <div key={profile.id} className="w-[260px] shrink-0 sm:w-[280px]">
+          {sample.map((profile, i) => (
+            <div key={`${profile.id}-${i}`} className="w-[240px] shrink-0 sm:w-[280px]">
               <TalentCard profile={profile} />
             </div>
           ))}
