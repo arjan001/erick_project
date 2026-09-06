@@ -10,8 +10,6 @@ const navItems = [
   { path: '/Admin/Invites', label: 'Invites', icon: Mail },
   { path: '/Admin/Clients', label: 'Clients', icon: Users },
   { path: '/Admin/Artists', label: 'Artists', icon: Users },
-  { path: '/Admin/Teams', label: 'Teams', icon: FolderKanban },
-  { path: '/Admin/Backers', label: 'Backers', icon: DollarSign },
   { path: '/Admin/Projects', label: 'Projects', icon: FolderKanban },
   { path: '/Admin/Jobs', label: 'Jobs', icon: FileText },
   { path: '/Admin/Categories', label: 'Categories', icon: Grid3x3 },

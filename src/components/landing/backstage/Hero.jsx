@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import RoleToggle from './RoleToggle';
 
@@ -19,6 +20,7 @@ const rotatingRoles = [
 ];
 
 export default function Hero() {
+  const navigate = useNavigate();
   const [role, setRole] = useState('talent');
   const [roleIdx, setRoleIdx] = useState(0);
   const { scrollY } = useScroll();
@@ -37,7 +39,7 @@ export default function Hero() {
       <div className="mx-auto max-w-[1400px] px-4 lg:px-8">
         {/* Toggle */}
         <div className="flex justify-center">
-          <RoleToggle active={role} onChange={setRole} />
+          <RoleToggle active={role} onChange={(r) => { setRole(r); if (r === 'hiring') navigate('/HiringTalent'); }} />
         </div>
 
         <div className="mt-8 grid items-center gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12">

@@ -558,11 +558,3 @@ export default function SignUp() {
     </div>
   );
 }
-   Get Started
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}

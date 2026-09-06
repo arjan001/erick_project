@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Youtube, Music2, Podcast, Globe, Apple, Cookie } from 'lucide-react';
 import RoleToggle from './RoleToggle';
 
@@ -13,11 +14,11 @@ const columns = [
   },
   {
     title: 'Company',
-    links: ['About', 'Careers', 'Partners', 'Sitemap', 'Articles Archive', 'Group and School Subscriptions'],
+    links: [{ label: 'About', to: '/About' }, { label: 'Careers', to: '/Careers' }, { label: 'Partners', to: '#' }, { label: 'Sitemap', to: '#' }, { label: 'Articles Archive', to: '#' }, { label: 'Group and School Subscriptions', to: '#' }],
   },
   {
     title: 'Support',
-    links: ['Help', 'Contact', 'Pricing', 'Advertising', 'Report Content'],
+    links: [{ label: 'Help', to: '/Help' }, { label: 'Contact', to: '/Contact' }, { label: 'Pricing', to: '/Pricing' }, { label: 'Advertising', to: '#' }, { label: 'Report Content', to: '#' }],
   },
 ];
 
@@ -31,6 +32,7 @@ const socials = [
 ];
 
 export default function Footer() {
+  const navigate = useNavigate();
   const [role, setRole] = useState('talent');
 
   return (
@@ -38,7 +40,7 @@ export default function Footer() {
       <div className="mx-auto max-w-[1400px]">
         {/* Top toggle */}
         <div className="flex justify-center pb-8 md:pb-10">
-          <RoleToggle active={role} onChange={setRole} dark />
+          <RoleToggle active={role} onChange={(r) => { setRole(r); if (r === 'hiring') navigate('/HiringTalent'); }} dark />
         </div>
 
         {/* Columns — 2 per row on mobile, 5 on desktop */}
@@ -49,13 +51,17 @@ export default function Footer() {
                 {col.title}
               </h4>
               <ul className="mt-3 space-y-2 md:mt-4 md:space-y-2.5">
-                {col.links.map((l) => (
-                  <li key={l}>
-                    <a href="#" className="text-xs text-white/60 hover:text-white md:text-sm">
-                      {l}
-                    </a>
-                  </li>
-                ))}
+                {col.links.map((l) => {
+                  const label = typeof l === 'string' ? l : l.label;
+                  const to = typeof l === 'string' ? '#' : l.to;
+                  return (
+                    <li key={label}>
+                      <Link to={to} className="text-xs text-white/60 hover:text-white md:text-sm">
+                        {label}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

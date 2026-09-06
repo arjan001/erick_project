@@ -215,6 +215,36 @@ const publicRoutes = [
     path: '/article/:slug',
     component: () => import('@/pages/ArticleDetailPage'),
     layout: MainLayout
+  },
+  {
+    path: '/About',
+    component: () => import('@/pages/About'),
+    layout: null
+  },
+  {
+    path: '/Careers',
+    component: () => import('@/pages/Careers'),
+    layout: null
+  },
+  {
+    path: '/Help',
+    component: () => import('@/pages/HelpCenter'),
+    layout: null
+  },
+  {
+    path: '/Contact',
+    component: () => import('@/pages/ContactUs'),
+    layout: null
+  },
+  {
+    path: '/Pricing',
+    component: () => import('@/pages/PricingPage'),
+    layout: null
+  },
+  {
+    path: '/HiringTalent',
+    component: () => import('@/pages/HiringTalent'),
+    layout: null
   }
 ];
 
