@@ -1,35 +1,47 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import TalentCard from './TalentCard';
 import { talentProfiles } from './talentData';
 
+// Duplicate each set so the CSS translate loop is seamless
+const row1 = [...talentProfiles.slice(0, 6), ...talentProfiles.slice(0, 6)];
+const row2 = [...talentProfiles.slice(6, 12), ...talentProfiles.slice(6, 12)];
+
+function AutoScrollRow({ items, direction }) {
+  return (
+    <div className="overflow-hidden">
+      <div
+        className="flex gap-4 w-max"
+        style={{
+          animation: `talent-scroll-${direction} 40s linear infinite`,
+        }}
+      >
+        {items.map((profile, i) => (
+          <div key={`${profile.id}-${i}`} className="w-[calc((100vw-6rem)/5)] max-w-[260px] shrink-0">
+            <TalentCard profile={profile} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function CreativeTeamCarousel() {
-  const scrollRef = useRef(null);
-
-  // Duplicate the sample so the auto-scroll loops seamlessly
-  const sample = [...talentProfiles.slice(0, 8), ...talentProfiles.slice(0, 8)];
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    let raf;
-    const tick = () => {
-      if (!el) return;
-      el.scrollLeft += 0.5; // slow continuous scroll
-      // loop back to start when we reach the halfway point (end of first set)
-      if (el.scrollLeft >= el.scrollWidth / 2) {
-        el.scrollLeft = 0;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
   return (
     <section className="bg-[#F5F3EF] py-16 md:py-20">
+      {/* Keyframes for both directions */}
+      <style>{`
+        @keyframes talent-scroll-rtl {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+        @keyframes talent-scroll-ltr {
+          from { transform: translateX(-50%); }
+          to { transform: translateX(0); }
+        }
+      `}</style>
+
       <div className="mx-auto max-w-[1400px] px-4 lg:px-8">
         {/* Heading */}
         <div className="text-center">
@@ -42,17 +54,10 @@ export default function CreativeTeamCarousel() {
           </p>
         </div>
 
-        {/* Auto-scrolling carousel — no controls */}
-        <div
-          ref={scrollRef}
-          className="mt-8 flex gap-4 overflow-x-scroll pb-4 [&::-webkit-scrollbar]:hidden"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {sample.map((profile, i) => (
-            <div key={`${profile.id}-${i}`} className="w-[240px] shrink-0 sm:w-[280px]">
-              <TalentCard profile={profile} />
-            </div>
-          ))}
+        {/* Two auto-scrolling rows — opposite directions, ~5 cards visible */}
+        <div className="mt-8 space-y-4">
+          <AutoScrollRow items={row1} direction="rtl" />
+          <AutoScrollRow items={row2} direction="ltr" />
         </div>
 
         {/* CTA */}
