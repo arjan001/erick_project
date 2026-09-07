@@ -7,7 +7,7 @@ const badgeConfig = {
   chat: { icon: MessageCircle, color: '#6366f1' },
 };
 
-export default function TalentCard({ profile }) {
+export default function TalentCard({ profile, showActions = true }) {
   const [imgIdx, setImgIdx] = useState(0);
   const [favorited, setFavorited] = useState(false);
 
@@ -87,23 +87,25 @@ export default function TalentCard({ profile }) {
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="mt-2 flex items-center gap-1.5 px-1 pb-1">
-        <button className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-black/10 bg-white px-2 py-2 text-xs font-semibold text-black transition-colors hover:bg-black/[0.03]">
-          <Home className="h-3.5 w-3.5" />
-          Invite
-        </button>
-        <button className="flex items-center justify-center rounded-lg border border-black/10 bg-white px-2.5 py-2 transition-colors hover:bg-black/[0.03]" aria-label="Message">
-          <MessageCircle className="h-3.5 w-3.5 text-black" />
-        </button>
-        <button
-          onClick={() => setFavorited(!favorited)}
-          className="flex items-center justify-center rounded-lg border border-black/10 bg-white px-2.5 py-2 transition-colors hover:bg-black/[0.03]"
-          aria-label="Favorite"
-        >
-          <Heart className={`h-3.5 w-3.5 ${favorited ? 'fill-red-500 text-red-500' : 'text-black'}`} />
-        </button>
-      </div>
+      {/* Action buttons — hidden on landing carousel, shown on talent directory */}
+      {showActions && (
+        <div className="mt-2 flex items-center gap-1.5 px-1 pb-1">
+          <button className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-black/10 bg-white px-2 py-2 text-xs font-semibold text-black transition-colors hover:bg-black/[0.03]">
+            <Home className="h-3.5 w-3.5" />
+            Invite
+          </button>
+          <button className="flex items-center justify-center rounded-lg border border-black/10 bg-white px-2.5 py-2 transition-colors hover:bg-black/[0.03]" aria-label="Message">
+            <MessageCircle className="h-3.5 w-3.5 text-black" />
+          </button>
+          <button
+            onClick={() => setFavorited(!favorited)}
+            className="flex items-center justify-center rounded-lg border border-black/10 bg-white px-2.5 py-2 transition-colors hover:bg-black/[0.03]"
+            aria-label="Favorite"
+          >
+            <Heart className={`h-3.5 w-3.5 ${favorited ? 'fill-red-500 text-red-500' : 'text-black'}`} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

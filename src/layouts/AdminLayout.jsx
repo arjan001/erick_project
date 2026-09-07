@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronLeft, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock, BarChart3, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -15,7 +15,6 @@ const navItems = [
   { path: '/Admin/Categories', label: 'Categories', icon: Grid3x3 },
   { path: '/Admin/Ticker', label: 'Marquee / Ticker', icon: ScrollText },
   { path: '/Admin/Messages', label: 'Messages', icon: Mail },
-  { path: '/Admin/Notifications', label: 'Notifications', icon: Bell },
   { path: '/Admin/SEOCMS', label: 'SEO & CMS', icon: FileText },
   { path: '/Admin/ImageStorage', label: 'Image Storage', icon: Image },
   { path: '/Admin/LoginProviders', label: 'Login Providers', icon: Shield },
@@ -34,7 +33,7 @@ const navGroups = [
   { label: 'Main', items: ['/Admin'] },
   { label: 'User Management', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
   { label: 'Content Management', items: ['/Admin/Clients', '/Admin/Artists', '/Admin/Projects', '/Admin/Jobs', '/Admin/Categories', '/Admin/Ticker'] },
-  { label: 'Communication', items: ['/Admin/Messages', '/Admin/Notifications'] },
+  { label: 'Communication', items: ['/Admin/Messages'] },
   { label: 'Integrations', items: ['/Admin/SEOCMS', '/Admin/ImageStorage', '/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
   { label: 'System', items: ['/Admin/GeneralSettings', '/Admin/Analytics', '/Admin/FinanceDashboard', '/Admin/AuditLogs', '/Admin/FeaturedWork', '/Admin/SuccessStories', '/Admin/RecentProjects'] },
 ];
@@ -42,9 +41,10 @@ const navGroups = [
 export default function AdminLayout({ children }) {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false); // mobile drawer
+  const [collapsed, setCollapsed] = useState(false); // desktop collapse
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedGroups, setExpandedGroups] = useState({});
 
   const isActive = (path, exact) => exact
     ? location.pathname === path
@@ -52,27 +52,11 @@ export default function AdminLayout({ children }) {
 
   const getNavItem = (path) => navItems.find(n => n.path === path);
 
-  const toggleGroup = (groupLabel) => {
-    setExpandedGroups(prev => ({
-      ...prev,
-      [groupLabel]: !prev[groupLabel]
-    }));
-  };
-
-  // Auto-expand group containing current path
+  // Close mobile sidebar on route change
   useEffect(() => {
-    navGroups.forEach(group => {
-      const hasActivePath = group.items.some(path => {
-        const item = getNavItem(path);
-        return item && isActive(path, item.exact);
-      });
-      if (hasActivePath) {
-        setExpandedGroups(prev => ({ ...prev, [group.label]: true }));
-      }
-    });
+    setSidebarOpen(false);
   }, [location.pathname]);
 
-  // Filter nav items based on search
   const filteredNavGroups = navGroups.map(group => ({
     ...group,
     items: group.items.filter(path => {
@@ -82,25 +66,50 @@ export default function AdminLayout({ children }) {
     })
   })).filter(group => group.items.length > 0);
 
+  const sidebarWidth = collapsed ? 'w-16' : 'w-64';
+
   return (
-    <div className="min-h-screen bg-[#f5f6fa] flex">
+    <div className="min-h-screen bg-[#f5f6fa]">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed h-screen`}>
+      <aside className={`fixed left-0 top-0 h-screen ${sidebarWidth} bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col z-50 transition-all duration-300 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-3 border-b border-gray-100 flex-shrink-0">
-          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-black text-sm tracking-tighter">22</span>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-black text-sm tracking-tighter">ER</span>
+            </div>
+            {!collapsed && (
+              <span className="text-sm font-bold text-gray-900">Admin</span>
+            )}
           </div>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 hover:text-black transition-colors text-gray-400"
-          >
-            {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="hidden lg:flex p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+            >
+              {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* User Profile - hide when collapsed */}
-        {sidebarOpen && (
+        {/* User Profile */}
+        {!collapsed && (
           <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
             <button
               onClick={() => navigate('/Admin/UserManagement')}
@@ -117,8 +126,8 @@ export default function AdminLayout({ children }) {
           </div>
         )}
 
-        {/* Search Bar - hide when collapsed */}
-        {sidebarOpen && (
+        {/* Search */}
+        {!collapsed && (
           <div className="px-3 py-3 border-b border-gray-100 flex-shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -135,8 +144,26 @@ export default function AdminLayout({ children }) {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
-          {sidebarOpen ? (
-            // Expanded state - show section headers with items
+          {collapsed ? (
+            navItems.map((item) => {
+              const active = isActive(item.path, item.exact);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex items-center justify-center w-full p-2 rounded-lg transition-all mb-2 ${
+                    active
+                      ? 'bg-gray-900 text-white font-semibold'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                  title={item.label}
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                </Link>
+              );
+            })
+          ) : (
             filteredNavGroups.map((group) => (
               <div key={group.label} className="mb-4">
                 <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
@@ -166,33 +193,8 @@ export default function AdminLayout({ children }) {
                 </div>
               </div>
             ))
-          ) : (
-            // Collapsed state - show icons only with tooltips
-            navItems.map((item) => {
-              const active = isActive(item.path, item.exact);
-              const Icon = item.icon;
-              return (
-                <div key={item.path} className="relative group mb-2">
-                  <Link
-                    to={item.path}
-                    className={`flex items-center justify-center w-full p-2 rounded-lg transition-all ${
-                      active
-                        ? 'bg-gray-900 text-white font-semibold'
-                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4 flex-shrink-0" />
-                  </Link>
-                  {/* Tooltip */}
-                  <div className="fixed left-[5.875rem] top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[99999] pointer-events-none">
-                    {item.label}
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
-                  </div>
-                </div>
-              );
-            })
           )}
-          {sidebarOpen && filteredNavGroups.length === 0 && (
+          {!collapsed && filteredNavGroups.length === 0 && (
             <div className="px-3 py-4 text-sm text-gray-500 text-center">
               No modules found
             </div>
@@ -200,8 +202,16 @@ export default function AdminLayout({ children }) {
         </nav>
 
         {/* Logout */}
-        <div className="border-t border-gray-100 p-2 space-y-1">
-          {sidebarOpen ? (
+        <div className="border-t border-gray-100 p-2">
+          {collapsed ? (
+            <button
+              onClick={() => logout(true)}
+              className="flex items-center justify-center w-full p-2 rounded-lg text-red-500 hover:bg-red-50 transition-all"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4 flex-shrink-0" />
+            </button>
+          ) : (
             <button
               onClick={() => logout(true)}
               className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 transition-all text-sm font-medium"
@@ -209,38 +219,26 @@ export default function AdminLayout({ children }) {
               <LogOut className="w-4 h-4" />
               Logout
             </button>
-          ) : (
-            <div className="relative group">
-              <button
-                onClick={() => logout(true)}
-                className="flex items-center justify-center w-full p-2 rounded-lg text-red-500 hover:bg-red-50 transition-all"
-              >
-                <LogOut className="w-4 h-4 flex-shrink-0" />
-              </button>
-              {/* Tooltip */}
-              <div className="fixed left-[5.875rem] top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[99999] pointer-events-none">
-                Logout
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
-              </div>
-            </div>
           )}
         </div>
       </aside>
 
-      {/* Main */}
-      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${sidebarOpen ? 'lg:ml-[17.5625rem] lg:mr-6' : 'lg:ml-[5.5625rem] lg:mr-6'}`}>
+      {/* Main content */}
+      <div className={`flex flex-col min-h-screen transition-all duration-300 ${
+        collapsed ? 'lg:ml-16' : 'lg:ml-64'
+      }`}>
         {/* Top Bar */}
-        <header className="bg-white border-b border-gray-100 flex-shrink-0"
+        <header className="sticky top-0 z-30 bg-white border-b border-gray-100 flex-shrink-0"
           style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>
-          <div className="flex items-center justify-between h-14 px-6">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between h-14 px-4 lg:px-6">
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
+                onClick={() => setSidebarOpen(true)}
                 className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors lg:hidden"
               >
-                {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+                <Menu className="w-5 h-5" />
               </button>
-              <div className="text-sm font-semibold text-gray-700">
+              <div className="text-sm font-semibold text-gray-700 truncate">
                 {navItems.find(n => isActive(n.path, n.exact))?.label || 'Admin Panel'}
               </div>
             </div>
@@ -248,7 +246,7 @@ export default function AdminLayout({ children }) {
               <button className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors relative">
                 <Bell className="w-4 h-4" />
               </button>
-              <Link to="/" className="text-xs text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+              <Link to="/" className="text-xs text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors whitespace-nowrap">
                 ← Back to site
               </Link>
             </div>
@@ -256,7 +254,7 @@ export default function AdminLayout({ children }) {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {children}
         </main>
       </div>

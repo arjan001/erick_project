@@ -14,7 +14,7 @@ export default function TalentPage() {
   const [autoplay, setAutoplay] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#1a1a23]">
       <SEOMetaTags
         title="Find Talent — Actors, Creators, Voiceover & Crew | Eric Rabar"
         description="Browse thousands of vetted performers, UGC creators, voiceover artists, and crew across all locations."

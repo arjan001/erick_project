@@ -50,6 +50,30 @@ export const saveMpesaSettings = async (mpesaSettings) => {
 };
 
 /**
+ * Save Nexus Pay settings. Merges into the existing record.
+ */
+export const saveNexusPaySettings = async (nexusPaySettings) => {
+  try {
+    const existing = await getPaymentSettings();
+    if (existing) {
+      const { data, error } = await base44.entities[ENTITY].update(existing.id, {
+        nexuspay_settings: nexusPaySettings,
+      });
+      if (error) throw error;
+      return data;
+    }
+    const { data, error } = await base44.entities[ENTITY].create({
+      nexuspay_settings: nexusPaySettings,
+    });
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    console.error('Error saving Nexus Pay settings:', err);
+    throw err;
+  }
+};
+
+/**
  * Save Mollie settings. Merges into the existing record.
  */
 export const saveMollieSettings = async (mollieSettings) => {

@@ -368,6 +368,13 @@ export default function MessagesPage() {
   const handleSend = async () => {
     if ((!messageInput.trim() && !attachedFile) || !selectedConversation) return;
     
+    // Check subscription — must have active plan to contact job posters directly
+    const canContact = await subscriptionService.canContactJobPoster(user.email);
+    if (!canContact.allowed) {
+      error('Subscription Required', canContact.message);
+      return;
+    }
+
     // Check subscription limits before sending
     const limitCheck = await subscriptionService.checkLimit(user.email, 'message');
     if (!limitCheck.allowed) {

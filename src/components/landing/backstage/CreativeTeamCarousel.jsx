@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import TalentCard from './TalentCard';
@@ -9,17 +9,24 @@ const row1 = [...talentProfiles.slice(0, 6), ...talentProfiles.slice(0, 6)];
 const row2 = [...talentProfiles.slice(6, 12), ...talentProfiles.slice(6, 12)];
 
 function AutoScrollRow({ items, direction }) {
+  const [paused, setPaused] = useState(false);
+
   return (
-    <div className="overflow-hidden">
+    <div
+      className="overflow-hidden"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
       <div
         className="flex gap-4 w-max"
         style={{
           animation: `talent-scroll-${direction} 40s linear infinite`,
+          animationPlayState: paused ? 'paused' : 'running',
         }}
       >
         {items.map((profile, i) => (
-          <div key={`${profile.id}-${i}`} className="w-[calc((100vw-6rem)/5)] max-w-[260px] shrink-0">
-            <TalentCard profile={profile} />
+          <div key={`${profile.id}-${i}`} className="w-[calc((100vw-6rem)/5)] max-w-[260px] min-w-[180px] shrink-0">
+            <TalentCard profile={profile} showActions={false} />
           </div>
         ))}
       </div>
@@ -54,7 +61,7 @@ export default function CreativeTeamCarousel() {
           </p>
         </div>
 
-        {/* Two auto-scrolling rows — opposite directions, ~5 cards visible */}
+        {/* Two auto-scrolling rows — opposite directions, pause on hover */}
         <div className="mt-8 space-y-4">
           <AutoScrollRow items={row1} direction="rtl" />
           <AutoScrollRow items={row2} direction="ltr" />

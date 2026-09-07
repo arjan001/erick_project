@@ -8,6 +8,7 @@ import { RouteRenderer } from '@/app/router/RouteRenderer';
 import { ToastProvider } from '@/hooks/useToast';
 import { MaintenanceGuard } from '@/app/router/guards/MaintenanceGuard';
 import { HelmetProvider } from 'react-helmet-async';
+import CookieBanner from '@/components/CookieBanner';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth } = useAuth();
@@ -25,6 +26,7 @@ const AuthenticatedApp = () => {
   return (
     <MaintenanceGuard>
       <RouteRenderer />
+      <CookieBanner />
     </MaintenanceGuard>
   );
 };

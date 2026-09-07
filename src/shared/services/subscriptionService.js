@@ -222,6 +222,35 @@ class SubscriptionService {
     const features = await this.getPlanFeatures(userEmail);
     return features[feature] === true;
   }
+
+  // Check if user has an active subscription (any paid plan)
+  async hasActiveSubscription(userEmail) {
+    const subscription = await this.getUserSubscription(userEmail);
+    if (!subscription) return false;
+
+    // Check if subscription has expired
+    const renewsAt = subscription.renews_at ? new Date(subscription.renews_at) : null;
+    if (renewsAt && new Date() > renewsAt) {
+      await this.handleExpiredSubscription(subscription);
+      return false;
+    }
+
+    return subscription.status === 'active';
+  }
+
+  // Check if user can contact a job poster directly
+  // Only subscribed users can contact job posters directly
+  async canContactJobPoster(userEmail) {
+    const hasSub = await this.hasActiveSubscription(userEmail);
+    if (hasSub) {
+      return { allowed: true, reason: 'active_subscription' };
+    }
+    return {
+      allowed: false,
+      reason: 'no_subscription',
+      message: 'You need an active subscription to contact job posters directly. Upgrade to start messaging.',
+    };
+  }
 }
 
 export default new SubscriptionService();

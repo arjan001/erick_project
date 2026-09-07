@@ -2,8 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@/components/ui/button';
 import { CreditCard, Save, DollarSign, Lock, Globe, CheckCircle, AlertTriangle, ToggleLeft, ToggleRight, TestTube, Zap, Settings as SettingsIcon, Smartphone, Loader2 } from 'lucide-react';
-import { getPaymentSettings, saveMpesaSettings, saveMollieSettings, saveGeneralPaymentSettings } from '@/modules/admin/api/payment.api';
+import { getPaymentSettings, saveMpesaSettings, saveMollieSettings, saveGeneralPaymentSettings, saveNexusPaySettings } from '@/modules/admin/api/payment.api';
 import { testMpesaConnection } from '@/services/mpesaService';
+import { testNexusPayConnection } from '@/services/nexusPayService';
 
 export default function AdminPaymentSettingsPage() {
   const { success, error } = useToast();
@@ -39,6 +40,16 @@ export default function AdminPaymentSettingsPage() {
     captureMethod: 'automatic'
   });
 
+  const [nexusPaySettings, setNexusPaySettings] = useState({
+    enabled: false,
+    secretKey: '',
+    publicKey: '',
+    settlementAccountId: '',
+    tenantCode: '',
+    currency: 'KES',
+    description: 'Eric Rabar Payment',
+  });
+
   const [paymentSettings, setPaymentSettings] = useState({
     enablePayments: true,
     defaultCurrency: 'EUR',
@@ -63,6 +74,9 @@ export default function AdminPaymentSettingsPage() {
         }
         if (data.mollie_settings) {
           setMollieSettings(prev => ({ ...prev, ...data.mollie_settings }));
+        }
+        if (data.nexuspay_settings) {
+          setNexusPaySettings(prev => ({ ...prev, ...data.nexuspay_settings }));
         }
         if (data.general_settings) {
           setPaymentSettings(prev => ({ ...prev, ...data.general_settings }));
@@ -119,6 +133,35 @@ export default function AdminPaymentSettingsPage() {
       error('Failed', 'Failed to save Mollie settings');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveNexusPaySettings = async () => {
+    setSaving(true);
+    try {
+      await saveNexusPaySettings(nexusPaySettings);
+      success('Saved', 'Nexus Pay settings saved successfully');
+    } catch (err) {
+      console.error('Error saving Nexus Pay settings:', err);
+      error('Failed', 'Failed to save Nexus Pay settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestNexusPayConnection = async () => {
+    setTesting(true);
+    try {
+      const result = await testNexusPayConnection(nexusPaySettings.secretKey);
+      if (result.success) {
+        success('Success', result.message);
+      } else {
+        error('Failed', result.message);
+      }
+    } catch (err) {
+      error('Failed', err.message || 'Nexus Pay connection test failed');
+    } finally {
+      setTesting(false);
     }
   };
 
@@ -191,6 +234,13 @@ export default function AdminPaymentSettingsPage() {
               className={`px-4 py-2 font-medium text-sm rounded-md transition-colors ${activeTab === 'mollie' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
             >
               Mollie
+            </button>
+            <button
+              onClick={() => setActiveTab('nexuspay')}
+              className={`flex items-center gap-1.5 px-4 py-2 font-medium text-sm rounded-md transition-colors ${activeTab === 'nexuspay' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              <Zap className="w-4 h-4" />
+              Nexus Pay
             </button>
             <button
               onClick={() => setActiveTab('general')}
@@ -537,6 +587,151 @@ export default function AdminPaymentSettingsPage() {
                         {testing ? 'Testing...' : 'Test Connection'}
                       </Button>
                       <Button onClick={handleSaveMollieSettings} disabled={saving} className="bg-blue-600 text-white hover:bg-blue-700">
+                        <Save className="w-4 h-4 mr-2" />
+                        {saving ? 'Saving...' : 'Save Settings'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'nexuspay' && (
+            <div className="max-w-4xl space-y-6">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-purple-50 rounded-xl">
+                      <Zap className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900">Nexus Pay (MakamescoPay)</h2>
+                      <p className="text-sm text-gray-500">Third-party M-Pesa STK Push, card & B2C gateway — makamescopay.com</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${nexusPaySettings.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                      {nexusPaySettings.enabled ? 'Enabled' : 'Disabled'}
+                    </span>
+                    <button
+                      onClick={() => setNexusPaySettings({ ...nexusPaySettings, enabled: !nexusPaySettings.enabled })}
+                      className="p-2"
+                    >
+                      {nexusPaySettings.enabled ? <ToggleRight className="w-5 h-5 text-green-600" /> : <ToggleLeft className="w-5 h-5 text-gray-400" />}
+                    </button>
+                  </div>
+                </div>
+
+                {nexusPaySettings.enabled && (
+                  <div className="space-y-5">
+                    <div className="bg-purple-50 border border-purple-100 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-purple-600 mt-0.5" />
+                        <div className="text-sm text-purple-800">
+                          <p className="font-medium mb-1">Nexus Pay API Credentials</p>
+                          <p className="text-purple-700">
+                            Get your API keys from the{' '}
+                            <a href="https://makamescopay.com" target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+                              Nexus Pay dashboard
+                            </a>
+                            . Go to API Keys → Create API Key. Copy both your Public Key (pk_...) and Secret Key (sk_...).
+                            Store the Secret Key safely — you can only see it once.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Secret Key (sk_...)</label>
+                      <input
+                        type="password"
+                        value={nexusPaySettings.secretKey}
+                        onChange={(e) => setNexusPaySettings({ ...nexusPaySettings, secretKey: e.target.value })}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="sk_your_secret_key_here"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Required for all payment API calls. Never share publicly.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Public Key (pk_...)</label>
+                      <input
+                        type="text"
+                        value={nexusPaySettings.publicKey}
+                        onChange={(e) => setNexusPaySettings({ ...nexusPaySettings, publicKey: e.target.value })}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="pk_your_public_key_here"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Safe for frontend use. Identifies your account.</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Settlement Account ID</label>
+                        <input
+                          type="text"
+                          value={nexusPaySettings.settlementAccountId}
+                          onChange={(e) => setNexusPaySettings({ ...nexusPaySettings, settlementAccountId: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          placeholder="e.g., 1"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">ID of your M-Pesa till/paybill settlement account</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Tenant Code (SaaS only)</label>
+                        <input
+                          type="text"
+                          value={nexusPaySettings.tenantCode}
+                          onChange={(e) => setNexusPaySettings({ ...nexusPaySettings, tenantCode: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          placeholder="tnnt_abc12345"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Optional: routes to a specific tenant's settlement</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Currency</label>
+                        <select
+                          value={nexusPaySettings.currency}
+                          onChange={(e) => setNexusPaySettings({ ...nexusPaySettings, currency: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        >
+                          <option value="KES">KES (Kenyan Shilling)</option>
+                          <option value="USD">USD (US Dollar)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Payment Description</label>
+                        <input
+                          type="text"
+                          value={nexusPaySettings.description}
+                          onChange={(e) => setNexusPaySettings({ ...nexusPaySettings, description: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          maxLength={200}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p className="text-sm font-medium text-gray-700 mb-2">Quick Start Checklist:</p>
+                      <ul className="space-y-1.5 text-sm text-gray-600">
+                        <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Register at makamescopay.com/register</li>
+                        <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Create API Key in dashboard → API Keys</li>
+                        <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Add settlement account (M-Pesa till/paybill)</li>
+                        <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Use 2 free sandbox transactions to test</li>
+                        <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Activate account (KES 100/mo or KES 500/yr) to go live</li>
+                      </ul>
+                    </div>
+
+                    <div className="flex gap-3 pt-4 border-t border-gray-200">
+                      <Button onClick={handleTestNexusPayConnection} disabled={testing} variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
+                        {testing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <TestTube className="w-4 h-4 mr-2" />}
+                        {testing ? 'Testing...' : 'Test Connection'}
+                      </Button>
+                      <Button onClick={handleSaveNexusPaySettings} disabled={saving} className="bg-purple-600 text-white hover:bg-purple-700">
                         <Save className="w-4 h-4 mr-2" />
                         {saving ? 'Saving...' : 'Save Settings'}
                       </Button>
