@@ -2,11 +2,11 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 
-const SEOMetaTags = ({ 
-  title, 
-  description, 
-  keywords, 
-  ogImage, 
+const SEOMetaTags = ({
+  title,
+  description,
+  keywords,
+  ogImage,
   ogType = 'website',
   noIndex = false,
   canonicalUrl,
@@ -40,7 +40,7 @@ const SEOMetaTags = ({
   }, [location.pathname]);
 
   // Use props if provided, otherwise fall back to database data
-  const pageTitle = title || pageData?.meta_title || seoData?.site_title || 'Eric Rabar';
+  const pageTitle = title || pageData?.meta_title || seoData?.site_title || 'SmartGigs Kenya';
   const pageDescription = description || pageData?.meta_description || seoData?.site_description || '';
   const pageKeywords = keywords || pageData?.meta_keywords || seoData?.site_keywords || '';
   const pageOgImage = ogImage || pageData?.og_image || seoData?.og_image || '';
@@ -62,14 +62,14 @@ const SEOMetaTags = ({
       <title>{pageTitle}</title>
       <meta name="description" content={pageDescription} />
       {pageKeywords && <meta name="keywords" content={pageKeywords} />}
-      
+
       {/* Canonical URL */}
       <link rel="canonical" href={fullCanonical} />
-      
+
       {/* Robots */}
       {pageNoIndex && <meta name="robots" content="noindex, nofollow" />}
       {!pageNoIndex && <meta name="robots" content="index, follow" />}
-      
+
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={pageOgType} />
       <meta property="og:url" content={fullCanonical} />
@@ -77,8 +77,8 @@ const SEOMetaTags = ({
       <meta property="og:description" content={pageDescription} />
       {pageOgImage && <meta property="og:image" content={pageOgImage} />}
       <meta property="og:locale" content={pageOgLocale} />
-      <meta property="og:site_name" content="Eric Rabar" />
-      
+      <meta property="og:site_name" content="SmartGigs Kenya" />
+
       {/* Twitter Card */}
       <meta name="twitter:card" content={twitterCard} />
       {twitterSite && <meta name="twitter:site" content={twitterSite} />}
@@ -86,22 +86,22 @@ const SEOMetaTags = ({
       <meta name="twitter:title" content={pageTitle} />
       <meta name="twitter:description" content={pageDescription} />
       {twitterImage && <meta name="twitter:image" content={twitterImage} />}
-      
+
       {/* Additional Meta Tags */}
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <meta charSet="utf-8" />
       <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-      
+
       {/* Theme Color */}
       <meta name="theme-color" content="#000000" />
-      
+
       {/* JSON-LD Schema */}
       {schemaJson && (
         <script type="application/ld+json">
           {schemaJson}
         </script>
       )}
-      
+
       {/* Custom schema data if provided */}
       {Object.keys(schemaData).length > 0 && (
         <script type="application/ld+json">

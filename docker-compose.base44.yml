@@ -9,7 +9,7 @@ services:
       - "3000:5173"
     env_file:
       - ./.env.base44-defaults
-      - /run/base44/app.env
+      # - /run/base44/app.env  # Platform-managed, not available locally
     command: sh -c "npm install --no-audit --no-fund && npx vite --host 0.0.0.0 --port 5173"
     restart: unless-stopped
     healthcheck:

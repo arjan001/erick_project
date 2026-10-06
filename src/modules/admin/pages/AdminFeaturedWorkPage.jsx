@@ -58,8 +58,8 @@ export default function AdminFeaturedWorkPage() {
     }
     setLoadingClips(true);
     try {
-      const clips = await PortfolioClip.filter({ 
-        uploaded_by_type: 'artist', 
+      const clips = await PortfolioClip.filter({
+        uploaded_by_type: 'artist',
         uploaded_by_id: artistId
       });
       setArtistPortfolioClips(clips || []);
@@ -95,7 +95,6 @@ export default function AdminFeaturedWorkPage() {
       setArtistPortfolioClips([]);
       setSelectedPortfolioClip(null);
       setSelectedProjects([]);
-      // Load only artists with active subscriptions
       const activeArtists = await getActiveSubscriptionArtists();
       setArtists(activeArtists);
     }
@@ -103,7 +102,6 @@ export default function AdminFeaturedWorkPage() {
   };
 
   const handleSave = async () => {
-    // Check if adding would exceed 6 limit
     if (!editing && works.length >= 6) {
       toastError('Limit Reached', 'Maximum 6 featured projects allowed (3 per line)');
       return;
@@ -116,7 +114,6 @@ export default function AdminFeaturedWorkPage() {
 
     try {
       if (editing) {
-        // Single edit mode
         const dataToSave = {
           artist_id: form.artist_id || null,
           portfolio_clip_id: form.portfolio_clip_id || null,
@@ -132,10 +129,9 @@ export default function AdminFeaturedWorkPage() {
         await FeaturedWork.update(editing.id, dataToSave);
         success('Updated', 'Featured work updated');
       } else {
-        // Multi-select mode - create multiple featured works
         const totalSlots = 6 - works.length;
         const projectsToAdd = selectedProjects.slice(0, totalSlots);
-        
+
         for (let i = 0; i < projectsToAdd.length; i++) {
           const project = projectsToAdd[i];
           await FeaturedWork.create({
@@ -150,7 +146,7 @@ export default function AdminFeaturedWorkPage() {
             status: 'active'
           });
         }
-        
+
         if (selectedProjects.length > totalSlots) {
           toastError('Partial Success', `Only ${totalSlots} projects added (max 6 total)`);
         } else {
@@ -195,9 +191,9 @@ export default function AdminFeaturedWorkPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Featured Works</h1>
           <p className="text-gray-600">Manage paid and subscription-based featured artist works</p>
         </div>
-        <Button onClick={() => openModal()} className="bg-black text-white hover:bg-gray-800">
+        <button onClick={() => openModal()} className="flex items-center gap-2 rounded-lg bg-black px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-800">
           <Plus className="w-4 h-4 mr-2" /> Add Featured Work
-        </Button>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -212,16 +208,14 @@ export default function AdminFeaturedWorkPage() {
                 </div>
               )}
               <div className="absolute top-2 right-2 flex gap-1">
-                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  work.featured_type === 'paid' ? 'bg-green-500 text-white' :
-                  work.featured_type === 'subscription' ? 'bg-blue-500 text-white' :
-                  'bg-purple-500 text-white'
-                }`}>
+                <span className={`px-2 py-1 rounded text-xs font-medium ${work.featured_type === 'paid' ? 'bg-green-500 text-white' :
+                    work.featured_type === 'subscription' ? 'bg-blue-500 text-white' :
+                      'bg-purple-500 text-white'
+                  }`}>
                   {work.featured_type}
                 </span>
-                <button onClick={() => toggleStatus(work)} className={`p-1.5 rounded ${
-                  work.status === 'active' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
-                }`}>
+                <button onClick={() => toggleStatus(work)} className={`p-1.5 rounded ${work.status === 'active' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+                  }`}>
                   {work.status === 'active' ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </button>
               </div>
@@ -248,9 +242,9 @@ export default function AdminFeaturedWorkPage() {
       {works.length === 0 && (
         <Card><CardContent className="p-12 text-center text-gray-500">
           <p className="mb-4">No featured works yet</p>
-          <Button onClick={() => openModal()} className="bg-black text-white hover:bg-gray-800">
+          <button onClick={() => openModal()} className="flex items-center gap-2 rounded-lg bg-black px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-800">
             <Plus className="w-4 h-4 mr-2" /> Create First Featured Work
-          </Button>
+          </button>
         </CardContent></Card>
       )}
 
@@ -283,14 +277,14 @@ export default function AdminFeaturedWorkPage() {
                     <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">
                       <User className="w-4 h-4 text-gray-500" /> Select Artist
                     </label>
-                    <select 
-                      value={form.artist_id} 
+                    <select
+                      value={form.artist_id}
                       onChange={(e) => {
                         setForm({ ...form, artist_id: e.target.value, portfolio_clip_id: '' });
                         setSelectedPortfolioClip(null);
                         setSelectedProjects([]);
                         fetchArtistPortfolioClips(e.target.value);
-                      }} 
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                     >
                       <option value="">Select an artist with active subscription...</option>
@@ -302,11 +296,11 @@ export default function AdminFeaturedWorkPage() {
                       <p className="text-xs text-gray-500 mt-1">No artists with active subscriptions found</p>
                     )}
                   </div>
-                  
+
                   {form.artist_id && (
                     <div>
                       <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">
-                        <Play className="w-4 h-4 text-gray-500" /> 
+                        <Play className="w-4 h-4 text-gray-500" />
                         Select Projects to Feature
                         <span className="text-xs text-gray-500 font-normal">
                           ({selectedProjects.length} selected, max {6 - works.length} more)
@@ -317,7 +311,7 @@ export default function AdminFeaturedWorkPage() {
                       ) : artistPortfolioClips.length > 0 ? (
                         <div className="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto p-2">
                           {artistPortfolioClips.map(clip => (
-                            <div 
+                            <div
                               key={clip.id}
                               onClick={() => {
                                 const isSelected = selectedProjects.some(p => p.id === clip.id);
@@ -327,11 +321,10 @@ export default function AdminFeaturedWorkPage() {
                                   setSelectedProjects([...selectedProjects, clip]);
                                 }
                               }}
-                              className={`cursor-pointer border-2 rounded-lg p-3 transition-all relative ${
-                                selectedProjects.some(p => p.id === clip.id) 
-                                  ? 'border-black bg-gray-50' 
+                              className={`cursor-pointer border-2 rounded-lg p-3 transition-all relative ${selectedProjects.some(p => p.id === clip.id)
+                                  ? 'border-black bg-gray-50'
                                   : 'border-gray-200 hover:border-gray-300'
-                              }`}
+                                }`}
                             >
                               {selectedProjects.some(p => p.id === clip.id) && (
                                 <div className="absolute top-2 right-2 w-6 h-6 bg-black rounded-full flex items-center justify-center">
@@ -392,10 +385,10 @@ export default function AdminFeaturedWorkPage() {
               )}
             </div>
             <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setShowModal(false)} className="rounded-lg">Cancel</Button>
-              <Button onClick={handleSave} disabled={!editing && selectedProjects.length === 0} className="bg-gray-900 hover:bg-gray-800 text-white rounded-lg">
+              <button onClick={() => setShowModal(false)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">Cancel</button>
+              <button onClick={handleSave} disabled={!editing && selectedProjects.length === 0} className="rounded-lg bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 text-sm font-semibold">
                 {editing ? 'Update' : `Add ${selectedProjects.length} Project${selectedProjects.length !== 1 ? 's' : ''}`}
-              </Button>
+              </button>
             </div>
           </div>
         </div>

@@ -1,7 +1,13 @@
-import React from 'react';
-import { X, MapPin, Clock, DollarSign, Share2, Heart, Building2, BadgeCheck, Briefcase } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, MapPin, Clock, DollarSign, Share2, Heart, Building2, BadgeCheck, Briefcase, ChevronDown, ChevronUp } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function JobDetailSlideOut({ job, onClose }) {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const [expandedRoles, setExpandedRoles] = useState(false);
+
   if (!job) return null;
 
   const handleShare = () => {
@@ -12,6 +18,20 @@ export default function JobDetailSlideOut({ job, onClose }) {
     }
   };
 
+  const handleApply = (role) => {
+    if (!isAuthenticated) {
+      // Show login prompt
+      navigate('/SignIn', { state: { returnTo: window.location.pathname, job: job.title } });
+      return;
+    }
+    // Handle application logic here
+    console.log('Applying for role:', role);
+  };
+
+  const toggleRoles = () => {
+    setExpandedRoles(!expandedRoles);
+  };
+
   return (
     <>
       {/* Overlay */}
@@ -20,7 +40,7 @@ export default function JobDetailSlideOut({ job, onClose }) {
         onClick={onClose}
       />
       {/* Panel — slides in from right */}
-      <div className="fixed right-0 top-0 z-[101] flex h-full w-full max-w-md flex-col overflow-y-auto bg-white shadow-2xl md:max-w-lg">
+      <div className="fixed right-0 top-0 z-[101] flex h-full w-full max-w-4xl flex-col overflow-y-auto bg-white shadow-2xl md:max-w-5xl">
         {/* Header with close button */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white px-5 py-4 md:px-6">
           <div className="flex items-center gap-2">
@@ -84,15 +104,41 @@ export default function JobDetailSlideOut({ job, onClose }) {
           {/* Roles */}
           {job.roles && job.roles.length > 0 && (
             <div className="mt-6">
-              <h3 className="text-sm font-bold uppercase tracking-wide text-black/50">Available Roles</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold uppercase tracking-wide text-black/50">
+                  Available Roles ({job.roles.length})
+                </h3>
+                {job.roles.length > 3 && (
+                  <button
+                    onClick={toggleRoles}
+                    className="flex items-center gap-1 text-xs font-semibold text-[#8B5CF6] hover:text-[#7C3AED]"
+                  >
+                    {expandedRoles ? (
+                      <>
+                        <ChevronUp className="h-4 w-4" />
+                        Show Less
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4" />
+                        Show All
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
               <div className="mt-3 space-y-3">
-                {job.roles.map((r, i) => (
-                  <div key={i} className="flex items-center justify-between rounded-xl border border-gray-200 p-4">
-                    <div>
+                {(expandedRoles ? job.roles : job.roles.slice(0, 3)).map((r, i) => (
+                  <div key={i} className="flex items-center justify-between rounded-xl border border-gray-200 p-4 hover:border-[#8B5CF6]/30 transition-colors">
+                    <div className="flex-1">
                       <p className="text-sm font-bold text-black">{r.title}</p>
                       {r.pay && <p className="mt-0.5 text-xs text-black/50">{r.pay}</p>}
+                      {r.details && <p className="mt-0.5 text-xs text-black/40">{r.details}</p>}
                     </div>
-                    <button className="rounded-full bg-[#4F46E5] px-5 py-2 text-xs font-semibold text-white hover:bg-[#4338CA]">
+                    <button
+                      onClick={() => handleApply(r)}
+                      className="ml-4 shrink-0 rounded-full bg-[#8B5CF6] px-5 py-2 text-xs font-semibold text-white hover:bg-[#7C3AED]"
+                    >
                       Apply
                     </button>
                   </div>
@@ -117,9 +163,12 @@ export default function JobDetailSlideOut({ job, onClose }) {
 
         {/* Footer CTA — sticky at bottom */}
         <div className="sticky bottom-0 border-t border-gray-100 bg-white px-5 py-4 md:px-6">
-          <button className="flex w-full items-center justify-center gap-2 rounded-full bg-[#4F46E5] py-3 text-sm font-semibold text-white hover:bg-[#4338CA]">
+          <button
+            onClick={() => handleApply({ title: job.title })}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-[#8B5CF6] py-3 text-sm font-semibold text-white hover:bg-[#7C3AED]"
+          >
             <Briefcase className="h-4 w-4" />
-            View Details & Apply
+            Apply to This Production
           </button>
         </div>
       </div>

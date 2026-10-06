@@ -47,8 +47,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Eric Rabar',
-        short_name: 'Eric Rabar',
+        name: 'SmartGigs Kenya',
+        short_name: 'SmartGigs Kenya',
         description: 'The place to get hired for theater, film, and TV.',
         theme_color: '#0A0A0A',
         background_color: '#0A0A0A',

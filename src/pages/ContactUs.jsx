@@ -1,126 +1,90 @@
-import React, { useState } from 'react';
-import { Search, ChevronRight, MessageCircle, ThumbsDown, Meh, ThumbsUp } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, MessageCircle } from 'lucide-react';
+import Navbar from '@/components/landing/backstage/Navbar';
+import Footer from '@/components/landing/backstage/Footer';
+import ChatWidget from '@/components/landing/backstage/ChatWidget';
 import SEOMetaTags from '@/components/SEOMetaTags';
 
-const relatedArticles = [
-  'Learn About Eric Rabar',
-  'Cancellation & Refunds',
-  'Tax Reporting Tips for Income Received via the Secure Payments System',
-  'Agent Tools FAQ',
-  'New to Eric Rabar?',
+const EMAIL = 'contact@smartgigskenya.com';
+const PHONE = '+254 780278398';
+
+const socials = [
+  { icon: Facebook, name: 'Facebook' },
+  { icon: Twitter, name: 'Twitter' },
+  { icon: Instagram, name: 'Instagram' },
 ];
 
 export default function ContactUs() {
-  const [query, setQuery] = useState('');
-
   return (
     <div className="min-h-screen bg-white">
       <SEOMetaTags
-        title="Contact Us — Eric Rabar Help Center"
-        description="Contact our customer service team for support."
-        keywords="contact, support, eric rabar"
+        title="Contact Us — SmartGigs Kenya"
+        description="Have a question or feedback for the SmartGigs Kenya team? Email, call or visit us."
+        keywords="contact smartgigs kenya, support, film jobs kenya"
         ogType="website"
-        schemaType="WebPage"
-        schemaData={{ name: 'Contact Us', description: 'Contact Eric Rabar support' }}
+        schemaType="ContactPage"
+        schemaData={{ name: 'Contact SmartGigs Kenya' }}
       />
+      <Navbar />
 
-      {/* Header banner */}
-      <div className="bg-gradient-to-b from-[#5A75FF] to-[#A0C3FF] px-4 pb-12 pt-6">
-        <p className="text-sm font-medium text-white/80">Eric Rabar Help Center</p>
-        <div className="mx-auto mt-8 flex max-w-xl items-center rounded-full bg-white/90 px-5 py-3 shadow-sm">
-          <Search className="h-5 w-5 shrink-0 text-[#5A75FF]" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for articles..."
-            className="ml-3 w-full bg-transparent text-sm text-black placeholder:text-[#5A75FF]/50 focus:outline-none"
-          />
-        </div>
-      </div>
+      <section className="bg-gradient-to-b from-[#5A75FF] to-[#A0C3FF] px-4 pb-14 pt-14 text-center">
+        <h1 className="font-serif text-3xl font-bold text-white md:text-5xl">Contact us</h1>
+        <p className="mx-auto mt-3 max-w-xl text-base text-white/90">
+          Have a question or feedback for the SmartGigs Kenya team? We'd love to hear from you!
+        </p>
+      </section>
 
-      {/* Breadcrumbs */}
-      <div className="mx-auto max-w-2xl px-4 pt-6">
-        <div className="flex flex-wrap items-center gap-1 text-xs text-gray-400">
-          <span>All Collections</span>
-          <ChevronRight className="h-3 w-3" />
-          <span>The Eric Rabar Platforms</span>
-          <ChevronRight className="h-3 w-3" />
-          <span>The Basics</span>
-          <ChevronRight className="h-3 w-3" />
-          <span className="font-medium text-gray-700">Contact Us</span>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="mx-auto max-w-2xl px-4 py-10">
-        <h1 className="font-serif text-3xl font-bold text-black">Contact Us</h1>
-        <p className="mt-2 text-sm text-gray-400">January 8, 2026</p>
-
-        <div className="mt-8 space-y-4">
-          <h2 className="text-lg font-bold text-black">Customer Service</h2>
-          <p className="text-sm leading-relaxed text-gray-700">
-            Our customer service reps are eager to help. Most requests are typically answered
-            within 1 business day. We also offer some weekend support.
-          </p>
-          <ul className="space-y-3">
-            <li className="text-sm leading-relaxed text-gray-700">
-              <span className="font-semibold">Contact Our Support Team:</span> To contact Eric
-              Rabar, <span className="font-semibold">click the chat-widget icon on the
-              bottom-right of this page.</span> Immediate support is available via AI chat, or
-              you can request additional assistance and a customer support agent will get back
-              to you via email ASAP.
-            </li>
-          </ul>
-        </div>
-
-        {/* Divider */}
-        <hr className="my-10 border-gray-200" />
-
-        {/* Related Articles */}
-        <div className="rounded-xl border border-gray-200 p-6">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-gray-500">Related Articles</h3>
-          <ul className="mt-4 space-y-3">
-            {relatedArticles.map((a) => (
-              <li key={a}>
-                <a
-                  href="#"
-                  className="flex items-center justify-between text-sm text-gray-700 hover:text-[#5A75FF]"
-                >
-                  {a}
-                  <ChevronRight className="h-4 w-4 text-gray-400" />
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Feedback */}
-        <div className="mt-8 rounded-xl bg-[#F2F2F2] p-6 text-center">
-          <p className="text-sm font-medium text-gray-700">Did this answer your question?</p>
-          <div className="mt-4 flex justify-center gap-6">
-            <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-400 shadow-sm transition-colors hover:text-gray-700">
-              <ThumbsDown className="h-5 w-5" />
-            </button>
-            <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-400 shadow-sm transition-colors hover:text-gray-700">
-              <Meh className="h-5 w-5" />
-            </button>
-            <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-400 shadow-sm transition-colors hover:text-gray-700">
-              <ThumbsUp className="h-5 w-5" />
-            </button>
+      <section className="mx-auto max-w-4xl px-4 py-14">
+        <div className="grid gap-5 md:grid-cols-3">
+          <a href={`mailto:${EMAIL}`} className="rounded-2xl border border-black/5 bg-[#F5F3EF] p-6 transition-shadow hover:shadow-md">
+            <Mail className="h-6 w-6 text-[#4F46E5]" />
+            <p className="mt-4 text-xs font-bold uppercase tracking-wider text-black/50">Email</p>
+            <p className="mt-1 break-all text-sm font-semibold text-black">{EMAIL}</p>
+          </a>
+          <a href={`tel:${PHONE.replace(/\s/g, '')}`} className="rounded-2xl border border-black/5 bg-[#F5F3EF] p-6 transition-shadow hover:shadow-md">
+            <Phone className="h-6 w-6 text-[#4F46E5]" />
+            <p className="mt-4 text-xs font-bold uppercase tracking-wider text-black/50">Phone</p>
+            <p className="mt-1 text-sm font-semibold text-black">{PHONE}</p>
+          </a>
+          <div className="rounded-2xl border border-black/5 bg-[#F5F3EF] p-6">
+            <MapPin className="h-6 w-6 text-[#4F46E5]" />
+            <p className="mt-4 text-xs font-bold uppercase tracking-wider text-black/50">Address</p>
+            <p className="mt-1 text-sm font-semibold text-black">Nairobi, Kenya</p>
           </div>
         </div>
-      </div>
 
-      {/* Footer text */}
-      <div className="px-4 pb-10 text-center">
-        <p className="text-sm font-medium text-gray-400">Eric Rabar Help Center</p>
-      </div>
+        <div className="mt-10 rounded-3xl bg-[#1a1a23] p-8 text-center text-white">
+          <h2 className="font-serif text-2xl font-bold">Connect with us on social media</h2>
+          <p className="mt-2 text-sm text-white/65">Our community pages are launching soon — follow along.</p>
+          <div className="mt-6 flex justify-center gap-4">
+            {socials.map((s) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.name} className="text-center">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <p className="mt-2 text-xs font-medium text-white/80">{s.name}</p>
+                  <p className="text-[10px] uppercase tracking-wide text-white/40">Coming soon</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
-      {/* Floating chat widget */}
-      <button className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-[#5A75FF] shadow-lg transition-transform hover:scale-110">
-        <MessageCircle className="h-6 w-6 text-white" />
-      </button>
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 text-center sm:flex-row">
+          <a href={`mailto:${EMAIL}`} className="rounded-full bg-black px-8 py-3 text-sm font-semibold text-white hover:bg-black/80">
+            Send us an email
+          </a>
+          <Link to="/FAQ" className="flex items-center gap-2 rounded-full border border-black/20 px-8 py-3 text-sm font-semibold text-black hover:bg-black/[0.04]">
+            <MessageCircle className="h-4 w-4" /> Read the FAQ
+          </Link>
+        </div>
+      </section>
+
+      <Footer />
+      <ChatWidget />
     </div>
   );
 }

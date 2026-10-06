@@ -273,6 +273,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('ericrabar_user');
     localStorage.removeItem('ericrabar_team');
     localStorage.removeItem('ericrabar_sidebar_expanded');
+    localStorage.removeItem('smartgigs_sidebar_expanded');
+    localStorage.removeItem('smartgigs_sidebar_collapsed');
     sessionStorage.removeItem('ericrabar_just_logged_in');
     sessionStorage.removeItem('ericrabar_onboarding_seen');
     // Nuke any lingering Supabase keys in localStorage/sessionStorage

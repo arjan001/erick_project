@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/landing/backstage/Navbar';
 import Footer from '@/components/landing/backstage/Footer';
 import ChatWidget from '@/components/landing/backstage/ChatWidget';
 import SEOMetaTags from '@/components/SEOMetaTags';
 import RoleToggle from '@/components/landing/backstage/RoleToggle';
-import TalentCard from '@/components/landing/backstage/TalentCard';
+import PartnersCarousel from '@/components/landing/backstage/PartnersCarousel';
 import { talentProfiles } from '@/components/landing/backstage/talentData';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -20,9 +20,6 @@ const heroStats = [
   { value: '1M+', label: 'PROJECTS SUCCESSFULLY COMPLETED' },
   { value: '1K+', label: 'TALENT AGENTS SUBMITTING' },
 ];
-
-// ── Trusted brands ──
-const trustedBrands = ['NETFLIX', 'HBO', 'amazon studios', 'Disney', 'YouTube', 'Hulu'];
 
 // ── Top info cards ──
 const infoCards = [
@@ -57,18 +54,68 @@ const filterPills = [
 const storyChecklist = [
   'Covert Film needed to cast high-quality talent on a limited budget.',
   'They wanted motivated professionals who were a good fit for the project and crew.',
-  'Six right-fit actors, including for the lead role, were cast from Eric Rabar.',
-  'The indie film starring Eric Rabar talent won multiple festival awards.',
+  'Six right-fit actors, including for the lead role, were cast from SmartGigs Kenya.',
+  'The indie film starring SmartGigs Kenya talent won multiple festival awards.',
 ];
 
 export default function HiringTalent() {
   const navigate = useNavigate();
   const [role, setRole] = useState('hiring');
+  const carouselRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const [scrollDirection, setScrollDirection] = useState(1);
+
+  // Auto-scroll carousel
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+
+    let animationFrame;
+    let scrollAmount = 0;
+    const speed = 1; // pixels per frame
+
+    const scroll = () => {
+      if (!isPaused) {
+        scrollAmount += speed * scrollDirection;
+
+        // Check if we've scrolled past the end
+        if (scrollAmount >= carousel.scrollWidth - carousel.clientWidth) {
+          scrollAmount = 0;
+        } else if (scrollAmount < 0) {
+          scrollAmount = carousel.scrollWidth - carousel.clientWidth;
+        }
+
+        carousel.scrollLeft = scrollAmount;
+      }
+      animationFrame = requestAnimationFrame(scroll);
+    };
+
+    animationFrame = requestAnimationFrame(scroll);
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+    };
+  }, [isPaused, scrollDirection]);
+
+  const handleMouseEnter = () => setIsPaused(true);
+  const handleMouseLeave = () => setIsPaused(false);
+  const handleMouseMove = (e) => {
+    const rect = carouselRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const center = rect.width / 2;
+
+    // Scroll left on left side, right on right side
+    if (x < center) {
+      setScrollDirection(-1);
+    } else {
+      setScrollDirection(1);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#20202a]">
       <SEOMetaTags
-        title="I'm Hiring Talent — Eric Rabar"
+        title="I'm Hiring Talent — SmartGigs Kenya"
         description="Find and hire the world's best talent for your next project."
         keywords="hire talent, casting, find talent, post a job"
         ogType="website"
@@ -107,9 +154,8 @@ export default function HiringTalent() {
           <div className="mt-10 grid grid-cols-2 gap-4 md:gap-6 lg:max-w-4xl lg:mx-auto">
             {heroStats.map((s, i) => (
               <div key={i} className="text-center">
-                <div className={`inline-block rounded-lg px-4 py-2 text-2xl font-bold md:text-4xl ${
-                  s.highlight ? 'bg-[#0047ab] text-white' : 'text-white'
-                }`}>
+                <div className={`inline-block rounded-lg px-4 py-2 text-2xl font-bold md:text-4xl ${s.highlight ? 'bg-[#0047ab] text-white' : 'text-white'
+                  }`}>
                   {s.value}
                 </div>
                 <div className="mt-2 text-[10px] font-medium uppercase tracking-wide text-white/60 md:text-xs">
@@ -131,23 +177,14 @@ export default function HiringTalent() {
         </div>
       </section>
 
-      {/* ═══ Trusted By Carousel ═══ */}
-      <section className="px-4 py-12 md:py-16">
-        <div className="mx-auto max-w-[1400px]">
+      {/* ═══ Trusted By Carousel (same partner logos as the landing page, managed in Admin → Partners) ═══ */}
+      <section className="overflow-hidden px-0 py-12 md:py-16">
+        <div className="mx-auto max-w-[1400px] px-4">
           <p className="text-center text-sm font-medium text-white/80 md:text-base">
-            Trusted by creators and casting pros for 65+ years
+            Trusted by producers, casting directors and brands across Kenya
           </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 md:gap-4">
-            {trustedBrands.map((brand) => (
-              <div
-                key={brand}
-                className="flex items-center justify-center rounded-xl bg-[#2a2a36] px-5 py-3 md:px-8 md:py-4"
-              >
-                <span className="text-sm font-bold text-white/70 md:text-lg">{brand}</span>
-              </div>
-            ))}
-          </div>
         </div>
+        <PartnersCarousel tone="dark" fade="#20202a" />
       </section>
 
       {/* ═══ Industry Pros Heading ═══ */}
@@ -157,7 +194,7 @@ export default function HiringTalent() {
             From small projects to feature films
           </p>
           <h2 className="mt-3 font-serif text-2xl font-bold text-white md:text-4xl lg:text-5xl">
-            Why 50k+ industry pros trust Eric Rabar
+            Why 50k+ industry pros trust SmartGigs Kenya
           </h2>
         </div>
       </section>
@@ -227,11 +264,10 @@ export default function HiringTalent() {
             {filterPills.map((pill) => (
               <button
                 key={pill.label}
-                className={`flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-semibold transition-colors md:text-sm ${
-                  pill.active
-                    ? 'border-transparent bg-[#4ade80] text-black'
-                    : 'border-white/20 bg-white text-black hover:bg-white/90'
-                }`}
+                className={`flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-semibold transition-colors md:text-sm ${pill.active
+                  ? 'border-transparent bg-[#4ade80] text-black'
+                  : 'border-white/20 bg-white text-black hover:bg-white/90'
+                  }`}
               >
                 <Check className="h-3 w-3" />
                 {pill.label}
@@ -239,10 +275,16 @@ export default function HiringTalent() {
             ))}
           </div>
 
-          {/* Talent grid — 5 cards on desktop, scroll on mobile */}
-          <div className="mt-10 flex gap-4 overflow-x-auto pb-4 lg:grid lg:grid-cols-5 lg:overflow-visible">
-            {talentProfiles.slice(0, 5).map((profile) => (
-              <div key={profile.id} className="w-[200px] shrink-0 lg:w-auto">
+          {/* Talent carousel with auto-scroll on hover */}
+          <div
+            ref={carouselRef}
+            className="mt-10 flex gap-4 overflow-x-auto pb-4 cursor-pointer"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onMouseMove={handleMouseMove}
+          >
+            {talentProfiles.map((profile) => (
+              <div key={profile.id} className="w-[200px] shrink-0">
                 <div className="overflow-hidden rounded-xl bg-[#282835]">
                   <div className="aspect-[3/4] overflow-hidden">
                     <img
@@ -286,7 +328,7 @@ export default function HiringTalent() {
 
           {/* Sub-heading */}
           <p className="mt-4 text-center text-base font-bold text-white md:text-lg">
-            Eric Rabar Cast Leads Indie Film to Festival Success
+            SmartGigs Kenya Cast Leads Indie Film to Festival Success
           </p>
 
           {/* Two-column cards */}
@@ -299,7 +341,7 @@ export default function HiringTalent() {
               <blockquote className="text-sm leading-relaxed text-gray-700 md:text-base">
                 "We were looking for undiscovered actors who were on the cusp of being great, who have
                 learnt techniques, have been to acting school, and were ready to put the work in to
-                create something amazing. And we found exactly what we were looking for on Eric Rabar."
+                create something amazing. And we found exactly what we were looking for on SmartGigs Kenya."
               </blockquote>
               <div className="mt-6 flex items-center gap-3">
                 <div className="h-12 w-12 rounded-full bg-gray-200 overflow-hidden">
@@ -327,7 +369,7 @@ export default function HiringTalent() {
               </div>
               <p className="mt-2 text-xs text-gray-400">Photo Source: Covert Film, on set of Turbo Cola</p>
               <h3 className="mt-4 text-sm font-bold text-black md:text-base">
-                Covert Film used Eric Rabar to cast the lead and five supporting roles in award-winning
+                Covert Film used SmartGigs Kenya to cast the lead and five supporting roles in award-winning
                 feature film
               </h3>
               <ul className="mt-4 space-y-2">
@@ -362,7 +404,7 @@ export default function HiringTalent() {
                 />
               </div>
               <p className="mt-3 text-sm font-bold text-white">Sonja Smith</p>
-              <p className="text-xs text-white/60">Eric Rabar Casting Expert</p>
+              <p className="text-xs text-white/60">SmartGigs Kenya Casting Expert</p>
             </div>
 
             {/* Middle: Heading */}
@@ -402,7 +444,7 @@ export default function HiringTalent() {
                 Contact Me
               </button>
               <p className="text-xs text-white/40">
-                By clicking 'Contact Me', you agree that Eric Rabar will process your personal
+                By clicking 'Contact Me', you agree that SmartGigs Kenya will process your personal
                 information in accordance with our Privacy Policy.
               </p>
             </div>

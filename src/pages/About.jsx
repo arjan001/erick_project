@@ -1,156 +1,204 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Target, Eye, Clapperboard, Users, ShieldCheck, Bell, MessageSquare, Video } from 'lucide-react';
 import Navbar from '@/components/landing/backstage/Navbar';
 import Footer from '@/components/landing/backstage/Footer';
 import ChatWidget from '@/components/landing/backstage/ChatWidget';
 import SEOMetaTags from '@/components/SEOMetaTags';
+import { ParallaxBackground } from '@/components/landing/backstage/Parallax';
+import { isFeatureEnabled } from '@/lib/featureFlags';
 
-const metrics = [
-  { value: '3,512', label: 'NEW ROLES POSTED THIS WEEK' },
-  { value: '259,293', label: 'ERIC RABAR MEMBERS & COUNTING' },
-  { value: '195,348', label: 'CREATORS LOOKING FOR TALENT' },
-  { value: '66', label: 'YEARS OF INSIDER KNOWLEDGE' },
+const audiences = [
+  'a filmmaker seeking the perfect cast',
+  'a location scout in search of the ideal spot for your next shoot',
+  'a visionary trying to get into film',
+  'a producer looking for the right team',
 ];
 
-const brands = ['ABC', 'Disney', 'AMC', 'HBO', 'CW', 'Netflix', '20th Century Animation', 'NBC', 'SAG-AFTRA'];
+const forTalent = [
+  'Sign up and complete a detailed public profile with high-resolution photos, portfolio uploads and embedded video reels.',
+  'Receive real-time job alerts and notifications matched by your location and profile tags.',
+  'Track every application status in one view and converse with producers through in-site messaging.',
+];
+
+const forProducers = [
+  'Post gigs, assigning city or region tags so roles surface to the right talent automatically.',
+  'Filter incoming submissions by location, skills or custom tags, then drill down with advanced talent search.',
+  'Review organised application pipelines and move candidates through stages — the actor dashboard updates automatically.',
+];
+
+const shared = [
+  { icon: Users, text: 'Responsive design for mobile, tablet and desktop' },
+  { icon: ShieldCheck, text: 'Secure sign-in, role-based access and admin content moderation' },
+  { icon: Video, text: 'Embeddable YouTube links for video portfolios' },
+  { icon: Bell, text: 'Email and in-app notifications that keep both sides informed' },
+  { icon: MessageSquare, text: 'Built-in messaging threads between talent and producers' },
+  { icon: Clapperboard, text: 'A shop with branded productions and live discount auctions' },
+];
+
+const steps = [
+  ['Create Profile', 'Build your profile to highlight your talents.'],
+  ['Search Gigs', 'Browse available gigs based on your interests.'],
+  ['Apply / Contact', 'Connect with producers and casting directors.'],
+  ['Get Hired', 'Land your next gig and start filming!'],
+];
 
 export default function About() {
   return (
     <div className="min-h-screen bg-white">
       <SEOMetaTags
-        title="About — Eric Rabar"
-        description="Eric Rabar is the #1 platform for the world's best talent and creators."
-        keywords="about eric rabar, casting platform, talent marketplace"
+        title="About Us — SmartGigs Kenya"
+        description="SmartGigs Kenya connects actors, crew, location managers, producers and casting directors across Kenya's film industry."
+        keywords="about smartgigs kenya, film industry kenya, casting platform, actors and crew"
         ogType="website"
         schemaType="WebPage"
-        schemaData={{ name: 'About Eric Rabar', description: 'The #1 platform for talent and creators' }}
+        schemaData={{
+          name: 'About SmartGigs Kenya', description: 'Connecting talent with opportunity in Kenya film industry'
+        }}
       />
-      <Navbar />
+      < Navbar />
 
-      {/* Hero */}
-      <section className="px-4 pt-16 pb-10 md:pt-24 md:pb-14">
-        <div className="mx-auto max-w-4xl text-center">
-          <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight text-black md:text-5xl">
-            Eric Rabar is the #1 platform for the world's best talent and creators
+      {/* Hero with parallax backdrop */}
+      < ParallaxBackground
+        src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=1800&h=900&fit=crop"
+        overlay="bg-gradient-to-b from-black/70 via-black/60 to-black/80"
+      >
+        <div className="mx-auto max-w-4xl px-4 py-20 text-center md:py-32">
+          <p className="text-sm font-semibold uppercase tracking-wider text-[#a7f3d0]">About us</p>
+          <h1 className="mt-3 font-serif text-3xl font-bold leading-tight text-white md:text-5xl">
+            Where Kenyan film talent meets its next opportunity
           </h1>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-white/80">
+            SmartGigs Kenya brings actors and casting professionals together — with a tailored
+            dashboard and tool-set for everyone who tells stories on screen.
+          </p>
+        </div>
+      </ParallaxBackground>
+
+      {/* Story */}
+      <section className="px-4 py-16 md:py-20">
+        <div className="mx-auto max-w-3xl space-y-5 text-base leading-relaxed text-gray-700">
+          <p>
+            At SmartGigs Kenya, we're passionate about connecting talented individuals with
+            opportunities in the dynamic world of film.
+          </p>
+          <p>
+            Our mission is to provide a platform where actors, crew members, and location managers
+            can showcase their skills, connect with industry professionals, and find their next gig
+            with ease.
+          </p>
+          <p>
+            With a user-friendly interface and robust features, SmartGigs Kenya is revolutionizing
+            the way talent is discovered and hired in film. Whether you're
+          </p>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {audiences.map((a) => (
+              <li key={a} className="rounded-xl bg-[#F5F3EF] px-4 py-3 text-sm font-medium text-black">
+                {a}
+              </li>
+            ))}
+          </ul>
+          <p>SmartGigs Kenya has you covered.</p>
         </div>
       </section>
 
-      {/* Metric Bar */}
-      <section className="px-4 pb-16">
+      {/* Mission & vision */}
+      <section className="bg-[#F5F3EF] px-4 py-16 md:py-20">
+        <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
+          <div className="rounded-3xl bg-white p-8 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#4F46E5]/10">
+              <Target className="h-6 w-6 text-[#4F46E5]" />
+            </div>
+            <h2 className="mt-5 font-serif text-2xl font-bold text-black">Our mission</h2>
+            <p className="mt-3 text-base leading-relaxed text-gray-700">
+              To build a vibrant community of filmmakers in Kenya while empowering talent, directors
+              and producers — giving every one of them a platform to showcase their skills, be
+              discovered on merit and find opportunities that turn passion into a career.
+            </p>
+          </div>
+          <div className="rounded-3xl bg-[#1a1a23] p-8 text-white shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10">
+              <Eye className="h-6 w-6 text-[#a7f3d0]" />
+            </div>
+            <h2 className="mt-5 font-serif text-2xl font-bold">Our vision</h2>
+            <p className="mt-3 text-base leading-relaxed text-white/80">
+              A Kenya where every great story can find its cast and crew in a single click — where a
+              young actor in Kisumu, a cinematographer in Mombasa and a producer in Nairobi build
+              award-winning productions together, and East African cinema takes its place on the
+              world stage.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Two portals */}
+      <section className="px-4 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
-          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-[#A8E4C0] md:grid-cols-4">
-            {metrics.map((m) => (
-              <div key={m.label} className="px-6 py-8 text-center">
-                <div className="text-3xl font-bold text-black md:text-4xl">{m.value}</div>
-                <div className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-black/60 md:text-xs">
-                  {m.label}
+          <h2 className="text-center font-serif text-3xl font-bold text-black">Built for both sides of the camera</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-base text-gray-600">
+            The core build includes two user roles — Actors &amp; Crew and Producers &amp; Casting
+            Managers — each with a tailored dashboard and tool-set.
+          </p>
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            <div className="rounded-3xl border border-black/5 p-8">
+              <h3 className="text-xl font-bold text-black">Actors &amp; Crew</h3>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-[#4F46E5]">
+                Actors portal open {isFeatureEnabled('CREW_PORTAL_ENABLED') ? '· Crew portal open' : '· Crew portal opening soon'}
+              </p>
+              <ul className="mt-5 space-y-3 text-sm leading-relaxed text-gray-700">
+                {forTalent.map((t) => (
+                  <li key={t} className="flex gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#4F46E5]" />{t}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-3xl border border-black/5 p-8">
+              <h3 className="text-xl font-bold text-black">Producers &amp; Casting Managers</h3>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-[#4F46E5]">Hire with confidence</p>
+              <ul className="mt-5 space-y-3 text-sm leading-relaxed text-gray-700">
+                {forProducers.map((t) => (
+                  <li key={t} className="flex gap-3"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#4F46E5]" />{t}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {shared.map((s) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.text} className="flex items-start gap-3 rounded-2xl bg-[#F5F3EF] p-4">
+                  <Icon className="mt-0.5 h-5 w-5 shrink-0 text-[#4F46E5]" />
+                  <p className="text-sm font-medium text-black">{s.text}</p>
                 </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Process */}
+      <section className="bg-[#1a1a23] px-4 py-16 md:py-20">
+        <div className="mx-auto max-w-5xl text-center">
+          <h2 className="font-serif text-3xl font-bold text-white">The process</h2>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map(([title, text], i) => (
+              <div key={title} className="rounded-2xl bg-white/5 p-6 text-left">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#a7f3d0] text-sm font-bold text-black">{i + 1}</span>
+                <h3 className="mt-4 text-base font-bold text-white">{title}</h3>
+                <p className="mt-1 text-sm text-white/65">{text}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* About / Editorial */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-5xl">
-          <div className="grid items-center gap-10 md:grid-cols-2">
-            <div className="overflow-hidden rounded-2xl">
-              <img
-                src="https://images.unsplash.com/photo-1504711438077-2dc8d2f1d3d8?w=600&h=750&fit=crop"
-                alt="Backstage newspaper"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="space-y-5">
-              <p className="text-base leading-relaxed text-gray-700">
-                Since 1960, Eric Rabar has been the most trusted name in casting. What began as a
-                small trade publication for the performing arts has grown into the world's leading
-                platform connecting talent with the creators who need them.
-              </p>
-              <p className="text-base leading-relaxed text-gray-700">
-                Today, we serve hundreds of thousands of performers, creators, and production
-                companies across film, television, theater, commercials, voiceover, and digital
-                media. Our mission remains the same: to break down barriers and make the
-                entertainment industry accessible to everyone, everywhere.
-              </p>
-            </div>
-          </div>
-          <p className="mx-auto mt-10 max-w-3xl text-center text-lg leading-relaxed text-gray-800">
-            Whether you want to land one of the thousands of roles posted each week or find the
-            perfect talent for your next project, Eric Rabar gives you the tools, the network, and
-            the insider knowledge to succeed.
+          <p className="mt-10 text-lg font-semibold text-white">
+            Join our growing community and let SmartGigs Kenya be your trusted partner in navigating
+            the exciting world of film.
           </p>
-        </div>
-      </section>
-
-      {/* CTA Banner */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-5xl">
-          <div className="rounded-2xl bg-[#4A47E5] px-6 py-14 text-center md:px-12">
-            <h2 className="font-serif text-2xl font-bold text-white md:text-3xl">
-              Want to see what Eric Rabar can do for you?
-            </h2>
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <button className="rounded-full bg-black px-8 py-3 text-sm font-semibold text-white transition-transform hover:scale-105">
-                Get Hired
-              </button>
-              <button className="rounded-full bg-black px-8 py-3 text-sm font-semibold text-white transition-transform hover:scale-105">
-                Launch Your Project
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trusted Brands */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-5xl text-center">
-          <h2 className="font-serif text-xl font-bold text-black md:text-2xl">
-            Trusted by some of the biggest names in the industry
-          </h2>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
-            {brands.map((b) => (
-              <span key={b} className="text-lg font-bold text-gray-400 md:text-xl">
-                {b}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonial */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-3xl text-center">
-          <img
-            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=120&h=120&fit=crop"
-            alt="Sandra Bullock"
-            className="mx-auto h-24 w-24 rounded-full object-cover"
-          />
-          <p className="mt-6 text-lg font-medium italic leading-relaxed text-gray-800 md:text-xl">
-            "Eric Rabar has been an essential part of my career from the very beginning. It's the
-            place where opportunities meet preparation, and where the next generation of talent
-            gets their start."
-          </p>
-          <p className="mt-4 text-base font-bold text-black">Sandra Bullock</p>
-        </div>
-      </section>
-
-      {/* Work with us */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-5xl">
-          <div className="rounded-2xl bg-[#A8E4C0] px-6 py-14 text-center md:px-12">
-            <h2 className="font-serif text-2xl font-bold text-black md:text-3xl">Work with us</h2>
-            <p className="mx-auto mt-4 max-w-xl text-base text-black/70">
-              Join our team and help launch the careers of the next generation of performing
-              artists.
-            </p>
-            <Link
-              to="/Careers"
-              className="mt-8 inline-block rounded-full bg-[#2A2A2A] px-8 py-3 text-sm font-semibold text-white transition-transform hover:scale-105"
-            >
-              View Current Opportunities
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link to="/SignUp" className="rounded-full bg-[#a7f3d0] px-8 py-3 text-sm font-bold text-black hover:bg-[#85F1B5]">
+              Join SmartGigs Kenya
+            </Link>
+            <Link to="/Contact" className="rounded-full border border-white/40 px-8 py-3 text-sm font-semibold text-white hover:bg-white/10">
+              Talk to us
             </Link>
           </div>
         </div>
@@ -158,6 +206,6 @@ export default function About() {
 
       <Footer />
       <ChatWidget />
-    </div>
+    </div >
   );
 }

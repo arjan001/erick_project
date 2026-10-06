@@ -8,9 +8,6 @@ export default function TermsConditions() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-8">
-          <Link to="/" className="inline-block mb-6">
-            <span className="text-3xl font-black tracking-tighter text-gray-900">22.</span>
-          </Link>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Terms & Conditions</h1>
           <p className="text-gray-600">Last updated: July 12, 2026</p>
         </div>
@@ -22,7 +19,7 @@ export default function TermsConditions() {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Agreement to Terms</h2>
             <p className="text-gray-700 leading-relaxed">
-              By accessing or using Eric Rabar, you agree to be bound by these Terms & Conditions. If you disagree with any part of these terms, you may not access our service.
+              By accessing or using SmartGigs Kenya, you agree to be bound by these Terms & Conditions. If you disagree with any part of these terms, you may not access our service.
             </p>
           </section>
 
@@ -49,7 +46,7 @@ export default function TermsConditions() {
               Acceptable Use
             </h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              You agree to use Eric Rabar for lawful purposes only. You must not:
+              You agree to use SmartGigs Kenya for lawful purposes only. You must not:
             </p>
             <ul className="space-y-3 text-gray-700">
               <li className="flex items-start gap-3">
@@ -81,7 +78,7 @@ export default function TermsConditions() {
               Intellectual Property
             </h2>
             <p className="text-gray-700 leading-relaxed">
-              The content, features, and functionality of Eric Rabar are owned by us and are protected by international copyright, trademark, and other intellectual property laws. You retain ownership of content you upload, but grant us a license to use, display, and distribute it as necessary to provide our services.
+              The content, features, and functionality of SmartGigs Kenya are owned by us and are protected by international copyright, trademark, and other intellectual property laws. You retain ownership of content you upload, but grant us a license to use, display, and distribute it as necessary to provide our services.
             </p>
           </section>
 
@@ -98,7 +95,7 @@ export default function TermsConditions() {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Governing Law</h2>
             <p className="text-gray-700 leading-relaxed">
-              These Terms & Conditions shall be governed by and construed in accordance with the laws of your jurisdiction, without regard to its conflict of law provisions.
+              These Terms & Conditions shall be governed by and construed in accordance with the laws of Kenya, without regard to its conflict of law provisions.
             </p>
           </section>
         </div>

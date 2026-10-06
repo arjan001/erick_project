@@ -8,9 +8,6 @@ export default function PrivacyPolicy() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-8">
-          <Link to="/" className="inline-block mb-6">
-            <span className="text-3xl font-black tracking-tighter text-gray-900">22.</span>
-          </Link>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Privacy Policy</h1>
           <p className="text-gray-600">Last updated: July 12, 2026</p>
         </div>
@@ -22,7 +19,7 @@ export default function PrivacyPolicy() {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Introduction</h2>
             <p className="text-gray-700 leading-relaxed">
-              Eric Rabar ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our creative network platform. Please read this policy carefully.
+              SmartGigs Kenya ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our creative network platform. Please read this policy carefully.
             </p>
           </section>
 
@@ -122,7 +119,7 @@ export default function PrivacyPolicy() {
             <p className="text-gray-700 leading-relaxed">
               If you have any questions about this Privacy Policy, please contact us at:
             </p>
-            <p className="text-gray-900 font-semibold mt-2">privacy@ericrabar.com</p>
+            <p className="text-gray-900 font-semibold mt-2">privacy@smartgigskenya.com</p>
           </section>
         </div>
       </div>

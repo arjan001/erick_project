@@ -1,26 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { isFeatureEnabled } from '@/lib/featureFlags';
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem('ericrabar_cookie_consent');
+    // Check if cookie banner is enabled via feature flag
+    if (!isFeatureEnabled('COOKIE_BANNER_ENABLED')) return;
+
+    const consent = localStorage.getItem('smartgigs_cookie_consent');
     if (!consent) setVisible(true);
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem('ericrabar_cookie_consent', 'accepted');
+    localStorage.setItem('smartgigs_cookie_consent', 'accepted');
     setVisible(false);
   };
 
   const handleReject = () => {
-    localStorage.setItem('ericrabar_cookie_consent', 'rejected');
+    localStorage.setItem('smartgigs_cookie_consent', 'rejected');
     setVisible(false);
   };
 
   const handleManage = () => {
-    localStorage.setItem('ericrabar_cookie_consent', 'managed');
+    localStorage.setItem('smartgigs_cookie_consent', 'managed');
     setVisible(false);
   };
 

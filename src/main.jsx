@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from '@/App.jsx'
 import '@/index.css'
+import '@/styles/theme.css'
 import { logWebVitals } from '@/lib/analytics'
 import '@/lib/sentry'
 import { startPerformanceMonitoring } from '@/lib/performanceMonitor'
@@ -29,7 +30,7 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.getRegistrations().then((registrations) => {
         registrations.forEach((reg) => reg.unregister())
-      }).catch(() => {})
+      }).catch(() => { })
     })
   }
 }

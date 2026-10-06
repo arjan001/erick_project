@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const popular = [
   'Netflix',
@@ -17,6 +18,29 @@ const popular = [
 
 export default function JobSearch() {
   const [query, setQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = () => {
+    if (query.trim()) {
+      navigate(`/Jobs?q=${encodeURIComponent(query.trim())}`);
+    } else {
+      navigate('/Jobs');
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handlePopularClick = (tag) => {
+    if (tag === 'Browse All Jobs') {
+      navigate('/Jobs');
+    } else {
+      navigate(`/Jobs?q=${encodeURIComponent(tag)}`);
+    }
+  };
 
   return (
     <section className="bg-[#F5F3EF] py-16 md:py-24">
@@ -48,11 +72,15 @@ export default function JobSearch() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Search for jobs (e.g. 'Paid acting jobs in LA')"
               className="w-full bg-transparent text-sm text-black placeholder:text-black/40 focus:outline-none"
             />
           </div>
-          <button className="flex items-center gap-2 rounded-full bg-[#5b56f7] px-7 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#4f46e5]">
+          <button
+            onClick={handleSearch}
+            className="flex items-center gap-2 rounded-full bg-[#5b56f7] px-7 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#4f46e5]"
+          >
             <Search className="h-4 w-4" />
             Search
           </button>
@@ -64,6 +92,7 @@ export default function JobSearch() {
             {popular.map((tag) => (
               <button
                 key={tag}
+                onClick={() => handlePopularClick(tag)}
                 className="rounded-full border border-black/15 bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:border-black/40 hover:bg-black/[0.02]"
               >
                 {tag}

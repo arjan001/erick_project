@@ -1,5 +1,5 @@
 /**
- * Entity access layer — Eric Rabar
+ * Entity access layer — SmartGigs Kenya
  *
  * Previously backed by Supabase; now delegates to the Base44 SDK
  * (base44.entities) so the whole app reads/writes the Base44 database.
@@ -98,3 +98,9 @@ export const PaymentSettings = buildEntity('payment_settings');
 export const MpesaTransaction = buildEntity('mpesa_transactions');
 export const MpesaC2bCallback = buildEntity('mpesa_c2b_callbacks');
 export const MolliePayment = buildEntity('mollie_payments');
+export const ShopProduct = buildEntity('ShopProduct');
+export const ShopOrder = buildEntity('ShopOrder');
+export const ShopOrderItem = buildEntity('ShopOrderItem');
+export const CardPayment = buildEntity('CardPayment');
+export const Wishlist = buildEntity('Wishlist');
+export const ShopSettings = buildEntity('ShopSettings');

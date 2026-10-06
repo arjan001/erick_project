@@ -222,6 +222,36 @@ const publicRoutes = [
     layout: null
   },
   {
+    path: '/Shop',
+    component: () => import('@/pages/Shop'),
+    layout: null
+  },
+  {
+    path: '/ShopProduct/:id',
+    component: () => import('@/pages/ShopProduct'),
+    layout: null
+  },
+  {
+    path: '/shop/:id',
+    component: () => import('@/pages/ShopProduct'),
+    layout: null
+  },
+  {
+    path: '/Cart',
+    component: () => import('@/pages/Cart'),
+    layout: null
+  },
+  {
+    path: '/Checkout',
+    component: () => import('@/pages/Checkout'),
+    layout: null
+  },
+  {
+    path: '/Wishlist',
+    component: () => import('@/pages/Wishlist'),
+    layout: null
+  },
+  {
     path: '/Careers',
     component: () => import('@/pages/Careers'),
     layout: null
@@ -249,6 +279,11 @@ const publicRoutes = [
   {
     path: '/talent',
     component: () => import('@/pages/TalentPage'),
+    layout: null
+  },
+  {
+    path: '/FAQ',
+    component: () => import('@/pages/FAQ'),
     layout: null
   }
 ];
@@ -420,6 +455,18 @@ const adminRoutes = [
     component: () => import('@/modules/admin/pages/AdminShopSettingsPage'),
     layout: AdminLayout,
     guard: ShopSettingsGuard
+  },
+  {
+    path: '/Admin/CardPayments',
+    component: () => import('@/modules/admin/pages/AdminCardPaymentsPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
+  },
+  {
+    path: '/Admin/Partners',
+    component: () => import('@/modules/admin/pages/AdminPartnersPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
   },
   {
     path: '/Admin/AuditLogs',
@@ -612,6 +659,24 @@ const clientRoutes = [
   {
     path: '/ClientProfile',
     component: () => import('@/modules/client/pages/ClientProfilePage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
+  },
+  {
+    path: '/BrowseTalent',
+    component: () => import('@/pages/TalentPage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
+  },
+  {
+    path: '/SavedTalent',
+    component: () => import('@/modules/network/pages/SavedTalentPage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
+  },
+  {
+    path: '/ClientProjects',
+    component: () => import('@/modules/client/pages/ClientProjectsPage'),
     layout: DashboardLayout,
     guard: ClientGuard
   }

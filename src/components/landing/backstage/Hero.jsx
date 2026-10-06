@@ -37,10 +37,10 @@ export default function Hero() {
   return (
     <section className="relative overflow-hidden bg-[#F5F3EF] pt-8 pb-14 md:pt-10 md:pb-16">
       <div className="mx-auto max-w-[1400px] px-4 lg:px-8">
-        {/* Toggle */}
-        <div className="flex justify-center">
+        {/* Toggle - Hidden on landing page, shown only on auth pages */}
+        {/* <div className="flex justify-center">
           <RoleToggle active={role} onChange={(r) => { setRole(r); if (r === 'hiring') navigate('/HiringTalent'); }} />
-        </div>
+        </div> */}
 
         <div className="mt-8 grid items-center gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
           {/* Left: copy + stats */}
@@ -109,21 +109,20 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Right: hero image with parallax */}
+          {/* Right: hero image with parallax using bg-fixed */}
           <motion.div style={{ y }} className="relative">
             <motion.div
               style={{ scale }}
               className="relative aspect-[4/5] overflow-hidden rounded-3xl shadow-2xl"
             >
-              <img
-                src="https://images.unsplash.com/photo-1517457373958-b7bdd0783f68?w=800&h=1000&fit=crop"
-                alt="Production set"
-                className="h-full w-full object-cover"
+              <div
+                className="absolute inset-0 bg-cover bg-center bg-fixed"
+                style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1517457373958-b7bdd0783f68?w=800&h=1000&fit=crop)' }}
               />
               {/* Subtle overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
               {/* Decorative gradient blobs */}
-              <div className="absolute -bottom-16 -right-16 h-48 w-48 rounded-full bg-[#4F46E5]/20 blur-3xl" />
+              <div className="absolute -bottom-16 -right-16 h-48 w-48 rounded-full bg-[#8B5CF6]/20 blur-3xl" />
               <div className="absolute -top-12 -left-12 h-40 w-40 rounded-full bg-[#B2F5EA]/20 blur-3xl" />
             </motion.div>
           </motion.div>

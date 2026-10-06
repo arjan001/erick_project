@@ -9,6 +9,7 @@ import { ToastProvider } from '@/hooks/useToast';
 import { MaintenanceGuard } from '@/app/router/guards/MaintenanceGuard';
 import { HelmetProvider } from 'react-helmet-async';
 import CookieBanner from '@/components/CookieBanner';
+import { ShopProvider } from '@/contexts/ShopContext';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth } = useAuth();
@@ -36,17 +37,19 @@ function App() {
 
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <ToastProvider>
-          <HelmetProvider>
-            <Router>
-              <NavigationTracker />
-              <AuthenticatedApp />
-            </Router>
-            <Toaster />
-          </HelmetProvider>
-        </ToastProvider>
-      </QueryClientProvider>
+      <ShopProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <ToastProvider>
+            <HelmetProvider>
+              <Router>
+                <NavigationTracker />
+                <AuthenticatedApp />
+              </Router>
+              <Toaster />
+            </HelmetProvider>
+          </ToastProvider>
+        </QueryClientProvider>
+      </ShopProvider>
     </AuthProvider>
   )
 }

@@ -1,10 +1,7 @@
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import ArtistSidebar from '@/components/ArtistSidebar';
-import BackerSidebar from '@/components/BackerSidebar';
-import ClientSidebar from '@/components/ClientSidebar';
-import TeamSidebar from '@/components/TeamSidebar';
-import DashboardTopbar from '@/components/DashboardTopbar';
+import UnifiedSidebar from '@/components/UnifiedSidebar';
+import UnifiedTopbar from '@/components/UnifiedTopbar';
 
 const SidebarContext = createContext();
 
@@ -15,39 +12,53 @@ const SIDEBAR_EXPANDED_WIDTH = 256;  // px  (w-64)
 
 export default function DashboardLayout({ children }) {
   const { user } = useAuth();
-  // Persisted so the sidebar doesn't flicker open/closed when navigating between pages
-  // (this layout remounts on every route change).
-  const [sidebarExpanded, setSidebarExpandedState] = useState(() => localStorage.getItem('ericrabar_sidebar_expanded') === 'true');
+  const [sidebarExpanded, setSidebarExpandedState] = useState(() => localStorage.getItem('smartgigs_sidebar_expanded') === 'true');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const setSidebarExpanded = (value) => {
     setSidebarExpandedState(value);
-    localStorage.setItem('ericrabar_sidebar_expanded', String(value));
+    localStorage.setItem('smartgigs_sidebar_expanded', String(value));
   };
 
-  const isArtist = user?.role === 'artist' || user?.role === 'artist_admin';
+  const isCreator = user?.role === 'artist' || user?.role === 'artist_admin';
   const isTeam = user?.role === 'team' || user?.role === 'team_admin';
   const isClient = user?.role === 'client' || user?.role === 'project_owner';
   const isBacker = user?.role === 'backer';
-  const hasSidebar = isArtist || isTeam || isClient || isBacker;
+  const hasSidebar = isCreator || isTeam || isClient || isBacker;
 
-  const settingsPage = isTeam ? 'TeamProfile' : isClient ? 'ClientProfile' : isBacker ? 'BackerProfile' : 'ArtistProfile';
+  const userRole = isTeam ? 'team' : isClient ? 'client' : isBacker ? 'backer' : 'creator';
+  const settingsPage = isTeam ? 'TeamProfile' : isClient ? 'ClientProfile' : isBacker ? 'BackerProfile' : 'CreatorProfile';
+
+  // Handle sidebar toggle from UnifiedTopbar
+  useEffect(() => {
+    const handleToggle = () => setMobileSidebarOpen(!mobileSidebarOpen);
+    window.addEventListener('toggle-sidebar', handleToggle);
+    return () => window.removeEventListener('toggle-sidebar', handleToggle);
+  }, [mobileSidebarOpen]);
+
+  // Handle sidebar collapse from UnifiedSidebar
+  useEffect(() => {
+    const handleCollapse = (e) => setCollapsed(e.detail.collapsed);
+    window.addEventListener('sidebar-collapse', handleCollapse);
+    return () => window.removeEventListener('sidebar-collapse', handleCollapse);
+  }, []);
 
   return (
     <SidebarContext.Provider value={{ sidebarExpanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen }}>
-      <div className="h-screen bg-[#0A0A0A] flex overflow-hidden">
+      <div className="min-h-screen bg-[#f5f6fa]">
         {/* Mobile overlay */}
         {mobileSidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          <div
+            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
             onClick={() => setMobileSidebarOpen(false)}
           />
         )}
-        {isArtist && <ArtistSidebar />}
-        {isTeam && <TeamSidebar />}
-        {isClient && <ClientSidebar />}
-        {isBacker && <BackerSidebar />}
-        <main className="flex-1 min-w-0 flex flex-col bg-[#0F0F0F] overflow-hidden lg:ml-4">
-          {hasSidebar && <DashboardTopbar settingsPage={settingsPage} />}
+
+        {hasSidebar && <UnifiedSidebar role={userRole} mobileSidebarOpen={mobileSidebarOpen} setMobileSidebarOpen={setMobileSidebarOpen} />}
+
+        <main className={`flex flex-col min-h-screen transition-all duration-300 ${collapsed ? 'lg:ml-16' : 'lg:ml-64'
+          }`}>
+          {hasSidebar && <UnifiedTopbar settingsPage={settingsPage} />}
           <div className="flex-1 min-w-0 overflow-y-auto">{children}</div>
         </main>
       </div>

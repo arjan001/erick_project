@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
 import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
@@ -16,7 +16,7 @@ const GoogleIcon = () => (
 
 const AppleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5" fill="white">
-    <path d="M17.05 12.04c.03 3.12 2.74 4.16 2.77 4.18-.02.08-.43 1.49-1.43 2.94-.86 1.25-1.76 2.49-3.18 2.52-1.39.03-1.84-.82-3.43-.82-1.59 0-2.09.79-3.41.85-1.37.05-2.41-1.36-3.28-2.61-1.79-2.58-3.16-7.29-1.32-10.47.91-1.58 2.55-2.58 4.31-2.61 1.34-.03 2.6.9 3.42.9.82 0 2.36-1.12 3.98-.95.67.03 2.58.27 3.8 2.06-.1.06-2.27 1.33-2.24 3.96zM14.4 5.45c.73-.88 1.22-2.11 1.09-3.33-1.05.04-2.32.7-3.07 1.58-.67.78-1.26 2.03-1.1 3.23 1.17.09 2.36-.6 3.08-1.48z" />
+    <path d="M17.05 12.04c.03 3.12 2.74 4.16 2.77 4.18-.02.08-.43 1.49-1.43 2.94-.86 1.25-1.76 2.49-3.18 2.52-1.39.03-1.84-.82-3.43-.82-1.59 0-2.09.79-3.41.85-1.37.05-2.32 1.36-3.07 1.58-3.08-1.48-.09-2.36-1.36-3.28-2.61-1.79-2.58-3.16-7.29-1.32-10.47.91-1.58-2.58-2.11-3.33-1.03-.67-.78-1.26-2.03-1.1-3.33 1.17-.09 2.36-.6 3.08-1.48zM14.4 5.45c.73-.88 1.22-2.11 1.09-3.33c.67.78 1.26 2.03 1.1 3.23-1.48z" />
   </svg>
 );
 
@@ -34,13 +34,15 @@ const DEMO_ACCOUNTS = {
   'team@team.com': { role: 'team', name: 'Studio Team' },
   'client@client.com': { role: 'client', name: 'Client User' },
   'backer@backer.com': { role: 'backer', name: 'Investment Group' },
-  'admin@ericrabar.com': { role: 'admin', name: 'Admin User' },
+  'admin@smartgigskenya.com': { role: 'admin', name: 'Admin User' },
 };
 
 const DEMO_BUTTONS = [
-  { email: 'admin@ericrabar.com', label: 'Admin', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AD&backgroundColor=4f46e5' },
+  { email: 'admin@smartgigskenya.com', label: 'Admin', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AD&backgroundColor=4f46e5' },
   { email: 'client@client.com', label: 'Client', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CL&backgroundColor=0a0b2e' },
-  { email: 'artist@artist.com', label: 'Artist', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AR&backgroundColor=00a37e' },
+  { email: 'artist@artist.com', label: 'Creator', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CR&backgroundColor=00a37e' },
+  { email: 'team@team.com', label: 'Team', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=TM&backgroundColor=6366f1' },
+  { email: 'backer@backer.com', label: 'Backer', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=BK&backgroundColor=f59e0b' },
 ];
 
 const talentBenefits = [
@@ -55,6 +57,7 @@ export default function SignIn() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useAuth();
+  const location = useLocation();
 
   const [userType, setUserType] = useState(searchParams.get('mode') === 'employer' ? 'employer' : 'talent');
   const [email, setEmail] = useState('');
@@ -67,9 +70,17 @@ export default function SignIn() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [modeOverride, setModeOverride] = useState(null);
+  const [returnTo, setReturnTo] = useState(location.state?.returnTo || null);
 
   useEffect(() => {
     if (searchParams.get('mode') === 'employer') setUserType('employer');
+    // Handle role parameter for auto tab selection
+    const roleParam = searchParams.get('role');
+    if (roleParam === 'client') {
+      setUserType('employer');
+    } else if (roleParam === 'creator' || roleParam === 'artist') {
+      setUserType('talent');
+    }
   }, [searchParams]);
 
   // Password recovery listener — detect a reset token in the URL (Base44
@@ -96,6 +107,25 @@ export default function SignIn() {
     base44.auth.loginWithProvider('apple', '/');
   };
 
+  const quickDemoLogin = async (demoEmail) => {
+    const acc = DEMO_ACCOUNTS[demoEmail];
+    if (!acc) return;
+    setError('');
+    setLoading(true);
+    try {
+      login({ id: demoEmail, email: demoEmail, full_name: acc.name, role: acc.role });
+      if (acc.role === 'team') {
+        localStorage.setItem('smartgigs_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: demoEmail, role: 'team_admin' }));
+      }
+      const redirectDest = sessionStorage.getItem('redirectAfterLogin');
+      sessionStorage.removeItem('redirectAfterLogin');
+      window.location.href = returnTo || redirectDest || ROLE_REDIRECTS[acc.role] || '/';
+    } catch (err) {
+      setError(err.message || 'Login failed');
+      setLoading(false);
+    }
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -106,7 +136,7 @@ export default function SignIn() {
         const acc = DEMO_ACCOUNTS[email];
         login({ id: email, email, full_name: acc.name, role: acc.role });
         if (acc.role === 'team') {
-          localStorage.setItem('ericrabar_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: email, role: 'team_admin' }));
+          localStorage.setItem('smartgigs_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: email, role: 'team_admin' }));
         }
         const redirectDest = sessionStorage.getItem('redirectAfterLogin');
         sessionStorage.removeItem('redirectAfterLogin');
@@ -154,7 +184,7 @@ export default function SignIn() {
       login({ id: user.id, email: user.email, full_name: fullName, role: userRole });
       const redirectDest = sessionStorage.getItem('redirectAfterLogin');
       sessionStorage.removeItem('redirectAfterLogin');
-      window.location.href = redirectDest || ROLE_REDIRECTS[userRole] || '/';
+      window.location.href = returnTo || redirectDest || ROLE_REDIRECTS[userRole] || '/';
     } catch (err) {
       setError(err.message || 'Invalid email or password');
     } finally {
@@ -219,12 +249,7 @@ export default function SignIn() {
         {DEMO_BUTTONS.map((d) => (
           <button
             key={d.email}
-            onClick={() => {
-              setEmail(d.email);
-              setPassword(d.email);
-              setUserType(d.email.includes('client') ? 'employer' : 'talent');
-              setTimeout(() => handleLogin({ preventDefault: () => {} }), 100);
-            }}
+            onClick={() => quickDemoLogin(d.email)}
             className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
           >
             <img src={d.avatar} alt="" className="h-5 w-5 rounded-full object-cover" />
@@ -307,28 +332,26 @@ export default function SignIn() {
         <div className="w-full max-w-sm">
           {/* Logo */}
           <Link to="/" className="mb-8 inline-block">
-            <span className="text-xl font-extrabold uppercase tracking-tight text-black">Eric Rabar</span>
+            <span className="text-xl font-extrabold uppercase tracking-tight text-black">SmartGigs Kenya</span>
           </Link>
 
-          {/* Mode toggle (I'm Talent / I'm Hiring) */}
-          <div className="mb-8 inline-flex items-center rounded-full bg-black/[0.06] p-1">
+          {/* Mode toggle (I'm Talent / I'm Hiring) - Hidden for now, logic preserved */}
+          {/* <div className="mb-8 inline-flex items-center rounded-full bg-black/[0.06] p-1">
             <button
               onClick={() => setUserType('talent')}
-              className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
-                !isEmployer ? 'bg-black text-white' : 'text-black/70 hover:text-black'
-              }`}
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${!isEmployer ? 'bg-black text-white' : 'text-black/70 hover:text-black'
+                }`}
             >
               I'm Talent
             </button>
             <button
               onClick={() => setUserType('employer')}
-              className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
-                isEmployer ? 'bg-black text-white' : 'text-black/70 hover:text-black'
-              }`}
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${isEmployer ? 'bg-black text-white' : 'text-black/70 hover:text-black'
+                }`}
             >
               I'm Hiring
             </button>
-          </div>
+          </div> */}
 
           {/* Messages */}
           {error && (
@@ -488,7 +511,7 @@ export default function SignIn() {
               {/* Terms for employer */}
               {isEmployer && (
                 <p className="mt-4 text-center text-xs text-black/40">
-                  By continuing, you agree that you have read and agree to the Eric Rabar{' '}
+                  By continuing, you agree that you have read and agree to the SmartGigs Kenya{' '}
                   <a href="#" className="text-[#4B4ACF] hover:underline">Terms of Service</a> and{' '}
                   <a href="#" className="text-[#4B4ACF] hover:underline">Privacy Policy</a>, and that you are currently at least 18 years old.
                 </p>
@@ -525,7 +548,7 @@ export default function SignIn() {
         className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[#4F46E5] text-white shadow-lg shadow-[#4F46E5]/30 hover:scale-105"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.8L3 20l1.3-3.9A7.96 7.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.8L3 20l1.3-3.9A7.96 7.96 0 0 03 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
       </button>
     </div>

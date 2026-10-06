@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Job, Application, Artist, ConnectsTransaction, Project, JobInvitation, Notification } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,8 @@ export default function Jobs() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('board');
+  const [jobsViewTab, setJobsViewTab] = useState('production'); // 'production' or 'roles'
+  const [expandedJobId, setExpandedJobId] = useState(null);
   const [applications, setApplications] = useState([]);
   const [artistId, setArtistId] = useState(null);
   const [invitations, setInvitations] = useState([]);
@@ -48,7 +50,7 @@ export default function Jobs() {
 
   useEffect(() => {
     if (!user) return;
-    
+
     const fetchData = async () => {
       try {
         // Fetch both Jobs and Projects for comprehensive job listings
@@ -116,7 +118,7 @@ export default function Jobs() {
         // Get artist ID first
         const artists = await Artist.filter({ email: user.email });
         const artist = artists?.[0];
-        
+
         if (artist) {
           setArtistId(artist.id);
           const userApplications = await Application.filter({ artist_id: artist.id });
@@ -172,18 +174,31 @@ export default function Jobs() {
     fetchData();
   }, [user]);
 
-  const handleApply = async () => {
-    if (!selectedJob || !user) return;
+  const handleApply = useCallback(async () => {
+    if (!selectedJob) return;
+
+    // Check if user is authenticated
+    if (!user) {
+      // Store the current path and job details for redirect after login
+      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+      sessionStorage.setItem('applyAfterLogin', JSON.stringify({
+        jobId: selectedJob.id,
+        jobTitle: selectedJob.title,
+        selectedRole: selectedJob.selectedRole
+      }));
+      navigate('/SignIn');
+      return;
+    }
 
     try {
       const artists = await Artist.filter({ email: user.email });
       const artist = artists?.[0];
-      
+
       if (!artist) {
         toastError('Profile Required', 'Please complete your artist profile before applying for jobs.');
         return;
       }
-      
+
       const balance = artist?.connects_balance ?? 0;
 
       if (balance <= 0) {
@@ -285,14 +300,62 @@ export default function Jobs() {
         })
       );
       setApplications(enrichedApplications);
-      
+
       // Close modal
       setSelectedJob(null);
     } catch (err) {
       console.error('Error applying:', err);
       toastError('Application Failed', 'Failed to submit application');
     }
-  };
+  }, [selectedJob, user, navigate, toastError, artistId]);
+
+  // Handle auto-apply after login
+  useEffect(() => {
+    if (!user) return;
+
+    const applyAfterLogin = sessionStorage.getItem('applyAfterLogin');
+    if (applyAfterLogin) {
+      const applyData = JSON.parse(applyAfterLogin);
+      sessionStorage.removeItem('applyAfterLogin');
+
+      // Find the job and select it
+      const fetchData = async () => {
+        try {
+          const allJobs = await Job.list();
+          const allProjects = await Project.filter({ status: 'verified' });
+
+          const openJobs = allJobs.filter(j => j.status === 'open');
+          const projectJobs = allProjects.map(project => ({
+            id: project.id,
+            title: project.title || project.project_type?.replace(/_/g, ' ') || 'Project',
+            description: project.notes || project.description || 'No description available',
+            short_description: project.notes?.substring(0, 150) + '...' || 'Project opportunity',
+            location: [project.location_city, project.location_country].filter(Boolean).join(', ') || 'Remote',
+            client_name: project.project_owner_name || 'Client',
+            roles_needed: project.departments_needed || [],
+            budget_min: project.budget_min || 0,
+            budget_max: project.budget_max || 0,
+            budget_type: project.budget_range?.includes('hourly') ? 'Hourly' : project.budget_range?.includes('daily') ? 'Daily' : 'Fixed',
+            isProject: true,
+            image_url: project.image_url
+          }));
+
+          const allListings = [...openJobs, ...projectJobs];
+          const jobToApply = allListings.find(j => j.id === applyData.jobId);
+
+          if (jobToApply) {
+            setSelectedJob({ ...jobToApply, selectedRole: applyData.selectedRole });
+            // Show a toast message that user can click to apply
+            success('Login Successful', 'You can now apply for the job by clicking the Apply button.');
+          }
+        } catch (err) {
+          console.error('Error finding job for auto-apply:', err);
+        }
+      };
+
+      fetchData();
+    }
+  }, [user, success]);
 
   // Check if user has already applied to selected job/project
   const hasAlreadyApplied = () => {
@@ -552,39 +615,36 @@ export default function Jobs() {
             .filter(([_, count]) => count > 0)
             .sort(([_, a], [__, b]) => b - a)
             .map(([role, count]) => (
-            <button
-              key={role}
-              onClick={() => toggleFilter('roles', role)}
-              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${
-                filters.roles.includes(role) ? 'bg-gray-100' : ''
-              }`}
-            >
-              <span className="truncate">{role}</span>
-              <span className="text-gray-500">({count})</span>
-            </button>
-          ))}
+              <button
+                key={role}
+                onClick={() => toggleFilter('roles', role)}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${filters.roles.includes(role) ? 'bg-gray-100' : ''
+                  }`}
+              >
+                <span className="truncate">{role}</span>
+                <span className="text-gray-500">({count})</span>
+              </button>
+            ))}
           {type === 'skills' && Object.entries(filterCounts.skills)
             .filter(([_, count]) => count > 0)
             .sort(([_, a], [__, b]) => b - a)
             .map(([skill, count]) => (
-            <button
-              key={skill}
-              onClick={() => toggleFilter('skills', skill)}
-              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${
-                filters.skills.includes(skill) ? 'bg-gray-100' : ''
-              }`}
-            >
-              <span className="truncate">{skill}</span>
-              <span className="text-gray-500">({count})</span>
-            </button>
-          ))}
+              <button
+                key={skill}
+                onClick={() => toggleFilter('skills', skill)}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${filters.skills.includes(skill) ? 'bg-gray-100' : ''
+                  }`}
+              >
+                <span className="truncate">{skill}</span>
+                <span className="text-gray-500">({count})</span>
+              </button>
+            ))}
           {type === 'location' && Object.entries(filterCounts.locations).map(([loc, count]) => (
             <button
               key={loc}
               onClick={() => toggleFilter('location', loc)}
-              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${
-                filters.location.includes(loc) ? 'bg-gray-100' : ''
-              }`}
+              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${filters.location.includes(loc) ? 'bg-gray-100' : ''
+                }`}
             >
               <span>{loc}</span>
               <span className="text-gray-500">({count})</span>
@@ -594,9 +654,8 @@ export default function Jobs() {
             <button
               key={type}
               onClick={() => toggleFilter('project_types', type)}
-              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${
-                filters.project_types.includes(type) ? 'bg-gray-100' : ''
-              }`}
+              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${filters.project_types.includes(type) ? 'bg-gray-100' : ''
+                }`}
             >
               <span>{type}</span>
               <span className="text-gray-500">({count})</span>
@@ -606,33 +665,29 @@ export default function Jobs() {
             <>
               <button
                 onClick={() => toggleFilter('paid', 'below100')}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
-                  filters.paid === 'below100' ? 'bg-gray-100' : ''
-                }`}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${filters.paid === 'below100' ? 'bg-gray-100' : ''
+                  }`}
               >
                 Below €100
               </button>
               <button
                 onClick={() => toggleFilter('paid', '100-500')}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
-                  filters.paid === '100-500' ? 'bg-gray-100' : ''
-                }`}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${filters.paid === '100-500' ? 'bg-gray-100' : ''
+                  }`}
               >
                 €100 - €500
               </button>
               <button
                 onClick={() => toggleFilter('paid', '500-1000')}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
-                  filters.paid === '500-1000' ? 'bg-gray-100' : ''
-                }`}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${filters.paid === '500-1000' ? 'bg-gray-100' : ''
+                  }`}
               >
                 €500 - €1,000
               </button>
               <button
                 onClick={() => toggleFilter('paid', 'above1000')}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
-                  filters.paid === 'above1000' ? 'bg-gray-100' : ''
-                }`}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${filters.paid === 'above1000' ? 'bg-gray-100' : ''
+                  }`}
               >
                 Above €1,000
               </button>
@@ -652,35 +707,55 @@ export default function Jobs() {
             <div className="flex gap-8 border-b border-gray-200">
               <button
                 onClick={() => setActiveTab('board')}
-                className={`pb-4 font-semibold text-base transition-colors ${
-                  activeTab === 'board'
-                    ? 'text-black border-b-2 border-black -mb-0.5'
-                    : 'text-gray-600 hover:text-black'
-                }`}
+                className={`pb-4 font-semibold text-base transition-colors ${activeTab === 'board'
+                  ? 'text-black border-b-2 border-black -mb-0.5'
+                  : 'text-gray-600 hover:text-black'
+                  }`}
               >
                 Job Board
               </button>
               <button
                 onClick={() => setActiveTab('applications')}
-                className={`pb-4 font-semibold text-base transition-colors ${
-                  activeTab === 'applications'
-                    ? 'text-black border-b-2 border-black -mb-0.5'
-                    : 'text-gray-600 hover:text-black'
-                }`}
+                className={`pb-4 font-semibold text-base transition-colors ${activeTab === 'applications'
+                  ? 'text-black border-b-2 border-black -mb-0.5'
+                  : 'text-gray-600 hover:text-black'
+                  }`}
               >
                 Applications {applications.length > 0 && `(${applications.length})`}
               </button>
               <button
                 onClick={() => setActiveTab('invitations')}
-                className={`pb-4 font-semibold text-base transition-colors ${
-                  activeTab === 'invitations'
-                    ? 'text-black border-b-2 border-black -mb-0.5'
-                    : 'text-gray-600 hover:text-black'
-                }`}
+                className={`pb-4 font-semibold text-base transition-colors ${activeTab === 'invitations'
+                  ? 'text-black border-b-2 border-black -mb-0.5'
+                  : 'text-gray-600 hover:text-black'
+                  }`}
               >
                 Invitations {invitations.length > 0 && `(${invitations.length})`}
               </button>
             </div>
+            {/* Production/Roles toggle */}
+            {activeTab === 'board' && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setJobsViewTab('production')}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${jobsViewTab === 'production'
+                    ? 'bg-[#8B5CF6] text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  Production
+                </button>
+                <button
+                  onClick={() => setJobsViewTab('roles')}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${jobsViewTab === 'roles'
+                    ? 'bg-[#8B5CF6] text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  Roles
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Filters */}
@@ -705,17 +780,72 @@ export default function Jobs() {
                   <div className="flex items-center justify-center h-full text-gray-500">
                     No jobs match your filters
                   </div>
+                ) : jobsViewTab === 'roles' ? (
+                  // Roles view - show individual roles
+                  <div className="space-y-3">
+                    {filteredJobs.flatMap((job) =>
+                      (job.roles_needed || []).map((role, roleIdx) => (
+                        <button
+                          key={`${job.id}-${roleIdx}`}
+                          onClick={() => handleJobClick({ ...job, selectedRole: role })}
+                          className={`w-full text-left bg-white rounded-xl border transition-all overflow-hidden shadow-sm hover:shadow-md ${selectedJob?.id === job.id && selectedJob?.selectedRole === role
+                            ? 'border-black shadow-md ring-1 ring-black/5'
+                            : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                        >
+                          <div className="flex gap-3 p-4">
+                            <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                              {job.image_url ? (
+                                <>
+                                  <img src={job.image_url} alt={job.title} className="w-full h-full object-cover" />
+                                  <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
+                                </>
+                              ) : (
+                                <Briefcase className="w-6 h-6 text-gray-400" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs text-gray-500">{getTimeAgo(job.posted_at)}</span>
+                                {job.isProject && (
+                                  <span className="bg-black text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                                    Project
+                                  </span>
+                                )}
+                              </div>
+                              <h3 className="font-semibold text-gray-900 mb-1 text-sm">{role}</h3>
+                              <p className="text-xs text-gray-600 mb-2 line-clamp-1">{job.title}</p>
+                              <div className="flex items-center gap-3 text-xs text-gray-500">
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" />
+                                  <span>{job.location || 'Remote'}</span>
+                                </div>
+                                <div className="flex items-center gap-1 font-medium text-gray-900">
+                                  <Euro className="w-3 h-3" />
+                                  <span>
+                                    {job.budget_type === 'Hourly' ? `€${job.budget_min}/hr` :
+                                      job.budget_type === 'Daily' ? `€${job.budget_min}/day` :
+                                        `€${job.budget_min}${job.budget_max && job.budget_max > job.budget_min ? ` - €${job.budget_max}` : ''}`}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
                 ) : (
+                  // Production view - show productions with expandable roles
                   <div className="space-y-3">
                     {filteredJobs.map((job) => (
                       <button
                         key={job.id}
                         onClick={() => handleJobClick(job)}
-                        className={`w-full text-left bg-white rounded-xl border transition-all overflow-hidden shadow-sm hover:shadow-md ${
-                          selectedJob?.id === job.id
-                            ? 'border-black shadow-md ring-1 ring-black/5'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
+                        className={`w-full text-left bg-white rounded-xl border transition-all overflow-hidden shadow-sm hover:shadow-md ${selectedJob?.id === job.id
+                          ? 'border-black shadow-md ring-1 ring-black/5'
+                          : 'border-gray-200 hover:border-gray-300'
+                          }`}
                       >
                         <div className="flex gap-3 p-4">
                           {/* Left - Job Image (square) */}
@@ -783,8 +913,8 @@ export default function Jobs() {
                                 <Euro className="w-3 h-3" />
                                 <span>
                                   {job.budget_type === 'Hourly' ? `€${job.budget_min}/hr` :
-                                   job.budget_type === 'Daily' ? `€${job.budget_min}/day` :
-                                   `€${job.budget_min}${job.budget_max && job.budget_max > job.budget_min ? ` - €${job.budget_max}` : ''}`}
+                                    job.budget_type === 'Daily' ? `€${job.budget_min}/day` :
+                                      `€${job.budget_min}${job.budget_max && job.budget_max > job.budget_min ? ` - €${job.budget_max}` : ''}`}
                                 </span>
                               </div>
                             </div>
@@ -802,6 +932,50 @@ export default function Jobs() {
                                     +{job.roles_needed.length - 3}
                                   </span>
                                 )}
+                                {job.roles_needed.length > 1 && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // Toggle expanded state for this job
+                                      setExpandedJobId(prev => prev === job.id ? null : job.id);
+                                    }}
+                                    className="px-2 py-0.5 bg-[#8B5CF6]/10 text-[#8B5CF6] text-[10px] rounded-full flex items-center gap-1"
+                                  >
+                                    {expandedJobId === job.id ? (
+                                      <>
+                                        <ChevronUp className="w-3 h-3" />
+                                        Show Less
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ChevronDown className="w-3 h-3" />
+                                        Show All
+                                      </>
+                                    )}
+                                  </button>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Expandable Roles */}
+                            {expandedJobId === job.id && job.roles_needed && job.roles_needed.length > 0 && (
+                              <div className="mt-3 pt-3 border-t border-gray-100">
+                                <div className="text-xs font-semibold text-gray-700 mb-2">All Roles ({job.roles_needed.length})</div>
+                                <div className="space-y-2">
+                                  {job.roles_needed.map((role, idx) => (
+                                    <div
+                                      key={idx}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleJobClick({ ...job, selectedRole: role });
+                                      }}
+                                      className="flex items-center justify-between p-2 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer"
+                                    >
+                                      <span className="text-xs font-medium text-gray-900">{role}</span>
+                                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             )}
                           </div>
@@ -915,11 +1089,10 @@ export default function Jobs() {
 
                     {/* Apply Button */}
                     <Button
-                      className={`w-full py-3 text-lg font-bold ${
-                        hasAlreadyApplied()
-                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                          : 'bg-black text-white hover:bg-gray-800'
-                      }`}
+                      className={`w-full py-3 text-lg font-bold ${hasAlreadyApplied()
+                        ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                        : 'bg-black text-white hover:bg-gray-800'
+                        }`}
                       onClick={handleApply}
                       disabled={hasAlreadyApplied()}
                     >
@@ -950,11 +1123,10 @@ export default function Jobs() {
                 <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
                   <button
                     onClick={() => setApplicationStatusFilter('all')}
-                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                      applicationStatusFilter === 'all'
-                        ? 'bg-black text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${applicationStatusFilter === 'all'
+                      ? 'bg-black text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
                   >
                     All ({applications.length})
                   </button>
@@ -967,11 +1139,10 @@ export default function Jobs() {
                       <button
                         key={status}
                         onClick={() => setApplicationStatusFilter(status)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
-                          applicationStatusFilter === status
-                            ? config.color
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${applicationStatusFilter === status
+                          ? config.color
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
                       >
                         <Icon className="w-3.5 h-3.5" />
                         {config.label} ({count})
@@ -1002,7 +1173,7 @@ export default function Jobs() {
                           const statusConfig = getStatusConfig(app.status);
                           const StatusIcon = statusConfig.icon;
                           const expired = isJobExpired(job);
-                          
+
                           return (
                             <tr key={app.id} className="hover:bg-gray-50">
                               <td className="px-4 py-3">
@@ -1035,9 +1206,9 @@ export default function Jobs() {
                                 )}
                               </td>
                               <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                                {job?.budget_type === 'Hourly' ? `€${job?.budget_min}/hr` : 
-                                 job?.budget_type === 'Daily' ? `€${job?.budget_min}/day` : 
-                                 `€${job?.budget_min}${job?.budget_max && job?.budget_max > job?.budget_min ? ` - €${job?.budget_max}` : ''}`}
+                                {job?.budget_type === 'Hourly' ? `€${job?.budget_min}/hr` :
+                                  job?.budget_type === 'Daily' ? `€${job?.budget_min}/day` :
+                                    `€${job?.budget_min}${job?.budget_max && job?.budget_max > job?.budget_min ? ` - €${job?.budget_max}` : ''}`}
                               </td>
                               <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-1">
                                 <MapPin className="w-3 h-3" />
@@ -1118,12 +1289,11 @@ export default function Jobs() {
                         Invited {new Date(selectedInvitation.sent_at).toLocaleDateString()}
                       </div>
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      selectedInvitation.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                    <div className={`px-3 py-1 rounded-full text-xs font-semibold ${selectedInvitation.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                       selectedInvitation.status === 'accepted' ? 'bg-green-100 text-green-700' :
-                      selectedInvitation.status === 'declined' ? 'bg-red-100 text-red-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
+                        selectedInvitation.status === 'declined' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                      }`}>
                       {selectedInvitation.status.charAt(0).toUpperCase() + selectedInvitation.status.slice(1)}
                     </div>
                   </div>
@@ -1228,12 +1398,11 @@ export default function Jobs() {
                             <h3 className="font-semibold text-gray-900">
                               {invitation.job?.title || 'Job Opportunity'}
                             </h3>
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                              invitation.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${invitation.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                               invitation.status === 'accepted' ? 'bg-green-100 text-green-700' :
-                              invitation.status === 'declined' ? 'bg-red-100 text-red-700' :
-                              'bg-gray-100 text-gray-700'
-                            }`}>
+                                invitation.status === 'declined' ? 'bg-red-100 text-red-700' :
+                                  'bg-gray-100 text-gray-700'
+                              }`}>
                               {invitation.status.charAt(0).toUpperCase() + invitation.status.slice(1)}
                             </span>
                           </div>

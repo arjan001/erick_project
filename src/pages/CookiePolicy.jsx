@@ -8,9 +8,6 @@ export default function CookiePolicy() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-8">
-          <Link to="/" className="inline-block mb-6">
-            <span className="text-3xl font-black tracking-tighter text-gray-900">22.</span>
-          </Link>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Cookie Policy</h1>
           <p className="text-gray-600">Last updated: July 12, 2026</p>
         </div>
@@ -65,7 +62,7 @@ export default function CookiePolicy() {
             <ul className="space-y-3 text-gray-700">
               <li className="flex items-start gap-3">
                 <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                <span><strong>Supabase:</strong> Database and authentication services</span>
+                <span><strong>Base44:</strong> Database and authentication services</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
