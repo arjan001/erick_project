@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { X, MapPin, Clock, DollarSign, Share2, Heart, Building2, BadgeCheck, Briefcase, ChevronDown, ChevronUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { X, MapPin, Clock, DollarSign, Share2, Heart, Building2, BadgeCheck, Briefcase, ChevronDown, ChevronUp, Crown, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { canApplyForJobs, canContactJobPoster } from '@/services/subscriptionService';
 
-export default function JobDetailSlideOut({ job, onClose }) {
-  const { isAuthenticated } = useAuth();
+export default function GigDetailSlideOut({ job, onClose }) {
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [expandedRoles, setExpandedRoles] = useState(false);
+  const [requiresSubscription, setRequiresSubscription] = useState(false);
 
   if (!job) return null;
 
@@ -18,14 +21,38 @@ export default function JobDetailSlideOut({ job, onClose }) {
     }
   };
 
-  const handleApply = (role) => {
+  const handleApply = async (role) => {
     if (!isAuthenticated) {
-      // Show login prompt
       navigate('/SignIn', { state: { returnTo: window.location.pathname, job: job.title } });
       return;
     }
+
+    // Check if user has active subscription
+    const canApply = await canApplyForJobs(user?.id);
+    if (!canApply) {
+      setRequiresSubscription(true);
+      return;
+    }
+
     // Handle application logic here
     console.log('Applying for role:', role);
+  };
+
+  const handleContactPoster = async () => {
+    if (!isAuthenticated) {
+      navigate('/SignIn', { state: { returnTo: window.location.pathname, job: job.title } });
+      return;
+    }
+
+    // Check if user has active subscription
+    const canContact = await canContactJobPoster(user?.id);
+    if (!canContact) {
+      setRequiresSubscription(true);
+      return;
+    }
+
+    // Handle contact logic here
+    console.log('Contacting job poster');
   };
 
   const toggleRoles = () => {
@@ -147,19 +174,58 @@ export default function JobDetailSlideOut({ job, onClose }) {
             </div>
           )}
 
-          {/* Company info */}
+          {/* Company info with link to producer profile */}
           <div className="mt-6 rounded-xl bg-gray-50 p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#4F46E5]/10">
                 <Building2 className="h-5 w-5 text-[#4F46E5]" />
               </div>
-              <div>
-                <p className="text-sm font-bold text-black">{job.project || job.company || 'Production Company'}</p>
-                <p className="text-xs text-black/50">View all jobs by this company</p>
+              <div className="flex-1">
+                <Link
+                  to={`/ClientPublicProfile/${job.posted_by || job.company_id || 'default'}`}
+                  className="text-sm font-bold text-black hover:text-[#4F46E5] flex items-center gap-1"
+                >
+                  {job.project || job.company || 'Production Company'}
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+                <p className="text-xs text-black/50">View producer profile</p>
               </div>
+              <button
+                onClick={handleContactPoster}
+                className="shrink-0 rounded-full bg-[#4F46E5] px-4 py-2 text-xs font-semibold text-white hover:bg-[#4338CA]"
+              >
+                Contact
+              </button>
             </div>
           </div>
         </div>
+
+        {/* Subscription required banner */}
+        {requiresSubscription && (
+          <div className="mx-5 mb-4 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] p-4 md:mx-6">
+            <div className="flex items-start gap-3">
+              <Crown className="mt-0.5 h-5 w-5 text-white" />
+              <div className="flex-1">
+                <p className="text-sm font-bold text-white">Subscription Required</p>
+                <p className="mt-1 text-xs text-white/90">
+                  Contacting job posters and applying for roles requires an active subscription.
+                </p>
+                <button
+                  onClick={() => navigate('/Subscribe')}
+                  className="mt-3 rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#8B5CF6] hover:bg-gray-100"
+                >
+                  View Subscription Plans
+                </button>
+              </div>
+              <button
+                onClick={() => setRequiresSubscription(false)}
+                className="rounded-full p-1 hover:bg-white/20"
+              >
+                <X className="h-4 w-4 text-white" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Footer CTA — sticky at bottom */}
         <div className="sticky bottom-0 border-t border-gray-100 bg-white px-5 py-4 md:px-6">

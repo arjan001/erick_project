@@ -154,27 +154,27 @@ const publicRoutes = [
   {
     path: '/legal/privacy',
     component: () => import('@/pages/PrivacyPolicy'),
-    layout: MainLayout
+    layout: null
   },
   {
     path: '/legal/terms',
     component: () => import('@/pages/TermsConditions'),
-    layout: MainLayout
+    layout: null
   },
   {
     path: '/legal/gdpr',
     component: () => import('@/pages/GDPR'),
-    layout: MainLayout
+    layout: null
   },
   {
     path: '/legal/cookies',
     component: () => import('@/pages/CookiePolicy'),
-    layout: MainLayout
+    layout: null
   },
   {
     path: '/legal/imprint',
     component: () => import('@/pages/Imprint'),
-    layout: MainLayout
+    layout: null
   },
   {
     path: '/Work',
@@ -184,6 +184,11 @@ const publicRoutes = [
   {
     path: '/ProjectPublic',
     component: () => import('@/pages/ProjectPublic'),
+    layout: MainLayout
+  },
+  {
+    path: '/ClientPublicProfile/:id',
+    component: () => import('@/pages/ClientPublicProfile'),
     layout: MainLayout
   },
   {
@@ -605,6 +610,12 @@ const artistRoutes = [
     guard: ArtistGuard
   },
   {
+    path: '/Network',
+    component: () => import('@/modules/network/pages/NetworkPage'),
+    layout: DashboardLayout,
+    guard: ArtistGuard
+  },
+  {
     path: '/ArtistSubscriptionCheckout',
     component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
     layout: DashboardLayout,
@@ -723,6 +734,18 @@ const teamRoutes = [
   {
     path: '/TeamProfile',
     component: () => import('@/modules/team/pages/TeamProfilePage'),
+    layout: DashboardLayout,
+    guard: TeamGuard
+  },
+  {
+    path: '/TeamApplications',
+    component: () => import('@/modules/jobs/pages/JobApplicationsPage'),
+    layout: DashboardLayout,
+    guard: TeamGuard
+  },
+  {
+    path: '/TeamFinance',
+    component: () => import('@/modules/team/pages/TeamPaymentsPage'),
     layout: DashboardLayout,
     guard: TeamGuard
   }

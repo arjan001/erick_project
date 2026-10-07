@@ -428,7 +428,7 @@ export default function SignUp() {
                     className="w-full"
                     disabled={loading}
                     required
-                d
+                    d
                   />
                 </div>
 
@@ -453,8 +453,8 @@ export default function SignUp() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                     disabled={loading}
                   >
-                    <option value="artist">Artist</option>
-                    <option value="client">Client</option>
+                    <option value="artist">Actor</option>
+                    <option value="client">Producer</option>
                   </select>
                 </div>
 

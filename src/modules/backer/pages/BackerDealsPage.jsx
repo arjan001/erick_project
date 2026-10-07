@@ -63,7 +63,7 @@ export default function BackerDealsPage() {
     try {
       await Deal.create({
         ...dealForm,
-        backer_email: user.email,
+        backer_email: authUser?.email,
         backer_id: backer.id,
         amount: parseFloat(dealForm.amount),
         created_at: new Date().toISOString()
@@ -96,7 +96,7 @@ export default function BackerDealsPage() {
 
   const handleSignatureSave = async (signatureData) => {
     try {
-      await Deal.update(signingDealId, { 
+      await Deal.update(signingDealId, {
         signature: signatureData,
         signed_at: new Date().toISOString(),
         status: 'active'
@@ -111,7 +111,7 @@ export default function BackerDealsPage() {
     }
   };
 
-  const filteredDeals = deals.filter(deal => 
+  const filteredDeals = deals.filter(deal =>
     deal.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     deal.counterparty?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -133,210 +133,209 @@ export default function BackerDealsPage() {
 
   return (
     <div className="p-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Deals & Agreements</h1>
-            <p className="text-gray-600">Manage your investment deals and partnerships</p>
-          </div>
-          <Button onClick={() => setShowModal(true)} className="bg-black text-white hover:bg-gray-800">
-            <Plus className="w-4 h-4 mr-2" />
-            New Deal
-          </Button>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Deals & Agreements</h1>
+          <p className="text-gray-600">Manage your investment deals and partnerships</p>
         </div>
+        <Button onClick={() => setShowModal(true)} className="bg-black text-white hover:bg-gray-800">
+          <Plus className="w-4 h-4 mr-2" />
+          New Deal
+        </Button>
+      </div>
 
-        {/* Search - Minimalist */}
-        <div className="mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search deals..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 h-9 text-sm"
-            />
-          </div>
+      {/* Search - Minimalist */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search deals..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 h-9 text-sm"
+          />
         </div>
+      </div>
 
-        {/* Deals Grid */}
-        {filteredDeals.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-gray-900 mb-2">No deals yet</h3>
-              <p className="text-gray-600 mb-4">Create your first investment deal</p>
-              <Button onClick={() => setShowModal(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Deal
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredDeals.map((deal) => {
-              const StatusIcon = statusIcons[deal.status] || Clock;
-              return (
-                <Card key={deal.id} className="hover:shadow-md transition-shadow">
-                  <div className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-sm text-gray-900 mb-1">{deal.title}</h3>
-                        <p className="text-xs text-gray-500 truncate">{deal.counterparty || 'N/A'}</p>
-                      </div>
-                      <div className={`p-1.5 rounded-lg ${
-                        deal.status === 'active' ? 'bg-green-100 text-green-600' :
+      {/* Deals Grid */}
+      {filteredDeals.length === 0 ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-gray-900 mb-2">No deals yet</h3>
+            <p className="text-gray-600 mb-4">Create your first investment deal</p>
+            <Button onClick={() => setShowModal(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Deal
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredDeals.map((deal) => {
+            const StatusIcon = statusIcons[deal.status] || Clock;
+            return (
+              <Card key={deal.id} className="hover:shadow-md transition-shadow">
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-sm text-gray-900 mb-1">{deal.title}</h3>
+                      <p className="text-xs text-gray-500 truncate">{deal.counterparty || 'N/A'}</p>
+                    </div>
+                    <div className={`p-1.5 rounded-lg ${deal.status === 'active' ? 'bg-green-100 text-green-600' :
                         deal.status === 'completed' ? 'bg-gray-100 text-gray-600' :
-                        deal.status === 'cancelled' ? 'bg-red-100 text-red-600' :
-                        'bg-yellow-100 text-yellow-600'
+                          deal.status === 'cancelled' ? 'bg-red-100 text-red-600' :
+                            'bg-yellow-100 text-yellow-600'
                       }`}>
-                        <StatusIcon className="w-4 h-4" />
-                      </div>
+                      <StatusIcon className="w-4 h-4" />
                     </div>
-                    
-                    <p className="text-xs text-gray-600 mb-3 line-clamp-2">{deal.description}</p>
-                    
-                    <div className="flex items-center justify-between text-xs mb-3">
-                      <span className="text-gray-500">Amount</span>
-                      <span className="font-semibold text-gray-900">${deal.amount?.toLocaleString()}</span>
+                  </div>
+
+                  <p className="text-xs text-gray-600 mb-3 line-clamp-2">{deal.description}</p>
+
+                  <div className="flex items-center justify-between text-xs mb-3">
+                    <span className="text-gray-500">Amount</span>
+                    <span className="font-semibold text-gray-900">${deal.amount?.toLocaleString()}</span>
+                  </div>
+
+                  {deal.start_date && (
+                    <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
+                      <Calendar className="w-3 h-3" />
+                      <span>{new Date(deal.start_date).toLocaleDateString()}</span>
                     </div>
+                  )}
 
-                    {deal.start_date && (
-                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
-                        <Calendar className="w-3 h-3" />
-                        <span>{new Date(deal.start_date).toLocaleDateString()}</span>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      {deal.status === 'pending' && (
-                        <>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleSignDeal(deal.id)}
-                            className="flex-1 h-8 text-xs"
-                          >
-                            <Pen className="w-3 h-3 mr-1" />
-                            Sign
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleUpdateDealStatus(deal.id, 'cancelled')}
-                            className="text-red-600 border-red-300 h-8 px-2"
-                          >
-                            <X className="w-3 h-3" />
-                          </Button>
-                        </>
-                      )}
-                      {deal.status === 'active' && (
-                        <Button 
+                  <div className="flex gap-2">
+                    {deal.status === 'pending' && (
+                      <>
+                        <Button
                           size="sm"
-                          onClick={() => handleUpdateDealStatus(deal.id, 'completed')}
+                          variant="outline"
+                          onClick={() => handleSignDeal(deal.id)}
                           className="flex-1 h-8 text-xs"
                         >
-                          Complete
+                          <Pen className="w-3 h-3 mr-1" />
+                          Sign
                         </Button>
-                      )}
-                      {deal.status !== 'pending' && deal.status !== 'active' && (
-                        <Button size="sm" variant="outline" className="flex-1 h-8 text-xs">
-                          <Eye className="w-3 h-4 mr-1" />
-                          View
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleUpdateDealStatus(deal.id, 'cancelled')}
+                          className="text-red-600 border-red-300 h-8 px-2"
+                        >
+                          <X className="w-3 h-3" />
                         </Button>
-                      )}
-                    </div>
+                      </>
+                    )}
+                    {deal.status === 'active' && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleUpdateDealStatus(deal.id, 'completed')}
+                        className="flex-1 h-8 text-xs"
+                      >
+                        Complete
+                      </Button>
+                    )}
+                    {deal.status !== 'pending' && deal.status !== 'active' && (
+                      <Button size="sm" variant="outline" className="flex-1 h-8 text-xs">
+                        <Eye className="w-3 h-4 mr-1" />
+                        View
+                      </Button>
+                    )}
                   </div>
-                </Card>
-              );
-            })}
-          </div>
-        )}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
-        {/* Create Deal Modal */}
-        {showModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">Create New Deal</h2>
+      {/* Create Deal Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Create New Deal</h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Deal Title</label>
+                <Input
+                  type="text"
+                  value={dealForm.title}
+                  onChange={(e) => setDealForm({ ...dealForm, title: e.target.value })}
+                  placeholder="Enter deal title"
+                />
               </div>
-              <div className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Deal Title</label>
-                  <Input
-                    type="text"
-                    value={dealForm.title}
-                    onChange={(e) => setDealForm({ ...dealForm, title: e.target.value })}
-                    placeholder="Enter deal title"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Description</label>
-                  <textarea
-                    value={dealForm.description}
-                    onChange={(e) => setDealForm({ ...dealForm, description: e.target.value })}
-                    placeholder="Describe the deal"
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Amount</label>
-                  <Input
-                    type="number"
-                    value={dealForm.amount}
-                    onChange={(e) => setDealForm({ ...dealForm, amount: e.target.value })}
-                    placeholder="Enter amount"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Counterparty</label>
-                  <Input
-                    type="text"
-                    value={dealForm.counterparty}
-                    onChange={(e) => setDealForm({ ...dealForm, counterparty: e.target.value })}
-                    placeholder="Company or individual name"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">Start Date</label>
-                    <Input
-                      type="date"
-                      value={dealForm.start_date}
-                      onChange={(e) => setDealForm({ ...dealForm, start_date: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">End Date</label>
-                    <Input
-                      type="date"
-                      value={dealForm.end_date}
-                      onChange={(e) => setDealForm({ ...dealForm, end_date: e.target.value })}
-                    />
-                  </div>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Description</label>
+                <textarea
+                  value={dealForm.description}
+                  onChange={(e) => setDealForm({ ...dealForm, description: e.target.value })}
+                  placeholder="Describe the deal"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                />
               </div>
-              <div className="p-6 border-t border-gray-200 flex gap-3 justify-end">
-                <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-                <Button onClick={handleCreateDeal} className="bg-black text-white hover:bg-gray-800">
-                  Create Deal
-                </Button>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Amount</label>
+                <Input
+                  type="number"
+                  value={dealForm.amount}
+                  onChange={(e) => setDealForm({ ...dealForm, amount: e.target.value })}
+                  placeholder="Enter amount"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Counterparty</label>
+                <Input
+                  type="text"
+                  value={dealForm.counterparty}
+                  onChange={(e) => setDealForm({ ...dealForm, counterparty: e.target.value })}
+                  placeholder="Company or individual name"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Start Date</label>
+                  <Input
+                    type="date"
+                    value={dealForm.start_date}
+                    onChange={(e) => setDealForm({ ...dealForm, start_date: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">End Date</label>
+                  <Input
+                    type="date"
+                    value={dealForm.end_date}
+                    onChange={(e) => setDealForm({ ...dealForm, end_date: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
+            <div className="p-6 border-t border-gray-200 flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
+              <Button onClick={handleCreateDeal} className="bg-black text-white hover:bg-gray-800">
+                Create Deal
+              </Button>
+            </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* E-Signature Modal */}
-        <ESignatureModal
-          isOpen={showSignatureModal}
-          onClose={() => {
-            setShowSignatureModal(false);
-            setSigningDealId(null);
-          }}
-          onSign={handleSignatureSave}
-          title="Sign Investment Deal"
-        />
+      {/* E-Signature Modal */}
+      <ESignatureModal
+        isOpen={showSignatureModal}
+        onClose={() => {
+          setShowSignatureModal(false);
+          setSigningDealId(null);
+        }}
+        onSign={handleSignatureSave}
+        title="Sign Investment Deal"
+      />
     </div>
   );
 }

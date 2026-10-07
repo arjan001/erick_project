@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, Flame, MessageCircle, Play, Home, Heart } from 'lucide-react';
+import { Star, Flame, MessageCircle, ChevronLeft, ChevronRight, ZoomIn, Home, Heart } from 'lucide-react';
 
 const badgeConfig = {
   star: { icon: Star, color: '#6366f1' },
@@ -7,25 +7,62 @@ const badgeConfig = {
   chat: { icon: MessageCircle, color: '#6366f1' },
 };
 
-export default function TalentCard({ profile, showActions = true }) {
+export default function TalentCard({ profile, showActions = true, onOpenProfile }) {
   const [imgIdx, setImgIdx] = useState(0);
   const [favorited, setFavorited] = useState(false);
 
   const next = (e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     setImgIdx((i) => (i + 1) % profile.images.length);
+  };
+
+  const prev = (e) => {
+    e?.stopPropagation();
+    setImgIdx((i) => (i - 1 + profile.images.length) % profile.images.length);
   };
 
   return (
     <div className="group rounded-xl bg-white p-2 shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md">
       {/* Image area */}
-      <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
+      <div
+        className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-pointer"
+        onClick={() => onOpenProfile?.(profile)}
+      >
         <img
           src={profile.images[imgIdx]}
           alt={profile.name}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
+
+        {/* Hover overlay arrows */}
+        {profile.images.length > 1 && (
+          <>
+            <button
+              onClick={prev}
+              className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/80 group-hover:opacity-100"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={next}
+              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/80 group-hover:opacity-100"
+              aria-label="Next image"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </>
+        )}
+
+        {/* Zoom button */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onOpenProfile?.(profile); }}
+          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-[#4F46E5] text-white opacity-0 transition-opacity hover:bg-[#4338CA] group-hover:opacity-100"
+          aria-label="View profile"
+        >
+          <ZoomIn className="h-4 w-4" />
+        </button>
 
         {/* Overlay text (e.g. "BOLD & BEYOND") */}
         {profile.overlayText && (
@@ -36,27 +73,15 @@ export default function TalentCard({ profile, showActions = true }) {
           </div>
         )}
 
-        {/* Play / reel indicator */}
-        {profile.hasReel && (
-          <button
-            onClick={next}
-            className="absolute bottom-2 left-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 backdrop-blur-sm transition-colors hover:bg-black/80"
-            aria-label="Play reel"
-          >
-            <Play className="h-3.5 w-3.5 fill-white text-white" />
-          </button>
-        )}
-
-        {/* Carousel dots */}
+        {/* Pagination dots */}
         {profile.images.length > 1 && (
           <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
             {profile.images.map((_, i) => (
               <button
                 key={i}
                 onClick={(e) => { e.stopPropagation(); setImgIdx(i); }}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === imgIdx ? 'w-4 bg-white' : 'w-1.5 bg-white/50'
-                }`}
+                className={`h-1.5 rounded-full transition-all ${i === imgIdx ? 'w-4 bg-[#4F46E5]' : 'w-1.5 border border-[#4F46E5]/50 bg-transparent'
+                  }`}
                 aria-label={`Image ${i + 1}`}
               />
             ))}

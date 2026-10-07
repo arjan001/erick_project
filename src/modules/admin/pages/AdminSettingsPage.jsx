@@ -34,6 +34,7 @@ export default function AdminSettingsPage() {
     marqueeSpeed: '40',
     enableCategories: true,
     featuredCategories: '',
+    enableCrewPortal: false,
     defaultCurrency: 'EUR',
     taxRate: '21',
     enableSubscriptions: true,
@@ -72,6 +73,7 @@ export default function AdminSettingsPage() {
           twoFactorAuth: settingsMap.twoFactorAuth === 'true',
           enableMarquee: settingsMap.enableMarquee === 'true',
           enableCategories: settingsMap.enableCategories === 'true',
+          enableCrewPortal: settingsMap.enableCrewPortal === 'true',
           enableSubscriptions: settingsMap.enableSubscriptions === 'true',
           enableMarketplace: settingsMap.enableMarketplace === 'true',
           enableReferrals: settingsMap.enableReferrals === 'true',
@@ -110,7 +112,7 @@ export default function AdminSettingsPage() {
 
       // Clear settings cache so changes take effect immediately
       clearSettingsCache();
-      
+
       success('Settings Saved', 'Your settings have been updated successfully');
     } catch (err) {
       console.error('Error saving settings:', err);
@@ -181,8 +183,8 @@ export default function AdminSettingsPage() {
               </h1>
               <p className="text-gray-600 mt-1">Configure all aspects of your Eric Rabar platform</p>
             </div>
-            <Button 
-              onClick={handleSave} 
+            <Button
+              onClick={handleSave}
               disabled={saving}
               className="bg-gray-900 text-white hover:bg-gray-800"
             >
@@ -304,6 +306,12 @@ export default function AdminSettingsPage() {
                     checked={settings.enableCategories}
                     onChange={(checked) => setSettings({ ...settings, enableCategories: checked })}
                   />
+                  <ToggleSetting
+                    label="Enable Crew Portal"
+                    description="Open crew profiles and registration (launch with actors first)"
+                    checked={settings.enableCrewPortal}
+                    onChange={(checked) => setSettings({ ...settings, enableCrewPortal: checked })}
+                  />
                   <div className="space-y-2">
                     <Label>Featured Category IDs (comma-separated)</Label>
                     <Input
@@ -317,9 +325,9 @@ export default function AdminSettingsPage() {
               </SettingCard>
             </div>
 
-            <SettingCard 
-              icon={AlertTriangle} 
-              title="Maintenance Mode" 
+            <SettingCard
+              icon={AlertTriangle}
+              title="Maintenance Mode"
               description="Control site availability"
               warning
             >

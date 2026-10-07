@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { supabase } from '@/lib/supabase';
 import skillsAndRoles from '@/lib/skillsAndRoles.json';
 import confetti from 'canvas-confetti';
+import { canApplyForJobs } from '@/services/subscriptionService';
 
 export default function Jobs() {
   const [jobs, setJobs] = useState([]);
@@ -196,6 +197,14 @@ export default function Jobs() {
 
       if (!artist) {
         toastError('Profile Required', 'Please complete your artist profile before applying for jobs.');
+        return;
+      }
+
+      // Check if user has active subscription
+      const hasSubscription = await canApplyForJobs(artist.id);
+      if (!hasSubscription) {
+        toastError('Subscription Required', 'Contacting job posters and applying for roles requires an active subscription.');
+        navigate('/Subscribe');
         return;
       }
 

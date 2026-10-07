@@ -111,8 +111,7 @@ export default function ArtistDashboard() {
 
             {/* Dynamic Subscription/Connects card */}
             <div>
-              {/* Commented out premium card - not needed for now */}
-              {/* {subscription ? (
+              {subscription ? (
                 <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl border-2 border-yellow-200 p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
@@ -156,18 +155,34 @@ export default function ArtistDashboard() {
                   </div>
 
                   <button
-                    onClick={() => navigate('/ArtistSubscriptionCheckout')}
+                    onClick={() => navigate('/Pricing')}
                     className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold py-3 rounded-xl hover:from-yellow-500 hover:to-orange-600 transition-all flex items-center justify-center gap-2"
                   >
                     <Crown className="w-4 h-4" />
-                    Unlock More Clients
+                    Upgrade Plan
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
-                <ConnectsTrackerCard connects={artistProfile?.connects_balance} />
-              )} */}
-              <ConnectsTrackerCard connects={artistProfile?.connects_balance} />
+                <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                      <Crown className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-gray-900">Upgrade to Premium</div>
+                      <div className="text-xs text-gray-600">Get more connects and features</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate('/Pricing')}
+                    className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-3 rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all flex items-center justify-center gap-2"
+                  >
+                    View Plans
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Bottom row */}

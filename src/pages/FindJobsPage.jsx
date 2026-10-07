@@ -4,7 +4,7 @@ import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, Ba
 import Navbar from '@/components/landing/backstage/Navbar';
 import Footer from '@/components/landing/backstage/Footer';
 import Marquee from '@/components/landing/backstage/Marquee';
-import JobDetailSlideOut from '@/components/landing/backstage/JobDetailSlideOut';
+import GigDetailSlideOut from '@/components/landing/backstage/GigDetailSlideOut';
 import { Job } from '@/lib/supabaseEntities';
 
 const dummyJobs = [
@@ -145,7 +145,7 @@ export default function FindJobsPage() {
         }));
         if (!cancelled) setAllJobs(mapped);
       })
-      .catch(() => {});
+      .catch(() => { });
     return () => { cancelled = true; };
   }, []);
 
@@ -363,9 +363,8 @@ export default function FindJobsPage() {
             <button
               key={p}
               onClick={() => setPage(p)}
-              className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-sm font-medium transition-colors ${
-                p === page ? 'bg-[#4f46e5] text-white' : 'bg-white text-black/60 hover:bg-gray-100'
-              }`}
+              className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-sm font-medium transition-colors ${p === page ? 'bg-[#4f46e5] text-white' : 'bg-white text-black/60 hover:bg-gray-100'
+                }`}
             >
               {p}
             </button>
@@ -393,7 +392,7 @@ export default function FindJobsPage() {
       <Footer />
 
       {/* Slide-out detail panel */}
-      <JobDetailSlideOut job={selectedJob} onClose={() => setSelectedJob(null)} />
+      <GigDetailSlideOut job={selectedJob} onClose={() => setSelectedJob(null)} />
     </div>
   );
 }

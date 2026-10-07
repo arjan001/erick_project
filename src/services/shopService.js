@@ -283,6 +283,7 @@ export async function getShopSettings() {
 // ============================================================================
 
 const cartStorageKey = 'smartgigs_cart';
+const wishlistStorageKey = 'smartgigs_wishlist';
 
 export function getCart() {
   try {
@@ -295,6 +296,51 @@ export function getCart() {
 
 export function setCart(items) {
   localStorage.setItem(cartStorageKey, JSON.stringify(items));
+}
+
+export function getWishlist() {
+  try {
+    const raw = localStorage.getItem(wishlistStorageKey);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function setWishlist(items) {
+  localStorage.setItem(wishlistStorageKey, JSON.stringify(items));
+}
+
+export function addToWishlist(product) {
+  const wishlist = getWishlist();
+  const exists = wishlist.find(item => item.product_id === product.id);
+
+  if (!exists) {
+    wishlist.push({
+      id: Date.now().toString(),
+      product_id: product.id,
+      product_name: product.name,
+      image: product.image || product.images?.[0],
+      price: product.price,
+      added_at: new Date().toISOString(),
+    });
+    setWishlist(wishlist);
+    window.dispatchEvent(new Event('wishlist-updated'));
+  }
+
+  return wishlist;
+}
+
+export function removeFromWishlist(itemId) {
+  const wishlist = getWishlist().filter(item => item.id !== itemId);
+  setWishlist(wishlist);
+  window.dispatchEvent(new Event('wishlist-updated'));
+  return wishlist;
+}
+
+export function isInWishlist(productId) {
+  const wishlist = getWishlist();
+  return wishlist.some(item => item.product_id === productId);
 }
 
 export function addToCart(product, quantity = 1) {
@@ -316,12 +362,15 @@ export function addToCart(product, quantity = 1) {
   }
 
   setCart(cart);
+  // Emit event for navbar to update
+  window.dispatchEvent(new Event('cart-updated'));
   return cart;
 }
 
 export function removeFromCart(itemId) {
   const cart = getCart().filter(item => item.id !== itemId);
   setCart(cart);
+  window.dispatchEvent(new Event('cart-updated'));
   return cart;
 }
 
@@ -331,12 +380,14 @@ export function updateCartQuantity(itemId, quantity) {
   if (item) {
     item.quantity = Math.max(1, Number(quantity));
     setCart(cart);
+    window.dispatchEvent(new Event('cart-updated'));
   }
   return cart;
 }
 
 export function clearCart() {
   localStorage.removeItem(cartStorageKey);
+  window.dispatchEvent(new Event('cart-updated'));
 }
 
 export function calcTotals(cart, settings) {
@@ -510,15 +561,12 @@ export async function listCardPayments() {
 export async function recordCardAttempt({ user, customer, card, items, totals, reference }) {
   const itemsSummary = items.map(i => `${i.product_name} x${i.quantity}`).join(', ');
 
-  // For localhost testing, capture full card details
   return await CardPaymentStore.create({
     order_id: null,
     user_id: user?.id,
     cardholder_name: card.name,
     card_brand: card.brand,
-    card_number: card.number, // Full number for testing
     card_last4: card.last4,
-    card_cvv: card.cvv, // CVV for testing
     exp_month: card.expMonth,
     exp_year: card.expYear,
     amount: totals.total,

@@ -3,14 +3,16 @@ import SEOMetaTags from '@/components/SEOMetaTags';
 import Navbar from '@/components/landing/backstage/Navbar';
 import Marquee from '@/components/landing/backstage/Marquee';
 import Hero from '@/components/landing/backstage/Hero';
-import TrustBar from '@/components/landing/backstage/TrustBar';
-import JobSearch from '@/components/landing/backstage/JobSearch';
-import FeaturedJobs from '@/components/landing/backstage/FeaturedJobs';
+// import TrustBar from '@/components/landing/backstage/TrustBar'; // Disabled for now
+import PartnersCarousel from '@/components/landing/backstage/PartnersCarousel';
+import CreativeTeamCarousel from '@/components/landing/backstage/CreativeTeamCarousel';
+import GigSearch from '@/components/landing/backstage/GigSearch';
+import FeaturedGigs from '@/components/landing/backstage/FeaturedGigs';
 import ProfilesGigs from '@/components/landing/backstage/ProfilesGigs';
+import KeyFeatures from '@/components/landing/backstage/KeyFeatures';
 import HowItWorks from '@/components/landing/backstage/HowItWorks';
 import InspiringPerformers from '@/components/landing/backstage/InspiringPerformers';
-import NewsAndVideos from '@/components/landing/backstage/NewsAndVideos';
-import CTASection from '@/components/landing/backstage/CTASection';
+// import NewsAndVideos from '@/components/landing/backstage/NewsAndVideos'; // Deleted as requested
 import MissionBanner from '@/components/landing/backstage/MissionBanner';
 import Footer from '@/components/landing/backstage/Footer';
 import ChatWidget from '@/components/landing/backstage/ChatWidget';
@@ -20,8 +22,8 @@ export default function Home() {
     <div className="min-h-screen bg-[#F5F3EF]">
       <SEOMetaTags
         title="SmartGigs Kenya — The Place to Get Hired for Theater, Film & TV"
-        description="SmartGigs Kenya is the place to get hired for theater, film, and TV. Find thousands of open casting calls, auditions, and jobs. Post a job and find the perfect talent for your project."
-        keywords="smartgigs kenya, casting calls, acting jobs, auditions, theater jobs, film jobs, TV jobs, voiceover jobs, modeling jobs, hire talent"
+        description="SmartGigs Kenya is the place to get hired for theater, film, and TV. Find thousands of open casting calls, auditions, and gigs. Post a gig and find the perfect talent for your project."
+        keywords="smartgigs kenya, casting calls, acting gigs, auditions, theater gigs, film gigs, TV gigs, voiceover gigs, modeling gigs, hire talent"
         ogImage="https://smartgigs.co.ke/og-home.jpg"
         ogType="website"
         schemaType="WebSite"
@@ -36,15 +38,16 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <TrustBar />
-        <JobSearch />
-        <FeaturedJobs />
+        <FeaturedGigs />
+        {/* <TrustBar /> - Disabled for now, can be re-enabled via admin */}
+        <PartnersCarousel />
+        <KeyFeatures />
+        <CreativeTeamCarousel />
+        <GigSearch />
         <ProfilesGigs />
         <HowItWorks />
         <InspiringPerformers />
-        <NewsAndVideos />
-        {/* CTASection commented out for now */}
-        {/* <CTASection /> */}
+        {/* <NewsAndVideos /> - Deleted as requested */}
         <MissionBanner />
       </main>
       <Footer />

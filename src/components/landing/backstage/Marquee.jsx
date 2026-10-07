@@ -14,9 +14,11 @@ const defaultItems = [
 
 export default function Marquee() {
   const [items, setItems] = useState(defaultItems);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    setIsLoading(true);
     TickerEntry.list('-created_at', 20)
       .then((data) => {
         if (cancelled) return;
@@ -24,7 +26,12 @@ export default function Marquee() {
           setItems(data.map((e) => e.text || e.title || e.content).filter(Boolean));
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // Silently fail and keep default items
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
     return () => { cancelled = true; };
   }, []);
 

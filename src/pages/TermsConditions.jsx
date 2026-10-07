@@ -1,10 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { FileText, AlertCircle, CheckCircle, XCircle, Scale } from 'lucide-react';
+import Navbar from '@/components/landing/backstage/Navbar';
+import Footer from '@/components/landing/backstage/Footer';
 
 export default function TermsConditions() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <Navbar />
+
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-8">
@@ -19,25 +22,29 @@ export default function TermsConditions() {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Agreement to Terms</h2>
             <p className="text-gray-700 leading-relaxed">
-              By accessing or using SmartGigs Kenya, you agree to be bound by these Terms & Conditions. If you disagree with any part of these terms, you may not access our service.
+              By accessing or using SmartGigs Kenya, you agree to be bound by these Terms & Conditions. If you do not agree to these terms, please do not use our platform.
             </p>
           </section>
 
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
               <FileText className="w-6 h-6" />
-              Accounts
+              User Accounts
             </h2>
-            <div className="space-y-4">
-              <div className="bg-white p-6 rounded-lg border border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-2">Account Registration</h3>
-                <p className="text-gray-700">You must provide accurate and complete information when creating an account. You are responsible for maintaining the confidentiality of your account credentials.</p>
-              </div>
-              <div className="bg-white p-6 rounded-lg border border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-2">Account Security</h3>
-                <p className="text-gray-700">You agree to notify us immediately of any unauthorized use of your account. We are not liable for any loss or damage from your failure to comply with this security obligation.</p>
-              </div>
-            </div>
+            <ul className="space-y-3 text-gray-700">
+              <li className="flex items-start gap-3">
+                <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
+                <span>You must be at least 18 years old to create an account</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
+                <span>You are responsible for maintaining the confidentiality of your account credentials</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
+                <span>You must provide accurate and complete information</span>
+              </li>
+            </ul>
           </section>
 
           <section className="mb-12">
@@ -46,28 +53,20 @@ export default function TermsConditions() {
               Acceptable Use
             </h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              You agree to use SmartGigs Kenya for lawful purposes only. You must not:
+              You agree to use SmartGigs Kenya only for lawful purposes and in accordance with these Terms. You may not:
             </p>
             <ul className="space-y-3 text-gray-700">
               <li className="flex items-start gap-3">
-                <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <span>Upload content that is illegal, harmful, or violates intellectual property rights</span>
+                <XCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <span>Use the platform for any illegal or unauthorized purpose</span>
               </li>
               <li className="flex items-start gap-3">
-                <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <span>Impersonate any person or entity or misrepresent your affiliation</span>
+                <XCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <span>Violate any international, federal, provincial or local regulations</span>
               </li>
               <li className="flex items-start gap-3">
-                <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <span>Interfere with or disrupt our service or servers</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <span>Use automated systems to access our service without permission</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <span>Engage in fraudulent or deceptive practices</span>
+                <XCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <span>Infringe upon or violate our intellectual property rights</span>
               </li>
             </ul>
           </section>
@@ -78,22 +77,15 @@ export default function TermsConditions() {
               Intellectual Property
             </h2>
             <p className="text-gray-700 leading-relaxed">
-              The content, features, and functionality of SmartGigs Kenya are owned by us and are protected by international copyright, trademark, and other intellectual property laws. You retain ownership of content you upload, but grant us a license to use, display, and distribute it as necessary to provide our services.
+              All content on SmartGigs Kenya, including text, graphics, logos, images, and software, is the property of SmartGigs Kenya or its content suppliers and is protected by intellectual property laws.
             </p>
           </section>
 
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
               <Scale className="w-6 h-6" />
-              Termination
+              Governing Law
             </h2>
-            <p className="text-gray-700 leading-relaxed">
-              We may terminate or suspend your account immediately if you breach these Terms & Conditions. Upon termination, your right to use the service will cease immediately.
-            </p>
-          </section>
-
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Governing Law</h2>
             <p className="text-gray-700 leading-relaxed">
               These Terms & Conditions shall be governed by and construed in accordance with the laws of Kenya, without regard to its conflict of law provisions.
             </p>
@@ -101,17 +93,7 @@ export default function TermsConditions() {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="flex flex-wrap gap-6 text-sm text-gray-600">
-            <Link to="/legal/privacy" className="hover:text-gray-900">Privacy Policy</Link>
-            <Link to="/legal/gdpr" className="hover:text-gray-900">GDPR</Link>
-            <Link to="/legal/cookies" className="hover:text-gray-900">Cookie Policy</Link>
-            <Link to="/legal/imprint" className="hover:text-gray-900">Imprint</Link>
-          </div>
-        </div>
-      </div>
+      <Footer />
     </div>
   );
 }

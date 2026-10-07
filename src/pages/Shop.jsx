@@ -21,14 +21,33 @@ export default function ShopPage() {
 
   useEffect(() => {
     let cancelled = false;
-    // Use seed products for now since we don't have a real database
-    const seedProducts = buildSeedProducts();
-    setProducts(seedProducts);
-    setLoading(false);
+    // Load products from backend
+    loadProducts();
     return () => {
       cancelled = true;
     };
   }, []);
+
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      const products = await listProducts();
+      if (!cancelled) {
+        setProducts(products);
+      }
+    } catch (error) {
+      console.error('Failed to load products:', error);
+      if (!cancelled) {
+        // Fallback to seed products on error
+        const seedProducts = buildSeedProducts();
+        setProducts(seedProducts);
+      }
+    } finally {
+      if (!cancelled) {
+        setLoading(false);
+      }
+    }
+  };
 
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -62,7 +81,7 @@ export default function ShopPage() {
       description="Shop branded merchandise, film equipment, collectibles and join live discount auctions on SmartGigs Kenya."
     >
       {/* Hero */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#4F46E5] to-[#7c3aed] px-4 py-12 lg:py-16">
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#1a1a2e] to-[#16213e] px-4 py-12 lg:py-16">
         <div className="mx-auto max-w-[1400px]">
           <div className="flex items-center gap-2 text-sm font-medium text-white/80">
             <ShoppingBag className="h-4 w-4" /> SmartGigs Shop
@@ -91,7 +110,7 @@ export default function ShopPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${activeTab === tab.id ? 'bg-[#6366f1] text-white' : 'text-black/70 hover:bg-black/[0.04]'
+                className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${activeTab === tab.id ? 'bg-[#1a1a2e] text-white' : 'text-black/70 hover:bg-black/[0.04]'
                   }`}
               >
                 <span className="text-base">{tab.icon}</span>
@@ -115,6 +134,26 @@ export default function ShopPage() {
               placeholder="Search products..."
               className="w-full rounded-full border border-black/10 bg-white py-3 pl-12 pr-4 text-sm text-black placeholder:text-black/40 focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20"
             />
+          </div>
+        </div>
+      </div>
+
+      {/* Ad Banner Section */}
+      <div className="bg-gray-50 px-4 py-6 lg:px-8">
+        <div className="mx-auto max-w-[1400px]">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] p-6 md:p-8">
+            <div className="absolute top-0 right-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-white/10 blur-2xl" />
+            <div className="absolute bottom-0 left-0 h-24 w-24 -translate-x-8 translate-y-8 rounded-full bg-white/10 blur-2xl" />
+            <div className="relative flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white">Sponsored</span>
+                <h3 className="mt-2 text-lg font-bold text-white md:text-xl">Upgrade to Premium for Exclusive Deals</h3>
+                <p className="mt-1 text-sm text-white/80">Get 20% off all shop items with a SmartGigs Premium subscription</p>
+              </div>
+              <button className="shrink-0 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#4F46E5] hover:bg-white/90 transition-colors">
+                Learn More
+              </button>
+            </div>
           </div>
         </div>
       </div>

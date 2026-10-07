@@ -104,7 +104,7 @@ export default function Hero() {
                 </p>
               </div>
               <button className="shrink-0 rounded-full bg-[#a7f3d0] px-6 py-2.5 text-sm font-bold text-black transition-colors hover:bg-[#85F1B5]">
-                Post a Job
+                Post a Gig
               </button>
             </motion.div>
           </div>

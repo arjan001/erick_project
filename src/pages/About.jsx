@@ -6,6 +6,8 @@ import Footer from '@/components/landing/backstage/Footer';
 import ChatWidget from '@/components/landing/backstage/ChatWidget';
 import SEOMetaTags from '@/components/SEOMetaTags';
 import { ParallaxBackground } from '@/components/landing/backstage/Parallax';
+import CreativeTeamCarousel from '@/components/landing/backstage/CreativeTeamCarousel';
+import CTASection from '@/components/landing/backstage/CTASection';
 import { isFeatureEnabled } from '@/lib/featureFlags';
 
 const audiences = [
@@ -58,14 +60,14 @@ export default function About() {
       />
       < Navbar />
 
-      {/* Hero with parallax backdrop */}
+      {/* Hero with parallax backdrop - large to occupy most of first viewport */}
       < ParallaxBackground
-        src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=1800&h=900&fit=crop"
+        src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=1800&h=1200&fit=crop"
         overlay="bg-gradient-to-b from-black/70 via-black/60 to-black/80"
       >
-        <div className="mx-auto max-w-4xl px-4 py-20 text-center md:py-32">
+        <div className="mx-auto max-w-4xl px-4 py-32 text-center md:py-48 lg:py-56">
           <p className="text-sm font-semibold uppercase tracking-wider text-[#a7f3d0]">About us</p>
-          <h1 className="mt-3 font-serif text-3xl font-bold leading-tight text-white md:text-5xl">
+          <h1 className="mt-3 font-serif text-3xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
             Where Kenyan film talent meets its next opportunity
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-white/80">
@@ -204,8 +206,26 @@ export default function About() {
         </div>
       </section>
 
+      {/* Exclusive celebrity interviews - copied from Home page */}
+      <section className="bg-[#F5F3EF] py-16 md:py-20">
+        <div className="mx-auto max-w-[1400px] px-4 lg:px-8">
+          <div className="mb-8">
+            <h2 className="font-serif text-3xl font-bold text-black md:text-4xl">
+              Exclusive celebrity interviews
+            </h2>
+            <p className="mt-2 text-base text-gray-600">
+              Find the perfect fit for your roles. Access 1M+ dynamic creatives.
+            </p>
+          </div>
+          <CreativeTeamCarousel />
+        </div>
+      </section>
+
+      {/* CTA Section - moved from Home to About, before footer */}
+      <CTASection />
+
       <Footer />
       <ChatWidget />
-    </div >
+    </div>
   );
 }

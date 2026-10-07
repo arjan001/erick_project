@@ -58,7 +58,7 @@ export default function BackerPartnersPage() {
     try {
       await Partner.create({
         ...partnerForm,
-        backer_email: user.email,
+        backer_email: authUser?.email,
         backer_id: backer.id,
         created_at: new Date().toISOString()
       });
@@ -91,7 +91,7 @@ export default function BackerPartnersPage() {
     }
   };
 
-  const filteredPartners = partners.filter(partner => 
+  const filteredPartners = partners.filter(partner =>
     partner.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     partner.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     partner.email?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -107,226 +107,225 @@ export default function BackerPartnersPage() {
 
   return (
     <div className="p-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Partners & Network</h1>
-            <p className="text-gray-600">Manage your business partners and connections</p>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Partners & Network</h1>
+          <p className="text-gray-600">Manage your business partners and connections</p>
+        </div>
+        <Button onClick={() => setShowModal(true)} className="bg-black text-white hover:bg-gray-800">
+          <Plus className="w-4 h-4 mr-2" />
+          Add Partner
+        </Button>
+      </div>
+
+      {/* Stats - Smaller cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Users className="w-5 h-5 text-gray-900" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-900">{partners.length}</div>
+              <div className="text-xs text-gray-500">Total Partners</div>
+            </div>
           </div>
-          <Button onClick={() => setShowModal(true)} className="bg-black text-white hover:bg-gray-800">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Partner
-          </Button>
-        </div>
+        </Card>
 
-        {/* Stats - Smaller cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-gray-900" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">{partners.length}</div>
-                <div className="text-xs text-gray-500">Total Partners</div>
-              </div>
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Star className="w-5 h-5 text-gray-900" />
             </div>
-          </Card>
-
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Star className="w-5 h-5 text-gray-900" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">{partners.filter(p => p.partnership_type === 'strategic').length}</div>
-                <div className="text-xs text-gray-500">Strategic Partners</div>
-              </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-900">{partners.filter(p => p.partnership_type === 'strategic').length}</div>
+              <div className="text-xs text-gray-500">Strategic Partners</div>
             </div>
-          </Card>
-
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-gray-900" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900">{partners.filter(p => p.status === 'active').length}</div>
-                <div className="text-xs text-gray-500">Active Collaborations</div>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Search - Minimalist */}
-        <div className="mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search partners..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 h-9 text-sm"
-            />
           </div>
-        </div>
+        </Card>
 
-        {/* Partners Grid */}
-        {filteredPartners.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-gray-900 mb-2">No partners yet</h3>
-              <p className="text-gray-600 mb-4">Add your first business partner</p>
-              <Button onClick={() => setShowModal(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Partner
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredPartners.map((partner) => (
-              <Card key={partner.id} className="hover:shadow-md transition-shadow">
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-sm text-gray-900 mb-1">{partner.name}</h3>
-                      {partner.company && (
-                        <p className="text-xs text-gray-500 truncate">{partner.company}</p>
-                      )}
-                    </div>
-                    <span className={`px-2 py-0.5 text-xs rounded ${
-                      partner.partnership_type === 'strategic' ? 'bg-gray-100 text-gray-700' :
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Building2 className="w-5 h-5 text-gray-900" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-900">{partners.filter(p => p.status === 'active').length}</div>
+              <div className="text-xs text-gray-500">Active Collaborations</div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Search - Minimalist */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search partners..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 h-9 text-sm"
+          />
+        </div>
+      </div>
+
+      {/* Partners Grid */}
+      {filteredPartners.length === 0 ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-gray-900 mb-2">No partners yet</h3>
+            <p className="text-gray-600 mb-4">Add your first business partner</p>
+            <Button onClick={() => setShowModal(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Partner
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredPartners.map((partner) => (
+            <Card key={partner.id} className="hover:shadow-md transition-shadow">
+              <div className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-sm text-gray-900 mb-1">{partner.name}</h3>
+                    {partner.company && (
+                      <p className="text-xs text-gray-500 truncate">{partner.company}</p>
+                    )}
+                  </div>
+                  <span className={`px-2 py-0.5 text-xs rounded ${partner.partnership_type === 'strategic' ? 'bg-gray-100 text-gray-700' :
                       partner.partnership_type === 'investment' ? 'bg-gray-100 text-gray-700' :
-                      'bg-gray-100 text-gray-700'
+                        'bg-gray-100 text-gray-700'
                     }`}>
-                      {partner.partnership_type}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-2 mb-3">
-                    {partner.email && (
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
-                        <Mail className="w-3 h-3" />
-                        <span className="truncate">{partner.email}</span>
-                      </div>
-                    )}
-                    {partner.role && (
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
-                        <Building2 className="w-3 h-3" />
-                        <span className="truncate">{partner.role}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <Calendar className="w-3 h-3" />
-                      <span>Since {new Date(partner.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
+                    {partner.partnership_type}
+                  </span>
+                </div>
 
-                  {partner.notes && (
-                    <div className="mb-3 p-2 bg-gray-50 rounded text-xs text-gray-600 line-clamp-2">
-                      {partner.notes}
+                <div className="space-y-2 mb-3">
+                  {partner.email && (
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <Mail className="w-3 h-3" />
+                      <span className="truncate">{partner.email}</span>
                     </div>
                   )}
-
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs">
-                      <MessageSquare className="w-3 h-3 mr-1" />
-                      Contact
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => handleDeletePartner(partner.id)}
-                      className="text-red-600 hover:text-red-700 h-8 px-2"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                  {partner.role && (
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <Building2 className="w-3 h-3" />
+                      <span className="truncate">{partner.role}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <Calendar className="w-3 h-3" />
+                    <span>Since {new Date(partner.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>
-              </Card>
-            ))}
-          </div>
-        )}
 
-        {/* Add Partner Modal */}
-        {showModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">Add New Partner</h2>
-              </div>
-              <div className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Contact Name</label>
-                  <Input
-                    type="text"
-                    value={partnerForm.name}
-                    onChange={(e) => setPartnerForm({ ...partnerForm, name: e.target.value })}
-                    placeholder="Enter contact name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Company</label>
-                  <Input
-                    type="text"
-                    value={partnerForm.company}
-                    onChange={(e) => setPartnerForm({ ...partnerForm, company: e.target.value })}
-                    placeholder="Company name (optional)"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>
-                  <Input
-                    type="email"
-                    value={partnerForm.email}
-                    onChange={(e) => setPartnerForm({ ...partnerForm, email: e.target.value })}
-                    placeholder="Contact email"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Role</label>
-                  <Input
-                    type="text"
-                    value={partnerForm.role}
-                    onChange={(e) => setPartnerForm({ ...partnerForm, role: e.target.value })}
-                    placeholder="e.g. CEO, Producer, Director"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Partnership Type</label>
-                  <select
-                    value={partnerForm.partnership_type}
-                    onChange={(e) => setPartnerForm({ ...partnerForm, partnership_type: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                {partner.notes && (
+                  <div className="mb-3 p-2 bg-gray-50 rounded text-xs text-gray-600 line-clamp-2">
+                    {partner.notes}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs">
+                    <MessageSquare className="w-3 h-3 mr-1" />
+                    Contact
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeletePartner(partner.id)}
+                    className="text-red-600 hover:text-red-700 h-8 px-2"
                   >
-                    <option value="strategic">Strategic Partner</option>
-                    <option value="investment">Investment Partner</option>
-                    <option value="collaboration">Collaboration Partner</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Notes</label>
-                  <textarea
-                    value={partnerForm.notes}
-                    onChange={(e) => setPartnerForm({ ...partnerForm, notes: e.target.value })}
-                    placeholder="Add notes about this partnership"
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                  />
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
                 </div>
               </div>
-              <div className="p-6 border-t border-gray-200 flex gap-3 justify-end">
-                <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-                <Button onClick={handleCreatePartner} className="bg-black text-white hover:bg-gray-800">
-                  Add Partner
-                </Button>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Add Partner Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Add New Partner</h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Contact Name</label>
+                <Input
+                  type="text"
+                  value={partnerForm.name}
+                  onChange={(e) => setPartnerForm({ ...partnerForm, name: e.target.value })}
+                  placeholder="Enter contact name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Company</label>
+                <Input
+                  type="text"
+                  value={partnerForm.company}
+                  onChange={(e) => setPartnerForm({ ...partnerForm, company: e.target.value })}
+                  placeholder="Company name (optional)"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>
+                <Input
+                  type="email"
+                  value={partnerForm.email}
+                  onChange={(e) => setPartnerForm({ ...partnerForm, email: e.target.value })}
+                  placeholder="Contact email"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Role</label>
+                <Input
+                  type="text"
+                  value={partnerForm.role}
+                  onChange={(e) => setPartnerForm({ ...partnerForm, role: e.target.value })}
+                  placeholder="e.g. CEO, Producer, Director"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Partnership Type</label>
+                <select
+                  value={partnerForm.partnership_type}
+                  onChange={(e) => setPartnerForm({ ...partnerForm, partnership_type: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                >
+                  <option value="strategic">Strategic Partner</option>
+                  <option value="investment">Investment Partner</option>
+                  <option value="collaboration">Collaboration Partner</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Notes</label>
+                <textarea
+                  value={partnerForm.notes}
+                  onChange={(e) => setPartnerForm({ ...partnerForm, notes: e.target.value })}
+                  placeholder="Add notes about this partnership"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                />
               </div>
             </div>
+            <div className="p-6 border-t border-gray-200 flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
+              <Button onClick={handleCreatePartner} className="bg-black text-white hover:bg-gray-800">
+                Add Partner
+              </Button>
+            </div>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }

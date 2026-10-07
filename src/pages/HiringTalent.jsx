@@ -112,6 +112,10 @@ export default function HiringTalent() {
     }
   };
 
+  // Pause only when hovering the carousel container, not individual cards
+  const handleCarouselMouseEnter = () => setIsPaused(true);
+  const handleCarouselMouseLeave = () => setIsPaused(false);
+
   return (
     <div className="min-h-screen bg-[#20202a]">
       <SEOMetaTags
@@ -279,8 +283,8 @@ export default function HiringTalent() {
           <div
             ref={carouselRef}
             className="mt-10 flex gap-4 overflow-x-auto pb-4 cursor-pointer"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+            onMouseEnter={handleCarouselMouseEnter}
+            onMouseLeave={handleCarouselMouseLeave}
             onMouseMove={handleMouseMove}
           >
             {talentProfiles.map((profile) => (

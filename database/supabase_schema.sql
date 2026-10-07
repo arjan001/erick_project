@@ -51,6 +51,24 @@ CREATE TABLE IF NOT EXISTS public.creators (
   portfolio_urls JSONB,
   video_reel_url TEXT,
   social_media JSONB,
+  -- Additional detailed profile fields
+  profession TEXT,
+  age_range TEXT,
+  ethnicity TEXT,
+  build TEXT,
+  -- Credits
+  film_credits TEXT[],
+  commercial_credits TEXT[],
+  -- Education & Training
+  education TEXT[],
+  -- Representation
+  agent_name TEXT,
+  agent_email TEXT,
+  -- Union Membership
+  union_memberships TEXT[],
+  -- License & Passport
+  has_driver_license BOOLEAN DEFAULT false,
+  has_passport BOOLEAN DEFAULT false,
   featured BOOLEAN DEFAULT false,
   verification_status TEXT DEFAULT 'pending', -- pending, verified, rejected
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -133,6 +151,18 @@ CREATE TABLE IF NOT EXISTS public.backers (
   contact_email TEXT,
   contact_phone TEXT,
   social_media JSONB,
+  bank_accounts JSONB, -- Array of bank account objects
+  organization_name TEXT,
+  website TEXT,
+  linkedin TEXT,
+  instagram TEXT,
+  twitter TEXT,
+  youtube TEXT,
+  email_notifications BOOLEAN DEFAULT true,
+  deal_alerts BOOLEAN DEFAULT true,
+  profile_public BOOLEAN DEFAULT true,
+  total_invested NUMERIC DEFAULT 0,
+  investment_count INTEGER DEFAULT 0,
   verification_status TEXT DEFAULT 'pending',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -182,10 +212,64 @@ CREATE TABLE IF NOT EXISTS public.project_backers (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
   backer_id UUID REFERENCES public.backers(id) ON DELETE CASCADE,
+  backer_email TEXT,
+  project_title TEXT,
   amount NUMERIC,
   currency TEXT DEFAULT 'KES',
   investment_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  status TEXT DEFAULT 'active', -- active, completed, withdrawn
+  expected_roi NUMERIC,
+  notes TEXT,
+  project_category TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Investment Deals
+CREATE TABLE IF NOT EXISTS public.deals (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  backer_id UUID REFERENCES public.backers(id) ON DELETE CASCADE,
+  backer_email TEXT,
+  title TEXT NOT NULL,
+  description TEXT,
+  amount NUMERIC,
+  counterparty TEXT,
+  status TEXT DEFAULT 'pending', -- pending, signed, rejected, completed
+  start_date DATE,
+  end_date DATE,
+  document_url TEXT,
+  signed_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Investment Tiers
+CREATE TABLE IF NOT EXISTS public.investment_tiers (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  min_investment NUMERIC NOT NULL,
+  max_investment NUMERIC,
+  roi_percentage NUMERIC,
+  benefits TEXT[],
+  icon TEXT,
+  color TEXT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Project Updates
+CREATE TABLE IF NOT EXISTS public.project_updates (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  backer_id UUID REFERENCES public.backers(id) ON DELETE CASCADE,
+  backer_email TEXT,
+  project_id UUID,
+  project_title TEXT,
+  title TEXT NOT NULL,
+  content TEXT,
+  update_type TEXT DEFAULT 'progress', -- progress, milestone, announcement
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- ============================================================
@@ -840,6 +924,10 @@ CREATE TRIGGER trg_creators_updated_at BEFORE UPDATE ON public.creators FOR EACH
 CREATE TRIGGER trg_teams_updated_at BEFORE UPDATE ON public.teams FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_clients_updated_at BEFORE UPDATE ON public.clients FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_backers_updated_at BEFORE UPDATE ON public.backers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_project_backers_updated_at BEFORE UPDATE ON public.project_backers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_deals_updated_at BEFORE UPDATE ON public.deals FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_investment_tiers_updated_at BEFORE UPDATE ON public.investment_tiers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_project_updates_updated_at BEFORE UPDATE ON public.project_updates FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_projects_updated_at BEFORE UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_jobs_updated_at BEFORE UPDATE ON public.jobs FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_job_applications_updated_at BEFORE UPDATE ON public.job_applications FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -911,6 +999,18 @@ CREATE POLICY "Clients can update own profile" ON public.clients FOR UPDATE USIN
 CREATE POLICY "Backers can view own profile" ON public.backers FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Public can view backers" ON public.backers FOR SELECT USING (true);
 CREATE POLICY "Backers can update own profile" ON public.backers FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Backers can view own investments" ON public.project_backers FOR SELECT USING (backer_id IN (SELECT id FROM public.backers WHERE user_id = auth.uid()));
+CREATE POLICY "Backers can manage own investments" ON public.project_backers FOR ALL USING (backer_id IN (SELECT id FROM public.backers WHERE user_id = auth.uid()));
+
+CREATE POLICY "Backers can view own deals" ON public.deals FOR SELECT USING (backer_id IN (SELECT id FROM public.backers WHERE user_id = auth.uid()));
+CREATE POLICY "Backers can manage own deals" ON public.deals FOR ALL USING (backer_id IN (SELECT id FROM public.backers WHERE user_id = auth.uid()));
+
+CREATE POLICY "Public can view investment tiers" ON public.investment_tiers FOR SELECT USING (true);
+CREATE POLICY "Admins can manage investment tiers" ON public.investment_tiers FOR ALL USING (auth.uid() IN (SELECT id FROM public.users WHERE role = 'admin'));
+
+CREATE POLICY "Backers can view own project updates" ON public.project_updates FOR SELECT USING (backer_id IN (SELECT id FROM public.backers WHERE user_id = auth.uid()));
+CREATE POLICY "Backers can manage own project updates" ON public.project_updates FOR ALL USING (backer_id IN (SELECT id FROM public.backers WHERE user_id = auth.uid()));
 
 CREATE POLICY "Public can view projects" ON public.projects FOR SELECT USING (true);
 CREATE POLICY "Clients can manage own projects" ON public.projects FOR ALL USING (auth.uid() IN (SELECT user_id FROM public.clients WHERE id = client_id));

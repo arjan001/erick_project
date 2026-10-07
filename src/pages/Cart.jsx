@@ -3,44 +3,49 @@ import { Link, useNavigate } from 'react-router-dom';
 import ShopShell from '@/components/shop/ShopShell';
 import { Minus, Plus, ShoppingBag, Trash2, Trophy } from 'lucide-react';
 import { formatKES } from '@/data/shopProducts';
+import { getCart, removeFromCart, updateCartQuantity, calcTotals, getShopSettings } from '@/services/shopService';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function CartPage() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({ enableMpesa: true, enableCard: true, shippingThreshold: 5000, shippingCost: 500 });
 
   useEffect(() => {
-    // Mock cart data - replace with real cart context
-    const mockCart = [
-      {
-        id: 'cart-001',
-        product_id: 'seed-1',
-        product_name: "Selina's Iconic Dress",
-        image: 'https://images.unsplash.com/photo-1539109236226-a51a09e5105f?w=600&h=600&fit=crop',
-        unit_price: 6500,
-        quantity: 1,
-        is_auction_claim: false,
-      },
-    ];
-    setCart(mockCart);
-    setLoading(false);
+    loadCart();
+
+    const handleStorageChange = () => loadCart();
+    window.addEventListener('cart-updated', handleStorageChange);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('cart-updated', handleStorageChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
+
+  const loadCart = async () => {
+    const cartItems = getCart();
+    setCart(cartItems);
+    const shopSettings = await getShopSettings();
+    setSettings(shopSettings);
+    setLoading(false);
+  };
 
   const setQuantity = (id, qty) => {
     if (qty < 1) return;
-    setCart(cart.map((item) => (item.id === id ? { ...item, quantity: qty } : item)));
+    updateCartQuantity(id, qty);
+    setCart(getCart());
   };
 
   const remove = (id) => {
-    setCart(cart.filter((item) => item.id !== id));
+    removeFromCart(id);
+    setCart(getCart());
   };
 
-  const totals = {
-    subtotal: cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0),
-    shipping: cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0) >= settings.shippingThreshold ? 0 : settings.shippingCost,
-  };
-  totals.total = totals.subtotal + totals.shipping;
+  const totals = calcTotals(cart, settings);
 
   return (
     <ShopShell title="Your Cart — SmartGigs Kenya Shop" description="Review the items in your SmartGigs Kenya cart.">

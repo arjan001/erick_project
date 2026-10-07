@@ -66,27 +66,27 @@ const roleNavConfig = {
         label: 'Work',
         items: [
           { path: '/TeamProjects', label: 'Our Projects', icon: Briefcase },
-          { path: '/TeamApplications', label: 'Applications', icon: FileText },
+          { path: '/TeamMembers', label: 'Team Members', icon: Users },
         ]
       },
       {
         label: 'Communication',
         items: [
-          { path: '/Messages', label: 'Messages', icon: Mail, showBadge: true },
-          { path: '/Network', label: 'Network', icon: Network },
+          { path: '/TeamMessages', label: 'Messages', icon: Mail, showBadge: true },
           { path: '/Notifications', label: 'Notifications', icon: Bell, showNotificationBadge: true },
         ]
       },
       {
         label: 'Finance',
         items: [
-          { path: '/TeamFinance', label: 'Finances', icon: Wallet },
+          { path: '/TeamPayments', label: 'Payments', icon: Wallet },
         ]
       },
       {
         label: 'Account',
         items: [
           { path: '/TeamProfile', label: 'Team Profile & Settings', icon: User },
+          { path: '/SupportTickets', label: 'Support Tickets', icon: Users },
         ]
       },
     ]
@@ -145,7 +145,16 @@ const roleNavConfig = {
         label: 'Investments',
         items: [
           { path: '/BackerProjects', label: 'My Investments', icon: DollarSign },
+          { path: '/BackerInvestments', label: 'Investment Portfolio', icon: Wallet },
+          { path: '/BackerDeals', label: 'Investment Deals', icon: CreditCard },
           { path: '/BackerAnalytics', label: 'Analytics', icon: BarChart3 },
+        ]
+      },
+      {
+        label: 'Financial',
+        items: [
+          { path: '/BackerBanking', label: 'Banking', icon: CreditCard },
+          { path: '/BackerInvestmentTiers', label: 'Investment Tiers', icon: DollarSign },
         ]
       },
       {
@@ -153,12 +162,15 @@ const roleNavConfig = {
         items: [
           { path: '/Messages', label: 'Messages', icon: Mail, showBadge: true },
           { path: '/Notifications', label: 'Notifications', icon: Bell, showNotificationBadge: true },
+          { path: '/SupportTickets', label: 'Support Tickets', icon: Users },
         ]
       },
       {
         label: 'Account',
         items: [
           { path: '/BackerProfile', label: 'Profile & Settings', icon: User },
+          { path: '/BackerPartners', label: 'Partners', icon: Users },
+          { path: '/BackerProjectUpdates', label: 'Project Updates', icon: Bell },
         ]
       },
     ]

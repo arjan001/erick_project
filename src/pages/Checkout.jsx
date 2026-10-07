@@ -4,6 +4,7 @@ import ShopShell from '@/components/shop/ShopShell';
 import { useAuth } from '@/lib/AuthContext';
 import { formatKES } from '@/data/shopProducts';
 import { CheckCircle2, Loader2, ShoppingBag, Smartphone } from 'lucide-react';
+import { getCart } from '@/services/shopService';
 
 const inputCls =
   'w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-black placeholder:text-black/35 focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20';
@@ -30,19 +31,18 @@ export default function CheckoutPage() {
   const [completed, setCompleted] = useState(null);
 
   useEffect(() => {
-    // Mock cart data
-    const mockCart = [
-      {
-        id: 'cart-001',
-        product_id: 'seed-1',
-        product_name: "Selina's Iconic Dress",
-        image: 'https://images.unsplash.com/photo-1539109236226-a51a09e5105f?w=600&h=600&fit=crop',
-        unit_price: 6500,
-        quantity: 1,
-      },
-    ];
-    setCart(mockCart);
-    setLoading(false);
+    const loadCart = async () => {
+      try {
+        const cartItems = getCart();
+        setCart(cartItems || []);
+      } catch (err) {
+        console.error('Failed to load cart:', err);
+        setCart([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCart();
   }, []);
 
   useEffect(() => {

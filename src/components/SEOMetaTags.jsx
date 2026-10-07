@@ -11,7 +11,11 @@ const SEOMetaTags = ({
   noIndex = false,
   canonicalUrl,
   schemaType = 'WebPage',
-  schemaData = {}
+  schemaData = {},
+  authorName = 'edwin nyongesa',
+  authorEmail = 'arjanky@mail.com',
+  authorWebsite = 'oneplusafrica.com',
+  authorLinkedIn = 'https://ke.linkedin.com/in/edwin-nyongesa-770658230'
 }) => {
   const location = useLocation();
   const [seoData, setSeoData] = React.useState(null);
@@ -63,6 +67,12 @@ const SEOMetaTags = ({
       <meta name="description" content={pageDescription} />
       {pageKeywords && <meta name="keywords" content={pageKeywords} />}
 
+      {/* Author Meta Tags */}
+      <meta name="author" content={authorName} />
+      <meta name="author-email" content={authorEmail} />
+      <meta name="author-website" content={authorWebsite} />
+      <meta name="author-linkedin" content={authorLinkedIn} />
+
       {/* Canonical URL */}
       <link rel="canonical" href={fullCanonical} />
 
@@ -101,6 +111,30 @@ const SEOMetaTags = ({
           {schemaJson}
         </script>
       )}
+
+      {/* Organization Schema for Publisher */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'OnePlus Africa Tech Solution',
+          url: authorWebsite,
+          logo: 'https://smartgigskenya.com/logo.png',
+          contactPoint: {
+            '@type': 'ContactPoint',
+            email: authorEmail,
+            contactType: 'customer service'
+          },
+          sameAs: [
+            authorLinkedIn
+          ],
+          founder: {
+            '@type': 'Person',
+            name: authorName,
+            sameAs: authorLinkedIn
+          }
+        })}
+      </script>
 
       {/* Custom schema data if provided */}
       {Object.keys(schemaData).length > 0 && (

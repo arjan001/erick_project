@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, MapPin, BadgeCheck, Search } from 'lucide-react';
 import { Job } from '@/lib/supabaseEntities';
-import JobDetailSlideOut from './JobDetailSlideOut';
+import GigDetailSlideOut from './GigDetailSlideOut';
 
 const tabs = [
   'Feature Films',
@@ -13,10 +13,10 @@ const tabs = [
   'UGC',
   'Crew',
   'Theater',
-  'Browse All Jobs',
+  'Browse All Gigs',
 ];
 
-const fallbackJobs = [
+const fallbackGigs = [
   {
     id: 1,
     title: 'Stylized Documentary B-roll Shoot',
@@ -94,12 +94,12 @@ const countries = [
   { code: 'IN', name: 'India', regions: ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad'] },
 ];
 
-export default function FeaturedJobs() {
+export default function FeaturedGigs() {
   const [activeTab, setActiveTab] = useState('Feature Films');
   const [active, setActive] = useState(0);
   const trackRef = useRef(null);
-  const [jobs, setJobs] = useState(fallbackJobs);
-  const [selectedJob, setSelectedJob] = useState(null);
+  const [jobs, setGigs] = useState(fallbackGigs);
+  const [selectedGig, setSelectedGig] = useState(null);
   const navigate = useNavigate();
 
   // Filter states
@@ -108,10 +108,10 @@ export default function FeaturedJobs() {
   const [talentTypeFilter, setTalentTypeFilter] = useState('');
 
   useEffect(() => {
-    Job.filter({ is_featured: true }, '-posted_at', 7)
+    Gig.filter({ is_featured: true }, '-posted_at', 7)
       .then((rows) => {
         if (rows && rows.length > 0) {
-          setJobs(rows.map(j => ({
+          setGigs(rows.map(j => ({
             id: j.id,
             title: j.title || 'Untitled Role',
             description: j.description || j.short_description || '',
@@ -145,14 +145,14 @@ export default function FeaturedJobs() {
     if (locationFilter) params.append('location', locationFilter);
     if (projectTypeFilter) params.append('projectType', projectTypeFilter);
     if (talentTypeFilter) params.append('talentType', talentTypeFilter);
-    navigate(`/Jobs?${params.toString()}`);
+    navigate(`/Gigs?${params.toString()}`);
   };
 
   return (
     <section className="bg-[#F5F3EF] py-16 md:py-24">
       <div className="mx-auto max-w-[1400px] px-4 lg:px-8">
         <h2 className="text-center text-3xl font-bold text-black md:text-4xl">
-          Featured Jobs
+          Featured Gigs
         </h2>
 
         {/* Tabs */}
@@ -162,8 +162,8 @@ export default function FeaturedJobs() {
               key={t}
               onClick={() => setActiveTab(t)}
               className={`text-xs font-bold tracking-wide transition-colors ${activeTab === t
-                  ? 'text-[#4F46E5] underline underline-offset-4'
-                  : 'text-black/70 hover:text-black'
+                ? 'text-[#4F46E5] underline underline-offset-4'
+                : 'text-black/70 hover:text-black'
                 }`}
             >
               {t}
@@ -180,12 +180,12 @@ export default function FeaturedJobs() {
             {jobs.map((job, i) => (
               <div
                 key={job.id || i}
-                onClick={() => setSelectedJob(job)}
+                onClick={() => setSelectedGig(job)}
                 className="block w-full shrink-0 cursor-pointer rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md md:w-[calc(50%-1.25rem)] lg:w-[calc(33.333%-1.25rem)] md:p-7"
               >
                 {/* Left: job info / Right: roles */}
                 <div className="flex gap-5">
-                  {/* Job info */}
+                  {/* Gig info */}
                   <div className="flex-1 min-w-0">
                     <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-[#e11d48] px-2.5 py-0.5 text-xs font-bold text-white">
                       <BadgeCheck className="h-3 w-3" /> Featured
@@ -254,8 +254,8 @@ export default function FeaturedJobs() {
               key={i}
               onClick={() => scrollTo(i)}
               className={`h-2.5 w-2.5 rounded-full border transition-colors ${i === active
-                  ? 'border-[#4F46E5] bg-[#4F46E5]'
-                  : 'border-[#4F46E5]/40 bg-transparent'
+                ? 'border-[#4F46E5] bg-[#4F46E5]'
+                : 'border-[#4F46E5]/40 bg-transparent'
                 }`}
             />
           ))}
@@ -268,7 +268,7 @@ export default function FeaturedJobs() {
             onChange={(e) => setLocationFilter(e.target.value)}
             className="rounded-xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-black/70 focus:border-[#4F46E5] focus:outline-none"
           >
-            <option value="">Job location</option>
+            <option value="">Gig location</option>
             {countries.map((country) => (
               <optgroup key={country.code} label={country.name}>
                 <option value={`${country.name}, Nationwide`}>{country.name}, Nationwide</option>
@@ -313,13 +313,13 @@ export default function FeaturedJobs() {
             className="flex items-center gap-2 rounded-xl bg-[#4F46E5] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#4338CA]"
           >
             <Search className="h-4 w-4" />
-            Explore Jobs
+            Explore Gigs
           </button>
         </div>
       </div>
 
-      {/* Job detail slide-out */}
-      <JobDetailSlideOut job={selectedJob} onClose={() => setSelectedJob(null)} />
+      {/* Gig detail slide-out */}
+      <GigDetailSlideOut job={selectedGig} onClose={() => setSelectedGig(null)} />
     </section>
   );
 }

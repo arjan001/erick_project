@@ -20,10 +20,10 @@ export default function CTASection() {
           </div>
 
           <h2 className="mt-8 font-serif text-3xl font-bold text-white md:text-5xl">
-            It's time to make your move.
+            Join SmartGigs Kenya today and kickstart your film career!
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base text-white/80">
-            No matter what type of work you do, Eric Rabar has the most jobs, the best tools,
+            No matter what type of work you do, SmartGigs Kenya has the most gigs, the best tools,
             and expert advice to help you get hired.
           </p>
 
@@ -41,7 +41,7 @@ export default function CTASection() {
                 Looking for talent for your project?
               </p>
               <button className="mt-4 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-black hover:bg-white/90">
-                Post a Job
+                Post a Gig
               </button>
             </div>
             <div className="text-left">

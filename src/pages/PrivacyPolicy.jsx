@@ -1,10 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Shield, Eye, Lock, Database, Trash2, Mail } from 'lucide-react';
+import Navbar from '@/components/landing/backstage/Navbar';
+import Footer from '@/components/landing/backstage/Footer';
 
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <Navbar />
+
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-8">
@@ -124,17 +127,7 @@ export default function PrivacyPolicy() {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="flex flex-wrap gap-6 text-sm text-gray-600">
-            <Link to="/legal/terms" className="hover:text-gray-900">Terms & Conditions</Link>
-            <Link to="/legal/gdpr" className="hover:text-gray-900">GDPR</Link>
-            <Link to="/legal/cookies" className="hover:text-gray-900">Cookie Policy</Link>
-            <Link to="/legal/imprint" className="hover:text-gray-900">Imprint</Link>
-          </div>
-        </div>
-      </div>
+      <Footer />
     </div>
   );
 }

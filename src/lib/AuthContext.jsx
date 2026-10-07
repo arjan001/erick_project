@@ -3,6 +3,12 @@ import { base44 } from '@/api/base44Client';
 import { Artist, Team, ProjectOwner, Backer, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
 import auditLogger from '@/lib/auditLogger';
 
+// Auth Provider Configuration
+// Priority: Base44 (current production) -> Supabase (future) -> Clerk (future)
+// Note: Currently using Base44 auth as primary. Supabase and Clerk can be added
+// as fallback providers by implementing the auth provider switch below.
+const AUTH_PROVIDER = 'base44'; // Options: 'base44', 'supabase', 'clerk'
+
 const AuthContext = createContext();
 
 /**
@@ -186,6 +192,14 @@ export const AuthProvider = ({ children }) => {
   }, [user?.email]);
 
   useEffect(() => {
+    // Auth Provider Switch Logic
+    // Currently using Base44 as primary auth provider.
+    // To add Supabase or Clerk as fallback:
+    // 1. Install Supabase/Clerk SDK packages
+    // 2. Add auth provider initialization based on AUTH_PROVIDER constant
+    // 3. Implement provider-specific login/logout methods
+    // 4. Update resolveAppRole to use provider-specific user data
+
     // 1. Fallback to localStorage demo session first (works without a Base44 login)
     const stored = localStorage.getItem('ericrabar_user');
     let demoUser = null;
@@ -199,7 +213,7 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // 2. Check for a real Base44 auth session
+    // 2. Check for a real Base44 auth session (current primary provider)
     (async () => {
       // Safety timeout: never let the auth check block the app from rendering
       const timeout = new Promise(resolve => setTimeout(() => resolve('timeout'), 5000));
@@ -259,17 +273,11 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async (shouldRedirect = true) => {
     const userEmail = user?.email;
-    // 1. Sign out from Base44 (clears the stored token + auth header)
-    try {
-      base44.auth.logout();
-    } catch (e) {
-      console.error('base44 logout error:', e);
-    }
-    // 2. Clear all React state
+    // 1. Clear all React state first (before Base44 logout to prevent redirect issues)
     setUser(null);
     setPermissions([]);
     setIsAuthenticated(false);
-    // 3. Clear every piece of stored auth/session data
+    // 2. Clear every piece of stored auth/session data
     localStorage.removeItem('ericrabar_user');
     localStorage.removeItem('ericrabar_team');
     localStorage.removeItem('ericrabar_sidebar_expanded');
@@ -280,13 +288,20 @@ export const AuthProvider = ({ children }) => {
     // Nuke any lingering Supabase keys in localStorage/sessionStorage
     Object.keys(localStorage).forEach(k => { if (k.startsWith('sb-')) localStorage.removeItem(k); });
     Object.keys(sessionStorage).forEach(k => { if (k.startsWith('sb-')) sessionStorage.removeItem(k); });
-    // 4. Expire cookies we can reach
+    // 3. Expire cookies we can reach
     document.cookie.split(';').forEach(c => {
       const eq = c.indexOf('=');
       const name = eq > -1 ? c.slice(0, eq).trim() : c.trim();
       document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
       document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + window.location.hostname;
     });
+    // 4. Sign out from Base44 (clears the stored token + auth header)
+    // We do this after clearing state to prevent Base44 redirect from interfering
+    try {
+      base44.auth.logout();
+    } catch (e) {
+      console.error('base44 logout error:', e);
+    }
     // 5. Log logout event
     if (userEmail) {
       try { await auditLogger.auth.logout(userEmail); } catch { /* ignore */ }

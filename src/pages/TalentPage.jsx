@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import Navbar from '@/components/landing/backstage/Navbar';
 import Footer from '@/components/landing/backstage/Footer';
 import ChatWidget from '@/components/landing/backstage/ChatWidget';
 import SEOMetaTags from '@/components/SEOMetaTags';
 import TalentCard from '@/components/landing/backstage/TalentCard';
+import CreatorProfileModal from '@/components/landing/backstage/CreatorProfileModal';
 import { talentProfiles, talentTabs, filterTags } from '@/components/landing/backstage/talentData';
 import { Search, SlidersHorizontal, ChevronDown, CheckSquare, HelpCircle, ZoomIn } from 'lucide-react';
 
@@ -12,18 +12,29 @@ export default function TalentPage() {
   const [activeTab, setActiveTab] = useState('actors');
   const [activeTag, setActiveTag] = useState(null);
   const [autoplay, setAutoplay] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState(null);
 
   return (
     <div className="min-h-screen bg-[#1a1a23]">
       <SEOMetaTags
-        title="Find Talent — Actors, Creators, Voiceover & Crew | Eric Rabar"
+        title="Discover Talent — Actors, Creators, Voiceover & Crew | SmartGigs Kenya"
         description="Browse thousands of vetted performers, UGC creators, voiceover artists, and crew across all locations."
         keywords="find talent, actors, performers, UGC creators, voiceover, crew"
         ogType="website"
         schemaType="WebPage"
-        schemaData={{ name: 'Find Talent', description: 'Browse vetted talent' }}
+        schemaData={{ name: 'Discover Talent', description: 'Browse vetted talent' }}
       />
       <Navbar />
+
+      {/* Page heading */}
+      <div className="px-4 pb-6 pt-8 lg:px-8">
+        <div className="mx-auto max-w-[1400px]">
+          <h1 className="font-serif text-3xl font-bold text-white md:text-4xl">Discover Talent</h1>
+          <p className="mt-2 text-sm text-white/65 md:text-base">
+            Browse vetted actors, crew and creators — search by skill, location and tag.
+          </p>
+        </div>
+      </div>
 
       {/* Sub-header tabs */}
       <div className="border-b border-black/5 bg-white">
@@ -33,11 +44,10 @@ export default function TalentPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                  activeTab === tab.id
+                className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${activeTab === tab.id
                     ? 'bg-[#6366f1] text-white'
                     : 'text-black/70 hover:bg-black/[0.04]'
-                }`}
+                  }`}
               >
                 <span className="text-base">{tab.icon}</span>
                 {tab.label}
@@ -61,23 +71,22 @@ export default function TalentPage() {
               placeholder="Popular Actor & Performers Searches"
               className="w-full rounded-full border border-black/10 bg-white py-3 pl-12 pr-4 text-sm text-black placeholder:text-black/40 focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20"
             />
-          </div>
 
-          {/* Filter tags */}
-          <div className="mt-4 flex flex-wrap gap-2">
-            {filterTags.map((tag) => (
-              <button
-                key={tag}
-                onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
-                  activeTag === tag
-                    ? 'border-[#6366f1] bg-[#6366f1]/10 text-[#6366f1]'
-                    : 'border-black/10 bg-white text-black/70 hover:bg-black/[0.03]'
-                }`}
-              >
-                {tag}
-              </button>
-            ))}
+            {/* Filter tags */}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {filterTags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                  className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${activeTag === tag
+                      ? 'border-[#6366f1] bg-[#6366f1]/10 text-[#6366f1]'
+                      : 'border-black/10 bg-white text-black/70 hover:bg-black/[0.03]'
+                    }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -130,7 +139,11 @@ export default function TalentPage() {
             {/* Grid */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {talentProfiles.map((profile) => (
-                <TalentCard key={profile.id} profile={profile} />
+                <TalentCard
+                  key={profile.id}
+                  profile={profile}
+                  onOpenProfile={setSelectedProfile}
+                />
               ))}
             </div>
 
@@ -146,6 +159,12 @@ export default function TalentPage() {
 
       <Footer />
       <ChatWidget />
+
+      {/* Creator profile modal */}
+      <CreatorProfileModal
+        profile={selectedProfile}
+        onClose={() => setSelectedProfile(null)}
+      />
     </div>
   );
 }
