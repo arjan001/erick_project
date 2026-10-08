@@ -1,14 +1,19 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Switch } from '@/shared/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
-import { Save, Shield, Key, Globe } from 'lucide-react'
+import { Save, Shield, Key, Globe, UserCheck } from 'lucide-react'
+import { AuthProvider } from '@/lib/supabaseEntities'
+import { useToast } from '@/hooks/useToast'
 
 export default function AdminAuthProvidersPage() {
+  const { success, error: toastError } = useToast()
   const [providers, setProviders] = useState({
+    supabase: { enabled: true, isDefault: true, config: {} },
+    clerk: { enabled: false, isDefault: false, config: { publishableKey: '', secretKey: '' } },
     google: { enabled: true, clientId: '', clientSecret: '' },
     github: { enabled: false, clientId: '', clientSecret: '' },
     email: { enabled: true, requireVerification: true }
@@ -20,8 +25,56 @@ export default function AdminAuthProvidersPage() {
     algorithm: 'HS256'
   })
 
-  const handleSave = () => {
-    
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    loadAuthProviders()
+  }, [])
+
+  const loadAuthProviders = async () => {
+    try {
+      const authProviders = await AuthProvider.list('-created_at', 10)
+      if (authProviders && authProviders.length > 0) {
+        const providerMap = {}
+        authProviders.forEach(provider => {
+          providerMap[provider.provider_name] = {
+            enabled: provider.is_enabled,
+            isDefault: provider.is_default,
+            config: provider.config || {}
+          }
+        })
+        setProviders(prev => ({ ...prev, ...providerMap }))
+      }
+    } catch (error) {
+      // Use defaults if load fails
+    }
+  }
+
+  const handleSave = async () => {
+    setLoading(true)
+    try {
+      // Save Supabase provider
+      await AuthProvider.create({
+        provider_name: 'supabase',
+        is_enabled: providers.supabase.enabled,
+        is_default: providers.supabase.isDefault,
+        config: providers.supabase.config
+      })
+
+      // Save Clerk provider
+      await AuthProvider.create({
+        provider_name: 'clerk',
+        is_enabled: providers.clerk.enabled,
+        is_default: providers.clerk.isDefault,
+        config: providers.clerk.config
+      })
+
+      success('Saved', 'Authentication providers updated successfully')
+    } catch (error) {
+      toastError('Error', 'Failed to save authentication providers')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -31,18 +84,124 @@ export default function AdminAuthProvidersPage() {
           <h1 className="text-2xl font-bold text-gray-900">Login Providers</h1>
           <p className="text-gray-600">Configure authentication methods and providers</p>
         </div>
-        <Button onClick={handleSave} className="bg-black text-white hover:bg-gray-800">
+        <Button onClick={handleSave} disabled={loading} className="bg-black text-white hover:bg-gray-800">
           <Save className="w-4 h-4 mr-2" />
-          Save Changes
+          {loading ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>
 
-      <Tabs defaultValue="oauth" className="space-y-4">
+      <Tabs defaultValue="auth" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="auth">Auth Providers</TabsTrigger>
           <TabsTrigger value="oauth">OAuth Providers</TabsTrigger>
           <TabsTrigger value="email">Email Settings</TabsTrigger>
           <TabsTrigger value="jwt">JWT Configuration</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="auth">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserCheck className="w-5 h-5" />
+                Authentication Providers
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Supabase */}
+              <div className="p-4 border border-gray-200 rounded-lg space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
+                      <span className="text-green-600 font-bold">SB</span>
+                    </div>
+                    <div>
+                      <p className="font-medium">Supabase</p>
+                      <p className="text-sm text-gray-600">Primary authentication provider</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={providers.supabase.enabled}
+                    onCheckedChange={(checked) => setProviders({
+                      ...providers,
+                      supabase: { ...providers.supabase, enabled: checked }
+                    })}
+                  />
+                </div>
+                <div className="flex items-center justify-between pt-2">
+                  <div>
+                    <Label>Set as Default</Label>
+                    <p className="text-sm text-gray-600">Users will be redirected to this provider by default</p>
+                  </div>
+                  <Switch
+                    checked={providers.supabase.isDefault}
+                    onCheckedChange={(checked) => setProviders({
+                      ...providers,
+                      supabase: { ...providers.supabase, isDefault: checked }
+                    })}
+                  />
+                </div>
+              </div>
+
+              {/* Clerk */}
+              <div className="p-4 border border-gray-200 rounded-lg space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-purple-100 rounded flex items-center justify-center">
+                      <span className="text-purple-600 font-bold">C</span>
+                    </div>
+                    <div>
+                      <p className="font-medium">Clerk</p>
+                      <p className="text-sm text-gray-600">Alternative authentication provider (optional)</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={providers.clerk.enabled}
+                    onCheckedChange={(checked) => setProviders({
+                      ...providers,
+                      clerk: { ...providers.clerk, enabled: checked }
+                    })}
+                  />
+                </div>
+                {providers.clerk.enabled && (
+                  <div className="space-y-2 pt-2">
+                    <Label>Publishable Key</Label>
+                    <Input
+                      value={providers.clerk.config.publishableKey}
+                      onChange={(e) => setProviders({
+                        ...providers,
+                        clerk: { ...providers.clerk, config: { ...providers.clerk.config, publishableKey: e.target.value } }
+                      })}
+                      placeholder="pk_test_..."
+                    />
+                    <Label>Secret Key</Label>
+                    <Input
+                      type="password"
+                      value={providers.clerk.config.secretKey}
+                      onChange={(e) => setProviders({
+                        ...providers,
+                        clerk: { ...providers.clerk, config: { ...providers.clerk.config, secretKey: e.target.value } }
+                      })}
+                      placeholder="sk_test_..."
+                    />
+                    <div className="flex items-center justify-between pt-2">
+                      <div>
+                        <Label>Set as Default</Label>
+                        <p className="text-sm text-gray-600">Users will be redirected to Clerk by default</p>
+                      </div>
+                      <Switch
+                        checked={providers.clerk.isDefault}
+                        onCheckedChange={(checked) => setProviders({
+                          ...providers,
+                          clerk: { ...providers.clerk, isDefault: checked }
+                        })}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="oauth">
           <Card>

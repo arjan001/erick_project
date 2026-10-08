@@ -396,6 +396,18 @@ const adminRoutes = [
     guard: LoginProvidersGuard
   },
   {
+    path: '/Admin/AuthProviders',
+    component: () => import('@/modules/admin/pages/AdminAuthProvidersPage'),
+    layout: AdminLayout,
+    guard: LoginProvidersGuard
+  },
+  {
+    path: '/Admin/FileUploadSettings',
+    component: () => import('@/modules/admin/pages/AdminFileUploadSettingsPage'),
+    layout: AdminLayout,
+    guard: SettingsGuard
+  },
+  {
     path: '/Admin/APISettings',
     component: () => import('@/modules/admin/pages/AdminAPISettingsPage'),
     layout: AdminLayout,

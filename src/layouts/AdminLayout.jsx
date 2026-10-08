@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronLeft, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock, BarChart3, AlertTriangle, ShoppingBag } from 'lucide-react'
+import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronLeft, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock, BarChart3, AlertTriangle, ShoppingBag, Upload, UserCheck } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 
 const navItems = [
@@ -28,6 +28,8 @@ const navItems = [
   { path: '/Admin/SEOCMS', label: 'SEO & CMS', icon: FileText },
   { path: '/Admin/ImageStorage', label: 'Image Storage', icon: Image },
   { path: '/Admin/LoginProviders', label: 'Login Providers', icon: Shield },
+  { path: '/Admin/AuthProviders', label: 'Auth Providers', icon: UserCheck },
+  { path: '/Admin/FileUploadSettings', label: 'File Upload Settings', icon: Upload },
   { path: '/Admin/APISettings', label: 'API Settings', icon: Database },
   { path: '/Admin/PaymentSettings', label: 'Payment Settings', icon: CreditCard },
   { path: '/Admin/GeneralSettings', label: 'General Settings', icon: Settings },
