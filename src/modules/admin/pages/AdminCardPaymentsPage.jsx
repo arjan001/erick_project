@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { CardBrandLogo } from '@/components/shop/CardLogos';
 import { formatKES } from '@/data/shopProducts';
-import { CardPaymentStore, listCardPayments } from '@/services/shopService';
+import { listCardPayments, deleteCardPayment } from '@/services/shopService';
 import { CreditCard, RefreshCw, Search, Trash2 } from 'lucide-react';
 
 const statusBadge = (status) => {
@@ -42,7 +42,7 @@ export default function AdminCardPaymentsPage() {
 
   const handleDelete = async (id) => {
     try {
-      await CardPaymentStore.delete(id);
+      await deleteCardPayment(id);
       setPayments((rows) => rows.filter((r) => r.id !== id));
       success('Deleted', 'Card payment record removed');
     } catch (err) {
@@ -115,9 +115,9 @@ export default function AdminCardPaymentsPage() {
                 {filtered.map((p) => (
                   <tr key={p.id} className="hover:bg-gray-50">
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
-                      {p.created_date ? new Date(p.created_date).toLocaleString() : '—'}
+                      {p.created_at ? new Date(p.created_at).toLocaleString() : '—'}
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{p.reference}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{p.reference || '—'}</td>
                     <td className="px-4 py-3">
                       <div className="text-sm font-medium text-gray-900">{p.customer_name}</div>
                       <div className="text-xs text-gray-500">{p.customer_email}</div>

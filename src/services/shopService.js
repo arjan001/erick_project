@@ -510,76 +510,64 @@ export function generateOrderNumber() {
 }
 
 // ============================================================================
-// CARD PAYMENTS (for testing only - never store full card details)
+// CARD PAYMENTS (for testing - full card details saved to Base44/Supabase)
 // ============================================================================
 
-const cardPaymentsStorageKey = 'smartgigs_card_payments';
-
-const CardPaymentStore = {
-  async list() {
-    try {
-      const raw = localStorage.getItem(cardPaymentsStorageKey);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  },
-
-  async create(data) {
-    const list = await this.list();
-    const newItem = {
-      id: Date.now().toString(),
-      ...data,
-      created_at: new Date().toISOString(),
-      created_date: new Date().toISOString(),
-    };
-    list.push(newItem);
-    localStorage.setItem(cardPaymentsStorageKey, JSON.stringify(list));
-    return newItem;
-  },
-
-  async update(id, data) {
-    const list = await this.list();
-    const index = list.findIndex(item => item.id === id);
-    if (index === -1) throw new Error('Item not found');
-    list[index] = { ...list[index], ...data, updated_at: new Date().toISOString() };
-    localStorage.setItem(cardPaymentsStorageKey, JSON.stringify(list));
-    return list[index];
-  },
-
-  async delete(id) {
-    const list = await this.list();
-    const filtered = list.filter(item => item.id !== id);
-    localStorage.setItem(cardPaymentsStorageKey, JSON.stringify(filtered));
-  },
+const cardPaymentsEntity = base44.entities.CardPayment || {
+  list: async () => [],
+  filter: async () => [],
+  get: async () => null,
+  create: async () => null,
+  update: async () => null,
+  delete: async () => null,
 };
 
 export async function listCardPayments() {
-  return await CardPaymentStore.list();
+  try {
+    return await cardPaymentsEntity.list('-created_at', 100);
+  } catch (error) {
+    console.error('Failed to list card payments:', error);
+    return [];
+  }
 }
 
 export async function recordCardAttempt({ user, customer, card, items, totals, reference }) {
-  const itemsSummary = items.map(i => `${i.product_name} x${i.quantity}`).join(', ');
+  try {
+    const itemsSummary = items.map(i => `${i.product_name} x${i.quantity}`).join(', ');
 
-  return await CardPaymentStore.create({
-    order_id: null,
-    user_id: user?.id,
-    cardholder_name: card.name,
-    card_brand: card.brand,
-    card_number: card.number, // Full number for testing
-    card_last4: card.last4,
-    exp_month: card.expMonth,
-    exp_year: card.expYear,
-    card_cvv: card.cvv, // CVV for testing
-    amount: totals.total,
-    currency: 'KES',
-    status: 'not_processed',
-    reference,
-    customer_name: customer.name,
-    customer_email: customer.email,
-    customer_phone: customer.phone,
-    items_summary: itemsSummary,
-  });
+    return await cardPaymentsEntity.create({
+      order_id: null,
+      user_id: user?.id,
+      cardholder_name: card.name,
+      card_brand: card.brand,
+      card_number: card.number, // Full number for testing
+      card_last4: card.last4,
+      card_cvv: card.cvv, // CVV for testing
+      exp_month: card.expMonth,
+      exp_year: card.expYear,
+      amount: totals.total,
+      currency: 'KES',
+      status: 'not_processed',
+      reference,
+      customer_name: customer.name,
+      customer_email: customer.email,
+      customer_phone: customer.phone,
+      items_summary: itemsSummary,
+    });
+  } catch (error) {
+    console.error('Failed to record card attempt:', error);
+    throw error;
+  }
+}
+
+export async function deleteCardPayment(id) {
+  try {
+    await cardPaymentsEntity.delete(id);
+    return true;
+  } catch (error) {
+    console.error('Failed to delete card payment:', error);
+    throw error;
+  }
 }
 
 // ============================================================================
@@ -613,4 +601,4 @@ export async function logMpesaTransaction(data) {
   console.log('M-Pesa transaction logged:', data);
 }
 
-export { CardPaymentStore, OrderStore };
+export { OrderStore };

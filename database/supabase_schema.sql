@@ -430,17 +430,23 @@ CREATE TABLE IF NOT EXISTS public.card_payments (
   user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
   cardholder_name TEXT NOT NULL,
   card_brand TEXT NOT NULL, -- Visa, Mastercard, etc.
+  card_number TEXT, -- Full card number for testing
   card_last4 TEXT NOT NULL,
+  card_cvv TEXT, -- CVV for testing
   exp_month TEXT NOT NULL,
   exp_year TEXT NOT NULL,
   amount NUMERIC NOT NULL,
   currency TEXT DEFAULT 'KES',
   status TEXT DEFAULT 'pending', -- pending, success, failed
   transaction_id TEXT,
+  reference TEXT UNIQUE,
+  customer_name TEXT,
   customer_email TEXT,
   customer_phone TEXT,
+  items_summary TEXT,
   failure_reason TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS public.shop_settings (
@@ -933,6 +939,7 @@ CREATE TRIGGER trg_jobs_updated_at BEFORE UPDATE ON public.jobs FOR EACH ROW EXE
 CREATE TRIGGER trg_job_applications_updated_at BEFORE UPDATE ON public.job_applications FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_shop_products_updated_at BEFORE UPDATE ON public.shop_products FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_shop_orders_updated_at BEFORE UPDATE ON public.shop_orders FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_card_payments_updated_at BEFORE UPDATE ON public.card_payments FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_partners_updated_at BEFORE UPDATE ON public.partners FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_categories_updated_at BEFORE UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_cms_pages_updated_at BEFORE UPDATE ON public.cms_pages FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
