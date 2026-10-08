@@ -1,8 +1,10 @@
 /**
  * Real-time messaging service using Supabase Realtime subscriptions
  * Provides instant message updates across all dashboards without page reload
+ * Messages persist in database and reload like WhatsApp
  */
 import { supabase } from '@/lib/supabase'
+import { Message, Notification, Connection } from '@/lib/supabaseEntities'
 
 class RealtimeMessagingService {
   constructor() {
@@ -34,7 +36,6 @@ class RealtimeMessagingService {
           filter: `recipient_email=eq.${userEmail}`,
         },
         (payload) => {
-          //
           if (onMessageReceived) {
             onMessageReceived(payload.new)
           }
@@ -49,7 +50,6 @@ class RealtimeMessagingService {
           filter: `sender_email=eq.${userEmail}`,
         },
         (payload) => {
-          //
           if (onMessageReceived) {
             onMessageReceived(payload.new)
           }
@@ -64,18 +64,16 @@ class RealtimeMessagingService {
           filter: `recipient_email=eq.${userEmail}`,
         },
         (payload) => {
-          //
           if (onMessageUpdated) {
             onMessageUpdated(payload.new)
           }
         }
       )
       .subscribe((status) => {
-        //
         if (status === 'SUBSCRIBED') {
-          //
+          // Subscription successful
         } else if (status === 'CHANNEL_ERROR') {
-          //
+          // Handle error
         }
       })
 
@@ -96,7 +94,73 @@ class RealtimeMessagingService {
       supabase.removeChannel(channel)
       this.subscriptions.delete(userEmail)
       this.listeners.delete(userEmail)
-      //
+    }
+  }
+
+  /**
+   * Send a message (persists to database)
+   * @param {Object} messageData - Message data
+   * @returns {Promise<Object>} Created message
+   */
+  async sendMessage(messageData) {
+    try {
+      const message = await Message.create({
+        ...messageData,
+        created_at: new Date().toISOString(),
+        read_at: null,
+      })
+      return message
+    } catch (error) {
+      throw new Error(`Failed to send message: ${error.message}`)
+    }
+  }
+
+  /**
+   * Mark message as read
+   * @param {string} messageId - Message ID
+   * @returns {Promise<Object>} Updated message
+   */
+  async markAsRead(messageId) {
+    try {
+      const message = await Message.update(messageId, {
+        read_at: new Date().toISOString(),
+      })
+      return message
+    } catch (error) {
+      throw new Error(`Failed to mark message as read: ${error.message}`)
+    }
+  }
+
+  /**
+   * Get conversation history between two users
+   * @param {string} userEmail1 - First user's email
+   * @param {string} userEmail2 - Second user's email
+   * @returns {Promise<Array>} Conversation messages
+   */
+  async getConversation(userEmail1, userEmail2) {
+    try {
+      const messages = await Message.filter({
+        or: `and(sender_email.eq.${userEmail1},recipient_email.eq.${userEmail2}),and(sender_email.eq.${userEmail2},recipient_email.eq.${userEmail1})`
+      }, 'created_at', 100)
+      return messages || []
+    } catch (error) {
+      throw new Error(`Failed to get conversation: ${error.message}`)
+    }
+  }
+
+  /**
+   * Get all messages for a user
+   * @param {string} userEmail - User's email
+   * @returns {Promise<Array>} User's messages
+   */
+  async getUserMessages(userEmail) {
+    try {
+      const messages = await Message.filter({
+        or: `sender_email.eq.${userEmail},recipient_email.eq.${userEmail}`
+      }, 'created_at', 100)
+      return messages || []
+    } catch (error) {
+      throw new Error(`Failed to get user messages: ${error.message}`)
     }
   }
 
@@ -109,7 +173,6 @@ class RealtimeMessagingService {
     })
     this.subscriptions.clear()
     this.listeners.clear()
-    //
   }
 
   /**
@@ -135,14 +198,15 @@ class RealtimeMessagingService {
           filter: `recipient_email=eq.${userEmail}`,
         },
         (payload) => {
-          //
           if (onNotification) {
             onNotification(payload.new)
           }
         }
       )
       .subscribe((status) => {
-        //
+        if (status === 'SUBSCRIBED') {
+          // Subscription successful
+        }
       })
 
     this.subscriptions.set(`notifications:${userEmail}`, channel)
@@ -160,7 +224,6 @@ class RealtimeMessagingService {
     if (channel) {
       supabase.removeChannel(channel)
       this.subscriptions.delete(`notifications:${userEmail}`)
-      //
     }
   }
 
@@ -187,7 +250,6 @@ class RealtimeMessagingService {
           filter: `recipient_email=eq.${userEmail}`,
         },
         (payload) => {
-          //
           if (onConnectionRequest) {
             onConnectionRequest(payload.new)
           }
@@ -202,14 +264,15 @@ class RealtimeMessagingService {
           filter: `recipient_email=eq.${userEmail}`,
         },
         (payload) => {
-          //
           if (onConnectionRequest) {
             onConnectionRequest(payload.new)
           }
         }
       )
       .subscribe((status) => {
-        //
+        if (status === 'SUBSCRIBED') {
+          // Subscription successful
+        }
       })
 
     this.subscriptions.set(`connections:${userEmail}`, channel)
@@ -227,7 +290,6 @@ class RealtimeMessagingService {
     if (channel) {
       supabase.removeChannel(channel)
       this.subscriptions.delete(`connections:${userEmail}`)
-      //
     }
   }
 }
