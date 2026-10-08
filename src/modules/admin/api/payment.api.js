@@ -19,7 +19,7 @@ export const getPaymentSettings = async () => {
     if (error) throw error
     return data?.[0] || null
   } catch (err) {
-    
+
     throw err
   }
 }
@@ -44,7 +44,7 @@ export const saveMpesaSettings = async (mpesaSettings) => {
     if (error) throw error
     return data
   } catch (err) {
-    
+
     throw err
   }
 }
@@ -68,7 +68,7 @@ export const saveNexusPaySettings = async (nexusPaySettings) => {
     if (error) throw error
     return data
   } catch (err) {
-    
+
     throw err
   }
 }
@@ -92,7 +92,7 @@ export const saveMollieSettings = async (mollieSettings) => {
     if (error) throw error
     return data
   } catch (err) {
-    
+
     throw err
   }
 }
@@ -116,7 +116,7 @@ export const saveGeneralPaymentSettings = async (paymentSettings) => {
     if (error) throw error
     return data
   } catch (err) {
-    
+
     throw err
   }
 }
@@ -130,7 +130,7 @@ export const recordMpesaTransaction = async (transaction) => {
     if (error) throw error
     return data
   } catch (err) {
-    
+
     throw err
   }
 }
@@ -144,7 +144,7 @@ export const listMpesaTransactions = async (filters = {}) => {
     if (error) throw error
     return data || []
   } catch (err) {
-    
+
     throw err
   }
 }
@@ -158,7 +158,49 @@ export const updateMpesaTransaction = async (id, updates) => {
     if (error) throw error
     return data
   } catch (err) {
-    
+
+    throw err
+  }
+}
+
+/**
+ * Record a Makamesco transaction.
+ */
+export const recordMakamescoTransaction = async (transaction) => {
+  try {
+    const { data, error } = await base44.entities.makamesco_transactions.create(transaction)
+    if (error) throw error
+    return data
+  } catch (err) {
+
+    throw err
+  }
+}
+
+/**
+ * List Makamesco transactions (optionally filtered).
+ */
+export const listMakamescoTransactions = async (filters = {}) => {
+  try {
+    const { data, error } = await base44.entities.makamesco_transactions.filter(filters, '-created_date')
+    if (error) throw error
+    return data || []
+  } catch (err) {
+
+    throw err
+  }
+}
+
+/**
+ * Update a Makamesco transaction status (e.g., after callback).
+ */
+export const updateMakamescoTransaction = async (id, updates) => {
+  try {
+    const { data, error } = await base44.entities.makamesco_transactions.update(id, updates)
+    if (error) throw error
+    return data
+  } catch (err) {
+
     throw err
   }
 }

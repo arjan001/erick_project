@@ -39,21 +39,21 @@ export default function AdminSidebar() {
     fetchUnreadMessages()
     fetchUnreadNotifications()
 
-    (async () => {
-      unsubscribe = Message.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchUnreadMessages()
-      })
-    })()
+      (async () => {
+        unsubscribe = Message.subscribe((event) => {
+          if (event.data?.recipient_email === user.email) fetchUnreadMessages()
+        })
+      })()
 
-    (async () => {
-      const notifUnsubscribe = Notification.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchUnreadNotifications()
-      })
-      return () => {
-        unsubscribe && unsubscribe()
-        notifUnsubscribe && notifUnsubscribe()
-      }
-    })()
+      (async () => {
+        const notifUnsubscribe = Notification.subscribe((event) => {
+          if (event.data?.recipient_email === user.email) fetchUnreadNotifications()
+        })
+        return () => {
+          unsubscribe && unsubscribe()
+          notifUnsubscribe && notifUnsubscribe()
+        }
+      })()
 
     return () => unsubscribe && unsubscribe()
   }, [user])
@@ -99,6 +99,7 @@ export default function AdminSidebar() {
         { path: '/Admin/LoginProviders', label: 'Login Providers', icon: Lock },
         { path: '/Admin/APISettings', label: 'API Settings', icon: Key },
         { path: '/Admin/PaymentSettings', label: 'Payment Settings', icon: CreditCard },
+        { path: '/Admin/EmailSettings', label: 'Email Settings', icon: Mail },
       ]
     },
     {
@@ -123,7 +124,7 @@ export default function AdminSidebar() {
   const handleLogout = () => { logout(true); }
 
   return (
-    <div 
+    <div
       className={`fixed left-0 top-0 h-full bg-[#0A0A0A] border-r border-[#1a1a1a] shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col z-50 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
     >
       {/* Logo */}
@@ -182,13 +183,11 @@ export default function AdminSidebar() {
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
-                  className={`relative w-full flex items-center justify-center rounded-xl text-sm transition-colors ${
-                    isCollapsed ? 'px-2 py-2 gap-0' : 'px-3 py-2.5 gap-3'
-                  } ${
-                    isActive(item.path)
+                  className={`relative w-full flex items-center justify-center rounded-xl text-sm transition-colors ${isCollapsed ? 'px-2 py-2 gap-0' : 'px-3 py-2.5 gap-3'
+                    } ${isActive(item.path)
                       ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
+                    }`}
                 >
                   <item.icon className="w-4 h-4 flex-shrink-0" />
                   {!isCollapsed && (

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { CreditCard, Save, DollarSign, Lock, Globe, CheckCircle, AlertTriangle, ToggleLeft, ToggleRight, TestTube, Zap, Settings as SettingsIcon, Smartphone, Loader2, Plus, Trash2, Crown } from 'lucide-react'
 import { getPaymentSettings, saveMpesaSettings, saveMollieSettings, saveGeneralPaymentSettings, saveNexusPaySettings } from '@/modules/admin/api/payment.api'
 import { testMpesaConnection } from '@/services/mpesaService'
-import { testNexusPayConnection } from '@/services/nexusPayService'
+import { testMakamescoConnection } from '@/services/makamescoService'
 import { SubscriptionPackage } from '@/lib/supabaseEntities'
 
 export default function AdminPaymentSettingsPage() {
@@ -99,7 +99,7 @@ export default function AdminPaymentSettingsPage() {
       const pkgs = await SubscriptionPackage.list()
       setPackages(pkgs || [])
     } catch (err) {
-      
+
       // Non-fatal — defaults are already set
     } finally {
       setLoading(false)
@@ -116,7 +116,7 @@ export default function AdminPaymentSettingsPage() {
       await saveMpesaSettings(mpesaSettings)
       success('Saved', 'M-Pesa settings saved successfully')
     } catch (err) {
-      
+
       error('Failed', 'Failed to save M-Pesa settings')
     } finally {
       setSaving(false)
@@ -145,7 +145,7 @@ export default function AdminPaymentSettingsPage() {
       await saveMollieSettings(mollieSettings)
       success('Saved', 'Mollie settings saved successfully')
     } catch (err) {
-      
+
       error('Failed', 'Failed to save Mollie settings')
     } finally {
       setSaving(false)
@@ -158,7 +158,7 @@ export default function AdminPaymentSettingsPage() {
       await saveNexusPaySettings(nexusPaySettings)
       success('Saved', 'Nexus Pay settings saved successfully')
     } catch (err) {
-      
+
       error('Failed', 'Failed to save Nexus Pay settings')
     } finally {
       setSaving(false)
@@ -168,14 +168,17 @@ export default function AdminPaymentSettingsPage() {
   const handleTestNexusPayConnection = async () => {
     setTesting(true)
     try {
-      const result = await testNexusPayConnection(nexusPaySettings.secretKey)
+      const result = await testMakamescoConnection({
+        secretKey: nexusPaySettings.secretKey,
+        phoneNumber: '254700000000' // Test number
+      })
       if (result.success) {
         success('Success', result.message)
       } else {
         error('Failed', result.message)
       }
     } catch (err) {
-      error('Failed', err.message || 'Nexus Pay connection test failed')
+      error('Failed', err.message || 'Makamesco connection test failed')
     } finally {
       setTesting(false)
     }
@@ -187,7 +190,7 @@ export default function AdminPaymentSettingsPage() {
       await saveGeneralPaymentSettings(paymentSettings)
       success('Saved', 'Payment settings saved successfully')
     } catch (err) {
-      
+
       error('Failed', 'Failed to save payment settings')
     } finally {
       setSaving(false)
@@ -774,7 +777,7 @@ export default function AdminPaymentSettingsPage() {
                         <Zap className="w-6 h-6 text-purple-600" />
                       </div>
                       <div>
-                        <h2 className="text-lg font-semibold text-gray-900">Nexus Pay (MakamescoPay)</h2>
+                        <h2 className="text-lg font-semibold text-gray-900">Makamesco/Nexus Pay</h2>
                         <p className="text-sm text-gray-500">Third-party M-Pesa STK Push, card & B2C gateway — makamescopay.com</p>
                       </div>
                     </div>

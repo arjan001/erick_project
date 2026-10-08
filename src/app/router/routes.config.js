@@ -24,6 +24,7 @@ import { MaintenanceGuard } from '@/app/router/guards/MaintenanceGuard'
 // const LoginProvidersGuard = createRoutePermissionGuard('/Admin/LoginProviders')
 // const APISettingsGuard = createRoutePermissionGuard('/Admin/APISettings')
 // const PaymentSettingsGuard = createRoutePermissionGuard('/Admin/PaymentSettings')
+// const EmailSettingsGuard = createRoutePermissionGuard('/Admin/EmailSettings')
 // const AnalyticsGuard = createRoutePermissionGuard('/Admin/Analytics')
 // const FinanceDashboardGuard = createRoutePermissionGuard('/Admin/FinanceDashboard')
 // const JobsGuard = createRoutePermissionGuard('/Admin/Jobs')
@@ -55,6 +56,7 @@ const InvitesGuard = createRoleGuard(['admin'])
 const LoginProvidersGuard = createRoleGuard(['admin'])
 const APISettingsGuard = createRoleGuard(['admin'])
 const PaymentSettingsGuard = createRoleGuard(['admin'])
+const EmailSettingsGuard = createRoleGuard(['admin'])
 const AnalyticsGuard = createRoleGuard(['admin'])
 const FinanceDashboardGuard = createRoleGuard(['admin'])
 const JobsGuard = createRoleGuard(['admin'])
@@ -418,6 +420,12 @@ const adminRoutes = [
     component: () => import('@/modules/admin/pages/AdminPaymentSettingsPage'),
     layout: AdminLayout,
     guard: PaymentSettingsGuard
+  },
+  {
+    path: '/Admin/EmailSettings',
+    component: () => import('@/modules/admin/pages/AdminEmailSettingsPage'),
+    layout: AdminLayout,
+    guard: EmailSettingsGuard
   },
   {
     path: '/Admin/Analytics',

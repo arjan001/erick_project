@@ -769,14 +769,23 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
 
 CREATE TABLE IF NOT EXISTS public.payment_settings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  -- M-Pesa Daraja (Direct)
   mpesa_consumer_key TEXT,
   mpesa_consumer_secret TEXT,
   mpesa_passkey TEXT,
   mpesa_shortcode TEXT,
   mpesa_environment TEXT DEFAULT 'sandbox',
+  -- Makamesco/Nexus Pay (Wrapper)
+  makamesco_public_key TEXT,
+  makamesco_secret_key TEXT,
+  makamesco_settlement_account_id INTEGER,
+  makamesco_enabled BOOLEAN DEFAULT false,
+  -- Card Payments
   stripe_public_key TEXT,
   stripe_secret_key TEXT,
   mollie_api_key TEXT,
+  -- General Settings
+  default_payment_method TEXT DEFAULT 'mpesa', -- mpesa, makamesco, card
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -982,6 +991,7 @@ CREATE TRIGGER trg_feature_flags_updated_at BEFORE UPDATE ON public.feature_flag
 CREATE TRIGGER trg_file_upload_settings_updated_at BEFORE UPDATE ON public.file_upload_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_auth_providers_updated_at BEFORE UPDATE ON public.auth_providers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_email_settings_updated_at BEFORE UPDATE ON public.email_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_makamesco_transactions_updated_at BEFORE UPDATE ON public.makamesco_transactions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_storage_buckets_config_updated_at BEFORE UPDATE ON public.storage_buckets_config FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_partners_updated_at BEFORE UPDATE ON public.partners FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_categories_updated_at BEFORE UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
