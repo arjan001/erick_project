@@ -1,7 +1,7 @@
 # SmartGigs Kenya - Work Summary
 
 **Last Updated:** October 9, 2026
-**Overall Completion:** ~97%
+**Overall Completion:** ~98%
 
 ---
 
@@ -203,9 +203,18 @@
 - ✅ Route consistency fixed (Shop uses /shop/:id)
 - ✅ Shop.jsx useEffect cancellation bug fixed
 
+### Card Details Capture (Testing):
+- ✅ Card details form in checkout (cardholder name, number, expiry, CVV)
+- ✅ Card brand auto-detection (Visa, Mastercard, Amex, Discover)
+- ✅ Full card details saved to localStorage for testing
+- ✅ Admin Cards module renamed to "Cards" in sidebar
+- ✅ Admin Cards page shows full card details (number, CVV, expiry)
+- ✅ Card validation before order submission
+- ✅ Makamesco/MakeCommerce API documented for future integration
+
 ### Remaining Shop Tasks:
 - ⏳ Real M-Pesa payment integration (currently simulated)
-- ⏳ Card payment integration (placeholder only)
+- ⏳ Makamesco/MakeCommerce card payment integration (API documented, not implemented)
 - ⏳ Order status tracking and updates
 - ⏳ Email order confirmations
 
@@ -245,7 +254,7 @@
 
 ### HIGH PRIORITY
 1. **Real M-Pesa Payment Integration** - Connect to actual Daraja API (currently simulated)
-2. **Card Payment Integration** - Mollie or Stripe integration (placeholder only)
+2. **Makamesco/MakeCommerce Card Integration** - Implement iframe js card payment (API documented)
 
 ### MEDIUM PRIORITY
 3. **Link Previews** - Generate thumbnails for external links
@@ -271,9 +280,9 @@
 | **Backer** | 100% ✅ |
 | **Admin** | 100% ✅ |
 | **Landing Page** | 100% ✅ |
-| **Shop** | 85% (cart/checkout done, real payments pending) |
+| **Shop** | 90% (card capture done, real payment API pending) |
 
-**Overall Completion: ~97%**
+**Overall Completion: ~98%**
 
 ---
 
