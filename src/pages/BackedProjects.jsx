@@ -51,25 +51,19 @@ export default function BackedProjects() {
   return (
     <div className="min-h-screen bg-white py-12">
       <SEOMetaTags
-        title="Backed Projects | Eric Rabar Film Funding & Co-Production"
-        description="Discover creative film and video projects seeking sponsorship, co-production partnerships, cultural support, and investment through Eric Rabar. Connect with filmmakers, studios, and production companies across Europe for collaborative opportunities in commercials, music videos, documentaries, and feature films."
-        keywords="film funding, video production investment, co-production partnerships, film sponsorship, cultural support for films, documentary funding, short film backing, commercial production investment, film financing, video project investment, production partnerships, creative collaboration"
-        ogImage="https://ericrabar.com/og-backed-projects.jpg"
+        title="Backed Projects — SmartGigs Kenya"
+        description="Discover creative film and video projects seeking sponsorship, co-production partnerships, cultural support, and investment through SmartGigs Kenya."
+        keywords="film funding, video production investment, co-production partnerships, film sponsorship, cultural support, smartgigs kenya"
+        ogImage="https://smartgigs.co.ke/og-backed.jpg"
         ogType="website"
-        schemaType="CollectionPage"
-        schemaData={{
-          name: "Eric Rabar Backed Projects",
-          description: "Film and video projects seeking funding and co-production partnerships",
-          author: "oneplusafrica.com - OnePlusAfrica Tech Solution"
-        }}
       />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-black">Projects Seeking Backing</h1>
           <p className="text-lg text-gray-600 max-w-2xl">
-            Discover creative projects from studios and filmmakers across Europe looking for sponsorship, 
-            co-production partnerships, or cultural support. Eric Rabar facilitates introductions and collaboration 
+            Discover creative projects from studios and filmmakers looking for sponsorship,
+            co-production partnerships, or cultural support. SmartGigs Kenya facilitates introductions and collaboration
             without handling payments or equity arrangements.
           </p>
         </div>
