@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Job, Project, Application, Notification, Artist, Team } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, User, Calendar, MapPin, Check, X, Crown, Star, Briefcase, Eye, Bookmark, BookmarkCheck, Play, Download, Globe, Linkedin, Instagram, Youtube, Twitter, Award, Languages, Globe2, Building2, Mail, Phone, Tag, Clock, DollarSign, GraduationCap, Search, Filter, MessageSquare, ChevronDown, ChevronUp, TrendingUp, Users } from 'lucide-react';
+import { FileText, User, Calendar, MapPin, Check, X, Crown, Star, Briefcase, Eye, Bookmark, BookmarkCheck, Play, Download, Globe, Linkedin, Instagram, Youtube, Twitter, Award, Languages, Globe2, Building2, Mail, Phone, Tag, Clock, DollarSign, GraduationCap, Search, Filter, MessageSquare, ChevronDown, ChevronUp, TrendingUp, Users, ExternalLink } from 'lucide-react';
 import { createPageUrl } from '@/shared/utils/routing';
 import { useToast } from '@/hooks/useToast';
 import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge';
@@ -929,6 +929,16 @@ export default function ClientApplications() {
                 <p className="text-sm text-gray-600">Application for: {selectedApplication.job_title}</p>
               </div>
               <div className="flex items-center gap-2">
+                {artistProfiles[selectedApplication.artist_email] && (
+                  <Button
+                    onClick={() => navigate(`/ArtistPublicProfile/${artistProfiles[selectedApplication.artist_email].id}`)}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    View Full Profile
+                  </Button>
+                )}
                 <Button
                   onClick={() => handleGeneratePDF(selectedApplication)}
                   variant="outline"
