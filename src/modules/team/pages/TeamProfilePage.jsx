@@ -56,7 +56,7 @@ export default function TeamProfilePage() {
       try {
         const { email } = JSON.parse(storedUser);
         const teams = await Team.filter({ contact_email: email });
-        if (teams.length > 0) {
+        if (teams && teams.length > 0) {
           const t = teams[0];
           setTeam(t);
           setFormData({
@@ -73,6 +73,7 @@ export default function TeamProfilePage() {
         }
       } catch (err) {
         console.error('Error fetching team:', err);
+        setTeam(null);
       } finally {
         setLoading(false);
       }
@@ -81,7 +82,14 @@ export default function TeamProfilePage() {
   }, []);
 
   const handleSave = async () => {
-    if (!team) return;
+    if (!team) {
+      toastError('Error', 'Team profile not found. Please refresh the page.');
+      return;
+    }
+    if (!formData.team_name) {
+      toastError('Validation Error', 'Team name is required');
+      return;
+    }
     try {
       const updated = await Team.update(team.id, {
         ...formData,
@@ -92,12 +100,15 @@ export default function TeamProfilePage() {
       setEditing(false);
     } catch (err) {
       console.error('Error saving profile:', err);
-      toastError('Save Failed', err.message || 'Failed to save profile');
+      toastError('Save Failed', 'Failed to save profile. Please try again.');
     }
   };
 
   const handleSaveBio = async () => {
-    if (!team) return;
+    if (!team) {
+      toastError('Error', 'Team profile not found. Please refresh the page.');
+      return;
+    }
     try {
       const updated = await Team.update(team.id, { description: formData.description });
       setTeam(updated);
@@ -105,12 +116,15 @@ export default function TeamProfilePage() {
       setShowBioModal(false);
     } catch (err) {
       console.error('Error saving bio:', err);
-      toastError('Save Failed', 'Failed to save bio');
+      toastError('Save Failed', 'Failed to save bio. Please try again.');
     }
   };
 
   const handleSavePreferences = async () => {
-    if (!team) return;
+    if (!team) {
+      toastError('Error', 'Team profile not found. Please refresh the page.');
+      return;
+    }
     try {
       const updated = await Team.update(team.id, {
         email_notifications: emailNotifications,
@@ -121,13 +135,16 @@ export default function TeamProfilePage() {
       success('Preferences Updated', 'Your settings have been saved');
     } catch (err) {
       console.error('Error saving preferences:', err);
-      toastError('Save Failed', 'Failed to update preferences');
+      toastError('Save Failed', 'Failed to update preferences. Please try again.');
     }
   };
 
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
-    if (!file || !team) return;
+    if (!file || !team) {
+      toastError('Error', 'Please select a file and ensure team profile exists.');
+      return;
+    }
     setUploadingLogo(true);
     try {
       const response = await base44.integrations.Core.UploadFile({ file });
@@ -137,7 +154,7 @@ export default function TeamProfilePage() {
       success('Logo Updated', 'Team logo updated successfully');
     } catch (err) {
       console.error('Error uploading logo:', err);
-      toastError('Upload Failed', 'Failed to upload logo');
+      toastError('Upload Failed', 'Failed to upload logo. Please try again.');
     } finally {
       setUploadingLogo(false);
     }
