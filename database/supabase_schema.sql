@@ -1164,5 +1164,125 @@ CREATE POLICY "Admin can manage all recordings" ON public.voice_recordings FOR A
 );
 
 -- ============================================================
+-- FEATURED CREATIVES / BRANDS
+-- ============================================================
+
+-- Featured creatives table for carousel (replaces static talentData.js)
+CREATE TABLE IF NOT EXISTS public.featured_creatives (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  creator_id UUID REFERENCES public.creators(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  profession TEXT,
+  location TEXT,
+  profile_image TEXT,
+  cover_image TEXT,
+  images TEXT[], -- Array of image URLs for carousel
+  overlay_text TEXT, -- e.g., "BOLD & BEYOND"
+  badges TEXT[], -- star, flame, chat
+  featured BOOLEAN DEFAULT false,
+  order_index INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Featured brands table for brands carousel
+CREATE TABLE IF NOT EXISTS public.featured_brands (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  logo_url TEXT,
+  website_url TEXT,
+  description TEXT,
+  order_index INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Index for featured tables
+CREATE INDEX IF NOT EXISTS idx_featured_creatives_active ON public.featured_creatives(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_featured_creatives_order ON public.featured_creatives(order_index);
+CREATE INDEX IF NOT EXISTS idx_featured_brands_active ON public.featured_brands(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_featured_brands_order ON public.featured_brands(order_index);
+
+-- Featured Creatives RLS
+CREATE POLICY "Public can view featured creatives" ON public.featured_creatives FOR SELECT USING (is_active = true);
+CREATE POLICY "Admin can manage featured creatives" ON public.featured_creatives FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
+    SELECT id FROM public.roles WHERE role_key = 'admin'
+  ))
+);
+
+-- Featured Brands RLS
+CREATE POLICY "Public can view featured brands" ON public.featured_brands FOR SELECT USING (is_active = true);
+CREATE POLICY "Admin can manage featured brands" ON public.featured_brands FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
+    SELECT id FROM public.roles WHERE role_key = 'admin'
+  ))
+);
+
+-- ============================================================
+-- SHOP AUCTIONS
+-- ============================================================
+
+-- Auction listings for shop products
+CREATE TABLE IF NOT EXISTS public.shop_auctions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  product_id UUID REFERENCES public.shop_products(id) ON DELETE CASCADE,
+  seller_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  starting_price DECIMAL(10, 2) NOT NULL,
+  current_price DECIMAL(10, 2),
+  reserve_price DECIMAL(10, 2),
+  buy_now_price DECIMAL(10, 2),
+  images TEXT[],
+  auction_start TIMESTAMP WITH TIME ZONE NOT NULL,
+  auction_end TIMESTAMP WITH TIME ZONE NOT NULL,
+  status TEXT DEFAULT 'upcoming', -- upcoming, active, ended, cancelled
+  is_featured BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Auction bids
+CREATE TABLE IF NOT EXISTS public.auction_bids (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  auction_id UUID REFERENCES public.shop_auctions(id) ON DELETE CASCADE,
+  bidder_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  bid_amount DECIMAL(10, 2) NOT NULL,
+  is_winning BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Index for auctions
+CREATE INDEX IF NOT EXISTS idx_auctions_status ON public.shop_auctions(status);
+CREATE INDEX IF NOT EXISTS idx_auctions_dates ON public.shop_auctions(auction_start, auction_end);
+CREATE INDEX IF NOT EXISTS idx_auctions_product ON public.shop_auctions(product_id);
+CREATE INDEX IF NOT EXISTS idx_auction_bids_auction ON public.auction_bids(auction_id);
+CREATE INDEX IF NOT EXISTS idx_auction_bids_bidder ON public.auction_bids(bidder_id);
+
+-- Auctions RLS
+CREATE POLICY "Public can view active auctions" ON public.shop_auctions FOR SELECT USING (status IN ('upcoming', 'active', 'ended'));
+CREATE POLICY "Users can view own auctions" ON public.shop_auctions FOR SELECT USING (seller_id = auth.uid());
+CREATE POLICY "Users can create auctions" ON public.shop_auctions FOR INSERT WITH CHECK (seller_id = auth.uid());
+CREATE POLICY "Sellers can update own auctions" ON public.shop_auctions FOR UPDATE USING (seller_id = auth.uid());
+CREATE POLICY "Admin can manage all auctions" ON public.shop_auctions FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
+    SELECT id FROM public.roles WHERE role_key = 'admin'
+  ))
+);
+
+-- Auction Bids RLS
+CREATE POLICY "Public can view auction bids" ON public.auction_bids FOR SELECT USING (true);
+CREATE POLICY "Users can place bids" ON public.auction_bids FOR INSERT WITH CHECK (bidder_id = auth.uid());
+CREATE POLICY "Users can view own bids" ON public.auction_bids FOR SELECT USING (bidder_id = auth.uid());
+CREATE POLICY "Admin can manage all bids" ON public.auction_bids FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
+    SELECT id FROM public.roles WHERE role_key = 'admin'
+  ))
+);
+
+-- ============================================================
 -- END OF SCHEMA
 -- ============================================================

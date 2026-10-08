@@ -4,7 +4,22 @@
 
 ---
 
-## 🚨 ROUTING FIXES APPLIED
+## � BACKEND ARCHITECTURE CLARIFICATION
+
+**Important:** The project uses **Base44 SDK** as the backend service (similar to Supabase), not a separate Supabase instance.
+
+- **Primary Backend:** Base44 SDK (`@base44/sdk`)
+- **Entities:** Defined in Base44 cloud, accessed via `base44.entities`
+- **Entity Wrappers:** `src/lib/supabaseEntities.js` wraps Base44 entities to match Supabase-style API
+- **SQL Schema:** `database/supabase_schema.sql` is documentation/reference for entity structure
+- **Data Storage:** All data stored in Base44 cloud database
+- **File Uploads:** Uses Base44's `base44.integrations.Core.UploadFile`
+
+When audit says "Backend Connected to Base44 ✅", it means the feature is using the Base44 SDK entity system correctly.
+
+---
+
+## �🚨 ROUTING FIXES APPLIED
 
 ### ✅ Fixed Issues
 1. **Hero.jsx CTA Buttons**

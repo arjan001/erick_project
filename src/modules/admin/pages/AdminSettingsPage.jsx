@@ -7,7 +7,7 @@ import { Textarea } from '@/shared/components/ui/textarea';
 import { Switch } from '@/shared/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Save, Globe, Mail, Bell, Shield, Users, CreditCard, Store, Settings as SettingsIcon, Layout, FileText, Link as LinkIcon, ScrollText, Grid3x3, CheckCircle, AlertTriangle, Info, Zap, Lock, Palette, Smartphone, Database, Globe2 } from 'lucide-react';
+import { Save, Globe, Mail, Bell, Shield, Users, CreditCard, Store, Settings as SettingsIcon, Layout, FileText, Link as LinkIcon, ScrollText, Grid3x3, CheckCircle, AlertTriangle, Info, Zap, Lock, Palette, Smartphone, Database, Globe2, Gavel } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SystemSetting } from '@/lib/supabaseEntities';
 import { useToast } from '@/hooks/useToast.jsx';
@@ -132,6 +132,9 @@ export default function AdminSettingsPage() {
     { icon: FileText, label: 'SEO & CMS', href: '/Admin/SEOCMS', color: 'bg-gray-50 text-gray-600' },
     { icon: LinkIcon, label: 'API', href: '/Admin/APISettings', color: 'bg-gray-50 text-gray-600' },
     { icon: FileText, label: 'Popups', href: '/Admin/Popups', color: 'bg-gray-50 text-gray-600' },
+    { icon: Users, label: 'Featured Creatives', href: '/Admin/FeaturedCreatives', color: 'bg-gray-50 text-gray-600' },
+    { icon: Building2, label: 'Featured Brands', href: '/Admin/FeaturedBrands', color: 'bg-gray-50 text-gray-600' },
+    { icon: Gavel, label: 'Shop Auctions', href: '/Admin/ShopAuctions', color: 'bg-gray-50 text-gray-600' },
   ];
 
   const SettingCard = ({ icon: Icon, title, description, children, warning }) => (

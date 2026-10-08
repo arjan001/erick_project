@@ -538,6 +538,24 @@ const adminRoutes = [
     component: () => import('@/modules/admin/pages/AdminPopupsPage'),
     layout: AdminLayout,
     guard: AdminDashboardGuard
+  },
+  {
+    path: '/Admin/FeaturedCreatives',
+    component: () => import('@/modules/admin/pages/AdminFeaturedCreativesPage'),
+    layout: AdminLayout,
+    guard: AdminDashboardGuard
+  },
+  {
+    path: '/Admin/FeaturedBrands',
+    component: () => import('@/modules/admin/pages/AdminFeaturedBrandsPage'),
+    layout: AdminLayout,
+    guard: AdminDashboardGuard
+  },
+  {
+    path: '/Admin/ShopAuctions',
+    component: () => import('@/modules/admin/pages/AdminShopAuctionsPage'),
+    layout: AdminLayout,
+    guard: AdminDashboardGuard
   }
 ];
 
