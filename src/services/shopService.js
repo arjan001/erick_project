@@ -1,16 +1,14 @@
-import { base44 } from '@/api/base44Client';
+import { ShopProduct, Cart, Wishlist, ShopOrder } from '@/lib/supabaseEntities';
 import { buildSeedProducts } from '@/data/shopProducts';
-
-const productsEntity = base44.entities.products || {
-  list: async () => [],
-  filter: async () => [],
-  get: async () => null,
-  create: async () => null,
-  update: async () => null,
-  delete: async () => null,
-};
+import { useAuth } from '@/lib/AuthContext';
 
 const seedProducts = buildSeedProducts();
+
+// Get current user ID for cart/wishlist operations
+let currentUserId = null;
+export function setCurrentUserId(userId) {
+  currentUserId = userId;
+}
 
 /**
  * Check if a product is an auction product
@@ -32,7 +30,7 @@ export function discountPercent(product) {
  */
 export async function listProducts() {
   try {
-    const products = await productsEntity.list('created_at', 100);
+    const products = await ShopProduct.list('-created_at', 100);
     if (products && products.length > 0) return products;
     // Fallback to seed products if entity is empty
     return seedProducts;
@@ -48,7 +46,7 @@ export async function listProducts() {
 export async function getProduct(id) {
   try {
     // Try entity first
-    const product = await productsEntity.get(id);
+    const product = await ShopProduct.get(id);
     if (product) return product;
 
     // Fallback to seed products for development
@@ -69,7 +67,7 @@ export async function getProduct(id) {
  */
 export async function createProduct(data) {
   try {
-    return await productsEntity.create({
+    return await ShopProduct.create({
       ...data,
       created_at: new Date().toISOString(),
       status: data.status || 'active',
@@ -85,7 +83,7 @@ export async function createProduct(data) {
  */
 export async function updateProduct(id, data) {
   try {
-    return await productsEntity.update(id, {
+    return await ShopProduct.update(id, {
       ...data,
       updated_at: new Date().toISOString(),
     });
@@ -100,7 +98,7 @@ export async function updateProduct(id, data) {
  */
 export async function deleteProduct(id) {
   try {
-    await productsEntity.delete(id);
+    await ShopProduct.delete(id);
     return true;
   } catch (error) {
     console.error('Failed to delete product:', error);
@@ -113,7 +111,7 @@ export async function deleteProduct(id) {
  */
 export async function filterProducts(filters) {
   try {
-    return await productsEntity.filter(filters, 'created_at', 100);
+    return await ShopProduct.filter(filters, '-created_at', 100);
   } catch (error) {
     console.error('Failed to filter products:', error);
     return [];
@@ -282,112 +280,156 @@ export async function getShopSettings() {
 // CART & CHECKOUT
 // ============================================================================
 
-const cartStorageKey = 'smartgigs_cart';
-const wishlistStorageKey = 'smartgigs_wishlist';
-
-export function getCart() {
+export async function getCart() {
+  if (!currentUserId) return [];
   try {
-    const raw = localStorage.getItem(cartStorageKey);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
+    const cartItems = await Cart.filter({ user_id: currentUserId });
+    return cartItems || [];
+  } catch (error) {
+    console.error('Failed to get cart:', error);
     return [];
   }
 }
 
-export function setCart(items) {
-  localStorage.setItem(cartStorageKey, JSON.stringify(items));
+export async function setCart(items) {
+  // Cart is persisted to database, this function is for local state sync only
 }
 
-export function getWishlist() {
+export async function getWishlist() {
+  if (!currentUserId) return [];
   try {
-    const raw = localStorage.getItem(wishlistStorageKey);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
+    const wishlistItems = await Wishlist.filter({ user_id: currentUserId });
+    return wishlistItems || [];
+  } catch (error) {
+    console.error('Failed to get wishlist:', error);
     return [];
   }
 }
 
-export function setWishlist(items) {
-  localStorage.setItem(wishlistStorageKey, JSON.stringify(items));
+export async function setWishlist(items) {
+  // Wishlist is persisted to database, this function is for local state sync only
 }
 
-export function addToWishlist(product) {
-  const wishlist = getWishlist();
-  const exists = wishlist.find(item => item.product_id === product.id);
+export async function addToWishlist(product) {
+  if (!currentUserId) return [];
 
-  if (!exists) {
-    wishlist.push({
-      id: Date.now().toString(),
+  try {
+    // Check if already in wishlist
+    const existing = await Wishlist.filter({ user_id: currentUserId, product_id: product.id });
+    if (existing && existing.length > 0) {
+      return existing;
+    }
+
+    // Add to wishlist
+    const wishlistItem = await Wishlist.create({
+      user_id: currentUserId,
       product_id: product.id,
-      product_name: product.name,
-      image: product.image || product.images?.[0],
-      price: product.price,
-      added_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     });
-    setWishlist(wishlist);
+
     window.dispatchEvent(new Event('wishlist-updated'));
+    return await getWishlist();
+  } catch (error) {
+    console.error('Failed to add to wishlist:', error);
+    return await getWishlist();
   }
-
-  return wishlist;
 }
 
-export function removeFromWishlist(itemId) {
-  const wishlist = getWishlist().filter(item => item.id !== itemId);
-  setWishlist(wishlist);
-  window.dispatchEvent(new Event('wishlist-updated'));
-  return wishlist;
+export async function removeFromWishlist(itemId) {
+  if (!currentUserId) return [];
+
+  try {
+    await Wishlist.delete(itemId);
+    window.dispatchEvent(new Event('wishlist-updated'));
+    return await getWishlist();
+  } catch (error) {
+    console.error('Failed to remove from wishlist:', error);
+    return await getWishlist();
+  }
 }
 
-export function isInWishlist(productId) {
-  const wishlist = getWishlist();
-  return wishlist.some(item => item.product_id === productId);
+export async function isInWishlist(productId) {
+  if (!currentUserId) return false;
+  try {
+    const existing = await Wishlist.filter({ user_id: currentUserId, product_id: productId });
+    return existing && existing.length > 0;
+  } catch (error) {
+    console.error('Failed to check wishlist:', error);
+    return false;
+  }
 }
 
-export function addToCart(product, quantity = 1) {
-  const cart = getCart();
-  const existing = cart.find(item => item.product_id === product.id);
+export async function addToCart(product, quantity = 1) {
+  if (!currentUserId) return [];
 
-  if (existing) {
-    existing.quantity = Number(existing.quantity) + quantity;
-  } else {
-    cart.push({
-      id: Date.now().toString(),
+  try {
+    // Check if already in cart
+    const existing = await Cart.filter({ user_id: currentUserId, product_id: product.id });
+    if (existing && existing.length > 0) {
+      // Update quantity
+      const updated = await Cart.update(existing[0].id, {
+        quantity: Number(existing[0].quantity) + quantity,
+      });
+      window.dispatchEvent(new Event('cart-updated'));
+      return await getCart();
+    }
+
+    // Add to cart
+    await Cart.create({
+      user_id: currentUserId,
       product_id: product.id,
-      product_name: product.name,
-      image: product.image || product.images?.[0],
-      unit_price: product.discount_price || product.price,
       quantity,
-      is_auction_claim: false,
+      created_at: new Date().toISOString(),
     });
-  }
 
-  setCart(cart);
-  // Emit event for navbar to update
-  window.dispatchEvent(new Event('cart-updated'));
-  return cart;
-}
-
-export function removeFromCart(itemId) {
-  const cart = getCart().filter(item => item.id !== itemId);
-  setCart(cart);
-  window.dispatchEvent(new Event('cart-updated'));
-  return cart;
-}
-
-export function updateCartQuantity(itemId, quantity) {
-  const cart = getCart();
-  const item = cart.find(item => item.id === itemId);
-  if (item) {
-    item.quantity = Math.max(1, Number(quantity));
-    setCart(cart);
     window.dispatchEvent(new Event('cart-updated'));
+    return await getCart();
+  } catch (error) {
+    console.error('Failed to add to cart:', error);
+    return await getCart();
   }
-  return cart;
 }
 
-export function clearCart() {
-  localStorage.removeItem(cartStorageKey);
-  window.dispatchEvent(new Event('cart-updated'));
+export async function removeFromCart(itemId) {
+  if (!currentUserId) return [];
+
+  try {
+    await Cart.delete(itemId);
+    window.dispatchEvent(new Event('cart-updated'));
+    return await getCart();
+  } catch (error) {
+    console.error('Failed to remove from cart:', error);
+    return await getCart();
+  }
+}
+
+export async function updateCartQuantity(itemId, quantity) {
+  if (!currentUserId) return [];
+
+  try {
+    await Cart.update(itemId, { quantity });
+    window.dispatchEvent(new Event('cart-updated'));
+    return await getCart();
+  } catch (error) {
+    console.error('Failed to update cart quantity:', error);
+    return await getCart();
+  }
+}
+
+export async function clearCart() {
+  if (!currentUserId) return [];
+
+  try {
+    const cartItems = await Cart.filter({ user_id: currentUserId });
+    for (const item of cartItems) {
+      await Cart.delete(item.id);
+    }
+    window.dispatchEvent(new Event('cart-updated'));
+    return [];
+  } catch (error) {
+    console.error('Failed to clear cart:', error);
+    return await getCart();
+  }
 }
 
 export function calcTotals(cart, settings) {
@@ -405,8 +447,7 @@ export function calcTotals(cart, settings) {
 const OrderStore = {
   async list() {
     try {
-      const entity = base44.entities.shop_orders || { list: async () => [] };
-      return await entity.list('-created_at', 100);
+      return await ShopOrder.list('-created_at', 100);
     } catch {
       return [];
     }
@@ -414,8 +455,7 @@ const OrderStore = {
 
   async create(data) {
     try {
-      const entity = base44.entities.shop_orders || { create: async () => null };
-      return await entity.create({
+      return await ShopOrder.create({
         ...data,
         created_at: new Date().toISOString(),
       });

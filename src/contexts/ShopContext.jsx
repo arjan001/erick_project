@@ -1,78 +1,87 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import { getCart, setCart, addToCart as addToCartService, removeFromCart as removeFromCartService, updateCartQuantity as updateCartQuantityService, clearCart as clearCartService } from '@/services/shopService';
-
-const wishlistStorageKey = 'smartgigs_wishlist';
+import { getCart, setCart, addToCart as addToCartService, removeFromCart as removeFromCartService, updateCartQuantity as updateCartQuantityService, clearCart as clearCartService, getWishlist, setWishlist, addToWishlist as addToWishlistService, removeFromWishlist as removeFromWishlistService, isInWishlist as isInWishlistService, setCurrentUserId } from '@/services/shopService';
 
 const ShopContext = createContext(null);
 
 export function ShopProvider({ children }) {
-  const { isAuthenticated: authIsAuthenticated } = useAuth();
+  const { user, isAuthenticated: authIsAuthenticated } = useAuth();
   const [cart, setCartState] = useState([]);
   const [wishlist, setWishlistState] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadCart();
-    loadWishlist();
-  }, []);
+    if (user?.id) {
+      setCurrentUserId(user.id);
+      loadCart();
+      loadWishlist();
+    }
+  }, [user?.id]);
 
-  const loadCart = () => {
-    setCartState(getCart());
-  };
-
-  const loadWishlist = () => {
+  const loadCart = async () => {
+    setLoading(true);
     try {
-      const raw = localStorage.getItem(wishlistStorageKey);
-      setWishlistState(raw ? JSON.parse(raw) : []);
-    } catch {
-      setWishlistState([]);
+      const cartItems = await getCart();
+      setCartState(cartItems);
+    } catch (error) {
+      console.error('Failed to load cart:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const addToCart = (product, quantity = 1, options = {}) => {
-    const updated = addToCartService(product, quantity, options);
+  const loadWishlist = async () => {
+    setLoading(true);
+    try {
+      const wishlistItems = await getWishlist();
+      setWishlistState(wishlistItems);
+    } catch (error) {
+      console.error('Failed to load wishlist:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addToCart = async (product, quantity = 1, options = {}) => {
+    const updated = await addToCartService(product, quantity, options);
     setCartState(updated);
     return true;
   };
 
-  const removeFromCart = (itemId) => {
-    const updated = removeFromCartService(itemId);
+  const removeFromCart = async (itemId) => {
+    const updated = await removeFromCartService(itemId);
     setCartState(updated);
   };
 
-  const setQuantity = (itemId, quantity) => {
-    const updated = updateCartQuantityService(itemId, quantity);
+  const setQuantity = async (itemId, quantity) => {
+    const updated = await updateCartQuantityService(itemId, quantity);
     setCartState(updated);
   };
 
-  const clear = () => {
-    clearCartService();
+  const clear = async () => {
+    await clearCartService();
     setCartState([]);
   };
 
-  const toggleWish = (product) => {
-    const isWished = wishlist.some(w => w.product_id === product.id);
+  const toggleWish = async (product) => {
+    const isWished = await isInWishlistService(product.id);
     let updated;
     if (isWished) {
-      updated = wishlist.filter(w => w.product_id !== product.id);
+      // Remove from wishlist
+      const wishlistItems = await getWishlist();
+      const itemToRemove = wishlistItems.find(w => w.product_id === product.id);
+      if (itemToRemove) {
+        updated = await removeFromWishlistService(itemToRemove.id);
+      }
     } else {
-      updated = [...wishlist, {
-        id: Date.now().toString(),
-        product_id: product.id,
-        product_name: product.name,
-        image: product.image || product.images?.[0],
-        price: product.price,
-        added_at: new Date().toISOString(),
-      }];
+      // Add to wishlist
+      updated = await addToWishlistService(product);
     }
     setWishlistState(updated);
-    localStorage.setItem(wishlistStorageKey, JSON.stringify(updated));
-    window.dispatchEvent(new Event('wishlist-updated'));
   };
 
-  const isWished = (productId) => {
-    return wishlist.some(w => w.product_id === productId);
+  const isWished = async (productId) => {
+    return await isInWishlistService(productId);
   };
 
   return (

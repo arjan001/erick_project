@@ -1,36 +1,34 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { Artist, Team, ProjectOwner, Backer, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
+import { supabase } from '@/lib/supabase';
+import { Artist, Team, ProjectOwner, Backer, Subscription, SubscriptionPackage, UserSession } from '@/lib/supabaseEntities';
 import auditLogger from '@/lib/auditLogger';
 
 // Auth Provider Configuration
-// Priority: Base44 (current production) -> Supabase (future) -> Clerk (future)
-// Note: Currently using Base44 auth as primary. Supabase and Clerk can be added
-// as fallback providers by implementing the auth provider switch below.
-const AUTH_PROVIDER = 'base44'; // Options: 'base44', 'supabase', 'clerk'
+// Primary: Supabase -> Clerk (optional, configured in admin)
+const AUTH_PROVIDER = 'supabase'; // Options: 'supabase', 'clerk'
 
 const AuthContext = createContext();
 
 /**
- * Build the app-level user object from a Base44 auth user.
- * Base44 users expose email / full_name / role plus any custom schema fields.
+ * Build the app-level user object from a Supabase auth user.
+ * Supabase users expose email / user_metadata.
  * The app-specific role (artist/team/client/backer) is resolved from the
- * linked entity records when available; otherwise we fall back to metadata
- * stored on the user or a sensible default.
+ * linked entity records when available.
  */
-function buildUser(base44User, appRole) {
-  if (!base44User) return null;
+function buildUser(supabaseUser, appRole) {
+  if (!supabaseUser) return null;
+  const metadata = supabaseUser.user_metadata || {};
   return {
-    id: base44User.id,
-    email: base44User.email,
-    full_name: base44User.full_name || base44User.email?.split('@')[0] || 'User',
-    role: appRole || base44User.role || 'artist',
-    is_system_user: base44User._app_role === 'admin' || base44User.role === 'admin',
-    team_id: base44User.team_id || null,
+    id: supabaseUser.id,
+    email: supabaseUser.email,
+    full_name: metadata.full_name || metadata.name || supabaseUser.email?.split('@')[0] || 'User',
+    role: appRole || metadata.role || 'artist',
+    is_system_user: metadata.is_system_user || metadata.role === 'admin',
+    team_id: metadata.team_id || null,
   };
 }
 
-// Resolve the app role (artist/team/client/backer) for a logged-in Base44
+// Resolve the app role (artist/team/client/backer) for a logged-in Supabase
 // user by checking which entity profile exists for their email.
 async function resolveAppRole(email) {
   if (!email) return 'artist';
@@ -177,6 +175,78 @@ async function updatePresence(u) {
   }
 }
 
+// Track user session with IP address and device info
+async function trackUserSession(user) {
+  if (!user?.id) return;
+
+  try {
+    // Get IP address from ipify API
+    const ipResponse = await fetch('https://api.ipify.org?format=json');
+    const { ip } = await ipResponse.json();
+
+    // Get device info from user agent
+    const userAgent = navigator.userAgent;
+    const deviceType = getDeviceType(userAgent);
+    const browser = getBrowser(userAgent);
+    const os = getOS(userAgent);
+
+    // Create or update session
+    const sessionToken = generateSessionToken();
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+    // Check if session already exists
+    const existingSessions = await UserSession.filter({ user_id: user.id, ip_address: ip });
+    if (existingSessions && existingSessions.length > 0) {
+      // Update existing session
+      await UserSession.update(existingSessions[0].id, {
+        last_activity: new Date().toISOString(),
+        expires_at: expiresAt.toISOString(),
+      });
+    } else {
+      // Create new session
+      await UserSession.create({
+        user_id: user.id,
+        session_token: sessionToken,
+        ip_address: ip,
+        user_agent: userAgent,
+        device_type: deviceType,
+        browser: browser,
+        os: os,
+        expires_at: expiresAt.toISOString(),
+      });
+    }
+  } catch (err) {
+    console.error('Error tracking user session:', err);
+  }
+}
+
+function generateSessionToken() {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
+function getDeviceType(userAgent) {
+  if (/Mobile|Android|iP(ad|hone)/i.test(userAgent)) return 'mobile';
+  if (/Tablet|iPad/i.test(userAgent)) return 'tablet';
+  return 'desktop';
+}
+
+function getBrowser(userAgent) {
+  if (/Chrome/i.test(userAgent)) return 'Chrome';
+  if (/Firefox/i.test(userAgent)) return 'Firefox';
+  if (/Safari/i.test(userAgent)) return 'Safari';
+  if (/Edge/i.test(userAgent)) return 'Edge';
+  return 'Unknown';
+}
+
+function getOS(userAgent) {
+  if (/Windows/i.test(userAgent)) return 'Windows';
+  if (/Mac/i.test(userAgent)) return 'MacOS';
+  if (/Linux/i.test(userAgent)) return 'Linux';
+  if (/Android/i.test(userAgent)) return 'Android';
+  if (/iOS/i.test(userAgent)) return 'iOS';
+  return 'Unknown';
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [permissions, setPermissions] = useState([]);
@@ -192,78 +262,102 @@ export const AuthProvider = ({ children }) => {
   }, [user?.email]);
 
   useEffect(() => {
-    // Auth Provider Switch Logic
-    // Currently using Base44 as primary auth provider.
-    // To add Supabase or Clerk as fallback:
-    // 1. Install Supabase/Clerk SDK packages
-    // 2. Add auth provider initialization based on AUTH_PROVIDER constant
-    // 3. Implement provider-specific login/logout methods
-    // 4. Update resolveAppRole to use provider-specific user data
-
-    // 1. Fallback to localStorage demo session first (works without a Base44 login)
-    const stored = localStorage.getItem('ericrabar_user');
-    let demoUser = null;
-    if (stored) {
-      try {
-        demoUser = JSON.parse(stored);
-        setUser(demoUser);
-        setIsAuthenticated(true);
-      } catch {
-        localStorage.removeItem('ericrabar_user');
-      }
-    }
-
-    // 2. Check for a real Base44 auth session (current primary provider)
+    // Check for Supabase auth session
     (async () => {
-      // Safety timeout: never let the auth check block the app from rendering
-      const timeout = new Promise(resolve => setTimeout(() => resolve('timeout'), 5000));
       try {
-        const result = await Promise.race([
-          (async () => {
-            const authed = await base44.auth.isAuthenticated();
-            if (authed) {
-              const me = await base44.auth.me();
-              const appRole = demoUser?.role || await resolveAppRole(me.email);
-              const u = buildUser(me, appRole);
-              setUser(u);
-              setIsAuthenticated(true);
-              localStorage.setItem('ericrabar_user', JSON.stringify(u));
-              if (me._app_role === 'admin' || me.role === 'admin') {
-                setPermissions(['*']);
-              }
-            }
-            return 'done';
-          })(),
-          timeout,
-        ]);
-        if (result === 'timeout') {
-          console.warn('Auth check timed out after 5s — continuing without auth');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const appRole = await resolveAppRole(session.user.email);
+          const u = buildUser(session.user, appRole);
+          setUser(u);
+          setIsAuthenticated(true);
+
+          // Track user session with IP and device info
+          await trackUserSession(u);
+
+          if (u.is_system_user) {
+            setPermissions(['*']);
+          }
         }
       } catch (err) {
-        console.error('Base44 auth check failed:', err);
+        console.error('Supabase auth check failed:', err);
       } finally {
         setIsLoadingAuth(false);
       }
     })();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const appRole = await resolveAppRole(session.user.email);
+        const u = buildUser(session.user, appRole);
+        setUser(u);
+        setIsAuthenticated(true);
+        await trackUserSession(u);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setIsAuthenticated(false);
+        setPermissions([]);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (userData) => {
-    setUser(userData);
+  const login = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) throw error;
+
+    const appRole = await resolveAppRole(data.user.email);
+    const u = buildUser(data.user, appRole);
+    setUser(u);
     setIsAuthenticated(true);
-    localStorage.setItem('ericrabar_user', JSON.stringify(userData));
-    await auditLogger.auth.login(userData.email);
+    await trackUserSession(u);
+    await auditLogger.auth.login(email);
+
+    // Ensure profile exists
+    await ensureProfile(u);
+
+    return u;
+  };
+
+  const signUp = async (email, password, metadata = {}) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: metadata,
+      },
+    });
+
+    if (error) throw error;
+
+    if (data.user) {
+      const appRole = metadata.role || 'artist';
+      const u = buildUser(data.user, appRole);
+      setUser(u);
+      setIsAuthenticated(true);
+      await trackUserSession(u);
+      await ensureProfile(u);
+    }
+
+    return data;
   };
 
   const updateUser = async (newName) => {
     if (!user) return;
+    const { error } = await supabase.auth.updateUser({
+      data: { full_name: newName },
+    });
+
+    if (error) throw error;
+
     const updatedUser = { ...user, full_name: newName };
     setUser(updatedUser);
-    localStorage.setItem('ericrabar_user', JSON.stringify(updatedUser));
-    try {
-      await base44.auth.updateMe({ full_name: newName });
-    } catch (err) {
-      console.error('Error updating Base44 user metadata:', err);
-    }
   };
 
   const hasPermission = (permissionKey) => permissions.includes('*') || permissions.includes(permissionKey);
@@ -273,11 +367,13 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async (shouldRedirect = true) => {
     const userEmail = user?.email;
-    // 1. Clear all React state first (before Base44 logout to prevent redirect issues)
+    // 1. Clear all React state first
     setUser(null);
     setPermissions([]);
     setIsAuthenticated(false);
-    // 2. Clear every piece of stored auth/session data
+    // 2. Sign out from Supabase
+    await supabase.auth.signOut();
+    // 3. Clear every piece of stored auth/session data
     localStorage.removeItem('ericrabar_user');
     localStorage.removeItem('ericrabar_team');
     localStorage.removeItem('ericrabar_sidebar_expanded');
@@ -285,28 +381,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('smartgigs_sidebar_collapsed');
     sessionStorage.removeItem('ericrabar_just_logged_in');
     sessionStorage.removeItem('ericrabar_onboarding_seen');
-    // Nuke any lingering Supabase keys in localStorage/sessionStorage
-    Object.keys(localStorage).forEach(k => { if (k.startsWith('sb-')) localStorage.removeItem(k); });
-    Object.keys(sessionStorage).forEach(k => { if (k.startsWith('sb-')) sessionStorage.removeItem(k); });
-    // 3. Expire cookies we can reach
-    document.cookie.split(';').forEach(c => {
-      const eq = c.indexOf('=');
-      const name = eq > -1 ? c.slice(0, eq).trim() : c.trim();
-      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + window.location.hostname;
-    });
-    // 4. Sign out from Base44 (clears the stored token + auth header)
-    // We do this after clearing state to prevent Base44 redirect from interfering
-    try {
-      base44.auth.logout();
-    } catch (e) {
-      console.error('base44 logout error:', e);
-    }
-    // 5. Log logout event
+    // 4. Log logout event
     if (userEmail) {
       try { await auditLogger.auth.logout(userEmail); } catch { /* ignore */ }
     }
-    // 6. Redirect to landing page
+    // 5. Redirect to landing page
     if (shouldRedirect) {
       window.location.href = '/';
     }
@@ -315,7 +394,7 @@ export const AuthProvider = ({ children }) => {
   const navigateToLogin = () => { window.location.href = '/SignIn'; };
 
   return (
-    <AuthContext.Provider value={{ user, permissions, isAuthenticated, isLoadingAuth, login, logout, navigateToLogin, updateUser, hasPermission, hasAnyPermission, hasAllPermissions, hasModuleAccess }}>
+    <AuthContext.Provider value={{ user, permissions, isAuthenticated, isLoadingAuth, login, signUp, logout, navigateToLogin, updateUser, hasPermission, hasAnyPermission, hasAllPermissions, hasModuleAccess }}>
       {children}
     </AuthContext.Provider>
   );

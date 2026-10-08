@@ -976,6 +976,12 @@ CREATE TRIGGER trg_shop_products_updated_at BEFORE UPDATE ON public.shop_product
 CREATE TRIGGER trg_shop_orders_updated_at BEFORE UPDATE ON public.shop_orders FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_card_payments_updated_at BEFORE UPDATE ON public.card_payments FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_team_payments_updated_at BEFORE UPDATE ON public.team_payments FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_user_sessions_updated_at BEFORE UPDATE ON public.user_sessions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_cart_updated_at BEFORE UPDATE ON public.cart FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_feature_flags_updated_at BEFORE UPDATE ON public.feature_flags FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_file_upload_settings_updated_at BEFORE UPDATE ON public.file_upload_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_auth_providers_updated_at BEFORE UPDATE ON public.auth_providers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_storage_buckets_config_updated_at BEFORE UPDATE ON public.storage_buckets_config FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_partners_updated_at BEFORE UPDATE ON public.partners FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_categories_updated_at BEFORE UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_cms_pages_updated_at BEFORE UPDATE ON public.cms_pages FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -1122,6 +1128,158 @@ CREATE POLICY "Users can view own testimonials" ON public.testimonials FOR SELEC
 CREATE POLICY "Users can create testimonials" ON public.testimonials FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own testimonials" ON public.testimonials FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own testimonials" ON public.testimonials FOR DELETE USING (auth.uid() = user_id);
+
+-- ============================================================
+-- IP ADDRESS & DEVICE TRACKING
+-- ============================================================
+
+-- Track user IP addresses and device info for security and analytics
+CREATE TABLE IF NOT EXISTS public.user_sessions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  session_token TEXT UNIQUE NOT NULL,
+  ip_address TEXT,
+  user_agent TEXT,
+  device_type TEXT, -- desktop, mobile, tablet
+  browser TEXT,
+  os TEXT,
+  location_country TEXT,
+  location_city TEXT,
+  last_activity TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  expires_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Track job/project views with IP address
+CREATE TABLE IF NOT EXISTS public.job_views (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  job_id UUID REFERENCES public.jobs(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  ip_address TEXT,
+  user_agent TEXT,
+  device_type TEXT,
+  view_count INTEGER DEFAULT 1,
+  last_viewed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(job_id, user_id, ip_address)
+);
+
+CREATE TABLE IF NOT EXISTS public.project_views (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  ip_address TEXT,
+  user_agent TEXT,
+  device_type TEXT,
+  view_count INTEGER DEFAULT 1,
+  last_viewed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(project_id, user_id, ip_address)
+);
+
+-- ============================================================
+-- CART & WISHLIST
+-- ============================================================
+
+-- Shopping cart for users
+CREATE TABLE IF NOT EXISTS public.cart (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  product_id UUID REFERENCES public.shop_products(id) ON DELETE CASCADE,
+  quantity INTEGER DEFAULT 1,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, product_id)
+);
+
+-- Wishlist for users
+CREATE TABLE IF NOT EXISTS public.wishlist (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  product_id UUID REFERENCES public.shop_products(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, product_id)
+);
+
+-- ============================================================
+-- FEATURE FLAGS & SETTINGS
+-- ============================================================
+
+-- Feature flags for controlling platform features
+CREATE TABLE IF NOT EXISTS public.feature_flags (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  flag_key TEXT UNIQUE NOT NULL,
+  flag_value BOOLEAN DEFAULT false,
+  description TEXT,
+  enabled_for TEXT[], -- all, artists, clients, teams, backers, admins
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- System settings for file upload validation
+CREATE TABLE IF NOT EXISTS public.file_upload_settings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  max_file_size_mb INTEGER DEFAULT 10,
+  allowed_image_types TEXT[] DEFAULT '{image/jpeg,image/png,image/webp,image/gif}',
+  allowed_video_types TEXT[] DEFAULT '{video/mp4,video/webm,video/quicktime}',
+  allowed_document_types TEXT[] DEFAULT '{application/pdf}',
+  require_admin_approval BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Authentication provider settings (Supabase, Clerk, etc.)
+CREATE TABLE IF NOT EXISTS public.auth_providers (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  provider_name TEXT UNIQUE NOT NULL, -- supabase, clerk
+  is_enabled BOOLEAN DEFAULT false,
+  is_default BOOLEAN DEFAULT false,
+  config JSONB, -- Store provider-specific config (API keys, etc.)
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================================
+-- RATE LIMITING & SECURITY
+-- ============================================================
+
+-- Rate limiting for API calls
+CREATE TABLE IF NOT EXISTS public.rate_limits (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  ip_address TEXT,
+  endpoint TEXT,
+  request_count INTEGER DEFAULT 1,
+  window_start TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  window_end TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- CSRF tokens for form protection
+CREATE TABLE IF NOT EXISTS public.csrf_tokens (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  token TEXT UNIQUE NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================================
+-- STORAGE BUCKETS CONFIGURATION
+-- ============================================================
+
+-- Storage buckets configuration (for Supabase Storage)
+-- Note: Actual buckets are created via Supabase dashboard or SQL, this tracks config
+CREATE TABLE IF NOT EXISTS public.storage_buckets_config (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  bucket_name TEXT UNIQUE NOT NULL,
+  bucket_type TEXT, -- images, videos, documents, avatars, portfolios
+  allowed_mime_types TEXT[],
+  max_file_size_mb INTEGER,
+  is_public BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
 -- ============================================================
 -- DYNAMIC POPUPS / MODALS
