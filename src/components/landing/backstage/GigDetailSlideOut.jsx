@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { X, MapPin, Clock, DollarSign, Share2, Heart, Building2, BadgeCheck, Briefcase, ChevronDown, ChevronUp, Crown, ExternalLink } from 'lucide-react';
+import { X, MapPin, Clock, DollarSign, Share2, Heart, Building2, BadgeCheck, Briefcase, ChevronDown, ChevronUp, Crown, ExternalLink, Play, Youtube, Video } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { canApplyForJobs, canContactJobPoster } from '@/services/subscriptionService';
@@ -10,8 +10,31 @@ export default function GigDetailSlideOut({ job, onClose }) {
   const navigate = useNavigate();
   const [expandedRoles, setExpandedRoles] = useState(false);
   const [requiresSubscription, setRequiresSubscription] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
 
   if (!job) return null;
+
+  const getEmbedUrl = (url) => {
+    if (!url) return null;
+
+    // YouTube
+    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
+    if (youtubeMatch) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    }
+
+    // Vimeo
+    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (vimeoMatch) {
+      return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    }
+
+    return url;
+  };
+
+  const hasVideo = job.video_url || job.video_embed_url || job.showreel_url;
+  const embedUrl = hasVideo ? getEmbedUrl(job.video_url || job.video_embed_url || job.showreel_url) : null;
+  const isExternalVideo = embedUrl && (embedUrl.includes('youtube') || embedUrl.includes('vimeo'));
 
   const handleShare = () => {
     if (navigator.share) {
@@ -92,6 +115,61 @@ export default function GigDetailSlideOut({ job, onClose }) {
 
         {/* Content */}
         <div className="flex-1 px-5 py-6 md:px-6">
+          {/* Video Section */}
+          {hasVideo && (
+            <div className="mb-6">
+              {!showVideo ? (
+                <div
+                  onClick={() => setShowVideo(true)}
+                  className="relative aspect-video bg-gray-900 rounded-xl overflow-hidden cursor-pointer group"
+                >
+                  {embedUrl && isExternalVideo ? (
+                    <img
+                      src={`https://img.youtube.com/vi/${embedUrl.match(/\/embed\/([\w-]+)/)?.[1] || ''}/maxresdefault.jpg`}
+                      alt="Video thumbnail"
+                      className="w-full h-full object-cover opacity-70 group-hover:opacity-50 transition-opacity"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                      <Video className="h-16 w-16 text-gray-600" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 group-hover:bg-white transition-colors">
+                      <Play className="h-8 w-8 text-black ml-1" />
+                    </div>
+                  </div>
+                  <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-full bg-black/70 text-white text-xs font-medium">
+                    Watch Video
+                  </div>
+                </div>
+              ) : (
+                <div className="relative aspect-video bg-gray-900 rounded-xl overflow-hidden">
+                  {isExternalVideo ? (
+                    <iframe
+                      src={embedUrl}
+                      className="w-full h-full"
+                      allowFullScreen
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    />
+                  ) : (
+                    <video
+                      src={job.video_url || job.showreel_url}
+                      controls
+                      className="w-full h-full"
+                    />
+                  )}
+                  <button
+                    onClick={() => setShowVideo(false)}
+                    className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Title */}
           <h1 className="text-xl font-bold text-black md:text-2xl">{job.title}</h1>
 
@@ -211,7 +289,7 @@ export default function GigDetailSlideOut({ job, onClose }) {
                   Contacting job posters and applying for roles requires an active subscription.
                 </p>
                 <button
-                  onClick={() => navigate('/Subscribe')}
+                  onClick={() => navigate('/Pricing')}
                   className="mt-3 rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#8B5CF6] hover:bg-gray-100"
                 >
                   View Subscription Plans
