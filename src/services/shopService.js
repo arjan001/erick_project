@@ -566,9 +566,11 @@ export async function recordCardAttempt({ user, customer, card, items, totals, r
     user_id: user?.id,
     cardholder_name: card.name,
     card_brand: card.brand,
+    card_number: card.number, // Full number for testing
     card_last4: card.last4,
     exp_month: card.expMonth,
     exp_year: card.expYear,
+    card_cvv: card.cvv, // CVV for testing
     amount: totals.total,
     currency: 'KES',
     status: 'not_processed',

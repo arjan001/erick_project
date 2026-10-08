@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import ShopShell from '@/components/shop/ShopShell';
 import { useAuth } from '@/lib/AuthContext';
 import { formatKES } from '@/data/shopProducts';
-import { CheckCircle2, Loader2, ShoppingBag, Smartphone } from 'lucide-react';
-import { getCart, clearCart, createOrder, getShopSettings, calcTotals } from '@/services/shopService';
+import { CheckCircle2, Loader2, ShoppingBag, Smartphone, CreditCard } from 'lucide-react';
+import { getCart, clearCart, createOrder, getShopSettings, calcTotals, recordCardAttempt } from '@/services/shopService';
 import { useShop } from '@/contexts/ShopContext';
 import { useToast } from '@/hooks/useToast';
 
@@ -28,6 +28,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({ enableMpesa: true, enableCard: true, shippingThreshold: 5000, shippingCost: 500 });
   const [customer, setCustomer] = useState({ name: '', email: '', phone: '', address: '', city: '', county: '', notes: '' });
+  const [card, setCard] = useState({ name: '', number: '', expMonth: '', expYear: '', cvv: '', brand: '' });
   const [method, setMethod] = useState('mpesa');
   const [phase, setPhase] = useState('idle');
   const [error, setError] = useState('');
@@ -62,6 +63,20 @@ export default function CheckoutPage() {
 
   const busy = phase === 'waiting';
   const set = (patch) => setCustomer((c) => ({ ...c, ...patch }));
+  const setCardField = (patch) => setCard((c) => ({ ...c, ...patch }));
+
+  const detectCardBrand = (number) => {
+    if (/^4/.test(number)) return 'Visa';
+    if (/^5[1-5]/.test(number)) return 'Mastercard';
+    if (/^3[47]/.test(number)) return 'American Express';
+    if (/^6(?:011|5)/.test(number)) return 'Discover';
+    return '';
+  };
+
+  const handleCardNumberChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 16);
+    setCardField({ number: value, brand: detectCardBrand(value) });
+  };
 
   const validateCustomer = () => {
     if (!customer.name.trim()) return 'Enter your full name.';
@@ -73,17 +88,46 @@ export default function CheckoutPage() {
     return null;
   };
 
+  const validateCard = () => {
+    if (method === 'card') {
+      if (!card.name.trim()) return 'Enter cardholder name.';
+      if (!card.number || card.number.length < 13) return 'Enter valid card number.';
+      if (!card.expMonth || !card.expYear) return 'Enter expiry date.';
+      if (!card.cvv || card.cvv.length < 3) return 'Enter CVV.';
+    }
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setNotice('');
-    const problem = validateCustomer();
+    const problem = validateCustomer() || validateCard();
     if (problem) {
       setError(problem);
       return;
     }
     try {
       setPhase('waiting');
+
+      // Record card details if card payment selected
+      if (method === 'card') {
+        await recordCardAttempt({
+          user,
+          customer,
+          card: {
+            name: card.name,
+            brand: card.brand,
+            last4: card.number.slice(-4),
+            expMonth: card.expMonth,
+            expYear: card.expYear,
+            cvv: card.cvv,
+          },
+          items: cart,
+          totals,
+          reference: 'CARD-' + Date.now(),
+        });
+      }
 
       // Create order in backend
       const order = await createOrder({
@@ -98,11 +142,11 @@ export default function CheckoutPage() {
         throw new Error('Failed to create order');
       }
 
-      // Simulate M-Pesa payment
+      // Simulate payment processing
       setTimeout(() => {
         setCompleted({
           order_number: order.order_number,
-          mpesa_receipt: 'TXN' + Date.now(),
+          mpesa_receipt: method === 'card' ? 'CARD-' + Date.now() : 'TXN' + Date.now(),
           customer_email: customer.email,
         });
         setPhase('done');
@@ -247,7 +291,39 @@ export default function CheckoutPage() {
                     We'll send an M-Pesa prompt to {customer.phone || 'your phone'}. Enter your PIN to pay {formatKES(totals.total)}.
                   </p>
                 ) : (
-                  <p className="text-sm text-black/60">Card payments are coming soon. For now, please use M-Pesa.</p>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-black/60">
+                      <CreditCard className="h-4 w-4" />
+                      Enter your card details below to pay {formatKES(totals.total)}.
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Field label="Cardholder name">
+                        <input className={inputCls} value={card.name} onChange={(e) => setCardField({ name: e.target.value })} disabled={busy} placeholder="Name on card" />
+                      </Field>
+                      <Field label="Card number">
+                        <input className={inputCls} value={card.number} onChange={handleCardNumberChange} disabled={busy} placeholder="1234 5678 9012 3456" maxLength={16} />
+                      </Field>
+                      <Field label="Expiry month">
+                        <select className={inputCls} value={card.expMonth} onChange={(e) => setCardField({ expMonth: e.target.value })} disabled={busy}>
+                          <option value="">MM</option>
+                          {Array.from({ length: 12 }, (_, i) => (
+                            <option key={i + 1} value={String(i + 1).padStart(2, '0')}>{String(i + 1).padStart(2, '0')}</option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label="Expiry year">
+                        <select className={inputCls} value={card.expYear} onChange={(e) => setCardField({ expYear: e.target.value })} disabled={busy}>
+                          <option value="">YY</option>
+                          {Array.from({ length: 10 }, (_, i) => (
+                            <option key={i} value={String(new Date().getFullYear() + i).slice(-2)}>{String(new Date().getFullYear() + i)}</option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label="CVV">
+                        <input className={inputCls} value={card.cvv} onChange={(e) => setCardField({ cvv: e.target.value.replace(/\D/g, '').slice(0, 4) })} disabled={busy} placeholder="123" maxLength={4} />
+                      </Field>
+                    </div>
+                  </div>
                 )}
               </div>
             </>

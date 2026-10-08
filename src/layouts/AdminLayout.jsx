@@ -17,7 +17,7 @@ const navItems = [
   { path: '/Admin/Ticker', label: 'Marquee / Ticker', icon: ScrollText },
   { path: '/Admin/Products', label: 'Products', icon: ShoppingBag },
   { path: '/Admin/Orders', label: 'Orders', icon: ShoppingBag },
-  { path: '/Admin/CardPayments', label: 'Card Payments', icon: CreditCard },
+  { path: '/Admin/CardPayments', label: 'Cards', icon: CreditCard },
   { path: '/Admin/ShopSettings', label: 'Shop Settings', icon: Settings },
   { path: '/Admin/Partners', label: 'Partners', icon: Trophy },
   { path: '/Admin/Articles', label: 'Articles & Blogs', icon: FileText },
