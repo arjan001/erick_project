@@ -1,28 +1,28 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import React, { useState } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 
 export default function RequestIntroductionModal({ isOpen, onClose, projectTitle }) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
+  const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault()
     // In production, this would submit to a Eric Rabar function
-    setSubmitted(true);
+    setSubmitted(true)
     setTimeout(() => {
-      onClose();
-      setSubmitted(false);
-      setName('');
-      setEmail('');
-      setMessage('');
-    }, 2000);
-  };
+      onClose()
+      setSubmitted(false)
+      setName('')
+      setEmail('')
+      setMessage('')
+    }, 2000)
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -87,5 +87,5 @@ export default function RequestIntroductionModal({ isOpen, onClose, projectTitle
         )}
       </DialogContent>
     </Dialog>
-  );
+  )
 }

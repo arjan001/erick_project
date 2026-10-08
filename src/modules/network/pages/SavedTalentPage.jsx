@@ -1,86 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import { Artist, Connection } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Star, Search, Heart, MapPin, Mail, User, MessageCircle, ExternalLink } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { Artist, Connection } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Star, Search, Heart, MapPin, Mail, User, MessageCircle, ExternalLink } from 'lucide-react'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { useNavigate } from 'react-router-dom'
 
 export default function SavedTalentPage() {
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const navigate = useNavigate();
-  const [savedTalent, setSavedTalent] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const navigate = useNavigate()
+  const [savedTalent, setSavedTalent] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
-    fetchSavedTalent();
-  }, [user]);
+    fetchSavedTalent()
+  }, [user])
 
   const fetchSavedTalent = async () => {
-    if (!user?.email) return;
+    if (!user?.email) return
     try {
-      setLoading(true);
+      setLoading(true)
       // Fetch connections where the current user has saved artists
       const connections = await Connection.filter({
         user_email: user.email,
         connection_type: 'saved',
         status: 'active'
-      });
+      })
 
       if (connections && connections.length > 0) {
         // Fetch artist details for each saved connection
-        const artistIds = connections.map(c => c.connected_artist_id).filter(Boolean);
+        const artistIds = connections.map(c => c.connected_artist_id).filter(Boolean)
         const artists = await Promise.all(
           artistIds.map(id => Artist.get(id))
-        );
-        setSavedTalent(artists.filter(Boolean));
+        )
+        setSavedTalent(artists.filter(Boolean))
       } else {
-        setSavedTalent([]);
+        setSavedTalent([])
       }
     } catch (err) {
-      console.error('Error fetching saved talent:', err);
-      error('Error', 'Failed to fetch saved talent');
+      //
+      error('Error', 'Failed to fetch saved talent')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleUnsave = async (artistId) => {
-    if (!user?.email) return;
+    if (!user?.email) return
     try {
       // Find and delete the connection
       const connections = await Connection.filter({
         user_email: user.email,
         connected_artist_id: artistId,
         connection_type: 'saved'
-      });
+      })
 
       if (connections.length > 0) {
-        await Connection.delete(connections[0].id);
-        setSavedTalent(prev => prev.filter(a => a.id !== artistId));
-        success('Removed', 'Talent removed from saved list');
+        await Connection.delete(connections[0].id)
+        setSavedTalent(prev => prev.filter(a => a.id !== artistId))
+        success('Removed', 'Talent removed from saved list')
       }
     } catch (err) {
-      console.error('Error removing saved talent:', err);
-      error('Failed', 'Failed to remove saved talent');
+      //
+      error('Failed', 'Failed to remove saved talent')
     }
-  };
+  }
 
   const handleMessage = (artistEmail) => {
-    navigate('/Messages', { state: { recipientEmail: artistEmail } });
-  };
+    navigate('/Messages', { state: { recipientEmail: artistEmail } })
+  }
 
   const handleViewProfile = (artistId) => {
-    navigate(`/ArtistPublicProfile/${artistId}`);
-  };
+    navigate(`/ArtistPublicProfile/${artistId}`)
+  }
 
   const filteredTalent = savedTalent.filter(a =>
     a.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     a.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  )
 
   return (
     <div className="bg-white min-h-full">
@@ -189,5 +189,5 @@ export default function SavedTalentPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

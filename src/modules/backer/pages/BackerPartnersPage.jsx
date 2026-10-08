@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Backer, Partner } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Users, Plus, Search, Mail, Building2, Calendar, MessageSquare, Trash2, Edit2, Star } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Backer, Partner } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Users, Plus, Search, Mail, Building2, Calendar, MessageSquare, Trash2, Edit2, Star } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function BackerPartnersPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [backer, setBacker] = useState(null);
-  const [partners, setPartners] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [backer, setBacker] = useState(null)
+  const [partners, setPartners] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
   const [partnerForm, setPartnerForm] = useState({
     name: '',
     company: '',
@@ -25,45 +25,45 @@ export default function BackerPartnersPage() {
     role: '',
     notes: '',
     partnership_type: 'strategic'
-  });
+  })
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    fetchData();
-  }, [isAuthenticated]);
+    fetchData()
+  }, [isAuthenticated])
 
   const fetchData = async () => {
     try {
-      const backers = await Backer.filter({ contact_email: authUser?.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email })
       if (backers.length > 0) {
-        setBacker(backers[0]);
+        setBacker(backers[0])
       }
 
       // Fetch partners
-      const allPartners = await Partner.filter({ backer_email: authUser?.email });
-      setPartners(allPartners);
+      const allPartners = await Partner.filter({ backer_email: authUser?.email })
+      setPartners(allPartners)
     } catch (err) {
-      console.error('Error fetching partners:', err);
-      toastError('Load Failed', 'Failed to load partners. Please try again.');
+      
+      toastError('Load Failed', 'Failed to load partners. Please try again.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCreatePartner = async () => {
-    if (!backer) return;
+    if (!backer) return
     try {
       await Partner.create({
         ...partnerForm,
         backer_email: authUser?.email,
         backer_id: backer.id,
         created_at: new Date().toISOString()
-      });
-      success('Partner Added', 'New partner has been added successfully');
-      setShowModal(false);
+      })
+      success('Partner Added', 'New partner has been added successfully')
+      setShowModal(false)
       setPartnerForm({
         name: '',
         company: '',
@@ -71,38 +71,38 @@ export default function BackerPartnersPage() {
         role: '',
         notes: '',
         partnership_type: 'strategic'
-      });
-      fetchData();
+      })
+      fetchData()
     } catch (err) {
-      console.error('Error creating partner:', err);
-      toastError('Creation Failed', 'Failed to add partner');
+      
+      toastError('Creation Failed', 'Failed to add partner')
     }
-  };
+  }
 
   const handleDeletePartner = async (partnerId) => {
-    if (!confirm('Are you sure you want to remove this partner?')) return;
+    if (!confirm('Are you sure you want to remove this partner?')) return
     try {
-      await Partner.delete(partnerId);
-      success('Partner Removed', 'Partner removed successfully');
-      fetchData();
+      await Partner.delete(partnerId)
+      success('Partner Removed', 'Partner removed successfully')
+      fetchData()
     } catch (err) {
-      console.error('Error deleting partner:', err);
-      toastError('Delete Failed', 'Failed to remove partner');
+      
+      toastError('Delete Failed', 'Failed to remove partner')
     }
-  };
+  }
 
   const filteredPartners = partners.filter(partner =>
     partner.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     partner.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     partner.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  )
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -327,5 +327,5 @@ export default function BackerPartnersPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

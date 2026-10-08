@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronLeft, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock, BarChart3, AlertTriangle, ShoppingBag } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { LogOut, Users, FolderKanban, LayoutDashboard, Shield, FileText, Database, Image, Mail, CreditCard, DollarSign, ChevronLeft, ChevronRight, Menu, X, Bell, Settings, Search, ScrollText, Grid3x3, Star, Trophy, Clock, BarChart3, AlertTriangle, ShoppingBag } from 'lucide-react'
+import { useAuth } from '@/lib/AuthContext'
 
 const navItems = [
   { path: '/Admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
@@ -36,7 +36,7 @@ const navItems = [
   { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: FileText },
   { path: '/Admin/SuccessStories', label: 'Success Stories', icon: Trophy },
   { path: '/Admin/RecentProjects', label: 'Recent Projects', icon: Clock },
-];
+]
 
 const navGroups = [
   { label: 'Main', items: ['/Admin'] },
@@ -46,37 +46,37 @@ const navGroups = [
   { label: 'Content & Communication', items: ['/Admin/Articles', '/Admin/Newsletter', '/Admin/MailingList', '/Admin/Messages', '/Admin/CMS'] },
   { label: 'Integrations', items: ['/Admin/SEOCMS', '/Admin/ImageStorage', '/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
   { label: 'System', items: ['/Admin/GeneralSettings', '/Admin/Analytics', '/Admin/FinanceDashboard', '/Admin/AuditLogs', '/Admin/SuccessStories', '/Admin/RecentProjects'] },
-];
+]
 
 export default function AdminLayout({ children }) {
-  const { user, logout } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const { user, logout } = useAuth()
+  const location = useLocation()
+  const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile drawer
   const [collapsed, setCollapsed] = useState(false); // desktop collapse
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('')
 
   const isActive = (path, exact) => exact
     ? location.pathname === path
-    : location.pathname === path || location.pathname.startsWith(path + '/');
+    : location.pathname === path || location.pathname.startsWith(path + '/')
 
-  const getNavItem = (path) => navItems.find(n => n.path === path);
+  const getNavItem = (path) => navItems.find(n => n.path === path)
 
   // Close mobile sidebar on route change
   useEffect(() => {
-    setSidebarOpen(false);
-  }, [location.pathname]);
+    setSidebarOpen(false)
+  }, [location.pathname])
 
   const filteredNavGroups = navGroups.map(group => ({
     ...group,
     items: group.items.filter(path => {
-      const item = getNavItem(path);
-      if (!item) return false;
-      return item.label.toLowerCase().includes(searchQuery.toLowerCase());
+      const item = getNavItem(path)
+      if (!item) return false
+      return item.label.toLowerCase().includes(searchQuery.toLowerCase())
     })
-  })).filter(group => group.items.length > 0);
+  })).filter(group => group.items.length > 0)
 
-  const sidebarWidth = collapsed ? 'w-16' : 'w-64';
+  const sidebarWidth = collapsed ? 'w-16' : 'w-64'
 
   return (
     <div className="min-h-screen bg-[#f5f6fa]">
@@ -155,8 +155,8 @@ export default function AdminLayout({ children }) {
         <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
           {collapsed ? (
             navItems.map((item) => {
-              const active = isActive(item.path, item.exact);
-              const Icon = item.icon;
+              const active = isActive(item.path, item.exact)
+              const Icon = item.icon
               return (
                 <Link
                   key={item.path}
@@ -169,7 +169,7 @@ export default function AdminLayout({ children }) {
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />
                 </Link>
-              );
+              )
             })
           ) : (
             filteredNavGroups.map((group) => (
@@ -179,10 +179,10 @@ export default function AdminLayout({ children }) {
                 </div>
                 <div className="space-y-1">
                   {group.items.map((path) => {
-                    const item = getNavItem(path);
-                    if (!item) return null;
-                    const Icon = item.icon;
-                    const active = isActive(path, item.exact);
+                    const item = getNavItem(path)
+                    if (!item) return null
+                    const Icon = item.icon
+                    const active = isActive(path, item.exact)
                     return (
                       <Link
                         key={path}
@@ -195,7 +195,7 @@ export default function AdminLayout({ children }) {
                         <Icon className="w-4 h-4" />
                         <span className="flex-1 text-left">{item.label}</span>
                       </Link>
-                    );
+                    )
                   })}
                 </div>
               </div>
@@ -265,5 +265,5 @@ export default function AdminLayout({ children }) {
         </main>
       </div>
     </div>
-  );
+  )
 }

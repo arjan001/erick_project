@@ -1,24 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 
 // Translation hook - will fetch from Translation entity in production
 export function useTranslation() {
-  const [lang, setLang] = useState('en');
-  const [translations, setTranslations] = useState({});
+  const [lang, setLang] = useState('en')
+  const [translations, setTranslations] = useState({})
 
   useEffect(() => {
-    const savedLang = localStorage.getItem('ericrabar_language') || 'en';
-    setLang(savedLang);
+    const savedLang = localStorage.getItem('ericrabar_language') || 'en'
+    setLang(savedLang)
     
     // In production, fetch from Translation entity
     // For now, using inline translations
-    setTranslations(getStaticTranslations(savedLang));
-  }, []);
+    setTranslations(getStaticTranslations(savedLang))
+  }, [])
 
   const t = (key) => {
-    return translations[key] || key;
-  };
+    return translations[key] || key
+  }
 
-  return { t, lang };
+  return { t, lang }
 }
 
 // Static translations - will be replaced by entity data
@@ -69,7 +69,7 @@ function getStaticTranslations(lang) {
       'hero.cta': 'Iniciar una Producción',
       'footer.rights': 'Eric Rabar. Todos los derechos reservados.',
     }
-  };
+  }
 
-  return translations[lang] || translations.en;
+  return translations[lang] || translations.en
 }

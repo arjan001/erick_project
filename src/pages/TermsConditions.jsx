@@ -1,7 +1,7 @@
-import React from 'react';
-import { FileText, AlertCircle, CheckCircle, XCircle, Scale } from 'lucide-react';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
+import React from 'react'
+import { FileText, AlertCircle, CheckCircle, XCircle, Scale } from 'lucide-react'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
 
 export default function TermsConditions() {
   return (
@@ -95,5 +95,5 @@ export default function TermsConditions() {
 
       <Footer />
     </div>
-  );
+  )
 }

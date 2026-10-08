@@ -10,7 +10,7 @@ const DEFAULT_OPTIONS = {
   useWebWorker: false,
   initialQuality: 0.8,
   fileType: 'image/jpeg'
-};
+}
 
 /**
  * Compress an image file
@@ -19,93 +19,93 @@ const DEFAULT_OPTIONS = {
  * @returns {Promise<File>} - Compressed file
  */
 export async function compressImage(file, options = {}) {
-  const opts = { ...DEFAULT_OPTIONS, ...options };
+  const opts = { ...DEFAULT_OPTIONS, ...options }
   
   // Validate file is an image
   if (!file || !file.type.startsWith('image/')) {
-    throw new Error('File must be an image');
+    throw new Error('File must be an image')
   }
   
   // If file is already small enough, return as-is
   if (file.size <= opts.maxSizeMB * 1024 * 1024) {
-    return file;
+    return file
   }
   
   // Create canvas for compression
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    const reader = new FileReader();
+    const img = new Image()
+    const reader = new FileReader()
     
     reader.onload = (e) => {
-      img.src = e.target.result;
-    };
+      img.src = e.target.result
+    }
     
     reader.onerror = () => {
-      reject(new Error('Failed to read file'));
-    };
+      reject(new Error('Failed to read file'))
+    }
     
     img.onload = () => {
       // Calculate new dimensions
-      let { width, height } = img;
-      const maxDimension = opts.maxWidthOrHeight;
+      let { width, height } = img
+      const maxDimension = opts.maxWidthOrHeight
       
       if (width > maxDimension || height > maxDimension) {
         if (width > height) {
-          height = Math.round((height * maxDimension) / width);
-          width = maxDimension;
+          height = Math.round((height * maxDimension) / width)
+          width = maxDimension
         } else {
-          width = Math.round((width * maxDimension) / height);
-          height = maxDimension;
+          width = Math.round((width * maxDimension) / height)
+          height = maxDimension
         }
       }
       
       // Create canvas and draw image
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
       
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, width, height)
       
       // Compress with decreasing quality until size is acceptable
-      let quality = opts.initialQuality;
-      let compressedFile = null;
+      let quality = opts.initialQuality
+      let compressedFile = null
       
       const attemptCompression = (currentQuality) => {
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              reject(new Error('Failed to compress image'));
-              return;
+              reject(new Error('Failed to compress image'))
+              return
             }
             
             compressedFile = new File([blob], file.name, {
               type: opts.fileType,
               lastModified: Date.now()
-            });
+            })
             
             // If size is acceptable or quality is too low, return
             if (compressedFile.size <= opts.maxSizeMB * 1024 * 1024 || currentQuality <= 0.1) {
-              resolve(compressedFile);
+              resolve(compressedFile)
             } else {
               // Try lower quality
-              attemptCompression(currentQuality - 0.1);
+              attemptCompression(currentQuality - 0.1)
             }
           },
           opts.fileType,
           currentQuality
-        );
-      };
+        )
+      }
       
-      attemptCompression(quality);
-    };
+      attemptCompression(quality)
+    }
     
     img.onerror = () => {
-      reject(new Error('Failed to load image'));
-    };
+      reject(new Error('Failed to load image'))
+    }
     
-    reader.readAsDataURL(file);
-  });
+    reader.readAsDataURL(file)
+  })
 }
 
 /**
@@ -115,20 +115,20 @@ export async function compressImage(file, options = {}) {
  * @returns {Promise<File[]>} - Array of compressed files
  */
 export async function compressImages(files, options = {}) {
-  const compressedFiles = [];
+  const compressedFiles = []
   
   for (const file of files) {
     try {
-      const compressed = await compressImage(file, options);
-      compressedFiles.push(compressed);
+      const compressed = await compressImage(file, options)
+      compressedFiles.push(compressed)
     } catch (error) {
-      console.error(`Failed to compress ${file.name}:`, error);
+      
       // Return original file if compression fails
-      compressedFiles.push(file);
+      compressedFiles.push(file)
     }
   }
   
-  return compressedFiles;
+  return compressedFiles
 }
 
 /**
@@ -138,23 +138,23 @@ export async function compressImages(files, options = {}) {
  */
 export async function getImageDimensions(file) {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    const reader = new FileReader();
+    const img = new Image()
+    const reader = new FileReader()
     
     reader.onload = (e) => {
-      img.src = e.target.result;
-    };
+      img.src = e.target.result
+    }
     
     img.onload = () => {
-      resolve({ width: img.width, height: img.height });
-    };
+      resolve({ width: img.width, height: img.height })
+    }
     
     img.onerror = () => {
-      reject(new Error('Failed to load image'));
-    };
+      reject(new Error('Failed to load image'))
+    }
     
-    reader.readAsDataURL(file);
-  });
+    reader.readAsDataURL(file)
+  })
 }
 
 /**
@@ -164,25 +164,25 @@ export async function getImageDimensions(file) {
  * @returns {Promise<boolean>} - Whether image needs compression
  */
 export async function needsCompression(file, options = {}) {
-  const opts = { ...DEFAULT_OPTIONS, ...options };
+  const opts = { ...DEFAULT_OPTIONS, ...options }
   
   // Check file size
   if (file.size > opts.maxSizeMB * 1024 * 1024) {
-    return true;
+    return true
   }
   
   // Check dimensions
   try {
-    const { width, height } = await getImageDimensions(file);
+    const { width, height } = await getImageDimensions(file)
     if (width > opts.maxWidthOrHeight || height > opts.maxWidthOrHeight) {
-      return true;
+      return true
     }
   } catch {
     // If we can't check dimensions, assume compression is needed if file is large
-    return file.size > opts.maxSizeMB * 1024 * 1024;
+    return file.size > opts.maxSizeMB * 1024 * 1024
   }
   
-  return false;
+  return false
 }
 
 /**
@@ -193,46 +193,46 @@ export async function needsCompression(file, options = {}) {
  */
 export async function convertToWebP(file, quality = 0.8) {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    const reader = new FileReader();
+    const img = new Image()
+    const reader = new FileReader()
     
     reader.onload = (e) => {
-      img.src = e.target.result;
-    };
+      img.src = e.target.result
+    }
     
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      const canvas = document.createElement('canvas')
+      canvas.width = img.width
+      canvas.height = img.height
       
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0)
       
       canvas.toBlob(
         (blob) => {
           if (!blob) {
-            reject(new Error('Failed to convert to WebP'));
-            return;
+            reject(new Error('Failed to convert to WebP'))
+            return
           }
           
           const webpFile = new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), {
             type: 'image/webp',
             lastModified: Date.now()
-          });
+          })
           
-          resolve(webpFile);
+          resolve(webpFile)
         },
         'image/webp',
         quality
-      );
-    };
+      )
+    }
     
     img.onerror = () => {
-      reject(new Error('Failed to load image'));
-    };
+      reject(new Error('Failed to load image'))
+    }
     
-    reader.readAsDataURL(file);
-  });
+    reader.readAsDataURL(file)
+  })
 }
 
 /**
@@ -240,8 +240,8 @@ export async function convertToWebP(file, quality = 0.8) {
  * @returns {boolean} - Whether WebP is supported
  */
 export function isWebPSupported() {
-  const canvas = document.createElement('canvas');
-  return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+  const canvas = document.createElement('canvas')
+  return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0
 }
 
 /**
@@ -252,59 +252,59 @@ export function isWebPSupported() {
  */
 export async function generateThumbnail(file, size = 200) {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    const reader = new FileReader();
+    const img = new Image()
+    const reader = new FileReader()
     
     reader.onload = (e) => {
-      img.src = e.target.result;
-    };
+      img.src = e.target.result
+    }
     
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
+      const canvas = document.createElement('canvas')
+      canvas.width = size
+      canvas.height = size
       
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d')
       
       // Calculate crop dimensions to center image
-      let { width, height } = img;
-      let x = 0, y = 0;
+      let { width, height } = img
+      let x = 0, y = 0
       
       if (width > height) {
-        x = (width - height) / 2;
-        width = height;
+        x = (width - height) / 2
+        width = height
       } else {
-        y = (height - width) / 2;
-        height = width;
+        y = (height - width) / 2
+        height = width
       }
       
-      ctx.drawImage(img, x, y, width, height, 0, 0, size, size);
+      ctx.drawImage(img, x, y, width, height, 0, 0, size, size)
       
       canvas.toBlob(
         (blob) => {
           if (!blob) {
-            reject(new Error('Failed to generate thumbnail'));
-            return;
+            reject(new Error('Failed to generate thumbnail'))
+            return
           }
           
           const thumbnail = new File([blob], `thumb_${file.name}`, {
             type: 'image/jpeg',
             lastModified: Date.now()
-          });
+          })
           
-          resolve(thumbnail);
+          resolve(thumbnail)
         },
         'image/jpeg',
         0.7
-      );
-    };
+      )
+    }
     
     img.onerror = () => {
-      reject(new Error('Failed to load image'));
-    };
+      reject(new Error('Failed to load image'))
+    }
     
-    reader.readAsDataURL(file);
-  });
+    reader.readAsDataURL(file)
+  })
 }
 
 /**
@@ -314,14 +314,14 @@ export async function generateThumbnail(file, size = 200) {
  * @returns {number} - Quality (0-1)
  */
 export function getOptimalQuality(fileSize, targetSize) {
-  const ratio = targetSize / fileSize;
+  const ratio = targetSize / fileSize
   
   if (ratio >= 1) {
     return 1.0; // No compression needed
   }
   
   // Map ratio to quality (0.1 to 1.0)
-  return Math.max(0.1, Math.min(1.0, ratio));
+  return Math.max(0.1, Math.min(1.0, ratio))
 }
 
 /**
@@ -332,25 +332,25 @@ export function getOptimalQuality(fileSize, targetSize) {
  * @returns {Promise<File[]>} - Array of compressed files
  */
 export async function compressImagesWithProgress(files, options = {}, onProgress) {
-  const compressedFiles = [];
+  const compressedFiles = []
   
   for (let i = 0; i < files.length; i++) {
     try {
-      const compressed = await compressImage(files[i], options);
-      compressedFiles.push(compressed);
+      const compressed = await compressImage(files[i], options)
+      compressedFiles.push(compressed)
       
       if (onProgress) {
-        onProgress(i + 1, files.length);
+        onProgress(i + 1, files.length)
       }
     } catch (error) {
-      console.error(`Failed to compress ${files[i].name}:`, error);
-      compressedFiles.push(files[i]);
+      
+      compressedFiles.push(files[i])
       
       if (onProgress) {
-        onProgress(i + 1, files.length);
+        onProgress(i + 1, files.length)
       }
     }
   }
   
-  return compressedFiles;
+  return compressedFiles
 }

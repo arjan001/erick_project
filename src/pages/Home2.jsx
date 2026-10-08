@@ -1,52 +1,52 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Wand2 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import React, { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Sparkles, Wand2 } from 'lucide-react'
+import { base44 } from '@/api/base44Client'
 
 export default function Home2() {
-  const [referenceUrl, setReferenceUrl] = useState('');
-  const [description, setDescription] = useState('');
-  const [projectType, setProjectType] = useState('commercial');
-  const [extracting, setExtracting] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [referenceUrl, setReferenceUrl] = useState('')
+  const [description, setDescription] = useState('')
+  const [projectType, setProjectType] = useState('commercial')
+  const [extracting, setExtracting] = useState(false)
+  const [generating, setGenerating] = useState(false)
 
   const handleExtract = async () => {
-    if (!referenceUrl) return;
+    if (!referenceUrl) return
     
-    setExtracting(true);
+    setExtracting(true)
     try {
-      const response = await base44.functions.invoke('extractWebsite', { url: referenceUrl });
+      const response = await base44.functions.invoke('extractWebsite', { url: referenceUrl })
       if (response.data?.description) {
-        setDescription(response.data.description);
+        setDescription(response.data.description)
       }
     } catch (error) {
-      console.error('Extract failed:', error);
+      //
     } finally {
-      setExtracting(false);
+      setExtracting(false)
     }
-  };
+  }
 
   const handleGeneratePlan = async () => {
-    if (!description) return;
+    if (!description) return
     
-    setGenerating(true);
+    setGenerating(true)
     try {
       // Generate production plan logic here
       const response = await base44.integrations.Core.InvokeLLM({
         prompt: `Generate a detailed production plan for this project:\n\nType: ${projectType}\nDescription: ${description}\n\nProvide a structured production plan with timeline, departments needed, and key deliverables.`,
-      });
+      })
       
-      console.log('Production plan:', response);
-      alert('Production plan generated! Check console for details.');
+      //
+      alert('Production plan generated! Check console for details.')
     } catch (error) {
-      console.error('Generation failed:', error);
+      //
     } finally {
-      setGenerating(false);
+      setGenerating(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -167,5 +167,5 @@ export default function Home2() {
         </div>
       </div>
     </div>
-  );
+  )
 }

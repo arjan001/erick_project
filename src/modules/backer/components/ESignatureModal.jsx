@@ -1,34 +1,34 @@
-import React, { useRef, useState, useEffect } from 'react';
-import SignatureCanvas from 'react-signature-canvas';
-import { Button } from '@/components/ui/button';
-import { X, Pen, RotateCcw, Check } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react'
+import SignatureCanvas from 'react-signature-canvas'
+import { Button } from '@/components/ui/button'
+import { X, Pen, RotateCcw, Check } from 'lucide-react'
 
 export default function ESignatureModal({ isOpen, onClose, onSign, title = 'Sign Document' }) {
-  const signatureRef = useRef();
-  const [isEmpty, setIsEmpty] = useState(true);
+  const signatureRef = useRef()
+  const [isEmpty, setIsEmpty] = useState(true)
 
   useEffect(() => {
     if (signatureRef.current) {
-      signatureRef.current.onBegin = () => setIsEmpty(false);
+      signatureRef.current.onBegin = () => setIsEmpty(false)
     }
-  }, []);
+  }, [])
 
   const handleClear = () => {
     if (signatureRef.current) {
-      signatureRef.current.clear();
-      setIsEmpty(true);
+      signatureRef.current.clear()
+      setIsEmpty(true)
     }
-  };
+  }
 
   const handleSave = () => {
     if (signatureRef.current && !isEmpty) {
-      const signatureData = signatureRef.current.toDataURL();
-      onSign(signatureData);
-      handleClear();
+      const signatureData = signatureRef.current.toDataURL()
+      onSign(signatureData)
+      handleClear()
     }
-  };
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -84,5 +84,5 @@ export default function ESignatureModal({ isOpen, onClose, onSign, title = 'Sign
         </div>
       </div>
     </div>
-  );
+  )
 }

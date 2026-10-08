@@ -1,10 +1,10 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Home, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Home, ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function NotFoundPage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
@@ -79,5 +79,5 @@ export default function NotFoundPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

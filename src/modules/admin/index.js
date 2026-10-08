@@ -1,2 +1,2 @@
-export * from './api/admin.api';
-export * from './types/admin.dto';
+export * from './api/admin.api'
+export * from './types/admin.dto'

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import ShopShell from '@/components/shop/ShopShell';
-import ProductCard, { buyNowPrice } from '@/components/shop/ProductCard';
-import { formatCountdown, useNow } from '@/components/shop/AuctionMeta';
-import { formatKES } from '@/data/shopProducts';
+import React, { useState, useEffect, useCallback } from 'react'
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
+import ShopShell from '@/components/shop/ShopShell'
+import ProductCard, { buyNowPrice } from '@/components/shop/ProductCard'
+import { formatCountdown, useNow } from '@/components/shop/AuctionMeta'
+import { formatKES } from '@/data/shopProducts'
 import {
   discountPercent as calcDiscount,
   getAuctionInfo,
@@ -12,75 +12,75 @@ import {
   isAuctionProduct,
   joinAuction,
   listProducts,
-} from '@/services/shopService';
-import { useShop } from '@/contexts/ShopContext';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { Flame, Check, ShoppingCart, ArrowLeft, Shield, Gavel, Trophy, Heart, Users } from 'lucide-react';
+} from '@/services/shopService'
+import { useShop } from '@/contexts/ShopContext'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { Flame, Check, ShoppingCart, ArrowLeft, Shield, Gavel, Trophy, Heart, Users } from 'lucide-react'
 
 export default function ProductPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { hash } = useLocation();
-  const { user, isAuthenticated } = useAuth();
-  const { add, toggleWish, isWished } = useShop();
-  const { success, info } = useToast();
-  const now = useNow();
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { hash } = useLocation()
+  const { user, isAuthenticated } = useAuth()
+  const { add, toggleWish, isWished } = useShop()
+  const { success, info } = useToast()
+  const now = useNow()
 
-  const [product, setProduct] = useState(null);
-  const [related, setRelated] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
-  const [joined, setJoined] = useState(false);
-  const [joining, setJoining] = useState(false);
+  const [product, setProduct] = useState(null)
+  const [related, setRelated] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [quantity, setQuantity] = useState(1)
+  const [joined, setJoined] = useState(false)
+  const [joining, setJoining] = useState(false)
 
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setQuantity(1);
+    let cancelled = false
+    setLoading(true)
+    setQuantity(1)
     Promise.all([getProduct(id), listProducts()])
       .then(([p, all]) => {
-        if (cancelled) return;
-        setProduct(p);
-        setRelated(all.filter((x) => String(x.id) !== String(id) && x.status !== 'inactive').slice(0, 4));
+        if (cancelled) return
+        setProduct(p)
+        setRelated(all.filter((x) => String(x.id) !== String(id) && x.status !== 'inactive').slice(0, 4))
       })
-      .catch((err) => console.error('Failed to load product', err))
-      .finally(() => !cancelled && setLoading(false));
+      .catch((err) => //)
+      .finally(() => !cancelled && setLoading(false))
     return () => {
-      cancelled = true;
-    };
-  }, [id]);
+      cancelled = true
+    }
+  }, [id])
 
   useEffect(() => {
-    if (!product || !isAuthenticated || !isAuctionProduct(product)) return;
-    hasJoinedAuction(product.id, user.email).then(setJoined);
-  }, [product?.id, isAuthenticated, user?.email]);
+    if (!product || !isAuthenticated || !isAuctionProduct(product)) return
+    hasJoinedAuction(product.id, user.email).then(setJoined)
+  }, [product?.id, isAuthenticated, user?.email])
 
   useEffect(() => {
     if (!loading && product && hash === '#auction') {
-      document.getElementById('auction')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('auction')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
-  }, [loading, product, hash]);
+  }, [loading, product, hash])
 
   const handleJoin = useCallback(async () => {
     if (!isAuthenticated) {
-      info('Sign in required', 'Please sign in to join this auction.');
-      navigate('/SignIn');
-      return;
+      info('Sign in required', 'Please sign in to join this auction.')
+      navigate('/SignIn')
+      return
     }
-    setJoining(true);
+    setJoining(true)
     try {
-      const res = await joinAuction(product, user);
-      setProduct(res.product);
-      setJoined(true);
-      if (!res.already) success("You're in!", 'Good luck — the winner is drawn when the auction closes.');
+      const res = await joinAuction(product, user)
+      setProduct(res.product)
+      setJoined(true)
+      if (!res.already) success("You're in!", 'Good luck — the winner is drawn when the auction closes.')
     } catch (err) {
-      console.error('Join auction failed', err);
-      info('Could not join', 'Something went wrong. Please try again.');
+      //
+      info('Could not join', 'Something went wrong. Please try again.')
     } finally {
-      setJoining(false);
+      setJoining(false)
     }
-  }, [isAuthenticated, product, user, info, success, navigate]);
+  }, [isAuthenticated, product, user, info, success, navigate])
 
   if (loading) {
     return (
@@ -89,7 +89,7 @@ export default function ProductPage() {
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-black/10 border-t-[#4F46E5]" />
         </div>
       </ShopShell>
-    );
+    )
   }
 
   if (!product) {
@@ -102,17 +102,17 @@ export default function ProductPage() {
           </Link>
         </div>
       </ShopShell>
-    );
+    )
   }
 
-  const auction = isAuctionProduct(product);
-  const aInfo = getAuctionInfo(product, now);
-  const auctionClosed = auction && !aInfo.open;
-  const isWinner = auction && product.auction_winner_email && product.auction_winner_email === user?.email;
-  const outOfStock = Number(product.stock) <= 0;
-  const wished = isWished(product.id);
-  const sale = !auction && calcDiscount(product) > 0;
-  const unitPrice = buyNowPrice(product);
+  const auction = isAuctionProduct(product)
+  const aInfo = getAuctionInfo(product, now)
+  const auctionClosed = auction && !aInfo.open
+  const isWinner = auction && product.auction_winner_email && product.auction_winner_email === user?.email
+  const outOfStock = Number(product.stock) <= 0
+  const wished = isWished(product.id)
+  const sale = !auction && calcDiscount(product) > 0
+  const unitPrice = buyNowPrice(product)
 
   return (
     <ShopShell
@@ -222,8 +222,8 @@ export default function ProductPage() {
                         <p className="text-xs text-amber-800">Claim it now at {formatKES(product.discount_price)}.</p>
                         <button
                           onClick={async () => {
-                            const ok = await add(product, 1, { unitPrice: product.discount_price, isAuctionClaim: true });
-                            if (ok) navigate('/Cart');
+                            const ok = await add(product, 1, { unitPrice: product.discount_price, isAuctionClaim: true })
+                            if (ok) navigate('/Cart')
                           }}
                           className="mt-3 w-full rounded-full bg-amber-500 px-6 py-3 text-sm font-bold text-white hover:bg-amber-600"
                         >
@@ -293,8 +293,8 @@ export default function ProductPage() {
                 <button
                   disabled={outOfStock}
                   onClick={async () => {
-                    const ok = await add(product, quantity, { unitPrice });
-                    if (ok) navigate('/Checkout');
+                    const ok = await add(product, quantity, { unitPrice })
+                    if (ok) navigate('/Checkout')
                   }}
                   className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#4F46E5] px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#4338CA] disabled:cursor-not-allowed disabled:bg-black/20"
                 >
@@ -336,5 +336,5 @@ export default function ProductPage() {
         </div>
       )}
     </ShopShell>
-  );
+  )
 }

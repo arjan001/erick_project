@@ -1,40 +1,40 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import ShopShell from '@/components/shop/ShopShell';
-import { Heart, ShoppingBag, Trash2 } from 'lucide-react';
-import { formatKES } from '@/data/shopProducts';
-import { useShop } from '@/contexts/ShopContext';
-import { getWishlist, removeFromWishlist as removeFromWishlistService } from '@/services/shopService';
-import { useToast } from '@/hooks/useToast';
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import ShopShell from '@/components/shop/ShopShell'
+import { Heart, ShoppingBag, Trash2 } from 'lucide-react'
+import { formatKES } from '@/data/shopProducts'
+import { useShop } from '@/contexts/ShopContext'
+import { getWishlist, removeFromWishlist as removeFromWishlistService } from '@/services/shopService'
+import { useToast } from '@/hooks/useToast'
 
 export default function WishlistPage() {
-  const { addToCart } = useShop();
-  const { success } = useToast();
-  const [wishlist, setWishlist] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { addToCart } = useShop()
+  const { success } = useToast()
+  const [wishlist, setWishlist] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Load wishlist from localStorage on mount
     const loadWishlist = () => {
-      setWishlist(getWishlist());
-      setLoading(false);
-    };
+      setWishlist(getWishlist())
+      setLoading(false)
+    }
 
-    loadWishlist();
+    loadWishlist()
 
     // Listen for wishlist updates from other components
     const handleWishlistUpdate = () => {
-      setWishlist(getWishlist());
-    };
+      setWishlist(getWishlist())
+    }
 
-    window.addEventListener('wishlist-updated', handleWishlistUpdate);
-    return () => window.removeEventListener('wishlist-updated', handleWishlistUpdate);
-  }, []);
+    window.addEventListener('wishlist-updated', handleWishlistUpdate)
+    return () => window.removeEventListener('wishlist-updated', handleWishlistUpdate)
+  }, [])
 
   const removeFromWishlist = (itemId) => {
-    removeFromWishlistService(itemId);
-    setWishlist(getWishlist());
-  };
+    removeFromWishlistService(itemId)
+    setWishlist(getWishlist())
+  }
 
   const moveToCart = (item) => {
     // Create a product object from wishlist item
@@ -43,10 +43,10 @@ export default function WishlistPage() {
       name: item.product_name,
       image: item.image,
       price: item.price,
-    };
-    addToCart(product);
-    success('Added to cart', `${item.product_name} has been added to your cart.`);
-  };
+    }
+    addToCart(product)
+    success('Added to cart', `${item.product_name} has been added to your cart.`)
+  }
 
   if (loading) {
     return (
@@ -59,7 +59,7 @@ export default function WishlistPage() {
           </div>
         </div>
       </ShopShell>
-    );
+    )
   }
 
   return (
@@ -118,5 +118,5 @@ export default function WishlistPage() {
         </div>
       </div>
     </ShopShell>
-  );
+  )
 }

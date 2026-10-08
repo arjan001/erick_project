@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
 
 const SERVICE_IMAGES = {
   commercial: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80',
@@ -9,10 +9,10 @@ const SERVICE_IMAGES = {
   vfx: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80',
   sound: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800&q=80',
   web: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80'
-};
+}
 
 const ServiceVisual = ({ type, isHovered }) => {
-  const imageUrl = SERVICE_IMAGES[type];
+  const imageUrl = SERVICE_IMAGES[type]
   
   return (
     <div className="relative w-full h-full overflow-hidden">
@@ -23,11 +23,11 @@ const ServiceVisual = ({ type, isHovered }) => {
         style={{ transform: isHovered ? 'scale(1.05)' : 'scale(1)' }}
       />
     </div>
-  );
-};
+  )
+}
 
 export default function ServiceCard({ title, desc, visualType }) {
-  const [isHovered, setIsHovered] = useState(false);
+  const [isHovered, setIsHovered] = useState(false)
   
   return (
     <Link
@@ -44,5 +44,5 @@ export default function ServiceCard({ title, desc, visualType }) {
         <p className="text-gray-600">{desc}</p>
       </div>
     </Link>
-  );
+  )
 }

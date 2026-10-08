@@ -1,12 +1,12 @@
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import React from 'react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const COUNTRIES = [
   'Netherlands', 'Belgium', 'France', 'Spain', 'Germany', 'Italy', 
   'United Kingdom', 'Austria', 'Luxembourg', 'Portugal', 'Switzerland', 'Other'
-];
+]
 
 export default function StepLocation({ data, updateData }) {
   return (
@@ -53,5 +53,5 @@ export default function StepLocation({ data, updateData }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

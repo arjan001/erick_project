@@ -1,28 +1,28 @@
-import React, { useState } from 'react';
-import { Upload, X, CheckCircle } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { base44 } from '@/api/base44Client';
+import React, { useState } from 'react'
+import { Upload, X, CheckCircle } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { base44 } from '@/api/base44Client'
 
 export default function ArtistStepPortfolio({ data, updateData }) {
-  const [isUploading, setIsUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false)
   const [agreements, setAgreements] = useState({
     noLogos: false,
     portfolioUsage: false
-  });
+  })
 
   const handleFileUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
     if (!agreements.noLogos || !agreements.portfolioUsage) {
-      alert('Please agree to the portfolio requirements first');
-      return;
+      alert('Please agree to the portfolio requirements first')
+      return
     }
 
-    setIsUploading(true);
+    setIsUploading(true)
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file })
       
       const clipData = {
         uploaded_by_type: 'artist',
@@ -34,19 +34,19 @@ export default function ArtistStepPortfolio({ data, updateData }) {
         no_logos_agreement: agreements.noLogos,
         portfolio_usage_agreement: agreements.portfolioUsage,
         status: 'pending'
-      };
+      }
 
-      updateData('portfolio_clips', [...(data.portfolio_clips || []), clipData]);
+      updateData('portfolio_clips', [...(data.portfolio_clips || []), clipData])
     } catch (error) {
-      alert('Error uploading file. Please try again.');
+      alert('Error uploading file. Please try again.')
     } finally {
-      setIsUploading(false);
+      setIsUploading(false)
     }
-  };
+  }
 
   const removeClip = (index) => {
-    updateData('portfolio_clips', data.portfolio_clips.filter((_, i) => i !== index));
-  };
+    updateData('portfolio_clips', data.portfolio_clips.filter((_, i) => i !== index))
+  }
 
   return (
     <div>
@@ -129,5 +129,5 @@ export default function ArtistStepPortfolio({ data, updateData }) {
         </div>
       )}
     </div>
-  );
+  )
 }

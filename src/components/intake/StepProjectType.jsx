@@ -1,5 +1,5 @@
-import React from 'react';
-import { Film, Video, Tv, Music, FileText, Sparkles, Handshake } from 'lucide-react';
+import React from 'react'
+import { Film, Video, Tv, Music, FileText, Sparkles, Handshake } from 'lucide-react'
 
 const PROJECT_TYPES = [
   { value: 'commercial', label: 'Commercial', icon: Tv, description: 'Brand campaigns and advertising' },
@@ -9,7 +9,7 @@ const PROJECT_TYPES = [
   { value: 'documentary', label: 'Documentary', icon: FileText, description: 'Non-fiction storytelling' },
   { value: 'funding_coproduction', label: 'Funding / Co-Production', icon: Handshake, description: 'Seeking investment or production partners' },
   { value: 'other', label: 'Other', icon: Sparkles, description: 'Other creative projects' },
-];
+]
 
 export default function StepProjectType({ data, updateData }) {
   return (
@@ -19,8 +19,8 @@ export default function StepProjectType({ data, updateData }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {PROJECT_TYPES.map((type) => {
-          const Icon = type.icon;
-          const isSelected = data.project_type === type.value;
+          const Icon = type.icon
+          const isSelected = data.project_type === type.value
           return (
             <button
               key={type.value}
@@ -35,9 +35,9 @@ export default function StepProjectType({ data, updateData }) {
               <h3 className="text-lg font-semibold mb-1 text-black">{type.label}</h3>
               <p className="text-sm text-gray-600">{type.description}</p>
             </button>
-          );
+          )
         })}
       </div>
     </div>
-  );
+  )
 }

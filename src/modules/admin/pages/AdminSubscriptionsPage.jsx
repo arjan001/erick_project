@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { SubscriptionPackage, SubscriptionOrder } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Plus, Edit2, Trash2, Check, X, Crown, Star, Zap } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { SubscriptionPackage, SubscriptionOrder } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Plus, Edit2, Trash2, Check, X, Crown, Star, Zap } from 'lucide-react'
 
 export default function AdminSubscriptionsPage() {
-  const [packages, setPackages] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editingPkg, setEditingPkg] = useState(null);
-  const [activeTab, setActiveTab] = useState('plans');
+  const [packages, setPackages] = useState([])
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [editingPkg, setEditingPkg] = useState(null)
+  const [activeTab, setActiveTab] = useState('plans')
 
   const defaultForm = {
     name: '', description: '', price: '', currency: 'USD',
@@ -17,27 +17,27 @@ export default function AdminSubscriptionsPage() {
     message_limit: 50, connects_included: 10, featured_listing: false,
     priority_support: false, analytics_access: false,
     active: true, display_order: 0
-  };
-  const [form, setForm] = useState(defaultForm);
+  }
+  const [form, setForm] = useState(defaultForm)
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   const fetchData = async () => {
     try {
       const [pkgs, ords] = await Promise.all([
         SubscriptionPackage.list('-display_order', 50),
         SubscriptionOrder.list('-created_at', 100)
-      ]);
-      setPackages(pkgs || []);
-      setOrders(ords || []);
+      ])
+      setPackages(pkgs || [])
+      setOrders(ords || [])
     } catch (err) {
-      console.error(err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSave = async () => {
     try {
@@ -48,39 +48,39 @@ export default function AdminSubscriptionsPage() {
         message_limit: parseInt(form.message_limit),
         connects_included: parseInt(form.connects_included) || 0,
         display_order: parseInt(form.display_order) || 0
-      };
-      if (editingPkg) {
-        await SubscriptionPackage.update(editingPkg.id, data);
-      } else {
-        await SubscriptionPackage.create(data);
       }
-      setShowForm(false);
-      setEditingPkg(null);
-      setForm(defaultForm);
-      fetchData();
+      if (editingPkg) {
+        await SubscriptionPackage.update(editingPkg.id, data)
+      } else {
+        await SubscriptionPackage.create(data)
+      }
+      setShowForm(false)
+      setEditingPkg(null)
+      setForm(defaultForm)
+      fetchData()
     } catch (err) {
-      alert('Error saving plan: ' + err.message);
+      alert('Error saving plan: ' + err.message)
     }
-  };
+  }
 
   const handleEdit = (pkg) => {
-    setEditingPkg(pkg);
-    setForm({ ...pkg });
-    setShowForm(true);
-  };
+    setEditingPkg(pkg)
+    setForm({ ...pkg })
+    setShowForm(true)
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this plan?')) return;
-    await SubscriptionPackage.delete(id);
-    fetchData();
-  };
+    if (!confirm('Delete this plan?')) return
+    await SubscriptionPackage.delete(id)
+    fetchData()
+  }
 
   const handleToggleActive = async (pkg) => {
-    await SubscriptionPackage.update(pkg.id, { active: !pkg.active });
-    fetchData();
-  };
+    await SubscriptionPackage.update(pkg.id, { active: !pkg.active })
+    fetchData()
+  }
 
-  if (loading) return <div className="p-8 text-gray-500">Loading...</div>;
+  if (loading) return <div className="p-8 text-gray-500">Loading...</div>
 
   return (
     <div className="p-8 max-w-6xl">
@@ -260,5 +260,5 @@ export default function AdminSubscriptionsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

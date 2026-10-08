@@ -1,38 +1,38 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { X, ChevronDown, Globe } from 'lucide-react';
-import LANGUAGES from '@/data/languages.json';
+import React, { useState, useRef, useEffect } from 'react'
+import { X, ChevronDown, Globe } from 'lucide-react'
+import LANGUAGES from '@/data/languages.json'
 
 export default function LanguageMultiSelect({ value = [], onChange, placeholder = "Select languages..." }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const dropdownRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const dropdownRef = useRef(null)
 
   // Filter languages based on search term
   const filteredLanguages = LANGUAGES.filter(lang =>
     lang.toLowerCase().includes(searchTerm.toLowerCase()) &&
     !value.includes(lang)
-  );
+  )
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-        setSearchTerm('');
+        setIsOpen(false)
+        setSearchTerm('')
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleAddLanguage = (language) => {
-    onChange([...value, language]);
-    setSearchTerm('');
-  };
+    onChange([...value, language])
+    setSearchTerm('')
+  }
 
   const handleRemoveLanguage = (language) => {
-    onChange(value.filter(l => l !== language));
-  };
+    onChange(value.filter(l => l !== language))
+  }
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -65,8 +65,8 @@ export default function LanguageMultiSelect({ value = [], onChange, placeholder 
             type="text"
             value={searchTerm}
             onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setIsOpen(true);
+              setSearchTerm(e.target.value)
+              setIsOpen(true)
             }}
             onFocus={() => setIsOpen(true)}
             placeholder={placeholder}
@@ -100,5 +100,5 @@ export default function LanguageMultiSelect({ value = [], onChange, placeholder 
         )}
       </div>
     </div>
-  );
+  )
 }

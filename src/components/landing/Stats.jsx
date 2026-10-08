@@ -1,12 +1,12 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from 'react'
+import { motion } from 'framer-motion'
 
 const stats = [
   { value: '12,000+', label: 'Creatives' },
   { value: '500+', label: 'Productions' },
   { value: '200+', label: 'Cities' },
   { value: '50+', label: 'Disciplines' },
-];
+]
 
 export default function Stats() {
   return (
@@ -33,5 +33,5 @@ export default function Stats() {
         </div>
       </div>
     </section>
-  );
+  )
 }

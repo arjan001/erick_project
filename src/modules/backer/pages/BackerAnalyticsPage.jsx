@@ -1,94 +1,94 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Backer, BackedProject } from '@/lib/supabaseEntities';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, DollarSign, BarChart3, PieChart, Calendar, ArrowUpRight, ArrowDownRight, Target, Zap } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Backer, BackedProject } from '@/lib/supabaseEntities'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { TrendingUp, DollarSign, BarChart3, PieChart, Calendar, ArrowUpRight, ArrowDownRight, Target, Zap } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function BackerAnalyticsPage() {
-  const navigate = useNavigate();
-  const { error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [backer, setBacker] = useState(null);
-  const [investments, setInvestments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('30d');
+  const navigate = useNavigate()
+  const { error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [backer, setBacker] = useState(null)
+  const [investments, setInvestments] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [timeRange, setTimeRange] = useState('30d')
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    fetchData();
-  }, [isAuthenticated, timeRange]);
+    fetchData()
+  }, [isAuthenticated, timeRange])
 
   const fetchData = async () => {
     try {
       // Fetch backer profile
-      const backers = await Backer.filter({ contact_email: authUser?.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email })
       if (backers.length > 0) {
-        setBacker(backers[0]);
+        setBacker(backers[0])
       }
 
       // Fetch investments
-      const backedProjects = await BackedProject.filter({ backer_email: authUser?.email });
+      const backedProjects = await BackedProject.filter({ backer_email: authUser?.email })
       
       // Filter by time range
-      const now = new Date();
+      const now = new Date()
       const filtered = backedProjects.filter(inv => {
-        const invDate = new Date(inv.investment_date);
-        if (timeRange === '30d') return (now - invDate) <= 30 * 24 * 60 * 60 * 1000;
-        if (timeRange === '90d') return (now - invDate) <= 90 * 24 * 60 * 60 * 1000;
-        if (timeRange === '1y') return (now - invDate) <= 365 * 24 * 60 * 60 * 1000;
-        return true;
-      });
+        const invDate = new Date(inv.investment_date)
+        if (timeRange === '30d') return (now - invDate) <= 30 * 24 * 60 * 60 * 1000
+        if (timeRange === '90d') return (now - invDate) <= 90 * 24 * 60 * 60 * 1000
+        if (timeRange === '1y') return (now - invDate) <= 365 * 24 * 60 * 60 * 1000
+        return true
+      })
       
-      setInvestments(filtered);
+      setInvestments(filtered)
     } catch (err) {
-      console.error('Error fetching analytics:', err);
-      toastError('Load Failed', 'Failed to load analytics data');
+      
+      toastError('Load Failed', 'Failed to load analytics data')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const totalInvested = investments.reduce((sum, inv) => sum + (inv.investment_amount || 0), 0);
-  const totalExpectedROI = investments.reduce((sum, inv) => sum + (inv.expected_roi || 0), 0);
-  const totalROI = totalExpectedROI - totalInvested;
-  const roiPercentage = totalInvested > 0 ? ((totalROI / totalInvested) * 100).toFixed(1) : 0;
-  const activeInvestments = investments.filter(inv => inv.status === 'active').length;
-  const completedInvestments = investments.filter(inv => inv.status === 'completed').length;
+  const totalInvested = investments.reduce((sum, inv) => sum + (inv.investment_amount || 0), 0)
+  const totalExpectedROI = investments.reduce((sum, inv) => sum + (inv.expected_roi || 0), 0)
+  const totalROI = totalExpectedROI - totalInvested
+  const roiPercentage = totalInvested > 0 ? ((totalROI / totalInvested) * 100).toFixed(1) : 0
+  const activeInvestments = investments.filter(inv => inv.status === 'active').length
+  const completedInvestments = investments.filter(inv => inv.status === 'completed').length
 
   // Calculate monthly investment trend
-  const monthlyData = {};
+  const monthlyData = {}
   investments.forEach(inv => {
-    const month = new Date(inv.investment_date).toLocaleString('default', { month: 'short', year: 'numeric' });
-    monthlyData[month] = (monthlyData[month] || 0) + (inv.investment_amount || 0);
-  });
+    const month = new Date(inv.investment_date).toLocaleString('default', { month: 'short', year: 'numeric' })
+    monthlyData[month] = (monthlyData[month] || 0) + (inv.investment_amount || 0)
+  })
 
-  const monthlyTrend = Object.entries(monthlyData).map(([month, amount]) => ({ month, amount }));
+  const monthlyTrend = Object.entries(monthlyData).map(([month, amount]) => ({ month, amount }))
 
   // Investment by category
-  const categoryData = {};
+  const categoryData = {}
   investments.forEach(inv => {
-    const category = inv.project_category || 'Other';
-    categoryData[category] = (categoryData[category] || 0) + (inv.investment_amount || 0);
-  });
+    const category = inv.project_category || 'Other'
+    categoryData[category] = (categoryData[category] || 0) + (inv.investment_amount || 0)
+  })
 
   const categoryBreakdown = Object.entries(categoryData).map(([category, amount]) => ({
     category,
     amount,
     percentage: totalInvested > 0 ? ((amount / totalInvested) * 100).toFixed(1) : 0
-  }));
+  }))
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -290,5 +290,5 @@ export default function BackerAnalyticsPage() {
           )}
         </Card>
     </div>
-  );
+  )
 }

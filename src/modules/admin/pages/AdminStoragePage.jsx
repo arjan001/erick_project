@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
-import { Progress } from '@/shared/components/ui/progress';
-import { Upload, Trash2, Folder, Image, Video, FileText, HardDrive } from 'lucide-react';
+import React, { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Badge } from '@/shared/components/ui/badge'
+import { Progress } from '@/shared/components/ui/progress'
+import { Upload, Trash2, Folder, Image, Video, FileText, HardDrive } from 'lucide-react'
 
 export default function AdminStoragePage() {
   const [storageStats, setStorageStats] = useState({
@@ -12,7 +12,7 @@ export default function AdminStoragePage() {
     images: 25.5,
     videos: 15.2,
     documents: 4.5
-  });
+  })
 
   const files = [
     { id: 1, name: 'project-banner.jpg', type: 'image', size: '2.5 MB', uploaded: '2024-01-15' },
@@ -20,25 +20,25 @@ export default function AdminStoragePage() {
     { id: 3, name: 'portfolio-clip.mp4', type: 'video', size: '45.2 MB', uploaded: '2024-01-13' },
     { id: 4, name: 'team-photo.jpg', type: 'image', size: '1.2 MB', uploaded: '2024-01-12' },
     { id: 5, name: 'contract.pdf', type: 'document', size: '0.5 MB', uploaded: '2024-01-11' },
-  ];
+  ]
 
   const getFileIcon = (type) => {
     switch (type) {
-      case 'image': return Image;
-      case 'video': return Video;
-      case 'document': return FileText;
-      default: return FileText;
+      case 'image': return Image
+      case 'video': return Video
+      case 'document': return FileText
+      default: return FileText
     }
-  };
+  }
 
   const getFileColor = (type) => {
     switch (type) {
-      case 'image': return 'bg-blue-100 text-blue-600';
-      case 'video': return 'bg-purple-100 text-purple-600';
-      case 'document': return 'bg-green-100 text-green-600';
-      default: return 'bg-gray-100 text-gray-600';
+      case 'image': return 'bg-blue-100 text-blue-600'
+      case 'video': return 'bg-purple-100 text-purple-600'
+      case 'document': return 'bg-green-100 text-green-600'
+      default: return 'bg-gray-100 text-gray-600'
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -122,7 +122,7 @@ export default function AdminStoragePage() {
         <CardContent>
           <div className="space-y-2">
             {files.map((file) => {
-              const Icon = getFileIcon(file.type);
+              const Icon = getFileIcon(file.type)
               return (
                 <div
                   key={file.id}
@@ -144,11 +144,11 @@ export default function AdminStoragePage() {
                     </Button>
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

@@ -1,44 +1,44 @@
-import React, { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { Project } from '@/lib/supabaseEntities';
-import { MapPin, Calendar, Briefcase } from 'lucide-react';
+import React, { useEffect, useState } from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
+import { Project } from '@/lib/supabaseEntities'
+import { MapPin, Calendar, Briefcase } from 'lucide-react'
 
 function setMeta(name, content, isProperty) {
-  const attr = isProperty ? 'property' : 'name';
-  let tag = document.querySelector(`meta[${attr}="${name}"]`);
+  const attr = isProperty ? 'property' : 'name'
+  let tag = document.querySelector(`meta[${attr}="${name}"]`)
   if (!tag) {
-    tag = document.createElement('meta');
-    tag.setAttribute(attr, name);
-    document.head.appendChild(tag);
+    tag = document.createElement('meta')
+    tag.setAttribute(attr, name)
+    document.head.appendChild(tag)
   }
-  tag.setAttribute('content', content);
+  tag.setAttribute('content', content)
 }
 
 export default function ProjectPublic() {
-  const [searchParams] = useSearchParams();
-  const [project, setProject] = useState(null);
-  const [notFound, setNotFound] = useState(false);
+  const [searchParams] = useSearchParams()
+  const [project, setProject] = useState(null)
+  const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
-    const id = searchParams.get('id');
+    const id = searchParams.get('id')
     if (!id) { setNotFound(true); return; }
-    Project.get(id).then(setProject).catch(() => setNotFound(true));
-  }, [searchParams]);
+    Project.get(id).then(setProject).catch(() => setNotFound(true))
+  }, [searchParams])
 
   useEffect(() => {
-    if (!project) return;
-    const title = `${(project.project_type || 'Project').replace(/_/g, ' ')} — Eric Rabar`;
-    const desc = project.notes || `A ${(project.project_type || '').replace(/_/g, ' ')} project on Eric Rabar, connecting clients with top creative talent.`;
-    document.title = title;
-    setMeta('description', desc);
-    setMeta('og:title', title, true);
-    setMeta('og:description', desc, true);
-    if (project.image_url) setMeta('og:image', project.image_url, true);
-    setMeta('og:type', 'website', true);
-  }, [project]);
+    if (!project) return
+    const title = `${(project.project_type || 'Project').replace(/_/g, ' ')} — Eric Rabar`
+    const desc = project.notes || `A ${(project.project_type || '').replace(/_/g, ' ')} project on Eric Rabar, connecting clients with top creative talent.`
+    document.title = title
+    setMeta('description', desc)
+    setMeta('og:title', title, true)
+    setMeta('og:description', desc, true)
+    if (project.image_url) setMeta('og:image', project.image_url, true)
+    setMeta('og:type', 'website', true)
+  }, [project])
 
-  if (notFound) return <div className="min-h-screen flex items-center justify-center text-gray-500">Project not found</div>;
-  if (!project) return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>;
+  if (notFound) return <div className="min-h-screen flex items-center justify-center text-gray-500">Project not found</div>
+  if (!project) return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>
 
   return (
     <div className="min-h-screen bg-white">
@@ -68,5 +68,5 @@ export default function ProjectPublic() {
         </div>
       </div>
     </div>
-  );
+  )
 }

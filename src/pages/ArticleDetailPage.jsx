@@ -1,39 +1,39 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Article } from '@/lib/supabaseEntities';
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
-import { Calendar, User, ArrowLeft, Share2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { Article } from '@/lib/supabaseEntities'
+import { Button } from '@/shared/components/ui/button'
+import { Badge } from '@/shared/components/ui/badge'
+import { Calendar, User, ArrowLeft, Share2 } from 'lucide-react'
 
 export default function ArticleDetailPage() {
-  const { slug } = useParams();
-  const [article, setArticle] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { slug } = useParams()
+  const [article, setArticle] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchArticle = async () => {
       try {
-        const allArticles = await Article.list('-published_date', 100);
-        const foundArticle = allArticles.find(a => a.slug === slug && a.status === 'published');
-        setArticle(foundArticle || null);
+        const allArticles = await Article.list('-published_date', 100)
+        const foundArticle = allArticles.find(a => a.slug === slug && a.status === 'published')
+        setArticle(foundArticle || null)
       } catch (error) {
-        console.error('Error fetching article:', error);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
     if (slug) {
-      fetchArticle();
+      fetchArticle()
     }
-  }, [slug]);
+  }, [slug])
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   if (!article) {
@@ -46,7 +46,7 @@ export default function ArticleDetailPage() {
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -126,5 +126,5 @@ export default function ArticleDetailPage() {
         </div>
       </article>
     </div>
-  );
+  )
 }

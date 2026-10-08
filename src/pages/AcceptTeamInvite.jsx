@@ -1,78 +1,78 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { AlertCircle, Eye, EyeOff, Lock } from 'lucide-react';
-import { Invite } from '@/lib/supabaseEntities';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { AlertCircle, Eye, EyeOff, Lock } from 'lucide-react'
+import { Invite } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/lib/AuthContext'
 
 // Invited team members land here from the invite email. Setting a password
 // here creates their own login, tagged with the exact team_id they were
 // invited to — so they always land in that team's workspace, never a blank
 // one of their own and never mixed up with another team.
 export default function AcceptTeamInvite() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const inviteId = urlParams.get('invite');
-  const navigate = useNavigate();
-  const { login } = useAuth();
+  const urlParams = new URLSearchParams(window.location.search)
+  const inviteId = urlParams.get('invite')
+  const navigate = useNavigate()
+  const { login } = useAuth()
 
-  const [invite, setInvite] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [invite, setInvite] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const loadInvite = async () => {
       if (!inviteId) { setLoading(false); return; }
       try {
-        const rows = await Invite.filter({ id: inviteId });
-        setInvite(rows?.[0] || null);
+        const rows = await Invite.filter({ id: inviteId })
+        setInvite(rows?.[0] || null)
       } catch (err) {
-        console.error('Error loading invite:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    loadInvite();
-  }, [inviteId]);
+    }
+    loadInvite()
+  }, [inviteId])
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+    e.preventDefault()
+    setError('')
     if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
     if (password !== confirmPassword) { setError('Passwords do not match'); return; }
-    setSubmitting(true);
+    setSubmitting(true)
     try {
       const { data, error: supaError } = await supabase.auth.signUp({
         email: invite.email,
         password,
         options: { data: { full_name: invite.member_name, role: 'team', team_id: invite.team_id } },
-      });
-      if (supaError) throw supaError;
+      })
+      if (supaError) throw supaError
 
-      await Invite.update(invite.id, { status: 'accepted' });
+      await Invite.update(invite.id, { status: 'accepted' })
 
       if (data.session) {
-        login({ id: data.user.id, email: data.user.email, full_name: invite.member_name, role: 'team', team_id: invite.team_id });
-        navigate('/teamdashboard');
+        login({ id: data.user.id, email: data.user.email, full_name: invite.member_name, role: 'team', team_id: invite.team_id })
+        navigate('/teamdashboard')
       } else {
-        navigate('/SignIn');
+        navigate('/SignIn')
       }
     } catch (err) {
-      setError(err.message || 'Failed to set up your account');
+      setError(err.message || 'Failed to set up your account')
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#fafafa]">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   if (!invite || invite.status !== 'pending') {
@@ -85,7 +85,7 @@ export default function AcceptTeamInvite() {
           <Link to="/SignIn" className="text-black font-semibold hover:underline text-sm">Go to sign in</Link>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -144,5 +144,5 @@ export default function AcceptTeamInvite() {
         </form>
       </div>
     </div>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 export default function StatCard({ icon: Icon, label, value, accent = '#2A9D8F' }) {
   return (
@@ -14,5 +14,5 @@ export default function StatCard({ icon: Icon, label, value, accent = '#2A9D8F' 
       </div>
       <div className="text-3xl font-extrabold text-gray-900 tracking-tight">{value}</div>
     </div>
-  );
+  )
 }

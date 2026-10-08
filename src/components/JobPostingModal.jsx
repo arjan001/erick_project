@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { X, Calendar as CalendarIcon, CheckCircle, User, Mail, Phone } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { base44 } from '@/api/base44Client';
-import { PRODUCTION_POSITIONS } from './positions';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import React, { useState } from 'react'
+import { X, Calendar as CalendarIcon, CheckCircle, User, Mail, Phone } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { base44 } from '@/api/base44Client'
+import { PRODUCTION_POSITIONS } from './positions'
+import ReactQuill from 'react-quill'
+import 'react-quill/dist/quill.snow.css'
 
 const PROJECT_TYPES = [
   'Commercial',
@@ -49,7 +49,7 @@ const PROJECT_TYPES = [
   'Testimonial Video',
   'Interview',
   'Q&A Session',
-];
+]
 
 const SKILLS_DATABASE = [
   // Camera Equipment
@@ -118,10 +118,10 @@ const SKILLS_DATABASE = [
   'Commercial Production', 'Music Video', 'Documentary', 'Feature Film', 'Short Film',
   'Corporate Video', 'Event Coverage', 'Wedding Videography', 'Social Media Content',
   'Branded Content', 'Web Series', 'TV Production',
-];
+]
 
 export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     position: '',
     location: '',
@@ -141,32 +141,32 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
     contact_name: user?.full_name || '',
     contact_email: user?.email || '',
     contact_phone: ''
-  });
-  const [positionSearch, setPositionSearch] = useState('');
-  const [showPositionDropdown, setShowPositionDropdown] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showProjectTypeDropdown, setShowProjectTypeDropdown] = useState(false);
-  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [locationSuggestions, setLocationSuggestions] = useState([]);
-  const [skillSearch, setSkillSearch] = useState('');
-  const [showExtractInput, setShowExtractInput] = useState(false);
-  const [extractUrl, setExtractUrl] = useState('');
-  const [isExtracting, setIsExtracting] = useState(false);
-  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+  })
+  const [positionSearch, setPositionSearch] = useState('')
+  const [showPositionDropdown, setShowPositionDropdown] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [showProjectTypeDropdown, setShowProjectTypeDropdown] = useState(false)
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false)
+  const [locationSuggestions, setLocationSuggestions] = useState([])
+  const [skillSearch, setSkillSearch] = useState('')
+  const [showExtractInput, setShowExtractInput] = useState(false)
+  const [extractUrl, setExtractUrl] = useState('')
+  const [isExtracting, setIsExtracting] = useState(false)
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false)
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const filteredPositions = PRODUCTION_POSITIONS.filter(pos =>
     pos.label.toLowerCase().includes(positionSearch.toLowerCase())
-  ).slice(0, 10);
+  ).slice(0, 10)
 
   const handleNext = () => {
-    if (step < 3) setStep(step + 1);
-  };
+    if (step < 3) setStep(step + 1)
+  }
 
   const handleBack = () => {
-    if (step > 1) setStep(step - 1);
-  };
+    if (step > 1) setStep(step - 1)
+  }
 
   const handleSubmit = () => {
     const jobData = {
@@ -184,18 +184,18 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
       contact_name: formData.contact_name,
       contact_email: formData.contact_email,
       contact_phone: formData.contact_phone
-    };
-    onSubmit(jobData);
-    setShowSuccessNotification(true);
+    }
+    onSubmit(jobData)
+    setShowSuccessNotification(true)
     setTimeout(() => {
-      setShowSuccessNotification(false);
-      onClose();
-    }, 3000);
-  };
+      setShowSuccessNotification(false)
+      onClose()
+    }, 3000)
+  }
 
   const handleSaveDraft = () => {
-    console.log('Draft saved:', formData);
-  };
+    
+  }
 
   const quillModules = {
     toolbar: [
@@ -207,7 +207,7 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
       ['link'],
       ['clean']
     ]
-  };
+  }
 
   return (
     <>
@@ -256,8 +256,8 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                       type="text"
                       value={positionSearch}
                       onChange={(e) => {
-                        setPositionSearch(e.target.value);
-                        setShowPositionDropdown(true);
+                        setPositionSearch(e.target.value)
+                        setShowPositionDropdown(true)
                       }}
                       onFocus={() => setShowPositionDropdown(true)}
                       placeholder="Position"
@@ -270,9 +270,9 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                         <button
                           key={pos.value}
                           onClick={() => {
-                            setFormData({ ...formData, position: pos.label });
-                            setPositionSearch(pos.label);
-                            setShowPositionDropdown(false);
+                            setFormData({ ...formData, position: pos.label })
+                            setPositionSearch(pos.label)
+                            setShowPositionDropdown(false)
                           }}
                           className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 text-sm"
                         >
@@ -291,15 +291,15 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                       type="text"
                       value={formData.location}
                       onChange={async (e) => {
-                        const query = e.target.value;
-                        setFormData({ ...formData, location: query });
+                        const query = e.target.value
+                        setFormData({ ...formData, location: query })
                         if (query.length > 2) {
                           try {
-                            const response = await fetch(`https://nominatim.openstreetmap.org/search?city=${query}&format=json&limit=5`);
-                            const data = await response.json();
-                            setLocationSuggestions(data.filter(item => item.type === 'city' || item.type === 'administrative'));
+                            const response = await fetch(`https://nominatim.openstreetmap.org/search?city=${query}&format=json&limit=5`)
+                            const data = await response.json()
+                            setLocationSuggestions(data.filter(item => item.type === 'city' || item.type === 'administrative'))
                           } catch (err) {
-                            console.error('Location search error:', err);
+                            
                           }
                         }
                       }}
@@ -311,23 +311,23 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                   {showLocationDropdown && locationSuggestions.length > 0 && (
                     <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
                       {locationSuggestions.map((loc, idx) => {
-                        const addressParts = loc.display_name.split(', ');
-                        const city = loc.name || addressParts[0];
-                        const country = addressParts[addressParts.length - 1];
-                        const displayText = `${city}, ${country}`;
+                        const addressParts = loc.display_name.split(', ')
+                        const city = loc.name || addressParts[0]
+                        const country = addressParts[addressParts.length - 1]
+                        const displayText = `${city}, ${country}`
                         return (
                           <button
                             key={idx}
                             onClick={() => {
-                              setFormData({ ...formData, location: displayText });
-                              setShowLocationDropdown(false);
-                              setLocationSuggestions([]);
+                              setFormData({ ...formData, location: displayText })
+                              setShowLocationDropdown(false)
+                              setLocationSuggestions([])
                             }}
                             className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 text-sm"
                           >
                             {displayText}
                           </button>
-                        );
+                        )
                       })}
                     </div>
                   )}
@@ -373,8 +373,8 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                       <div className="flex gap-2">
                         <button
                           onClick={() => {
-                            setFormData({ ...formData, dates: 'Dates are flexible', date_from: '', date_till: '' });
-                            setShowDatePicker(false);
+                            setFormData({ ...formData, dates: 'Dates are flexible', date_from: '', date_till: '' })
+                            setShowDatePicker(false)
                           }}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
                         >
@@ -383,9 +383,9 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                         <button
                           onClick={() => {
                             if (formData.date_from && formData.date_till) {
-                              setFormData({ ...formData, dates: `${formData.date_from} - ${formData.date_till}` });
+                              setFormData({ ...formData, dates: `${formData.date_from} - ${formData.date_till}` })
                             }
-                            setShowDatePicker(false);
+                            setShowDatePicker(false)
                           }}
                           className="px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800"
                         >
@@ -404,8 +404,8 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                       type="text"
                       value={formData.project_type}
                       onChange={(e) => {
-                        setFormData({ ...formData, project_type: e.target.value });
-                        setShowProjectTypeDropdown(true);
+                        setFormData({ ...formData, project_type: e.target.value })
+                        setShowProjectTypeDropdown(true)
                       }}
                       onFocus={() => setShowProjectTypeDropdown(true)}
                       placeholder="Project type"
@@ -418,8 +418,8 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                       <button
                         key={type}
                         onClick={() => {
-                          setFormData({ ...formData, project_type: type });
-                          setShowProjectTypeDropdown(false);
+                          setFormData({ ...formData, project_type: type })
+                          setShowProjectTypeDropdown(false)
                         }}
                         className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 text-sm"
                       >
@@ -462,14 +462,14 @@ export default function JobPostingModal({ isOpen, onClose, onSubmit, user }) {
                           type="button"
                           onClick={async () => {
                             if (!extractUrl) {
-                              alert('Please enter a URL');
-                              return;
+                              alert('Please enter a URL')
+                              return
                             }
                             if (!formData.position || !formData.location || !formData.project_type) {
-                              alert('Please fill in position, location, and project type first');
-                              return;
+                              alert('Please fill in position, location, and project type first')
+                              return
                             }
-                            setIsExtracting(true);
+                            setIsExtracting(true)
                             try {
                               const response = await base44.integrations.Core.InvokeLLM({
                                 prompt: `Analyze this website: ${extractUrl}
@@ -490,15 +490,15 @@ Format using HTML for better readability:
 
 Write in a professional, direct tone.`,
                                 add_context_from_internet: true
-                              });
-                              setFormData({ ...formData, description: response });
-                              setShowExtractInput(false);
-                              setExtractUrl('');
+                              })
+                              setFormData({ ...formData, description: response })
+                              setShowExtractInput(false)
+                              setExtractUrl('')
                             } catch (err) {
-                              console.error('Extract error:', err);
-                              alert('Failed to extract from URL: ' + err.message);
+                              
+                              alert('Failed to extract from URL: ' + err.message)
                             } finally {
-                              setIsExtracting(false);
+                              setIsExtracting(false)
                             }
                           }}
                           disabled={isExtracting}
@@ -509,8 +509,8 @@ Write in a professional, direct tone.`,
                         <button
                           type="button"
                           onClick={() => {
-                            setShowExtractInput(false);
-                            setExtractUrl('');
+                            setShowExtractInput(false)
+                            setExtractUrl('')
                           }}
                           className="px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50"
                         >
@@ -525,10 +525,10 @@ Write in a professional, direct tone.`,
                       type="button"
                       onClick={async () => {
                         if (!formData.position || !formData.location || !formData.project_type) {
-                          alert('Please fill in position, location, and project type first');
-                          return;
+                          alert('Please fill in position, location, and project type first')
+                          return
                         }
-                        setIsExtracting(true);
+                        setIsExtracting(true)
                         try {
                           const response = await base44.integrations.Core.InvokeLLM({
                             prompt: `Create a professional job description for hiring a ${formData.position} in ${formData.location} for a ${formData.project_type} project. The dates are: ${formData.dates || 'flexible'}.
@@ -546,13 +546,13 @@ Format using HTML for better readability:
 - DO NOT use ** or markdown, use actual HTML tags
 
 Write in a professional, direct tone.`
-                          });
-                          setFormData({ ...formData, description: response });
+                          })
+                          setFormData({ ...formData, description: response })
                         } catch (err) {
-                          console.error('Generate error:', err);
-                          alert('Failed to generate description: ' + err.message);
+                          
+                          alert('Failed to generate description: ' + err.message)
                         } finally {
-                          setIsExtracting(false);
+                          setIsExtracting(false)
                         }
                       }}
                       disabled={isExtracting}
@@ -646,14 +646,14 @@ Write in a professional, direct tone.`
                   type="file"
                   accept="image/*"
                   onChange={async (e) => {
-                    const file = e.target.files?.[0];
+                    const file = e.target.files?.[0]
                     if (file) {
                       try {
-                        const result = await base44.integrations.Core.UploadFile({ file });
-                        setFormData({ ...formData, image_url: result.file_url });
+                        const result = await base44.integrations.Core.UploadFile({ file })
+                        setFormData({ ...formData, image_url: result.file_url })
                       } catch (err) {
-                        console.error('Upload error:', err);
-                        alert('Failed to upload image');
+                        
+                        alert('Failed to upload image')
                       }
                     }
                   }}
@@ -759,8 +759,8 @@ Write in a professional, direct tone.`
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:border-gray-400 outline-none"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && e.target.value) {
-                      setFormData({ ...formData, skills: [...formData.skills, e.target.value] });
-                      setSkillSearch('');
+                      setFormData({ ...formData, skills: [...formData.skills, e.target.value] })
+                      setSkillSearch('')
                     }
                   }}
                 />
@@ -771,9 +771,9 @@ Write in a professional, direct tone.`
                         key={skill}
                         onClick={() => {
                           if (!formData.skills.includes(skill)) {
-                            setFormData({ ...formData, skills: [...formData.skills, skill] });
+                            setFormData({ ...formData, skills: [...formData.skills, skill] })
                           }
-                          setSkillSearch('');
+                          setSkillSearch('')
                         }}
                         className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 text-sm"
                       >
@@ -875,28 +875,28 @@ Write in a professional, direct tone.`
       <style>{`
         @keyframes slideDown {
           from {
-            opacity: 0;
-            transform: translate(-50%, -100%);
+            opacity: 0
+            transform: translate(-50%, -100%)
           }
           to {
-            opacity: 1;
-            transform: translate(-50%, 0);
+            opacity: 1
+            transform: translate(-50%, 0)
           }
         }
         .animate-slideDown {
-          animation: slideDown 0.5s ease-out;
+          animation: slideDown 0.5s ease-out
         }
         
         .ql-toolbar.ql-snow {
-          border-top-left-radius: 8px;
-          border-top-right-radius: 8px;
+          border-top-left-radius: 8px
+          border-top-right-radius: 8px
         }
         
         .ql-container.ql-snow {
-          border-bottom-left-radius: 8px;
-          border-bottom-right-radius: 8px;
+          border-bottom-left-radius: 8px
+          border-bottom-right-radius: 8px
         }
       `}</style>
     </>
-  );
+  )
 }

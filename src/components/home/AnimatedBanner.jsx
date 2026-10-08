@@ -1,8 +1,8 @@
-import React from 'react';
-import { Smile } from 'lucide-react';
+import React from 'react'
+import { Smile } from 'lucide-react'
 
 export default function AnimatedBanner() {
-  const message = "First Frame Offer — One complimentary production day for verified projects";
+  const message = "First Frame Offer — One complimentary production day for verified projects"
   
   return (
     <div className="fixed top-16 left-0 right-0 z-40 bg-[#1a1a1a] text-white overflow-hidden">
@@ -24,13 +24,13 @@ export default function AnimatedBanner() {
       <style>{`
         @keyframes scroll-infinite {
           from {
-            transform: translateX(0);
+            transform: translateX(0)
           }
           to {
-            transform: translateX(-50%);
+            transform: translateX(-50%)
           }
         }
       `}</style>
     </div>
-  );
+  )
 }

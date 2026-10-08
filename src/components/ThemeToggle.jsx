@@ -1,41 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { Sun, Moon } from 'lucide-react'
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem('theme');
-    const shouldBeDark = saved === 'dark';
-    setIsDark(shouldBeDark);
-    applyTheme(shouldBeDark);
-  }, []);
+    const saved = localStorage.getItem('theme')
+    const shouldBeDark = saved === 'dark'
+    setIsDark(shouldBeDark)
+    applyTheme(shouldBeDark)
+  }, [])
 
   const applyTheme = (dark) => {
-    const root = document.documentElement;
-    const body = document.body;
+    const root = document.documentElement
+    const body = document.body
     
     if (dark) {
-      root.classList.add('dark');
-      root.classList.remove('light');
-      root.style.backgroundColor = '#000000';
-      body.style.backgroundColor = '#000000';
-      body.style.color = '#ffffff';
+      root.classList.add('dark')
+      root.classList.remove('light')
+      root.style.backgroundColor = '#000000'
+      body.style.backgroundColor = '#000000'
+      body.style.color = '#ffffff'
     } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
-      root.style.backgroundColor = '#ffffff';
-      body.style.backgroundColor = '#ffffff';
-      body.style.color = '#000000';
+      root.classList.add('light')
+      root.classList.remove('dark')
+      root.style.backgroundColor = '#ffffff'
+      body.style.backgroundColor = '#ffffff'
+      body.style.color = '#000000'
     }
-  };
+  }
 
   const toggleTheme = () => {
-    const newIsDark = !isDark;
-    setIsDark(newIsDark);
-    localStorage.setItem('theme', newIsDark ? 'dark' : 'light');
-    applyTheme(newIsDark);
-  };
+    const newIsDark = !isDark
+    setIsDark(newIsDark)
+    localStorage.setItem('theme', newIsDark ? 'dark' : 'light')
+    applyTheme(newIsDark)
+  }
 
   return (
     <div className="relative group/theme">
@@ -58,5 +58,5 @@ export default function ThemeToggle() {
         {isDark ? 'Light Mode' : 'Dark Mode'}
       </div>
     </div>
-  );
+  )
 }

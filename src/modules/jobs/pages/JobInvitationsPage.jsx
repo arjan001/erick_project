@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Job, JobInvitation, Application, ProjectOwner } from '@/lib/supabaseEntities';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, DollarSign, Clock, CheckCircle, X, MessageCircle, Briefcase, User } from 'lucide-react';
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Job, JobInvitation, Application, ProjectOwner } from '@/lib/supabaseEntities'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { MapPin, Calendar, DollarSign, Clock, CheckCircle, X, MessageCircle, Briefcase, User } from 'lucide-react'
 
 export default function JobInvitations() {
-  const [user, setUser] = useState(null);
-  const [invitations, setInvitations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  const { success, error } = useToast();
+  const [user, setUser] = useState(null)
+  const [invitations, setInvitations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+  const { success, error } = useToast()
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    setUser(JSON.parse(storedUser));
-  }, []);
+    setUser(JSON.parse(storedUser))
+  }, [])
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
     const fetchInvitations = async () => {
       try {
@@ -30,76 +30,76 @@ export default function JobInvitations() {
         const allInvitations = await JobInvitation.filter({ 
           artist_email: user.email,
           status: 'pending'
-        });
+        })
 
         const enrichedInvitations = await Promise.all(
           allInvitations.map(async (invitation) => {
             try {
-              const job = await Job.get(invitation.job_id);
-              const client = await ProjectOwner.filter({ email: invitation.client_email });
+              const job = await Job.get(invitation.job_id)
+              const client = await ProjectOwner.filter({ email: invitation.client_email })
               return { 
                 ...invitation, 
                 job, 
                 client: client[0] || null 
-              };
+              }
             } catch (err) {
-              console.error('Error fetching job details:', err);
-              return { ...invitation, job: null, client: null };
+              //
+              return { ...invitation, job: null, client: null }
             }
           })
-        );
+        )
 
-        setInvitations(enrichedInvitations.filter(inv => inv.job));
+        setInvitations(enrichedInvitations.filter(inv => inv.job))
       } catch (err) {
-        console.error('Error fetching invitations:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchInvitations();
-  }, [user]);
+    fetchInvitations()
+  }, [user])
 
   const handleAcceptInvitation = async (invitationId) => {
     try {
-      await JobInvitation.update(invitationId, { status: 'accepted' });
+      await JobInvitation.update(invitationId, { status: 'accepted' })
       
       // Create application automatically
-      const invitation = invitations.find(inv => inv.id === invitationId);
+      const invitation = invitations.find(inv => inv.id === invitationId)
       if (invitation) {
         await Application.create({
           job_id: invitation.job_id,
           artist_email: user.email,
           status: 'applied',
           applied_at: new Date().toISOString()
-        });
+        })
       }
 
-      setInvitations(prev => prev.filter(inv => inv.id !== invitationId));
-      success('Accepted', 'Invitation accepted and application submitted');
+      setInvitations(prev => prev.filter(inv => inv.id !== invitationId))
+      success('Accepted', 'Invitation accepted and application submitted')
     } catch (err) {
-      console.error('Error accepting invitation:', err);
-      error('Failed', 'Failed to accept invitation');
+      //
+      error('Failed', 'Failed to accept invitation')
     }
-  };
+  }
 
   const handleDeclineInvitation = async (invitationId) => {
     try {
-      await JobInvitation.update(invitationId, { status: 'declined' });
-      setInvitations(prev => prev.filter(inv => inv.id !== invitationId));
-      success('Declined', 'Invitation declined');
+      await JobInvitation.update(invitationId, { status: 'declined' })
+      setInvitations(prev => prev.filter(inv => inv.id !== invitationId))
+      success('Declined', 'Invitation declined')
     } catch (err) {
-      console.error('Error declining invitation:', err);
-      error('Failed', 'Failed to decline invitation');
+      //
+      error('Failed', 'Failed to decline invitation')
     }
-  };
+  }
 
   if (!user || loading) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -184,5 +184,5 @@ export default function JobInvitations() {
         </div>
       </main>
     </div>
-  );
+  )
 }

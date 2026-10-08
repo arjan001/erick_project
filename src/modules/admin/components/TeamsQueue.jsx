@@ -1,28 +1,28 @@
-import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Clock } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
+import React, { useState } from 'react'
+import { base44 } from '@/api/base44Client'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { CheckCircle, XCircle, Clock } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 
 export default function TeamsQueue() {
-  const [selectedTeam, setSelectedTeam] = useState(null);
-  const [adminNotes, setAdminNotes] = useState('');
-  const queryClient = useQueryClient();
+  const [selectedTeam, setSelectedTeam] = useState(null)
+  const [adminNotes, setAdminNotes] = useState('')
+  const queryClient = useQueryClient()
 
   const { data: teams, isLoading } = useQuery({
     queryKey: ['admin-teams'],
     queryFn: () => base44.entities.Team.list('-created_date'),
-  });
+  })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Team.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-teams'] });
-      setSelectedTeam(null);
+      queryClient.invalidateQueries({ queryKey: ['admin-teams'] })
+      setSelectedTeam(null)
     },
-  });
+  })
 
   const handleApprove = (team) => {
     updateMutation.mutate({
@@ -32,20 +32,20 @@ export default function TeamsQueue() {
         admin_notes: adminNotes || team.admin_notes,
         approved_date: new Date().toISOString()
       }
-    });
-  };
+    })
+  }
 
   const handleReject = (team) => {
     updateMutation.mutate({
       id: team.id,
       data: { status: 'rejected', admin_notes: adminNotes || team.admin_notes }
-    });
-  };
+    })
+  }
 
-  if (isLoading) return <div className="text-center py-12 text-gray-400">Loading teams...</div>;
+  if (isLoading) return <div className="text-center py-12 text-gray-400">Loading teams...</div>
 
-  const pending = teams?.filter(t => t.status === 'pending') || [];
-  const approved = teams?.filter(t => t.status === 'approved') || [];
+  const pending = teams?.filter(t => t.status === 'pending') || []
+  const approved = teams?.filter(t => t.status === 'approved') || []
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -177,5 +177,5 @@ export default function TeamsQueue() {
         )}
       </div>
     </div>
-  );
+  )
 }

@@ -1,9 +1,9 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lightbulb, Handshake, Building2, Users, Trophy, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Lightbulb, Handshake, Building2, Users, Trophy, ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
 
 export default function HowBackingWorks() {
   const backingTypes = [
@@ -37,7 +37,7 @@ export default function HowBackingWorks() {
       description: 'In some cases, investors may provide capital with clear expectations about the project\'s commercial potential or return. This is entirely optional and project-dependent.',
       example: 'An investor funds a feature film project with defined financial terms negotiated directly between parties.'
     }
-  ];
+  ]
 
   return (
     <div className="min-h-screen bg-white py-12">
@@ -54,7 +54,7 @@ export default function HowBackingWorks() {
         {/* Backing Types */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           {backingTypes.map((type, idx) => {
-            const Icon = type.icon;
+            const Icon = type.icon
             return (
               <Card key={idx} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
@@ -75,7 +75,7 @@ export default function HowBackingWorks() {
                   </div>
                 </CardContent>
               </Card>
-            );
+            )
           })}
         </div>
 
@@ -174,5 +174,5 @@ export default function HowBackingWorks() {
         </div>
       </div>
     </div>
-  );
+  )
 }

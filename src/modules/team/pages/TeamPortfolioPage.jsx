@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { Team } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { FolderOpen, Plus, Play, Trash2, Edit2, Upload, Film, Image, Music } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { base44 } from '@/api/base44Client'
+import { Team } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { FolderOpen, Plus, Play, Trash2, Edit2, Upload, Film, Image, Music } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function TeamPortfolioPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [team, setTeam] = useState(null);
-  const [portfolioItems, setPortfolioItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [team, setTeam] = useState(null)
+  const [portfolioItems, setPortfolioItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showUploadModal, setShowUploadModal] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const [uploadForm, setUploadForm] = useState({
     title: '',
@@ -25,37 +25,37 @@ export default function TeamPortfolioPage() {
     project_type: '',
     client_name: '',
     year: ''
-  });
+  })
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    loadTeamData();
-  }, [isAuthenticated]);
+    loadTeamData()
+  }, [isAuthenticated])
 
   const loadTeamData = async () => {
     try {
-      let teamData = null;
+      let teamData = null
       if (authUser?.team_id) {
-        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null);
+        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null)
       } else {
-        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1);
-        teamData = teams?.[0] || null;
+        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1)
+        teamData = teams?.[0] || null
       }
-      setTeam(teamData);
+      setTeam(teamData)
       if (teamData) {
-        fetchPortfolio(teamData.id);
+        fetchPortfolio(teamData.id)
       } else {
-        setLoading(false);
+        setLoading(false)
       }
     } catch (err) {
-      console.error('Error loading team:', err);
-      toastError('Load Failed', 'Failed to load team data');
-      setLoading(false);
+      //
+      toastError('Load Failed', 'Failed to load team data')
+      setLoading(false)
     }
-  };
+  }
 
   const fetchPortfolio = async (teamId) => {
     try {
@@ -63,24 +63,24 @@ export default function TeamPortfolioPage() {
         uploaded_by_type: 'team',
         uploaded_by_id: teamId,
         status: 'approved'
-      });
-      setPortfolioItems(clips);
+      })
+      setPortfolioItems(clips)
     } catch (err) {
-      console.error('Error fetching portfolio:', err);
-      toastError('Load Failed', 'Failed to load portfolio. Please try again.');
+      //
+      toastError('Load Failed', 'Failed to load portfolio. Please try again.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleUpload = async (e) => {
-    e.preventDefault();
-    if (!team) return;
-    setUploading(true);
+    e.preventDefault()
+    if (!team) return
+    setUploading(true)
 
     try {
-      const response = await base44.integrations.Core.UploadFile({ file: e.target.file });
-      const fileUrl = response.file_url || response.url;
+      const response = await base44.integrations.Core.UploadFile({ file: e.target.file })
+      const fileUrl = response.file_url || response.url
 
       await base44.entities.PortfolioClip.create({
         title: uploadForm.title,
@@ -94,38 +94,38 @@ export default function TeamPortfolioPage() {
         uploaded_by_id: team.id,
         status: 'pending',
         created_at: new Date().toISOString()
-      });
+      })
 
-      success('Upload Successful', 'Portfolio item uploaded successfully');
-      setShowUploadModal(false);
-      setUploadForm({ title: '', description: '', project_type: '', client_name: '', year: '' });
-      fetchPortfolio();
+      success('Upload Successful', 'Portfolio item uploaded successfully')
+      setShowUploadModal(false)
+      setUploadForm({ title: '', description: '', project_type: '', client_name: '', year: '' })
+      fetchPortfolio()
     } catch (err) {
-      console.error('Error uploading portfolio:', err);
-      toastError('Upload Failed', 'Failed to upload portfolio item');
+      //
+      toastError('Upload Failed', 'Failed to upload portfolio item')
     } finally {
-      setUploading(false);
+      setUploading(false)
     }
-  };
+  }
 
   const handleDelete = async (itemId) => {
-    if (!confirm('Are you sure you want to delete this portfolio item?')) return;
+    if (!confirm('Are you sure you want to delete this portfolio item?')) return
     try {
-      await base44.entities.PortfolioClip.delete(itemId);
-      setPortfolioItems(portfolioItems.filter(item => item.id !== itemId));
-      success('Item Deleted', 'Portfolio item deleted successfully');
+      await base44.entities.PortfolioClip.delete(itemId)
+      setPortfolioItems(portfolioItems.filter(item => item.id !== itemId))
+      success('Item Deleted', 'Portfolio item deleted successfully')
     } catch (err) {
-      console.error('Error deleting portfolio item:', err);
-      toastError('Deletion Failed', 'Failed to delete portfolio item');
+      //
+      toastError('Deletion Failed', 'Failed to delete portfolio item')
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center">
         <div className="text-gray-600">Loading...</div>
       </div>
-    );
+    )
   }
 
   const typeIcons = {
@@ -133,7 +133,7 @@ export default function TeamPortfolioPage() {
     photography: Image,
     music: Music,
     other: FolderOpen
-  };
+  }
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -147,7 +147,7 @@ export default function TeamPortfolioPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {portfolioItems.map((item) => {
-              const TypeIcon = typeIcons[item.project_type] || FolderOpen;
+              const TypeIcon = typeIcons[item.project_type] || FolderOpen
               return (
                 <div key={item.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="aspect-video bg-gray-200 relative">
@@ -185,7 +185,7 @@ export default function TeamPortfolioPage() {
                     </div>
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
 
@@ -285,5 +285,5 @@ export default function TeamPortfolioPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

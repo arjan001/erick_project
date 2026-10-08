@@ -1,70 +1,70 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Bell, CalendarClock, UserCheck, Clock, Users } from 'lucide-react';
-import { Connection } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Bell, CalendarClock, UserCheck, Clock, Users } from 'lucide-react'
+import { Connection } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function RemindersCard({ invitations = [] }) {
-  const { user } = useAuth();
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('invitations'); // 'invitations', 'connections', 'sent'
-  const [connections, setConnections] = useState([]);
-  const [sentRequests, setSentRequests] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [connections, setConnections] = useState([])
+  const [sentRequests, setSentRequests] = useState([])
+  const [pendingRequests, setPendingRequests] = useState([])
+  const [loading, setLoading] = useState(false)
 
   const fetchConnections = async () => {
-    if (!user?.email) return;
-    setLoading(true);
+    if (!user?.email) return
+    setLoading(true)
     try {
       const [sentConns, receivedConns] = await Promise.all([
         Connection.filter({ requester_email: user.email }),
         Connection.filter({ recipient_email: user.email }),
-      ]);
-      const allConnections = [...(sentConns || []), ...(receivedConns || [])];
+      ])
+      const allConnections = [...(sentConns || []), ...(receivedConns || [])]
       
-      setConnections(allConnections.filter(c => c.status === 'accepted'));
-      setSentRequests(allConnections.filter(c => c.requester_email === user.email && c.status === 'pending'));
-      setPendingRequests(allConnections.filter(c => c.recipient_email === user.email && c.status === 'pending'));
+      setConnections(allConnections.filter(c => c.status === 'accepted'))
+      setSentRequests(allConnections.filter(c => c.requester_email === user.email && c.status === 'pending'))
+      setPendingRequests(allConnections.filter(c => c.recipient_email === user.email && c.status === 'pending'))
     } catch (err) {
-      console.error('Error fetching connections:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   React.useEffect(() => {
     if (activeTab === 'connections' || activeTab === 'sent' || activeTab === 'pending') {
-      fetchConnections();
+      fetchConnections()
     }
-  }, [activeTab, user]);
+  }, [activeTab, user])
 
   const handleAcceptConnection = async (connectionId) => {
     try {
-      await Connection.update(connectionId, { status: 'accepted' });
-      await fetchConnections();
+      await Connection.update(connectionId, { status: 'accepted' })
+      await fetchConnections()
     } catch (err) {
-      console.error('Error accepting connection:', err);
+      
     }
-  };
+  }
 
   const handleDeclineConnection = async (connectionId) => {
     try {
-      await Connection.update(connectionId, { status: 'declined' });
-      await fetchConnections();
+      await Connection.update(connectionId, { status: 'declined' })
+      await fetchConnections()
     } catch (err) {
-      console.error('Error declining connection:', err);
+      
     }
-  };
+  }
 
   const handleCancelRequest = async (connectionId) => {
     try {
-      await Connection.delete(connectionId);
-      await fetchConnections();
+      await Connection.delete(connectionId)
+      await fetchConnections()
     } catch (err) {
-      console.error('Error cancelling request:', err);
+      
     }
-  };
+  }
 
   return (
     <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5">
@@ -280,5 +280,5 @@ export default function RemindersCard({ invitations = [] }) {
         </>
       )}
     </div>
-  );
+  )
 }

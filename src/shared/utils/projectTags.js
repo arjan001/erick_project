@@ -7,10 +7,10 @@
  * @returns {boolean}
  */
 export const isNewProject = (createdAt) => {
-  if (!createdAt) return false;
-  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  return new Date(createdAt) > oneDayAgo;
-};
+  if (!createdAt) return false
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+  return new Date(createdAt) > oneDayAgo
+}
 
 /**
  * Check if a project is popular (budget >= $50,000)
@@ -18,10 +18,10 @@ export const isNewProject = (createdAt) => {
  * @returns {boolean}
  */
 export const isPopularProject = (budget) => {
-  if (!budget) return false;
-  const budgetNum = parseFloat(budget);
-  return budgetNum >= 50000;
-};
+  if (!budget) return false
+  const budgetNum = parseFloat(budget)
+  return budgetNum >= 50000
+}
 
 /**
  * Get all applicable tags for a project
@@ -29,7 +29,7 @@ export const isPopularProject = (budget) => {
  * @returns {Array} Array of tag objects { id, label, icon, color }
  */
 export const getProjectTags = (project) => {
-  const tags = [];
+  const tags = []
 
   if (project.is_featured) {
     tags.push({
@@ -37,7 +37,7 @@ export const getProjectTags = (project) => {
       label: 'Featured',
       icon: 'Star',
       color: 'bg-yellow-100 text-yellow-800 border-yellow-200'
-    });
+    })
   }
 
   if (isPopularProject(project.budget)) {
@@ -46,7 +46,7 @@ export const getProjectTags = (project) => {
       label: 'Popular',
       icon: 'Flame',
       color: 'bg-orange-100 text-orange-800 border-orange-200'
-    });
+    })
   }
 
   if (isNewProject(project.created_at)) {
@@ -55,7 +55,7 @@ export const getProjectTags = (project) => {
       label: 'New',
       icon: 'Sparkles',
       color: 'bg-blue-100 text-blue-800 border-blue-200'
-    });
+    })
   }
 
   if (project.open_to_backing) {
@@ -64,8 +64,8 @@ export const getProjectTags = (project) => {
       label: 'Seeking Backing',
       icon: 'DollarSign',
       color: 'bg-green-100 text-green-800 border-green-200'
-    });
+    })
   }
 
-  return tags;
-};
+  return tags
+}

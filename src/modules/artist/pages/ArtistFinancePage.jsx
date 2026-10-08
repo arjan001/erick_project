@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Wallet, CreditCard, Building2, TrendingUp, ArrowDownRight, ArrowUpRight, Calendar, CheckCircle, AlertCircle, Crown, Edit, Save, Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Subscription, SubscriptionOrder, ConnectsTransaction, Artist } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Wallet, CreditCard, Building2, TrendingUp, ArrowDownRight, ArrowUpRight, Calendar, CheckCircle, AlertCircle, Crown, Edit, Save, Plus, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Subscription, SubscriptionOrder, ConnectsTransaction, Artist } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
 
 export default function ArtistFinancePage() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const { success, error } = useToast();
-  const [activeTab, setActiveTab] = useState('subscription');
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const { success, error } = useToast()
+  const [activeTab, setActiveTab] = useState('subscription')
+  const [loading, setLoading] = useState(true)
   
   // Subscription data
-  const [currentSubscription, setCurrentSubscription] = useState(null);
-  const [subscriptionOrders, setSubscriptionOrders] = useState([]);
+  const [currentSubscription, setCurrentSubscription] = useState(null)
+  const [subscriptionOrders, setSubscriptionOrders] = useState([])
   
   // Bank details
   const [bankDetails, setBankDetails] = useState({
@@ -25,45 +25,45 @@ export default function ArtistFinancePage() {
     accountHolderName: '',
     iban: '',
     swiftCode: ''
-  });
-  const [editingBank, setEditingBank] = useState(false);
+  })
+  const [editingBank, setEditingBank] = useState(false)
   
   // Transactions
-  const [transactions, setTransactions] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [transactions, setTransactions] = useState([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
   
   // Pagination for other tabs
-  const [subscriptionPage, setSubscriptionPage] = useState(1);
-  const [paymentsPage, setPaymentsPage] = useState(1);
+  const [subscriptionPage, setSubscriptionPage] = useState(1)
+  const [paymentsPage, setPaymentsPage] = useState(1)
   
   // Payments received
-  const [payments, setPayments] = useState([]);
+  const [payments, setPayments] = useState([])
 
   useEffect(() => {
-    if (!user) return;
-    loadFinanceData();
-  }, [user]);
+    if (!user) return
+    loadFinanceData()
+  }, [user])
 
   const loadFinanceData = async () => {
     try {
-      setLoading(true);
+      setLoading(true)
       
       // Load subscription
-      const subscriptions = await Subscription.filter({ user_email: user.email });
-      setCurrentSubscription(subscriptions?.[0] || null);
+      const subscriptions = await Subscription.filter({ user_email: user.email })
+      setCurrentSubscription(subscriptions?.[0] || null)
       
       // Load subscription orders
-      const orders = await SubscriptionOrder.filter({ user_email: user.email }, '-created_date', 10);
-      setSubscriptionOrders(orders || []);
+      const orders = await SubscriptionOrder.filter({ user_email: user.email }, '-created_date', 10)
+      setSubscriptionOrders(orders || [])
       
       // Load connects transactions
-      const connectsTx = await ConnectsTransaction.filter({ artist_email: user.email }, '-created_date', 20);
-      setTransactions(connectsTx || []);
+      const connectsTx = await ConnectsTransaction.filter({ artist_email: user.email }, '-created_date', 20)
+      setTransactions(connectsTx || [])
       
       // Load artist profile for bank details
-      const artists = await Artist.filter({ email: user.email });
-      const artist = artists?.[0];
+      const artists = await Artist.filter({ email: user.email })
+      const artist = artists?.[0]
       if (artist) {
         setBankDetails({
           bankName: artist.bank_name || '',
@@ -72,20 +72,20 @@ export default function ArtistFinancePage() {
           accountHolderName: artist.account_holder_name || '',
           iban: artist.iban || '',
           swiftCode: artist.swift_code || ''
-        });
+        })
       }
       
     } catch (err) {
-      console.error('Error loading finance data:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSaveBankDetails = async () => {
     try {
-      const artists = await Artist.filter({ email: user.email });
-      const artist = artists?.[0];
+      const artists = await Artist.filter({ email: user.email })
+      const artist = artists?.[0]
       
       if (artist) {
         await Artist.update(artist.id, {
@@ -95,48 +95,48 @@ export default function ArtistFinancePage() {
           account_holder_name: bankDetails.accountHolderName,
           iban: bankDetails.iban,
           swift_code: bankDetails.swiftCode
-        });
+        })
       }
       
-      setEditingBank(false);
-      success('Bank Details Saved', 'Your bank information has been updated successfully.');
+      setEditingBank(false)
+      success('Bank Details Saved', 'Your bank information has been updated successfully.')
     } catch (err) {
-      console.error('Error saving bank details:', err);
-      error('Failed', 'Could not save bank details. Please try again.');
+      
+      error('Failed', 'Could not save bank details. Please try again.')
     }
-  };
+  }
 
   const getSubscriptionStatus = () => {
-    if (!currentSubscription) return { status: 'No Subscription', color: 'gray' };
+    if (!currentSubscription) return { status: 'No Subscription', color: 'gray' }
     
-    const now = new Date();
-    const renewsAt = new Date(currentSubscription.renews_at);
+    const now = new Date()
+    const renewsAt = new Date(currentSubscription.renews_at)
     
     if (currentSubscription.status !== 'active') {
-      return { status: 'Inactive', color: 'red' };
+      return { status: 'Inactive', color: 'red' }
     }
     
     if (renewsAt < now) {
-      return { status: 'Expired', color: 'red' };
+      return { status: 'Expired', color: 'red' }
     }
     
-    const daysUntilRenewal = Math.ceil((renewsAt - now) / (1000 * 60 * 60 * 24));
+    const daysUntilRenewal = Math.ceil((renewsAt - now) / (1000 * 60 * 60 * 24))
     
     if (daysUntilRenewal <= 7) {
-      return { status: 'Expiring Soon', color: 'yellow' };
+      return { status: 'Expiring Soon', color: 'yellow' }
     }
     
-    return { status: 'Active', color: 'green' };
-  };
+    return { status: 'Active', color: 'green' }
+  }
 
-  const subscriptionStatus = getSubscriptionStatus();
+  const subscriptionStatus = getSubscriptionStatus()
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -157,7 +157,7 @@ export default function ArtistFinancePage() {
               { id: 'bank', label: 'Bank Details', icon: Building2 },
               { id: 'transactions', label: 'Transactions', icon: TrendingUp }
             ].map((tab) => {
-              const Icon = tab.icon;
+              const Icon = tab.icon
               return (
                 <button
                   key={tab.id}
@@ -172,7 +172,7 @@ export default function ArtistFinancePage() {
                   <span className="hidden sm:inline">{tab.label}</span>
                   <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
                 </button>
-              );
+              )
             })}
           </div>
 
@@ -646,5 +646,5 @@ export default function ArtistFinancePage() {
         </div>
       </main>
     </div>
-  );
+  )
 }

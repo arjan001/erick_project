@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { base44 } from '@/api/base44Client'
 
 /**
  * SEO Settings API
@@ -7,33 +7,33 @@ import { base44 } from '@/api/base44Client';
 // Get global SEO settings
 export const getSeoSettings = async () => {
   try {
-    const { data, error } = await base44.entities.seo_settings.list();
-    if (error) throw error;
-    return data?.[0] || null;
+    const { data, error } = await base44.entities.seo_settings.list()
+    if (error) throw error
+    return data?.[0] || null
   } catch (error) {
-    console.error('Error fetching SEO settings:', error);
-    throw error;
+    
+    throw error
   }
-};
+}
 
 // Update global SEO settings
 export const updateSeoSettings = async (settings) => {
   try {
-    const existing = await getSeoSettings();
+    const existing = await getSeoSettings()
     if (existing) {
-      const { data, error } = await base44.entities.seo_settings.update(existing.id, settings);
-      if (error) throw error;
-      return data;
+      const { data, error } = await base44.entities.seo_settings.update(existing.id, settings)
+      if (error) throw error
+      return data
     } else {
-      const { data, error } = await base44.entities.seo_settings.create(settings);
-      if (error) throw error;
-      return data;
+      const { data, error } = await base44.entities.seo_settings.create(settings)
+      if (error) throw error
+      return data
     }
   } catch (error) {
-    console.error('Error updating SEO settings:', error);
-    throw error;
+    
+    throw error
   }
-};
+}
 
 /**
  * Page Metadata API
@@ -42,62 +42,62 @@ export const updateSeoSettings = async (settings) => {
 // Get all page metadata
 export const getPageMetadata = async () => {
   try {
-    const { data, error } = await base44.entities.page_seo_metadata.list();
-    if (error) throw error;
-    return data || [];
+    const { data, error } = await base44.entities.page_seo_metadata.list()
+    if (error) throw error
+    return data || []
   } catch (error) {
-    console.error('Error fetching page metadata:', error);
-    throw error;
+    
+    throw error
   }
-};
+}
 
 // Get single page metadata by slug
 export const getPageMetadataBySlug = async (slug) => {
   try {
-    const { data, error } = await base44.entities.page_seo_metadata.filter({ page_slug: slug });
-    if (error) throw error;
-    return data?.[0] || null;
+    const { data, error } = await base44.entities.page_seo_metadata.filter({ page_slug: slug })
+    if (error) throw error
+    return data?.[0] || null
   } catch (error) {
-    console.error('Error fetching page metadata by slug:', error);
-    throw error;
+    
+    throw error
   }
-};
+}
 
 // Update page metadata
 export const updatePageMetadata = async (id, metadata) => {
   try {
-    const { data, error } = await base44.entities.page_seo_metadata.update(id, metadata);
-    if (error) throw error;
-    return data;
+    const { data, error } = await base44.entities.page_seo_metadata.update(id, metadata)
+    if (error) throw error
+    return data
   } catch (error) {
-    console.error('Error updating page metadata:', error);
-    throw error;
+    
+    throw error
   }
-};
+}
 
 // Create page metadata
 export const createPageMetadata = async (metadata) => {
   try {
-    const { data, error } = await base44.entities.page_seo_metadata.create(metadata);
-    if (error) throw error;
-    return data;
+    const { data, error } = await base44.entities.page_seo_metadata.create(metadata)
+    if (error) throw error
+    return data
   } catch (error) {
-    console.error('Error creating page metadata:', error);
-    throw error;
+    
+    throw error
   }
-};
+}
 
 // Delete page metadata
 export const deletePageMetadata = async (id) => {
   try {
-    const { data, error } = await base44.entities.page_seo_metadata.delete(id);
-    if (error) throw error;
-    return data;
+    const { data, error } = await base44.entities.page_seo_metadata.delete(id)
+    if (error) throw error
+    return data
   } catch (error) {
-    console.error('Error deleting page metadata:', error);
-    throw error;
+    
+    throw error
   }
-};
+}
 
 /**
  * Sitemap Generation API
@@ -106,50 +106,50 @@ export const deletePageMetadata = async (id) => {
 // Generate sitemap XML
 export const generateSitemap = async () => {
   try {
-    const seoSettings = await getSeoSettings();
-    const pageMetadata = await getPageMetadata();
+    const seoSettings = await getSeoSettings()
+    const pageMetadata = await getPageMetadata()
     
     if (!seoSettings?.sitemap_enabled) {
-      throw new Error('Sitemap generation is disabled');
+      throw new Error('Sitemap generation is disabled')
     }
 
-    const baseUrl = seoSettings.canonical_url || 'https://ericrabar.com';
-    const defaultPriority = seoSettings.sitemap_priority || 0.8;
-    const defaultChangeFreq = seoSettings.sitemap_change_freq || 'weekly';
+    const baseUrl = seoSettings.canonical_url || 'https://ericrabar.com'
+    const defaultPriority = seoSettings.sitemap_priority || 0.8
+    const defaultChangeFreq = seoSettings.sitemap_change_freq || 'weekly'
 
     // Filter out no-index pages
-    const indexedPages = pageMetadata.filter(page => !page.no_index);
+    const indexedPages = pageMetadata.filter(page => !page.no_index)
 
     // Build XML
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-    xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`
+    xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`
 
     indexedPages.forEach(page => {
-      const url = page.canonical_url || `${baseUrl}${page.page_slug}`;
-      const priority = page.sitemap_priority || defaultPriority;
-      const changeFreq = page.sitemap_change_freq || defaultChangeFreq;
-      const lastMod = page.updated_at || page.created_at;
+      const url = page.canonical_url || `${baseUrl}${page.page_slug}`
+      const priority = page.sitemap_priority || defaultPriority
+      const changeFreq = page.sitemap_change_freq || defaultChangeFreq
+      const lastMod = page.updated_at || page.created_at
 
-      xml += `  <url>\n`;
-      xml += `    <loc>${url}</loc>\n`;
-      xml += `    <lastmod>${new Date(lastMod).toISOString()}</lastmod>\n`;
-      xml += `    <changefreq>${changeFreq}</changefreq>\n`;
-      xml += `    <priority>${priority}</priority>\n`;
-      xml += `  </url>\n`;
-    });
+      xml += `  <url>\n`
+      xml += `    <loc>${url}</loc>\n`
+      xml += `    <lastmod>${new Date(lastMod).toISOString()}</lastmod>\n`
+      xml += `    <changefreq>${changeFreq}</changefreq>\n`
+      xml += `    <priority>${priority}</priority>\n`
+      xml += `  </url>\n`
+    })
 
-    xml += `</urlset>`;
+    xml += `</urlset>`
 
     // Log generation
-    await logSitemapGeneration('success', indexedPages.length, xml.length);
+    await logSitemapGeneration('success', indexedPages.length, xml.length)
 
-    return xml;
+    return xml
   } catch (error) {
-    console.error('Error generating sitemap:', error);
-    await logSitemapGeneration('failed', 0, 0, error.message);
-    throw error;
+    
+    await logSitemapGeneration('failed', 0, 0, error.message)
+    throw error
   }
-};
+}
 
 // Log sitemap generation
 const logSitemapGeneration = async (status, urlCount, fileSize, errorMessage = null) => {
@@ -161,11 +161,11 @@ const logSitemapGeneration = async (status, urlCount, fileSize, errorMessage = n
       error_message: errorMessage,
       started_at: new Date().toISOString(),
       completed_at: new Date().toISOString()
-    });
+    })
   } catch (error) {
-    console.error('Error logging sitemap generation:', error);
+    
   }
-};
+}
 
 // Get sitemap generation logs
 export const getSitemapLogs = async (limit = 10) => {
@@ -174,14 +174,14 @@ export const getSitemapLogs = async (limit = 10) => {
       {},
       '-created_at',
       limit
-    );
-    if (error) throw error;
-    return data || [];
+    )
+    if (error) throw error
+    return data || []
   } catch (error) {
-    console.error('Error fetching sitemap logs:', error);
-    throw error;
+    
+    throw error
   }
-};
+}
 
 /**
  * Robots.txt API
@@ -190,13 +190,13 @@ export const getSitemapLogs = async (limit = 10) => {
 // Get robots.txt content
 export const getRobotsTxt = async () => {
   try {
-    const seoSettings = await getSeoSettings();
-    return seoSettings?.robots_txt || 'User-agent: *\nAllow: /';
+    const seoSettings = await getSeoSettings()
+    return seoSettings?.robots_txt || 'User-agent: *\nAllow: /'
   } catch (error) {
-    console.error('Error fetching robots.txt:', error);
-    throw error;
+    
+    throw error
   }
-};
+}
 
 /**
  * Schema.org JSON-LD API
@@ -205,15 +205,15 @@ export const getRobotsTxt = async () => {
 // Generate JSON-LD schema for a page
 export const generateSchemaForPage = async (slug) => {
   try {
-    const seoSettings = await getSeoSettings();
-    const pageMetadata = await getPageMetadataBySlug(slug);
+    const seoSettings = await getSeoSettings()
+    const pageMetadata = await getPageMetadataBySlug(slug)
 
     if (!seoSettings?.enable_schema) {
-      return null;
+      return null
     }
 
-    const baseUrl = seoSettings.canonical_url || 'https://ericrabar.com';
-    const pageUrl = pageMetadata?.canonical_url || `${baseUrl}${slug}`;
+    const baseUrl = seoSettings.canonical_url || 'https://ericrabar.com'
+    const pageUrl = pageMetadata?.canonical_url || `${baseUrl}${slug}`
 
     // Organization schema
     const organizationSchema = {
@@ -223,7 +223,7 @@ export const generateSchemaForPage = async (slug) => {
       url: seoSettings.organization_url || baseUrl,
       logo: seoSettings.organization_logo || '',
       sameAs: seoSettings.same_as || []
-    };
+    }
 
     // WebPage schema
     const webPageSchema = {
@@ -233,19 +233,19 @@ export const generateSchemaForPage = async (slug) => {
       description: pageMetadata?.meta_description || seoSettings.site_description,
       url: pageUrl,
       inLanguage: seoSettings.og_locale || 'en_US'
-    };
+    }
 
     // Combine schemas
-    const schema = [organizationSchema, webPageSchema];
+    const schema = [organizationSchema, webPageSchema]
 
     // Add page-specific schema if exists
     if (pageMetadata?.schema_data && Object.keys(pageMetadata.schema_data).length > 0) {
-      schema.push(pageMetadata.schema_data);
+      schema.push(pageMetadata.schema_data)
     }
 
-    return JSON.stringify(schema);
+    return JSON.stringify(schema)
   } catch (error) {
-    console.error('Error generating schema:', error);
-    throw error;
+    
+    throw error
   }
-};
+}

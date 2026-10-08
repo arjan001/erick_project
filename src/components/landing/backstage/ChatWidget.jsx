@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { MessageCircle, X, Search, ChevronRight, Home, HelpCircle, Grid3x3, Mail, Phone, MapPin } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { MessageCircle, X, Search, ChevronRight, Home, HelpCircle, Grid3x3, Mail, Phone, MapPin } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
 
 const HELP_ARTICLES = [
   { title: 'Self-Tape Audition Requests', desc: 'How to submit and manage self-tape requests.' },
@@ -9,36 +9,36 @@ const HELP_ARTICLES = [
   { title: 'Subscriptions & Benefits', desc: 'Plans, connects, and premium features.' },
   { title: 'Posting a Project', desc: 'How to post a job and find talent.' },
   { title: 'Payment & Invoicing', desc: 'M-Pesa and payment processing details.' },
-];
+]
 
 export default function ChatWidget() {
-  const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('home');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedArticle, setSelectedArticle] = useState(null);
-  const navigate = useNavigate();
+  const [open, setOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('home')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedArticle, setSelectedArticle] = useState(null)
+  const navigate = useNavigate()
 
   const handleTabClick = (tab) => {
-    setActiveTab(tab);
-    setSelectedArticle(null);
+    setActiveTab(tab)
+    setSelectedArticle(null)
     if (tab === 'messages') {
       // Navigate to messages page (or login if not authenticated)
-      navigate(createPageUrl('SignIn'));
-      setOpen(false);
+      navigate(createPageUrl('SignIn'))
+      setOpen(false)
     } else if (tab === 'home') {
       // Stay on home view
     }
-  };
+  }
 
   const handleContactUs = () => {
-    navigate(createPageUrl('Contact'));
-    setOpen(false);
-  };
+    navigate(createPageUrl('Contact'))
+    setOpen(false)
+  }
 
   const filteredArticles = HELP_ARTICLES.filter(a =>
     a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     a.desc.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  )
 
   if (!open) {
     return (
@@ -49,7 +49,7 @@ export default function ChatWidget() {
       >
         <MessageCircle className="h-5 w-5" />
       </button>
-    );
+    )
   }
 
   return (
@@ -171,5 +171,5 @@ export default function ChatWidget() {
         </button>
       </div>
     </div>
-  );
+  )
 }

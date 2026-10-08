@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Textarea } from '@/shared/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Switch } from '@/shared/components/ui/switch';
-import { Plus, Edit2, Trash2, Upload, X, Gavel, TrendingUp, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import { useToast } from '@/hooks/useToast';
-import { ShopAuction, ShopProduct, AuctionBid } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Textarea } from '@/shared/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
+import { Switch } from '@/shared/components/ui/switch'
+import { Plus, Edit2, Trash2, Upload, X, Gavel, TrendingUp, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { base44 } from '@/api/base44Client'
+import { useToast } from '@/hooks/useToast'
+import { ShopAuction, ShopProduct, AuctionBid } from '@/lib/supabaseEntities'
 
 export default function AdminShopAuctionsPage() {
-  const { success, error: toastError } = useToast();
-  const [auctions, setAuctions] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingAuction, setEditingAuction] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const { success, error: toastError } = useToast()
+  const [auctions, setAuctions] = useState([])
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingAuction, setEditingAuction] = useState(null)
+  const [uploading, setUploading] = useState(false)
 
   const [formData, setFormData] = useState({
     product_id: '',
@@ -33,51 +33,51 @@ export default function AdminShopAuctionsPage() {
     auction_end: '',
     status: 'upcoming',
     is_featured: false,
-  });
+  })
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData()
+  }, [])
 
   const loadData = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       const [auctionsData, productsData] = await Promise.all([
         ShopAuction.filter({}, '-created_at', 100),
         ShopProduct.filter({}, 'name', 500),
-      ]);
-      setAuctions(auctionsData || []);
-      setProducts(productsData || []);
+      ])
+      setAuctions(auctionsData || [])
+      setProducts(productsData || [])
     } catch (err) {
-      console.error('Error loading data:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    setUploading(true);
+    setUploading(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url;
-      setFormData({ ...formData, images: [...formData.images, fileUrl] });
+      const response = await base44.integrations.Core.UploadFile({ file })
+      const fileUrl = response.file_url || response.url
+      setFormData({ ...formData, images: [...formData.images, fileUrl] })
     } catch (err) {
-      console.error('Error uploading image:', err);
-      toastError('Upload Failed', 'Failed to upload image');
+      
+      toastError('Upload Failed', 'Failed to upload image')
     } finally {
-      setUploading(false);
+      setUploading(false)
     }
-  };
+  }
 
   const handleRemoveImage = (index) => {
     setFormData({
       ...formData,
       images: formData.images.filter((_, i) => i !== index),
-    });
-  };
+    })
+  }
 
   const handleSave = async () => {
     try {
@@ -90,41 +90,41 @@ export default function AdminShopAuctionsPage() {
         images: JSON.stringify(formData.images),
         auction_start: new Date(formData.auction_start).toISOString(),
         auction_end: new Date(formData.auction_end).toISOString(),
-      };
-
-      if (editingAuction) {
-        await ShopAuction.update(editingAuction.id, dataToSave);
-        success('Auction Updated', 'Auction has been updated');
-      } else {
-        await ShopAuction.create(dataToSave);
-        success('Auction Created', 'Auction has been created');
       }
 
-      setShowModal(false);
-      setEditingAuction(null);
-      resetForm();
-      loadData();
+      if (editingAuction) {
+        await ShopAuction.update(editingAuction.id, dataToSave)
+        success('Auction Updated', 'Auction has been updated')
+      } else {
+        await ShopAuction.create(dataToSave)
+        success('Auction Created', 'Auction has been created')
+      }
+
+      setShowModal(false)
+      setEditingAuction(null)
+      resetForm()
+      loadData()
     } catch (err) {
-      console.error('Error saving auction:', err);
-      toastError('Save Failed', 'Failed to save auction');
+      
+      toastError('Save Failed', 'Failed to save auction')
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this auction?')) return;
+    if (!confirm('Are you sure you want to delete this auction?')) return
 
     try {
-      await ShopAuction.delete(id);
-      success('Auction Deleted', 'Auction has been deleted');
-      loadData();
+      await ShopAuction.delete(id)
+      success('Auction Deleted', 'Auction has been deleted')
+      loadData()
     } catch (err) {
-      console.error('Error deleting auction:', err);
-      toastError('Delete Failed', 'Failed to delete auction');
+      
+      toastError('Delete Failed', 'Failed to delete auction')
     }
-  };
+  }
 
   const handleEdit = (auction) => {
-    setEditingAuction(auction);
+    setEditingAuction(auction)
     setFormData({
       product_id: auction.product_id || '',
       title: auction.title || '',
@@ -138,19 +138,19 @@ export default function AdminShopAuctionsPage() {
       auction_end: auction.auction_end ? new Date(auction.auction_end).toISOString().slice(0, 16) : '',
       status: auction.status || 'upcoming',
       is_featured: auction.is_featured || false,
-    });
-    setShowModal(true);
-  };
+    })
+    setShowModal(true)
+  }
 
   const handleViewBids = async (auctionId) => {
     try {
-      const bids = await AuctionBid.filter({ auction_id: auctionId }, '-created_at', 50);
-      alert(`Total bids: ${bids.length}\n\nBids:\n${bids.map(b => `$${b.bid_amount} - ${b.created_at}`).join('\n')}`);
+      const bids = await AuctionBid.filter({ auction_id: auctionId }, '-created_at', 50)
+      alert(`Total bids: ${bids.length}\n\nBids:\n${bids.map(b => `$${b.bid_amount} - ${b.created_at}`).join('\n')}`)
     } catch (err) {
-      console.error('Error loading bids:', err);
-      toastError('Error', 'Failed to load bids');
+      
+      toastError('Error', 'Failed to load bids')
     }
-  };
+  }
 
   const resetForm = () => {
     setFormData({
@@ -166,25 +166,25 @@ export default function AdminShopAuctionsPage() {
       auction_end: '',
       status: 'upcoming',
       is_featured: false,
-    });
-  };
+    })
+  }
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'upcoming': return <Clock className="w-4 h-4 text-gray-500" />;
-      case 'active': return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'ended': return <CheckCircle className="w-4 h-4 text-blue-500" />;
-      case 'cancelled': return <XCircle className="w-4 h-4 text-red-500" />;
-      default: return null;
+      case 'upcoming': return <Clock className="w-4 h-4 text-gray-500" />
+      case 'active': return <TrendingUp className="w-4 h-4 text-green-500" />
+      case 'ended': return <CheckCircle className="w-4 h-4 text-blue-500" />
+      case 'cancelled': return <XCircle className="w-4 h-4 text-red-500" />
+      default: return null
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -198,9 +198,9 @@ export default function AdminShopAuctionsPage() {
             </div>
             <Button
               onClick={() => {
-                resetForm();
-                setEditingAuction(null);
-                setShowModal(true);
+                resetForm()
+                setEditingAuction(null)
+                setShowModal(true)
               }}
               className="bg-gray-900 text-white hover:bg-gray-800"
             >
@@ -477,5 +477,5 @@ export default function AdminShopAuctionsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

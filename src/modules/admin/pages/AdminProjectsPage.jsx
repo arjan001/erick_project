@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Project, AuditLog } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { FolderKanban, Search, Eye, Trash2, DollarSign, CheckCircle, XCircle, TrendingUp, X, Plus, Building2, FileText, Film, ChevronLeft, ChevronRight, MapPin, Calendar, Clock, Users, Tag, Star, Flame, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { Project, AuditLog } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { FolderKanban, Search, Eye, Trash2, DollarSign, CheckCircle, XCircle, TrendingUp, X, Plus, Building2, FileText, Film, ChevronLeft, ChevronRight, MapPin, Calendar, Clock, Users, Tag, Star, Flame, Sparkles } from 'lucide-react'
 
-const STATUSES = ['submitted', 'verified', 'in_progress', 'delivered', 'rejected'];
+const STATUSES = ['submitted', 'verified', 'in_progress', 'delivered', 'rejected']
 
 export default function AdminProjectsPage() {
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [projects, setProjects] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [projects, setProjects] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [selectedProject, setSelectedProject] = useState(null)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [createForm, setCreateForm] = useState({
     title: '',
     description: '',
@@ -25,50 +25,50 @@ export default function AdminProjectsPage() {
     location_city: '',
     budget_amount: '',
     status: 'submitted'
-  });
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+      setDebouncedSearchQuery(searchQuery)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   const fetchProjects = async () => {
     try {
-      setLoading(true);
-      const rows = await Project.list('-created_date');
-      setProjects(rows || []);
+      setLoading(true)
+      const rows = await Project.list('-created_date')
+      setProjects(rows || [])
     } catch (err) {
-      console.error('Error fetching projects:', err);
-      error('Error', 'Failed to fetch projects');
+      
+      error('Error', 'Failed to fetch projects')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchProjects(); }, []);
+  useEffect(() => { fetchProjects(); }, [])
 
   const handleDeleteProject = async (projectId) => {
-    if (!window.confirm('Delete this project? This cannot be undone.')) return;
+    if (!window.confirm('Delete this project? This cannot be undone.')) return
     try {
-      await Project.delete(projectId);
-      setProjects(prev => prev.filter(p => p.id !== projectId));
-      success('Deleted', 'Project deleted successfully');
-      AuditLog.create({ actor_email: user?.email, action: 'project.delete', entity_type: 'Project', entity_id: projectId, details: 'Deleted project' }).catch(() => {});
+      await Project.delete(projectId)
+      setProjects(prev => prev.filter(p => p.id !== projectId))
+      success('Deleted', 'Project deleted successfully')
+      AuditLog.create({ actor_email: user?.email, action: 'project.delete', entity_type: 'Project', entity_id: projectId, details: 'Deleted project' }).catch(() => {})
     } catch (err) {
-      console.error('Error deleting project:', err);
-      error('Failed', 'Failed to delete project');
+      
+      error('Failed', 'Failed to delete project')
     }
-  };
+  }
 
   const handleCreateProject = async () => {
     if (!createForm.title || !createForm.description) {
-      error('Validation Error', 'Title and description are required');
-      return;
+      error('Validation Error', 'Title and description are required')
+      return
     }
     try {
       const newProject = await Project.create({
@@ -78,9 +78,9 @@ export default function AdminProjectsPage() {
         location_city: createForm.location_city,
         budget_amount: parseFloat(createForm.budget_amount) || 0,
         status: createForm.status
-      });
-      setProjects(prev => [newProject, ...prev]);
-      setShowCreateModal(false);
+      })
+      setProjects(prev => [newProject, ...prev])
+      setShowCreateModal(false)
       setCreateForm({
         title: '',
         description: '',
@@ -88,27 +88,27 @@ export default function AdminProjectsPage() {
         location_city: '',
         budget_amount: '',
         status: 'submitted'
-      });
-      success('Created', 'Project created successfully');
-      AuditLog.create({ actor_email: user?.email, action: 'project.create', entity_type: 'Project', entity_id: newProject.id, details: 'Created project' }).catch(() => {});
+      })
+      success('Created', 'Project created successfully')
+      AuditLog.create({ actor_email: user?.email, action: 'project.create', entity_type: 'Project', entity_id: newProject.id, details: 'Created project' }).catch(() => {})
     } catch (err) {
-      console.error('Error creating project:', err);
-      error('Failed', 'Failed to create project');
+      
+      error('Failed', 'Failed to create project')
     }
-  };
+  }
 
   const handleVerify = async (projectId, currentStatus) => {
-    const newStatus = currentStatus === 'verified' ? 'submitted' : 'verified';
+    const newStatus = currentStatus === 'verified' ? 'submitted' : 'verified'
     try {
-      await Project.update(projectId, { status: newStatus });
-      setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: newStatus } : p));
-      success('Updated', 'Project status updated successfully');
-      AuditLog.create({ actor_email: user?.email, action: 'project.status_update', entity_type: 'Project', entity_id: projectId, details: `Changed status to ${newStatus}` }).catch(() => {});
+      await Project.update(projectId, { status: newStatus })
+      setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: newStatus } : p))
+      success('Updated', 'Project status updated successfully')
+      AuditLog.create({ actor_email: user?.email, action: 'project.status_update', entity_type: 'Project', entity_id: projectId, details: `Changed status to ${newStatus}` }).catch(() => {})
     } catch (err) {
-      console.error('Error updating project status:', err);
-      error('Failed', 'Failed to update project status');
+      
+      error('Failed', 'Failed to update project status')
     }
-  };
+  }
 
   const getStatusBadge = (status) => {
     const map = {
@@ -117,37 +117,37 @@ export default function AdminProjectsPage() {
       in_progress: 'bg-purple-100 text-purple-800',
       delivered: 'bg-green-100 text-green-800',
       rejected: 'bg-red-100 text-red-800',
-    };
-    return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[status] || 'bg-gray-100 text-gray-800'}`}>{status?.replace('_', ' ')}</span>;
-  };
+    }
+    return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[status] || 'bg-gray-100 text-gray-800'}`}>{status?.replace('_', ' ')}</span>
+  }
 
   // Helper functions for dynamic tags
   const isNewProject = (createdAt) => {
-    if (!createdAt) return false;
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    return new Date(createdAt) > oneDayAgo;
-  };
+    if (!createdAt) return false
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    return new Date(createdAt) > oneDayAgo
+  }
 
   const isPopularProject = (budget) => {
-    if (!budget) return false;
-    const budgetNum = parseFloat(budget);
+    if (!budget) return false
+    const budgetNum = parseFloat(budget)
     return budgetNum >= 50000; // Popular if budget is $50k or more
-  };
+  }
 
   const handleToggleFeatured = async (projectId, currentFeatured) => {
     try {
-      await Project.update(projectId, { is_featured: !currentFeatured });
-      setProjects(prev => prev.map(p => p.id === projectId ? { ...p, is_featured: !currentFeatured } : p));
-      success('Updated', !currentFeatured ? 'Project featured' : 'Project unfeatured');
-      AuditLog.create({ actor_email: user?.email, action: 'project.feature_toggle', entity_type: 'Project', entity_id: projectId, details: `Set featured to ${!currentFeatured}` }).catch(() => {});
+      await Project.update(projectId, { is_featured: !currentFeatured })
+      setProjects(prev => prev.map(p => p.id === projectId ? { ...p, is_featured: !currentFeatured } : p))
+      success('Updated', !currentFeatured ? 'Project featured' : 'Project unfeatured')
+      AuditLog.create({ actor_email: user?.email, action: 'project.feature_toggle', entity_type: 'Project', entity_id: projectId, details: `Set featured to ${!currentFeatured}` }).catch(() => {})
     } catch (err) {
-      console.error('Error toggling featured:', err);
-      error('Failed', 'Failed to update featured status');
+      
+      error('Failed', 'Failed to update featured status')
     }
-  };
+  }
 
   const filteredProjects = projects.filter(project => {
-    const searchLower = debouncedSearchQuery.toLowerCase();
+    const searchLower = debouncedSearchQuery.toLowerCase()
     const matchesSearch = !searchLower || 
       project.project_owner_name?.toLowerCase().includes(searchLower) ||
       project.project_owner_company?.toLowerCase().includes(searchLower) ||
@@ -156,32 +156,32 @@ export default function AdminProjectsPage() {
       project.title?.toLowerCase().includes(searchLower) ||
       project.location_city?.toLowerCase().includes(searchLower) ||
       project.location_country?.toLowerCase().includes(searchLower) ||
-      project.budget_range?.toLowerCase().includes(searchLower);
-    const matchesStatus = filterStatus === 'all' || project.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+      project.budget_range?.toLowerCase().includes(searchLower)
+    const matchesStatus = filterStatus === 'all' || project.status === filterStatus
+    return matchesSearch && matchesStatus
+  })
 
   const paginatedProjects = filteredProjects.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
+  )
 
-  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage)
 
   const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+    setCurrentPage(page)
+  }
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearchQuery, filterStatus, itemsPerPage]);
+    setCurrentPage(1)
+  }, [debouncedSearchQuery, filterStatus, itemsPerPage])
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -389,15 +389,15 @@ export default function AdminProjectsPage() {
                 <ChevronLeft className="w-4 h-4" />
               </Button>
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                let pageNum;
+                let pageNum
                 if (totalPages <= 5) {
-                  pageNum = i + 1;
+                  pageNum = i + 1
                 } else if (currentPage <= 3) {
-                  pageNum = i + 1;
+                  pageNum = i + 1
                 } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
+                  pageNum = totalPages - 4 + i
                 } else {
-                  pageNum = currentPage - 2 + i;
+                  pageNum = currentPage - 2 + i
                 }
                 return (
                   <Button
@@ -409,7 +409,7 @@ export default function AdminProjectsPage() {
                   >
                     {pageNum}
                   </Button>
-                );
+                )
               })}
               {totalPages > 5 && (
                 <>
@@ -748,5 +748,5 @@ export default function AdminProjectsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

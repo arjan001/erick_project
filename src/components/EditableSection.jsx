@@ -1,90 +1,90 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Upload } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import React, { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Sparkles, Upload } from 'lucide-react'
+import { base44 } from '@/api/base44Client'
 
 export default function EditableSection({ title, onGenerate }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [prompt, setPrompt] = useState('');
-  const [generating, setGenerating] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [prompt, setPrompt] = useState('')
+  const [generating, setGenerating] = useState(false)
   const [boxes, setBoxes] = useState([
     { id: 1, images: [], prompt: '', title: '', description: '', uploading: false, progress: '' },
     { id: 2, images: [], prompt: '', title: '', description: '', uploading: false, progress: '' },
     { id: 3, images: [], prompt: '', title: '', description: '', uploading: false, progress: '' }
-  ]);
-  const [hoveredBox, setHoveredBox] = useState(null);
+  ])
+  const [hoveredBox, setHoveredBox] = useState(null)
 
   const handleGenerateImage = async (boxId) => {
-    const box = boxes.find(b => b.id === boxId);
-    if (!box.prompt && box.images.length === 0) return;
+    const box = boxes.find(b => b.id === boxId)
+    if (!box.prompt && box.images.length === 0) return
 
     try {
       // Generate 5 images for the project
-      const generatedImages = [];
+      const generatedImages = []
       const shots = [
         'Wide back-of-room angle. Crowd as silhouettes. Stage barely lit.',
         'Side angle near the DJ booth or mixing area. Hands resting. No action.',
         'Close shot of a face in profile. Expression neutral.',
         'High angle from a corner. Slow drift perspective.',
         'Rear crowd perspective looking toward the stage or focal point.'
-      ];
+      ]
 
       for (let i = 0; i < 5; i++) {
         setBoxes(prevBoxes => prevBoxes.map(b => 
           b.id === boxId ? { ...b, uploading: true, progress: `Generating shot ${i + 1}/5...`, images: generatedImages } : b
-        ));
+        ))
 
-        const shotPrompt = `${box.prompt}\n\nSpecific shot: ${shots[i]}\n\nCinematic style. Muted colors. Practical lights. Natural grain. In-production feel.`;
+        const shotPrompt = `${box.prompt}\n\nSpecific shot: ${shots[i]}\n\nCinematic style. Muted colors. Practical lights. Natural grain. In-production feel.`
         
         const response = await base44.integrations.Core.GenerateImage({
           prompt: shotPrompt,
           existing_image_urls: box.images.length > 0 ? [box.images[0]] : undefined
-        });
+        })
 
-        generatedImages.push(response.url);
+        generatedImages.push(response.url)
         
         // Update progressively
         setBoxes(prevBoxes => prevBoxes.map(b => 
           b.id === boxId ? { ...b, images: [...generatedImages] } : b
-        ));
+        ))
       }
 
       setBoxes(prevBoxes => prevBoxes.map(b => 
         b.id === boxId ? { ...b, images: generatedImages, uploading: false, progress: '' } : b
-      ));
+      ))
     } catch (error) {
-      console.error('Failed to generate image:', error);
+      
       setBoxes(prevBoxes => prevBoxes.map(b => 
         b.id === boxId ? { ...b, uploading: false, progress: 'Error generating' } : b
-      ));
+      ))
     }
-  };
+  }
 
   const handleFileUpload = async (boxId, file) => {
     setBoxes(boxes.map(b => 
       b.id === boxId ? { ...b, uploading: true, progress: 'Uploading...' } : b
-    ));
+    ))
 
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
+      const response = await base44.integrations.Core.UploadFile({ file })
       setBoxes(boxes.map(b => 
         b.id === boxId ? { ...b, images: [response.file_url], uploading: false, progress: '' } : b
-      ));
+      ))
     } catch (error) {
-      console.error('Failed to upload file:', error);
+      
       setBoxes(boxes.map(b => 
         b.id === boxId ? { ...b, uploading: false, progress: 'Upload failed' } : b
-      ));
+      ))
     }
-  };
+  }
 
   const handleUrlInput = (boxId, url) => {
     setBoxes(boxes.map(b => 
       b.id === boxId ? { ...b, images: [url] } : b
-    ));
-  };
+    ))
+  }
 
   return (
     <div className="mb-8 border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
@@ -157,7 +157,7 @@ export default function EditableSection({ title, onGenerate }) {
                   onChange={(e) => {
                     setBoxes(boxes.map(b => 
                       b.id === box.id ? { ...b, title: e.target.value } : b
-                    ));
+                    ))
                   }}
                   className="text-xs mb-2"
                 />
@@ -168,7 +168,7 @@ export default function EditableSection({ title, onGenerate }) {
                   onChange={(e) => {
                     setBoxes(boxes.map(b => 
                       b.id === box.id ? { ...b, description: e.target.value } : b
-                    ));
+                    ))
                   }}
                   className="text-xs mb-2 h-16"
                 />
@@ -177,13 +177,13 @@ export default function EditableSection({ title, onGenerate }) {
                   placeholder="Describe 5 cinematic shots for your project..."
                   value={box.prompt}
                   onChange={(e) => {
-                    const value = e.target.value;
+                    const value = e.target.value
                     if (value.startsWith('http')) {
-                      handleUrlInput(box.id, value);
+                      handleUrlInput(box.id, value)
                     }
                     setBoxes(boxes.map(b => 
                       b.id === box.id ? { ...b, prompt: value } : b
-                    ));
+                    ))
                   }}
                   className="text-xs mb-2 h-20"
                 />
@@ -204,8 +204,8 @@ export default function EditableSection({ title, onGenerate }) {
                       variant="outline"
                       className="w-full text-xs"
                       onClick={(e) => {
-                        e.preventDefault();
-                        document.getElementById(`file-${box.id}`).click();
+                        e.preventDefault()
+                        document.getElementById(`file-${box.id}`).click()
                       }}
                     >
                       <Upload className="w-3 h-3 mr-1" />
@@ -217,8 +217,8 @@ export default function EditableSection({ title, onGenerate }) {
                       accept="image/*,video/*"
                       className="hidden"
                       onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) handleFileUpload(box.id, file);
+                        const file = e.target.files[0]
+                        if (file) handleFileUpload(box.id, file)
                       }}
                     />
                   </label>
@@ -230,8 +230,8 @@ export default function EditableSection({ title, onGenerate }) {
           <div className="flex justify-end gap-2">
             <Button
               onClick={() => {
-                onGenerate(boxes.filter(b => b.images.length > 0));
-                setIsExpanded(false);
+                onGenerate(boxes.filter(b => b.images.length > 0))
+                setIsExpanded(false)
               }}
               className="bg-green-600 hover:bg-green-700"
             >
@@ -241,5 +241,5 @@ export default function EditableSection({ title, onGenerate }) {
         </div>
       )}
     </div>
-  );
+  )
 }

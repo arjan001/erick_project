@@ -189,7 +189,7 @@ export const PRODUCTION_POSITIONS = [
   { value: "medic", label: "Medic / Set Medic", department: "other" },
   { value: "security", label: "Security", department: "other" },
   { value: "driver", label: "Driver / Transportation", department: "other" },
-];
+]
 
 // Departments for filtering
 export const DEPARTMENTS = [
@@ -214,4 +214,4 @@ export const DEPARTMENTS = [
   { value: "commercial", label: "Commercial / Advertising" },
   { value: "digital", label: "Web / Digital" },
   { value: "other", label: "Other" },
-];
+]

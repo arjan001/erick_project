@@ -1,66 +1,66 @@
-import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2 } from 'lucide-react';
+import React, { useState } from 'react'
+import { base44 } from '@/api/base44Client'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Plus, Trash2 } from 'lucide-react'
 
 export default function AssignmentManager() {
-  const [selectedProject, setSelectedProject] = useState('');
-  const [selectedType, setSelectedType] = useState('artist');
-  const [selectedResource, setSelectedResource] = useState('');
-  const queryClient = useQueryClient();
+  const [selectedProject, setSelectedProject] = useState('')
+  const [selectedType, setSelectedType] = useState('artist')
+  const [selectedResource, setSelectedResource] = useState('')
+  const queryClient = useQueryClient()
 
   const { data: projects } = useQuery({
     queryKey: ['verified-projects'],
     queryFn: () => base44.entities.Project.filter({ status: 'verified' }),
-  });
+  })
 
   const { data: artists } = useQuery({
     queryKey: ['approved-artists'],
     queryFn: () => base44.entities.Artist.filter({ status: 'approved' }),
-  });
+  })
 
   const { data: teams } = useQuery({
     queryKey: ['approved-teams'],
     queryFn: () => base44.entities.Team.filter({ status: 'approved' }),
-  });
+  })
 
   const { data: assignments } = useQuery({
     queryKey: ['assignments', selectedProject],
     queryFn: () => selectedProject ? base44.entities.Assignment.filter({ project_id: selectedProject }) : [],
     enabled: !!selectedProject
-  });
+  })
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Assignment.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
-      setSelectedResource('');
+      queryClient.invalidateQueries({ queryKey: ['assignments'] })
+      setSelectedResource('')
     },
-  });
+  })
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Assignment.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['assignments'] })
     },
-  });
+  })
 
   const handleAssign = () => {
-    if (!selectedProject || !selectedResource) return;
+    if (!selectedProject || !selectedResource) return
     
     createMutation.mutate({
       project_id: selectedProject,
       assigned_type: selectedType,
       assigned_id: selectedResource,
       assignment_status: 'proposed'
-    });
-  };
+    })
+  }
 
-  const resources = selectedType === 'artist' ? artists : teams;
-  const project = projects?.find(p => p.id === selectedProject);
+  const resources = selectedType === 'artist' ? artists : teams
+  const project = projects?.find(p => p.id === selectedProject)
 
   return (
     <div className="space-y-6">
@@ -137,7 +137,7 @@ export default function AssignmentManager() {
               {assignments.map(assignment => {
                 const resource = assignment.assigned_type === 'artist' 
                   ? artists?.find(a => a.id === assignment.assigned_id)
-                  : teams?.find(t => t.id === assignment.assigned_id);
+                  : teams?.find(t => t.id === assignment.assigned_id)
 
                 return (
                   <div key={assignment.id} className="flex items-center justify-between p-4 bg-zinc-800 rounded-lg">
@@ -159,7 +159,7 @@ export default function AssignmentManager() {
                       </Button>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           ) : (
@@ -168,5 +168,5 @@ export default function AssignmentManager() {
         </div>
       )}
     </div>
-  );
+  )
 }

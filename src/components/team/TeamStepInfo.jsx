@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Eye, EyeOff } from 'lucide-react';
-import CountrySelector from '../CountrySelector';
+import React, { useState } from 'react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Eye, EyeOff } from 'lucide-react'
+import CountrySelector from '../CountrySelector'
 
 export default function TeamStepInfo({ data, updateData }) {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
   return (
     <div>
       <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Team Information</h2>
@@ -140,5 +140,5 @@ export default function TeamStepInfo({ data, updateData }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

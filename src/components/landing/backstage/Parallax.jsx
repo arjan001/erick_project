@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 export function ParallaxBackground({ src, overlay = 'bg-black/50', children }) {
   return (
@@ -10,7 +10,7 @@ export function ParallaxBackground({ src, overlay = 'bg-black/50', children }) {
       <div className={`absolute inset-0 ${overlay}`} />
       <div className="relative">{children}</div>
     </div>
-  );
+  )
 }
 
 export function ParallaxLayer({ speed = 0.1, children, className = '' }) {
@@ -18,5 +18,5 @@ export function ParallaxLayer({ speed = 0.1, children, className = '' }) {
     <div className={className}>
       {children}
     </div>
-  );
+  )
 }

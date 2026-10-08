@@ -1,9 +1,9 @@
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Award } from 'lucide-react';
+import React from 'react'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Award } from 'lucide-react'
 
 export default function StepFinal({ data, updateData }) {
   return (
@@ -88,22 +88,22 @@ export default function StepFinal({ data, updateData }) {
                       { value: 'city_support', label: 'City Support' },
                       { value: 'investment', label: 'Investment' }
                     ].map((option) => {
-                      const isChecked = (data.backing_types || []).includes(option.value);
+                      const isChecked = (data.backing_types || []).includes(option.value)
                       return (
                         <label key={option.value} className="flex items-center gap-2 cursor-pointer">
                           <Checkbox
                             checked={isChecked}
                             onCheckedChange={() => {
-                              const current = data.backing_types || [];
+                              const current = data.backing_types || []
                               const updated = isChecked
                                 ? current.filter(v => v !== option.value)
-                                : [...current, option.value];
-                              updateData('backing_types', updated);
+                                : [...current, option.value]
+                              updateData('backing_types', updated)
                             }}
                           />
                           <span className="text-sm text-gray-700">{option.label}</span>
                         </label>
-                      );
+                      )
                     })}
                   </div>
                   <Textarea
@@ -120,5 +120,5 @@ export default function StepFinal({ data, updateData }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

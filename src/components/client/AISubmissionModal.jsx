@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { generateProductionPlan, regenerateSection } from '../../lib/aiService';
-import { analyzeWebsiteUrl } from '../../lib/urlAnalysisService';
-import { Film, Music, Video, Clapperboard, Briefcase, Building, Calendar, Package, Share, Sparkles as SparklesIcon, Loader, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react'
+import { generateProductionPlan, regenerateSection } from '../../lib/aiService'
+import { analyzeWebsiteUrl } from '../../lib/urlAnalysisService'
+import { Film, Music, Video, Clapperboard, Briefcase, Building, Calendar, Package, Share, Sparkles as SparklesIcon, Loader, CheckCircle2 } from 'lucide-react'
 
 /* ─── ICONS ─────────────────────────────────────────────────────────────── */
 function CheckIcon({ size = 14 }) {
@@ -9,7 +9,7 @@ function CheckIcon({ size = 14 }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12" />
     </svg>
-  );
+  )
 }
 function AlertCircleIcon() {
   return (
@@ -18,7 +18,7 @@ function AlertCircleIcon() {
       <line x1="12" y1="8" x2="12" y2="12" />
       <line x1="12" y1="16" x2="12.01" y2="16" />
     </svg>
-  );
+  )
 }
 function RefreshIcon({ size = 14 }) {
   return (
@@ -27,7 +27,7 @@ function RefreshIcon({ size = 14 }) {
       <polyline points="1 20 1 14 7 14" />
       <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
     </svg>
-  );
+  )
 }
 function XIcon({ size = 14 }) {
   return (
@@ -35,7 +35,7 @@ function XIcon({ size = 14 }) {
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
-  );
+  )
 }
 function EditIcon({ size = 14 }) {
   return (
@@ -43,7 +43,7 @@ function EditIcon({ size = 14 }) {
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
     </svg>
-  );
+  )
 }
 function PencilIcon({ size = 13 }) {
   return (
@@ -51,7 +51,7 @@ function PencilIcon({ size = 13 }) {
       <path d="M12 20h9" />
       <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
     </svg>
-  );
+  )
 }
 function PackageIcon({ size = 18 }) {
   return (
@@ -61,7 +61,7 @@ function PackageIcon({ size = 18 }) {
       <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
       <line x1="12" y1="22.08" x2="12" y2="12" />
     </svg>
-  );
+  )
 }
 function CalendarIcon({ size = 18 }) {
   return (
@@ -71,7 +71,7 @@ function CalendarIcon({ size = 18 }) {
       <line x1="8" y1="2" x2="8" y2="6" />
       <line x1="3" y1="10" x2="21" y2="10" />
     </svg>
-  );
+  )
 }
 function CameraIcon({ size = 18 }) {
   return (
@@ -79,7 +79,7 @@ function CameraIcon({ size = 18 }) {
       <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
       <circle cx="12" cy="13" r="4" />
     </svg>
-  );
+  )
 }
 function LightbulbIcon({ size = 18 }) {
   return (
@@ -88,7 +88,7 @@ function LightbulbIcon({ size = 18 }) {
       <line x1="10" y1="22" x2="14" y2="22" />
       <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
     </svg>
-  );
+  )
 }
 function MicIcon({ size = 18 }) {
   return (
@@ -98,7 +98,7 @@ function MicIcon({ size = 18 }) {
       <line x1="12" y1="19" x2="12" y2="23" />
       <line x1="8" y1="23" x2="16" y2="23" />
     </svg>
-  );
+  )
 }
 function PinIcon({ size = 16 }) {
   return (
@@ -106,7 +106,7 @@ function PinIcon({ size = 16 }) {
       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
       <circle cx="12" cy="10" r="3" />
     </svg>
-  );
+  )
 }
 function UsersIcon({ size = 16 }) {
   return (
@@ -116,7 +116,7 @@ function UsersIcon({ size = 16 }) {
       <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
-  );
+  )
 }
 function FileTextIcon({ size = 18 }) {
   return (
@@ -127,7 +127,7 @@ function FileTextIcon({ size = 18 }) {
       <line x1="16" y1="17" x2="8" y2="17" />
       <polyline points="10 9 9 9 8 9" />
     </svg>
-  );
+  )
 }
 
 /* ─── CONSTANTS ─────────────────────────────────────────────────────────── */
@@ -141,7 +141,7 @@ const STEPS = [
   'Production Schedule',
   'Creative Direction',
   'Deliverables',
-];
+]
 
 /* ─── SHARED UI ─────────────────────────────────────────────────────────── */
 function PendingBadge() {
@@ -149,7 +149,7 @@ function PendingBadge() {
     <span style={{ background: '#fef3c7', color: '#92400e', fontSize: 12, fontWeight: 500, padding: '3px 10px', borderRadius: 20, display: 'inline-block' }}>
       Pending Review
     </span>
-  );
+  )
 }
 
 function SuggestionBox({ label = 'Suggestions (optional)', placeholder = "e.g., 'Make it more professional', 'Focus on budget-friendly approach', 'Add more detail about locations'" }) {
@@ -166,7 +166,7 @@ function SuggestionBox({ label = 'Suggestions (optional)', placeholder = "e.g., 
         </button>
       </div>
     </div>
-  );
+  )
 }
 
 function RequestModBox({ placeholder }) {
@@ -183,43 +183,43 @@ function RequestModBox({ placeholder }) {
         </button>
       </div>
     </div>
-  );
+  )
 }
 
 function Card({ children, highlight = false, style = {} }) {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   return (
     <div style={{ background: highlight ? '#f0fdf9' : '#fff', border: `1px solid ${highlight ? '#6ee7b7' : '#e5e7eb'}`, borderRadius: 12, padding: isMobile ? '16px' : '20px 24px', marginBottom: 16, ...style }}>
       {children}
     </div>
-  );
+  )
 }
 
 /* ─── STEP CONTENT COMPONENTS ───────────────────────────────────────────── */
 
 function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
-  const [suggestion, setSuggestion] = useState('');
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [suggestion, setSuggestion] = useState('')
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const projectCategories = [
     { value: 'commercial', label: 'Commercial', icon: Film },
@@ -232,26 +232,26 @@ function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
     { value: 'product_demo', label: 'Product Demo', icon: Package },
     { value: 'social_media', label: 'Social Media', icon: Share },
     { value: 'animation', label: 'Animation', icon: SparklesIcon }
-  ];
+  ]
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      onRegenerate('overviewBrief', suggestion);
-      setSuggestion('');
+      onRegenerate('overviewBrief', suggestion)
+      setSuggestion('')
     }
-  };
+  }
 
   const handleCategorySelect = (category) => {
-    setShowCategoryDropdown(false);
+    setShowCategoryDropdown(false)
     if (onCategoryChange) {
-      onCategoryChange(category);
+      onCategoryChange(category)
     }
-  };
+  }
 
-  const initialIdea = data?.initialIdea || `Create a high-impact commercial for ${data?.title || 'your brand'} showcasing their bespoke artisanal floral arrangements. Target affluent lifestyle enthusiasts and event planners with key selling points like premium, sustainably sourced blooms and custom design artistry.`;
-  const productionBrief = data?.description || 'AI-generated production brief based on your requirements.';
-  const category = data?.category || 'commercial';
-  const tags = data?.tags || ['bespoke', 'floristry', 'artisanal', 'sustainable', 'luxury', 'floraldesign', 'eventplanning', 'cinematic', 'modern', 'premium'];
+  const initialIdea = data?.initialIdea || `Create a high-impact commercial for ${data?.title || 'your brand'} showcasing their bespoke artisanal floral arrangements. Target affluent lifestyle enthusiasts and event planners with key selling points like premium, sustainably sourced blooms and custom design artistry.`
+  const productionBrief = data?.description || 'AI-generated production brief based on your requirements.'
+  const category = data?.category || 'commercial'
+  const tags = data?.tags || ['bespoke', 'floristry', 'artisanal', 'sustainable', 'luxury', 'floraldesign', 'eventplanning', 'cinematic', 'modern', 'premium']
 
   return (
     <>
@@ -283,9 +283,9 @@ function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
                 style={{ background: '#111', color: '#fff', fontSize: isMobile ? 10 : 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
               >
                 {(() => {
-                  const selectedCategory = projectCategories.find(cat => cat.value === category);
-                  const Icon = selectedCategory?.icon || Film;
-                  return <><Icon size={isMobile ? 10 : 12} /><span>{selectedCategory?.label}</span></>;
+                  const selectedCategory = projectCategories.find(cat => cat.value === category)
+                  const Icon = selectedCategory?.icon || Film
+                  return <><Icon size={isMobile ? 10 : 12} /><span>{selectedCategory?.label}</span></>
                 })()}
               </button>
               {showCategoryDropdown && (
@@ -293,7 +293,7 @@ function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
                   style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: '4px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', minWidth: '150px', zIndex: 100 }}
                 >
                   {projectCategories.map((cat) => {
-                    const Icon = cat.icon;
+                    const Icon = cat.icon
                     return (
                       <button
                         key={cat.value}
@@ -304,7 +304,7 @@ function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
                         <Icon size={12} />
                         <span>{cat.label}</span>
                       </button>
-                    );
+                    )
                   })}
                 </div>
               )}
@@ -384,22 +384,22 @@ function StepOverviewBrief({ data, onRegenerate, onCategoryChange }) {
         </div>
       </div>
     </>
-  );
+  )
 }
 
 function StepBudgetBreakdown({ data, onRegenerate }) {
-  const [activePackage, setActivePackage] = useState(1);
-  const [suggestion, setSuggestion] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
+  const [activePackage, setActivePackage] = useState(1)
+  const [suggestion, setSuggestion] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const packages = data?.packages || [
     { 
@@ -441,28 +441,28 @@ function StepBudgetBreakdown({ data, onRegenerate }) {
       team: 'Director (1), Cinematographer (1), 1st AC (1), Gaffer (1), Key Grip (1), Sound Mixer (1), Boom Operator (1), Production Designer (1), Art Director (1), VFX Artist (1), Colorist (1), Sound Designer (1), Editor (1)',
       highlight: false 
     },
-  ];
+  ]
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      onRegenerate('budgetBreakdown', suggestion);
-      setSuggestion('');
+      onRegenerate('budgetBreakdown', suggestion)
+      setSuggestion('')
     }
-  };
+  }
 
   const handlePackageSelect = (pkgIndex, pkgName) => {
-    setActivePackage(pkgIndex);
-    const prompt = `I want the ${pkgName} package. ${suggestion || ''}`;
-    onRegenerate('budgetBreakdown', prompt);
-  };
+    setActivePackage(pkgIndex)
+    const prompt = `I want the ${pkgName} package. ${suggestion || ''}`
+    onRegenerate('budgetBreakdown', prompt)
+  }
 
   const handleEdit = () => {
     // Focus on the suggestion textarea
-    const textarea = document.querySelector('textarea[placeholder*="Customize Budget"]');
+    const textarea = document.querySelector('textarea[placeholder*="Customize Budget"]')
     if (textarea) {
-      textarea.focus();
+      textarea.focus()
     }
-  };
+  }
 
   return (
     <>
@@ -552,43 +552,43 @@ function StepBudgetBreakdown({ data, onRegenerate }) {
         </div>
       </div>
     </>
-  );
+  )
 }
 
 function StepRolesTeam({ data, onRegenerate, selectedBudgetPackage }) {
-  const [activePackage, setActivePackage] = useState(selectedBudgetPackage || 1);
-  const [suggestion, setSuggestion] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
+  const [activePackage, setActivePackage] = useState(selectedBudgetPackage || 1)
+  const [suggestion, setSuggestion] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const pkgs = data?.packages || [
     { label: 'Conservative', price: '€5,000' },
     { label: 'Standard', price: '€14,000' },
     { label: 'Premium', price: '€40,000' },
-  ];
-  const roles = data?.team || ['Director', 'Cinematographer', 'Gaffer', 'Sound Mixer', 'Editor', 'Colorist', 'Production Assistant'];
+  ]
+  const roles = data?.team || ['Director', 'Cinematographer', 'Gaffer', 'Sound Mixer', 'Editor', 'Colorist', 'Production Assistant']
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      const prompt = `${suggestion}. Current package: ${pkgs[activePackage].label}. Adjust team composition and pricing accordingly.`;
-      onRegenerate('roles', prompt);
-      setSuggestion('');
+      const prompt = `${suggestion}. Current package: ${pkgs[activePackage].label}. Adjust team composition and pricing accordingly.`
+      onRegenerate('roles', prompt)
+      setSuggestion('')
     }
-  };
+  }
 
   const handlePackageSelect = (pkgIndex, pkgLabel) => {
-    setActivePackage(pkgIndex);
-    const prompt = `Change to ${pkgLabel} package. Adjust team composition and pricing for ${pkgLabel} tier. ${suggestion || ''}`;
-    onRegenerate('roles', prompt);
-  };
+    setActivePackage(pkgIndex)
+    const prompt = `Change to ${pkgLabel} package. Adjust team composition and pricing for ${pkgLabel} tier. ${suggestion || ''}`
+    onRegenerate('roles', prompt)
+  }
 
   return (
     <>
@@ -644,21 +644,21 @@ function StepRolesTeam({ data, onRegenerate, selectedBudgetPackage }) {
 
       <SuggestionBox placeholder="e.g., 'Need less experienced team', 'Add sound designer', 'Change to solo producer'" />
     </>
-  );
+  )
 }
 
 function StepScreeningQuestions({ data, onRegenerate }) {
-  const [suggestion, setSuggestion] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
+  const [suggestion, setSuggestion] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const questions = data?.questions || [
     {
@@ -741,14 +741,14 @@ function StepScreeningQuestions({ data, onRegenerate }) {
       ],
       preferred: 1,
     },
-  ];
+  ]
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      onRegenerate('questions', suggestion);
-      setSuggestion('');
+      onRegenerate('questions', suggestion)
+      setSuggestion('')
     }
-  };
+  }
 
   return (
     <>
@@ -796,21 +796,21 @@ function StepScreeningQuestions({ data, onRegenerate }) {
 
       <SuggestionBox placeholder="e.g., 'Add question about equipment', 'Make questions simpler', 'Focus more on creativity'" />
     </>
-  );
+  )
 }
 
 function StepLocations({ data, onRegenerate }) {
-  const [suggestion, setSuggestion] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
+  const [suggestion, setSuggestion] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const locations = data?.locations || [
     {
@@ -845,14 +845,14 @@ function StepLocations({ data, onRegenerate }) {
       desc: 'A clean, infinity-wall studio allows for total control over lighting and composition, essential for isolating the floral arrangements as the hero of the frame. This is the most practical choice for achieving a \'polished, commercial\' look that aligns with high-end luxury advertising.',
       reqs: ['High-output lighting kit', 'Macro lenses for detailed texture capture', 'Multiple colored backdrops'],
     },
-  ];
+  ]
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      onRegenerate('locations', suggestion);
-      setSuggestion('');
+      onRegenerate('locations', suggestion)
+      setSuggestion('')
     }
-  };
+  }
 
   return (
     <>
@@ -890,21 +890,21 @@ function StepLocations({ data, onRegenerate }) {
 
       <RequestModBox placeholder="e.g., 'Add indoor backup location', 'Need more urban locations', 'Focus on natural settings'" />
     </>
-  );
+  )
 }
 
 function StepTechnicalRequirements({ data, onRegenerate, projectCategory }) {
-  const [suggestion, setSuggestion] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
+  const [suggestion, setSuggestion] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const cameraRows = data?.camera || [
     ['Camera Type', 'Sony FX6 Cinema Line'],
@@ -912,27 +912,27 @@ function StepTechnicalRequirements({ data, onRegenerate, projectCategory }) {
     ['Frame Rate', '24fps for cinematic narrative, 120fps for high-speed macro floral movement'],
     ['Lenses', 'Sony FE 35mm f/1.4 GM, 50mm f/1.2 GM, and 90mm f/2.8 Macro G OSS'],
     ['Camera Support', 'DJI RS3 Pro Gimbal and Sachtler Ace XL Fluid Head Tripod'],
-  ];
+  ]
   const lightingItems = data?.lighting || [
     'Aputure LS 600d Pro for high-output daylight balanced key light',
     'Aputure Light Dome II for soft, wrap-around portrait lighting',
     '2x Aputure Amaran 200x Bi-Color for adjustable rim and background texture lighting',
     'Aputure MC RGBWW lights for subtle accent color highlights on petals',
     '4x4 Scrim Jim Cine Kit for diffusing harsh sunlight in outdoor locations',
-  ];
+  ]
   const audioItems = data?.audio || [
     'Sennheiser MKH 416 shotgun microphone for crisp ambient floral shots',
     'Rode Wireless PRO lavalier system for clean interview recording',
     'Zoom F6 MultiTrack Field Recorder for high-fidelity audio capture',
     'Rycote Softie Windshield for suppressing movement artifacts',
-  ];
+  ]
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      onRegenerate('technicalRequirements', suggestion);
-      setSuggestion('');
+      onRegenerate('technicalRequirements', suggestion)
+      setSuggestion('')
     }
-  };
+  }
 
   return (
     <>
@@ -995,21 +995,21 @@ function StepTechnicalRequirements({ data, onRegenerate, projectCategory }) {
 
       <RequestModBox placeholder="e.g., 'Need ARRI camera package', 'Add more LED lighting', 'Budget-friendly options'" />
     </>
-  );
+  )
 }
 
 function StepProductionSchedule({ data, onRegenerate }) {
-  const [suggestion, setSuggestion] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
+  const [suggestion, setSuggestion] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const phases = data?.phases || [
     {
@@ -1059,14 +1059,14 @@ function StepProductionSchedule({ data, onRegenerate }) {
         'Archive final project files and raw footage on long-term storage',
       ],
     },
-  ];
+  ]
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      onRegenerate('productionSchedule', suggestion);
-      setSuggestion('');
+      onRegenerate('productionSchedule', suggestion)
+      setSuggestion('')
     }
-  };
+  }
 
   return (
     <>
@@ -1102,22 +1102,22 @@ function StepProductionSchedule({ data, onRegenerate }) {
 
       <RequestModBox placeholder="e.g., 'Extend pre-production to 4 weeks', 'Add more production days', 'Faster turnaround needed'" />
     </>
-  );
+  )
 }
 
 function StepCreativeDirection({ data, onRegenerate }) {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
-  const moodTags = data?.moodTags || ['Energetic', 'Aspirational', 'Modern', 'Dynamic', 'Confident'];
+  const moodTags = data?.moodTags || ['Energetic', 'Aspirational', 'Modern', 'Dynamic', 'Confident']
 
   return (
     <>
@@ -1170,28 +1170,28 @@ function StepCreativeDirection({ data, onRegenerate }) {
         </div>
       </Card>
     </>
-  );
+  )
 }
 
 function StepDeliverables({ data, onRegenerate }) {
-  const [suggestion, setSuggestion] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
+  const [suggestion, setSuggestion] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const handleRegenerate = () => {
     if (suggestion.trim()) {
-      onRegenerate('deliverables', suggestion);
-      setSuggestion('');
+      onRegenerate('deliverables', suggestion)
+      setSuggestion('')
     }
-  };
+  }
 
   return (
     <>
@@ -1234,12 +1234,12 @@ function StepDeliverables({ data, onRegenerate }) {
         </div>
       </div>
     </>
-  );
+  )
 }
 
 /* ─── BOTTOM ACTION BAR ─────────────────────────────────────────────────── */
 function BottomBar({ step, onApprove, isMobile = false }) {
-  const isLast = step === 8;
+  const isLast = step === 8
 
   if (isLast) {
     return (
@@ -1254,7 +1254,7 @@ function BottomBar({ step, onApprove, isMobile = false }) {
           <CheckIcon size={isMobile ? 12 : 14} /> Approve Section
         </button>
       </div>
-    );
+    )
   }
 
   return (
@@ -1266,43 +1266,43 @@ function BottomBar({ step, onApprove, isMobile = false }) {
         <CheckIcon size={isMobile ? 12 : 14} /> Approve Section
       </button>
     </div>
-  );
+  )
 }
 
 /* ─── MAIN MODAL COMPONENT ──────────────────────────────────────────────────── */
 export default function AISubmissionModal({ open, onClose, onSubmit, projectData }) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [approved, setApproved] = useState(new Set());
-  const [loading, setLoading] = useState(false);
-  const [aiData, setAIData] = useState(null);
-  const [error, setError] = useState(null);
-  const [projectUrl, setProjectUrl] = useState(projectData?.url || '');
-  const [projectDescription, setProjectDescription] = useState('');
-  const [projectCategory, setProjectCategory] = useState(projectData?.category || 'commercial');
-  const [analyzing, setAnalyzing] = useState(false);
-  const [extractProgress, setExtractProgress] = useState(null);
-  const [regenerating, setRegenerating] = useState(false);
-  const [activePackage, setActivePackage] = useState(1);
-  const [isMobile, setIsMobile] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const previousCategoryRef = useRef(projectCategory);
+  const [currentStep, setCurrentStep] = useState(0)
+  const [approved, setApproved] = useState(new Set())
+  const [loading, setLoading] = useState(false)
+  const [aiData, setAIData] = useState(null)
+  const [error, setError] = useState(null)
+  const [projectUrl, setProjectUrl] = useState(projectData?.url || '')
+  const [projectDescription, setProjectDescription] = useState('')
+  const [projectCategory, setProjectCategory] = useState(projectData?.category || 'commercial')
+  const [analyzing, setAnalyzing] = useState(false)
+  const [extractProgress, setExtractProgress] = useState(null)
+  const [regenerating, setRegenerating] = useState(false)
+  const [activePackage, setActivePackage] = useState(1)
+  const [isMobile, setIsMobile] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const previousCategoryRef = useRef(projectCategory)
 
   // Detect mobile screen size
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const progressSteps = [
     'Fetching site content',
     'Analyzing brand and tone',
     'Identifying visual language',
     'Translating into a film concept'
-  ];
+  ]
 
   const projectCategories = [
     { value: 'commercial', label: 'Commercial', icon: Film },
@@ -1315,98 +1315,98 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     { value: 'product_demo', label: 'Product Demo', icon: Package },
     { value: 'social_media', label: 'Social Media', icon: Share },
     { value: 'animation', label: 'Animation', icon: SparklesIcon }
-  ];
+  ]
 
   const normalizeUrl = (url) => {
-    if (!url || url.trim() === '') return url;
-    let normalized = url.trim();
+    if (!url || url.trim() === '') return url
+    let normalized = url.trim()
     
     if (normalized.startsWith('http://')) {
-      normalized = normalized.substring(7);
+      normalized = normalized.substring(7)
     } else if (normalized.startsWith('https://')) {
-      normalized = normalized.substring(8);
+      normalized = normalized.substring(8)
     }
     
     if (normalized.startsWith('www.')) {
-      normalized = normalized.substring(4);
+      normalized = normalized.substring(4)
     }
     
-    return 'https://' + normalized;
-  };
+    return 'https://' + normalized
+  }
 
   const handleUrlChange = (e) => {
-    const rawValue = e.target.value;
+    const rawValue = e.target.value
     if (rawValue.includes('.') && !rawValue.includes(' ')) {
-      setProjectUrl(normalizeUrl(rawValue));
+      setProjectUrl(normalizeUrl(rawValue))
     } else {
-      setProjectUrl(rawValue);
+      setProjectUrl(rawValue)
     }
-  };
+  }
 
   // Auto-regenerate analysis when category changes (if URL exists)
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (previousCategoryRef.current !== projectCategory && projectUrl && projectUrl.trim() !== '') {
         try {
-          setRegenerating(true);
+          setRegenerating(true)
           
-          const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory);
+          const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory)
           
           if (analysisResult.success && analysisResult.rawAnalysis) {
-            setProjectDescription(analysisResult.rawAnalysis);
+            setProjectDescription(analysisResult.rawAnalysis)
           }
         } catch (err) {
-          console.error('Regeneration error:', err);
+          
         } finally {
-          setRegenerating(false);
+          setRegenerating(false)
         }
       }
       
-      previousCategoryRef.current = projectCategory;
-    }, 500);
+      previousCategoryRef.current = projectCategory
+    }, 500)
 
-    return () => clearTimeout(timer);
-  }, [projectCategory, projectUrl]);
+    return () => clearTimeout(timer)
+  }, [projectCategory, projectUrl])
 
   const handleAnalyzeUrl = async () => {
-    if (!projectUrl) return;
+    if (!projectUrl) return
 
-    setAnalyzing(true);
-    setExtractProgress(0);
+    setAnalyzing(true)
+    setExtractProgress(0)
 
     const progressInterval = setInterval(() => {
       setExtractProgress(prev => {
-        if (prev === null) return 0;
-        if (prev < progressSteps.length - 1) return prev + 1;
-        return prev;
-      });
-    }, 800);
+        if (prev === null) return 0
+        if (prev < progressSteps.length - 1) return prev + 1
+        return prev
+      })
+    }, 800)
 
     try {
-      const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory);
-      clearInterval(progressInterval);
+      const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory)
+      clearInterval(progressInterval)
 
       if (analysisResult.success && analysisResult.rawAnalysis) {
-        setProjectDescription(analysisResult.rawAnalysis);
-        setExtractProgress(progressSteps.length - 1);
+        setProjectDescription(analysisResult.rawAnalysis)
+        setExtractProgress(progressSteps.length - 1)
         
         setTimeout(() => {
-          setExtractProgress(null);
-        }, 600);
+          setExtractProgress(null)
+        }, 600)
       } else {
-        console.error('Extract error:', analysisResult.error);
-        setExtractProgress(null);
-        setError(analysisResult.error);
+        
+        setExtractProgress(null)
+        setError(analysisResult.error)
       }
     } catch (error) {
-      console.error('Extract failed:', error);
-      setExtractProgress(null);
-      setError(error.message);
-      clearInterval(progressInterval);
+      
+      setExtractProgress(null)
+      setError(error.message)
+      clearInterval(progressInterval)
     } finally {
-      setAnalyzing(false);
+      setAnalyzing(false)
     }
-  };
+  }
 
   const handleGenerateProductionPlan = async () => {
     // Save context to localStorage before generating
@@ -1415,44 +1415,44 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
       category: projectCategory,
       description: projectDescription,
       timestamp: new Date().toISOString()
-    };
-    localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData));
+    }
+    localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData))
     
     const updatedProjectData = {
       ...projectData,
       url: projectUrl,
       category: projectCategory,
       description: projectDescription
-    };
+    }
     
     // Load AI production plan and transition to main modal
-    await loadAIProductionPlan(updatedProjectData);
-    setCurrentStep(0);
-    setApproved(new Set());
-  };
+    await loadAIProductionPlan(updatedProjectData)
+    setCurrentStep(0)
+    setApproved(new Set())
+  }
 
   const loadAIProductionPlan = async (data) => {
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
     
     try {
-      const result = await generateProductionPlan(data);
+      const result = await generateProductionPlan(data)
       if (result.success) {
-        setAIData(result.data);
+        setAIData(result.data)
       } else {
-        setError(result.error || 'Failed to generate production plan');
+        setError(result.error || 'Failed to generate production plan')
       }
     } catch (err) {
-      console.error('AI generation error:', err);
-      setError(err.message || 'Failed to generate production plan');
+      
+      setError(err.message || 'Failed to generate production plan')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCategoryChange = async (newCategory) => {
-    setProjectCategory(newCategory);
-    setLoading(true);
+    setProjectCategory(newCategory)
+    setLoading(true)
     
     // Update context in localStorage
     const contextData = {
@@ -1460,8 +1460,8 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
       category: newCategory,
       description: projectDescription,
       timestamp: new Date().toISOString()
-    };
-    localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData));
+    }
+    localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData))
     
     // Regenerate production plan with new category
     try {
@@ -1469,68 +1469,68 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
         url: projectUrl,
         category: newCategory,
         description: projectDescription
-      });
+      })
       if (result.success) {
-        setAIData(result.data);
+        setAIData(result.data)
       } else {
-        setError(result.error);
+        setError(result.error)
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleRegenerate = async (section, suggestion) => {
-    if (!aiData) return;
+    if (!aiData) return
     
-    setLoading(true);
+    setLoading(true)
     try {
-      const result = await regenerateSection(section, aiData, suggestion);
+      const result = await regenerateSection(section, aiData, suggestion)
       if (result.success) {
         setAIData(prev => ({
           ...prev,
           [section]: result.data
-        }));
+        }))
       }
     } catch (err) {
-      console.error('Regeneration error:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleApprove = async () => {
-    setApproved(prev => new Set([...prev, currentStep]));
+    setApproved(prev => new Set([...prev, currentStep]))
     if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep(currentStep + 1)
     } else {
       try {
-        await onSubmit(aiData);
+        await onSubmit(aiData)
         // Modal will be closed by parent's handleAIComplete
       } catch (err) {
-        console.error('Error submitting AI data:', err);
-        setError('Failed to submit AI-generated data');
+        
+        setError('Failed to submit AI-generated data')
       }
     }
-  };
+  }
 
   // Initialize modal with proper loading state
   useEffect(() => {
     if (!open) {
       // Modal closed, reset state
-      setAIData(null);
-      setCurrentStep(0);
-      setApproved(new Set());
-      setLoading(false);
-      setError(null);
+      setAIData(null)
+      setCurrentStep(0)
+      setApproved(new Set())
+      setLoading(false)
+      setError(null)
     }
-  }, [open]);
+  }, [open])
 
   // When aiData is an object (not the initial data), load the actual production plan
 
-  if (!open) return null;
+  if (!open) return null
 
   if (loading) {
     return (
@@ -1541,7 +1541,7 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
           <div style={{ fontSize: 13, color: '#6b7280', marginTop: 8 }}>AI is analyzing your project requirements</div>
         </div>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -1556,17 +1556,17 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   // Show URL input if no AI data yet
   if (!aiData || (typeof aiData === 'object' && !aiData.overviewBrief && !aiData.budgetBreakdown)) {
     // Only show input form if modal is explicitly open and we have no AI data
-    if (!open) return null;
+    if (!open) return null
     
     // Don't show input form if we just have empty initial data from parent
     if (aiData && aiData.url === '' && aiData.category === 'commercial' && aiData.description === '') {
-      return null;
+      return null
     }
     
     // Show input form
@@ -1577,8 +1577,8 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
             <h2 style={{ fontSize: 20, fontWeight: 600, color: '#111', margin: 0 }}>AI Production Plan</h2>
             <button 
               onClick={(e) => {
-                e.stopPropagation();
-                onClose();
+                e.stopPropagation()
+                onClose()
               }}
               style={{ background: '#f3f4f6', border: '1px solid #e5e7eb', cursor: 'pointer', padding: 8, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
@@ -1655,15 +1655,15 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
                 <button
                   type="button"
                   onClick={() => {
-                    const dropdown = document.getElementById('category-dropdown');
-                    dropdown.classList.toggle('hidden');
+                    const dropdown = document.getElementById('category-dropdown')
+                    dropdown.classList.toggle('hidden')
                   }}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#4b5563', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, padding: '4px 8px', cursor: 'pointer' }}
                 >
                   {(() => {
-                    const selectedCategory = projectCategories.find(cat => cat.value === projectCategory);
-                    const Icon = selectedCategory?.icon || Film;
-                    return <Icon size={12} style={{ color: '#6b7280' }} />;
+                    const selectedCategory = projectCategories.find(cat => cat.value === projectCategory)
+                    const Icon = selectedCategory?.icon || Film
+                    return <Icon size={12} style={{ color: '#6b7280' }} />
                   })()}
                   <span>{projectCategories.find(cat => cat.value === projectCategory)?.label}</span>
                 </button>
@@ -1673,21 +1673,21 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
                   style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 4, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', zIndex: 100, minWidth: 150 }}
                 >
                   {projectCategories.map((cat) => {
-                    const Icon = cat.icon;
+                    const Icon = cat.icon
                     return (
                       <button
                         key={cat.value}
                         type="button"
                         onClick={() => {
-                          setProjectCategory(cat.value);
-                          document.getElementById('category-dropdown').classList.add('hidden');
+                          setProjectCategory(cat.value)
+                          document.getElementById('category-dropdown').classList.add('hidden')
                         }}
                         style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', border: 'none', background: 'none', cursor: 'pointer', fontSize: 12, color: '#374151', textAlign: 'left' }}
                       >
                         <Icon size={12} style={{ color: '#6b7280' }} />
                         <span>{cat.label}</span>
                       </button>
-                    );
+                    )
                   })}
                 </div>
               </div>
@@ -1711,7 +1711,7 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   const stepComponents = [
@@ -1724,11 +1724,11 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
     <StepProductionSchedule data={aiData?.productionSchedule} onRegenerate={handleRegenerate} projectCategory={projectCategory} />,
     <StepCreativeDirection data={aiData?.creativeDirection} onRegenerate={handleRegenerate} productionBrief={aiData?.overviewBrief?.description} />,
     <StepDeliverables data={aiData?.deliverables} onRegenerate={handleRegenerate} projectCategory={projectCategory} productionBrief={aiData?.overviewBrief?.description} />,
-  ];
+  ]
 
-  const progressPct = Math.round(((approved.size) / STEPS.length) * 100);
+  const progressPct = Math.round(((approved.size) / STEPS.length) * 100)
 
-  if (!open) return null;
+  if (!open) return null
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: isMobile ? 0 : 20 }}>
@@ -1756,8 +1756,8 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
           </div>
           <button 
             onClick={(e) => {
-              e.stopPropagation();
-              onClose();
+              e.stopPropagation()
+              onClose()
             }}
             style={{ 
               background: '#f3f4f6', 
@@ -1771,10 +1771,10 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.background = '#e5e7eb';
+              e.target.style.background = '#e5e7eb'
             }}
             onMouseLeave={(e) => {
-              e.target.style.background = '#f3f4f6';
+              e.target.style.background = '#f3f4f6'
             }}
           >
             <XIcon size={isMobile ? 18 : 20} />
@@ -1815,9 +1815,9 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
 
             <div style={{ padding: '0 10px' }}>
               {STEPS.map((label, i) => {
-                const isActive = i === currentStep;
-                const isDone = approved.has(i);
-                const isPending = !isActive && !isDone;
+                const isActive = i === currentStep
+                const isDone = approved.has(i)
+                const isPending = !isActive && !isDone
 
                 return (
                   <button
@@ -1855,7 +1855,7 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
                       <span style={{ color: '#f59e0b' }}><AlertCircleIcon /></span>
                     )}
                   </button>
-                );
+                )
               })}
             </div>
 
@@ -1882,5 +1882,5 @@ export default function AISubmissionModal({ open, onClose, onSubmit, projectData
         </div>
       </div>
     </div>
-  );
+  )
 }

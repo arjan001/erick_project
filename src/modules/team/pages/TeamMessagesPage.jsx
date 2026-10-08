@@ -1,70 +1,70 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Team, Message } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import React, { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Team, Message } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { 
   MessageSquare, Send, Phone, Video, Monitor, 
   Plus, Search, MoreVertical, X, Users, Paperclip 
-} from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useAuth } from '@/lib/AuthContext';
-import realtimeMessagingService from '@/services/realtimeMessagingService';
+} from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useAuth } from '@/lib/AuthContext'
+import realtimeMessagingService from '@/services/realtimeMessagingService'
 
 export default function TeamMessagesPage() {
-  const navigate = useNavigate();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [team, setTeam] = useState(null);
-  const [conversations, setConversations] = useState([]);
-  const [selectedConversation, setSelectedConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [showCallModal, setShowCallModal] = useState(false);
-  const [callType, setCallType] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const messagesEndRef = useRef(null);
-  const localVideoRef = useRef(null);
-  const remoteVideoRef = useRef(null);
+  const navigate = useNavigate()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [team, setTeam] = useState(null)
+  const [conversations, setConversations] = useState([])
+  const [selectedConversation, setSelectedConversation] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [newMessage, setNewMessage] = useState('')
+  const [showCallModal, setShowCallModal] = useState(false)
+  const [callType, setCallType] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const messagesEndRef = useRef(null)
+  const localVideoRef = useRef(null)
+  const remoteVideoRef = useRef(null)
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    loadTeamData();
-  }, [isAuthenticated]);
+    loadTeamData()
+  }, [isAuthenticated])
 
   const loadTeamData = async () => {
     try {
-      let teamData = null;
+      let teamData = null
       if (authUser?.team_id) {
-        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null);
+        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null)
       } else {
-        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1);
-        teamData = teams?.[0] || null;
+        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1)
+        teamData = teams?.[0] || null
       }
-      setTeam(teamData);
+      setTeam(teamData)
       if (teamData) {
-        loadConversations();
+        loadConversations()
       }
     } catch (err) {
-      console.error('Error loading team:', err);
+      //
     }
-  };
+  }
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    scrollToBottom()
+  }, [messages])
 
   // Real-time message subscription using Supabase Realtime
   useEffect(() => {
-    if (!authUser) return;
+    if (!authUser) return
 
     const handleNewMessage = (newMessage) => {
-      console.log('Real-time new message received:', newMessage);
+      //
       
       // Check if conversation already exists
-      const existingConv = conversations.find(c => c.id === newMessage.conversation_id);
+      const existingConv = conversations.find(c => c.id === newMessage.conversation_id)
       
       if (existingConv) {
         // Update existing conversation
@@ -75,10 +75,10 @@ export default function TeamMessagesPage() {
               lastMessage: newMessage.text || '',
               timestamp: newMessage.created_at,
               unread: c.id === selectedConversation?.id ? 0 : (c.unread || 0) + 1
-            };
+            }
           }
-          return c;
-        }));
+          return c
+        }))
         
         // If this is the selected conversation, add the message
         if (selectedConversation?.id === newMessage.conversation_id) {
@@ -87,7 +87,7 @@ export default function TeamMessagesPage() {
             sender: newMessage.sender_email === authUser.email ? 'me' : 'other',
             text: newMessage.text,
             timestamp: newMessage.created_at
-          }]);
+          }])
         }
       } else {
         // Create new conversation
@@ -99,31 +99,31 @@ export default function TeamMessagesPage() {
           lastMessage: newMessage.text || '',
           timestamp: newMessage.created_at,
           unread: 1
-        };
-        setConversations(prev => [newConv, ...prev]);
+        }
+        setConversations(prev => [newConv, ...prev])
       }
-    };
+    }
 
     // Subscribe to real-time messages
     const unsubscribe = realtimeMessagingService.subscribeToMessages(
       authUser.email,
       handleNewMessage
-    );
+    )
 
     // Cleanup on unmount
     return () => {
-      unsubscribe();
-    };
-  }, [authUser, selectedConversation]);
+      unsubscribe()
+    }
+  }, [authUser, selectedConversation])
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   const loadConversations = () => {
-    const saved = localStorage.getItem('ericrabar_team_conversations');
+    const saved = localStorage.getItem('ericrabar_team_conversations')
     if (saved) {
-      setConversations(JSON.parse(saved));
+      setConversations(JSON.parse(saved))
     } else {
       const mockConversations = [
         {
@@ -144,16 +144,16 @@ export default function TeamMessagesPage() {
           timestamp: new Date(Date.now() - 3600000).toISOString(),
           unread: 0
         }
-      ];
-      setConversations(mockConversations);
-      localStorage.setItem('ericrabar_team_conversations', JSON.stringify(mockConversations));
+      ]
+      setConversations(mockConversations)
+      localStorage.setItem('ericrabar_team_conversations', JSON.stringify(mockConversations))
     }
-  };
+  }
 
   const loadMessages = (conversationId) => {
-    const saved = localStorage.getItem(`ericrabar_team_messages_${conversationId}`);
+    const saved = localStorage.getItem(`ericrabar_team_messages_${conversationId}`)
     if (saved) {
-      setMessages(JSON.parse(saved));
+      setMessages(JSON.parse(saved))
     } else {
       const mockMessages = [
         {
@@ -168,47 +168,47 @@ export default function TeamMessagesPage() {
           text: 'Sure, I\'m available now',
           timestamp: new Date(Date.now() - 3600000).toISOString()
         }
-      ];
-      setMessages(mockMessages);
-      localStorage.setItem(`ericrabar_team_messages_${conversationId}`, JSON.stringify(mockMessages));
+      ]
+      setMessages(mockMessages)
+      localStorage.setItem(`ericrabar_team_messages_${conversationId}`, JSON.stringify(mockMessages))
     }
-  };
+  }
 
   const handleSendMessage = () => {
-    if (!newMessage.trim() || !selectedConversation) return;
+    if (!newMessage.trim() || !selectedConversation) return
 
     const message = {
       id: Date.now().toString(),
       sender: 'me',
       text: newMessage,
       timestamp: new Date().toISOString()
-    };
+    }
 
-    setMessages([...messages, message]);
+    setMessages([...messages, message])
     localStorage.setItem(
       `ericrabar_team_messages_${selectedConversation.id}`,
       JSON.stringify([...messages, message])
-    );
+    )
 
-    setNewMessage('');
-  };
+    setNewMessage('')
+  }
 
   const handleStartCall = (type) => {
-    setCallType(type);
-    setShowCallModal(true);
-  };
+    setCallType(type)
+    setShowCallModal(true)
+  }
 
   const handleEndCall = () => {
-    setShowCallModal(false);
-    setCallType(null);
+    setShowCallModal(false)
+    setCallType(null)
     if (localVideoRef.current) {
-      localVideoRef.current.srcObject?.getTracks()?.forEach(track => track.stop());
+      localVideoRef.current.srcObject?.getTracks()?.forEach(track => track.stop())
     }
-  };
+  }
 
   const filteredConversations = conversations.filter(conv =>
     conv.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  )
 
   return (
     <>
@@ -238,8 +238,8 @@ export default function TeamMessagesPage() {
                 <div
                   key={conv.id}
                   onClick={() => {
-                    setSelectedConversation(conv);
-                    loadMessages(conv.id);
+                    setSelectedConversation(conv)
+                    loadMessages(conv.id)
                   }}
                   className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
                     selectedConversation?.id === conv.id ? 'bg-gray-100' : ''
@@ -415,5 +415,5 @@ export default function TeamMessagesPage() {
         </div>
       )}
     </>
-  );
+  )
 }

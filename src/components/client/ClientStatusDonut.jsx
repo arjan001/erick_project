@@ -1,10 +1,10 @@
-import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import React from 'react'
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 
-const COLORS = ['#1f2937', '#374151', '#4b5563', '#6b7280', '#9ca3af'];
+const COLORS = ['#1f2937', '#374151', '#4b5563', '#6b7280', '#9ca3af']
 
 export default function ClientStatusDonut({ data }) {
-  const hasData = data.some((d) => d.value > 0);
+  const hasData = data.some((d) => d.value > 0)
   return (
     <div>
       {hasData ? (
@@ -23,5 +23,5 @@ export default function ClientStatusDonut({ data }) {
         <div className="h-[220px] flex items-center justify-center text-sm text-gray-400">No projects yet</div>
       )}
     </div>
-  );
+  )
 }

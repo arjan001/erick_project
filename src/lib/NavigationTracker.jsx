@@ -1,49 +1,49 @@
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import { pagesConfig } from '@/pages.config';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
+import { useAuth } from './AuthContext'
+import { pagesConfig } from '@/pages.config'
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 export default function NavigationTracker() {
-    const location = useLocation();
-    const { isAuthenticated } = useAuth();
-    const { trackPageView } = useAnalytics();
-    const { Pages, mainPage } = pagesConfig;
-    const mainPageKey = mainPage ?? Object.keys(Pages)[0];
+    const location = useLocation()
+    const { isAuthenticated } = useAuth()
+    const { trackPageView } = useAnalytics()
+    const { Pages, mainPage } = pagesConfig
+    const mainPageKey = mainPage ?? Object.keys(Pages)[0]
 
     // Track page views using analytics
     useEffect(() => {
         try {
-            const pathname = location.pathname;
-            const pageTitle = document.title;
+            const pathname = location.pathname
+            const pageTitle = document.title
 
             // Track page view with analytics - don't let errors block the app
             if (trackPageView) {
                 trackPageView(pathname, pageTitle).catch(err => {
-                    console.error('Analytics tracking failed:', err);
-                });
+                    
+                })
             }
 
             // Extract page name for logging
-            let pageName;
+            let pageName
             if (pathname === '/' || pathname === '') {
-                pageName = mainPageKey;
+                pageName = mainPageKey
             } else {
-                const pathSegment = pathname.replace(/^\//, '').split('/')[0];
-                const pageKeys = Object.keys(Pages);
+                const pathSegment = pathname.replace(/^\//, '').split('/')[0]
+                const pageKeys = Object.keys(Pages)
                 const matchedKey = pageKeys.find(
                     key => key.toLowerCase() === pathSegment.toLowerCase()
-                );
-                pageName = matchedKey || null;
+                )
+                pageName = matchedKey || null
             }
 
             if (isAuthenticated && pageName) {
-                console.log('User navigated to:', pageName);
+                
             }
         } catch (error) {
-            console.error('NavigationTracker error:', error);
+            
         }
-    }, [location, isAuthenticated, Pages, mainPageKey, trackPageView]);
+    }, [location, isAuthenticated, Pages, mainPageKey, trackPageView])
 
-    return null;
+    return null
 }

@@ -1,86 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import { ProjectOwner, AuditLog } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Building, Search, Eye, Trash2, Mail, Phone, Briefcase, X, ChevronLeft, ChevronRight, Edit2, Ban, AlertCircle, CheckCircle, User, Calendar, MapPin } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { ProjectOwner, AuditLog } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Building, Search, Eye, Trash2, Mail, Phone, Briefcase, X, ChevronLeft, ChevronRight, Edit2, Ban, AlertCircle, CheckCircle, User, Calendar, MapPin } from 'lucide-react'
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 const STATUS_STYLES = {
   active: 'bg-green-100 text-green-700 border-green-200',
   suspended: 'bg-orange-100 text-orange-700 border-orange-200',
   disabled: 'bg-red-100 text-red-700 border-red-200',
   pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-};
+}
 
 export default function AdminClientsPage() {
-  const { user } = useAuth();
-  const { success, error: toastError } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [clients, setClients] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedClient, setSelectedClient] = useState(null);
-  const [editingClient, setEditingClient] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [page, setPage] = useState(1);
+  const { user } = useAuth()
+  const { success, error: toastError } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [clients, setClients] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [selectedClient, setSelectedClient] = useState(null)
+  const [editingClient, setEditingClient] = useState(null)
+  const [showModal, setShowModal] = useState(false)
+  const [page, setPage] = useState(1)
   const [form, setForm] = useState({
     full_name: '', email: '', company: '', phone: '', website: '', bio: '', status: 'active', is_suspended: false, is_disabled: false
-  });
+  })
 
   const fetchClients = async () => {
     try {
-      setLoading(true);
-      const rows = await ProjectOwner.list('-created_at', 100);
-      setClients(rows || []);
+      setLoading(true)
+      const rows = await ProjectOwner.list('-created_at', 100)
+      setClients(rows || [])
     } catch (err) {
-      console.error('Error fetching clients:', err);
-      toastError('Error', 'Failed to fetch clients');
+      
+      toastError('Error', 'Failed to fetch clients')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchClients(); }, []);
+  useEffect(() => { fetchClients(); }, [])
 
   const handleDeleteClient = async (clientId) => {
-    if (!window.confirm('Delete this client? This cannot be undone.')) return;
+    if (!window.confirm('Delete this client? This cannot be undone.')) return
     try {
-      await ProjectOwner.delete(clientId);
-      setClients(prev => prev.filter(c => c.id !== clientId));
-      success('Deleted', 'Client deleted successfully');
-      AuditLog.create({ actor_email: user?.email, action: 'client.delete', entity_type: 'ProjectOwner', entity_id: clientId, details: 'Deleted client' }).catch(() => {});
+      await ProjectOwner.delete(clientId)
+      setClients(prev => prev.filter(c => c.id !== clientId))
+      success('Deleted', 'Client deleted successfully')
+      AuditLog.create({ actor_email: user?.email, action: 'client.delete', entity_type: 'ProjectOwner', entity_id: clientId, details: 'Deleted client' }).catch(() => {})
     } catch (err) {
-      console.error('Error deleting client:', err);
-      toastError('Failed', 'Failed to delete client');
+      
+      toastError('Failed', 'Failed to delete client')
     }
-  };
+  }
 
   const toggleSuspend = async (client) => {
     try {
-      await ProjectOwner.update(client.id, { is_suspended: !client.is_suspended });
-      success(!client.is_suspended ? 'Suspended' : 'Unsuspended', `Client ${!client.is_suspended ? 'suspended' : 'unsuspended'}`);
-      fetchClients();
+      await ProjectOwner.update(client.id, { is_suspended: !client.is_suspended })
+      success(!client.is_suspended ? 'Suspended' : 'Unsuspended', `Client ${!client.is_suspended ? 'suspended' : 'unsuspended'}`)
+      fetchClients()
     } catch (err) {
-      toastError('Failed', 'Failed to update suspension status');
+      toastError('Failed', 'Failed to update suspension status')
     }
-  };
+  }
 
   const toggleDisable = async (client) => {
     try {
-      await ProjectOwner.update(client.id, { is_disabled: !client.is_disabled });
-      success(!client.is_disabled ? 'Disabled' : 'Enabled', `Client ${!client.is_disabled ? 'disabled' : 'enabled'}`);
-      fetchClients();
+      await ProjectOwner.update(client.id, { is_disabled: !client.is_disabled })
+      success(!client.is_disabled ? 'Disabled' : 'Enabled', `Client ${!client.is_disabled ? 'disabled' : 'enabled'}`)
+      fetchClients()
     } catch (err) {
-      toastError('Failed', 'Failed to update disabled status');
+      toastError('Failed', 'Failed to update disabled status')
     }
-  };
+  }
 
   const openModal = (client = null) => {
     if (client) {
-      setEditingClient(client);
+      setEditingClient(client)
       setForm({
         full_name: client.full_name || '',
         email: client.email || '',
@@ -91,59 +91,59 @@ export default function AdminClientsPage() {
         status: client.status || 'active',
         is_suspended: client.is_suspended || false,
         is_disabled: client.is_disabled || false
-      });
+      })
     } else {
-      setEditingClient(null);
-      setForm({ full_name: '', email: '', company: '', phone: '', website: '', bio: '', status: 'active', is_suspended: false, is_disabled: false });
+      setEditingClient(null)
+      setForm({ full_name: '', email: '', company: '', phone: '', website: '', bio: '', status: 'active', is_suspended: false, is_disabled: false })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const handleSave = async () => {
     if (!form.full_name.trim()) { toastError('Validation', 'Name is required'); return; }
     try {
       if (editingClient) {
-        await ProjectOwner.update(editingClient.id, form);
-        success('Updated', 'Client updated');
+        await ProjectOwner.update(editingClient.id, form)
+        success('Updated', 'Client updated')
       } else {
-        await ProjectOwner.create(form);
-        success('Created', 'Client created');
+        await ProjectOwner.create(form)
+        success('Created', 'Client created')
       }
-      setShowModal(false);
-      fetchClients();
+      setShowModal(false)
+      fetchClients()
     } catch (err) {
-      console.error('Error saving client:', err);
-      toastError('Save Failed', `Failed to save client: ${err.message || 'Unknown error'}`);
+      
+      toastError('Save Failed', `Failed to save client: ${err.message || 'Unknown error'}`)
     }
-  };
+  }
 
   const getStatus = (client) => {
-    if (client.is_suspended) return 'suspended';
-    if (client.is_disabled) return 'disabled';
-    return client.status || 'active';
-  };
+    if (client.is_suspended) return 'suspended'
+    if (client.is_disabled) return 'disabled'
+    return client.status || 'active'
+  }
 
   const filteredClients = clients.filter(client => {
     const matchesSearch = client.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          client.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         client.company?.toLowerCase().includes(searchQuery.toLowerCase());
+                         client.company?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' || 
                           (statusFilter === 'active' && !client.is_suspended && !client.is_disabled) ||
                           (statusFilter === 'suspended' && client.is_suspended) ||
                           (statusFilter === 'disabled' && client.is_disabled) ||
-                          (statusFilter === 'pending' && client.status === 'pending');
-    return matchesSearch && matchesStatus;
-  });
+                          (statusFilter === 'pending' && client.status === 'pending')
+    return matchesSearch && matchesStatus
+  })
 
-  const totalPages = Math.ceil(filteredClients.length / PAGE_SIZE);
-  const paginatedClients = filteredClients.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(filteredClients.length / PAGE_SIZE)
+  const paginatedClients = filteredClients.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -377,5 +377,5 @@ export default function AdminClientsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -3,41 +3,41 @@
  * Shown to users when maintenance mode is enabled
  */
 
-import React, { useState, useEffect } from 'react';
-import { getMaintenanceMessage, getMaintenanceEndTime, getMaintenanceTemplate, isMaintenanceMode } from '@/lib/maintenanceMode';
-import { Clock, Mail, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { getMaintenanceMessage, getMaintenanceEndTime, getMaintenanceTemplate, isMaintenanceMode } from '@/lib/maintenanceMode'
+import { Clock, Mail, RefreshCw } from 'lucide-react'
 
 export default function MaintenancePage() {
-  const [message, setMessage] = useState('');
-  const [endTime, setEndTime] = useState(null);
-  const [timeRemaining, setTimeRemaining] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [contactEmail, setContactEmail] = useState('support@ericrabar.app');
+  const [message, setMessage] = useState('')
+  const [endTime, setEndTime] = useState(null)
+  const [timeRemaining, setTimeRemaining] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [contactEmail, setContactEmail] = useState('support@ericrabar.app')
 
   useEffect(() => {
-    loadMaintenanceInfo();
-  }, []);
+    loadMaintenanceInfo()
+  }, [])
 
   useEffect(() => {
-    let interval;
+    let interval
     if (endTime) {
       interval = setInterval(() => {
-        const now = new Date();
-        const remaining = endTime - now;
+        const now = new Date()
+        const remaining = endTime - now
         
         if (remaining <= 0) {
-          setTimeRemaining(null);
-          clearInterval(interval);
+          setTimeRemaining(null)
+          clearInterval(interval)
           // Reload page to check if maintenance is over
-          setTimeout(() => window.location.reload(), 5000);
+          setTimeout(() => window.location.reload(), 5000)
         } else {
-          setTimeRemaining(remaining);
+          setTimeRemaining(remaining)
         }
-      }, 1000);
+      }, 1000)
     }
     
-    return () => clearInterval(interval);
-  }, [endTime]);
+    return () => clearInterval(interval)
+  }, [endTime])
 
   const loadMaintenanceInfo = async () => {
     try {
@@ -45,49 +45,49 @@ export default function MaintenancePage() {
         getMaintenanceMessage(),
         getMaintenanceEndTime(),
         getMaintenanceTemplate()
-      ]);
+      ])
       
-      setMessage(msg);
-      setEndTime(end);
+      setMessage(msg)
+      setEndTime(end)
       
       // Extract contact email from message or use default
-      const emailMatch = msg.match(/[\w.-]+@[\w.-]+\.\w+/);
+      const emailMatch = msg.match(/[\w.-]+@[\w.-]+\.\w+/)
       if (emailMatch) {
-        setContactEmail(emailMatch[0]);
+        setContactEmail(emailMatch[0])
       }
     } catch (error) {
-      console.error('Error loading maintenance info:', error);
-      setMessage('<h2>Site Under Maintenance</h2><p>We are currently performing scheduled maintenance. Please check back soon.</p>');
+      //
+      setMessage('<h2>Site Under Maintenance</h2><p>We are currently performing scheduled maintenance. Please check back soon.</p>')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const formatTimeRemaining = (ms) => {
-    if (!ms) return null;
+    if (!ms) return null
     
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
+    const seconds = Math.floor(ms / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const hours = Math.floor(minutes / 60)
+    const days = Math.floor(hours / 24)
     
     if (days > 0) {
-      return `${days}d ${hours % 24}h ${minutes % 60}m`;
+      return `${days}d ${hours % 24}h ${minutes % 60}m`
     } else if (hours > 0) {
-      return `${hours}h ${minutes % 60}m`;
+      return `${hours}h ${minutes % 60}m`
     } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`;
+      return `${minutes}m ${seconds % 60}s`
     } else {
-      return `${seconds}s`;
+      return `${seconds}s`
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -158,5 +158,5 @@ export default function MaintenancePage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

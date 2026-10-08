@@ -1,101 +1,101 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Backer, BackedProject, Project } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Search, Filter, DollarSign, MapPin, Calendar, TrendingUp, Heart, Star, Play } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Backer, BackedProject, Project } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Search, Filter, DollarSign, MapPin, Calendar, TrendingUp, Heart, Star, Play } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function BackerProjectsPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [backer, setBacker] = useState(null);
-  const [projects, setProjects] = useState([]);
-  const [filteredProjects, setFilteredProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterBudget, setFilterBudget] = useState('all');
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [showProjectModal, setShowProjectModal] = useState(false);
-  const [savedProjects, setSavedProjects] = useState([]);
-  const [ignoredProjects, setIgnoredProjects] = useState([]);
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [backer, setBacker] = useState(null)
+  const [projects, setProjects] = useState([])
+  const [filteredProjects, setFilteredProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterCategory, setFilterCategory] = useState('all')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [filterBudget, setFilterBudget] = useState('all')
+  const [selectedProject, setSelectedProject] = useState(null)
+  const [showProjectModal, setShowProjectModal] = useState(false)
+  const [savedProjects, setSavedProjects] = useState([])
+  const [ignoredProjects, setIgnoredProjects] = useState([])
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    fetchData();
-  }, [isAuthenticated]);
+    fetchData()
+  }, [isAuthenticated])
 
   const fetchData = async () => {
     try {
       // Fetch backer profile
-      const backers = await Backer.filter({ contact_email: authUser?.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email })
       if (backers.length > 0) {
-        setBacker(backers[0]);
+        setBacker(backers[0])
       }
 
       // Fetch all projects
-      const allProjects = await Project.list();
-      setProjects(allProjects);
-      setFilteredProjects(allProjects);
+      const allProjects = await Project.list()
+      setProjects(allProjects)
+      setFilteredProjects(allProjects)
     } catch (err) {
-      console.error('Error fetching data:', err);
-      toastError('Load Failed', 'Failed to load projects. Please try again.');
+      //
+      toastError('Load Failed', 'Failed to load projects. Please try again.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    let filtered = projects;
+    let filtered = projects
 
     if (searchTerm) {
       filtered = filtered.filter(p => 
         p.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      )
     }
 
     if (filterCategory !== 'all') {
-      filtered = filtered.filter(p => p.category === filterCategory);
+      filtered = filtered.filter(p => p.category === filterCategory)
     }
 
     if (filterStatus !== 'all') {
-      filtered = filtered.filter(p => p.status === filterStatus);
+      filtered = filtered.filter(p => p.status === filterStatus)
     }
 
     if (filterBudget !== 'all') {
-      const budget = parseFloat(filterBudget);
+      const budget = parseFloat(filterBudget)
       filtered = filtered.filter(p => {
-        const projectBudget = parseFloat(p.budget) || 0;
-        if (filterBudget === 'under10k') return projectBudget < 10000;
-        if (filterBudget === '10k-50k') return projectBudget >= 10000 && projectBudget < 50000;
-        if (filterBudget === '50k-100k') return projectBudget >= 50000 && projectBudget < 100000;
-        if (filterBudget === '100k+') return projectBudget >= 100000;
-        return true;
-      });
+        const projectBudget = parseFloat(p.budget) || 0
+        if (filterBudget === 'under10k') return projectBudget < 10000
+        if (filterBudget === '10k-50k') return projectBudget >= 10000 && projectBudget < 50000
+        if (filterBudget === '50k-100k') return projectBudget >= 50000 && projectBudget < 100000
+        if (filterBudget === '100k+') return projectBudget >= 100000
+        return true
+      })
     }
 
-    setFilteredProjects(filtered);
-  }, [searchTerm, filterCategory, filterStatus, filterBudget, projects]);
+    setFilteredProjects(filtered)
+  }, [searchTerm, filterCategory, filterStatus, filterBudget, projects])
 
   const handleBackProject = async (project) => {
     if (!backer) {
-      toastError('Profile Required', 'Please complete your backer profile first');
-      navigate(createPageUrl('BackerProfile'));
-      return;
+      toastError('Profile Required', 'Please complete your backer profile first')
+      navigate(createPageUrl('BackerProfile'))
+      return
     }
 
-    const investmentAmount = prompt(`Enter investment amount for "${project.title}":`);
-    if (!investmentAmount || isNaN(investmentAmount)) return;
+    const investmentAmount = prompt(`Enter investment amount for "${project.title}":`)
+    if (!investmentAmount || isNaN(investmentAmount)) return
 
     try {
       // Create backed project record
@@ -107,65 +107,65 @@ export default function BackerProjectsPage() {
         status: 'active',
         investment_date: new Date().toISOString(),
         expected_roi: parseFloat(investmentAmount) * 1.15 // 15% expected ROI
-      });
+      })
 
       // Update backer totals
       await Backer.update(backer.id, {
         total_invested: (backer.total_invested || 0) + parseFloat(investmentAmount),
         investment_count: (backer.investment_count || 0) + 1
-      });
+      })
 
       // Update project funding
       await Project.update(project.id, {
         current_funding: (project.current_funding || 0) + parseFloat(investmentAmount),
         backers_count: (project.backers_count || 0) + 1
-      });
+      })
 
-      success('Project Backed', `You have successfully backed "${project.title}" with $${investmentAmount}`);
-      fetchData();
+      success('Project Backed', `You have successfully backed "${project.title}" with $${investmentAmount}`)
+      fetchData()
     } catch (err) {
-      console.error('Error backing project:', err);
-      toastError('Backing Failed', err.message || 'Failed to back project. Please try again.');
+      //
+      toastError('Backing Failed', err.message || 'Failed to back project. Please try again.')
     }
-  };
+  }
 
   const handleQuickBack = (project) => {
     if (!backer) {
-      toastError('Profile Required', 'Please complete your backer profile first');
-      navigate(createPageUrl('BackerProfile'));
-      return;
+      toastError('Profile Required', 'Please complete your backer profile first')
+      navigate(createPageUrl('BackerProfile'))
+      return
     }
-    handleBackProject(project);
-  };
+    handleBackProject(project)
+  }
 
   const handleViewProject = (project) => {
-    setSelectedProject(project);
-    setShowProjectModal(true);
-  };
+    setSelectedProject(project)
+    setShowProjectModal(true)
+  }
 
   const handleSaveProject = (project) => {
     if (savedProjects.includes(project.id)) {
-      setSavedProjects(savedProjects.filter(id => id !== project.id));
-      success('Removed', 'Project removed from saved');
+      setSavedProjects(savedProjects.filter(id => id !== project.id))
+      success('Removed', 'Project removed from saved')
     } else {
-      setSavedProjects([...savedProjects, project.id]);
-      success('Saved', 'Project saved for later');
+      setSavedProjects([...savedProjects, project.id])
+      success('Saved', 'Project saved for later')
     }
-  };
+  }
 
   const handleIgnoreProject = (project) => {
     if (!ignoredProjects.includes(project.id)) {
-      setIgnoredProjects([...ignoredProjects, project.id]);
-      success('Ignored', 'Project will not be shown again');
+      setIgnoredProjects([...ignoredProjects, project.id])
+      success('Ignored', 'Project will not be shown again')
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -364,5 +364,5 @@ export default function BackerProjectsPage() {
           </div>
         )}
     </div>
-  );
+  )
 }

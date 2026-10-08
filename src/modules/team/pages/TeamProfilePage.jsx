@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { Team } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import CountrySelector from '@/components/CountrySelector';
-import LanguageMultiSelect from '@/components/LanguageMultiSelect';
-import { formatSocialMediaUrl } from '@/lib/socialMediaUtils';
-import { Building2, MapPin, Globe, Phone, Mail, Edit2, Save, Upload, X, Users, Briefcase, Bell, Shield, Linkedin, Instagram, Twitter, Youtube } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { base44 } from '@/api/base44Client'
+import { Team } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import CountrySelector from '@/components/CountrySelector'
+import LanguageMultiSelect from '@/components/LanguageMultiSelect'
+import { formatSocialMediaUrl } from '@/lib/socialMediaUtils'
+import { Building2, MapPin, Globe, Phone, Mail, Edit2, Save, Upload, X, Users, Briefcase, Bell, Shield, Linkedin, Instagram, Twitter, Youtube } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
   return (
@@ -23,17 +23,17 @@ function ToggleRow({ title, description, checked, onChange, isLast }) {
         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
       </button>
     </div>
-  );
+  )
 }
 
 export default function TeamProfilePage() {
-  const { success, error: toastError } = useToast();
-  const [team, setTeam] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [activeTab, setActiveTab] = useState('profile');
-  const [showBioModal, setShowBioModal] = useState(false);
+  const { success, error: toastError } = useToast()
+  const [team, setTeam] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [editing, setEditing] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [activeTab, setActiveTab] = useState('profile')
+  const [showBioModal, setShowBioModal] = useState(false)
 
   const [formData, setFormData] = useState({
     team_name: '', contact_name: '', contact_email: '', contact_phone: '',
@@ -41,25 +41,25 @@ export default function TeamProfilePage() {
     industry: '', company_size: '',
     specialties: [], equipment_owned: [], languages_spoken: [], description: '', availability: 'available',
     bio: '', email_notifications: true, task_notifications: true, profile_public: true
-  });
+  })
 
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [taskNotifications, setTaskNotifications] = useState(true);
-  const [profilePublic, setProfilePublic] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true)
+  const [taskNotifications, setTaskNotifications] = useState(true)
+  const [profilePublic, setProfilePublic] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
     const fetchTeam = async () => {
       try {
-        const { email } = JSON.parse(storedUser);
-        const teams = await Team.filter({ contact_email: email });
+        const { email } = JSON.parse(storedUser)
+        const teams = await Team.filter({ contact_email: email })
         if (teams && teams.length > 0) {
-          const t = teams[0];
-          setTeam(t);
+          const t = teams[0]
+          setTeam(t)
           setFormData({
             team_name: t.team_name || '', contact_name: t.contact_name || '', contact_email: t.contact_email || '',
             contact_phone: t.contact_phone || '', city: t.city || '', country: t.country || '', website: t.website || '',
@@ -68,106 +68,106 @@ export default function TeamProfilePage() {
             equipment_owned: t.equipment_owned || [], languages_spoken: t.languages_spoken || [],
             description: t.description || '', availability: t.availability || 'available',
             bio: t.bio || '', email_notifications: t.email_notifications ?? true, task_notifications: t.task_notifications ?? true, profile_public: t.profile_public ?? true
-          });
-          setEmailNotifications(t.email_notifications ?? true);
-          setTaskNotifications(t.task_notifications ?? true);
-          setProfilePublic(t.profile_public ?? true);
+          })
+          setEmailNotifications(t.email_notifications ?? true)
+          setTaskNotifications(t.task_notifications ?? true)
+          setProfilePublic(t.profile_public ?? true)
         }
       } catch (err) {
-        console.error('Error fetching team:', err);
-        setTeam(null);
+        //
+        setTeam(null)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchTeam();
-  }, []);
+    }
+    fetchTeam()
+  }, [])
 
   const handleSave = async () => {
     if (!team) {
-      toastError('Error', 'Team profile not found. Please refresh the page.');
-      return;
+      toastError('Error', 'Team profile not found. Please refresh the page.')
+      return
     }
     if (!formData.team_name) {
-      toastError('Validation Error', 'Team name is required');
-      return;
+      toastError('Validation Error', 'Team name is required')
+      return
     }
     try {
       const updated = await Team.update(team.id, {
         ...formData,
         location: `${formData.city}, ${formData.country}`,
-      });
-      setTeam(updated);
-      success('Profile Updated', 'Team profile updated successfully');
-      setEditing(false);
+      })
+      setTeam(updated)
+      success('Profile Updated', 'Team profile updated successfully')
+      setEditing(false)
     } catch (err) {
-      console.error('Error saving profile:', err);
-      toastError('Save Failed', 'Failed to save profile. Please try again.');
+      //
+      toastError('Save Failed', 'Failed to save profile. Please try again.')
     }
-  };
+  }
 
   const handleSaveBio = async () => {
     if (!team) {
-      toastError('Error', 'Team profile not found. Please refresh the page.');
-      return;
+      toastError('Error', 'Team profile not found. Please refresh the page.')
+      return
     }
     try {
-      const updated = await Team.update(team.id, { description: formData.description });
-      setTeam(updated);
-      success('Bio Updated', 'Your bio has been updated');
-      setShowBioModal(false);
+      const updated = await Team.update(team.id, { description: formData.description })
+      setTeam(updated)
+      success('Bio Updated', 'Your bio has been updated')
+      setShowBioModal(false)
     } catch (err) {
-      console.error('Error saving bio:', err);
-      toastError('Save Failed', 'Failed to save bio. Please try again.');
+      //
+      toastError('Save Failed', 'Failed to save bio. Please try again.')
     }
-  };
+  }
 
   const handleSavePreferences = async () => {
     if (!team) {
-      toastError('Error', 'Team profile not found. Please refresh the page.');
-      return;
+      toastError('Error', 'Team profile not found. Please refresh the page.')
+      return
     }
     try {
       const updated = await Team.update(team.id, {
         email_notifications: emailNotifications,
         task_notifications: taskNotifications,
         profile_public: profilePublic
-      });
-      setTeam(updated);
-      success('Preferences Updated', 'Your settings have been saved');
+      })
+      setTeam(updated)
+      success('Preferences Updated', 'Your settings have been saved')
     } catch (err) {
-      console.error('Error saving preferences:', err);
-      toastError('Save Failed', 'Failed to update preferences. Please try again.');
+      //
+      toastError('Save Failed', 'Failed to update preferences. Please try again.')
     }
-  };
+  }
 
   const handleLogoUpload = async (e) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (!file || !team) {
-      toastError('Error', 'Please select a file and ensure team profile exists.');
-      return;
+      toastError('Error', 'Please select a file and ensure team profile exists.')
+      return
     }
-    setUploadingLogo(true);
+    setUploadingLogo(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url;
-      const updated = await Team.update(team.id, { logo: fileUrl });
-      setTeam(updated);
-      success('Logo Updated', 'Team logo updated successfully');
+      const response = await base44.integrations.Core.UploadFile({ file })
+      const fileUrl = response.file_url || response.url
+      const updated = await Team.update(team.id, { logo: fileUrl })
+      setTeam(updated)
+      success('Logo Updated', 'Team logo updated successfully')
     } catch (err) {
-      console.error('Error uploading logo:', err);
-      toastError('Upload Failed', 'Failed to upload logo. Please try again.');
+      //
+      toastError('Upload Failed', 'Failed to upload logo. Please try again.')
     } finally {
-      setUploadingLogo(false);
+      setUploadingLogo(false)
     }
-  };
+  }
 
   if (loading || !team) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -415,5 +415,5 @@ export default function TeamProfilePage() {
         </div>
       )}
     </div>
-  );
+  )
 }

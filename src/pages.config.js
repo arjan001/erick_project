@@ -9,9 +9,9 @@
  * 
  * Example file structure:
  * 
- *   import HomePage from './pages/HomePage';
- *   import Dashboard from './pages/Dashboard';
- *   import Settings from './pages/Settings';
+ *   import HomePage from './pages/HomePage'
+ *   import Dashboard from './pages/Dashboard'
+ *   import Settings from './pages/Settings'
  *   
  *   export const PAGES = {
  *       "HomePage": HomePage,
@@ -22,13 +22,13 @@
  *   export const pagesConfig = {
  *       mainPage: "HomePage",
  *       Pages: PAGES,
- *   };
+ *   }
  * 
  * Example with Layout (wraps all pages):
  *
- *   import Home from './pages/Home';
- *   import Settings from './pages/Settings';
- *   import __Layout from './Layout.jsx';
+ *   import Home from './pages/Home'
+ *   import Settings from './pages/Settings'
+ *   import __Layout from './Layout.jsx'
  *
  *   export const PAGES = {
  *       "Home": Home,
@@ -39,7 +39,7 @@
  *       mainPage: "Home",
  *       Pages: PAGES,
  *       Layout: __Layout,
- *   };
+ *   }
  *
  * To change the main page from HomePage to Dashboard, use find_replace:
  *   Old: mainPage: "HomePage",
@@ -47,37 +47,37 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Admin from './pages/Admin';
-import ApplyArtist from './pages/ApplyArtist';
-import ApplyTeam from './pages/ApplyTeam';
-import ArtistAdmin from './pages/ArtistAdmin';
-import ArtistDashboard from './pages/ArtistDashboard';
-import ArtistHome from './pages/ArtistHome';
-import ArtistProfile from './pages/ArtistProfile';
-import ArtistPublicProfile from './pages/ArtistPublicProfile';
-import BackedProjects from './pages/BackedProjects';
-import ClientDashboard from './pages/ClientDashboard';
-import Contact from './pages/Contact';
-import CreatorDashboard from './pages/CreatorDashboard';
-import Home from './pages/Home';
-import Home2 from './pages/Home2';
-import HowBackingWorks from './pages/HowBackingWorks';
-import JobApplications from './pages/JobApplications';
-import JobBoard from './pages/JobBoard';
-import JobInvitations from './pages/JobInvitations';
-import Jobs from './pages/Jobs';
-import Messages from './pages/Messages';
-import Network from './pages/Network';
-import Pricing from './pages/Pricing';
-import ProjectAdmin from './pages/ProjectAdmin';
-import Projects from './pages/Projects';
-import Services from './pages/Services';
-import SignIn from './pages/SignIn';
-import SubmitProject from './pages/SubmitProject';
-import TeamAdmin from './pages/TeamAdmin';
-import TeamDashboard from './pages/TeamDashboard';
-import TeamPublicProfile from './pages/TeamPublicProfile';
-import Work from './pages/Work';
+import Admin from './pages/Admin'
+import ApplyArtist from './pages/ApplyArtist'
+import ApplyTeam from './pages/ApplyTeam'
+import ArtistAdmin from './pages/ArtistAdmin'
+import ArtistDashboard from './pages/ArtistDashboard'
+import ArtistHome from './pages/ArtistHome'
+import ArtistProfile from './pages/ArtistProfile'
+import ArtistPublicProfile from './pages/ArtistPublicProfile'
+import BackedProjects from './pages/BackedProjects'
+import ClientDashboard from './pages/ClientDashboard'
+import Contact from './pages/Contact'
+import CreatorDashboard from './pages/CreatorDashboard'
+import Home from './pages/Home'
+import Home2 from './pages/Home2'
+import HowBackingWorks from './pages/HowBackingWorks'
+import JobApplications from './pages/JobApplications'
+import JobBoard from './pages/JobBoard'
+import JobInvitations from './pages/JobInvitations'
+import Jobs from './pages/Jobs'
+import Messages from './pages/Messages'
+import Network from './pages/Network'
+import Pricing from './pages/Pricing'
+import ProjectAdmin from './pages/ProjectAdmin'
+import Projects from './pages/Projects'
+import Services from './pages/Services'
+import SignIn from './pages/SignIn'
+import SubmitProject from './pages/SubmitProject'
+import TeamAdmin from './pages/TeamAdmin'
+import TeamDashboard from './pages/TeamDashboard'
+import TeamPublicProfile from './pages/TeamPublicProfile'
+import Work from './pages/Work'
 
 export const PAGES = {
     "Admin": Admin,
@@ -116,4 +116,4 @@ export const PAGES = {
 export const pagesConfig = {
     mainPage: "Home",
     Pages: PAGES,
-};
+}

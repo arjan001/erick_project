@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Article } from '@/lib/supabaseEntities';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Badge } from '@/shared/components/ui/badge';
-import { Plus, Edit2, Trash2, X, Eye, EyeOff, ArrowUp, ArrowDown, Calendar, User } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { Article } from '@/lib/supabaseEntities'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Badge } from '@/shared/components/ui/badge'
+import { Plus, Edit2, Trash2, X, Eye, EyeOff, ArrowUp, ArrowDown, Calendar, User } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
 
 export default function AdminArticlesPage() {
-  const { success, error: toastError } = useToast();
-  const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingArticle, setEditingArticle] = useState(null);
+  const { success, error: toastError } = useToast()
+  const [articles, setArticles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingArticle, setEditingArticle] = useState(null)
   const [form, setForm] = useState({
     title: '',
     slug: '',
@@ -28,25 +28,25 @@ export default function AdminArticlesPage() {
     is_featured: false,
     meta_title: '',
     meta_description: '',
-  });
+  })
 
   const fetchArticles = async () => {
     try {
-      const all = await Article.list('-display_order', 100);
-      setArticles(all || []);
+      const all = await Article.list('-display_order', 100)
+      setArticles(all || [])
     } catch (err) {
-      console.error('Error fetching articles:', err);
-      toastError('Load Failed', 'Failed to load articles');
+      
+      toastError('Load Failed', 'Failed to load articles')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchArticles(); }, []);
+  useEffect(() => { fetchArticles(); }, [])
 
   const openModal = (article = null) => {
     if (article) {
-      setEditingArticle(article);
+      setEditingArticle(article)
       setForm({
         title: article.title || '',
         slug: article.slug || '',
@@ -61,9 +61,9 @@ export default function AdminArticlesPage() {
         is_featured: article.is_featured || false,
         meta_title: article.meta_title || '',
         meta_description: article.meta_description || '',
-      });
+      })
     } else {
-      setEditingArticle(null);
+      setEditingArticle(null)
       setForm({
         title: '',
         slug: '',
@@ -78,10 +78,10 @@ export default function AdminArticlesPage() {
         is_featured: false,
         meta_title: '',
         meta_description: '',
-      });
+      })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const handleSave = async () => {
     if (!form.title.trim()) { toastError('Validation', 'Title is required'); return; }
@@ -92,74 +92,74 @@ export default function AdminArticlesPage() {
         slug: form.slug || form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
         tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
         published_date: form.status === 'published' && !editingArticle?.published_date ? new Date().toISOString() : editingArticle?.published_date,
-      };
-      if (editingArticle) {
-        await Article.update(editingArticle.id, dataToSave);
-        success('Updated', 'Article updated');
-      } else {
-        await Article.create(dataToSave);
-        success('Created', 'Article created');
       }
-      setShowModal(false);
-      fetchArticles();
+      if (editingArticle) {
+        await Article.update(editingArticle.id, dataToSave)
+        success('Updated', 'Article updated')
+      } else {
+        await Article.create(dataToSave)
+        success('Created', 'Article created')
+      }
+      setShowModal(false)
+      fetchArticles()
     } catch (err) {
-      console.error('Error saving article:', err);
-      toastError('Save Failed', `Failed to save article: ${err.message || 'Unknown error'}`);
+      
+      toastError('Save Failed', `Failed to save article: ${err.message || 'Unknown error'}`)
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this article?')) return;
+    if (!confirm('Delete this article?')) return
     try {
-      await Article.delete(id);
-      success('Deleted', 'Article deleted');
-      fetchArticles();
+      await Article.delete(id)
+      success('Deleted', 'Article deleted')
+      fetchArticles()
     } catch (err) {
-      console.error('Error deleting:', err);
-      toastError('Delete Failed', 'Failed to delete article');
+      
+      toastError('Delete Failed', 'Failed to delete article')
     }
-  };
+  }
 
   const toggleStatus = async (article) => {
     try {
-      const newStatus = article.status === 'published' ? 'draft' : 'published';
+      const newStatus = article.status === 'published' ? 'draft' : 'published'
       await Article.update(article.id, { 
         status: newStatus, 
         published_date: newStatus === 'published' ? new Date().toISOString() : article.published_date 
-      });
-      success(newStatus === 'published' ? 'Published' : 'Unpublished', `Article is now ${newStatus}`);
-      fetchArticles();
+      })
+      success(newStatus === 'published' ? 'Published' : 'Unpublished', `Article is now ${newStatus}`)
+      fetchArticles()
     } catch (err) {
-      toastError('Failed', 'Failed to update status');
+      toastError('Failed', 'Failed to update status')
     }
-  };
+  }
 
   const toggleFeatured = async (article) => {
     try {
-      await Article.update(article.id, { is_featured: !article.is_featured });
-      success('Updated', `Article ${article.is_featured ? 'removed from' : 'added to'} featured`);
-      fetchArticles();
+      await Article.update(article.id, { is_featured: !article.is_featured })
+      success('Updated', `Article ${article.is_featured ? 'removed from' : 'added to'} featured`)
+      fetchArticles()
     } catch (err) {
-      toastError('Failed', 'Failed to update featured status');
+      toastError('Failed', 'Failed to update featured status')
     }
-  };
+  }
 
   const moveOrder = async (article, direction) => {
-    const newOrder = (article.display_order || 0) + direction;
+    const newOrder = (article.display_order || 0) + direction
     try {
-      await Article.update(article.id, { display_order: newOrder });
-      fetchArticles();
+      await Article.update(article.id, { display_order: newOrder })
+      fetchArticles()
     } catch (err) {
-      toastError('Failed', 'Failed to reorder');
+      toastError('Failed', 'Failed to reorder')
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -323,5 +323,5 @@ export default function AdminArticlesPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

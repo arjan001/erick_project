@@ -1,17 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
-import ChatWidget from '@/components/landing/backstage/ChatWidget';
-import SEOMetaTags from '@/components/SEOMetaTags';
-import RoleToggle from '@/components/landing/backstage/RoleToggle';
-import PartnersCarousel from '@/components/landing/backstage/PartnersCarousel';
-import { talentProfiles } from '@/components/landing/backstage/talentData';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
+import ChatWidget from '@/components/landing/backstage/ChatWidget'
+import SEOMetaTags from '@/components/SEOMetaTags'
+import RoleToggle from '@/components/landing/backstage/RoleToggle'
+import PartnersCarousel from '@/components/landing/backstage/PartnersCarousel'
+import { talentProfiles } from '@/components/landing/backstage/talentData'
+import { useNavigate } from 'react-router-dom'
 import {
   Search, FileText, Users, Zap, Shield, TrendingUp, ArrowRight, Check,
   Calendar, MessageSquare, UserPlus, Briefcase, Camera, Smartphone, Star,
-} from 'lucide-react';
+} from 'lucide-react'
 
 // ── Stats ──
 const heroStats = [
@@ -19,14 +19,14 @@ const heroStats = [
   { value: '1M+', label: 'TALENT ACROSS THE GLOBE' },
   { value: '1M+', label: 'PROJECTS SUCCESSFULLY COMPLETED' },
   { value: '1K+', label: 'TALENT AGENTS SUBMITTING' },
-];
+]
 
 // ── Top info cards ──
 const infoCards = [
   { title: 'Find great talent', desc: 'Access the largest, most diverse marketplace for creative professionals.' },
   { title: 'Seamless hiring', desc: 'Flexible tools to post jobs, track submissions, audition and hire talent.' },
   { title: 'Secure payments', desc: 'Find, hire, and pay talent all in one place using our Secure Payments system.' },
-];
+]
 
 // ── Feature grid (3x3) ──
 const features = [
@@ -39,7 +39,7 @@ const features = [
   { icon: Smartphone, title: 'Self-tape auditions', desc: 'Vet talent with ease' },
   { icon: Calendar, title: 'Audition schedules', desc: 'Coordinate talent bookings' },
   { icon: FileText, title: 'Talent profiles', desc: 'Explore comprehensive talent profiles' },
-];
+]
 
 // ── Filter pills ──
 const filterPills = [
@@ -48,7 +48,7 @@ const filterPills = [
   { label: 'Production Crew' },
   { label: 'Content Creators' },
   { label: 'Explore All Talent' },
-];
+]
 
 // ── Success story checklist ──
 const storyChecklist = [
@@ -56,65 +56,65 @@ const storyChecklist = [
   'They wanted motivated professionals who were a good fit for the project and crew.',
   'Six right-fit actors, including for the lead role, were cast from SmartGigs Kenya.',
   'The indie film starring SmartGigs Kenya talent won multiple festival awards.',
-];
+]
 
 export default function HiringTalent() {
-  const navigate = useNavigate();
-  const [role, setRole] = useState('hiring');
-  const carouselRef = useRef(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const [scrollDirection, setScrollDirection] = useState(1);
+  const navigate = useNavigate()
+  const [role, setRole] = useState('hiring')
+  const carouselRef = useRef(null)
+  const [isPaused, setIsPaused] = useState(false)
+  const [scrollDirection, setScrollDirection] = useState(1)
 
   // Auto-scroll carousel
   useEffect(() => {
-    const carousel = carouselRef.current;
-    if (!carousel) return;
+    const carousel = carouselRef.current
+    if (!carousel) return
 
-    let animationFrame;
-    let scrollAmount = 0;
+    let animationFrame
+    let scrollAmount = 0
     const speed = 1; // pixels per frame
 
     const scroll = () => {
       if (!isPaused) {
-        scrollAmount += speed * scrollDirection;
+        scrollAmount += speed * scrollDirection
 
         // Check if we've scrolled past the end
         if (scrollAmount >= carousel.scrollWidth - carousel.clientWidth) {
-          scrollAmount = 0;
+          scrollAmount = 0
         } else if (scrollAmount < 0) {
-          scrollAmount = carousel.scrollWidth - carousel.clientWidth;
+          scrollAmount = carousel.scrollWidth - carousel.clientWidth
         }
 
-        carousel.scrollLeft = scrollAmount;
+        carousel.scrollLeft = scrollAmount
       }
-      animationFrame = requestAnimationFrame(scroll);
-    };
+      animationFrame = requestAnimationFrame(scroll)
+    }
 
-    animationFrame = requestAnimationFrame(scroll);
+    animationFrame = requestAnimationFrame(scroll)
 
     return () => {
-      cancelAnimationFrame(animationFrame);
-    };
-  }, [isPaused, scrollDirection]);
+      cancelAnimationFrame(animationFrame)
+    }
+  }, [isPaused, scrollDirection])
 
-  const handleMouseEnter = () => setIsPaused(true);
-  const handleMouseLeave = () => setIsPaused(false);
+  const handleMouseEnter = () => setIsPaused(true)
+  const handleMouseLeave = () => setIsPaused(false)
   const handleMouseMove = (e) => {
-    const rect = carouselRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const center = rect.width / 2;
+    const rect = carouselRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const center = rect.width / 2
 
     // Scroll left on left side, right on right side
     if (x < center) {
-      setScrollDirection(-1);
+      setScrollDirection(-1)
     } else {
-      setScrollDirection(1);
+      setScrollDirection(1)
     }
-  };
+  }
 
   // Pause only when hovering the carousel container, not individual cards
-  const handleCarouselMouseEnter = () => setIsPaused(true);
-  const handleCarouselMouseLeave = () => setIsPaused(false);
+  const handleCarouselMouseEnter = () => setIsPaused(true)
+  const handleCarouselMouseLeave = () => setIsPaused(false)
 
   return (
     <div className="min-h-screen bg-[#20202a]">
@@ -137,8 +137,8 @@ export default function HiringTalent() {
               active={role}
               dark
               onChange={(r) => {
-                setRole(r);
-                if (r === 'talent') navigate('/');
+                setRole(r)
+                if (r === 'talent') navigate('/')
               }}
             />
           </div>
@@ -225,7 +225,7 @@ export default function HiringTalent() {
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {features.map((f) => {
-              const Icon = f.icon;
+              const Icon = f.icon
               return (
                 <div key={f.title} className="rounded-xl bg-white p-4 md:p-5">
                   <div className="flex items-center gap-3">
@@ -236,7 +236,7 @@ export default function HiringTalent() {
                   </div>
                   <p className="mt-2 text-xs text-gray-500 md:text-sm">{f.desc}</p>
                 </div>
-              );
+              )
             })}
           </div>
 
@@ -459,5 +459,5 @@ export default function HiringTalent() {
       <Footer />
       <ChatWidget />
     </div>
-  );
+  )
 }

@@ -1,30 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import { Project } from '@/lib/supabaseEntities';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, Banknote } from 'lucide-react';
-import SEOMetaTags from '../components/SEOMetaTags';
+import React, { useEffect, useState } from 'react'
+import { Project } from '@/lib/supabaseEntities'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { MapPin, Calendar, Banknote } from 'lucide-react'
+import SEOMetaTags from '../components/SEOMetaTags'
 
 export default function BackedProjects() {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const allProjects = await Project.list();
-        const backedProjects = allProjects.filter(p => p.open_to_backing === true);
-        setProjects(backedProjects);
+        const allProjects = await Project.list()
+        const backedProjects = allProjects.filter(p => p.open_to_backing === true)
+        setProjects(backedProjects)
       } catch (error) {
-        console.error('Error fetching projects:', error);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchProjects();
-  }, []);
+    fetchProjects()
+  }, [])
 
   const getBackingTypeLabel = (type) => {
     const labels = {
@@ -33,9 +33,9 @@ export default function BackedProjects() {
       cultural_support: 'Cultural Support',
       city_support: 'City Support',
       investment: 'Investment'
-    };
-    return labels[type] || type;
-  };
+    }
+    return labels[type] || type
+  }
 
   const getProjectTypeLabel = (type) => {
     const labels = {
@@ -44,9 +44,9 @@ export default function BackedProjects() {
       film: 'Feature Film',
       music_video: 'Music Video',
       documentary: 'Documentary'
-    };
-    return labels[type] || type;
-  };
+    }
+    return labels[type] || type
+  }
 
   return (
     <div className="min-h-screen bg-white py-12">
@@ -149,5 +149,5 @@ export default function BackedProjects() {
         )}
       </div>
     </div>
-  );
+  )
 }

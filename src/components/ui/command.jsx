@@ -29,7 +29,7 @@ const CommandDialog = ({
         </Command>
       </DialogContent>
     </Dialog>)
-  );
+  )
 }
 
 const CommandInput = React.forwardRef(({ className, ...props }, ref) => (
@@ -99,7 +99,7 @@ const CommandShortcut = ({
     (<span
       className={cn("ml-auto text-xs tracking-widest text-muted-foreground", className)}
       {...props} />)
-  );
+  )
 }
 CommandShortcut.displayName = "CommandShortcut"
 

@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ParallaxBackground } from './Parallax';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { ParallaxBackground } from './Parallax'
 
 /** Full-bleed parallax banner carrying the SmartGigs mission (footer block B2) + about blurb (M2). */
 export default function MissionBanner() {
@@ -35,5 +35,5 @@ export default function MissionBanner() {
         </div>
       </div>
     </section>
-  );
+  )
 }

@@ -1,52 +1,52 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronDown, MoreVertical, Star, Handshake, ShoppingBag, Heart } from 'lucide-react';
-import Logo from './Logo';
-import { useAuth } from '@/lib/AuthContext';
-import { getCart, getWishlist } from '@/services/shopService';
+import React, { useState, useRef, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { ChevronDown, MoreVertical, Star, Handshake, ShoppingBag, Heart } from 'lucide-react'
+import Logo from './Logo'
+import { useAuth } from '@/lib/AuthContext'
+import { getCart, getWishlist } from '@/services/shopService'
 
 const NewBadge = ({ className = '' }) => (
   <span className={`inline-flex items-center rounded-full bg-[#B2F5EA] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#0a3b32] ${className}`}>
     New
   </span>
-);
+)
 
 export default function Navbar() {
-  const { isAuthenticated } = useAuth();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [joinOpen, setJoinOpen] = useState(false);
-  const [cartItems, setCartItems] = useState([]);
-  const [wishlistItems, setWishlistItems] = useState([]);
-  const joinRef = useRef(null);
+  const { isAuthenticated } = useAuth()
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [joinOpen, setJoinOpen] = useState(false)
+  const [cartItems, setCartItems] = useState([])
+  const [wishlistItems, setWishlistItems] = useState([])
+  const joinRef = useRef(null)
 
   useEffect(() => {
     const handler = (e) => {
-      if (joinRef.current && !joinRef.current.contains(e.target)) setJoinOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+      if (joinRef.current && !joinRef.current.contains(e.target)) setJoinOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   // Load cart and wishlist items
   useEffect(() => {
     const loadItems = () => {
-      setCartItems(getCart());
-      setWishlistItems(getWishlist());
-    };
-    loadItems();
+      setCartItems(getCart())
+      setWishlistItems(getWishlist())
+    }
+    loadItems()
 
     // Listen for storage changes
-    const handleStorageChange = () => loadItems();
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('cart-updated', handleStorageChange);
-    window.addEventListener('wishlist-updated', handleStorageChange);
+    const handleStorageChange = () => loadItems()
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('cart-updated', handleStorageChange)
+    window.addEventListener('wishlist-updated', handleStorageChange)
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('cart-updated', handleStorageChange);
-      window.removeEventListener('wishlist-updated', handleStorageChange);
-    };
-  }, []);
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('cart-updated', handleStorageChange)
+      window.removeEventListener('wishlist-updated', handleStorageChange)
+    }
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-black/5 bg-white">
@@ -162,5 +162,5 @@ export default function Navbar() {
         </div>
       )}
     </header>
-  );
+  )
 }

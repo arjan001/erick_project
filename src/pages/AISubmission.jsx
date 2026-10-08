@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { generateProductionPlan, regenerateSection } from '../lib/aiService';
-import { Film, Music, Clapperboard, Video, Briefcase, Building, Calendar, Package, Share, Sparkles as SparklesIcon, CheckCircle2, Loader } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { generateProductionPlan, regenerateSection } from '../lib/aiService'
+import { Film, Music, Clapperboard, Video, Briefcase, Building, Calendar, Package, Share, Sparkles as SparklesIcon, CheckCircle2, Loader } from 'lucide-react'
 
 /* ─── ICONS ─────────────────────────────────────────────────────────────── */
 function ClockIcon() {
@@ -10,14 +10,14 @@ function ClockIcon() {
       <circle cx="12" cy="12" r="10" />
       <polyline points="12 6 12 12 16 14" />
     </svg>
-  );
+  )
 }
 function CheckIcon({ size = 14 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12" />
     </svg>
-  );
+  )
 }
 function AlertCircleIcon() {
   return (
@@ -26,7 +26,7 @@ function AlertCircleIcon() {
       <line x1="12" y1="8" x2="12" y2="12" />
       <line x1="12" y1="16" x2="12.01" y2="16" />
     </svg>
-  );
+  )
 }
 function RefreshIcon({ size = 14 }) {
   return (
@@ -35,7 +35,7 @@ function RefreshIcon({ size = 14 }) {
       <polyline points="1 20 1 14 7 14" />
       <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
     </svg>
-  );
+  )
 }
 function XIcon({ size = 14 }) {
   return (
@@ -43,7 +43,7 @@ function XIcon({ size = 14 }) {
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
-  );
+  )
 }
 function EditIcon({ size = 14 }) {
   return (
@@ -51,7 +51,7 @@ function EditIcon({ size = 14 }) {
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
     </svg>
-  );
+  )
 }
 function PencilIcon({ size = 13 }) {
   return (
@@ -59,7 +59,7 @@ function PencilIcon({ size = 13 }) {
       <path d="M12 20h9" />
       <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
     </svg>
-  );
+  )
 }
 function PackageIcon({ size = 18 }) {
   return (
@@ -69,7 +69,7 @@ function PackageIcon({ size = 18 }) {
       <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
       <line x1="12" y1="22.08" x2="12" y2="12" />
     </svg>
-  );
+  )
 }
 function CalendarIcon({ size = 18 }) {
   return (
@@ -79,7 +79,7 @@ function CalendarIcon({ size = 18 }) {
       <line x1="8" y1="2" x2="8" y2="6" />
       <line x1="3" y1="10" x2="21" y2="10" />
     </svg>
-  );
+  )
 }
 function CameraIcon({ size = 18 }) {
   return (
@@ -87,7 +87,7 @@ function CameraIcon({ size = 18 }) {
       <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
       <circle cx="12" cy="13" r="4" />
     </svg>
-  );
+  )
 }
 function LightbulbIcon({ size = 18 }) {
   return (
@@ -96,7 +96,7 @@ function LightbulbIcon({ size = 18 }) {
       <line x1="10" y1="22" x2="14" y2="22" />
       <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" />
     </svg>
-  );
+  )
 }
 function MicIcon({ size = 18 }) {
   return (
@@ -106,7 +106,7 @@ function MicIcon({ size = 18 }) {
       <line x1="12" y1="19" x2="12" y2="23" />
       <line x1="8" y1="23" x2="16" y2="23" />
     </svg>
-  );
+  )
 }
 function PinIcon({ size = 16 }) {
   return (
@@ -114,7 +114,7 @@ function PinIcon({ size = 16 }) {
       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
       <circle cx="12" cy="10" r="3" />
     </svg>
-  );
+  )
 }
 function UsersIcon({ size = 16 }) {
   return (
@@ -124,7 +124,7 @@ function UsersIcon({ size = 16 }) {
       <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
-  );
+  )
 }
 function FileTextIcon({ size = 18 }) {
   return (
@@ -135,7 +135,7 @@ function FileTextIcon({ size = 18 }) {
       <line x1="16" y1="17" x2="8" y2="17" />
       <polyline points="10 9 9 9 8 9" />
     </svg>
-  );
+  )
 }
 function LogOutIcon() {
   return (
@@ -144,7 +144,7 @@ function LogOutIcon() {
       <polyline points="16 17 21 12 16 7" />
       <line x1="21" y1="12" x2="9" y2="12" />
     </svg>
-  );
+  )
 }
 
 /* ─── CONSTANTS ─────────────────────────────────────────────────────────── */
@@ -158,7 +158,7 @@ const STEPS = [
   'Production Schedule',
   'Creative Direction',
   'Deliverables',
-];
+]
 
 /* ─── SHARED UI ─────────────────────────────────────────────────────────── */
 function PendingBadge({ isApproved = false }) {
@@ -166,18 +166,18 @@ function PendingBadge({ isApproved = false }) {
     <span style={{ background: isApproved ? '#d1fae5' : '#fef3c7', color: isApproved ? '#065f46' : '#92400e', fontSize: 12, fontWeight: 500, padding: '3px 10px', borderRadius: 20, display: 'inline-block' }}>
       {isApproved ? 'Approved' : 'Pending Review'}
     </span>
-  );
+  )
 }
 
 function SuggestionBox({ label = 'Suggestions (optional)', placeholder = "e.g., 'Make it more professional', 'Focus on budget-friendly approach', 'Add more detail about locations'", onRegenerate }) {
-  const [suggestion, setSuggestion] = useState('');
+  const [suggestion, setSuggestion] = useState('')
 
   const handleRegenerate = () => {
     if (onRegenerate && suggestion.trim()) {
-      onRegenerate(suggestion);
-      setSuggestion('');
+      onRegenerate(suggestion)
+      setSuggestion('')
     }
-  };
+  }
 
   return (
     <div style={{ background: '#f0fdf9', border: '1px solid #ccfce7', borderRadius: 10, padding: '18px 20px', marginTop: 24 }}>
@@ -198,7 +198,7 @@ function SuggestionBox({ label = 'Suggestions (optional)', placeholder = "e.g., 
         </button>
       </div>
     </div>
-  );
+  )
 }
 
 function RequestModBox({ placeholder }) {
@@ -215,7 +215,7 @@ function RequestModBox({ placeholder }) {
         </button>
       </div>
     </div>
-  );
+  )
 }
 
 function Card({ children, highlight = false }) {
@@ -223,16 +223,16 @@ function Card({ children, highlight = false }) {
     <div style={{ background: highlight ? '#f0fdf9' : '#fff', border: `1px solid ${highlight ? '#6ee7b7' : '#e5e7eb'}`, borderRadius: 12, padding: '20px 24px', marginBottom: 16 }}>
       {children}
     </div>
-  );
+  )
 }
 
 /* ─── STEP CONTENT COMPONENTS ───────────────────────────────────────────── */
 
 function StepOverviewBrief({ data, projectCategory, onRegenerate, loading, isApproved, onCategoryChange }) {
-  if (!data) return null;
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedContent, setEditedContent] = useState(data.introduction || '');
+  if (!data) return null
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedContent, setEditedContent] = useState(data.introduction || '')
   
   const projectCategories = [
     { value: 'commercial', label: 'Commercial', icon: Film },
@@ -245,25 +245,25 @@ function StepOverviewBrief({ data, projectCategory, onRegenerate, loading, isApp
     { value: 'product_demo', label: 'Product Demo', icon: Package },
     { value: 'social_media', label: 'Social Media', icon: Share },
     { value: 'animation', label: 'Animation', icon: SparklesIcon }
-  ];
+  ]
 
   const handleCategorySelect = (categoryValue) => {
-    setShowCategoryDropdown(false);
+    setShowCategoryDropdown(false)
     if (onCategoryChange) {
-      onCategoryChange(categoryValue);
+      onCategoryChange(categoryValue)
     }
-  };
+  }
   
   const handleSaveEdit = () => {
-    setIsEditing(false);
+    setIsEditing(false)
     // Trigger regeneration with the edited content
-    onRegenerate && onRegenerate(editedContent);
-  };
+    onRegenerate && onRegenerate(editedContent)
+  }
   
   const handleCancelEdit = () => {
-    setIsEditing(false);
-    setEditedContent(data.introduction || '');
-  };
+    setIsEditing(false)
+    setEditedContent(data.introduction || '')
+  }
   
   return (
     <>
@@ -307,9 +307,9 @@ function StepOverviewBrief({ data, projectCategory, onRegenerate, loading, isApp
                 style={{ background: '#111', color: '#fff', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
               >
                 {(() => {
-                  const selectedCategory = projectCategories.find(cat => cat.value === projectCategory);
-                  const Icon = selectedCategory?.icon || Film;
-                  return <><Icon className="w-3 h-3" /><span>{selectedCategory?.label}</span></>;
+                  const selectedCategory = projectCategories.find(cat => cat.value === projectCategory)
+                  const Icon = selectedCategory?.icon || Film
+                  return <><Icon className="w-3 h-3" /><span>{selectedCategory?.label}</span></>
                 })()}
               </button>
               {showCategoryDropdown && (
@@ -318,7 +318,7 @@ function StepOverviewBrief({ data, projectCategory, onRegenerate, loading, isApp
                   style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: '4px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', minWidth: '150px', zIndex: 100 }}
                 >
                   {projectCategories.map((cat) => {
-                    const Icon = cat.icon;
+                    const Icon = cat.icon
                     return (
                       <button
                         key={cat.value}
@@ -329,7 +329,7 @@ function StepOverviewBrief({ data, projectCategory, onRegenerate, loading, isApp
                         <Icon size={12} />
                         <span>{cat.label}</span>
                       </button>
-                    );
+                    )
                   })}
                 </div>
               )}
@@ -399,12 +399,12 @@ function StepOverviewBrief({ data, projectCategory, onRegenerate, loading, isApp
 
       <SuggestionBox onRegenerate={onRegenerate} />
     </>
-  );
+  )
 }
 
 function StepBudgetBreakdown({ data, projectCategory, onRegenerate, loading, isApproved }) {
-  if (!data) return null;
-  const packages = data.packages || [];
+  if (!data) return null
+  const packages = data.packages || []
 
   return (
     <>
@@ -473,13 +473,13 @@ function StepBudgetBreakdown({ data, projectCategory, onRegenerate, loading, isA
 
       <SuggestionBox placeholder="e.g., 'Lower the costs', 'Increase premium package', 'Add more detail to explanations'" onRegenerate={onRegenerate} />
     </>
-  );
+  )
 }
 
 function StepRolesTeam({ data, projectCategory, onRegenerate, loading, isApproved }) {
-  const [activePackage, setActivePackage] = useState(0);
-  const packages = data?.packages || [];
-  const roles = data?.roles || [];
+  const [activePackage, setActivePackage] = useState(0)
+  const packages = data?.packages || []
+  const roles = data?.roles || []
 
   return (
     <>
@@ -567,11 +567,11 @@ function StepRolesTeam({ data, projectCategory, onRegenerate, loading, isApprove
 
       <SuggestionBox placeholder="e.g., 'Need less experienced team', 'Add sound designer', 'Change to solo producer'" onRegenerate={onRegenerate} />
     </>
-  );
+  )
 }
 
 function StepScreeningQuestions({ data, projectCategory, onRegenerate, loading, isApproved }) {
-  const questions = data?.questions || [];
+  const questions = data?.questions || []
 
   return (
     <>
@@ -635,11 +635,11 @@ function StepScreeningQuestions({ data, projectCategory, onRegenerate, loading, 
 
       <SuggestionBox placeholder="e.g., 'Add question about equipment', 'Make questions simpler', 'Focus more on creativity'" onRegenerate={onRegenerate} />
     </>
-  );
+  )
 }
 
 function StepLocations({ data, projectCategory, onRegenerate, loading, isApproved }) {
-  const locations = data?.locations || [];
+  const locations = data?.locations || []
 
   return (
     <>
@@ -693,13 +693,13 @@ function StepLocations({ data, projectCategory, onRegenerate, loading, isApprove
 
       <RequestModBox placeholder="e.g., 'Add indoor backup location', 'Need more urban locations', 'Focus on natural settings'" />
     </>
-  );
+  )
 }
 
 function StepTechnicalRequirements({ data, projectCategory, onRegenerate, loading, isApproved }) {
-  const cameraRows = data?.camera || [];
-  const lightingItems = data?.lighting || [];
-  const audioItems = data?.audio || [];
+  const cameraRows = data?.camera || []
+  const lightingItems = data?.lighting || []
+  const audioItems = data?.audio || []
 
   return (
     <>
@@ -784,11 +784,11 @@ function StepTechnicalRequirements({ data, projectCategory, onRegenerate, loadin
 
       <SuggestionBox placeholder="e.g., 'Add drone shots', 'Change camera model', 'Add more lighting options'" onRegenerate={onRegenerate} />
     </>
-  );
+  )
 }
 
 function StepProductionSchedule({ data, projectCategory, onRegenerate, loading, isApproved }) {
-  const phases = data?.phases || [];
+  const phases = data?.phases || []
 
   return (
     <>
@@ -840,27 +840,27 @@ function StepProductionSchedule({ data, projectCategory, onRegenerate, loading, 
 
       <SuggestionBox placeholder="e.g., 'Shorten timeline', 'Add more phases', 'Adjust milestone dates'" onRegenerate={onRegenerate} />
     </>
-  );
+  )
 }
 
 function StepCreativeDirection({ data, productionBrief, projectCategory, onRegenerate, loading, isApproved }) {
-  const [imageLoading, setImageLoading] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState(data?.image || null);
-  const moodTags = data?.moodTags || [];
+  const [imageLoading, setImageLoading] = useState(false)
+  const [generatedImage, setGeneratedImage] = useState(data?.image || null)
+  const moodTags = data?.moodTags || []
 
   const handleRegenerateImage = async () => {
-    setImageLoading(true);
+    setImageLoading(true)
     try {
-      const result = await onRegenerate();
+      const result = await onRegenerate()
       if (result && result.image) {
-        setGeneratedImage(result.image);
+        setGeneratedImage(result.image)
       }
     } catch (err) {
-      console.error('Image regeneration error:', err);
+      //
     } finally {
-      setImageLoading(false);
+      setImageLoading(false)
     }
-  };
+  }
 
   return (
     <>
@@ -933,12 +933,12 @@ function StepCreativeDirection({ data, productionBrief, projectCategory, onRegen
         </div>
       </Card>
     </>
-  );
+  )
 }
 
 function StepDeliverables({ data, projectCategory, productionBrief, onRegenerate, loading, isApproved }) {
-  const deliverables = data?.deliverables || [];
-  const formats = data?.formats || [];
+  const deliverables = data?.deliverables || []
+  const formats = data?.formats || []
 
   return (
     <>
@@ -1007,12 +1007,12 @@ function StepDeliverables({ data, projectCategory, productionBrief, onRegenerate
         </div>
       </div>
     </>
-  );
+  )
 }
 
 /* ─── BOTTOM ACTION BAR ─────────────────────────────────────────────────── */
 function BottomBar({ step, onApprove }) {
-  const isLast = step === 8;
+  const isLast = step === 8
 
   if (isLast) {
     return (
@@ -1027,7 +1027,7 @@ function BottomBar({ step, onApprove }) {
           <CheckIcon size={14} /> Approve Section
         </button>
       </div>
-    );
+    )
   }
 
   return (
@@ -1039,32 +1039,32 @@ function BottomBar({ step, onApprove }) {
         <CheckIcon size={14} /> Approve Section
       </button>
     </div>
-  );
+  )
 }
 
 /* ─── MAIN APP ──────────────────────────────────────────────────────────── */
 export default function AISubmission() {
-  const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [approved, setApproved] = useState(new Set());
-  const [loading, setLoading] = useState(false);
-  const [aiData, setAIData] = useState(null);
-  const [error, setError] = useState(null);
-  const [projectUrl, setProjectUrl] = useState('');
-  const [projectDescription, setProjectDescription] = useState('');
-  const [projectCategory, setProjectCategory] = useState('commercial');
-  const [analyzing, setAnalyzing] = useState(false);
-  const [extractProgress, setExtractProgress] = useState(null);
-  const [regenerating, setRegenerating] = useState(false);
-  const [hasAnalyzedProject, setHasAnalyzedProject] = useState(false);
-  const previousCategoryRef = useRef(projectCategory);
+  const navigate = useNavigate()
+  const [currentStep, setCurrentStep] = useState(0)
+  const [approved, setApproved] = useState(new Set())
+  const [loading, setLoading] = useState(false)
+  const [aiData, setAIData] = useState(null)
+  const [error, setError] = useState(null)
+  const [projectUrl, setProjectUrl] = useState('')
+  const [projectDescription, setProjectDescription] = useState('')
+  const [projectCategory, setProjectCategory] = useState('commercial')
+  const [analyzing, setAnalyzing] = useState(false)
+  const [extractProgress, setExtractProgress] = useState(null)
+  const [regenerating, setRegenerating] = useState(false)
+  const [hasAnalyzedProject, setHasAnalyzedProject] = useState(false)
+  const previousCategoryRef = useRef(projectCategory)
 
   const progressSteps = [
     'Fetching site content',
     'Analyzing brand and tone',
     'Identifying visual language',
     'Translating into a film concept'
-  ];
+  ]
 
   const projectCategories = [
     { value: 'commercial', label: 'Commercial', icon: Film },
@@ -1077,34 +1077,34 @@ export default function AISubmission() {
     { value: 'product_demo', label: 'Product Demo', icon: Package },
     { value: 'social_media', label: 'Social Media', icon: Share },
     { value: 'animation', label: 'Animation', icon: SparklesIcon }
-  ];
+  ]
 
   // Load saved context from localStorage on mount
   useEffect(() => {
-    const savedContext = localStorage.getItem('ericrabar_ai_modal_context');
+    const savedContext = localStorage.getItem('ericrabar_ai_modal_context')
     if (savedContext) {
       try {
-        const context = JSON.parse(savedContext);
-        const contextAge = Date.now() - new Date(context.timestamp).getTime();
+        const context = JSON.parse(savedContext)
+        const contextAge = Date.now() - new Date(context.timestamp).getTime()
         if (contextAge < 3600000) {
-          setProjectUrl(context.url || '');
-          setProjectCategory(context.category || 'commercial');
-          setProjectDescription(context.description || '');
+          setProjectUrl(context.url || '')
+          setProjectCategory(context.category || 'commercial')
+          setProjectDescription(context.description || '')
         }
       } catch (err) {
-        console.error('Error loading saved context:', err);
+        //
       }
     }
-  }, []);
+  }, [])
 
   // Load analyzed project from Home page and auto-generate
   useEffect(() => {
-    const analyzedProject = JSON.parse(localStorage.getItem('ericrabar_analyzed_project') || 'null');
+    const analyzedProject = JSON.parse(localStorage.getItem('ericrabar_analyzed_project') || 'null')
     if (analyzedProject) {
-      setHasAnalyzedProject(true);
-      setProjectUrl(analyzedProject.url || '');
-      setProjectCategory(analyzedProject.projectType || 'commercial');
-      setProjectDescription(analyzedProject.additionalNotes || analyzedProject.analysis?.rawAnalysis || '');
+      setHasAnalyzedProject(true)
+      setProjectUrl(analyzedProject.url || '')
+      setProjectCategory(analyzedProject.projectType || 'commercial')
+      setProjectDescription(analyzedProject.additionalNotes || analyzedProject.analysis?.rawAnalysis || '')
       
       // Auto-trigger production plan generation immediately
       const contextData = {
@@ -1112,14 +1112,14 @@ export default function AISubmission() {
         category: analyzedProject.projectType || 'commercial',
         description: analyzedProject.additionalNotes || analyzedProject.analysis?.rawAnalysis || '',
         timestamp: new Date().toISOString()
-      };
-      localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData));
+      }
+      localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData))
       
-      setCurrentStep(0);
-      setApproved(new Set());
+      setCurrentStep(0)
+      setApproved(new Set())
       
-      setLoading(true);
-      setError(null);
+      setLoading(true)
+      setError(null)
       
       // If brief was already generated, use it; otherwise generate full plan
       if (analyzedProject.brief && analyzedProject.brief.description) {
@@ -1134,8 +1134,8 @@ export default function AISubmission() {
           schedule: null,
           creativeDirection: null,
           deliverables: null
-        };
-        setAIData(partialData);
+        }
+        setAIData(partialData)
         
         // Generate remaining sections
         generateProductionPlan({
@@ -1148,15 +1148,15 @@ export default function AISubmission() {
             setAIData(prev => ({
               ...result.data,
               overviewBrief: prev.overviewBrief
-            }));
+            }))
           } else {
-            setError(result.error);
+            setError(result.error)
           }
         }).catch(err => {
-          setError(err.message);
+          setError(err.message)
         }).finally(() => {
-          setLoading(false);
-        });
+          setLoading(false)
+        })
       } else {
         // Generate full production plan
         generateProductionPlan({
@@ -1165,18 +1165,18 @@ export default function AISubmission() {
           description: contextData.description
         }).then(result => {
           if (result.success) {
-            setAIData(result.data);
+            setAIData(result.data)
           } else {
-            setError(result.error);
+            setError(result.error)
           }
         }).catch(err => {
-          setError(err.message);
+          setError(err.message)
         }).finally(() => {
-          setLoading(false);
-        });
+          setLoading(false)
+        })
       }
     }
-  }, []);
+  }, [])
 
   // No authentication check - users can use analyze tool without logging in
 
@@ -1191,107 +1191,107 @@ export default function AISubmission() {
         projectCategory,
         projectDescription,
         timestamp: new Date().toISOString()
-      };
-      localStorage.setItem('ericrabar_ai_submission_draft', JSON.stringify(draftData));
+      }
+      localStorage.setItem('ericrabar_ai_submission_draft', JSON.stringify(draftData))
     }
-  }, [aiData, currentStep, approved, projectUrl, projectCategory, projectDescription]);
+  }, [aiData, currentStep, approved, projectUrl, projectCategory, projectDescription])
 
   // Load saved draft from localStorage on mount
   useEffect(() => {
-    const savedDraft = localStorage.getItem('ericrabar_ai_submission_draft');
+    const savedDraft = localStorage.getItem('ericrabar_ai_submission_draft')
     if (savedDraft) {
       try {
-        const draft = JSON.parse(savedDraft);
-        const draftAge = Date.now() - new Date(draft.timestamp).getTime();
+        const draft = JSON.parse(savedDraft)
+        const draftAge = Date.now() - new Date(draft.timestamp).getTime()
         // Restore draft if it's less than 24 hours old AND has real AI data (not just empty structure)
         if (draftAge < 86400000 && draft.aiData && draft.aiData.overviewBrief && draft.aiData.overviewBrief.description && draft.aiData.overviewBrief.description.length > 100) {
-          setAIData(draft.aiData);
-          setCurrentStep(draft.currentStep || 0);
-          setApproved(new Set(draft.approved || []));
-          setProjectUrl(draft.projectUrl || '');
-          setProjectCategory(draft.projectCategory || 'commercial');
-          setProjectDescription(draft.projectDescription || '');
-          console.log('Restored draft from', new Date(draft.timestamp).toLocaleString());
+          setAIData(draft.aiData)
+          setCurrentStep(draft.currentStep || 0)
+          setApproved(new Set(draft.approved || []))
+          setProjectUrl(draft.projectUrl || '')
+          setProjectCategory(draft.projectCategory || 'commercial')
+          setProjectDescription(draft.projectDescription || '')
+          //.toLocaleString())
         } else {
           // Draft is too old or doesn't have real data, clear it
-          localStorage.removeItem('ericrabar_ai_submission_draft');
-          console.log('Draft was stale or incomplete, cleared it');
+          localStorage.removeItem('ericrabar_ai_submission_draft')
+          //
         }
       } catch (err) {
-        console.error('Error loading saved draft:', err);
-        localStorage.removeItem('ericrabar_ai_submission_draft');
+        //
+        localStorage.removeItem('ericrabar_ai_submission_draft')
       }
     }
-  }, []);
+  }, [])
 
   const normalizeUrl = (url) => {
-    if (!url || url.trim() === '') return url;
-    let normalized = url.trim();
+    if (!url || url.trim() === '') return url
+    let normalized = url.trim()
     if (normalized.startsWith('http://')) {
-      normalized = normalized.substring(7);
+      normalized = normalized.substring(7)
     } else if (normalized.startsWith('https://')) {
-      normalized = normalized.substring(8);
+      normalized = normalized.substring(8)
     }
     if (normalized.startsWith('www.')) {
-      normalized = normalized.substring(4);
+      normalized = normalized.substring(4)
     }
-    return 'https://' + normalized;
-  };
+    return 'https://' + normalized
+  }
 
   const handleUrlChange = (e) => {
-    const rawValue = e.target.value;
+    const rawValue = e.target.value
     if (rawValue.includes('.') && !rawValue.includes(' ')) {
-      setProjectUrl(normalizeUrl(rawValue));
+      setProjectUrl(normalizeUrl(rawValue))
     } else {
-      setProjectUrl(rawValue);
+      setProjectUrl(rawValue)
     }
-  };
+  }
 
   const handleAnalyzeUrl = async () => {
-    if (!projectUrl) return;
-    setAnalyzing(true);
-    setExtractProgress(0);
+    if (!projectUrl) return
+    setAnalyzing(true)
+    setExtractProgress(0)
     const progressInterval = setInterval(() => {
       setExtractProgress(prev => {
-        if (prev === null) return 0;
-        if (prev < progressSteps.length - 1) return prev + 1;
-        return prev;
-      });
-    }, 800);
+        if (prev === null) return 0
+        if (prev < progressSteps.length - 1) return prev + 1
+        return prev
+      })
+    }, 800)
 
     try {
-      const { analyzeWebsiteUrl } = await import('../lib/urlAnalysisService');
-      const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory);
-      clearInterval(progressInterval);
+      const { analyzeWebsiteUrl } = await import('../lib/urlAnalysisService')
+      const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory)
+      clearInterval(progressInterval)
       if (analysisResult.success && analysisResult.rawAnalysis) {
-        setProjectDescription(analysisResult.rawAnalysis);
-        setExtractProgress(progressSteps.length - 1);
-        setTimeout(() => setExtractProgress(null), 600);
+        setProjectDescription(analysisResult.rawAnalysis)
+        setExtractProgress(progressSteps.length - 1)
+        setTimeout(() => setExtractProgress(null), 600)
       } else {
-        setError(analysisResult.error);
-        setExtractProgress(null);
+        setError(analysisResult.error)
+        setExtractProgress(null)
       }
     } catch (error) {
-      console.error('Extract failed:', error);
-      setExtractProgress(null);
-      setError(error.message);
-      clearInterval(progressInterval);
+      //
+      setExtractProgress(null)
+      setError(error.message)
+      clearInterval(progressInterval)
     } finally {
-      setAnalyzing(false);
+      setAnalyzing(false)
     }
-  };
+  }
 
   const handleGenerateProductionPlan = async () => {
     // Clear any existing draft when starting fresh
-    localStorage.removeItem('ericrabar_ai_submission_draft');
+    localStorage.removeItem('ericrabar_ai_submission_draft')
     
     const contextData = {
       url: projectUrl,
       category: projectCategory,
       description: projectDescription,
       timestamp: new Date().toISOString()
-    };
-    localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData));
+    }
+    localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData))
     
     // Initialize with empty data structure to show steps immediately
     setAIData({
@@ -1304,33 +1304,33 @@ export default function AISubmission() {
       productionSchedule: { phases: [] },
       creativeDirection: { visualStyle: '', cinematographyNotes: '', moodTags: [], toneMood: '', referenceStyle: '' },
       deliverables: { primary: [], formats: [], additional: [], timeline: '' }
-    });
-    setCurrentStep(0);
-    setApproved(new Set());
+    })
+    setCurrentStep(0)
+    setApproved(new Set())
     
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
     try {
       const result = await generateProductionPlan({
         url: projectUrl,
         category: projectCategory,
         description: projectDescription
-      });
+      })
       if (result.success) {
-        setAIData(result.data);
+        setAIData(result.data)
       } else {
-        setError(result.error);
+        setError(result.error)
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCategoryChange = async (newCategory) => {
-    setProjectCategory(newCategory);
-    setLoading(true);
+    setProjectCategory(newCategory)
+    setLoading(true)
     
     // Update context in localStorage
     const contextData = {
@@ -1338,8 +1338,8 @@ export default function AISubmission() {
       category: newCategory,
       description: projectDescription,
       timestamp: new Date().toISOString()
-    };
-    localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData));
+    }
+    localStorage.setItem('ericrabar_ai_modal_context', JSON.stringify(contextData))
     
     // Regenerate production plan with new category
     try {
@@ -1347,46 +1347,46 @@ export default function AISubmission() {
         url: projectUrl,
         category: newCategory,
         description: projectDescription
-      });
+      })
       if (result.success) {
-        setAIData(result.data);
+        setAIData(result.data)
       } else {
-        setError(result.error);
+        setError(result.error)
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleRegenerate = async (section, suggestion) => {
-    if (!aiData) return;
-    setLoading(true);
+    if (!aiData) return
+    setLoading(true)
     try {
-      const result = await regenerateSection(section, aiData, suggestion);
+      const result = await regenerateSection(section, aiData, suggestion)
       if (result.success) {
         setAIData(prev => ({
           ...prev,
           [section]: result.data
-        }));
+        }))
       }
     } catch (err) {
-      console.error('Regeneration error:', err);
+      //
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleApprove = () => {
-    setApproved(prev => new Set([...prev, currentStep]));
+    setApproved(prev => new Set([...prev, currentStep]))
     if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep(currentStep + 1)
     } else {
       // Submit the production plan
-      navigate('/ClientDashboard');
+      navigate('/ClientDashboard')
     }
-  };
+  }
 
   // Dynamic step components based on AI data
   const stepComponents = aiData ? [
@@ -1399,9 +1399,9 @@ export default function AISubmission() {
     <StepProductionSchedule data={aiData.schedule} projectCategory={projectCategory} onRegenerate={(s) => handleRegenerate('schedule', s)} loading={loading} isApproved={approved.has(6)} />,
     <StepCreativeDirection data={aiData.creativeDirection} productionBrief={aiData.overviewBrief?.description} projectCategory={projectCategory} onRegenerate={() => handleRegenerate('creativeDirection', 'regenerate style')} loading={loading} isApproved={approved.has(7)} />,
     <StepDeliverables data={aiData.deliverables} projectCategory={projectCategory} productionBrief={aiData.overviewBrief?.description} onRegenerate={(s) => handleRegenerate('deliverables', s)} loading={loading} isApproved={approved.has(8)} />
-  ] : [];
+  ] : []
 
-  const progressPct = Math.round(((approved.size) / STEPS.length) * 100);
+  const progressPct = Math.round(((approved.size) / STEPS.length) * 100)
 
   // No authentication loading check - users can use analyze tool without logging in
 
@@ -1486,15 +1486,15 @@ export default function AISubmission() {
                 <button
                   type="button"
                   onClick={() => {
-                    const dropdown = document.getElementById('category-dropdown');
-                    dropdown.classList.toggle('hidden');
+                    const dropdown = document.getElementById('category-dropdown')
+                    dropdown.classList.toggle('hidden')
                   }}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#4b5563', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, padding: '4px 8px', cursor: 'pointer' }}
                 >
                   {(() => {
-                    const selectedCategory = projectCategories.find(cat => cat.value === projectCategory);
-                    const Icon = selectedCategory?.icon || Film;
-                    return <><Icon className="w-3 h-3" /><span>{selectedCategory?.label}</span></>;
+                    const selectedCategory = projectCategories.find(cat => cat.value === projectCategory)
+                    const Icon = selectedCategory?.icon || Film
+                    return <><Icon className="w-3 h-3" /><span>{selectedCategory?.label}</span></>
                   })()}
                 </button>
                 <div
@@ -1502,21 +1502,21 @@ export default function AISubmission() {
                   className="hidden absolute bottom-full left-0 mb-1 bg-white border border-gray-200 rounded shadow-lg z-[100] min-w-[150px]"
                 >
                   {projectCategories.map((cat) => {
-                    const Icon = cat.icon;
+                    const Icon = cat.icon
                     return (
                       <button
                         key={cat.value}
                         type="button"
                         onClick={() => {
-                          setProjectCategory(cat.value);
-                          document.getElementById('category-dropdown').classList.add('hidden');
+                          setProjectCategory(cat.value)
+                          document.getElementById('category-dropdown').classList.add('hidden')
                         }}
                         className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 text-left"
                       >
                         <Icon className="w-3 h-3" />
                         <span>{cat.label}</span>
                       </button>
-                    );
+                    )
                   })}
                 </div>
               </div>
@@ -1532,7 +1532,7 @@ export default function AISubmission() {
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -1599,9 +1599,9 @@ export default function AISubmission() {
 
           <div style={{ padding: '0 10px' }}>
             {STEPS.map((label, i) => {
-              const isActive = i === currentStep;
-              const isDone = approved.has(i);
-              const isPending = !isActive && !isDone;
+              const isActive = i === currentStep
+              const isDone = approved.has(i)
+              const isPending = !isActive && !isDone
 
               return (
                 <button
@@ -1639,7 +1639,7 @@ export default function AISubmission() {
                     <span style={{ color: '#f59e0b' }}><AlertCircleIcon /></span>
                   )}
                 </button>
-              );
+              )
             })}
           </div>
 
@@ -1672,7 +1672,7 @@ export default function AISubmission() {
         </main>
       </div>
     </div>
-  );
+  )
 }
 
 

@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
@@ -42,7 +42,7 @@ const ChartContainer = React.forwardRef(({ id, className, children, config, ...p
         </RechartsPrimitive.ResponsiveContainer>
       </div>
     </ChartContext.Provider>)
-  );
+  )
 })
 ChartContainer.displayName = "Chart"
 
@@ -74,7 +74,7 @@ return color ? `  --color-${key}: ${color};` : null
 `)
           .join("\n"),
       }} />)
-  );
+  )
 }
 
 const ChartTooltip = RechartsPrimitive.Tooltip
@@ -117,14 +117,14 @@ const ChartTooltipContent = React.forwardRef((
         (<div className={cn("font-medium", labelClassName)}>
           {labelFormatter(value, payload)}
         </div>)
-      );
+      )
     }
 
     if (!value) {
       return null
     }
 
-    return <div className={cn("font-medium", labelClassName)}>{value}</div>;
+    return <div className={cn("font-medium", labelClassName)}>{value}</div>
   }, [
     label,
     labelFormatter,
@@ -206,11 +206,11 @@ const ChartTooltipContent = React.forwardRef((
                 </>
               )}
             </div>)
-          );
+          )
         })}
       </div>
     </div>)
-  );
+  )
 })
 ChartTooltipContent.displayName = "ChartTooltip"
 
@@ -255,10 +255,10 @@ const ChartLegendContent = React.forwardRef((
             )}
             {itemConfig?.label}
           </div>)
-        );
+        )
       })}
     </div>)
-  );
+  )
 })
 ChartLegendContent.displayName = "ChartLegend"
 
@@ -296,7 +296,7 @@ function getPayloadConfigFromPayload(
 
   return configLabelKey in config
     ? config[configLabelKey]
-    : config[key];
+    : config[key]
 }
 
 export {

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Search, Building2, HelpCircle, Briefcase, Smartphone, MessageCircle } from 'lucide-react';
-import SEOMetaTags from '@/components/SEOMetaTags';
+import React, { useState } from 'react'
+import { Search, Building2, HelpCircle, Briefcase, Smartphone, MessageCircle } from 'lucide-react'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 const cards = [
   {
@@ -27,10 +27,10 @@ const cards = [
     desc: 'How to use the Eric Rabar iOS app',
     count: '24 articles',
   },
-];
+]
 
 export default function HelpCenter() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState('')
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#5b80f7] to-[#e8efff]">
@@ -74,7 +74,7 @@ export default function HelpCenter() {
       <section className="px-4 pb-20">
         <div className="mx-auto max-w-2xl space-y-4">
           {cards.map((c) => {
-            const Icon = c.icon;
+            const Icon = c.icon
             return (
               <div
                 key={c.title}
@@ -89,7 +89,7 @@ export default function HelpCenter() {
                   <p className="mt-2 text-xs font-medium text-[#3a61f5]">{c.count}</p>
                 </div>
               </div>
-            );
+            )
           })}
         </div>
       </section>
@@ -104,5 +104,5 @@ export default function HelpCenter() {
         <MessageCircle className="h-6 w-6 text-white" />
       </button>
     </div>
-  );
+  )
 }

@@ -1,93 +1,93 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Upload, Play, Volume2, Mic, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react'
+import { X, Upload, Play, Volume2, Mic, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function DynamicPopupModal({ popup, onClose }) {
-  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const videoRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  const [recordingTime, setRecordingTime] = useState(0)
+  const videoRef = useRef(null)
+  const mediaRecorderRef = useRef(null)
+  const audioChunksRef = useRef([])
 
-  if (!popup) return null;
+  if (!popup) return null
 
   const mediaItems = [
     ...(popup.image_url ? [{ type: 'image', url: popup.image_url }] : []),
     ...(popup.video_url ? [{ type: 'video', url: popup.video_url, embedUrl: popup.video_embed_url, source: popup.video_source }] : []),
-  ];
+  ]
 
   const nextMedia = () => {
-    setCurrentMediaIndex((prev) => (prev + 1) % mediaItems.length);
-  };
+    setCurrentMediaIndex((prev) => (prev + 1) % mediaItems.length)
+  }
 
   const prevMedia = () => {
-    setCurrentMediaIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length);
-  };
+    setCurrentMediaIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length)
+  }
 
   const handlePlayPause = () => {
     if (videoRef.current) {
       if (isPlaying) {
-        videoRef.current.pause();
+        videoRef.current.pause()
       } else {
-        videoRef.current.play();
+        videoRef.current.play()
       }
-      setIsPlaying(!isPlaying);
+      setIsPlaying(!isPlaying)
     }
-  };
+  }
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaRecorderRef.current = new MediaRecorder(stream)
+      audioChunksRef.current = []
 
       mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
-      };
+        audioChunksRef.current.push(event.data)
+      }
 
       mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        console.log('Voice recording created:', audioUrl);
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
+        const audioUrl = URL.createObjectURL(audioBlob)
+        
         // Here you would upload to backend
-      };
+      }
 
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
-      setRecordingTime(0);
+      mediaRecorderRef.current.start()
+      setIsRecording(true)
+      setRecordingTime(0)
 
       const timer = setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
-      }, 1000);
+        setRecordingTime((prev) => prev + 1)
+      }, 1000)
 
-      mediaRecorderRef.current.timer = timer;
+      mediaRecorderRef.current.timer = timer
     } catch (err) {
-      console.error('Error starting recording:', err);
+      
     }
-  };
+  }
 
   const stopRecording = () => {
     if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      clearInterval(mediaRecorderRef.current.timer);
-      setIsRecording(false);
+      mediaRecorderRef.current.stop()
+      clearInterval(mediaRecorderRef.current.timer)
+      setIsRecording(false)
     }
-  };
+  }
 
   const getEmbedUrl = (url, source) => {
     if (source === 'youtube') {
-      const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
-      return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+      const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/)
+      return match ? `https://www.youtube.com/embed/${match[1]}` : url
     }
     if (source === 'vimeo') {
-      const match = url.match(/vimeo\.com\/(\d+)/);
-      return match ? `https://player.vimeo.com/video/${match[1]}` : url;
+      const match = url.match(/vimeo\.com\/(\d+)/)
+      return match ? `https://player.vimeo.com/video/${match[1]}` : url
     }
-    return url;
-  };
+    return url
+  }
 
-  const currentMedia = mediaItems[currentMediaIndex];
+  const currentMedia = mediaItems[currentMediaIndex]
 
   return (
     <>
@@ -244,5 +244,5 @@ export default function DynamicPopupModal({ popup, onClose }) {
         </div>
       </div>
     </>
-  );
+  )
 }

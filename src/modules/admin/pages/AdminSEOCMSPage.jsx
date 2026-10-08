@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Search, Globe, Code, Save, Plus, Trash2, Copy, RefreshCw, Zap, Layout, FileText, Image, Link, ToggleLeft, ToggleRight, Edit, X, Loader2 } from 'lucide-react';
-import { getPageMetadata, createPageMetadata, updatePageMetadata, deletePageMetadata } from '../api/seo.api';
-import RichTextEditor from '@/components/admin/RichTextEditor';
+import React, { useState, useEffect } from 'react'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Search, Globe, Code, Save, Plus, Trash2, Copy, RefreshCw, Zap, Layout, FileText, Image, Link, ToggleLeft, ToggleRight, Edit, X, Loader2 } from 'lucide-react'
+import { getPageMetadata, createPageMetadata, updatePageMetadata, deletePageMetadata } from '../api/seo.api'
+import RichTextEditor from '@/components/admin/RichTextEditor'
 
 export default function AdminSEOCMSPage() {
-  const { success, error } = useToast();
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('pages');
+  const { success, error } = useToast()
+  const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('pages')
 
   // SEO Settings
   const [seoSettings, setSeoSettings] = useState({
@@ -24,20 +24,20 @@ export default function AdminSEOCMSPage() {
     enableSitemap: true,
     enableRobotsTxt: true,
     enableStructuredData: true
-  });
+  })
 
   // CMS Pages - loaded from backend
-  const [cmsPages, setCmsPages] = useState([]);
+  const [cmsPages, setCmsPages] = useState([])
 
   // Load pages from backend on mount
   useEffect(() => {
-    loadPages();
-  }, []);
+    loadPages()
+  }, [])
 
   const loadPages = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const pages = await getPageMetadata();
+      const pages = await getPageMetadata()
       if (pages && pages.length > 0) {
         setCmsPages(pages.map(p => ({
           id: p.id,
@@ -50,10 +50,10 @@ export default function AdminSEOCMSPage() {
           customHead: p.custom_head || '',
           status: p.status || 'published',
           lastModified: p.updated_at || p.created_at
-        })));
+        })))
       }
     } catch (err) {
-      console.error('Error loading pages:', err);
+      
       // On error, initialize with default pages
       setCmsPages([
         {
@@ -68,11 +68,11 @@ export default function AdminSEOCMSPage() {
           status: 'published',
           lastModified: new Date().toISOString()
         }
-      ]);
+      ])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Auto-Generated Rules
   const [autoRules, setAutoRules] = useState([
@@ -118,12 +118,12 @@ export default function AdminSEOCMSPage() {
       enabled: false,
       pattern: 'Filename to readable text'
     }
-  ]);
+  ])
 
   // Redirect Rules
   const [redirects, setRedirects] = useState([
     { id: 1, from: '/old-path', to: '/new-path', type: '301', status: 'active' }
-  ]);
+  ])
 
   // Navbar & Footer Settings
   const [navFooterSettings, setNavFooterSettings] = useState({
@@ -194,11 +194,11 @@ export default function AdminSEOCMSPage() {
     newsletterPlaceholder: 'Enter your email',
     copyrightText: '© 2026 Eric Rabar. All rights reserved.',
     showBackToTop: true
-  });
+  })
 
-  const [showPageModal, setShowPageModal] = useState(false);
-  const [showRedirectModal, setShowRedirectModal] = useState(false);
-  const [editingPage, setEditingPage] = useState(null);
+  const [showPageModal, setShowPageModal] = useState(false)
+  const [showRedirectModal, setShowRedirectModal] = useState(false)
+  const [editingPage, setEditingPage] = useState(null)
   const [pageForm, setPageForm] = useState({
     title: '',
     slug: '',
@@ -208,23 +208,23 @@ export default function AdminSEOCMSPage() {
     ogImage: '',
     customHead: '',
     status: 'draft'
-  });
+  })
 
   const handleSaveSeoSettings = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      success('Saved', 'SEO settings saved successfully');
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      success('Saved', 'SEO settings saved successfully')
     } catch (err) {
-      console.error('Error saving SEO settings:', err);
-      error('Failed', 'Failed to save SEO settings');
+      
+      error('Failed', 'Failed to save SEO settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleSavePage = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
       if (editingPage) {
         // Update existing page
@@ -237,9 +237,9 @@ export default function AdminSEOCMSPage() {
           og_image: pageForm.ogImage,
           custom_head: pageForm.customHead,
           status: pageForm.status
-        });
-        setCmsPages(cmsPages.map(p => p.id === editingPage.id ? { ...pageForm, id: editingPage.id, lastModified: new Date().toISOString() } : p));
-        success('Updated', 'Page updated successfully');
+        })
+        setCmsPages(cmsPages.map(p => p.id === editingPage.id ? { ...pageForm, id: editingPage.id, lastModified: new Date().toISOString() } : p))
+        success('Updated', 'Page updated successfully')
       } else {
         // Create new page
         const newPage = await createPageMetadata({
@@ -251,48 +251,48 @@ export default function AdminSEOCMSPage() {
           og_image: pageForm.ogImage,
           custom_head: pageForm.customHead,
           status: pageForm.status
-        });
-        setCmsPages([...cmsPages, { ...pageForm, id: newPage.id, lastModified: new Date().toISOString() }]);
-        success('Created', 'Page created successfully');
+        })
+        setCmsPages([...cmsPages, { ...pageForm, id: newPage.id, lastModified: new Date().toISOString() }])
+        success('Created', 'Page created successfully')
       }
-      setShowPageModal(false);
-      setEditingPage(null);
-      setPageForm({ title: '', slug: '', metaTitle: '', metaDescription: '', metaKeywords: '', ogImage: '', customHead: '', status: 'draft' });
+      setShowPageModal(false)
+      setEditingPage(null)
+      setPageForm({ title: '', slug: '', metaTitle: '', metaDescription: '', metaKeywords: '', ogImage: '', customHead: '', status: 'draft' })
     } catch (err) {
-      console.error('Error saving page:', err);
-      error('Failed', 'Failed to save page');
+      
+      error('Failed', 'Failed to save page')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleDeletePage = async (pageId) => {
     try {
-      await deletePageMetadata(pageId);
-      setCmsPages(cmsPages.filter(p => p.id !== pageId));
-      success('Deleted', 'Page deleted successfully');
+      await deletePageMetadata(pageId)
+      setCmsPages(cmsPages.filter(p => p.id !== pageId))
+      success('Deleted', 'Page deleted successfully')
     } catch (err) {
-      console.error('Error deleting page:', err);
-      error('Failed', 'Failed to delete page');
+      
+      error('Failed', 'Failed to delete page')
     }
-  };
+  }
 
   const handleToggleRule = (ruleId) => {
-    setAutoRules(autoRules.map(r => r.id === ruleId ? { ...r, enabled: !r.enabled } : r));
-  };
+    setAutoRules(autoRules.map(r => r.id === ruleId ? { ...r, enabled: !r.enabled } : r))
+  }
 
   const handleAddRedirect = () => {
-    const newRedirect = { id: Date.now(), from: '', to: '', type: '301', status: 'active' };
-    setRedirects([...redirects, newRedirect]);
-  };
+    const newRedirect = { id: Date.now(), from: '', to: '', type: '301', status: 'active' }
+    setRedirects([...redirects, newRedirect])
+  }
 
   const handleDeleteRedirect = (redirectId) => {
-    setRedirects(redirects.filter(r => r.id !== redirectId));
-  };
+    setRedirects(redirects.filter(r => r.id !== redirectId))
+  }
 
   const handleUpdateRedirect = (redirectId, field, value) => {
-    setRedirects(redirects.map(r => r.id === redirectId ? { ...r, [field]: value } : r));
-  };
+    setRedirects(redirects.map(r => r.id === redirectId ? { ...r, [field]: value } : r))
+  }
 
   return (
     <div>
@@ -822,9 +822,9 @@ export default function AdminSEOCMSPage() {
                         type="text"
                         value={section.title}
                         onChange={(e) => {
-                          const newLinks = [...navFooterSettings.footerLinks];
-                          newLinks[sectionIndex].title = e.target.value;
-                          setNavFooterSettings({ ...navFooterSettings, footerLinks: newLinks });
+                          const newLinks = [...navFooterSettings.footerLinks]
+                          newLinks[sectionIndex].title = e.target.value
+                          setNavFooterSettings({ ...navFooterSettings, footerLinks: newLinks })
                         }}
                         className="px-3 py-2 border border-gray-300 rounded-lg font-medium"
                       />
@@ -836,9 +836,9 @@ export default function AdminSEOCMSPage() {
                             type="text"
                             value={link.label}
                             onChange={(e) => {
-                              const newLinks = [...navFooterSettings.footerLinks];
-                              newLinks[sectionIndex].links[linkIndex].label = e.target.value;
-                              setNavFooterSettings({ ...navFooterSettings, footerLinks: newLinks });
+                              const newLinks = [...navFooterSettings.footerLinks]
+                              newLinks[sectionIndex].links[linkIndex].label = e.target.value
+                              setNavFooterSettings({ ...navFooterSettings, footerLinks: newLinks })
                             }}
                             placeholder="Label"
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -847,9 +847,9 @@ export default function AdminSEOCMSPage() {
                             type="text"
                             value={link.url}
                             onChange={(e) => {
-                              const newLinks = [...navFooterSettings.footerLinks];
-                              newLinks[sectionIndex].links[linkIndex].url = e.target.value;
-                              setNavFooterSettings({ ...navFooterSettings, footerLinks: newLinks });
+                              const newLinks = [...navFooterSettings.footerLinks]
+                              newLinks[sectionIndex].links[linkIndex].url = e.target.value
+                              setNavFooterSettings({ ...navFooterSettings, footerLinks: newLinks })
                             }}
                             placeholder="URL"
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -872,9 +872,9 @@ export default function AdminSEOCMSPage() {
                       type="text"
                       value={social.platform}
                       onChange={(e) => {
-                        const newSocial = [...navFooterSettings.socialLinks];
-                        newSocial[index].platform = e.target.value;
-                        setNavFooterSettings({ ...navFooterSettings, socialLinks: newSocial });
+                        const newSocial = [...navFooterSettings.socialLinks]
+                        newSocial[index].platform = e.target.value
+                        setNavFooterSettings({ ...navFooterSettings, socialLinks: newSocial })
                       }}
                       placeholder="Platform"
                       className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -883,9 +883,9 @@ export default function AdminSEOCMSPage() {
                       type="text"
                       value={social.url}
                       onChange={(e) => {
-                        const newSocial = [...navFooterSettings.socialLinks];
-                        newSocial[index].url = e.target.value;
-                        setNavFooterSettings({ ...navFooterSettings, socialLinks: newSocial });
+                        const newSocial = [...navFooterSettings.socialLinks]
+                        newSocial[index].url = e.target.value
+                        setNavFooterSettings({ ...navFooterSettings, socialLinks: newSocial })
                       }}
                       placeholder="URL"
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -996,5 +996,5 @@ export default function AdminSEOCMSPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

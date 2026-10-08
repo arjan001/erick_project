@@ -1,11 +1,11 @@
-import React from 'react';
-import { Crown, Star } from 'lucide-react';
+import React from 'react'
+import { Crown, Star } from 'lucide-react'
 
 export default function SubscriptionBadge({ subscription, package: pkg }) {
-  if (!subscription || !pkg) return null;
+  if (!subscription || !pkg) return null
 
-  const isPro = pkg.name.toLowerCase().includes('pro');
-  const isBasic = pkg.name.toLowerCase().includes('basic');
+  const isPro = pkg.name.toLowerCase().includes('pro')
+  const isBasic = pkg.name.toLowerCase().includes('basic')
 
   return (
     <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
@@ -20,5 +20,5 @@ export default function SubscriptionBadge({ subscription, package: pkg }) {
       )}
       <span>{pkg.name}</span>
     </div>
-  );
+  )
 }

@@ -1,104 +1,104 @@
-import React, { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { ShoppingCart, Search, Filter, Eye, Package, Truck, CheckCircle, XCircle, Clock, DollarSign, User, Calendar, MoreVertical } from 'lucide-react';
-import { ShopOrder } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { ShoppingCart, Search, Filter, Eye, Package, Truck, CheckCircle, XCircle, Clock, DollarSign, User, Calendar, MoreVertical } from 'lucide-react'
+import { ShopOrder } from '@/lib/supabaseEntities'
 
 export default function AdminOrdersPage() {
-  const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const { success, error } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [orders, setOrders] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const allOrders = await ShopOrder.list('-created_at');
-        setOrders(allOrders || []);
+        const allOrders = await ShopOrder.list('-created_at')
+        setOrders(allOrders || [])
       } catch (err) {
-        console.error('Error fetching orders:', err);
-        error('Error', 'Failed to fetch orders');
+        
+        error('Error', 'Failed to fetch orders')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchOrders();
-  }, []);
+    fetchOrders()
+  }, [])
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
-      await ShopOrder.update(orderId, { order_status: newStatus });
-      setOrders(orders.map(o => o.id === orderId ? { ...o, order_status: newStatus } : o));
-      success('Updated', 'Order status updated successfully');
+      await ShopOrder.update(orderId, { order_status: newStatus })
+      setOrders(orders.map(o => o.id === orderId ? { ...o, order_status: newStatus } : o))
+      success('Updated', 'Order status updated successfully')
     } catch (err) {
-      console.error('Error updating order status:', err);
-      error('Failed', 'Failed to update order status');
+      
+      error('Failed', 'Failed to update order status')
     }
-  };
+  }
 
   const handleDeleteOrder = async (orderId) => {
     try {
-      await ShopOrder.delete(orderId);
-      setOrders(orders.filter(o => o.id !== orderId));
-      success('Deleted', 'Order deleted successfully');
+      await ShopOrder.delete(orderId)
+      setOrders(orders.filter(o => o.id !== orderId))
+      success('Deleted', 'Order deleted successfully')
     } catch (err) {
-      console.error('Error deleting order:', err);
-      error('Failed', 'Failed to delete order');
+      
+      error('Failed', 'Failed to delete order')
     }
-  };
+  }
 
   const getStatusBadge = (status) => {
     switch (status) {
       case 'pending':
-        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Pending</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Pending</span>
       case 'processing':
       case 'confirmed':
-        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Processing</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Processing</span>
       case 'shipped':
-        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">Shipped</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">Shipped</span>
       case 'completed':
       case 'delivered':
-        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Completed</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Completed</span>
       case 'cancelled':
-        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Cancelled</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Cancelled</span>
       default:
-        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">{status}</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">{status}</span>
     }
-  };
+  }
 
   const getStatusIcon = (status) => {
     switch (status) {
       case 'pending':
-        return <Clock className="w-4 h-4 text-yellow-600" />;
+        return <Clock className="w-4 h-4 text-yellow-600" />
       case 'processing':
-        return <Package className="w-4 h-4 text-blue-600" />;
+        return <Package className="w-4 h-4 text-blue-600" />
       case 'shipped':
-        return <Truck className="w-4 h-4 text-purple-600" />;
+        return <Truck className="w-4 h-4 text-purple-600" />
       case 'completed':
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
+        return <CheckCircle className="w-4 h-4 text-green-600" />
       case 'cancelled':
-        return <XCircle className="w-4 h-4 text-red-600" />;
+        return <XCircle className="w-4 h-4 text-red-600" />
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customer.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+      order.customer.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesStatus = filterStatus === 'all' || order.status === filterStatus
+    return matchesSearch && matchesStatus
+  })
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -268,5 +268,5 @@ export default function AdminOrdersPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

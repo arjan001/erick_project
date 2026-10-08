@@ -1,121 +1,121 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Notification } from '@/lib/supabaseEntities';
-import { useToast } from '@/hooks/useToast';
-import { useAuth } from '@/lib/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Bell, Check, X, Briefcase, MessageCircle, Users, Award, ThumbsUp, Clock, Filter, CreditCard, UserCheck, MessageSquare, Heart, Star, Ticket, Zap, CheckCheck } from 'lucide-react';
-import realtimeMessagingService from '@/services/realtimeMessagingService';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Notification } from '@/lib/supabaseEntities'
+import { useToast } from '@/hooks/useToast'
+import { useAuth } from '@/lib/AuthContext'
+import { Button } from '@/components/ui/button'
+import { Bell, Check, X, Briefcase, MessageCircle, Users, Award, ThumbsUp, Clock, Filter, CreditCard, UserCheck, MessageSquare, Heart, Star, Ticket, Zap, CheckCheck } from 'lucide-react'
+import realtimeMessagingService from '@/services/realtimeMessagingService'
 
 export default function NotificationsPage() {
-  const navigate = useNavigate();
-  const { success, error } = useToast();
-  const { user: authUser } = useAuth();
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
+  const { success, error } = useToast()
+  const { user: authUser } = useAuth()
+  const [notifications, setNotifications] = useState([])
+  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all'); // all, unread, action_required
 
   const fetchNotifications = async () => {
-    if (!authUser?.email) return;
+    if (!authUser?.email) return
     try {
       const allNotifications = await Notification.filter({ 
         recipient_email: authUser.email 
-      });
+      })
       
       // Sort by created_at descending
       const sorted = allNotifications.sort((a, b) => 
         new Date(b.created_at) - new Date(a.created_at)
-      );
+      )
       
-      setNotifications(sorted);
+      setNotifications(sorted)
     } catch (err) {
-      console.error('Error fetching notifications:', err);
+      //
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchNotifications();
-  }, [authUser]);
+    fetchNotifications()
+  }, [authUser])
 
   // Real-time notification subscription
   useEffect(() => {
-    if (!authUser?.email) return;
+    if (!authUser?.email) return
 
     const handleNewNotification = (newNotification) => {
-      console.log('Real-time new notification received:', newNotification);
-      setNotifications(prev => [newNotification, ...prev]);
-    };
+      //
+      setNotifications(prev => [newNotification, ...prev])
+    }
 
     const unsubscribe = realtimeMessagingService.subscribeToNotifications(
       authUser.email,
       handleNewNotification
-    );
+    )
 
-    return () => unsubscribe();
-  }, [authUser]);
+    return () => unsubscribe()
+  }, [authUser])
 
   const handleMarkAsRead = async (notificationId) => {
     try {
-      await Notification.update(notificationId, { read: true });
+      await Notification.update(notificationId, { read: true })
       setNotifications(prev => 
         prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-      );
+      )
     } catch (err) {
-      console.error('Error marking notification as read:', err);
-      error('Failed', 'Failed to mark notification as read');
+      //
+      error('Failed', 'Failed to mark notification as read')
     }
-  };
+  }
 
   const handleMarkAllAsRead = async () => {
     try {
-      const unread = notifications.filter(n => !n.read);
+      const unread = notifications.filter(n => !n.read)
       await Promise.all(
         unread.map(n => Notification.update(n.id, { read: true }))
-      );
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      success('Success', 'All notifications marked as read');
+      )
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+      success('Success', 'All notifications marked as read')
     } catch (err) {
-      console.error('Error marking all as read:', err);
-      error('Failed', 'Failed to mark all notifications as read');
+      //
+      error('Failed', 'Failed to mark all notifications as read')
     }
-  };
+  }
 
   const handleDeleteNotification = async (notificationId) => {
     try {
-      await Notification.delete(notificationId);
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
-      success('Deleted', 'Notification deleted');
+      await Notification.delete(notificationId)
+      setNotifications(prev => prev.filter(n => n.id !== notificationId))
+      success('Deleted', 'Notification deleted')
     } catch (err) {
-      console.error('Error deleting notification:', err);
-      error('Failed', 'Failed to delete notification');
+      //
+      error('Failed', 'Failed to delete notification')
     }
-  };
+  }
 
   const handleDeleteAllRead = async () => {
     try {
-      const read = notifications.filter(n => n.read);
+      const read = notifications.filter(n => n.read)
       await Promise.all(
         read.map(n => Notification.delete(n.id))
-      );
-      setNotifications(prev => prev.filter(n => !n.read));
-      success('Success', 'All read notifications deleted');
+      )
+      setNotifications(prev => prev.filter(n => !n.read))
+      success('Success', 'All read notifications deleted')
     } catch (err) {
-      console.error('Error deleting read notifications:', err);
-      error('Failed', 'Failed to delete read notifications');
+      //
+      error('Failed', 'Failed to delete read notifications')
     }
-  };
+  }
 
   const handleAction = async (notification) => {
-    await handleMarkAsRead(notification.id);
+    await handleMarkAsRead(notification.id)
     
     if (notification.link) {
-      navigate(notification.link);
+      navigate(notification.link)
     } else if (notification.action_data?.job_id) {
-      navigate(`/jobs/${notification.action_data.job_id}`);
+      navigate(`/jobs/${notification.action_data.job_id}`)
     }
-  };
+  }
 
   const getNotificationIcon = (type) => {
     const iconMap = {
@@ -132,9 +132,9 @@ export default function NotificationsPage() {
       'testimonial': <Star className="w-5 h-5 text-white" />,
       'project_update': <Briefcase className="w-5 h-5 text-white" />,
       'system': <Bell className="w-5 h-5 text-white" />,
-    };
-    return iconMap[type] || <Bell className="w-5 h-5 text-white" />;
-  };
+    }
+    return iconMap[type] || <Bell className="w-5 h-5 text-white" />
+  }
 
   const getNotificationIconColor = (type) => {
     const colorMap = {
@@ -151,40 +151,40 @@ export default function NotificationsPage() {
       'testimonial': 'bg-rose-500',
       'project_update': 'bg-teal-500',
       'system': 'bg-gray-500',
-    };
-    return colorMap[type] || 'bg-gray-500';
-  };
+    }
+    return colorMap[type] || 'bg-gray-500'
+  }
 
   const formatNotificationTime = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now - date
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    return date.toLocaleDateString()
+  }
 
   const filteredNotifications = notifications.filter(n => {
-    if (filter === 'unread') return !n.read;
-    return true;
-  });
+    if (filter === 'unread') return !n.read
+    return true
+  })
 
   if (!authUser || loading) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
-  const unreadCount = notifications.filter(n => !n.read).length;
-  const readCount = notifications.filter(n => n.read).length;
+  const unreadCount = notifications.filter(n => !n.read).length
+  const readCount = notifications.filter(n => n.read).length
 
   return (
     <>
@@ -319,5 +319,5 @@ export default function NotificationsPage() {
         </table>
       </div>
     </>
-  );
+  )
 }

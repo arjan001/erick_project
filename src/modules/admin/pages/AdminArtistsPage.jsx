@@ -1,72 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import { Artist, Application, Job } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Edit2, Trash2, X, Eye, Ban, CheckCircle, AlertCircle, Search, User, Mail, Calendar, MapPin, ChevronLeft, ChevronRight, Phone, Globe, Star, Briefcase, Award, Clock, Link as LinkIcon, FileText, Users } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { Artist, Application, Job } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Edit2, Trash2, X, Eye, Ban, CheckCircle, AlertCircle, Search, User, Mail, Calendar, MapPin, ChevronLeft, ChevronRight, Phone, Globe, Star, Briefcase, Award, Clock, Link as LinkIcon, FileText, Users } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
 
 const STATUS_STYLES = {
   active: 'bg-green-100 text-green-700',
   suspended: 'bg-orange-100 text-orange-700',
   disabled: 'bg-red-100 text-red-700',
-};
+}
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 export default function AdminArtistsPage() {
-  const { success, error: toastError } = useToast();
-  const [artists, setArtists] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [showModal, setShowModal] = useState(false);
-  const [viewingArtist, setViewingArtist] = useState(null);
-  const [editingArtist, setEditingArtist] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const { success, error: toastError } = useToast()
+  const [artists, setArtists] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [showModal, setShowModal] = useState(false)
+  const [viewingArtist, setViewingArtist] = useState(null)
+  const [editingArtist, setEditingArtist] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
   const [form, setForm] = useState({
     full_name: '', email: '', bio: '', location: '', skills: '', status: 'active', is_suspended: false, is_disabled: false
-  });
+  })
 
   const fetchData = async () => {
     try {
-      const all = await Artist.list('-created_at', 100);
-      setArtists(all || []);
+      const all = await Artist.list('-created_at', 100)
+      setArtists(all || [])
     } catch (err) {
-      console.error('Error fetching artists:', err);
-      toastError('Load Failed', 'Failed to load artists');
+      
+      toastError('Load Failed', 'Failed to load artists')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [])
 
   const filteredArtists = artists.filter(artist => {
     const matchesSearch = artist.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         artist.email?.toLowerCase().includes(searchQuery.toLowerCase());
+                         artist.email?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' || 
                           (statusFilter === 'active' && !artist.is_suspended && !artist.is_disabled) ||
                           (statusFilter === 'suspended' && artist.is_suspended) ||
-                          (statusFilter === 'disabled' && artist.is_disabled);
-    return matchesSearch && matchesStatus;
-  });
+                          (statusFilter === 'disabled' && artist.is_disabled)
+    return matchesSearch && matchesStatus
+  })
 
   const paginatedArtists = filteredArtists.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
-  );
+  )
 
-  const totalPages = Math.ceil(filteredArtists.length / PAGE_SIZE);
+  const totalPages = Math.ceil(filteredArtists.length / PAGE_SIZE)
 
   const getStatus = (artist) => {
-    if (artist.is_suspended) return 'suspended';
-    if (artist.is_disabled) return 'disabled';
-    return 'active';
-  };
+    if (artist.is_suspended) return 'suspended'
+    if (artist.is_disabled) return 'disabled'
+    return 'active'
+  }
 
   const openModal = (artist = null) => {
     if (artist) {
-      setEditingArtist(artist);
+      setEditingArtist(artist)
       setForm({
         full_name: artist.full_name || '',
         email: artist.email || '',
@@ -76,79 +76,79 @@ export default function AdminArtistsPage() {
         status: artist.status || 'active',
         is_suspended: artist.is_suspended || false,
         is_disabled: artist.is_disabled || false
-      });
+      })
     } else {
-      setEditingArtist(null);
-      setForm({ full_name: '', email: '', bio: '', location: '', skills: '', status: 'active', is_suspended: false, is_disabled: false });
+      setEditingArtist(null)
+      setForm({ full_name: '', email: '', bio: '', location: '', skills: '', status: 'active', is_suspended: false, is_disabled: false })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const openViewModal = async (artist) => {
-    setViewingArtist(artist);
+    setViewingArtist(artist)
     // Fetch additional data for the artist
     try {
       const [applications, jobs] = await Promise.all([
         Application.filter({ artist_email: artist.email }, '-created_date', 10),
         Job.list('-created_date', 20)
-      ]);
-      setViewingArtist(prev => ({ ...prev, applications: applications || [], jobs: jobs || [] }));
+      ])
+      setViewingArtist(prev => ({ ...prev, applications: applications || [], jobs: jobs || [] }))
     } catch (err) {
-      console.error('Error fetching artist details:', err);
+      
     }
-  };
+  }
 
   const handleSave = async () => {
     if (!form.full_name.trim()) { toastError('Validation', 'Name is required'); return; }
     try {
       if (editingArtist) {
-        await Artist.update(editingArtist.id, form);
-        success('Updated', 'Artist updated');
+        await Artist.update(editingArtist.id, form)
+        success('Updated', 'Artist updated')
       } else {
-        await Artist.create(form);
-        success('Created', 'Artist created');
+        await Artist.create(form)
+        success('Created', 'Artist created')
       }
-      setShowModal(false);
-      fetchData();
+      setShowModal(false)
+      fetchData()
     } catch (err) {
-      console.error('Error saving artist:', err);
-      toastError('Save Failed', `Failed to save artist: ${err.message || 'Unknown error'}`);
+      
+      toastError('Save Failed', `Failed to save artist: ${err.message || 'Unknown error'}`)
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this artist? This action cannot be undone.')) return;
+    if (!confirm('Delete this artist? This action cannot be undone.')) return
     try {
-      await Artist.delete(id);
-      success('Deleted', 'Artist deleted');
-      fetchData();
+      await Artist.delete(id)
+      success('Deleted', 'Artist deleted')
+      fetchData()
     } catch (err) {
-      toastError('Delete Failed', 'Failed to delete artist');
+      toastError('Delete Failed', 'Failed to delete artist')
     }
-  };
+  }
 
   const toggleSuspend = async (artist) => {
     try {
-      await Artist.update(artist.id, { is_suspended: !artist.is_suspended });
-      success(!artist.is_suspended ? 'Suspended' : 'Unsuspended', `Artist ${!artist.is_suspended ? 'suspended' : 'unsuspended'}`);
-      fetchData();
+      await Artist.update(artist.id, { is_suspended: !artist.is_suspended })
+      success(!artist.is_suspended ? 'Suspended' : 'Unsuspended', `Artist ${!artist.is_suspended ? 'suspended' : 'unsuspended'}`)
+      fetchData()
     } catch (err) {
-      toastError('Failed', 'Failed to update suspension status');
+      toastError('Failed', 'Failed to update suspension status')
     }
-  };
+  }
 
   const toggleDisable = async (artist) => {
     try {
-      await Artist.update(artist.id, { is_disabled: !artist.is_disabled });
-      success(!artist.is_disabled ? 'Disabled' : 'Enabled', `Artist ${!artist.is_disabled ? 'disabled' : 'enabled'}`);
-      fetchData();
+      await Artist.update(artist.id, { is_disabled: !artist.is_disabled })
+      success(!artist.is_disabled ? 'Disabled' : 'Enabled', `Artist ${!artist.is_disabled ? 'disabled' : 'enabled'}`)
+      fetchData()
     } catch (err) {
-      toastError('Failed', 'Failed to update disabled status');
+      toastError('Failed', 'Failed to update disabled status')
     }
-  };
+  }
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>
   }
 
   return (
@@ -526,5 +526,5 @@ export default function AdminArtistsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

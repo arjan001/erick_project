@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Project } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Briefcase, Plus, Search, Filter, Calendar, MapPin, DollarSign, Eye, Trash2, Edit } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
+import React, { useState, useEffect } from 'react'
+import { Project } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Briefcase, Plus, Search, Filter, Calendar, MapPin, DollarSign, Eye, Trash2, Edit } from 'lucide-react'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
 
 export default function ClientProjectsPage() {
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingProjectId, setEditingProjectId] = useState(null);
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [editingProjectId, setEditingProjectId] = useState(null)
   const [createForm, setCreateForm] = useState({
     title: '',
     description: '',
@@ -22,38 +22,38 @@ export default function ClientProjectsPage() {
     budget_max: '',
     location_city: '',
     location_country: 'Kenya'
-  });
+  })
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    fetchProjects()
+  }, [])
 
   const fetchProjects = async () => {
     if (!user?.email) {
-      error('Authentication Required', 'Please sign in to view your projects');
-      return;
+      error('Authentication Required', 'Please sign in to view your projects')
+      return
     }
     try {
-      setLoading(true);
-      const rows = await Project.filter({ project_owner_email: user.email }, '-created_at', 50);
-      setProjects(rows || []);
+      setLoading(true)
+      const rows = await Project.filter({ project_owner_email: user.email }, '-created_at', 50)
+      setProjects(rows || [])
     } catch (err) {
-      console.error('Error fetching projects:', err);
-      error('Error', 'Failed to fetch projects. Please try again.');
-      setProjects([]);
+      //
+      error('Error', 'Failed to fetch projects. Please try again.')
+      setProjects([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCreateProject = async () => {
     if (!user?.email) {
-      error('Authentication Required', 'Please sign in to create a project');
-      return;
+      error('Authentication Required', 'Please sign in to create a project')
+      return
     }
     if (!createForm.title || !createForm.description) {
-      error('Validation Error', 'Title and description are required');
-      return;
+      error('Validation Error', 'Title and description are required')
+      return
     }
     try {
       const newProject = await Project.create({
@@ -62,9 +62,9 @@ export default function ClientProjectsPage() {
         project_owner_name: user.full_name,
         status: 'draft',
         created_at: new Date().toISOString()
-      });
-      success('Created', 'Project created successfully');
-      setShowCreateModal(false);
+      })
+      success('Created', 'Project created successfully')
+      setShowCreateModal(false)
       setCreateForm({
         title: '',
         description: '',
@@ -73,25 +73,25 @@ export default function ClientProjectsPage() {
         budget_max: '',
         location_city: '',
         location_country: 'Kenya'
-      });
-      fetchProjects();
+      })
+      fetchProjects()
     } catch (err) {
-      console.error('Error creating project:', err);
-      error('Failed', 'Failed to create project. Please try again.');
+      //
+      error('Failed', 'Failed to create project. Please try again.')
     }
-  };
+  }
 
   const handleDeleteProject = async (projectId) => {
-    if (!window.confirm('Delete this project? This cannot be undone.')) return;
+    if (!window.confirm('Delete this project? This cannot be undone.')) return
     try {
-      await Project.delete(projectId);
-      setProjects(prev => prev.filter(p => p.id !== projectId));
-      success('Deleted', 'Project deleted successfully');
+      await Project.delete(projectId)
+      setProjects(prev => prev.filter(p => p.id !== projectId))
+      success('Deleted', 'Project deleted successfully')
     } catch (err) {
-      console.error('Error deleting project:', err);
-      error('Failed', 'Failed to delete project. Please try again.');
+      //
+      error('Failed', 'Failed to delete project. Please try again.')
     }
-  };
+  }
 
   const handleEditProject = (project) => {
     setCreateForm({
@@ -102,26 +102,26 @@ export default function ClientProjectsPage() {
       budget_max: project.budget_max || '',
       location_city: project.location_city || '',
       location_country: project.location_country || 'Kenya'
-    });
-    setShowCreateModal(true);
-  };
+    })
+    setShowCreateModal(true)
+  }
 
   const handleUpdateProject = async (projectId) => {
     if (!user?.email) {
-      error('Authentication Required', 'Please sign in to update this project');
-      return;
+      error('Authentication Required', 'Please sign in to update this project')
+      return
     }
     if (!createForm.title || !createForm.description) {
-      error('Validation Error', 'Title and description are required');
-      return;
+      error('Validation Error', 'Title and description are required')
+      return
     }
     try {
       await Project.update(projectId, {
         ...createForm,
         updated_at: new Date().toISOString()
-      });
-      success('Updated', 'Project updated successfully');
-      setShowCreateModal(false);
+      })
+      success('Updated', 'Project updated successfully')
+      setShowCreateModal(false)
       setCreateForm({
         title: '',
         description: '',
@@ -130,18 +130,18 @@ export default function ClientProjectsPage() {
         budget_max: '',
         location_city: '',
         location_country: 'Kenya'
-      });
-      fetchProjects();
+      })
+      fetchProjects()
     } catch (err) {
-      console.error('Error updating project:', err);
-      error('Failed', 'Failed to update project. Please try again.');
+      //
+      error('Failed', 'Failed to update project. Please try again.')
     }
-  };
+  }
 
   const filteredProjects = projects.filter(p =>
     p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  )
 
   return (
     <div className="bg-white min-h-full">
@@ -154,7 +154,7 @@ export default function ClientProjectsPage() {
           </div>
           <Button
             onClick={() => {
-              setEditingProjectId(null);
+              setEditingProjectId(null)
               setCreateForm({
                 title: '',
                 description: '',
@@ -163,8 +163,8 @@ export default function ClientProjectsPage() {
                 budget_max: '',
                 location_city: '',
                 location_country: 'Kenya'
-              });
-              setShowCreateModal(true);
+              })
+              setShowCreateModal(true)
             }}
             className="bg-[#4F46E5] hover:bg-[#4338CA] text-white sm:w-auto w-full"
           >
@@ -309,8 +309,8 @@ export default function ClientProjectsPage() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setShowCreateModal(false);
-                    setEditingProjectId(null);
+                    setShowCreateModal(false)
+                    setEditingProjectId(null)
                   }}
                   className="flex-1"
                 >
@@ -328,5 +328,5 @@ export default function ClientProjectsPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

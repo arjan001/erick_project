@@ -1,14 +1,14 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Search, Sparkles, Compass, Users } from 'lucide-react';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Search, Sparkles, Compass, Users } from 'lucide-react'
 
 const features = [
   { icon: Search, title: 'Find Gigs', text: 'Search for short-term or long-term opportunities tailored to your expertise and preferences.' },
   { icon: Sparkles, title: 'Showcase', text: 'Your skills, experience, and availability to attract producers and casting directors.' },
   { icon: Compass, title: 'Explore', text: 'Explore a range of gigs to find the perfect match for your project.' },
   { icon: Users, title: 'Connect', text: 'With professionals. Network with industry insiders, collaborate on projects and build lasting relationships.' },
-];
+]
 
 export default function KeyFeatures() {
   return (
@@ -23,7 +23,7 @@ export default function KeyFeatures() {
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:pb-16">
           {features.map((f, i) => {
-            const Icon = f.icon;
+            const Icon = f.icon
             return (
               <motion.div
                 key={f.title}
@@ -39,7 +39,7 @@ export default function KeyFeatures() {
                 <h3 className="mt-4 text-lg font-bold text-black">{f.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-black/65">{f.text}</p>
               </motion.div>
-            );
+            )
           })}
         </div>
 
@@ -56,5 +56,5 @@ export default function KeyFeatures() {
         </div>
       </div>
     </section>
-  );
+  )
 }

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Key, Save, Plus, Trash2, Shield, Lock, Unlock, Globe, Mail, Smartphone, ToggleLeft, ToggleRight, CheckCircle, XCircle } from 'lucide-react';
+import React, { useState } from 'react'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Key, Save, Plus, Trash2, Shield, Lock, Unlock, Globe, Mail, Smartphone, ToggleLeft, ToggleRight, CheckCircle, XCircle } from 'lucide-react'
 
 export default function AdminLoginProvidersPage() {
-  const { success, error } = useToast();
-  const [saving, setSaving] = useState(false);
+  const { success, error } = useToast()
+  const [saving, setSaving] = useState(false)
   const [providers, setProviders] = useState([
     {
       id: 'google',
@@ -57,7 +57,7 @@ export default function AdminLoginProvidersPage() {
       redirectUri: 'https://ericrabar.com/auth/twitter/callback',
       scopes: ['tweet.read', 'users.read']
     }
-  ]);
+  ])
 
   const [emailSettings, setEmailSettings] = useState({
     enabled: true,
@@ -68,7 +68,7 @@ export default function AdminLoginProvidersPage() {
     fromEmail: 'noreply@ericrabar.com',
     fromName: 'Eric Rabar',
     useTLS: true
-  });
+  })
 
   const [twoFactorSettings, setTwoFactorSettings] = useState({
     enabled: false,
@@ -76,62 +76,62 @@ export default function AdminLoginProvidersPage() {
     secretLength: 32,
     digits: 6,
     period: 30
-  });
+  })
 
   const handleSaveProviders = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      success('Saved', 'Login providers saved successfully');
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      success('Saved', 'Login providers saved successfully')
     } catch (err) {
-      console.error('Error saving providers:', err);
-      error('Failed', 'Failed to save providers');
+      
+      error('Failed', 'Failed to save providers')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleSaveEmailSettings = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      success('Saved', 'Email settings saved successfully');
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      success('Saved', 'Email settings saved successfully')
     } catch (err) {
-      console.error('Error saving email settings:', err);
-      error('Failed', 'Failed to save email settings');
+      
+      error('Failed', 'Failed to save email settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleSaveTwoFactorSettings = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      success('Saved', '2FA settings saved successfully');
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      success('Saved', '2FA settings saved successfully')
     } catch (err) {
-      console.error('Error saving 2FA settings:', err);
-      error('Failed', 'Failed to save 2FA settings');
+      
+      error('Failed', 'Failed to save 2FA settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleToggleProvider = (providerId) => {
-    setProviders(providers.map(p => p.id === providerId ? { ...p, enabled: !p.enabled } : p));
-  };
+    setProviders(providers.map(p => p.id === providerId ? { ...p, enabled: !p.enabled } : p))
+  }
 
   const handleUpdateProvider = (providerId, field, value) => {
-    setProviders(providers.map(p => p.id === providerId ? { ...p, [field]: value } : p));
-  };
+    setProviders(providers.map(p => p.id === providerId ? { ...p, [field]: value } : p))
+  }
 
   const handleTestConnection = async (providerId) => {
     try {
-      success('Success', `Connection to ${providers.find(p => p.id === providerId).name} successful`);
+      success('Success', `Connection to ${providers.find(p => p.id === providerId).name} successful`)
     } catch (err) {
-      error('Failed', 'Connection test failed');
+      error('Failed', 'Connection test failed')
     }
-  };
+  }
 
   return (
     <div>
@@ -393,5 +393,5 @@ export default function AdminLoginProvidersPage() {
           </div>
       </div>
     </div>
-  );
+  )
 }

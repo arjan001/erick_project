@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Search, Sparkles } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const popular = [
   'Netflix',
@@ -14,33 +14,33 @@ const popular = [
   'TV Series',
   'Background Extra',
   'Browse All Jobs',
-];
+]
 
 export default function JobSearch() {
-  const [query, setQuery] = useState('');
-  const navigate = useNavigate();
+  const [query, setQuery] = useState('')
+  const navigate = useNavigate()
 
   const handleSearch = () => {
     if (query.trim()) {
-      navigate(`/Jobs?q=${encodeURIComponent(query.trim())}`);
+      navigate(`/Jobs?q=${encodeURIComponent(query.trim())}`)
     } else {
-      navigate('/Jobs');
+      navigate('/Jobs')
     }
-  };
+  }
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      handleSearch()
     }
-  };
+  }
 
   const handlePopularClick = (tag) => {
     if (tag === 'Browse All Jobs') {
-      navigate('/Jobs');
+      navigate('/Jobs')
     } else {
-      navigate(`/Jobs?q=${encodeURIComponent(tag)}`);
+      navigate(`/Jobs?q=${encodeURIComponent(tag)}`)
     }
-  };
+  }
 
   return (
     <section className="bg-[#F5F3EF] py-16 md:py-24">
@@ -102,5 +102,5 @@ export default function JobSearch() {
         </div>
       </div>
     </section>
-  );
+  )
 }

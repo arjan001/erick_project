@@ -2,7 +2,7 @@ import * as React from "react"
 
 import { Slot } from "@radix-ui/react-slot"
 
-import { cva } from "class-variance-authority";
+import { cva } from "class-variance-authority"
 
 
 
@@ -84,7 +84,7 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
 
       {...props} />)
 
-  );
+  )
 
 })
 

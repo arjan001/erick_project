@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Image as ImageIcon, Video, Link2, Film } from 'lucide-react';
-import RolesTagInput from './RolesTagInput';
+import React, { useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Image as ImageIcon, Video, Link2, Film } from 'lucide-react'
+import RolesTagInput from './RolesTagInput'
 
 const PROJECT_TYPES = [
   { value: 'commercial', label: 'Commercial' },
@@ -10,7 +10,7 @@ const PROJECT_TYPES = [
   { value: 'short_film', label: 'Short Film' },
   { value: 'film', label: 'Film' },
   { value: 'other', label: 'Other' },
-];
+]
 
 const VIDEO_SOURCES = [
   { value: 'upload', label: 'Upload Video File' },
@@ -18,31 +18,31 @@ const VIDEO_SOURCES = [
   { value: 'youtube', label: 'YouTube Link' },
   { value: 'tiktok', label: 'TikTok Link' },
   { value: 'google_drive', label: 'Google Drive Link' },
-];
+]
 
 // Convert a raw video URL into an embeddable URL based on the source
 export function getEmbedUrl(url, source) {
-  if (!url) return '';
+  if (!url) return ''
   try {
     if (source === 'youtube') {
-      const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
-      return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+      const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/)
+      return match ? `https://www.youtube.com/embed/${match[1]}` : url
     }
     if (source === 'vimeo') {
-      const match = url.match(/vimeo\.com\/(\d+)/);
-      return match ? `https://player.vimeo.com/video/${match[1]}` : url;
+      const match = url.match(/vimeo\.com\/(\d+)/)
+      return match ? `https://player.vimeo.com/video/${match[1]}` : url
     }
     if (source === 'tiktok') {
-      const match = url.match(/tiktok\.com\/.*\/video\/(\d+)/);
-      return match ? `https://www.tiktok.com/embed/v2/${match[1]}` : url;
+      const match = url.match(/tiktok\.com\/.*\/video\/(\d+)/)
+      return match ? `https://www.tiktok.com/embed/v2/${match[1]}` : url
     }
     if (source === 'google_drive') {
-      const match = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/);
-      return match ? `https://drive.google.com/file/d/${match[1]}/preview` : url;
+      const match = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/)
+      return match ? `https://drive.google.com/file/d/${match[1]}/preview` : url
     }
-    return url;
+    return url
   } catch {
-    return url;
+    return url
   }
 }
 
@@ -61,31 +61,31 @@ export default function PortfolioModal({
   maxVideoSizeMB = 20,
   googleDriveFolderId = null,
 }) {
-  const imageInputRef = useRef(null);
-  const videoInputRef = useRef(null);
-  const [videoError, setVideoError] = useState('');
-  const [videoSource, setVideoSource] = useState(portfolioForm?.video_source || 'upload');
-  const [videoLink, setVideoLink] = useState(portfolioForm?.original_video_url || '');
-  const [imagePreview, setImagePreview] = useState(null);
+  const imageInputRef = useRef(null)
+  const videoInputRef = useRef(null)
+  const [videoError, setVideoError] = useState('')
+  const [videoSource, setVideoSource] = useState(portfolioForm?.video_source || 'upload')
+  const [videoLink, setVideoLink] = useState(portfolioForm?.original_video_url || '')
+  const [imagePreview, setImagePreview] = useState(null)
 
   // Generate image preview when file is selected
   React.useEffect(() => {
     if (selectedCoverImage) {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(selectedCoverImage);
+        setImagePreview(reader.result)
+      }
+      reader.readAsDataURL(selectedCoverImage)
     } else {
-      setImagePreview(null);
+      setImagePreview(null)
     }
-  }, [selectedCoverImage]);
+  }, [selectedCoverImage])
 
   // Populate form when editing
   React.useEffect(() => {
     if (editingPortfolio) {
-      setVideoSource(editingPortfolio.video_source || 'upload');
-      setVideoLink(editingPortfolio.original_video_url || '');
+      setVideoSource(editingPortfolio.video_source || 'upload')
+      setVideoLink(editingPortfolio.original_video_url || '')
       setPortfolioForm({
         title: editingPortfolio.title || '',
         project_type: editingPortfolio.project_type || 'commercial',
@@ -93,48 +93,48 @@ export default function PortfolioModal({
         role: editingPortfolio.role || '',
         video_source: editingPortfolio.video_source || 'upload',
         original_video_url: editingPortfolio.original_video_url || ''
-      });
+      })
     }
-  }, [editingPortfolio, setPortfolioForm]);
+  }, [editingPortfolio, setPortfolioForm])
 
   const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) setSelectedCoverImage(file);
-  };
+    const file = e.target.files?.[0]
+    if (file) setSelectedCoverImage(file)
+  }
 
   const handleVideoChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
     if (file.size > maxVideoSizeMB * 1024 * 1024) {
-      setVideoError(`Video must be under ${maxVideoSizeMB}MB. This file is ${(file.size / (1024 * 1024)).toFixed(1)}MB.`);
-      setSelectedVideoFile(null);
-      e.target.value = '';
-      return;
+      setVideoError(`Video must be under ${maxVideoSizeMB}MB. This file is ${(file.size / (1024 * 1024)).toFixed(1)}MB.`)
+      setSelectedVideoFile(null)
+      e.target.value = ''
+      return
     }
-    setVideoError('');
-    setSelectedVideoFile(file);
-  };
+    setVideoError('')
+    setSelectedVideoFile(file)
+  }
 
   const handleVideoSourceChange = (src) => {
-    setVideoSource(src);
-    setVideoError('');
+    setVideoSource(src)
+    setVideoError('')
     if (src !== 'upload') {
-      setSelectedVideoFile(null);
+      setSelectedVideoFile(null)
     } else {
-      setVideoLink('');
+      setVideoLink('')
     }
-  };
+  }
 
   const handleVideoLinkChange = (e) => {
-    const val = e.target.value;
-    setVideoLink(val);
+    const val = e.target.value
+    setVideoLink(val)
     setPortfolioForm(prev => ({
       ...prev,
       original_video_url: val,
       video_source: videoSource,
       video_embed_url: getEmbedUrl(val, videoSource),
-    }));
-  };
+    }))
+  }
 
   const handleSubmit = () => {
     // Ensure video_source and link data are in the form
@@ -144,10 +144,10 @@ export default function PortfolioModal({
         video_source: videoSource,
         original_video_url: videoLink,
         video_embed_url: getEmbedUrl(videoLink, videoSource),
-      }));
+      }))
     }
-    onSubmit();
-  };
+    onSubmit()
+  }
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6">
@@ -238,9 +238,9 @@ export default function PortfolioModal({
                     <button
                       type="button"
                       onClick={() => {
-                        setSelectedCoverImage(null);
-                        setImagePreview(null);
-                        if (imageInputRef.current) imageInputRef.current.value = '';
+                        setSelectedCoverImage(null)
+                        setImagePreview(null)
+                        if (imageInputRef.current) imageInputRef.current.value = ''
                       }}
                       className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                     >
@@ -374,5 +374,5 @@ export default function PortfolioModal({
         </div>
       </div>
     </div>
-  );
+  )
 }

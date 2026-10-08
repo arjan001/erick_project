@@ -1,53 +1,53 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, X } from 'lucide-react';
-import { ALL_FILM_ROLES, FILM_ROLES_BY_CATEGORY } from '@/lib/filmRoles';
+import React, { useState, useRef, useEffect } from 'react'
+import { Search, X } from 'lucide-react'
+import { ALL_FILM_ROLES, FILM_ROLES_BY_CATEGORY } from '@/lib/filmRoles'
 
 // Compact multi-select tag input for film industry roles.
 // Used in the portfolio modal so artists can tag multiple roles per clip.
 export default function RolesTagInput({ selected = [], onChange }) {
-  const [query, setQuery] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const containerRef = useRef(null);
+  const [query, setQuery] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
+  const containerRef = useRef(null)
 
   useEffect(() => {
     const handleClick = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setShowDropdown(false);
+        setShowDropdown(false)
       }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   const toggleRole = (role) => {
     if (selected.includes(role)) {
-      onChange(selected.filter(r => r !== role));
+      onChange(selected.filter(r => r !== role))
     } else {
-      onChange([...selected, role]);
+      onChange([...selected, role])
     }
-    setQuery('');
-    setShowDropdown(false);
-  };
+    setQuery('')
+    setShowDropdown(false)
+  }
 
   // Check if query matches a category name
   const matchedCategory = Object.keys(FILM_ROLES_BY_CATEGORY).find(
     cat => cat.toLowerCase().includes(query.toLowerCase())
-  );
+  )
 
   // Flat filtered suggestions - search by role name
   const flatMatches = query
     ? ALL_FILM_ROLES.filter(r => r.toLowerCase().includes(query.toLowerCase())).slice(0, 15)
-    : [];
+    : []
 
   // If query matches a category, show all roles from that category
   const categoryMatches = matchedCategory
     ? FILM_ROLES_BY_CATEGORY[matchedCategory]
-    : [];
+    : []
 
   // Grouped suggestions when no query (show top roles per category)
   const groupedPreview = !query
     ? Object.entries(FILM_ROLES_BY_CATEGORY).map(([cat, roles]) => ({ cat, roles: roles.slice(0, 6) }))
-    : [];
+    : []
 
   return (
     <div className="relative" ref={containerRef}>
@@ -136,5 +136,5 @@ export default function RolesTagInput({ selected = [], onChange }) {
         </div>
       )}
     </div>
-  );
+  )
 }

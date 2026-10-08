@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Team } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import LanguageMultiSelect from '@/components/LanguageMultiSelect';
-import { Building2, Users, Mail, Phone, Globe, MapPin, Briefcase, ArrowLeft } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Team } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import LanguageMultiSelect from '@/components/LanguageMultiSelect'
+import { Building2, Users, Mail, Phone, Globe, MapPin, Briefcase, ArrowLeft } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
 
 export default function TeamRegistrationPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const [loading, setLoading] = useState(false)
 
   const [formData, setFormData] = useState({
     team_name: '',
@@ -28,16 +28,16 @@ export default function TeamRegistrationPage() {
     languages_spoken: [],
     description: '',
     availability: 'available'
-  });
+  })
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+    e.preventDefault()
+    setLoading(true)
 
     try {
-      const cityCode = formData.city?.substring(0, 3).toUpperCase() || 'XXX';
-      const randomNum = String(Math.floor(Math.random() * 100) + 1).padStart(2, '0');
-      const teamCode = `${cityCode}${randomNum}`;
+      const cityCode = formData.city?.substring(0, 3).toUpperCase() || 'XXX'
+      const randomNum = String(Math.floor(Math.random() * 100) + 1).padStart(2, '0')
+      const teamCode = `${cityCode}${randomNum}`
 
       const team = await Team.create({
         ...formData,
@@ -47,23 +47,23 @@ export default function TeamRegistrationPage() {
         verified: false,
         status: 'pending',
         created_at: new Date().toISOString()
-      });
+      })
 
       // Store team info in localStorage for demo
       localStorage.setItem('ericrabar_team', JSON.stringify({
         ...team,
         role: 'team_admin'
-      }));
+      }))
 
-      success('Team Registered', 'Your team has been registered successfully. Your application is under review.');
-      navigate(createPageUrl('TeamDashboard'));
+      success('Team Registered', 'Your team has been registered successfully. Your application is under review.')
+      navigate(createPageUrl('TeamDashboard'))
     } catch (err) {
-      console.error('Error registering team:', err);
-      toastError('Registration Failed', err.message || 'Failed to register team. Please try again.');
+      //
+      toastError('Registration Failed', err.message || 'Failed to register team. Please try again.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
@@ -250,5 +250,5 @@ export default function TeamRegistrationPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

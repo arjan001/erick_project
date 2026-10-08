@@ -1,7 +1,7 @@
-import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
+import React from 'react'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const FUNDING_STAGES = [
   { value: 'development', label: 'Development' },
@@ -9,7 +9,7 @@ const FUNDING_STAGES = [
   { value: 'production_ready', label: 'Production Ready' },
   { value: 'in_production', label: 'In Production' },
   { value: 'post_production', label: 'Post-Production' },
-];
+]
 
 const SEEKING_OPTIONS = [
   { value: 'investment', label: 'Investment' },
@@ -17,16 +17,16 @@ const SEEKING_OPTIONS = [
   { value: 'executive_producer', label: 'Executive Producer' },
   { value: 'strategic_partner', label: 'Strategic Partner' },
   { value: 'distribution', label: 'Distribution Partner' },
-];
+]
 
 export default function StepFundingDetails({ data, updateData }) {
   const toggleSeekingPartner = (value) => {
-    const current = data.seeking_partners || [];
+    const current = data.seeking_partners || []
     const updated = current.includes(value)
       ? current.filter(v => v !== value)
-      : [...current, value];
-    updateData('seeking_partners', updated);
-  };
+      : [...current, value]
+    updateData('seeking_partners', updated)
+  }
 
   return (
     <div>
@@ -39,7 +39,7 @@ export default function StepFundingDetails({ data, updateData }) {
           <Label className="text-base font-semibold mb-3 block">Current Production Stage</Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {FUNDING_STAGES.map((stage) => {
-              const isSelected = data.funding_stage === stage.value;
+              const isSelected = data.funding_stage === stage.value
               return (
                 <button
                   key={stage.value}
@@ -54,7 +54,7 @@ export default function StepFundingDetails({ data, updateData }) {
                     {stage.label}
                   </span>
                 </button>
-              );
+              )
             })}
           </div>
         </div>
@@ -65,7 +65,7 @@ export default function StepFundingDetails({ data, updateData }) {
           <p className="text-sm text-gray-600 mb-4">Select all that apply</p>
           <div className="space-y-3">
             {SEEKING_OPTIONS.map((option) => {
-              const isChecked = (data.seeking_partners || []).includes(option.value);
+              const isChecked = (data.seeking_partners || []).includes(option.value)
               return (
                 <label
                   key={option.value}
@@ -77,7 +77,7 @@ export default function StepFundingDetails({ data, updateData }) {
                   />
                   <span className="font-medium text-gray-800">{option.label}</span>
                 </label>
-              );
+              )
             })}
           </div>
         </div>
@@ -117,5 +117,5 @@ export default function StepFundingDetails({ data, updateData }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { adminApi } from '../api/admin.api';
-import { Users, FolderKanban, Clock, CheckCircle, TrendingUp, TrendingDown, Activity, Briefcase, DollarSign, Star, MessageCircle, Building2 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { Project, Job, Subscription, Artist, Client } from '@/lib/supabaseEntities';
+import React, { useEffect, useState } from 'react'
+import { adminApi } from '../api/admin.api'
+import { Users, FolderKanban, Clock, CheckCircle, TrendingUp, TrendingDown, Activity, Briefcase, DollarSign, Star, MessageCircle, Building2 } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
+import { Project, Job, Subscription, Artist, Client } from '@/lib/supabaseEntities'
 
-const COLORS = ['#1a1a1a', '#6b7280', '#d1d5db', '#374151'];
+const COLORS = ['#1a1a1a', '#6b7280', '#d1d5db', '#374151']
 
 export default function AdminDashboardPage() {
-  const [projects, setProjects] = useState([]);
-  const [jobs, setJobs] = useState([]);
-  const [artists, setArtists] = useState([]);
-  const [teams, setTeams] = useState([]);
-  const [clients, setClients] = useState([]);
-  const [backers, setBackers] = useState([]);
-  const [subscriptions, setSubscriptions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState([])
+  const [jobs, setJobs] = useState([])
+  const [artists, setArtists] = useState([])
+  const [teams, setTeams] = useState([])
+  const [clients, setClients] = useState([])
+  const [backers, setBackers] = useState([])
+  const [subscriptions, setSubscriptions] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,59 +27,59 @@ export default function AdminDashboardPage() {
           Client.list('-created_at'),
           Backer.list('-created_at'),
           Subscription.list('-created_at')
-        ]);
-        setProjects(p || []);
-        setJobs(j || []);
-        setArtists(a || []);
-        setTeams(t || []);
-        setClients(c || []);
-        setBackers(b || []);
-        setSubscriptions(s || []);
+        ])
+        setProjects(p || [])
+        setJobs(j || [])
+        setArtists(a || [])
+        setTeams(t || [])
+        setClients(c || [])
+        setBackers(b || [])
+        setSubscriptions(s || [])
       } catch (err) {
-        console.error(err);
+        
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchData();
-  }, []);
+    }
+    fetchData()
+  }, [])
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-6 h-6 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
-  const pendingProjects = projects.filter(p => p.status === 'submitted').length;
-  const verifiedProjects = projects.filter(p => p.status === 'verified').length;
-  const featuredProjects = projects.filter(p => p.is_featured).length;
-  const openJobs = jobs.filter(j => j.status === 'open').length;
-  const totalRevenue = subscriptions.reduce((sum, sub) => sum + (sub.amount || 0), 0);
-  const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length;
-  const totalCreators = artists.length + teams.length;
-  const totalClients = clients.length;
-  const totalBackers = backers.length;
+  const pendingProjects = projects.filter(p => p.status === 'submitted').length
+  const verifiedProjects = projects.filter(p => p.status === 'verified').length
+  const featuredProjects = projects.filter(p => p.is_featured).length
+  const openJobs = jobs.filter(j => j.status === 'open').length
+  const totalRevenue = subscriptions.reduce((sum, sub) => sum + (sub.amount || 0), 0)
+  const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length
+  const totalCreators = artists.length + teams.length
+  const totalClients = clients.length
+  const totalBackers = backers.length
 
   // Project types breakdown
   const projectTypeData = Object.entries(
     projects.reduce((acc, p) => {
-      acc[p.project_type || 'other'] = (acc[p.project_type || 'other'] || 0) + 1;
-      return acc;
+      acc[p.project_type || 'other'] = (acc[p.project_type || 'other'] || 0) + 1
+      return acc
     }, {})
-  ).map(([name, value]) => ({ name: name.replace('_', ' '), value }));
+  ).map(([name, value]) => ({ name: name.replace('_', ' '), value }))
 
   // Artist roles breakdown (top 5)
   const artistRoleData = Object.entries(
     artists.reduce((acc, a) => {
-      acc[a.role || 'other'] = (acc[a.role || 'other'] || 0) + 1;
-      return acc;
+      acc[a.role || 'other'] = (acc[a.role || 'other'] || 0) + 1
+      return acc
     }, {})
   )
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
-    .map(([name, value]) => ({ name: name.replace('_', ' '), value }));
+    .map(([name, value]) => ({ name: name.replace('_', ' '), value }))
 
   // Status distribution for projects
   const statusData = [
@@ -87,7 +87,7 @@ export default function AdminDashboardPage() {
     { name: 'Verified', value: projects.filter(p => p.status === 'verified').length, color: '#10b981' },
     { name: 'In Progress', value: projects.filter(p => p.status === 'in_progress').length, color: '#3b82f6' },
     { name: 'Rejected', value: projects.filter(p => p.status === 'rejected').length, color: '#ef4444' },
-  ].filter(d => d.value > 0);
+  ].filter(d => d.value > 0)
 
   const stats = [
     {
@@ -118,7 +118,7 @@ export default function AdminDashboardPage() {
       icon: Building2,
       trend: 'up',
     },
-  ];
+  ]
 
   return (
     <div className="space-y-6">
@@ -131,7 +131,7 @@ export default function AdminDashboardPage() {
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => {
-          const Icon = stat.icon;
+          const Icon = stat.icon
           return (
             <div key={stat.label} className="bg-white rounded-xl p-5 border border-gray-100"
               style={{ boxShadow: '0 1px 4px 0 rgba(60,72,100,0.06)' }}>
@@ -146,7 +146,7 @@ export default function AdminDashboardPage() {
               <div className="text-sm text-gray-500 mt-0.5">{stat.label}</div>
               <div className="text-xs text-gray-400 mt-1">{stat.sub}</div>
             </div>
-          );
+          )
         })}
       </div>
 
@@ -293,5 +293,5 @@ export default function AdminDashboardPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

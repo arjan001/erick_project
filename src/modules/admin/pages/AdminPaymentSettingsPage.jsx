@@ -1,21 +1,21 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { CreditCard, Save, DollarSign, Lock, Globe, CheckCircle, AlertTriangle, ToggleLeft, ToggleRight, TestTube, Zap, Settings as SettingsIcon, Smartphone, Loader2, Plus, Trash2, Crown } from 'lucide-react';
-import { getPaymentSettings, saveMpesaSettings, saveMollieSettings, saveGeneralPaymentSettings, saveNexusPaySettings } from '@/modules/admin/api/payment.api';
-import { testMpesaConnection } from '@/services/mpesaService';
-import { testNexusPayConnection } from '@/services/nexusPayService';
-import { SubscriptionPackage } from '@/lib/supabaseEntities';
+import React, { useState, useEffect, useCallback } from 'react'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { CreditCard, Save, DollarSign, Lock, Globe, CheckCircle, AlertTriangle, ToggleLeft, ToggleRight, TestTube, Zap, Settings as SettingsIcon, Smartphone, Loader2, Plus, Trash2, Crown } from 'lucide-react'
+import { getPaymentSettings, saveMpesaSettings, saveMollieSettings, saveGeneralPaymentSettings, saveNexusPaySettings } from '@/modules/admin/api/payment.api'
+import { testMpesaConnection } from '@/services/mpesaService'
+import { testNexusPayConnection } from '@/services/nexusPayService'
+import { SubscriptionPackage } from '@/lib/supabaseEntities'
 
 export default function AdminPaymentSettingsPage() {
-  const { success, error } = useToast();
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [testing, setTesting] = useState(false);
-  const [activeTab, setActiveTab] = useState('mpesa');
-  const [packages, setPackages] = useState([]);
-  const [showPackageModal, setShowPackageModal] = useState(false);
-  const [editingPackage, setEditingPackage] = useState(null);
+  const { success, error } = useToast()
+  const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [testing, setTesting] = useState(false)
+  const [activeTab, setActiveTab] = useState('mpesa')
+  const [packages, setPackages] = useState([])
+  const [showPackageModal, setShowPackageModal] = useState(false)
+  const [editingPackage, setEditingPackage] = useState(null)
 
   const [newPackage, setNewPackage] = useState({
     name: '',
@@ -24,7 +24,7 @@ export default function AdminPaymentSettingsPage() {
     connects_per_month: 0,
     features: [],
     description: ''
-  });
+  })
 
   const [mpesaSettings, setMpesaSettings] = useState({
     enabled: true,
@@ -38,7 +38,7 @@ export default function AdminPaymentSettingsPage() {
     accountType: 'paybill',
     currency: 'KES',
     description: 'SmartGigs Kenya Payment',
-  });
+  })
 
   const [mollieSettings, setMollieSettings] = useState({
     enabled: true,
@@ -51,7 +51,7 @@ export default function AdminPaymentSettingsPage() {
     description: 'SmartGigs Kenya Payment',
     locale: 'en_US',
     captureMethod: 'automatic'
-  });
+  })
 
   const [nexusPaySettings, setNexusPaySettings] = useState({
     enabled: false,
@@ -61,7 +61,7 @@ export default function AdminPaymentSettingsPage() {
     tenantCode: '',
     currency: 'KES',
     description: 'SmartGigs Kenya Payment',
-  });
+  })
 
   const [paymentSettings, setPaymentSettings] = useState({
     enablePayments: true,
@@ -74,190 +74,190 @@ export default function AdminPaymentSettingsPage() {
     enableInvoicing: true,
     taxRate: 0,
     enableTaxCalculation: false
-  });
+  })
 
   // Load settings on mount
   const loadSettings = useCallback(async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const data = await getPaymentSettings();
+      const data = await getPaymentSettings()
       if (data) {
         if (data.mpesa_settings) {
-          setMpesaSettings(prev => ({ ...prev, ...data.mpesa_settings }));
+          setMpesaSettings(prev => ({ ...prev, ...data.mpesa_settings }))
         }
         if (data.mollie_settings) {
-          setMollieSettings(prev => ({ ...prev, ...data.mollie_settings }));
+          setMollieSettings(prev => ({ ...prev, ...data.mollie_settings }))
         }
         if (data.nexuspay_settings) {
-          setNexusPaySettings(prev => ({ ...prev, ...data.nexuspay_settings }));
+          setNexusPaySettings(prev => ({ ...prev, ...data.nexuspay_settings }))
         }
         if (data.general_settings) {
-          setPaymentSettings(prev => ({ ...prev, ...data.general_settings }));
+          setPaymentSettings(prev => ({ ...prev, ...data.general_settings }))
         }
       }
       // Load subscription packages
-      const pkgs = await SubscriptionPackage.list();
-      setPackages(pkgs || []);
+      const pkgs = await SubscriptionPackage.list()
+      setPackages(pkgs || [])
     } catch (err) {
-      console.error('Error loading payment settings:', err);
+      
       // Non-fatal — defaults are already set
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
+    loadSettings()
+  }, [loadSettings])
 
   const handleSaveMpesaSettings = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await saveMpesaSettings(mpesaSettings);
-      success('Saved', 'M-Pesa settings saved successfully');
+      await saveMpesaSettings(mpesaSettings)
+      success('Saved', 'M-Pesa settings saved successfully')
     } catch (err) {
-      console.error('Error saving M-Pesa settings:', err);
-      error('Failed', 'Failed to save M-Pesa settings');
+      
+      error('Failed', 'Failed to save M-Pesa settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleTestMpesaConnection = async () => {
-    setTesting(true);
+    setTesting(true)
     try {
-      const result = await testMpesaConnection(mpesaSettings);
+      const result = await testMpesaConnection(mpesaSettings)
       if (result.success) {
-        success('Success', result.message);
+        success('Success', result.message)
       } else {
-        error('Failed', result.message);
+        error('Failed', result.message)
       }
     } catch (err) {
-      error('Failed', err.message || 'M-Pesa connection test failed');
+      error('Failed', err.message || 'M-Pesa connection test failed')
     } finally {
-      setTesting(false);
+      setTesting(false)
     }
-  };
+  }
 
   const handleSaveMollieSettings = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await saveMollieSettings(mollieSettings);
-      success('Saved', 'Mollie settings saved successfully');
+      await saveMollieSettings(mollieSettings)
+      success('Saved', 'Mollie settings saved successfully')
     } catch (err) {
-      console.error('Error saving Mollie settings:', err);
-      error('Failed', 'Failed to save Mollie settings');
+      
+      error('Failed', 'Failed to save Mollie settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleSaveNexusPaySettings = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await saveNexusPaySettings(nexusPaySettings);
-      success('Saved', 'Nexus Pay settings saved successfully');
+      await saveNexusPaySettings(nexusPaySettings)
+      success('Saved', 'Nexus Pay settings saved successfully')
     } catch (err) {
-      console.error('Error saving Nexus Pay settings:', err);
-      error('Failed', 'Failed to save Nexus Pay settings');
+      
+      error('Failed', 'Failed to save Nexus Pay settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleTestNexusPayConnection = async () => {
-    setTesting(true);
+    setTesting(true)
     try {
-      const result = await testNexusPayConnection(nexusPaySettings.secretKey);
+      const result = await testNexusPayConnection(nexusPaySettings.secretKey)
       if (result.success) {
-        success('Success', result.message);
+        success('Success', result.message)
       } else {
-        error('Failed', result.message);
+        error('Failed', result.message)
       }
     } catch (err) {
-      error('Failed', err.message || 'Nexus Pay connection test failed');
+      error('Failed', err.message || 'Nexus Pay connection test failed')
     } finally {
-      setTesting(false);
+      setTesting(false)
     }
-  };
+  }
 
   const handleSavePaymentSettings = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await saveGeneralPaymentSettings(paymentSettings);
-      success('Saved', 'Payment settings saved successfully');
+      await saveGeneralPaymentSettings(paymentSettings)
+      success('Saved', 'Payment settings saved successfully')
     } catch (err) {
-      console.error('Error saving payment settings:', err);
-      error('Failed', 'Failed to save payment settings');
+      
+      error('Failed', 'Failed to save payment settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleTestConnection = async () => {
-    setTesting(true);
+    setTesting(true)
     try {
       if (!mollieSettings.apiKey) {
-        error('Missing', 'Mollie API key is required to test connection');
-        return;
+        error('Missing', 'Mollie API key is required to test connection')
+        return
       }
       const response = await fetch('https://api.mollie.com/v2/methods', {
         headers: { Authorization: `Bearer ${mollieSettings.apiKey}` },
-      });
+      })
       if (response.ok) {
-        success('Success', 'Mollie connection test successful');
+        success('Success', 'Mollie connection test successful')
       } else {
-        error('Failed', `Mollie connection test failed (${response.status})`);
+        error('Failed', `Mollie connection test failed (${response.status})`)
       }
     } catch (err) {
-      error('Failed', err.message || 'Connection test failed');
+      error('Failed', err.message || 'Connection test failed')
     } finally {
-      setTesting(false);
+      setTesting(false)
     }
-  };
+  }
 
   // Subscription Package Functions
   const handleCreatePackage = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await SubscriptionPackage.create(newPackage);
-      success('Created', 'Subscription package created successfully');
-      setShowPackageModal(false);
-      setNewPackage({ name: '', price: 0, billing_cycle: 'monthly', connects_per_month: 0, features: [], description: '' });
-      loadSettings();
+      await SubscriptionPackage.create(newPackage)
+      success('Created', 'Subscription package created successfully')
+      setShowPackageModal(false)
+      setNewPackage({ name: '', price: 0, billing_cycle: 'monthly', connects_per_month: 0, features: [], description: '' })
+      loadSettings()
     } catch (err) {
-      error('Failed', 'Failed to create package');
+      error('Failed', 'Failed to create package')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleUpdatePackage = async () => {
-    if (!editingPackage) return;
-    setSaving(true);
+    if (!editingPackage) return
+    setSaving(true)
     try {
-      await SubscriptionPackage.update(editingPackage.id, editingPackage);
-      success('Updated', 'Subscription package updated successfully');
-      setEditingPackage(null);
-      setShowPackageModal(false);
-      loadSettings();
+      await SubscriptionPackage.update(editingPackage.id, editingPackage)
+      success('Updated', 'Subscription package updated successfully')
+      setEditingPackage(null)
+      setShowPackageModal(false)
+      loadSettings()
     } catch (err) {
-      error('Failed', 'Failed to update package');
+      error('Failed', 'Failed to update package')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleDeletePackage = async (id) => {
-    if (!confirm('Are you sure you want to delete this package?')) return;
+    if (!confirm('Are you sure you want to delete this package?')) return
     try {
-      await SubscriptionPackage.delete(id);
-      success('Deleted', 'Subscription package deleted successfully');
-      loadSettings();
+      await SubscriptionPackage.delete(id)
+      success('Deleted', 'Subscription package deleted successfully')
+      loadSettings()
     } catch (err) {
-      error('Failed', 'Failed to delete package');
+      error('Failed', 'Failed to delete package')
     }
-  };
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -1046,5 +1046,5 @@ export default function AdminPaymentSettingsPage() {
         }
       </div >
     </div >
-  );
+  )
 }

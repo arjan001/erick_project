@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 // Shared TailAdmin-style stat card: soft icon square, big value, label, optional trend badge.
 export default function DashboardStatCard({ icon: Icon, label, value, trend, iconBg = 'bg-indigo-50', iconColor = 'text-indigo-600' }) {
@@ -19,5 +19,5 @@ export default function DashboardStatCard({ icon: Icon, label, value, trend, ico
         )}
       </div>
     </div>
-  );
+  )
 }

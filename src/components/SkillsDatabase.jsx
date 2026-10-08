@@ -82,7 +82,7 @@ export const SKILLS_DATABASE = [
   // Other
   'Casting Director', 'Talent Coordinator', 'Storyboard Artist',
   'Concept Artist', 'Previsualization', 'Stunt Coordinator', 'Choreographer'
-];
+]
 
 // Categorized for better organization (used for grouped browsing / suggestions)
 export const SKILLS_BY_CATEGORY = {
@@ -152,4 +152,4 @@ export const SKILLS_BY_CATEGORY = {
   'Other': [
     'Talent Coordinator', 'Previsualization', 'Stunt Coordinator', 'Choreographer'
   ]
-};
+}

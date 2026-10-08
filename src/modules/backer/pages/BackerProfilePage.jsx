@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Backer } from '@/lib/supabaseEntities';
-import { base44 } from '@/api/base44Client';
-import { Edit2, Save, X, Upload, Globe, Linkedin, Instagram, Twitter, Youtube, Bell, Shield } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import CountrySelector from '@/components/CountrySelector';
-import { useToast } from '@/hooks/useToast.jsx';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { Backer } from '@/lib/supabaseEntities'
+import { base44 } from '@/api/base44Client'
+import { Edit2, Save, X, Upload, Globe, Linkedin, Instagram, Twitter, Youtube, Bell, Shield } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import CountrySelector from '@/components/CountrySelector'
+import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
   return (
@@ -22,75 +22,75 @@ function ToggleRow({ title, description, checked, onChange, isLast }) {
         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
       </button>
     </div>
-  );
+  )
 }
 
 export default function BackerProfile() {
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [backer, setBacker] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [activeTab, setActiveTab] = useState('profile');
-  const [showBioModal, setShowBioModal] = useState(false);
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [backer, setBacker] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [editing, setEditing] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [activeTab, setActiveTab] = useState('profile')
+  const [showBioModal, setShowBioModal] = useState(false)
 
   const [formData, setFormData] = useState({
     organization_name: '', bio: '', website: '', linkedin: '', instagram: '', twitter: '', youtube: '',
     city: '', country: '', investment_focus: []
-  });
+  })
 
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [dealAlerts, setDealAlerts] = useState(true);
-  const [profilePublic, setProfilePublic] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true)
+  const [dealAlerts, setDealAlerts] = useState(true)
+  const [profilePublic, setProfilePublic] = useState(true)
 
-  const logoInputRef = React.useRef(null);
+  const logoInputRef = React.useRef(null)
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    fetchData();
-  }, [isAuthenticated]);
+    fetchData()
+  }, [isAuthenticated])
 
   const fetchData = async () => {
     if (!authUser?.email) {
-      toastError('Error', 'User not authenticated. Please sign in.');
-      setLoading(false);
-      return;
+      toastError('Error', 'User not authenticated. Please sign in.')
+      setLoading(false)
+      return
     }
     try {
-      const backers = await Backer.filter({ contact_email: authUser.email });
+      const backers = await Backer.filter({ contact_email: authUser.email })
       if (backers && backers.length > 0) {
-        const b = backers[0];
-        setBacker(b);
+        const b = backers[0]
+        setBacker(b)
         setFormData({
           organization_name: b.organization_name || '', bio: b.bio || '', website: b.website || '',
           linkedin: b.linkedin || '', instagram: b.instagram || '', twitter: b.twitter || '', youtube: b.youtube || '',
           city: b.city || '', country: b.country || '',
           investment_focus: b.investment_focus || []
-        });
-        setEmailNotifications(b.email_notifications ?? true);
-        setDealAlerts(b.deal_alerts ?? true);
-        setProfilePublic(b.profile_public ?? true);
+        })
+        setEmailNotifications(b.email_notifications ?? true)
+        setDealAlerts(b.deal_alerts ?? true)
+        setProfilePublic(b.profile_public ?? true)
       }
     } catch (error) {
-      console.error('Error fetching backer data:', error);
-      setBacker(null);
+      //
+      setBacker(null)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSave = async () => {
     if (!backer) {
-      toastError('Error', 'Backer profile not found. Please refresh the page.');
-      return;
+      toastError('Error', 'Backer profile not found. Please refresh the page.')
+      return
     }
     if (!formData.organization_name) {
-      toastError('Validation Error', 'Organization name is required');
-      return;
+      toastError('Validation Error', 'Organization name is required')
+      return
     }
     try {
       const updated = await Backer.update(backer.id, {
@@ -104,82 +104,82 @@ export default function BackerProfile() {
         city: formData.city,
         country: formData.country,
         backing_types: formData.investment_focus
-      });
-      setBacker(updated);
-      setEditing(false);
-      success('Profile Updated', 'Your profile has been updated successfully');
+      })
+      setBacker(updated)
+      setEditing(false)
+      success('Profile Updated', 'Your profile has been updated successfully')
     } catch (error) {
-      console.error('Error saving profile:', error);
-      toastError('Save Failed', 'Failed to save profile. Please try again.');
+      //
+      toastError('Save Failed', 'Failed to save profile. Please try again.')
     }
-  };
+  }
 
   const handleSaveBio = async () => {
     if (!backer) {
-      toastError('Error', 'Backer profile not found. Please refresh the page.');
-      return;
+      toastError('Error', 'Backer profile not found. Please refresh the page.')
+      return
     }
     try {
-      const updated = await Backer.update(backer.id, { bio: formData.bio });
-      setBacker(updated);
-      success('Bio Updated', 'Your bio has been updated');
-      setShowBioModal(false);
+      const updated = await Backer.update(backer.id, { bio: formData.bio })
+      setBacker(updated)
+      success('Bio Updated', 'Your bio has been updated')
+      setShowBioModal(false)
     } catch (error) {
-      console.error('Error saving bio:', error);
-      toastError('Save Failed', 'Failed to save bio. Please try again.');
+      //
+      toastError('Save Failed', 'Failed to save bio. Please try again.')
     }
-  };
+  }
 
   const handleSavePreferences = async () => {
     if (!backer) {
-      toastError('Error', 'Backer profile not found. Please refresh the page.');
-      return;
+      toastError('Error', 'Backer profile not found. Please refresh the page.')
+      return
     }
     try {
       const updated = await Backer.update(backer.id, {
         email_notifications: emailNotifications,
         deal_alerts: dealAlerts,
         profile_public: profilePublic
-      });
-      setBacker(updated);
-      success('Preferences Updated', 'Your settings have been saved');
+      })
+      setBacker(updated)
+      success('Preferences Updated', 'Your settings have been saved')
     } catch (error) {
-      console.error('Error saving preferences:', error);
-      toastError('Save Failed', 'Failed to update preferences. Please try again.');
+      //
+      toastError('Save Failed', 'Failed to update preferences. Please try again.')
     }
-  };
+  }
 
   const handleLogoUpload = async (e) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (!file || !backer) {
-      toastError('Error', 'Please select a file and ensure backer profile exists.');
-      return;
+      toastError('Error', 'Please select a file and ensure backer profile exists.')
+      return
     }
 
-    setUploadingLogo(true);
+    setUploadingLogo(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url || response.data?.url;
+      const response = await base44.integrations.Core.UploadFile({ file })
+      const fileUrl = response.file_url || response.url || response.data?.url
       if (!fileUrl) {
-        throw new Error('No file URL returned from upload service');
+        throw new Error('No file URL returned from upload service')
       }
-      const updated = await Backer.update(backer.id, { logo_url: fileUrl });
-      setBacker(updated);
-      success('Logo Updated', 'Your logo has been uploaded successfully');
+      const updated = await Backer.update(backer.id, { logo_url: fileUrl })
+      setBacker(updated)
+      success('Logo Updated', 'Your logo has been uploaded successfully')
     } catch (error) {
-      console.error('Error uploading logo:', error);
-      toastError('Upload Failed', `Failed to upload logo: ${error.message || 'Unknown error'}`);
+      //
+      toastError('Upload Failed', `Failed to upload logo: ${error.message || 'Unknown error'}`)
     } finally {
-      setUploadingLogo(false);
+      setUploadingLogo(false)
     }
-  };
+  }
 
   if (loading || !authUser) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -334,8 +334,8 @@ export default function BackerProfile() {
                           onChange={(e) => {
                             const updated = e.target.checked
                               ? [...(formData.investment_focus || []), focus]
-                              : formData.investment_focus?.filter(f => f !== focus) || [];
-                            setFormData({ ...formData, investment_focus: updated });
+                              : formData.investment_focus?.filter(f => f !== focus) || []
+                            setFormData({ ...formData, investment_focus: updated })
                           }}
                           className="w-4 h-4 rounded border-gray-300"
                         />
@@ -403,5 +403,5 @@ export default function BackerProfile() {
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { AuditLog } from '@/lib/supabaseEntities';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Search, Download, Filter, X, Eye, ChevronLeft, ChevronRight, Calendar, User, Shield, Settings, FileText, Database, Activity, LogOut, LogIn, UserPlus, Trash2, Edit, Plus, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { AuditLog } from '@/lib/supabaseEntities'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Search, Download, Filter, X, Eye, ChevronLeft, ChevronRight, Calendar, User, Shield, Settings, FileText, Database, Activity, LogOut, LogIn, UserPlus, Trash2, Edit, Plus, CheckCircle, AlertTriangle, Clock } from 'lucide-react'
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 20
 
 const ACTION_ICONS = {
   'login': LogIn,
@@ -26,7 +26,7 @@ const ACTION_ICONS = {
   'project': FileText,
   'client': User,
   'default': Activity
-};
+}
 
 const ACTION_COLORS = {
   'login': 'bg-blue-100 text-blue-700',
@@ -40,7 +40,7 @@ const ACTION_COLORS = {
   'import': 'bg-indigo-100 text-indigo-700',
   'settings': 'bg-slate-100 text-slate-700',
   'default': 'bg-gray-100 text-gray-700'
-};
+}
 
 const MODULE_COLORS = {
   'auth': 'bg-indigo-50 text-indigo-700 border-indigo-200',
@@ -54,84 +54,84 @@ const MODULE_COLORS = {
   'settings': 'bg-slate-50 text-slate-700 border-slate-200',
   'system': 'bg-gray-50 text-gray-700 border-gray-200',
   'default': 'bg-gray-50 text-gray-700 border-gray-200'
-};
+}
 
 export default function AdminAuditLogsPage() {
-  const { success, error } = useToast();
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterAction, setFilterAction] = useState('all');
-  const [filterModule, setFilterModule] = useState('all');
-  const [filterDate, setFilterDate] = useState('all');
-  const [viewLog, setViewLog] = useState(null);
-  const [page, setPage] = useState(1);
+  const { success, error } = useToast()
+  const [logs, setLogs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterAction, setFilterAction] = useState('all')
+  const [filterModule, setFilterModule] = useState('all')
+  const [filterDate, setFilterDate] = useState('all')
+  const [viewLog, setViewLog] = useState(null)
+  const [page, setPage] = useState(1)
 
   const fetchLogs = async () => {
     try {
-      setLoading(true);
-      const rows = await AuditLog.list('-created_at', 500);
-      setLogs(rows || []);
+      setLoading(true)
+      const rows = await AuditLog.list('-created_at', 500)
+      setLogs(rows || [])
     } catch (err) {
-      console.error('Error fetching audit logs:', err);
-      error('Error', 'Failed to fetch audit logs');
+      
+      error('Error', 'Failed to fetch audit logs')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchLogs(); }, []);
+  useEffect(() => { fetchLogs(); }, [])
 
   const getActionIcon = (action) => {
-    const actionLower = action?.toLowerCase() || '';
+    const actionLower = action?.toLowerCase() || ''
     for (const [key, icon] of Object.entries(ACTION_ICONS)) {
-      if (actionLower.includes(key)) return icon;
+      if (actionLower.includes(key)) return icon
     }
-    return ACTION_ICONS.default;
-  };
+    return ACTION_ICONS.default
+  }
 
   const getActionColor = (action) => {
-    const actionLower = action?.toLowerCase() || '';
+    const actionLower = action?.toLowerCase() || ''
     for (const [key, color] of Object.entries(ACTION_COLORS)) {
-      if (actionLower.includes(key)) return color;
+      if (actionLower.includes(key)) return color
     }
-    return ACTION_COLORS.default;
-  };
+    return ACTION_COLORS.default
+  }
 
   const getModuleColor = (module) => {
-    return MODULE_COLORS[module?.toLowerCase()] || MODULE_COLORS.default;
-  };
+    return MODULE_COLORS[module?.toLowerCase()] || MODULE_COLORS.default
+  }
 
   const filteredLogs = logs.filter(log => {
     const matchesSearch = 
       log.actor_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       log.action?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       log.details?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.entity_type?.toLowerCase().includes(searchTerm.toLowerCase());
+      log.entity_type?.toLowerCase().includes(searchTerm.toLowerCase())
     
-    const matchesAction = filterAction === 'all' || log.action?.toLowerCase().includes(filterAction);
-    const matchesModule = filterModule === 'all' || log.module?.toLowerCase() === filterModule;
+    const matchesAction = filterAction === 'all' || log.action?.toLowerCase().includes(filterAction)
+    const matchesModule = filterModule === 'all' || log.module?.toLowerCase() === filterModule
     
-    let matchesDate = true;
+    let matchesDate = true
     if (filterDate !== 'all') {
-      const logDate = new Date(log.created_at);
-      const today = new Date();
+      const logDate = new Date(log.created_at)
+      const today = new Date()
       if (filterDate === 'today') {
-        matchesDate = logDate.toDateString() === today.toDateString();
+        matchesDate = logDate.toDateString() === today.toDateString()
       } else if (filterDate === 'week') {
-        const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-        matchesDate = logDate >= weekAgo;
+        const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+        matchesDate = logDate >= weekAgo
       } else if (filterDate === 'month') {
-        const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-        matchesDate = logDate >= monthAgo;
+        const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+        matchesDate = logDate >= monthAgo
       }
     }
     
-    return matchesSearch && matchesAction && matchesModule && matchesDate;
-  });
+    return matchesSearch && matchesAction && matchesModule && matchesDate
+  })
 
-  const totalPages = Math.ceil(filteredLogs.length / PAGE_SIZE);
-  const paginatedLogs = filteredLogs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(filteredLogs.length / PAGE_SIZE)
+  const paginatedLogs = filteredLogs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const handleExport = () => {
     const csvContent = [
@@ -146,27 +146,27 @@ export default function AdminAuditLogsPage() {
         `"${(log.details || '').replace(/"/g, '""')}"`,
         log.ip_address || ''
       ].join(','))
-    ].join('\n');
+    ].join('\n')
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
     
-    success('Export Successful', 'Audit logs exported to CSV');
-  };
+    success('Export Successful', 'Audit logs exported to CSV')
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -202,8 +202,8 @@ export default function AdminAuditLogsPage() {
               <div>
                 <p className="text-xs text-gray-500">Today</p>
                 <p className="text-xl font-bold text-green-600">{logs.filter(l => {
-                  const today = new Date().toDateString();
-                  return new Date(l.created_at).toDateString() === today;
+                  const today = new Date().toDateString()
+                  return new Date(l.created_at).toDateString() === today
                 }).length}</p>
               </div>
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -216,8 +216,8 @@ export default function AdminAuditLogsPage() {
               <div>
                 <p className="text-xs text-gray-500">This Week</p>
                 <p className="text-xl font-bold text-blue-600">{logs.filter(l => {
-                  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                  return new Date(l.created_at) >= weekAgo;
+                  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+                  return new Date(l.created_at) >= weekAgo
                 }).length}</p>
               </div>
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -312,7 +312,7 @@ export default function AdminAuditLogsPage() {
                 <tr><td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500">No audit log entries found</td></tr>
               )}
               {paginatedLogs.map((log) => {
-                const ActionIcon = getActionIcon(log.action);
+                const ActionIcon = getActionIcon(log.action)
                 return (
                   <tr key={log.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-sm text-gray-600">
@@ -351,7 +351,7 @@ export default function AdminAuditLogsPage() {
                       </div>
                     </td>
                   </tr>
-                );
+                )
               })}
             </tbody>
           </table>
@@ -446,5 +446,5 @@ export default function AdminAuditLogsPage() {
         </Dialog>
       )}
     </div>
-  );
+  )
 }

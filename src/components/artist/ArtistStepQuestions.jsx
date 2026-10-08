@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { base44 } from '@/api/base44Client';
+import React, { useState, useEffect } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { base44 } from '@/api/base44Client'
 
 const ACTOR_TAGS = [
   'Leading Role', 'Supporting Role', 'Character Actor', 'Voice Acting', 'Motion Capture',
@@ -8,37 +8,37 @@ const ACTOR_TAGS = [
   'Drama', 'Comedy', 'Action', 'Horror', 'Romance',
   'Method Acting', 'Classical Training', 'Shakespearean', 'Musical Theater', 'Physical Theater',
   'Stage Combat', 'Stunt Work', 'Dialect Coach', 'Accent Work', 'Multiple Languages'
-];
+]
 
 const VOICE_ARTIST_TAGS = [
   'Narration', 'Character Voices', 'Audiobook', 'Commercial VO', 'Documentary',
   'Animation', 'Video Game', 'E-Learning', 'IVR Systems', 'Podcast',
   'Multiple Accents', 'Age Range', 'Vocal Effects', 'Singing', 'Impressions',
   'Home Studio', 'Professional Studio', 'Fast Turnaround', 'Script Writing', 'Audio Editing'
-];
+]
 
 export default function ArtistStepQuestions({ data, updateData }) {
-  const [questions, setQuestions] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [selectedTags, setSelectedTags] = useState(data.questionnaire_response?.tags || []);
-  const [availableTags, setAvailableTags] = useState([]);
+  const [questions, setQuestions] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [selectedTags, setSelectedTags] = useState(data.questionnaire_response?.tags || [])
+  const [availableTags, setAvailableTags] = useState([])
 
   useEffect(() => {
     // For actors and voice artists, show tag selection instead
     if (data.role === 'actor') {
-      setAvailableTags(ACTOR_TAGS);
+      setAvailableTags(ACTOR_TAGS)
     } else if (data.role === 'voice_artist') {
-      setAvailableTags(VOICE_ARTIST_TAGS);
+      setAvailableTags(VOICE_ARTIST_TAGS)
     } else {
       // For other roles, fetch AI questions
-      fetchQuestions();
+      fetchQuestions()
     }
-  }, [data.role]);
+  }, [data.role])
 
   const fetchQuestions = async () => {
-    if (!data.role) return;
+    if (!data.role) return
     
-    setLoading(true);
+    setLoading(true)
     try {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Generate 3 professional questions for a ${data.role} applying to join a high-end production network. 
@@ -58,54 +58,54 @@ export default function ArtistStepQuestions({ data, updateData }) {
             }
           }
         }
-      });
+      })
 
       const questionsData = result.questions.map((q, i) => ({
         id: i + 1,
         question: q.question,
         answer: data.questionnaire_response?.[`q${i + 1}`] || ''
-      }));
+      }))
 
-      setQuestions(questionsData);
+      setQuestions(questionsData)
     } catch (error) {
-      console.error('Error fetching questions:', error);
+      
       // Fallback questions
       setQuestions([
         { id: 1, question: `What is your experience as a ${data.role}?`, answer: '' },
         { id: 2, question: 'What is your creative approach?', answer: '' },
         { id: 3, question: 'What are your technical capabilities?', answer: '' }
-      ]);
+      ])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleAnswerChange = (questionId, value) => {
     const updatedQuestions = questions.map(q => 
       q.id === questionId ? { ...q, answer: value } : q
-    );
-    setQuestions(updatedQuestions);
+    )
+    setQuestions(updatedQuestions)
     
-    const responses = {};
+    const responses = {}
     updatedQuestions.forEach(q => {
-      responses[`q${q.id}`] = q.answer;
-    });
-    updateData({ questionnaire_response: responses });
-  };
+      responses[`q${q.id}`] = q.answer
+    })
+    updateData({ questionnaire_response: responses })
+  }
 
   const toggleTag = (tag) => {
-    let newTags;
+    let newTags
     if (selectedTags.includes(tag)) {
-      newTags = selectedTags.filter(t => t !== tag);
+      newTags = selectedTags.filter(t => t !== tag)
     } else if (selectedTags.length < 5) {
-      newTags = [...selectedTags, tag];
+      newTags = [...selectedTags, tag]
     } else {
       return; // Max 5 tags
     }
     
-    setSelectedTags(newTags);
-    updateData({ questionnaire_response: { tags: newTags } });
-  };
+    setSelectedTags(newTags)
+    updateData({ questionnaire_response: { tags: newTags } })
+  }
 
   // Tag selection for actors and voice artists
   if (data.role === 'actor' || data.role === 'voice_artist') {
@@ -118,7 +118,7 @@ export default function ArtistStepQuestions({ data, updateData }) {
 
         <div className="flex flex-wrap gap-3">
           {availableTags.map((tag) => {
-            const isSelected = selectedTags.includes(tag);
+            const isSelected = selectedTags.includes(tag)
             return (
               <button
                 key={tag}
@@ -132,7 +132,7 @@ export default function ArtistStepQuestions({ data, updateData }) {
               >
                 {tag}
               </button>
-            );
+            )
           })}
         </div>
 
@@ -149,7 +149,7 @@ export default function ArtistStepQuestions({ data, updateData }) {
           </div>
         )}
       </div>
-    );
+    )
   }
 
   // Question-based approach for other roles
@@ -161,10 +161,10 @@ export default function ArtistStepQuestions({ data, updateData }) {
           <p className="text-gray-600">Generating questions...</p>
         </div>
       </div>
-    );
+    )
   }
 
-  if (!questions) return null;
+  if (!questions) return null
 
   return (
     <div className="space-y-6">
@@ -187,5 +187,5 @@ export default function ArtistStepQuestions({ data, updateData }) {
         </div>
       ))}
     </div>
-  );
+  )
 }

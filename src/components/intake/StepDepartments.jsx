@@ -1,5 +1,5 @@
-import React from 'react';
-import { FileText, Video, Scissors, Music, Wand2, Box, Headphones, Code } from 'lucide-react';
+import React from 'react'
+import { FileText, Video, Scissors, Music, Wand2, Box, Headphones, Code } from 'lucide-react'
 
 const DEPARTMENTS = [
   { value: 'preproduction', label: 'Pre-production', icon: FileText, description: 'Scripting, planning, casting' },
@@ -10,17 +10,17 @@ const DEPARTMENTS = [
   { value: '3d', label: '3D', icon: Box, description: '3D animation and CGI' },
   { value: 'music', label: 'Music', icon: Music, description: 'Original composition' },
   { value: 'web_development', label: 'Web Development', icon: Code, description: 'Marketing websites' },
-];
+]
 
 export default function StepDepartments({ data, updateData }) {
   const toggleDepartment = (value) => {
-    const current = data.departments_needed || [];
+    const current = data.departments_needed || []
     if (current.includes(value)) {
-      updateData('departments_needed', current.filter(d => d !== value));
+      updateData('departments_needed', current.filter(d => d !== value))
     } else {
-      updateData('departments_needed', [...current, value]);
+      updateData('departments_needed', [...current, value])
     }
-  };
+  }
 
   return (
     <div>
@@ -29,8 +29,8 @@ export default function StepDepartments({ data, updateData }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {DEPARTMENTS.map((dept) => {
-          const Icon = dept.icon;
-          const isSelected = (data.departments_needed || []).includes(dept.value);
+          const Icon = dept.icon
+          const isSelected = (data.departments_needed || []).includes(dept.value)
           return (
             <button
               key={dept.value}
@@ -45,9 +45,9 @@ export default function StepDepartments({ data, updateData }) {
               <h3 className="text-base font-semibold mb-1 text-black">{dept.label}</h3>
               <p className="text-sm text-gray-600">{dept.description}</p>
             </button>
-          );
+          )
         })}
       </div>
     </div>
-  );
+  )
 }

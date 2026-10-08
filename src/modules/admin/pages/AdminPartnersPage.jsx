@@ -1,38 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { PartnerLogoStore, listPartnerLogos } from '@/services/partnerLogoService';
-import { Edit, Eye, EyeOff, Handshake, Plus, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { PartnerLogoStore, listPartnerLogos } from '@/services/partnerLogoService'
+import { Edit, Eye, EyeOff, Handshake, Plus, Trash2 } from 'lucide-react'
 
-const emptyForm = { name: '', logo_url: '', website_url: '', sort_order: 1, is_active: true };
+const emptyForm = { name: '', logo_url: '', website_url: '', sort_order: 1, is_active: true }
 
 export default function AdminPartnersPage() {
-  const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [partners, setPartners] = useState([]);
-  const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState(emptyForm);
-  const [saving, setSaving] = useState(false);
+  const { success, error } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [partners, setPartners] = useState([])
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState(emptyForm)
+  const [saving, setSaving] = useState(false)
 
   const load = async () => {
     try {
-      setPartners(await listPartnerLogos());
+      setPartners(await listPartnerLogos())
     } catch (err) {
-      console.error('Error loading partners:', err);
-      error('Error', 'Failed to load partner logos');
+      
+      error('Error', 'Failed to load partner logos')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    load();
-  }, []);
+    load()
+  }, [])
 
   const openNew = () => {
-    setForm({ ...emptyForm, sort_order: partners.length + 1 });
-    setEditing({});
-  };
+    setForm({ ...emptyForm, sort_order: partners.length + 1 })
+    setEditing({})
+  }
 
   const openEdit = (p) => {
     setForm({
@@ -41,55 +41,55 @@ export default function AdminPartnersPage() {
       website_url: p.website_url || '',
       sort_order: p.sort_order ?? 1,
       is_active: p.is_active !== false,
-    });
-    setEditing(p);
-  };
+    })
+    setEditing(p)
+  }
 
   const handleSave = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!form.name.trim() || !form.logo_url.trim()) {
-      error('Missing details', 'A name and a logo URL are required');
-      return;
+      error('Missing details', 'A name and a logo URL are required')
+      return
     }
-    setSaving(true);
-    const data = { ...form, name: form.name.trim(), logo_url: form.logo_url.trim(), sort_order: Number(form.sort_order) || 0 };
+    setSaving(true)
+    const data = { ...form, name: form.name.trim(), logo_url: form.logo_url.trim(), sort_order: Number(form.sort_order) || 0 }
     try {
-      if (editing?.id) await PartnerLogoStore.update(editing.id, data);
-      else await PartnerLogoStore.create(data);
-      success('Saved', editing?.id ? 'Partner updated' : 'Partner added');
-      setEditing(null);
-      await load();
+      if (editing?.id) await PartnerLogoStore.update(editing.id, data)
+      else await PartnerLogoStore.create(data)
+      success('Saved', editing?.id ? 'Partner updated' : 'Partner added')
+      setEditing(null)
+      await load()
     } catch (err) {
-      console.error('Error saving partner:', err);
-      error('Failed', 'Could not save the partner');
+      
+      error('Failed', 'Could not save the partner')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleToggle = async (p) => {
     try {
-      await PartnerLogoStore.update(p.id, { is_active: p.is_active === false });
-      await load();
+      await PartnerLogoStore.update(p.id, { is_active: p.is_active === false })
+      await load()
     } catch (err) {
-      console.error('Error updating partner:', err);
-      error('Failed', 'Could not update the partner');
+      
+      error('Failed', 'Could not update the partner')
     }
-  };
+  }
 
   const handleDelete = async (p) => {
     try {
-      await PartnerLogoStore.delete(p.id);
-      success('Deleted', `${p.name} removed`);
-      await load();
+      await PartnerLogoStore.delete(p.id)
+      success('Deleted', `${p.name} removed`)
+      await load()
     } catch (err) {
-      console.error('Error deleting partner:', err);
-      error('Failed', 'Could not delete the partner');
+      
+      error('Failed', 'Could not delete the partner')
     }
-  };
+  }
 
   const inputCls =
-    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-black';
+    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-black'
 
   return (
     <div>
@@ -201,5 +201,5 @@ export default function AdminPartnersPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

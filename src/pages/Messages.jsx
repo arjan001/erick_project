@@ -1,1 +1,1 @@
-export { default } from '@/modules/messages/pages/MessagesPage';
+export { default } from '@/modules/messages/pages/MessagesPage'

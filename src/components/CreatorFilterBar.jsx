@@ -1,10 +1,10 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { RotateCcw, ChevronDown, X, Grid3x3, List } from 'lucide-react';
+import React from 'react'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { RotateCcw, ChevronDown, X, Grid3x3, List } from 'lucide-react'
 
-const TYPES = ['All Types', 'Freelance', 'Studio', 'Agency', 'Team', 'Collective'];
+const TYPES = ['All Types', 'Freelance', 'Studio', 'Agency', 'Team', 'Collective']
 
 const CATEGORIES = [
   'All Categories',
@@ -30,7 +30,7 @@ const CATEGORIES = [
   'DOP',
   'Scriptwriting',
   'Web Design'
-];
+]
 
 const COUNTRIES = [
   'All Countries',
@@ -49,7 +49,7 @@ const COUNTRIES = [
   'Switzerland',
   'Portugal',
   'Poland'
-];
+]
 
 export default function CreatorFilterBar({ filters, onFilterChange, onReset, resultCount, allCreators, categoryCounts, view, onViewChange }) {
   return (
@@ -70,7 +70,7 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
               <PopoverContent className="w-[160px] p-0" align="start">
                 <div className="max-h-[300px] overflow-y-auto">
                   {TYPES.map(type => {
-                    const value = type.toLowerCase().replace(' ', '_');
+                    const value = type.toLowerCase().replace(' ', '_')
                     return (
                       <button
                         key={type}
@@ -79,7 +79,7 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
                       >
                         {type}
                       </button>
-                    );
+                    )
                   })}
                 </div>
               </PopoverContent>
@@ -134,8 +134,8 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
               <PopoverContent className="w-[250px] p-0" align="start">
                 <div className="max-h-[300px] overflow-y-auto">
                   {COUNTRIES.slice(1).map(country => {
-                    const value = country.toLowerCase().replace(' ', '_');
-                    const isSelected = filters.countries?.includes(value);
+                    const value = country.toLowerCase().replace(' ', '_')
+                    const isSelected = filters.countries?.includes(value)
                     return (
                       <label
                         key={country}
@@ -144,16 +144,16 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={() => {
-                            const current = filters.countries || [];
+                            const current = filters.countries || []
                             const newCountries = isSelected
                               ? current.filter(c => c !== value)
-                              : [...current, value];
-                            onFilterChange('countries', newCountries);
+                              : [...current, value]
+                            onFilterChange('countries', newCountries)
                           }}
                         />
                         <span className="text-sm">{country}</span>
                       </label>
-                    );
+                    )
                   })}
                 </div>
               </PopoverContent>
@@ -203,5 +203,5 @@ export default function CreatorFilterBar({ filters, onFilterChange, onReset, res
         </div>
       </div>
     </div>
-  );
+  )
 }

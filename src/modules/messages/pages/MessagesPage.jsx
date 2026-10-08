@@ -1,110 +1,110 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { Message, Artist, Team, ProjectOwner, Backer, Notification } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { formatDistanceToNow } from 'date-fns';
-import { Search, Send, Plus, X, Trash2, Archive, ArchiveRestore, Inbox, ArrowLeft, LogOut, MoreVertical, Star, Edit, Mic, Paperclip, Download, ExternalLink, FileText, Image as ImageIcon, FileArchive, File, Check, CheckCheck } from 'lucide-react';
-import { confirmDialog } from '@/lib/sweetAlert';
-import notificationService from '@/shared/services/notificationService';
-import subscriptionService from '@/shared/services/subscriptionService';
-import { uploadFile, deleteFile } from '@/lib/fileUploadService';
-import realtimeMessagingService from '@/services/realtimeMessagingService';
+import React, { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { useVirtualizer } from '@tanstack/react-virtual'
+import { Message, Artist, Team, ProjectOwner, Backer, Notification } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { formatDistanceToNow } from 'date-fns'
+import { Search, Send, Plus, X, Trash2, Archive, ArchiveRestore, Inbox, ArrowLeft, LogOut, MoreVertical, Star, Edit, Mic, Paperclip, Download, ExternalLink, FileText, Image as ImageIcon, FileArchive, File, Check, CheckCheck } from 'lucide-react'
+import { confirmDialog } from '@/lib/sweetAlert'
+import notificationService from '@/shared/services/notificationService'
+import subscriptionService from '@/shared/services/subscriptionService'
+import { uploadFile, deleteFile } from '@/lib/fileUploadService'
+import realtimeMessagingService from '@/services/realtimeMessagingService'
 
 function playMessageTone() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.35);
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(880, ctx.currentTime)
+    osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1)
+    gain.gain.setValueAtTime(0.15, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35)
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start()
+    osc.stop(ctx.currentTime + 0.35)
   } catch {
     // audio not supported — ignore
   }
 }
 
-const getConversationId = (a, b) => [a, b].sort().join('__');
+const getConversationId = (a, b) => [a, b].sort().join('__')
 const ONLINE_THRESHOLD_MS = 90 * 1000; // consider online if active within last 90s
 
-const isOnline = (lastActive) => lastActive && (Date.now() - new Date(lastActive).getTime()) < ONLINE_THRESHOLD_MS;
+const isOnline = (lastActive) => lastActive && (Date.now() - new Date(lastActive).getTime()) < ONLINE_THRESHOLD_MS
 
 function getFileIcon(fileType) {
-  if (!fileType) return <File className="w-5 h-5 text-gray-600" />;
+  if (!fileType) return <File className="w-5 h-5 text-gray-600" />
   
   if (fileType.startsWith('image/')) {
-    return <ImageIcon className="w-5 h-5 text-gray-600" />;
+    return <ImageIcon className="w-5 h-5 text-gray-600" />
   }
   if (fileType.includes('pdf')) {
-    return <FileText className="w-5 h-5 text-red-600" />;
+    return <FileText className="w-5 h-5 text-red-600" />
   }
   if (fileType.includes('zip') || fileType.includes('rar') || fileType.includes('7z') || fileType.includes('tar')) {
-    return <FileArchive className="w-5 h-5 text-yellow-600" />;
+    return <FileArchive className="w-5 h-5 text-yellow-600" />
   }
   if (fileType.includes('word') || fileType.includes('document')) {
-    return <FileText className="w-5 h-5 text-blue-600" />;
+    return <FileText className="w-5 h-5 text-blue-600" />
   }
   if (fileType.includes('excel') || fileType.includes('spreadsheet')) {
-    return <FileText className="w-5 h-5 text-green-600" />;
+    return <FileText className="w-5 h-5 text-green-600" />
   }
-  return <File className="w-5 h-5 text-gray-600" />;
+  return <File className="w-5 h-5 text-gray-600" />
 }
 
 function formatFileSize(bytes) {
-  if (!bytes) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  if (!bytes) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
 function getMessageStatus(msg, currentUserEmail) {
   if (msg.sender_email !== currentUserEmail) return null; // Only show status for sent messages
   
   if (msg.is_read) {
-    return { icon: CheckCheck, color: 'text-blue-500', label: 'Read' };
+    return { icon: CheckCheck, color: 'text-blue-500', label: 'Read' }
   }
   if (msg.delivered_at) {
-    return { icon: CheckCheck, color: 'text-gray-400', label: 'Delivered' };
+    return { icon: CheckCheck, color: 'text-gray-400', label: 'Delivered' }
   }
-  return { icon: Check, color: 'text-gray-400', label: 'Sent' };
+  return { icon: Check, color: 'text-gray-400', label: 'Sent' }
 }
 
 // Look up a participant's profile across all user types and return display info + tags + presence
 async function enrichParticipant(email) {
   try {
-    const artists = await Artist.filter({ email });
+    const artists = await Artist.filter({ email })
     if (artists.length > 0) {
-      const a = artists[0];
-      const tags = [a.role, ...(a.skills_experience || []).slice(0, 2).map(s => s.skill)].filter(Boolean).slice(0, 3);
-      return { name: a.full_name, avatar: a.profile_photo_url, type: 'Artist', tags, lastActive: a.last_active };
+      const a = artists[0]
+      const tags = [a.role, ...(a.skills_experience || []).slice(0, 2).map(s => s.skill)].filter(Boolean).slice(0, 3)
+      return { name: a.full_name, avatar: a.profile_photo_url, type: 'Artist', tags, lastActive: a.last_active }
     }
-    const teams = await Team.filter({ contact_email: email });
+    const teams = await Team.filter({ contact_email: email })
     if (teams.length > 0) {
-      const t = teams[0];
-      return { name: t.team_name, avatar: t.team_logo_url, type: 'Team', tags: (t.specialties || []).slice(0, 2), lastActive: t.last_active };
+      const t = teams[0]
+      return { name: t.team_name, avatar: t.team_logo_url, type: 'Team', tags: (t.specialties || []).slice(0, 2), lastActive: t.last_active }
     }
-    const owners = await ProjectOwner.filter({ email });
+    const owners = await ProjectOwner.filter({ email })
     if (owners.length > 0) {
-      const o = owners[0];
-      return { name: o.full_name, avatar: o.profile_photo_url, type: 'Client', tags: [], lastActive: o.last_active };
+      const o = owners[0]
+      return { name: o.full_name, avatar: o.profile_photo_url, type: 'Client', tags: [], lastActive: o.last_active }
     }
-    const backers = await Backer.filter({ contact_email: email });
+    const backers = await Backer.filter({ contact_email: email })
     if (backers.length > 0) {
-      const b = backers[0];
-      return { name: b.organization_name, avatar: b.logo_url, type: 'Backer', tags: (b.interests || []).slice(0, 2), lastActive: b.last_active };
+      const b = backers[0]
+      return { name: b.organization_name, avatar: b.logo_url, type: 'Backer', tags: (b.interests || []).slice(0, 2), lastActive: b.last_active }
     }
   } catch (e) {
-    console.error('enrichParticipant error:', e);
+    //
   }
-  return { name: email, avatar: null, type: null, tags: [], lastActive: null };
+  return { name: email, avatar: null, type: null, tags: [], lastActive: null }
 }
 
 const typeBadgeColor = {
@@ -112,15 +112,15 @@ const typeBadgeColor = {
   Team: 'bg-purple-50 text-purple-600',
   Client: 'bg-amber-50 text-amber-600',
   Backer: 'bg-emerald-50 text-emerald-600',
-};
+}
 
 function PresenceDot({ online, className = '' }) {
-  if (!online) return null;
-  return <span className={`absolute w-3 h-3 bg-green-500 border-2 border-white rounded-full ${className}`} />;
+  if (!online) return null
+  return <span className={`absolute w-3 h-3 bg-green-500 border-2 border-white rounded-full ${className}`} />
 }
 
 function ParticipantTags({ type, tags }) {
-  if (!type && (!tags || tags.length === 0)) return null;
+  if (!type && (!tags || tags.length === 0)) return null
   return (
     <div className="flex flex-wrap items-center gap-1 mt-1">
       {type && <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${typeBadgeColor[type] || 'bg-gray-100 text-gray-600'}`}>{type}</span>}
@@ -128,50 +128,50 @@ function ParticipantTags({ type, tags }) {
         <span key={i} className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 capitalize">{String(t).replace(/_/g, ' ')}</span>
       ))}
     </div>
-  );
+  )
 }
 
 export default function MessagesPage() {
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const [searchParams] = useSearchParams();
-  const [conversations, setConversations] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const [searchParams] = useSearchParams()
+  const [conversations, setConversations] = useState([])
+  const [selectedId, setSelectedId] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
   const [filterTab, setFilterTab] = useState('active'); // active | archived
-  const [messageInput, setMessageInput] = useState('');
-  const [showNewChatModal, setShowNewChatModal] = useState(false);
-  const [directory, setDirectory] = useState([]);
-  const [directorySearch, setDirectorySearch] = useState('');
+  const [messageInput, setMessageInput] = useState('')
+  const [showNewChatModal, setShowNewChatModal] = useState(false)
+  const [directory, setDirectory] = useState([])
+  const [directorySearch, setDirectorySearch] = useState('')
   const [, setPresenceTick] = useState(0); // forces re-render so "last seen" text stays fresh
-  const [hoveredMessageId, setHoveredMessageId] = useState(null);
-  const [showMessageMenu, setShowMessageMenu] = useState(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [attachedFile, setAttachedFile] = useState(null);
-  const [previewAttachment, setPreviewAttachment] = useState(null);
-  const [editingMessage, setEditingMessage] = useState(null);
-  const [editText, setEditText] = useState('');
-  const messagesEndRef = useRef(null);
-  const conversationsListRef = useRef(null);
-  const messagesListRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const recordingIntervalRef = useRef(null);
+  const [hoveredMessageId, setHoveredMessageId] = useState(null)
+  const [showMessageMenu, setShowMessageMenu] = useState(null)
+  const [isRecording, setIsRecording] = useState(false)
+  const [recordingTime, setRecordingTime] = useState(0)
+  const [attachedFile, setAttachedFile] = useState(null)
+  const [previewAttachment, setPreviewAttachment] = useState(null)
+  const [editingMessage, setEditingMessage] = useState(null)
+  const [editText, setEditText] = useState('')
+  const messagesEndRef = useRef(null)
+  const conversationsListRef = useRef(null)
+  const messagesListRef = useRef(null)
+  const fileInputRef = useRef(null)
+  const mediaRecorderRef = useRef(null)
+  const recordingIntervalRef = useRef(null)
 
   const buildConversations = (all) => {
-    const grouped = {};
+    const grouped = {}
     all.forEach(m => {
-      if (!grouped[m.conversation_id]) grouped[m.conversation_id] = [];
-      grouped[m.conversation_id].push(m);
-    });
+      if (!grouped[m.conversation_id]) grouped[m.conversation_id] = []
+      grouped[m.conversation_id].push(m)
+    })
 
     return Object.entries(grouped).map(([id, msgs]) => {
-      const sorted = msgs.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-      const last = sorted[sorted.length - 1];
+      const sorted = msgs.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+      const last = sorted[sorted.length - 1]
       const otherEmail = sorted.find(m => m.sender_email !== user.email)?.sender_email
-        || sorted.find(m => m.recipient_email !== user.email)?.recipient_email;
+        || sorted.find(m => m.recipient_email !== user.email)?.recipient_email
       return {
         id,
         otherEmail,
@@ -179,46 +179,46 @@ export default function MessagesPage() {
         lastMessage: last?.text || last?.file_name || '',
         lastMessageTime: last?.created_at,
         isArchived: sorted.every(m => m.is_archived),
-      };
-    }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
-  };
+      }
+    }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime))
+  }
 
   const fetchConversations = async () => {
     try {
       const [sent, received] = await Promise.all([
         Message.filter({ sender_email: user.email }, '-created_at', 500),
         Message.filter({ recipient_email: user.email }, '-created_at', 500),
-      ]);
-      const convs = buildConversations([...sent, ...received]);
+      ])
+      const convs = buildConversations([...sent, ...received])
 
       // Enrich with participant display info (name, avatar, type, tags, presence)
       const enriched = await Promise.all(convs.map(async (c) => {
-        const info = await enrichParticipant(c.otherEmail);
-        return { ...c, ...info };
-      }));
+        const info = await enrichParticipant(c.otherEmail)
+        return { ...c, ...info }
+      }))
 
-      setConversations(enriched);
+      setConversations(enriched)
     } catch (err) {
-      console.error('Error fetching conversations:', err);
-      setConversations([]);
+      //
+      setConversations([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { if (user) fetchConversations(); }, [user]);
+  useEffect(() => { if (user) fetchConversations(); }, [user])
 
   // Handle ?with= query parameter to automatically open chat with specific person
   useEffect(() => {
-    const withEmail = searchParams.get('with');
+    const withEmail = searchParams.get('with')
     if (withEmail && user) {
-      const conversationId = getConversationId(user.email, withEmail);
+      const conversationId = getConversationId(user.email, withEmail)
       
       // First check if conversation already exists
-      const existing = conversations.find(c => c.id === conversationId);
+      const existing = conversations.find(c => c.id === conversationId)
       if (existing) {
-        setSelectedId(conversationId);
-        return;
+        setSelectedId(conversationId)
+        return
       }
       
       // If not, create new conversation and select it
@@ -226,8 +226,8 @@ export default function MessagesPage() {
         setConversations(prev => {
           // Check again in case it was added while fetching
           if (prev.some(c => c.id === conversationId)) {
-            setSelectedId(conversationId);
-            return prev;
+            setSelectedId(conversationId)
+            return prev
           }
           const newConv = {
             id: conversationId,
@@ -241,26 +241,26 @@ export default function MessagesPage() {
             lastMessage: '',
             lastMessageTime: new Date().toISOString(),
             isArchived: false,
-          };
-          setSelectedId(conversationId);
-          return [newConv, ...prev];
-        });
-      });
+          }
+          setSelectedId(conversationId)
+          return [newConv, ...prev]
+        })
+      })
     }
-  }, [searchParams, user]);
+  }, [searchParams, user])
 
   // Keep "last seen" labels fresh without refetching anything
   useEffect(() => {
-    const t = setInterval(() => setPresenceTick(n => n + 1), 30000);
-    return () => clearInterval(t);
-  }, []);
+    const t = setInterval(() => setPresenceTick(n => n + 1), 30000)
+    return () => clearInterval(t)
+  }, [])
 
   // Merge a single new message into state in-place — no refetch, no flicker, no "reload" feeling
   const applyIncomingMessage = async (m) => {
     setConversations(prev => {
-      const idx = prev.findIndex(c => c.id === m.conversation_id);
+      const idx = prev.findIndex(c => c.id === m.conversation_id)
       if (idx === -1) return prev; // handled async below if conversation is brand new
-      const conv = prev[idx];
+      const conv = prev[idx]
       if (conv.messages.some(existing => existing.id === m.id)) return prev; // already applied (optimistic)
       const updatedConv = {
         ...conv,
@@ -268,15 +268,15 @@ export default function MessagesPage() {
         lastMessage: m.text || m.file_name || '',
         lastMessageTime: m.created_at,
         isArchived: false,
-      };
-      const rest = prev.filter((_, i) => i !== idx);
-      return [updatedConv, ...rest];
-    });
+      }
+      const rest = prev.filter((_, i) => i !== idx)
+      return [updatedConv, ...rest]
+    })
 
-    const exists = conversationsRef.current.some(c => c.id === m.conversation_id);
+    const exists = conversationsRef.current.some(c => c.id === m.conversation_id)
     if (!exists) {
-      const otherEmail = m.sender_email === user.email ? m.recipient_email : m.sender_email;
-      const info = await enrichParticipant(otherEmail);
+      const otherEmail = m.sender_email === user.email ? m.recipient_email : m.sender_email
+      const info = await enrichParticipant(otherEmail)
       setConversations(prev => {
         if (prev.some(c => c.id === m.conversation_id)) return prev; // race guard
         return [{
@@ -287,33 +287,33 @@ export default function MessagesPage() {
           lastMessageTime: m.created_at,
           isArchived: false,
           ...info,
-        }, ...prev];
-      });
+        }, ...prev]
+      })
     }
-  };
+  }
 
   // Keep a ref of conversations so the polling callback always sees the latest state
-  const conversationsRef = useRef([]);
-  useEffect(() => { conversationsRef.current = conversations; }, [conversations]);
+  const conversationsRef = useRef([])
+  useEffect(() => { conversationsRef.current = conversations; }, [conversations])
 
   // Real-time message subscription using Supabase Realtime
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
     const handleNewMessage = async (newMessage) => {
-      console.log('Real-time new message received:', newMessage);
+      //
       
       // Apply the new message to state
-      await applyIncomingMessage(newMessage);
+      await applyIncomingMessage(newMessage)
       
       // Play notification sound if message is from someone else
       if (newMessage.sender_email !== user.email) {
-        playMessageTone();
+        playMessageTone()
       }
-    };
+    }
 
     const handleMessageUpdate = async (updatedMessage) => {
-      console.log('Real-time message update received:', updatedMessage);
+      //
       
       // Update message in state (e.g., read status, delivery status)
       setConversations(prev => {
@@ -324,83 +324,83 @@ export default function MessagesPage() {
               messages: c.messages.map(m => 
                 m.id === updatedMessage.id ? { ...m, ...updatedMessage } : m
               )
-            };
+            }
           }
-          return c;
-        });
-      });
-    };
+          return c
+        })
+      })
+    }
 
     // Subscribe to real-time messages
     const unsubscribe = realtimeMessagingService.subscribeToMessages(
       user.email,
       handleNewMessage,
       handleMessageUpdate
-    );
+    )
 
     // Cleanup on unmount
     return () => {
-      unsubscribe();
-    };
-  }, [user]);
+      unsubscribe()
+    }
+  }, [user])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [selectedId, conversations]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [selectedId, conversations])
 
-  const selectedConversation = conversations.find(c => c.id === selectedId);
+  const selectedConversation = conversations.find(c => c.id === selectedId)
 
-  const getUnreadCount = (conv) => conv.messages.filter(m => m.recipient_email === user.email && !m.is_read).length;
+  const getUnreadCount = (conv) => conv.messages.filter(m => m.recipient_email === user.email && !m.is_read).length
 
   // Mark all unread messages in the opened conversation as read — mirrors WhatsApp: badge clears the moment you open the chat
   useEffect(() => {
-    if (!selectedConversation) return;
-    const unread = selectedConversation.messages.filter(m => m.recipient_email === user.email && !m.is_read);
-    if (unread.length === 0) return;
+    if (!selectedConversation) return
+    const unread = selectedConversation.messages.filter(m => m.recipient_email === user.email && !m.is_read)
+    if (unread.length === 0) return
     setConversations(prev => prev.map(c => c.id === selectedConversation.id
       ? { ...c, messages: c.messages.map(m => (m.recipient_email === user.email && !m.is_read) ? { ...m, is_read: true, read_at: new Date().toISOString() } : m) }
-      : c));
+      : c))
     Promise.all(unread.map(m => Message.update(m.id, { is_read: true, read_at: new Date().toISOString() }))).catch(err => {
-      console.error('Error marking messages as read:', err);
-    });
-  }, [selectedId]);
+      //
+    })
+  }, [selectedId])
 
   const handleSend = async () => {
-    if ((!messageInput.trim() && !attachedFile) || !selectedConversation) return;
+    if ((!messageInput.trim() && !attachedFile) || !selectedConversation) return
     
     // Check subscription — must have active plan to contact job posters directly
-    const canContact = await subscriptionService.canContactJobPoster(user.email);
+    const canContact = await subscriptionService.canContactJobPoster(user.email)
     if (!canContact.allowed) {
-      error('Subscription Required', canContact.message);
-      return;
+      error('Subscription Required', canContact.message)
+      return
     }
 
     // Check subscription limits before sending
-    const limitCheck = await subscriptionService.checkLimit(user.email, 'message');
+    const limitCheck = await subscriptionService.checkLimit(user.email, 'message')
     if (!limitCheck.allowed) {
       error('Limit Reached', limitCheck.expired 
         ? 'Your subscription has expired. Please renew to continue sending messages.'
-        : 'You have reached your monthly message limit. Upgrade to send more messages.');
-      return;
+        : 'You have reached your monthly message limit. Upgrade to send more messages.')
+      return
     }
 
-    const text = messageInput;
-    const file = attachedFile;
-    setMessageInput('');
-    setAttachedFile(null);
-    const tempId = `temp-${Date.now()}`;
+    const text = messageInput
+    const file = attachedFile
+    setMessageInput('')
+    setAttachedFile(null)
+    const tempId = `temp-${Date.now()}`
 
     // Handle file upload if present
-    let attachmentData = null;
+    let attachmentData = null
     if (file) {
-      const uploadResult = await uploadFile(file, 'message-attachments', `conversations/${selectedConversation.id}`);
+      const uploadResult = await uploadFile(file, 'message-attachments', `conversations/${selectedConversation.id}`)
       if (uploadResult.error) {
-        error('Upload Failed', uploadResult.error);
-        setMessageInput(text);
-        setAttachedFile(file);
-        return;
+        error('Upload Failed', uploadResult.error)
+        setMessageInput(text)
+        setAttachedFile(file)
+        return
       }
-      attachmentData = uploadResult.data;
+      attachmentData = uploadResult.data
     }
 
     const optimisticMsg = {
@@ -411,11 +411,11 @@ export default function MessagesPage() {
       text,
       attachment: attachmentData,
       created_at: new Date().toISOString(),
-    };
+    }
     // Optimistic update — instant, no waiting on the network for the UI to feel responsive
     setConversations(prev => prev.map(c => c.id === selectedConversation.id
       ? { ...c, messages: [...c.messages, optimisticMsg], lastMessage: text, lastMessageTime: optimisticMsg.created_at }
-      : c));
+      : c))
     try {
       const created = await Message.create({
         conversation_id: selectedConversation.id,
@@ -424,16 +424,16 @@ export default function MessagesPage() {
         text,
         attachment: attachmentData,
         delivered_at: new Date().toISOString(),
-      });
+      })
       // Replace temp message with the real saved one
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
         ? { ...c, messages: c.messages.map(msg => msg.id === tempId ? created : msg) }
-        : c));
+        : c))
       // Refetch from DB to guarantee the message is persisted and visible after reload
-      await fetchConversations();
+      await fetchConversations()
       
       // Track usage and notify if approaching limit
-      await subscriptionService.trackUsage(user.email, 'message');
+      await subscriptionService.trackUsage(user.email, 'message')
       
       // Notify recipient about new message
       try {
@@ -444,207 +444,207 @@ export default function MessagesPage() {
           message: `${user.full_name || user.email} sent you a message.`,
           metadata: { sender_name: user.full_name || user.email, conversation_id: selectedConversation.id },
           read: false
-        });
+        })
       } catch (notifErr) {
-        console.error('Error sending message notification:', notifErr);
+        //
       }
     } catch (err) {
-      console.error('Error sending message:', err);
-      error('Failed', 'Failed to send message');
+      //
+      error('Failed', 'Failed to send message')
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
         ? { ...c, messages: c.messages.filter(msg => msg.id !== tempId) }
-        : c));
+        : c))
     }
-  };
+  }
 
   const handleFileAttach = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !selectedConversation) return;
+    const file = e.target.files?.[0]
+    if (!file || !selectedConversation) return
     
     // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      error('File too large', 'Maximum file size is 10MB');
-      e.target.value = null;
-      return;
+      error('File too large', 'Maximum file size is 10MB')
+      e.target.value = null
+      return
     }
 
     // Check file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/zip', 'audio/mpeg', 'audio/mp3', 'audio/wav'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/zip', 'audio/mpeg', 'audio/mp3', 'audio/wav']
     if (!allowedTypes.includes(file.type)) {
-      error('Invalid file type', 'Allowed types: images, PDF, ZIP, MP3, WAV');
-      e.target.value = null;
-      return;
+      error('Invalid file type', 'Allowed types: images, PDF, ZIP, MP3, WAV')
+      e.target.value = null
+      return
     }
 
-    setAttachedFile(file);
-    e.target.value = null;
-  };
+    setAttachedFile(file)
+    e.target.value = null
+  }
 
   const handleRemoveAttachment = () => {
-    setAttachedFile(null);
-  };
+    setAttachedFile(null)
+  }
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      const chunks = [];
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaRecorderRef.current = new MediaRecorder(stream)
+      const chunks = []
 
       mediaRecorderRef.current.ondataavailable = (e) => {
-        chunks.push(e.data);
-      };
+        chunks.push(e.data)
+      }
 
       mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
-        const audioFile = new File([audioBlob], `recording_${Date.now()}.webm`, { type: 'audio/webm' });
-        setAttachedFile(audioFile);
-        setRecordingTime(0);
-        setIsRecording(false);
-      };
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' })
+        const audioFile = new File([audioBlob], `recording_${Date.now()}.webm`, { type: 'audio/webm' })
+        setAttachedFile(audioFile)
+        setRecordingTime(0)
+        setIsRecording(false)
+      }
 
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
-      setRecordingTime(0);
+      mediaRecorderRef.current.start()
+      setIsRecording(true)
+      setRecordingTime(0)
 
       recordingIntervalRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
-      }, 1000);
+        setRecordingTime(prev => prev + 1)
+      }, 1000)
     } catch (err) {
-      console.error('Error starting recording:', err);
-      error('Recording Failed', 'Could not access microphone');
+      //
+      error('Recording Failed', 'Could not access microphone')
     }
-  };
+  }
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-      clearInterval(recordingIntervalRef.current);
+      mediaRecorderRef.current.stop()
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
+      clearInterval(recordingIntervalRef.current)
     }
-  };
+  }
 
   const formatRecordingTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
 
   const handleArchive = async (conv, archive) => {
     try {
-      await Promise.all(conv.messages.map(m => Message.update(m.id, { is_archived: archive })));
-      setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, isArchived: archive } : c));
-      success(archive ? 'Archived' : 'Unarchived', archive ? 'Conversation archived' : 'Conversation restored');
-      if (selectedId === conv.id) setSelectedId(null);
+      await Promise.all(conv.messages.map(m => Message.update(m.id, { is_archived: archive })))
+      setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, isArchived: archive } : c))
+      success(archive ? 'Archived' : 'Unarchived', archive ? 'Conversation archived' : 'Conversation restored')
+      if (selectedId === conv.id) setSelectedId(null)
     } catch (err) {
-      console.error('Error archiving conversation:', err);
-      error('Failed', 'Failed to update conversation');
+      //
+      error('Failed', 'Failed to update conversation')
     }
-  };
+  }
 
   const handleDelete = async (conv) => {
-    const confirmed = await confirmDialog('Delete conversation?', `This will permanently delete your conversation with ${conv.name}.`, 'Yes, delete it');
-    if (!confirmed) return;
+    const confirmed = await confirmDialog('Delete conversation?', `This will permanently delete your conversation with ${conv.name}.`, 'Yes, delete it')
+    if (!confirmed) return
     try {
-      await Promise.all(conv.messages.map(m => Message.delete(m.id)));
-      success('Deleted', 'Conversation deleted');
-      if (selectedId === conv.id) setSelectedId(null);
-      setConversations(prev => prev.filter(c => c.id !== conv.id));
+      await Promise.all(conv.messages.map(m => Message.delete(m.id)))
+      success('Deleted', 'Conversation deleted')
+      if (selectedId === conv.id) setSelectedId(null)
+      setConversations(prev => prev.filter(c => c.id !== conv.id))
     } catch (err) {
-      console.error('Error deleting conversation:', err);
-      error('Failed', 'Failed to delete conversation');
+      //
+      error('Failed', 'Failed to delete conversation')
     }
-  };
+  }
 
   const handleDeleteMessage = async (msg, deleteType = 'me') => {
     const confirmText = deleteType === 'everyone' 
       ? 'Delete for everyone? This will remove the message for all participants.' 
-      : 'Delete for you? This will only remove the message from your view.';
-    const confirmed = await confirmDialog('Delete message?', confirmText, 'Yes, delete it');
-    if (!confirmed) return;
+      : 'Delete for you? This will only remove the message from your view.'
+    const confirmed = await confirmDialog('Delete message?', confirmText, 'Yes, delete it')
+    if (!confirmed) return
     try {
       if (deleteType === 'everyone') {
         // Mark as deleted for everyone
-        await Message.update(msg.id, { deleted_for_everyone: true });
+        await Message.update(msg.id, { deleted_for_everyone: true })
         setConversations(prev => prev.map(c => c.id === selectedConversation.id
           ? { ...c, messages: c.messages.map(m => m.id === msg.id ? { ...m, deleted_for_everyone: true, text: 'This message was deleted' } : m) }
-          : c));
+          : c))
       } else {
         // Delete only for current user (soft delete - add to deleted_for array)
-        const currentDeletedFor = msg.deleted_for || [];
-        const updatedDeletedFor = [...currentDeletedFor, user.email];
-        await Message.update(msg.id, { deleted_for: updatedDeletedFor });
+        const currentDeletedFor = msg.deleted_for || []
+        const updatedDeletedFor = [...currentDeletedFor, user.email]
+        await Message.update(msg.id, { deleted_for: updatedDeletedFor })
         setConversations(prev => prev.map(c => c.id === selectedConversation.id
           ? { ...c, messages: c.messages.filter(m => m.id !== msg.id) }
-          : c));
+          : c))
       }
-      setShowMessageMenu(null);
-      success('Deleted', deleteType === 'everyone' ? 'Message deleted for everyone' : 'Message deleted for you');
+      setShowMessageMenu(null)
+      success('Deleted', deleteType === 'everyone' ? 'Message deleted for everyone' : 'Message deleted for you')
     } catch (err) {
-      console.error('Error deleting message:', err);
-      error('Failed', 'Failed to delete message');
+      //
+      error('Failed', 'Failed to delete message')
     }
-  };
+  }
 
   const handleEditMessage = (msg) => {
-    setEditingMessage(msg);
-    setEditText(msg.text || '');
-    setShowMessageMenu(null);
-    setMessageInput('');
-    setAttachedFile(null);
+    setEditingMessage(msg)
+    setEditText(msg.text || '')
+    setShowMessageMenu(null)
+    setMessageInput('')
+    setAttachedFile(null)
     // Scroll to input
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   const handleSaveEdit = async () => {
-    if (!editingMessage || editText.trim() === '') return;
+    if (!editingMessage || editText.trim() === '') return
     try {
-      await Message.update(editingMessage.id, { text: editText.trim() });
+      await Message.update(editingMessage.id, { text: editText.trim() })
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
         ? { ...c, messages: c.messages.map(m => m.id === editingMessage.id ? { ...m, text: editText.trim() } : m) }
-        : c));
-      setEditingMessage(null);
-      setEditText('');
-      success('Edited', 'Message updated');
+        : c))
+      setEditingMessage(null)
+      setEditText('')
+      success('Edited', 'Message updated')
     } catch (err) {
-      console.error('Error editing message:', err);
-      error('Failed', 'Failed to edit message');
+      //
+      error('Failed', 'Failed to edit message')
     }
-  };
+  }
 
   const handleCancelEdit = () => {
-    setEditingMessage(null);
-    setEditText('');
-  };
+    setEditingMessage(null)
+    setEditText('')
+  }
 
   const handleStarMessage = async (msg) => {
     try {
-      const currentStarredBy = msg.starred_by || [];
-      const isStarred = currentStarredBy.includes(user.email);
+      const currentStarredBy = msg.starred_by || []
+      const isStarred = currentStarredBy.includes(user.email)
       const updatedStarredBy = isStarred
         ? currentStarredBy.filter(email => email !== user.email)
-        : [...currentStarredBy, user.email];
+        : [...currentStarredBy, user.email]
       
-      await Message.update(msg.id, { starred_by: updatedStarredBy });
+      await Message.update(msg.id, { starred_by: updatedStarredBy })
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
         ? { ...c, messages: c.messages.map(m => m.id === msg.id ? { ...m, starred_by: updatedStarredBy } : m) }
-        : c));
-      setShowMessageMenu(null);
-      success(isStarred ? 'Unstarred' : 'Starred', `Message ${isStarred ? 'unstarred' : 'starred'}`);
+        : c))
+      setShowMessageMenu(null)
+      success(isStarred ? 'Unstarred' : 'Starred', `Message ${isStarred ? 'unstarred' : 'starred'}`)
     } catch (err) {
-      console.error('Error starring message:', err);
-      error('Failed', 'Failed to star message');
+      //
+      error('Failed', 'Failed to star message')
     }
-  };
+  }
 
   const openDirectory = async () => {
-    setShowNewChatModal(true);
+    setShowNewChatModal(true)
     try {
       const [artists, teams, owners, backers] = await Promise.all([
         Artist.list(),
         Team.list(),
         ProjectOwner.list(),
         Backer.list(),
-      ]);
+      ])
       const people = [
         ...artists.filter(a => a.email !== user.email).map(a => ({
           email: a.email, name: a.full_name, type: 'Artist',
@@ -662,40 +662,40 @@ export default function MessagesPage() {
           email: b.contact_email, name: b.organization_name, type: 'Backer',
           tags: (b.interests || []).slice(0, 2), avatar: b.logo_url, lastActive: b.last_active,
         })),
-      ];
-      setDirectory(people);
+      ]
+      setDirectory(people)
     } catch (err) {
-      console.error('Error loading directory:', err);
+      //
     }
-  };
+  }
 
   const startChat = (person) => {
-    const id = getConversationId(user.email, person.email);
-    const existing = conversations.find(c => c.id === id);
+    const id = getConversationId(user.email, person.email)
+    const existing = conversations.find(c => c.id === id)
     if (existing) {
-      setSelectedId(id);
+      setSelectedId(id)
     } else {
       setConversations(prev => [{
         id, otherEmail: person.email, name: person.name, avatar: person.avatar || null,
         type: person.type, tags: person.tags || [], lastActive: person.lastActive,
         messages: [], lastMessage: '', lastMessageTime: new Date().toISOString(), isArchived: false,
-      }, ...prev]);
-      setSelectedId(id);
+      }, ...prev])
+      setSelectedId(id)
     }
-    setShowNewChatModal(false);
-    setDirectorySearch('');
-  };
+    setShowNewChatModal(false)
+    setDirectorySearch('')
+  }
 
   const filteredConversations = conversations.filter(c => {
-    if (filterTab === 'active' && c.isArchived) return false;
-    if (filterTab === 'archived' && !c.isArchived) return false;
-    const q = searchQuery.toLowerCase();
-    return c.name?.toLowerCase().includes(q) || c.otherEmail?.toLowerCase().includes(q);
-  });
+    if (filterTab === 'active' && c.isArchived) return false
+    if (filterTab === 'archived' && !c.isArchived) return false
+    const q = searchQuery.toLowerCase()
+    return c.name?.toLowerCase().includes(q) || c.otherEmail?.toLowerCase().includes(q)
+  })
 
   const filteredDirectory = directory.filter(p =>
     p.name?.toLowerCase().includes(directorySearch.toLowerCase()) || p.email?.toLowerCase().includes(directorySearch.toLowerCase())
-  );
+  )
 
   // Virtual scrolling for conversation list
   const conversationsVirtualizer = useVirtualizer({
@@ -703,7 +703,7 @@ export default function MessagesPage() {
     getScrollElement: () => conversationsListRef.current,
     estimateSize: () => 100, // Estimated height of each conversation item
     overscan: 5,
-  });
+  })
 
   // Virtual scrolling for message history
   const messagesVirtualizer = useVirtualizer({
@@ -711,14 +711,14 @@ export default function MessagesPage() {
     getScrollElement: () => messagesListRef.current,
     estimateSize: () => 60, // Estimated height of each message
     overscan: 5,
-  });
+  })
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -765,7 +765,7 @@ export default function MessagesPage() {
           )}
           <div style={{ height: `${conversationsVirtualizer.getTotalSize()}px`, position: 'relative' }}>
             {conversationsVirtualizer.getVirtualItems().map((virtualItem) => {
-              const conv = filteredConversations[virtualItem.index];
+              const conv = filteredConversations[virtualItem.index]
               return (
                 <div
                   key={conv.id}
@@ -813,7 +813,7 @@ export default function MessagesPage() {
                     </button>
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         </div>
@@ -860,7 +860,7 @@ export default function MessagesPage() {
                 )}
                 <div style={{ height: `${messagesVirtualizer.getTotalSize()}px`, position: 'relative' }}>
                   {messagesVirtualizer.getVirtualItems().map((virtualItem) => {
-                    const msg = selectedConversation.messages[virtualItem.index];
+                    const msg = selectedConversation.messages[virtualItem.index]
                     return (
                       <div
                         key={msg.id}
@@ -923,17 +923,17 @@ export default function MessagesPage() {
                               {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                             {(() => {
-                              const status = getMessageStatus(msg, user.email);
-                              if (!status) return null;
-                              const StatusIcon = status.icon;
+                              const status = getMessageStatus(msg, user.email)
+                              if (!status) return null
+                              const StatusIcon = status.icon
                               return (
                                 <StatusIcon className={`w-3.5 h-3.5 ${status.color}`} title={status.label} />
-                              );
+                              )
                             })()}
                             <button
                               onClick={(e) => {
-                                e.stopPropagation();
-                                setShowMessageMenu(showMessageMenu === msg.id ? null : msg.id);
+                                e.stopPropagation()
+                                setShowMessageMenu(showMessageMenu === msg.id ? null : msg.id)
                               }}
                               className="p-0.5 hover:bg-gray-200 rounded"
                             >
@@ -976,7 +976,7 @@ export default function MessagesPage() {
                           )}
                         </div>
                       </div>
-                    );
+                    )
                   })}
                 </div>
                 <div ref={messagesEndRef} />
@@ -1199,5 +1199,5 @@ export default function MessagesPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

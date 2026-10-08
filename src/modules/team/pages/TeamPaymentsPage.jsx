@@ -1,80 +1,80 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Team, TeamPayment } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { CreditCard, DollarSign, TrendingUp, Check, Clock, AlertCircle, CheckCircle } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Team, TeamPayment } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { CreditCard, DollarSign, TrendingUp, Check, Clock, AlertCircle, CheckCircle } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function TeamPaymentsPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [team, setTeam] = useState(null);
-  const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [team, setTeam] = useState(null)
+  const [payments, setPayments] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    loadTeamData();
-  }, [isAuthenticated]);
+    loadTeamData()
+  }, [isAuthenticated])
 
   const loadTeamData = async () => {
     try {
-      let teamData = null;
+      let teamData = null
       if (authUser?.team_id) {
-        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null);
+        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null)
       } else {
-        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1);
-        teamData = teams?.[0] || null;
+        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1)
+        teamData = teams?.[0] || null
       }
-      setTeam(teamData);
+      setTeam(teamData)
       if (teamData) {
-        fetchPayments(teamData.id);
+        fetchPayments(teamData.id)
       } else {
-        setLoading(false);
+        setLoading(false)
       }
     } catch (err) {
-      console.error('Error loading team:', err);
-      toastError('Load Failed', 'Failed to load team data');
-      setLoading(false);
+      //
+      toastError('Load Failed', 'Failed to load team data')
+      setLoading(false)
     }
-  };
+  }
 
   const fetchPayments = async (teamId) => {
     try {
-      const teamPayments = await TeamPayment.filter({ team_id: teamId }, '-created_at', 50);
-      setPayments(teamPayments || []);
+      const teamPayments = await TeamPayment.filter({ team_id: teamId }, '-created_at', 50)
+      setPayments(teamPayments || [])
     } catch (err) {
-      console.error('Error fetching payments:', err);
-      toastError('Load Failed', 'Failed to load payments. Please try again.');
-      setPayments([]);
+      //
+      toastError('Load Failed', 'Failed to load payments. Please try again.')
+      setPayments([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center">
         <div className="text-gray-600">Loading...</div>
       </div>
-    );
+    )
   }
 
-  const totalRevenue = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
-  const pendingPayments = payments.filter(p => p.status === 'pending').length;
-  const completedPayments = payments.filter(p => p.status === 'completed').length;
+  const totalRevenue = payments.reduce((sum, p) => sum + (p.amount || 0), 0)
+  const pendingPayments = payments.filter(p => p.status === 'pending').length
+  const completedPayments = payments.filter(p => p.status === 'completed').length
 
   const statusIcons = {
     completed: CheckCircle,
     pending: Clock,
     failed: AlertCircle
-  };
+  }
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -123,7 +123,7 @@ export default function TeamPaymentsPage() {
           </thead>
           <tbody>
             {payments.map((payment) => {
-              const StatusIcon = statusIcons[payment.status] || AlertCircle;
+              const StatusIcon = statusIcons[payment.status] || AlertCircle
               return (
                 <tr key={payment.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="px-4 py-3 text-gray-900">{payment.project_name || 'N/A'}</td>
@@ -142,7 +142,7 @@ export default function TeamPaymentsPage() {
                     {payment.created_at ? new Date(payment.created_at).toLocaleDateString() : 'N/A'}
                   </td>
                 </tr>
-              );
+              )
             })}
           </tbody>
         </table>
@@ -154,5 +154,5 @@ export default function TeamPaymentsPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

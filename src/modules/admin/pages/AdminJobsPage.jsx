@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Job, AuditLog } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Briefcase, Search, Eye, Trash2, Calendar, MapPin, CheckCircle, XCircle, X, Crown, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { Job, AuditLog } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Briefcase, Search, Eye, Trash2, Calendar, MapPin, CheckCircle, XCircle, X, Crown, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 
-const STATUSES = ['draft', 'pending_approval', 'open', 'closed', 'filled'];
+const STATUSES = ['draft', 'pending_approval', 'open', 'closed', 'filled']
 
 export default function AdminJobsPage() {
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [jobs, setJobs] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [jobs, setJobs] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [selectedJob, setSelectedJob] = useState(null)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [createForm, setCreateForm] = useState({
     title: '',
     description: '',
@@ -27,72 +27,72 @@ export default function AdminJobsPage() {
     budget: '',
     duration: 'short_term',
     status: 'open'
-  });
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
 
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+      setDebouncedSearchQuery(searchQuery)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   const fetchJobs = async () => {
     try {
-      setLoading(true);
-      const rows = await Job.list('-posted_at');
-      setJobs(rows || []);
+      setLoading(true)
+      const rows = await Job.list('-posted_at')
+      setJobs(rows || [])
     } catch (err) {
-      console.error('Error fetching jobs:', err);
-      error('Error', 'Failed to fetch jobs');
+      
+      error('Error', 'Failed to fetch jobs')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchJobs(); }, []);
+  useEffect(() => { fetchJobs(); }, [])
 
   const handleDeleteJob = async (jobId) => {
-    if (!window.confirm('Delete this job? This cannot be undone.')) return;
+    if (!window.confirm('Delete this job? This cannot be undone.')) return
     try {
-      await Job.delete(jobId);
-      setJobs(prev => prev.filter(j => j.id !== jobId));
-      success('Deleted', 'Job deleted successfully');
-      AuditLog.create({ actor_email: user?.email, action: 'job.delete', entity_type: 'Job', entity_id: jobId, details: 'Deleted job' }).catch(() => {});
+      await Job.delete(jobId)
+      setJobs(prev => prev.filter(j => j.id !== jobId))
+      success('Deleted', 'Job deleted successfully')
+      AuditLog.create({ actor_email: user?.email, action: 'job.delete', entity_type: 'Job', entity_id: jobId, details: 'Deleted job' }).catch(() => {})
     } catch (err) {
-      console.error('Error deleting job:', err);
-      error('Failed', 'Failed to delete job');
+      
+      error('Failed', 'Failed to delete job')
     }
-  };
+  }
 
   const handleToggleStatus = async (jobId, currentStatus) => {
-    let newStatus;
+    let newStatus
     if (currentStatus === 'pending_approval') {
       newStatus = 'open'; // Approve the job
     } else if (currentStatus === 'open') {
-      newStatus = 'closed';
+      newStatus = 'closed'
     } else {
-      newStatus = 'open';
+      newStatus = 'open'
     }
     
     try {
-      await Job.update(jobId, { status: newStatus });
-      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: newStatus } : j));
-      const message = currentStatus === 'pending_approval' ? 'Job approved and is now live' : 'Job status updated successfully';
-      success('Updated', message);
-      AuditLog.create({ actor_email: user?.email, action: 'job.status_update', entity_type: 'Job', entity_id: jobId, details: `Changed status to ${newStatus}` }).catch(() => {});
+      await Job.update(jobId, { status: newStatus })
+      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: newStatus } : j))
+      const message = currentStatus === 'pending_approval' ? 'Job approved and is now live' : 'Job status updated successfully'
+      success('Updated', message)
+      AuditLog.create({ actor_email: user?.email, action: 'job.status_update', entity_type: 'Job', entity_id: jobId, details: `Changed status to ${newStatus}` }).catch(() => {})
     } catch (err) {
-      console.error('Error updating job status:', err);
-      error('Failed', 'Failed to update job status');
+      
+      error('Failed', 'Failed to update job status')
     }
-  };
+  }
 
   const handleCreateJob = async () => {
     if (!createForm.title || !createForm.description) {
-      error('Validation Error', 'Title and description are required');
-      return;
+      error('Validation Error', 'Title and description are required')
+      return
     }
     try {
       const newJob = await Job.create({
@@ -106,9 +106,9 @@ export default function AdminJobsPage() {
         status: createForm.status,
         client_email: user?.email || 'admin@ericrabar.com',
         client_name: user?.full_name || 'Admin'
-      });
-      setJobs(prev => [newJob, ...prev]);
-      setShowCreateModal(false);
+      })
+      setJobs(prev => [newJob, ...prev])
+      setShowCreateModal(false)
       setCreateForm({
         title: '',
         description: '',
@@ -118,26 +118,26 @@ export default function AdminJobsPage() {
         budget: '',
         duration: 'short_term',
         status: 'open'
-      });
-      success('Created', 'Job created successfully');
-      AuditLog.create({ actor_email: user?.email, action: 'job.create', entity_type: 'Job', entity_id: newJob.id, details: 'Created job' }).catch(() => {});
+      })
+      success('Created', 'Job created successfully')
+      AuditLog.create({ actor_email: user?.email, action: 'job.create', entity_type: 'Job', entity_id: newJob.id, details: 'Created job' }).catch(() => {})
     } catch (err) {
-      console.error('Error creating job:', err);
-      error('Failed', 'Failed to create job');
+      
+      error('Failed', 'Failed to create job')
     }
-  };
+  }
 
   const handleToggleProRequired = async (jobId, currentProRequired) => {
     try {
-      await Job.update(jobId, { requires_subscription: !currentProRequired });
-      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, requires_subscription: !currentProRequired } : j));
-      success('Updated', `Job ${!currentProRequired ? 'now requires' : 'no longer requires'} Pro subscription`);
-      AuditLog.create({ actor_email: user?.email, action: 'job.pro_requirement_update', entity_type: 'Job', entity_id: jobId, details: `Changed pro requirement to ${!currentProRequired}` }).catch(() => {});
+      await Job.update(jobId, { requires_subscription: !currentProRequired })
+      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, requires_subscription: !currentProRequired } : j))
+      success('Updated', `Job ${!currentProRequired ? 'now requires' : 'no longer requires'} Pro subscription`)
+      AuditLog.create({ actor_email: user?.email, action: 'job.pro_requirement_update', entity_type: 'Job', entity_id: jobId, details: `Changed pro requirement to ${!currentProRequired}` }).catch(() => {})
     } catch (err) {
-      console.error('Error updating pro requirement:', err);
-      error('Failed', 'Failed to update pro requirement');
+      
+      error('Failed', 'Failed to update pro requirement')
     }
-  };
+  }
 
   const getStatusBadge = (status) => {
     const map = {
@@ -146,39 +146,39 @@ export default function AdminJobsPage() {
       open: 'bg-green-100 text-green-800',
       closed: 'bg-gray-100 text-gray-800',
       filled: 'bg-blue-100 text-blue-800',
-    };
-    return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[status] || 'bg-gray-100 text-gray-800'}`}>{status.replace('_', ' ')}</span>;
-  };
+    }
+    return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[status] || 'bg-gray-100 text-gray-800'}`}>{status.replace('_', ' ')}</span>
+  }
 
   const filteredJobs = jobs.filter(job => {
     const matchesSearch = job.title?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
                          job.client_name?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-                         job.job_type?.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || job.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+                         job.job_type?.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    const matchesStatus = filterStatus === 'all' || job.status === filterStatus
+    return matchesSearch && matchesStatus
+  })
 
   const paginatedJobs = filteredJobs.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
+  )
 
-  const totalPages = Math.ceil(filteredJobs.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredJobs.length / itemsPerPage)
 
   const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+    setCurrentPage(page)
+  }
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearchQuery, filterStatus]);
+    setCurrentPage(1)
+  }, [debouncedSearchQuery, filterStatus])
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -446,5 +446,5 @@ export default function AdminJobsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

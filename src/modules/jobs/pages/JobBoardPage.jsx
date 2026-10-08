@@ -1,56 +1,56 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { Project, Application, Job } from '@/lib/supabaseEntities';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, Users, MessageSquare, Search, Filter, CheckCircle, TrendingUp, X, Bookmark, BookmarkCheck, Eye, EyeOff, Lock, Clock, Building2, Star, Crown } from 'lucide-react';
-import ShareProjectButton from '@/components/projects/ShareProjectButton';
-import notificationService from '@/shared/services/notificationService';
-import subscriptionService from '@/shared/services/subscriptionService';
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { base44 } from '@/api/base44Client'
+import { Project, Application, Job } from '@/lib/supabaseEntities'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { MapPin, Calendar, Users, MessageSquare, Search, Filter, CheckCircle, TrendingUp, X, Bookmark, BookmarkCheck, Eye, EyeOff, Lock, Clock, Building2, Star, Crown } from 'lucide-react'
+import ShareProjectButton from '@/components/projects/ShareProjectButton'
+import notificationService from '@/shared/services/notificationService'
+import subscriptionService from '@/shared/services/subscriptionService'
 
 export default function JobBoard() {
-  const [projects, setProjects] = useState([]);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterRole, setFilterRole] = useState('all');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [filterLocation, setFilterLocation] = useState('all');
-  const [filterSkill, setFilterSkill] = useState('all');
-  const [filterPayment, setFilterPayment] = useState('all');
-  const [showFilters, setShowFilters] = useState(false);
-  const [generatingImageFor, setGeneratingImageFor] = useState(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [wishlist, setWishlist] = useState([]);
-  const [hiddenProjects, setHiddenProjects] = useState([]);
-  const navigate = useNavigate();
-  const { success, error } = useToast();
+  const [projects, setProjects] = useState([])
+  const [selectedProject, setSelectedProject] = useState(null)
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterType, setFilterType] = useState('all')
+  const [filterRole, setFilterRole] = useState('all')
+  const [filterCategory, setFilterCategory] = useState('all')
+  const [filterLocation, setFilterLocation] = useState('all')
+  const [filterSkill, setFilterSkill] = useState('all')
+  const [filterPayment, setFilterPayment] = useState('all')
+  const [showFilters, setShowFilters] = useState(false)
+  const [generatingImageFor, setGeneratingImageFor] = useState(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [wishlist, setWishlist] = useState([])
+  const [hiddenProjects, setHiddenProjects] = useState([])
+  const navigate = useNavigate()
+  const { success, error } = useToast()
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    setUser(JSON.parse(storedUser));
-  }, []);
+    setUser(JSON.parse(storedUser))
+  }, [])
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
     
     const fetchProjects = async () => {
       try {
         // Fetch all projects from clients (not just verified)
-        const allProjects = await Project.filter({});
+        const allProjects = await Project.filter({})
         
         // Fetch jobs as well to unify data
-        const allJobs = await Job.filter({});
+        const allJobs = await Job.filter({})
         
         // Fetch applications to show engagement
-        const applications = await Application.list();
+        const applications = await Application.list()
         
         // Convert jobs to project-like format for unified display
         const jobsAsProjects = allJobs.map(job => ({
@@ -77,73 +77,73 @@ export default function JobBoard() {
           duration: job.duration,
           is_premium: job.is_premium,
           requires_subscription: job.is_premium || false
-        }));
+        }))
         
         // Combine projects and jobs
-        const allItems = [...allProjects, ...jobsAsProjects];
+        const allItems = [...allProjects, ...jobsAsProjects]
         
         // Enrich with application counts
         const enrichedItems = allItems.map(item => {
           const itemApplications = applications.filter(app => 
             app.project_id === item.id || app.job_id === item.job_id
-          );
+          )
           return {
             ...item,
             applicantCount: itemApplications.length,
             hasApplied: itemApplications.some(app => app.artist_email === user.email),
             inDiscussion: itemApplications.filter(app => app.status === 'chat_started').length > 0
-          };
-        });
+          }
+        })
         
-        setProjects(enrichedItems);
-        if (enrichedItems.length > 0) setSelectedProject(enrichedItems[0]);
+        setProjects(enrichedItems)
+        if (enrichedItems.length > 0) setSelectedProject(enrichedItems[0])
       } catch (err) {
-        console.error('Error fetching projects:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchProjects();
-  }, [user]);
+    fetchProjects()
+  }, [user])
 
   const handleGenerateImage = async (project) => {
-    setGeneratingImageFor(project.id);
+    setGeneratingImageFor(project.id)
     try {
-      const description = project.notes || `${project.project_type?.replace(/_/g, ' ')} production project`;
-      const location = `${project.location_city || 'modern city'}, ${project.location_country || 'Europe'}`;
-      const clientType = project.project_owner_company ? 'corporate brand' : 'independent creator';
-      const departments = project.departments_needed?.join(', ').replace(/_/g, ' ') || 'production';
+      const description = project.notes || `${project.project_type?.replace(/_/g, ' ')} production project`
+      const location = `${project.location_city || 'modern city'}, ${project.location_country || 'Europe'}`
+      const clientType = project.project_owner_company ? 'corporate brand' : 'independent creator'
+      const departments = project.departments_needed?.join(', ').replace(/_/g, ' ') || 'production'
       
-      const prompt = `Wide cinematic banner image for ${project.project_type?.replace(/_/g, ' ')} project by ${clientType}. Visual style: ${description}. Location atmosphere: ${location}. Focus on ${departments} aesthetic. Film production, creative, professional, vibrant colors, no text, no logos, cinematic composition`;
+      const prompt = `Wide cinematic banner image for ${project.project_type?.replace(/_/g, ' ')} project by ${clientType}. Visual style: ${description}. Location atmosphere: ${location}. Focus on ${departments} aesthetic. Film production, creative, professional, vibrant colors, no text, no logos, cinematic composition`
       
-      const imageResult = await base44.integrations.Core.GenerateImage({ prompt });
-      await Project.update(project.id, { image_url: imageResult.url });
+      const imageResult = await base44.integrations.Core.GenerateImage({ prompt })
+      await Project.update(project.id, { image_url: imageResult.url })
       
       // Update local state
       setProjects(prev => prev.map(p => 
         p.id === project.id ? { ...p, image_url: imageResult.url } : p
-      ));
+      ))
       if (selectedProject?.id === project.id) {
-        setSelectedProject({ ...selectedProject, image_url: imageResult.url });
+        setSelectedProject({ ...selectedProject, image_url: imageResult.url })
       }
     } catch (err) {
-      console.error('Failed to generate image:', err);
+      //
     } finally {
-      setGeneratingImageFor(null);
+      setGeneratingImageFor(null)
     }
-  };
+  }
 
   const handleApply = async () => {
-    if (!selectedProject || !user) return;
+    if (!selectedProject || !user) return
     
     // Check subscription limits before applying
-    const limitCheck = await subscriptionService.checkLimit(user.email, 'job_application');
+    const limitCheck = await subscriptionService.checkLimit(user.email, 'job_application')
     if (!limitCheck.allowed) {
       error('Limit Reached', limitCheck.expired 
         ? 'Your subscription has expired. Please renew to continue applying to jobs.'
-        : 'You have reached your monthly job application limit. Upgrade to apply to more jobs.');
-      return;
+        : 'You have reached your monthly job application limit. Upgrade to apply to more jobs.')
+      return
     }
     
     try {
@@ -153,99 +153,99 @@ export default function JobBoard() {
         artist_email: user.email,
         status: 'applied',
         applied_at: new Date().toISOString()
-      });
+      })
       
       // Update local state
       setProjects(projects.map(p => 
         p.id === selectedProject.id 
           ? { ...p, hasApplied: true, applicantCount: p.applicantCount + 1 }
           : p
-      ));
-      setSelectedProject({ ...selectedProject, hasApplied: true, applicantCount: selectedProject.applicantCount + 1 });
+      ))
+      setSelectedProject({ ...selectedProject, hasApplied: true, applicantCount: selectedProject.applicantCount + 1 })
       
       // Notify user about job application
       notificationService.notifyJobApplication(
         user.email, 
         selectedProject.title || selectedProject.project_type,
         selectedProject.project_owner_name || 'Client'
-      );
+      )
       
       // Track usage and notify if approaching limit
-      await subscriptionService.trackUsage(user.email, 'job_application');
+      await subscriptionService.trackUsage(user.email, 'job_application')
       
-      success('Application Sent', `You've applied to ${selectedProject.title || selectedProject.project_type}`);
-      setShowDetailModal(false);
+      success('Application Sent', `You've applied to ${selectedProject.title || selectedProject.project_type}`)
+      setShowDetailModal(false)
     } catch (err) {
-      console.error('Error applying:', err);
-      error('Failed', 'Failed to submit application');
+      //
+      error('Failed', 'Failed to submit application')
     }
-  };
+  }
 
   const handleToggleWishlist = (project) => {
     if (wishlist.includes(project.id)) {
-      setWishlist(wishlist.filter(id => id !== project.id));
-      success('Removed', 'Removed from wishlist');
+      setWishlist(wishlist.filter(id => id !== project.id))
+      success('Removed', 'Removed from wishlist')
     } else {
-      setWishlist([...wishlist, project.id]);
-      success('Added', 'Added to wishlist');
+      setWishlist([...wishlist, project.id])
+      success('Added', 'Added to wishlist')
     }
-  };
+  }
 
   const handleHideProject = (project) => {
-    setHiddenProjects([...hiddenProjects, project.id]);
-    success('Hidden', 'Project hidden from view');
-  };
+    setHiddenProjects([...hiddenProjects, project.id])
+    success('Hidden', 'Project hidden from view')
+  }
 
   const handleSkip = () => {
     if (selectedProject) {
-      handleHideProject(selectedProject);
-      setShowDetailModal(false);
+      handleHideProject(selectedProject)
+      setShowDetailModal(false)
     }
-  };
+  }
 
   const getTimeAgo = (date) => {
-    if (!date) return 'Recently';
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    if (seconds < 60) return 'Just now';
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    if (days < 7) return `${days}d ago`;
-    return new Date(date).toLocaleDateString();
-  };
+    if (!date) return 'Recently'
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000)
+    if (seconds < 60) return 'Just now'
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    if (days < 7) return `${days}d ago`
+    return new Date(date).toLocaleDateString()
+  }
 
   const filteredProjects = projects.filter(project => {
-    if (hiddenProjects.includes(project.id)) return false;
+    if (hiddenProjects.includes(project.id)) return false
     
     const matchesSearch = project.project_type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.location_city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.departments_needed?.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
+                         project.departments_needed?.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))
     
-    if (!matchesSearch) return false;
+    if (!matchesSearch) return false
     
-    if (filterType !== 'all' && project.project_type !== filterType) return false;
-    if (filterRole !== 'all' && project.job_type !== filterRole) return false;
-    if (filterCategory !== 'all' && project.category !== filterCategory) return false;
-    if (filterLocation !== 'all' && project.location_city !== filterLocation) return false;
-    if (filterSkill !== 'all' && !project.departments_needed?.includes(filterSkill)) return false;
+    if (filterType !== 'all' && project.project_type !== filterType) return false
+    if (filterRole !== 'all' && project.job_type !== filterRole) return false
+    if (filterCategory !== 'all' && project.category !== filterCategory) return false
+    if (filterLocation !== 'all' && project.location_city !== filterLocation) return false
+    if (filterSkill !== 'all' && !project.departments_needed?.includes(filterSkill)) return false
     if (filterPayment !== 'all') {
-      if (filterPayment === 'paid' && !project.budget) return false;
-      if (filterPayment === 'unpaid' && project.budget) return false;
+      if (filterPayment === 'paid' && !project.budget) return false
+      if (filterPayment === 'unpaid' && project.budget) return false
     }
     
-    return true;
-  });
+    return true
+  })
 
-  const projectTypes = [...new Set(projects.map(p => p.project_type))].filter(Boolean);
-  const jobRoles = [...new Set(projects.map(p => p.job_type))].filter(Boolean);
-  const allSkills = [...new Set(projects.flatMap(p => p.departments_needed || []))].filter(Boolean);
-  const locations = [...new Set(projects.map(p => p.location_city))].filter(Boolean);
+  const projectTypes = [...new Set(projects.map(p => p.project_type))].filter(Boolean)
+  const jobRoles = [...new Set(projects.map(p => p.job_type))].filter(Boolean)
+  const allSkills = [...new Set(projects.flatMap(p => p.departments_needed || []))].filter(Boolean)
+  const locations = [...new Set(projects.map(p => p.location_city))].filter(Boolean)
 
-  if (!user || loading) return null;
+  if (!user || loading) return null
 
   return (
     <div className="h-full bg-white overflow-hidden">
@@ -357,12 +357,12 @@ export default function JobBoard() {
 
                       <Button
                         onClick={() => {
-                          setFilterType('all');
-                          setFilterRole('all');
-                          setFilterCategory('all');
-                          setFilterLocation('all');
-                          setFilterSkill('all');
-                          setFilterPayment('all');
+                          setFilterType('all')
+                          setFilterRole('all')
+                          setFilterCategory('all')
+                          setFilterLocation('all')
+                          setFilterSkill('all')
+                          setFilterPayment('all')
                         }}
                         variant="outline"
                         className="w-full text-sm"
@@ -636,5 +636,5 @@ export default function JobBoard() {
         </div>
       )}
     </div>
-  );
+  )
 }

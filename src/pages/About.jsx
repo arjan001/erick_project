@@ -1,33 +1,33 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Target, Eye, Clapperboard, Users, ShieldCheck, Bell, MessageSquare, Video } from 'lucide-react';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
-import ChatWidget from '@/components/landing/backstage/ChatWidget';
-import SEOMetaTags from '@/components/SEOMetaTags';
-import { ParallaxBackground } from '@/components/landing/backstage/Parallax';
-import CreativeTeamCarousel from '@/components/landing/backstage/CreativeTeamCarousel';
-import CTASection from '@/components/landing/backstage/CTASection';
-import { isFeatureEnabledSync } from '@/lib/featureFlags';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { Target, Eye, Clapperboard, Users, ShieldCheck, Bell, MessageSquare, Video } from 'lucide-react'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
+import ChatWidget from '@/components/landing/backstage/ChatWidget'
+import SEOMetaTags from '@/components/SEOMetaTags'
+import { ParallaxBackground } from '@/components/landing/backstage/Parallax'
+import CreativeTeamCarousel from '@/components/landing/backstage/CreativeTeamCarousel'
+import CTASection from '@/components/landing/backstage/CTASection'
+import { isFeatureEnabledSync } from '@/lib/featureFlags'
 
 const audiences = [
   'a filmmaker seeking the perfect cast',
   'a location scout in search of the ideal spot for your next shoot',
   'a visionary trying to get into film',
   'a producer looking for the right team',
-];
+]
 
 const forTalent = [
   'Sign up and complete a detailed public profile with high-resolution photos, portfolio uploads and embedded video reels.',
   'Receive real-time job alerts and notifications matched by your location and profile tags.',
   'Track every application status in one view and converse with producers through in-site messaging.',
-];
+]
 
 const forProducers = [
   'Post gigs, assigning city or region tags so roles surface to the right talent automatically.',
   'Filter incoming submissions by location, skills or custom tags, then drill down with advanced talent search.',
   'Review organised application pipelines and move candidates through stages — the actor dashboard updates automatically.',
-];
+]
 
 const shared = [
   { icon: Users, text: 'Responsive design for mobile, tablet and desktop' },
@@ -36,14 +36,14 @@ const shared = [
   { icon: Bell, text: 'Email and in-app notifications that keep both sides informed' },
   { icon: MessageSquare, text: 'Built-in messaging threads between talent and producers' },
   { icon: Clapperboard, text: 'A shop with branded productions and live discount auctions' },
-];
+]
 
 const steps = [
   ['Create Profile', 'Build your profile to highlight your talents.'],
   ['Search Gigs', 'Browse available gigs based on your interests.'],
   ['Apply / Contact', 'Connect with producers and casting directors.'],
   ['Get Hired', 'Land your next gig and start filming!'],
-];
+]
 
 export default function About() {
   return (
@@ -166,13 +166,13 @@ export default function About() {
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {shared.map((s) => {
-              const Icon = s.icon;
+              const Icon = s.icon
               return (
                 <div key={s.text} className="flex items-start gap-3 rounded-2xl bg-[#F5F3EF] p-4">
                   <Icon className="mt-0.5 h-5 w-5 shrink-0 text-[#4F46E5]" />
                   <p className="text-sm font-medium text-black">{s.text}</p>
                 </div>
-              );
+              )
             })}
           </div>
         </div>
@@ -227,5 +227,5 @@ export default function About() {
       <Footer />
       <ChatWidget />
     </div>
-  );
+  )
 }

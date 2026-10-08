@@ -1,20 +1,20 @@
-import React from 'react';
-import { AreaChart, Area, XAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import React from 'react'
+import { AreaChart, Area, XAxis, ResponsiveContainer, Tooltip } from 'recharts'
 
 export default function ActivityChart({ applications = [] }) {
-  const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-  const today = new Date();
+  const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+  const today = new Date()
   const data = Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() - (6 - i));
+    const d = new Date(today)
+    d.setDate(today.getDate() - (6 - i))
     const count = applications.filter(a => {
-      const ad = new Date(a.created_date);
-      return ad.toDateString() === d.toDateString();
-    }).length;
-    return { day: days[d.getDay()], count };
-  });
+      const ad = new Date(a.created_date)
+      return ad.toDateString() === d.toDateString()
+    }).length
+    return { day: days[d.getDay()], count }
+  })
 
-  const total = data.reduce((s, d) => s + d.count, 0);
+  const total = data.reduce((s, d) => s + d.count, 0)
 
   return (
     <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5">
@@ -42,5 +42,5 @@ export default function ActivityChart({ applications = [] }) {
         </AreaChart>
       </ResponsiveContainer>
     </div>
-  );
+  )
 }

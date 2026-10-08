@@ -1,39 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Textarea } from '@/shared/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Switch } from '@/shared/components/ui/switch';
-import { Save, Globe, FileText, Image as ImageIcon, Map, Settings, Code, RefreshCw, Plus, Trash2, Edit, ChevronLeft, ChevronRight, Search, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { getSeoSettings, updateSeoSettings, getPageMetadata, updatePageMetadata, createPageMetadata, deletePageMetadata, generateSitemap } from '../api/seo.api';
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Textarea } from '@/shared/components/ui/textarea'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
+import { Switch } from '@/shared/components/ui/switch'
+import { Save, Globe, FileText, Image as ImageIcon, Map, Settings, Code, RefreshCw, Plus, Trash2, Edit, ChevronLeft, ChevronRight, Search, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { getSeoSettings, updateSeoSettings, getPageMetadata, updatePageMetadata, createPageMetadata, deletePageMetadata, generateSitemap } from '../api/seo.api'
 
 export default function AdminSEOPage() {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [sitemapRegenerating, setSitemapRegenerating] = useState(false);
-  const [seoSettings, setSeoSettings] = useState(null);
-  const [cmsPages, setCmsPages] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
-  const [editingPage, setEditingPage] = useState(null);
-  const [showAddPage, setShowAddPage] = useState(false);
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [sitemapRegenerating, setSitemapRegenerating] = useState(false)
+  const [seoSettings, setSeoSettings] = useState(null)
+  const [cmsPages, setCmsPages] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(5)
+  const [editingPage, setEditingPage] = useState(null)
+  const [showAddPage, setShowAddPage] = useState(false)
 
   // Load data on mount
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData()
+  }, [])
 
   const loadData = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       const [settings, pages] = await Promise.all([
         getSeoSettings().catch(() => null),
         getPageMetadata().catch(() => [])
-      ]);
+      ])
       
       if (settings) {
         setSeoSettings({
@@ -65,7 +65,7 @@ export default function AdminSEOPage() {
           gtmId: settings.gtm_id || '',
           enableFacebookPixel: settings.enable_facebook_pixel || false,
           facebookPixelId: settings.facebook_pixel_id || '',
-        });
+        })
       }
       
       if (pages && pages.length > 0) {
@@ -80,18 +80,18 @@ export default function AdminSEOPage() {
           noIndex: p.no_index || false,
           priority: p.sitemap_priority || 0.8,
           changeFreq: p.sitemap_change_freq || 'weekly'
-        })));
+        })))
       }
     } catch (error) {
-      console.error('Error loading SEO data:', error);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSave = async () => {
-    setSaving(true);
-    setSaveSuccess(false);
+    setSaving(true)
+    setSaveSuccess(false)
     try {
       // Save SEO settings
       if (seoSettings) {
@@ -124,7 +124,7 @@ export default function AdminSEOPage() {
           gtm_id: seoSettings.gtmId,
           enable_facebook_pixel: seoSettings.enableFacebookPixel,
           facebook_pixel_id: seoSettings.facebookPixelId,
-        });
+        })
       }
       
       // Save page metadata
@@ -140,40 +140,40 @@ export default function AdminSEOPage() {
             no_index: page.noIndex,
             sitemap_priority: page.priority,
             sitemap_change_freq: page.changeFreq,
-          });
+          })
         }
       }
       
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 3000)
     } catch (error) {
-      console.error('Error saving SEO settings:', error);
+      
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleRegenerateSitemap = async () => {
-    setSitemapRegenerating(true);
+    setSitemapRegenerating(true)
     try {
-      await generateSitemap();
+      await generateSitemap()
     } catch (error) {
-      console.error('Error regenerating sitemap:', error);
+      
     } finally {
-      setSitemapRegenerating(false);
+      setSitemapRegenerating(false)
     }
-  };
+  }
 
   // Pagination
   const filteredPages = cmsPages.filter(page => 
     page.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     page.slug.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  const totalPages = Math.ceil(filteredPages.length / itemsPerPage);
+  )
+  const totalPages = Math.ceil(filteredPages.length / itemsPerPage)
   const paginatedPages = filteredPages.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
+  )
 
   const handleAddPage = () => {
     const newPage = {
@@ -187,26 +187,26 @@ export default function AdminSEOPage() {
       noIndex: false,
       priority: 0.8,
       changeFreq: 'weekly'
-    };
-    setEditingPage(newPage);
-    setShowAddPage(true);
-  };
+    }
+    setEditingPage(newPage)
+    setShowAddPage(true)
+  }
 
   const handleEditPage = (page) => {
-    setEditingPage(page);
-    setShowAddPage(true);
-  };
+    setEditingPage(page)
+    setShowAddPage(true)
+  }
 
   const handleDeletePage = async (pageId) => {
     if (window.confirm('Are you sure you want to delete this page metadata?')) {
       try {
-        await deletePageMetadata(pageId);
-        setCmsPages(cmsPages.filter(p => p.id !== pageId));
+        await deletePageMetadata(pageId)
+        setCmsPages(cmsPages.filter(p => p.id !== pageId))
       } catch (error) {
-        console.error('Error deleting page:', error);
+        
       }
     }
-  };
+  }
 
   const handleSavePage = async () => {
     try {
@@ -221,8 +221,8 @@ export default function AdminSEOPage() {
           no_index: editingPage.noIndex,
           sitemap_priority: editingPage.priority,
           sitemap_change_freq: editingPage.changeFreq,
-        });
-        setCmsPages(cmsPages.map(p => p.id === editingPage.id ? editingPage : p));
+        })
+        setCmsPages(cmsPages.map(p => p.id === editingPage.id ? editingPage : p))
       } else {
         const newPage = await createPageMetadata({
           page_title: editingPage.title,
@@ -234,22 +234,22 @@ export default function AdminSEOPage() {
           no_index: editingPage.noIndex,
           sitemap_priority: editingPage.priority,
           sitemap_change_freq: editingPage.changeFreq,
-        });
-        setCmsPages([...cmsPages, { ...editingPage, id: newPage.id }]);
+        })
+        setCmsPages([...cmsPages, { ...editingPage, id: newPage.id }])
       }
-      setShowAddPage(false);
-      setEditingPage(null);
+      setShowAddPage(false)
+      setEditingPage(null)
     } catch (error) {
-      console.error('Error saving page:', error);
+      
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
       </div>
-    );
+    )
   }
 
   return (
@@ -411,7 +411,7 @@ export default function AdminSEOPage() {
                           <Switch 
                             checked={!page.noIndex}
                             onCheckedChange={(checked) => {
-                              setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, noIndex: !checked } : p));
+                              setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, noIndex: !checked } : p))
                             }}
                           />
                           <span className={page.noIndex ? 'text-red-600' : 'text-green-600'}>
@@ -876,5 +876,5 @@ export default function AdminSEOPage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

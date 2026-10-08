@@ -1,28 +1,28 @@
-import React, { useState } from 'react';
-import { Artist } from '@/lib/supabaseEntities';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Clock, ExternalLink } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
+import React, { useState } from 'react'
+import { Artist } from '@/lib/supabaseEntities'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { CheckCircle, XCircle, Clock, ExternalLink } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 
 export default function ArtistsQueue() {
-  const [selectedArtist, setSelectedArtist] = useState(null);
-  const [adminNotes, setAdminNotes] = useState('');
-  const queryClient = useQueryClient();
+  const [selectedArtist, setSelectedArtist] = useState(null)
+  const [adminNotes, setAdminNotes] = useState('')
+  const queryClient = useQueryClient()
 
   const { data: artists, isLoading } = useQuery({
     queryKey: ['admin-artists'],
     queryFn: () => Artist.list('-created_date'),
-  });
+  })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => Artist.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-artists'] });
-      setSelectedArtist(null);
+      queryClient.invalidateQueries({ queryKey: ['admin-artists'] })
+      setSelectedArtist(null)
     },
-  });
+  })
 
   const handleApprove = (artist) => {
     updateMutation.mutate({
@@ -32,21 +32,21 @@ export default function ArtistsQueue() {
         admin_notes: adminNotes || artist.admin_notes,
         approved_date: new Date().toISOString()
       }
-    });
-  };
+    })
+  }
 
   const handleReject = (artist) => {
     updateMutation.mutate({
       id: artist.id,
       data: { status: 'rejected', admin_notes: adminNotes || artist.admin_notes }
-    });
-  };
+    })
+  }
 
-  if (isLoading) return <div className="text-center py-12 text-gray-400">Loading artists...</div>;
+  if (isLoading) return <div className="text-center py-12 text-gray-400">Loading artists...</div>
 
-  const pending = artists?.filter(a => a.status === 'pending') || [];
-  const approved = artists?.filter(a => a.status === 'approved') || [];
-  const rejected = artists?.filter(a => a.status === 'rejected') || [];
+  const pending = artists?.filter(a => a.status === 'pending') || []
+  const approved = artists?.filter(a => a.status === 'approved') || []
+  const rejected = artists?.filter(a => a.status === 'rejected') || []
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -214,5 +214,5 @@ export default function ArtistsQueue() {
         )}
       </div>
     </div>
-  );
+  )
 }

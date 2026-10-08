@@ -1,29 +1,29 @@
-import React, { useState } from 'react';
-import { Upload, X, CheckCircle, Image } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { base44 } from '@/api/base44Client';
+import React, { useState } from 'react'
+import { Upload, X, CheckCircle, Image } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { base44 } from '@/api/base44Client'
 
 export default function TeamStepPortfolio({ data, updateData }) {
-  const [isUploading, setIsUploading] = useState(false);
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploading, setIsUploading] = useState(false)
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
   const [agreements, setAgreements] = useState({
     noLogos: false,
     portfolioUsage: false
-  });
+  })
 
   const handleFileUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
     if (!agreements.noLogos || !agreements.portfolioUsage) {
-      alert('Please agree to the portfolio requirements first');
-      return;
+      alert('Please agree to the portfolio requirements first')
+      return
     }
 
-    setIsUploading(true);
+    setIsUploading(true)
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file })
       
       const clipData = {
         uploaded_by_type: 'team',
@@ -35,34 +35,34 @@ export default function TeamStepPortfolio({ data, updateData }) {
         no_logos_agreement: agreements.noLogos,
         portfolio_usage_agreement: agreements.portfolioUsage,
         status: 'pending'
-      };
+      }
 
-      updateData('portfolio_clips', [...(data.portfolio_clips || []), clipData]);
+      updateData('portfolio_clips', [...(data.portfolio_clips || []), clipData])
     } catch (error) {
-      alert('Error uploading file. Please try again.');
+      alert('Error uploading file. Please try again.')
     } finally {
-      setIsUploading(false);
+      setIsUploading(false)
     }
-  };
+  }
 
   const removeClip = (index) => {
-    updateData('portfolio_clips', data.portfolio_clips.filter((_, i) => i !== index));
-  };
+    updateData('portfolio_clips', data.portfolio_clips.filter((_, i) => i !== index))
+  }
 
   const handleLogoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    setIsUploadingLogo(true);
+    setIsUploadingLogo(true)
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      updateData('team_logo', file_url);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file })
+      updateData('team_logo', file_url)
     } catch (error) {
-      alert('Error uploading logo. Please try again.');
+      alert('Error uploading logo. Please try again.')
     } finally {
-      setIsUploadingLogo(false);
+      setIsUploadingLogo(false)
     }
-  };
+  }
 
   return (
     <div>
@@ -185,5 +185,5 @@ export default function TeamStepPortfolio({ data, updateData }) {
         )}
       </div>
     </div>
-  );
+  )
 }

@@ -1,9 +1,9 @@
-import React from 'react';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
-import ChatWidget from '@/components/landing/backstage/ChatWidget';
-import SEOMetaTags from '@/components/SEOMetaTags';
-import { Target, Heart, Users, TrendingUp, BookOpen, Calendar } from 'lucide-react';
+import React from 'react'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
+import ChatWidget from '@/components/landing/backstage/ChatWidget'
+import SEOMetaTags from '@/components/SEOMetaTags'
+import { Target, Heart, Users, TrendingUp, BookOpen, Calendar } from 'lucide-react'
 
 const values = [
   { icon: Target, title: 'Mission First', desc: 'We exist to break down barriers in the creative industry and make opportunity accessible to all.' },
@@ -12,7 +12,7 @@ const values = [
   { icon: TrendingUp, title: 'Always Improving', desc: 'We iterate fast, learn from data, and never settle for "good enough."' },
   { icon: BookOpen, title: 'Knowledge Sharing', desc: 'We democratize insider knowledge so that anyone can navigate the industry with confidence.' },
   { icon: Calendar, title: 'Remote-First', desc: 'We trust our team to do their best work wherever they are, with flexibility and autonomy.' },
-];
+]
 
 const perks = [
   { icon: Users, title: 'Remote-First Culture', desc: 'Work from anywhere. We have team members across multiple time zones.' },
@@ -21,13 +21,13 @@ const perks = [
   { icon: TrendingUp, title: 'Retirement Planning', desc: '401(k) with company match to help you plan for the future.' },
   { icon: BookOpen, title: 'Professional Development', desc: 'Learning stipend, conference attendance, and internal growth paths.' },
   { icon: Calendar, title: 'Generous PTO', desc: 'Flexible paid time off plus holidays — we want you rested and inspired.' },
-];
+]
 
 const teamPhotos = [
   { src: 'https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=500&h=350&fit=crop', caption: 'Team Meetup — New York City' },
   { src: 'https://images.unsplash.com/photo-1513635269970-9b3131f5b1c4?w=500&h=350&fit=crop', caption: 'Team Meetup — London' },
   { src: 'https://images.unsplash.com/photo-1515462277126-7b8f1d1f1f1f?w=500&h=350&fit=crop', caption: 'Team Meetup — Las Vegas' },
-];
+]
 
 export default function Careers() {
   return (
@@ -84,14 +84,14 @@ export default function Careers() {
           </h2>
           <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {values.map((v) => {
-              const Icon = v.icon;
+              const Icon = v.icon
               return (
                 <div key={v.title}>
                   <Icon className="h-8 w-8 text-[#5A75FF]" strokeWidth={1.5} />
                   <h3 className="mt-4 text-lg font-bold text-black">{v.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-gray-600">{v.desc}</p>
                 </div>
-              );
+              )
             })}
           </div>
         </div>
@@ -122,14 +122,14 @@ export default function Careers() {
             </h2>
             <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {perks.map((p) => {
-                const Icon = p.icon;
+                const Icon = p.icon
                 return (
                   <div key={p.title}>
                     <Icon className="h-8 w-8 text-[#5A75FF]" strokeWidth={1.5} />
                     <h3 className="mt-4 text-lg font-bold text-black">{p.title}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-gray-600">{p.desc}</p>
                   </div>
-                );
+                )
               })}
             </div>
           </div>
@@ -139,5 +139,5 @@ export default function Careers() {
       <Footer />
       <ChatWidget />
     </div>
-  );
+  )
 }

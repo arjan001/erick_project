@@ -3,49 +3,49 @@
  * Handles access code validation for maintenance mode bypass
  */
 
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { canAccessSite } from '@/lib/maintenanceMode';
-import { Key, CheckCircle2, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { canAccessSite } from '@/lib/maintenanceMode'
+import { Key, CheckCircle2, XCircle } from 'lucide-react'
 
 export default function AccessCodePage() {
-  const { code } = useParams();
-  const navigate = useNavigate();
+  const { code } = useParams()
+  const navigate = useNavigate()
   const [status, setStatus] = useState('loading'); // loading, success, error
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState('')
 
   useEffect(() => {
     const validateCode = async () => {
       try {
-        const allowed = await canAccessSite(null, code);
+        const allowed = await canAccessSite(null, code)
         
         if (allowed) {
           // Store code in session storage for temporary access
-          sessionStorage.setItem('maintenance_access_code', code);
-          setStatus('success');
-          setMessage('Access code validated. Redirecting to admin panel...');
+          sessionStorage.setItem('maintenance_access_code', code)
+          setStatus('success')
+          setMessage('Access code validated. Redirecting to admin panel...')
           
           setTimeout(() => {
-            navigate('/Admin');
-          }, 2000);
+            navigate('/Admin')
+          }, 2000)
         } else {
-          setStatus('error');
-          setMessage('Invalid or expired access code');
+          setStatus('error')
+          setMessage('Invalid or expired access code')
         }
       } catch (error) {
-        console.error('Error validating access code:', error);
-        setStatus('error');
-        setMessage('Error validating access code');
+        //
+        setStatus('error')
+        setMessage('Error validating access code')
       }
-    };
+    }
 
     if (code) {
-      validateCode();
+      validateCode()
     } else {
-      setStatus('error');
-      setMessage('No access code provided');
+      setStatus('error')
+      setMessage('No access code provided')
     }
-  }, [code, navigate]);
+  }, [code, navigate])
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -92,5 +92,5 @@ export default function AccessCodePage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

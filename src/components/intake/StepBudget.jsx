@@ -1,5 +1,5 @@
-import React from 'react';
-import { DollarSign } from 'lucide-react';
+import React from 'react'
+import { DollarSign } from 'lucide-react'
 
 const BUDGET_RANGES = [
   { value: 'under_10k', label: 'Under €10k', description: 'Small projects' },
@@ -9,7 +9,7 @@ const BUDGET_RANGES = [
   { value: '100k_250k', label: '€100k - €250k', description: 'Large scale' },
   { value: '250k_plus', label: '€250k+', description: 'Major productions' },
   { value: 'not_disclosed', label: 'Prefer not to say', description: 'We can discuss later' },
-];
+]
 
 export default function StepBudget({ data, updateData }) {
   return (
@@ -20,7 +20,7 @@ export default function StepBudget({ data, updateData }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {BUDGET_RANGES.map((range) => {
-          const isSelected = data.budget_range === range.value;
+          const isSelected = data.budget_range === range.value
           return (
             <button
               key={range.value}
@@ -35,9 +35,9 @@ export default function StepBudget({ data, updateData }) {
               <h3 className="text-base font-semibold mb-1 text-black">{range.label}</h3>
               <p className="text-sm text-gray-600">{range.description}</p>
             </button>
-          );
+          )
         })}
       </div>
     </div>
-  );
+  )
 }

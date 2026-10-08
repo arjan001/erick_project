@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Zap } from 'lucide-react';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Zap } from 'lucide-react'
 
 export default function ConnectsTrackerCard({ connects }) {
   return (
@@ -32,5 +32,5 @@ export default function ConnectsTrackerCard({ connects }) {
         Get More Connects
       </Link>
     </div>
-  );
+  )
 }

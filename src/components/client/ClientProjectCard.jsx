@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, Edit2, X, MoreVertical } from 'lucide-react';
+import React from 'react'
+import { Button } from '@/components/ui/button'
+import { MapPin, Calendar, Edit2, X, MoreVertical } from 'lucide-react'
 
 const statusConfig = {
   submitted: { label: 'Submitted', color: 'bg-gray-100 text-gray-700' },
@@ -8,10 +8,10 @@ const statusConfig = {
   in_progress: { label: 'In Progress', color: 'bg-gray-800 text-white' },
   delivered: { label: 'Delivered', color: 'bg-gray-700 text-white' },
   rejected: { label: 'Rejected', color: 'bg-gray-200 text-gray-700' }
-};
+}
 
 export default function ClientProjectCard({ project, onEdit, onDelete }) {
-  const status = statusConfig[project.status] || statusConfig.submitted;
+  const status = statusConfig[project.status] || statusConfig.submitted
 
   return (
     <div className="group bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300 overflow-hidden">
@@ -54,5 +54,5 @@ export default function ClientProjectCard({ project, onEdit, onDelete }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

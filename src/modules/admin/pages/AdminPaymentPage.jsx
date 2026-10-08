@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Switch } from '@/shared/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Save, CreditCard, Wallet, Settings } from 'lucide-react';
+import React, { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Switch } from '@/shared/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
+import { Save, CreditCard, Wallet, Settings } from 'lucide-react'
 
 export default function AdminPaymentPage() {
   const [stripeSettings, setStripeSettings] = useState({
@@ -13,18 +13,18 @@ export default function AdminPaymentPage() {
     publishableKey: '',
     secretKey: '',
     webhookSecret: ''
-  });
+  })
 
   const [backingSettings, setBackingSettings] = useState({
     enabled: true,
     minAmount: '100',
     maxAmount: '100000',
     feePercentage: '5'
-  });
+  })
 
   const handleSave = () => {
-    console.log('Saving payment settings');
-  };
+    
+  }
 
   return (
     <div className="space-y-6">
@@ -178,5 +178,5 @@ export default function AdminPaymentPage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

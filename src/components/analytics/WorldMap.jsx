@@ -1,5 +1,5 @@
-import React from 'react';
-import { MapPin } from 'lucide-react';
+import React from 'react'
+import { MapPin } from 'lucide-react'
 
 // Simplified country data with approximate coordinates for visualization
 const COUNTRY_COORDINATES = {
@@ -50,32 +50,32 @@ const COUNTRY_COORDINATES = {
   'Chile': { lat: -35.6751, lng: -71.5430 },
   'Peru': { lat: -9.1900, lng: -75.0152 },
   'Venezuela': { lat: 6.4238, lng: -66.5897 },
-};
+}
 
 export default function WorldMap({ trafficData = [], onCountryClick = null }) {
   // Find max count for scaling
-  const maxCount = Math.max(...trafficData.map(d => d.count), 1);
+  const maxCount = Math.max(...trafficData.map(d => d.count), 1)
 
   // Convert lat/lng to SVG coordinates
   const latLngToXY = (lat, lng) => {
-    const x = (lng + 180) * (800 / 360);
-    const y = ((-lat) + 90) * (400 / 180);
-    return { x, y };
-  };
+    const x = (lng + 180) * (800 / 360)
+    const y = ((-lat) + 90) * (400 / 180)
+    return { x, y }
+  }
 
   const getDotSize = (count) => {
-    const baseSize = 4;
-    const maxSize = 20;
-    const size = baseSize + ((count / maxCount) * (maxSize - baseSize));
-    return Math.min(size, maxSize);
-  };
+    const baseSize = 4
+    const maxSize = 20
+    const size = baseSize + ((count / maxCount) * (maxSize - baseSize))
+    return Math.min(size, maxSize)
+  }
 
   const getDotColor = (count) => {
-    const intensity = count / maxCount;
+    const intensity = count / maxCount
     if (intensity > 0.7) return '#ef4444'; // red for high traffic
     if (intensity > 0.4) return '#f59e0b'; // orange for medium
     return '#3b82f6'; // blue for low
-  };
+  }
 
   return (
     <div className="relative w-full">
@@ -99,12 +99,12 @@ export default function WorldMap({ trafficData = [], onCountryClick = null }) {
 
         {/* Traffic dots */}
         {trafficData.map((data) => {
-          const coords = COUNTRY_COORDINATES[data.country];
-          if (!coords) return null;
+          const coords = COUNTRY_COORDINATES[data.country]
+          if (!coords) return null
 
-          const { x, y } = latLngToXY(coords.lat, coords.lng);
-          const size = getDotSize(data.count);
-          const color = getDotColor(data.count);
+          const { x, y } = latLngToXY(coords.lat, coords.lng)
+          const size = getDotSize(data.count)
+          const color = getDotColor(data.count)
 
           return (
             <g key={data.country}>
@@ -128,7 +128,7 @@ export default function WorldMap({ trafficData = [], onCountryClick = null }) {
                 onClick={() => onCountryClick?.(data)}
               />
             </g>
-          );
+          )
         })}
       </svg>
 
@@ -163,17 +163,17 @@ export default function WorldMap({ trafficData = [], onCountryClick = null }) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 // Alternative: Simple heatmap-style bars component
 export function TrafficHeatmap({ trafficData = [] }) {
-  const maxCount = Math.max(...trafficData.map(d => d.count), 1);
+  const maxCount = Math.max(...trafficData.map(d => d.count), 1)
 
   return (
     <div className="space-y-2">
       {trafficData.slice(0, 10).map((data) => {
-        const percentage = (data.count / maxCount) * 100;
+        const percentage = (data.count / maxCount) * 100
         return (
           <div key={data.country} className="flex items-center gap-3">
             <span className="text-xs text-gray-600 w-32 truncate">{data.country}</span>
@@ -191,8 +191,8 @@ export function TrafficHeatmap({ trafficData = [] }) {
               {data.count.toLocaleString()}
             </span>
           </div>
-        );
+        )
       })}
     </div>
-  );
+  )
 }

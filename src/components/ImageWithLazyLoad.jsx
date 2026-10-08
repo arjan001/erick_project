@@ -3,7 +3,7 @@
  * Lazy loads images with placeholder and fade-in effect
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react'
 
 const ImageWithLazyLoad = ({ 
   src, 
@@ -14,11 +14,11 @@ const ImageWithLazyLoad = ({
   onLoad = null,
   onError = null
 }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const imgRef = useRef(null);
-  const observerRef = useRef(null);
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [isInView, setIsInView] = useState(false)
+  const [hasError, setHasError] = useState(false)
+  const imgRef = useRef(null)
+  const observerRef = useRef(null)
 
   useEffect(() => {
     // Create Intersection Observer
@@ -26,41 +26,41 @@ const ImageWithLazyLoad = ({
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setIsInView(true);
-            observerRef.current.unobserve(entry.target);
+            setIsInView(true)
+            observerRef.current.unobserve(entry.target)
           }
-        });
+        })
       },
       { threshold }
-    );
+    )
 
     // Observe the image element
     if (imgRef.current) {
-      observerRef.current.observe(imgRef.current);
+      observerRef.current.observe(imgRef.current)
     }
 
     // Cleanup
     return () => {
       if (observerRef.current) {
-        observerRef.current.disconnect();
+        observerRef.current.disconnect()
       }
-    };
-  }, [threshold]);
+    }
+  }, [threshold])
 
   const handleLoad = () => {
-    setIsLoaded(true);
-    if (onLoad) onLoad();
-  };
+    setIsLoaded(true)
+    if (onLoad) onLoad()
+  }
 
   const handleError = () => {
-    setHasError(true);
-    if (onError) onError();
-  };
+    setHasError(true)
+    if (onError) onError()
+  }
 
   // Default placeholder
   const defaultPlaceholder = (
     <div className={`bg-gray-200 animate-pulse ${className}`} />
-  );
+  )
 
   return (
     <div ref={imgRef} className="relative overflow-hidden">
@@ -89,7 +89,7 @@ const ImageWithLazyLoad = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default ImageWithLazyLoad;
+export default ImageWithLazyLoad

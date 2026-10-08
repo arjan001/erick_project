@@ -1,19 +1,19 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, MessageCircle } from 'lucide-react';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
-import ChatWidget from '@/components/landing/backstage/ChatWidget';
-import SEOMetaTags from '@/components/SEOMetaTags';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, MessageCircle } from 'lucide-react'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
+import ChatWidget from '@/components/landing/backstage/ChatWidget'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
-const EMAIL = 'contact@smartgigskenya.com';
-const PHONE = '+254 780278398';
+const EMAIL = 'contact@smartgigskenya.com'
+const PHONE = '+254 780278398'
 
 const socials = [
   { icon: Facebook, name: 'Facebook' },
   { icon: Twitter, name: 'Twitter' },
   { icon: Instagram, name: 'Instagram' },
-];
+]
 
 export default function ContactUs() {
   return (
@@ -59,7 +59,7 @@ export default function ContactUs() {
           <p className="mt-2 text-sm text-white/65">Our community pages are launching soon — follow along.</p>
           <div className="mt-6 flex justify-center gap-4">
             {socials.map((s) => {
-              const Icon = s.icon;
+              const Icon = s.icon
               return (
                 <div key={s.name} className="text-center">
                   <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
@@ -68,7 +68,7 @@ export default function ContactUs() {
                   <p className="mt-2 text-xs font-medium text-white/80">{s.name}</p>
                   <p className="text-[10px] uppercase tracking-wide text-white/40">Coming soon</p>
                 </div>
-              );
+              )
             })}
           </div>
         </div>
@@ -86,5 +86,5 @@ export default function ContactUs() {
       <Footer />
       <ChatWidget />
     </div>
-  );
+  )
 }

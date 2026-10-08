@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { listPartnerLogos } from '@/services/partnerLogoService';
+import React, { useState, useEffect } from 'react'
+import { listPartnerLogos } from '@/services/partnerLogoService'
 
 export default function PartnersCarousel({ tone = 'light', fade = '#F5F3EF' }) {
-  const [partners, setPartners] = useState([]);
+  const [partners, setPartners] = useState([])
 
   useEffect(() => {
-    listPartnerLogos().then(setPartners).catch(() => setPartners([]));
-  }, []);
+    listPartnerLogos().then(setPartners).catch(() => setPartners([]))
+  }, [])
 
   if (partners.length === 0) {
-    return null;
+    return null
   }
 
   // Duplicate for seamless infinite scroll
-  const allPartners = [...partners, ...partners, ...partners];
+  const allPartners = [...partners, ...partners, ...partners]
 
   return (
     <div className="relative overflow-hidden">
@@ -42,5 +42,5 @@ export default function PartnersCarousel({ tone = 'light', fade = '#F5F3EF' }) {
         ))}
       </div>
     </div>
-  );
+  )
 }

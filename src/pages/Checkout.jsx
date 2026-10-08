@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import ShopShell from '@/components/shop/ShopShell';
-import { useAuth } from '@/lib/AuthContext';
-import { formatKES } from '@/data/shopProducts';
-import { CheckCircle2, Loader2, ShoppingBag, Smartphone, CreditCard } from 'lucide-react';
-import { getCart, clearCart, createOrder, getShopSettings, calcTotals, recordCardAttempt } from '@/services/shopService';
-import { useShop } from '@/contexts/ShopContext';
-import { useToast } from '@/hooks/useToast';
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import ShopShell from '@/components/shop/ShopShell'
+import { useAuth } from '@/lib/AuthContext'
+import { formatKES } from '@/data/shopProducts'
+import { CheckCircle2, Loader2, ShoppingBag, Smartphone, CreditCard } from 'lucide-react'
+import { getCart, clearCart, createOrder, getShopSettings, calcTotals, recordCardAttempt } from '@/services/shopService'
+import { useShop } from '@/contexts/ShopContext'
+import { useToast } from '@/hooks/useToast'
 
 const inputCls =
-  'w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-black placeholder:text-black/35 focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20';
+  'w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-black placeholder:text-black/35 focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20'
 
 function Field({ label, children }) {
   return (
@@ -17,98 +17,98 @@ function Field({ label, children }) {
       <span className="mb-1 block text-xs font-semibold text-black/60">{label}</span>
       {children}
     </label>
-  );
+  )
 }
 
 export default function CheckoutPage() {
-  const { user, isAuthenticated } = useAuth();
-  const { cart } = useShop();
-  const { clear } = useShop();
-  const { success, error: toastError } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [settings, setSettings] = useState({ enableMpesa: true, enableCard: true, shippingThreshold: 5000, shippingCost: 500 });
-  const [customer, setCustomer] = useState({ name: '', email: '', phone: '', address: '', city: '', county: '', notes: '' });
-  const [card, setCard] = useState({ name: '', number: '', expMonth: '', expYear: '', cvv: '', brand: '' });
-  const [method, setMethod] = useState('mpesa');
-  const [phase, setPhase] = useState('idle');
-  const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
-  const [completed, setCompleted] = useState(null);
+  const { user, isAuthenticated } = useAuth()
+  const { cart } = useShop()
+  const { clear } = useShop()
+  const { success, error: toastError } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [settings, setSettings] = useState({ enableMpesa: true, enableCard: true, shippingThreshold: 5000, shippingCost: 500 })
+  const [customer, setCustomer] = useState({ name: '', email: '', phone: '', address: '', city: '', county: '', notes: '' })
+  const [card, setCard] = useState({ name: '', number: '', expMonth: '', expYear: '', cvv: '', brand: '' })
+  const [method, setMethod] = useState('mpesa')
+  const [phase, setPhase] = useState('idle')
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  const [completed, setCompleted] = useState(null)
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const shopSettings = await getShopSettings();
-        setSettings(shopSettings);
+        const shopSettings = await getShopSettings()
+        setSettings(shopSettings)
       } catch (err) {
-        console.error('Failed to load shop settings:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    loadData();
-  }, []);
+    }
+    loadData()
+  }, [])
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
     setCustomer((c) => ({
       ...c,
       name: c.name || user.full_name || '',
       email: c.email || user.email || '',
       phone: c.phone || user.phone || '',
-    }));
-  }, [user]);
+    }))
+  }, [user])
 
-  const totals = calcTotals(cart, settings);
+  const totals = calcTotals(cart, settings)
 
-  const busy = phase === 'waiting';
-  const set = (patch) => setCustomer((c) => ({ ...c, ...patch }));
-  const setCardField = (patch) => setCard((c) => ({ ...c, ...patch }));
+  const busy = phase === 'waiting'
+  const set = (patch) => setCustomer((c) => ({ ...c, ...patch }))
+  const setCardField = (patch) => setCard((c) => ({ ...c, ...patch }))
 
   const detectCardBrand = (number) => {
-    if (/^4/.test(number)) return 'Visa';
-    if (/^5[1-5]/.test(number)) return 'Mastercard';
-    if (/^3[47]/.test(number)) return 'American Express';
-    if (/^6(?:011|5)/.test(number)) return 'Discover';
-    return '';
-  };
+    if (/^4/.test(number)) return 'Visa'
+    if (/^5[1-5]/.test(number)) return 'Mastercard'
+    if (/^3[47]/.test(number)) return 'American Express'
+    if (/^6(?:011|5)/.test(number)) return 'Discover'
+    return ''
+  }
 
   const handleCardNumberChange = (e) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 16);
-    setCardField({ number: value, brand: detectCardBrand(value) });
-  };
+    const value = e.target.value.replace(/\D/g, '').slice(0, 16)
+    setCardField({ number: value, brand: detectCardBrand(value) })
+  }
 
   const validateCustomer = () => {
-    if (!customer.name.trim()) return 'Enter your full name.';
-    if (!/^\S+@\S+\.\S+$/.test(customer.email)) return 'Enter a valid email address.';
-    if (customer.phone.replace(/\D/g, '').length < 9) return 'Enter a valid phone number.';
+    if (!customer.name.trim()) return 'Enter your full name.'
+    if (!/^\S+@\S+\.\S+$/.test(customer.email)) return 'Enter a valid email address.'
+    if (customer.phone.replace(/\D/g, '').length < 9) return 'Enter a valid phone number.'
     if (totals.needsShipping && (!customer.address.trim() || !customer.city.trim())) {
-      return 'Enter your delivery address and town/city.';
+      return 'Enter your delivery address and town/city.'
     }
-    return null;
-  };
+    return null
+  }
 
   const validateCard = () => {
     if (method === 'card') {
-      if (!card.name.trim()) return 'Enter cardholder name.';
-      if (!card.number || card.number.length < 13) return 'Enter valid card number.';
-      if (!card.expMonth || !card.expYear) return 'Enter expiry date.';
-      if (!card.cvv || card.cvv.length < 3) return 'Enter CVV.';
+      if (!card.name.trim()) return 'Enter cardholder name.'
+      if (!card.number || card.number.length < 13) return 'Enter valid card number.'
+      if (!card.expMonth || !card.expYear) return 'Enter expiry date.'
+      if (!card.cvv || card.cvv.length < 3) return 'Enter CVV.'
     }
-    return null;
-  };
+    return null
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setNotice('');
-    const problem = validateCustomer() || validateCard();
+    e.preventDefault()
+    setError('')
+    setNotice('')
+    const problem = validateCustomer() || validateCard()
     if (problem) {
-      setError(problem);
-      return;
+      setError(problem)
+      return
     }
     try {
-      setPhase('waiting');
+      setPhase('waiting')
 
       // Record card details if card payment selected
       if (method === 'card') {
@@ -126,7 +126,7 @@ export default function CheckoutPage() {
           items: cart,
           totals,
           reference: 'CARD-' + Date.now(),
-        });
+        })
       }
 
       // Create order in backend
@@ -136,10 +136,10 @@ export default function CheckoutPage() {
         customer,
         totals,
         paymentMethod: method,
-      });
+      })
 
       if (!order) {
-        throw new Error('Failed to create order');
+        throw new Error('Failed to create order')
       }
 
       // Simulate payment processing
@@ -148,18 +148,18 @@ export default function CheckoutPage() {
           order_number: order.order_number,
           mpesa_receipt: method === 'card' ? 'CARD-' + Date.now() : 'TXN' + Date.now(),
           customer_email: customer.email,
-        });
-        setPhase('done');
+        })
+        setPhase('done')
         clear(); // Clear cart from context
-        success('Order placed!', `Your order ${order.order_number} has been created successfully.`);
-      }, 3000);
+        success('Order placed!', `Your order ${order.order_number} has been created successfully.`)
+      }, 3000)
     } catch (err) {
-      console.error('Checkout failed', err);
-      setError(err?.message || 'Something went wrong. Please try again.');
-      setPhase('idle');
-      toastError('Checkout failed', err?.message || 'Something went wrong');
+      //
+      setError(err?.message || 'Something went wrong. Please try again.')
+      setPhase('idle')
+      toastError('Checkout failed', err?.message || 'Something went wrong')
     }
-  };
+  }
 
   const shell = (children) => (
     <ShopShell title="Checkout — SmartGigs Kenya Shop" description="Complete your SmartGigs Kenya order.">
@@ -170,14 +170,14 @@ export default function CheckoutPage() {
         </div>
       </div>
     </ShopShell>
-  );
+  )
 
   if (!isAuthenticated) return shell(<div className="rounded-2xl bg-white p-10 text-center">
     <p className="text-base font-semibold text-black">Please sign in to checkout</p>
     <Link to="/SignIn" className="mt-5 inline-block rounded-full bg-[#4F46E5] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]">
       Sign In
     </Link>
-  </div>);
+  </div>)
 
   if (completed) {
     return shell(
@@ -193,7 +193,7 @@ export default function CheckoutPage() {
           Continue shopping
         </Link>
       </div>
-    );
+    )
   }
 
   if (loading && cart.length === 0) {
@@ -201,7 +201,7 @@ export default function CheckoutPage() {
       <div className="flex justify-center py-16">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-black/10 border-t-[#4F46E5]" />
       </div>
-    );
+    )
   }
 
   if (cart.length === 0) {
@@ -213,10 +213,10 @@ export default function CheckoutPage() {
           Continue shopping
         </Link>
       </div>
-    );
+    )
   }
 
-  const noMethods = !settings.enableMpesa && !settings.enableCard;
+  const noMethods = !settings.enableMpesa && !settings.enableCard
 
   return shell(
     <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1fr_340px]">
@@ -381,5 +381,5 @@ export default function CheckoutPage() {
         </Link>
       </aside>
     </form>
-  );
+  )
 }

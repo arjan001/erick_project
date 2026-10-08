@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Project } from '@/lib/supabaseEntities';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Eye, Clock, Truck, Package } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
+import React, { useState } from 'react'
+import { Project } from '@/lib/supabaseEntities'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { CheckCircle, XCircle, Eye, Clock, Truck, Package } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 
 const STATUS_CONFIG = {
   submitted: { label: 'Submitted', color: 'bg-blue-600', icon: Clock },
@@ -12,34 +12,34 @@ const STATUS_CONFIG = {
   in_progress: { label: 'In Progress', color: 'bg-amber-600', icon: Truck },
   delivered: { label: 'Delivered', color: 'bg-purple-600', icon: Package },
   rejected: { label: 'Rejected', color: 'bg-red-600', icon: XCircle },
-};
+}
 
 export default function ProjectsQueue() {
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [adminNotes, setAdminNotes] = useState('');
-  const queryClient = useQueryClient();
+  const [selectedProject, setSelectedProject] = useState(null)
+  const [adminNotes, setAdminNotes] = useState('')
+  const queryClient = useQueryClient()
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ['admin-projects'],
     queryFn: () => Project.list('-created_date'),
-  });
+  })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => Project.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
-      setSelectedProject(null);
+      queryClient.invalidateQueries({ queryKey: ['admin-projects'] })
+      setSelectedProject(null)
     },
-  });
+  })
 
   const handleStatusChange = (project, newStatus) => {
     updateMutation.mutate({
       id: project.id,
       data: { status: newStatus, admin_notes: adminNotes || project.admin_notes }
-    });
-  };
+    })
+  }
 
-  if (isLoading) return <div className="text-center py-12 text-gray-400">Loading projects...</div>;
+  if (isLoading) return <div className="text-center py-12 text-gray-400">Loading projects...</div>
 
   return (
     <div className="space-y-4">
@@ -47,8 +47,8 @@ export default function ProjectsQueue() {
         {/* Projects List */}
         <div className="space-y-4">
           {projects?.map((project) => {
-            const statusConfig = STATUS_CONFIG[project.status];
-            const StatusIcon = statusConfig.icon;
+            const statusConfig = STATUS_CONFIG[project.status]
+            const StatusIcon = statusConfig.icon
             return (
               <div
                 key={project.id}
@@ -72,7 +72,7 @@ export default function ProjectsQueue() {
                   <p>Start: {project.timeline_start}</p>
                 </div>
               </div>
-            );
+            )
           })}
           {!projects?.length && (
             <div className="text-center py-12 text-gray-400">No projects yet</div>
@@ -157,5 +157,5 @@ export default function ProjectsQueue() {
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,59 +1,59 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities';
-import { MessageCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities'
+import { MessageCircle } from 'lucide-react'
 
 async function lookupName(email) {
   try {
-    const artists = await Artist.filter({ email });
-    if (artists[0]) return { name: artists[0].full_name, avatar: artists[0].profile_photo_url };
-    const owners = await ProjectOwner.filter({ email });
-    if (owners[0]) return { name: owners[0].full_name, avatar: owners[0].profile_photo_url };
-    const teams = await Team.filter({ contact_email: email });
-    if (teams[0]) return { name: teams[0].team_name, avatar: teams[0].team_logo_url };
-    const backers = await Backer.filter({ contact_email: email });
-    if (backers[0]) return { name: backers[0].organization_name, avatar: backers[0].logo_url };
+    const artists = await Artist.filter({ email })
+    if (artists[0]) return { name: artists[0].full_name, avatar: artists[0].profile_photo_url }
+    const owners = await ProjectOwner.filter({ email })
+    if (owners[0]) return { name: owners[0].full_name, avatar: owners[0].profile_photo_url }
+    const teams = await Team.filter({ contact_email: email })
+    if (teams[0]) return { name: teams[0].team_name, avatar: teams[0].team_logo_url }
+    const backers = await Backer.filter({ contact_email: email })
+    if (backers[0]) return { name: backers[0].organization_name, avatar: backers[0].logo_url }
   } catch {
     // ignore lookup failures
   }
-  return { name: email, avatar: null };
+  return { name: email, avatar: null }
 }
 
 export default function RecentConversations({ userEmail }) {
-  const [conversations, setConversations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [conversations, setConversations] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!userEmail) return;
+    if (!userEmail) return
     (async () => {
       try {
         const [sent, received] = await Promise.all([
           Message.filter({ sender_email: userEmail }, '-created_at', 100),
           Message.filter({ recipient_email: userEmail }, '-created_at', 100),
-        ]);
-        const grouped = {};
+        ])
+        const grouped = {}
         [...sent, ...received].forEach(m => {
-          const existing = grouped[m.conversation_id];
-          if (!existing || new Date(m.created_at) > new Date(existing.created_at)) grouped[m.conversation_id] = m;
-        });
+          const existing = grouped[m.conversation_id]
+          if (!existing || new Date(m.created_at) > new Date(existing.created_at)) grouped[m.conversation_id] = m
+        })
         const top = Object.values(grouped)
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, 3);
+          .slice(0, 3)
         const enriched = await Promise.all(top.map(async m => {
-          const otherEmail = m.sender_email === userEmail ? m.recipient_email : m.sender_email;
-          const info = await lookupName(otherEmail);
-          return { ...m, otherEmail, ...info };
-        }));
-        setConversations(enriched);
+          const otherEmail = m.sender_email === userEmail ? m.recipient_email : m.sender_email
+          const info = await lookupName(otherEmail)
+          return { ...m, otherEmail, ...info }
+        }))
+        setConversations(enriched)
       } catch (err) {
-        console.error('Error loading recent conversations:', err);
-        setConversations([]);
+        
+        setConversations([])
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    })();
-  }, [userEmail]);
+    })()
+  }, [userEmail])
 
   return (
     <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5">
@@ -83,5 +83,5 @@ export default function RecentConversations({ userEmail }) {
         </div>
       )}
     </div>
-  );
+  )
 }

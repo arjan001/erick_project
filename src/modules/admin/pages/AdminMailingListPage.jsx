@@ -1,49 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Search, Trash2, Download, Mail, Users, TrendingUp, X } from 'lucide-react';
-import { MailingListSubscriber } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { Plus, Search, Trash2, Download, Mail, Users, TrendingUp, X } from 'lucide-react'
+import { MailingListSubscriber } from '@/lib/supabaseEntities'
 
-const STORAGE_KEY = 'smartgigs_mailing_list';
+const STORAGE_KEY = 'smartgigs_mailing_list'
 
 function loadFromStorage() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : []
   } catch { return []; }
 }
 
 function saveToStorage(list) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
 }
 
 export default function AdminMailingListPage() {
-  const [subscribers, setSubscribers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [showAdd, setShowAdd] = useState(false);
-  const [newEmail, setNewEmail] = useState('');
-  const [newName, setNewName] = useState('');
+  const [subscribers, setSubscribers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [showAdd, setShowAdd] = useState(false)
+  const [newEmail, setNewEmail] = useState('')
+  const [newName, setNewName] = useState('')
 
   useEffect(() => {
-    fetchSubscribers();
-  }, []);
+    fetchSubscribers()
+  }, [])
 
   const fetchSubscribers = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const rows = await MailingListSubscriber.list('-created_at', 500);
+      const rows = await MailingListSubscriber.list('-created_at', 500)
       if (rows && rows.length > 0) {
-        setSubscribers(rows);
+        setSubscribers(rows)
       } else {
-        setSubscribers(loadFromStorage());
+        setSubscribers(loadFromStorage())
       }
     } catch {
-      setSubscribers(loadFromStorage());
+      setSubscribers(loadFromStorage())
     }
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   const handleAdd = async () => {
-    if (!newEmail) return;
+    if (!newEmail) return
     const sub = {
       id: Date.now().toString(),
       email: newEmail,
@@ -51,53 +51,53 @@ export default function AdminMailingListPage() {
       source: 'admin',
       status: 'active',
       created_at: new Date().toISOString(),
-    };
+    }
     try {
-      await MailingListSubscriber.create({ email: newEmail, name: newName, source: 'admin', status: 'active' });
+      await MailingListSubscriber.create({ email: newEmail, name: newName, source: 'admin', status: 'active' })
     } catch { /* fallback to local */ }
-    const updated = [sub, ...subscribers];
-    setSubscribers(updated);
-    saveToStorage(updated);
-    setNewEmail('');
-    setNewName('');
-    setShowAdd(false);
-  };
+    const updated = [sub, ...subscribers]
+    setSubscribers(updated)
+    saveToStorage(updated)
+    setNewEmail('')
+    setNewName('')
+    setShowAdd(false)
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Remove this subscriber?')) return;
+    if (!confirm('Remove this subscriber?')) return
     try { await MailingListSubscriber.delete(id); } catch { /* ignore */ }
-    const updated = subscribers.filter(s => s.id !== id);
-    setSubscribers(updated);
-    saveToStorage(updated);
-  };
+    const updated = subscribers.filter(s => s.id !== id)
+    setSubscribers(updated)
+    saveToStorage(updated)
+  }
 
   const handleExport = () => {
-    const csv = ['Email,Name,Source,Status,Date'];
+    const csv = ['Email,Name,Source,Status,Date']
     subscribers.forEach(s => {
-      csv.push(`${s.email},${s.name || ''},${s.source || ''},${s.status || ''},${s.created_at || ''}`);
-    });
-    const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'mailing-list.csv';
-    a.click();
-  };
+      csv.push(`${s.email},${s.name || ''},${s.source || ''},${s.status || ''},${s.created_at || ''}`)
+    })
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'mailing-list.csv'
+    a.click()
+  }
 
   const filtered = subscribers.filter(s =>
     (s.email || '').toLowerCase().includes(search.toLowerCase()) ||
     (s.name || '').toLowerCase().includes(search.toLowerCase())
-  );
+  )
 
   const stats = [
     { label: 'Total Subscribers', value: subscribers.length, icon: Users, color: 'text-indigo-600' },
     { label: 'Active', value: subscribers.filter(s => s.status === 'active').length, icon: Mail, color: 'text-green-600' },
     { label: 'This Month', value: subscribers.filter(s => {
-      const d = new Date(s.created_at);
-      const now = new Date();
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      const d = new Date(s.created_at)
+      const now = new Date()
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
     }).length, icon: TrendingUp, color: 'text-blue-600' },
-  ];
+  ]
 
   return (
     <div className="space-y-6">
@@ -118,7 +118,7 @@ export default function AdminMailingListPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {stats.map((stat, i) => {
-          const Icon = stat.icon;
+          const Icon = stat.icon
           return (
             <div key={i} className="rounded-xl border border-gray-100 bg-white p-5">
               <div className="flex items-center gap-3">
@@ -131,7 +131,7 @@ export default function AdminMailingListPage() {
                 </div>
               </div>
             </div>
-          );
+          )
         })}
       </div>
 
@@ -223,5 +223,5 @@ export default function AdminMailingListPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

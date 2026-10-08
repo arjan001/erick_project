@@ -1,72 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import { Backer } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Edit2, Trash2, X, Eye, Ban, CheckCircle, AlertCircle, Search, User, Mail, Calendar, MapPin, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { Backer } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Edit2, Trash2, X, Eye, Ban, CheckCircle, AlertCircle, Search, User, Mail, Calendar, MapPin, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
 
 const STATUS_STYLES = {
   active: 'bg-green-100 text-green-700 border-green-200',
   suspended: 'bg-orange-100 text-orange-700 border-orange-200',
   disabled: 'bg-red-100 text-red-700 border-red-200',
-};
+}
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 export default function AdminBackersPage() {
-  const { success, error: toastError } = useToast();
-  const [backers, setBackers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [showModal, setShowModal] = useState(false);
-  const [viewingBacker, setViewingBacker] = useState(null);
-  const [editingBacker, setEditingBacker] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const { success, error: toastError } = useToast()
+  const [backers, setBackers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [showModal, setShowModal] = useState(false)
+  const [viewingBacker, setViewingBacker] = useState(null)
+  const [editingBacker, setEditingBacker] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
   const [form, setForm] = useState({
     full_name: '', email: '', bio: '', location: '', investment_focus: '', status: 'active', is_suspended: false, is_disabled: false
-  });
+  })
 
   const fetchData = async () => {
     try {
-      const all = await Backer.list('-created_at', 100);
-      setBackers(all || []);
+      const all = await Backer.list('-created_at', 100)
+      setBackers(all || [])
     } catch (err) {
-      console.error('Error fetching backers:', err);
-      toastError('Load Failed', 'Failed to load backers');
+      
+      toastError('Load Failed', 'Failed to load backers')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [])
 
   const filteredBackers = backers.filter(backer => {
     const matchesSearch = backer.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         backer.email?.toLowerCase().includes(searchQuery.toLowerCase());
+                         backer.email?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' || 
                           (statusFilter === 'active' && !backer.is_suspended && !backer.is_disabled) ||
                           (statusFilter === 'suspended' && backer.is_suspended) ||
-                          (statusFilter === 'disabled' && backer.is_disabled);
-    return matchesSearch && matchesStatus;
-  });
+                          (statusFilter === 'disabled' && backer.is_disabled)
+    return matchesSearch && matchesStatus
+  })
 
   const paginatedBackers = filteredBackers.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
-  );
+  )
 
-  const totalPages = Math.ceil(filteredBackers.length / PAGE_SIZE);
+  const totalPages = Math.ceil(filteredBackers.length / PAGE_SIZE)
 
   const getStatus = (backer) => {
-    if (backer.is_suspended) return 'suspended';
-    if (backer.is_disabled) return 'disabled';
-    return 'active';
-  };
+    if (backer.is_suspended) return 'suspended'
+    if (backer.is_disabled) return 'disabled'
+    return 'active'
+  }
 
   const openModal = (backer = null) => {
     if (backer) {
-      setEditingBacker(backer);
+      setEditingBacker(backer)
       setForm({
         full_name: backer.full_name || '',
         email: backer.email || '',
@@ -76,69 +76,69 @@ export default function AdminBackersPage() {
         status: backer.status || 'active',
         is_suspended: backer.is_suspended || false,
         is_disabled: backer.is_disabled || false
-      });
+      })
     } else {
-      setEditingBacker(null);
-      setForm({ full_name: '', email: '', bio: '', location: '', investment_focus: '', status: 'active', is_suspended: false, is_disabled: false });
+      setEditingBacker(null)
+      setForm({ full_name: '', email: '', bio: '', location: '', investment_focus: '', status: 'active', is_suspended: false, is_disabled: false })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const openViewModal = (backer) => {
-    setViewingBacker(backer);
-  };
+    setViewingBacker(backer)
+  }
 
   const handleSave = async () => {
     if (!form.full_name.trim()) { toastError('Validation', 'Name is required'); return; }
     try {
       if (editingBacker) {
-        await Backer.update(editingBacker.id, form);
-        success('Updated', 'Backer updated');
+        await Backer.update(editingBacker.id, form)
+        success('Updated', 'Backer updated')
       } else {
-        await Backer.create(form);
-        success('Created', 'Backer created');
+        await Backer.create(form)
+        success('Created', 'Backer created')
       }
-      setShowModal(false);
-      fetchData();
+      setShowModal(false)
+      fetchData()
     } catch (err) {
-      console.error('Error saving backer:', err);
-      toastError('Save Failed', `Failed to save backer: ${err.message || 'Unknown error'}`);
+      
+      toastError('Save Failed', `Failed to save backer: ${err.message || 'Unknown error'}`)
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this backer? This action cannot be undone.')) return;
+    if (!confirm('Delete this backer? This action cannot be undone.')) return
     try {
-      await Backer.delete(id);
-      success('Deleted', 'Backer deleted');
-      fetchData();
+      await Backer.delete(id)
+      success('Deleted', 'Backer deleted')
+      fetchData()
     } catch (err) {
-      toastError('Delete Failed', 'Failed to delete backer');
+      toastError('Delete Failed', 'Failed to delete backer')
     }
-  };
+  }
 
   const toggleSuspend = async (backer) => {
     try {
-      await Backer.update(backer.id, { is_suspended: !backer.is_suspended });
-      success(!backer.is_suspended ? 'Suspended' : 'Unsuspended', `Backer ${!backer.is_suspended ? 'suspended' : 'unsuspended'}`);
-      fetchData();
+      await Backer.update(backer.id, { is_suspended: !backer.is_suspended })
+      success(!backer.is_suspended ? 'Suspended' : 'Unsuspended', `Backer ${!backer.is_suspended ? 'suspended' : 'unsuspended'}`)
+      fetchData()
     } catch (err) {
-      toastError('Failed', 'Failed to update suspension status');
+      toastError('Failed', 'Failed to update suspension status')
     }
-  };
+  }
 
   const toggleDisable = async (backer) => {
     try {
-      await Backer.update(backer.id, { is_disabled: !backer.is_disabled });
-      success(!backer.is_disabled ? 'Disabled' : 'Enabled', `Backer ${!backer.is_disabled ? 'disabled' : 'enabled'}`);
-      fetchData();
+      await Backer.update(backer.id, { is_disabled: !backer.is_disabled })
+      success(!backer.is_disabled ? 'Disabled' : 'Enabled', `Backer ${!backer.is_disabled ? 'disabled' : 'enabled'}`)
+      fetchData()
     } catch (err) {
-      toastError('Failed', 'Failed to update disabled status');
+      toastError('Failed', 'Failed to update disabled status')
     }
-  };
+  }
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>
   }
 
   return (
@@ -386,5 +386,5 @@ export default function AdminBackersPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

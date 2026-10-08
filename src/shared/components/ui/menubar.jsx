@@ -9,31 +9,31 @@ import { cn } from "@/lib/utils"
 function MenubarMenu({
   ...props
 }) {
-  return <MenubarPrimitive.Menu {...props} />;
+  return <MenubarPrimitive.Menu {...props} />
 }
 
 function MenubarGroup({
   ...props
 }) {
-  return <MenubarPrimitive.Group {...props} />;
+  return <MenubarPrimitive.Group {...props} />
 }
 
 function MenubarPortal({
   ...props
 }) {
-  return <MenubarPrimitive.Portal {...props} />;
+  return <MenubarPrimitive.Portal {...props} />
 }
 
 function MenubarRadioGroup({
   ...props
 }) {
-  return <MenubarPrimitive.RadioGroup {...props} />;
+  return <MenubarPrimitive.RadioGroup {...props} />
 }
 
 function MenubarSub({
   ...props
 }) {
-  return <MenubarPrimitive.Sub data-slot="menubar-sub" {...props} />;
+  return <MenubarPrimitive.Sub data-slot="menubar-sub" {...props} />
 }
 
 const Menubar = React.forwardRef(({ className, ...props }, ref) => (
@@ -176,7 +176,7 @@ const MenubarShortcut = ({
     (<span
       className={cn("ml-auto text-xs tracking-widest text-muted-foreground", className)}
       {...props} />)
-  );
+  )
 }
 MenubarShortcut.displayname = "MenubarShortcut"
 

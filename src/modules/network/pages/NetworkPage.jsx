@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Artist, Team, Backer, ProjectOwner, Connection, Notification, Subscription } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast';
-import { Search, MapPin, ChevronDown, Users, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import notificationService from '@/shared/services/notificationService';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Artist, Team, Backer, ProjectOwner, Connection, Notification, Subscription } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast'
+import { Search, MapPin, ChevronDown, Users, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import notificationService from '@/shared/services/notificationService'
 
 // Maps the app's user.role values to the Connection entity's requester/recipient type enum
 const ROLE_TO_TYPE = {
@@ -14,7 +14,7 @@ const ROLE_TO_TYPE = {
   team: 'team', team_admin: 'team',
   backer: 'backer',
   client: 'client', project_owner: 'client',
-};
+}
 
 const toDisplay = (person) => {
   if (person.type === 'artist') {
@@ -25,7 +25,7 @@ const toDisplay = (person) => {
       image: person.profile_photo_url,
       email: person.email,
       skills: (person.skills_experience || []).map(s => s.skill).concat(person.secondary_roles || [], person.role ? [person.role] : []),
-    };
+    }
   }
   if (person.type === 'team') {
     return {
@@ -35,7 +35,7 @@ const toDisplay = (person) => {
       image: person.team_logo_url,
       email: person.contact_email,
       skills: person.specialties || [],
-    };
+    }
   }
   if (person.type === 'client') {
     return {
@@ -45,7 +45,7 @@ const toDisplay = (person) => {
       image: person.profile_photo_url,
       email: person.email,
       skills: person.company ? [person.company] : [],
-    };
+    }
   }
   return {
     id: person.id, type: 'backer', name: person.organization_name,
@@ -54,35 +54,35 @@ const toDisplay = (person) => {
     image: person.logo_url,
     email: person.contact_email,
     skills: person.interests || [],
-  };
-};
+  }
+}
 
 export default function NetworkPage() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
-  const [showTypeFilter, setShowTypeFilter] = useState(false);
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedType, setSelectedType] = useState('all')
+  const [showTypeFilter, setShowTypeFilter] = useState(false)
   const [activeTab, setActiveTab] = useState('connections'); // 'connections', 'sent', 'pending'
-  const [showSubFilter, setShowSubFilter] = useState(false);
-  const [subscriptionFilter, setSubscriptionFilter] = useState('all');
-  const [subscribedEmails, setSubscribedEmails] = useState(new Set());
+  const [showSubFilter, setShowSubFilter] = useState(false)
+  const [subscriptionFilter, setSubscriptionFilter] = useState('all')
+  const [subscribedEmails, setSubscribedEmails] = useState(new Set())
 
-  const [myProfile, setMyProfile] = useState(null);
-  const [people, setPeople] = useState([]);
-  const [connections, setConnections] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]);
+  const [myProfile, setMyProfile] = useState(null)
+  const [people, setPeople] = useState([])
+  const [connections, setConnections] = useState([])
+  const [pendingRequests, setPendingRequests] = useState([])
 
-  const [showConnectionModal, setShowConnectionModal] = useState(false);
-  const [selectedPerson, setSelectedPerson] = useState(null);
-  const [connectionMessage, setConnectionMessage] = useState('');
+  const [showConnectionModal, setShowConnectionModal] = useState(false)
+  const [selectedPerson, setSelectedPerson] = useState(null)
+  const [connectionMessage, setConnectionMessage] = useState('')
 
-  const myType = ROLE_TO_TYPE[user?.role] || 'artist';
+  const myType = ROLE_TO_TYPE[user?.role] || 'artist'
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
     const fetchData = async () => {
       try {
@@ -92,131 +92,131 @@ export default function NetworkPage() {
         const [sentConns, receivedConns] = await Promise.all([
           Connection.filter({ requester_email: user.email }),
           Connection.filter({ recipient_email: user.email }),
-        ]);
-        const connectionsData = [...(sentConns || []), ...(receivedConns || [])];
+        ])
+        const connectionsData = [...(sentConns || []), ...(receivedConns || [])]
         // Deduplicate by id (in case both queries return the same row)
-        const seenIds = new Set();
+        const seenIds = new Set()
         const uniqueConns = connectionsData.filter(c => {
-          if (seenIds.has(c.id)) return false;
-          seenIds.add(c.id);
-          return true;
-        });
+          if (seenIds.has(c.id)) return false
+          seenIds.add(c.id)
+          return true
+        })
 
         const [artists, teams, backers, clients] = await Promise.all([
           Artist.list(),
           Team.list(),
           Backer.list(),
           ProjectOwner.list(),
-        ]);
+        ])
 
         const allPeople = [
           ...artists.map(a => ({ ...a, type: 'artist' })),
           ...teams.map(t => ({ ...t, type: 'team' })),
           ...backers.map(b => ({ ...b, type: 'backer' })),
           ...clients.map(c => ({ ...c, type: 'client' })),
-        ].map(toDisplay).filter(p => p.email !== user.email);
+        ].map(toDisplay).filter(p => p.email !== user.email)
 
-        setPeople(allPeople);
+        setPeople(allPeople)
 
         // My own profile (used to score suggestions by skill/career niche overlap)
         if (myType === 'artist') {
-          const mine = await Artist.filter({ email: user.email });
-          setMyProfile(mine?.[0] || null);
+          const mine = await Artist.filter({ email: user.email })
+          setMyProfile(mine?.[0] || null)
         } else if (myType === 'team') {
-          const mine = await Team.filter({ contact_email: user.email });
-          setMyProfile(mine?.[0] || null);
+          const mine = await Team.filter({ contact_email: user.email })
+          setMyProfile(mine?.[0] || null)
         } else if (myType === 'backer') {
-          const mine = await Backer.filter({ contact_email: user.email });
-          setMyProfile(mine?.[0] || null);
+          const mine = await Backer.filter({ contact_email: user.email })
+          setMyProfile(mine?.[0] || null)
         } else {
-          const mine = await ProjectOwner.filter({ email: user.email });
-          setMyProfile(mine?.[0] || null);
+          const mine = await ProjectOwner.filter({ email: user.email })
+          setMyProfile(mine?.[0] || null)
         }
 
         const myConnections = connectionsData.filter(c =>
           c.requester_email === user.email || c.recipient_email === user.email
-        );
-        console.log('My connections after filtering:', myConnections);
-        console.log('Accepted connections:', myConnections.filter(c => c.status === 'accepted'));
-        console.log('Pending connections:', myConnections.filter(c => c.status === 'pending'));
+        )
+        //
+        //)
+        //)
         
-        setConnections(myConnections);
-        setPendingRequests(myConnections.filter(c => c.recipient_email === user.email && c.status === 'pending'));
+        setConnections(myConnections)
+        setPendingRequests(myConnections.filter(c => c.recipient_email === user.email && c.status === 'pending'))
 
         // For backers/clients: track which creators have an active paid subscription
         if (myType === 'backer' || myType === 'client') {
           try {
-            const activeSubs = await Subscription.filter({ status: 'active' });
-            setSubscribedEmails(new Set(activeSubs.map(s => s.user_email)));
+            const activeSubs = await Subscription.filter({ status: 'active' })
+            setSubscribedEmails(new Set(activeSubs.map(s => s.user_email)))
           } catch (subErr) {
-            console.error('Error fetching subscriptions:', subErr);
+            //
           }
         }
       } catch (err) {
-        console.error('Error fetching network data:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, [user, myType]);
+    fetchData()
+  }, [user, myType])
 
   const getConnectionStatus = (person) => {
     const connection = connections.find(c =>
       (c.requester_email === user.email && c.recipient_email === person.email) ||
       (c.recipient_email === user.email && c.requester_email === person.email)
-    );
-    return connection ? connection.status : 'not_connected';
-  };
+    )
+    return connection ? connection.status : 'not_connected'
+  }
 
   const getMutualConnections = (personEmail) => {
     // Find all accepted connections for the current user
     const myAcceptedConnections = connections.filter(c =>
       (c.requester_email === user.email || c.recipient_email === user.email) && c.status === 'accepted'
-    );
+    )
 
     // Find all accepted connections for the other person
     const theirAcceptedConnections = connections.filter(c =>
       (c.requester_email === personEmail || c.recipient_email === personEmail) && c.status === 'accepted'
-    );
+    )
 
     // Extract email addresses from both sets
-    const myConnectionsEmails = new Set();
+    const myConnectionsEmails = new Set()
     myAcceptedConnections.forEach(c => {
-      if (c.requester_email === user.email) myConnectionsEmails.add(c.recipient_email);
-      else myConnectionsEmails.add(c.requester_email);
-    });
+      if (c.requester_email === user.email) myConnectionsEmails.add(c.recipient_email)
+      else myConnectionsEmails.add(c.requester_email)
+    })
 
-    const theirConnectionsEmails = new Set();
+    const theirConnectionsEmails = new Set()
     theirAcceptedConnections.forEach(c => {
-      if (c.requester_email === personEmail) theirConnectionsEmails.add(c.recipient_email);
-      else theirConnectionsEmails.add(c.requester_email);
-    });
+      if (c.requester_email === personEmail) theirConnectionsEmails.add(c.recipient_email)
+      else theirConnectionsEmails.add(c.requester_email)
+    })
 
     // Find mutual connections
-    const mutualEmails = [...myConnectionsEmails].filter(email => theirConnectionsEmails.has(email));
+    const mutualEmails = [...myConnectionsEmails].filter(email => theirConnectionsEmails.has(email))
 
     // Get the actual person objects for mutual connections
-    const mutualPeople = people.filter(p => mutualEmails.includes(p.email));
+    const mutualPeople = people.filter(p => mutualEmails.includes(p.email))
 
-    return mutualPeople;
-  };
+    return mutualPeople
+  }
 
   const refreshConnections = async () => {
     const [sent, received] = await Promise.all([
       Connection.filter({ requester_email: user.email }),
       Connection.filter({ recipient_email: user.email }),
-    ]);
-    const all = [...(sent || []), ...(received || [])];
-    const seen = new Set();
-    const mine = all.filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; });
-    setConnections(mine);
-    setPendingRequests(mine.filter(c => c.recipient_email === user.email && c.status === 'pending'));
-  };
+    ])
+    const all = [...(sent || []), ...(received || [])]
+    const seen = new Set()
+    const mine = all.filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; })
+    setConnections(mine)
+    setPendingRequests(mine.filter(c => c.recipient_email === user.email && c.status === 'pending'))
+  }
 
   const handleConnect = async () => {
-    if (!selectedPerson) return;
+    if (!selectedPerson) return
     try {
       await Connection.create({
         requester_email: user.email,
@@ -225,7 +225,7 @@ export default function NetworkPage() {
         recipient_type: selectedPerson.type,
         status: 'pending',
         message: connectionMessage,
-      });
+      })
       await Notification.create({
         recipient_email: selectedPerson.email,
         type: 'connection_request',
@@ -233,24 +233,24 @@ export default function NetworkPage() {
         message: `${user.full_name} wants to connect with you`,
         metadata: { sender_email: user.email, sender_name: user.full_name, connection_message: connectionMessage },
         read: false
-      });
-      setShowConnectionModal(false);
-      setConnectionMessage('');
-      success('Sent', `Connection request sent to ${selectedPerson.name}`);
-      await refreshConnections();
+      })
+      setShowConnectionModal(false)
+      setConnectionMessage('')
+      success('Sent', `Connection request sent to ${selectedPerson.name}`)
+      await refreshConnections()
     } catch (err) {
-      console.error('Error sending connection:', err);
-      error('Failed', 'Failed to send connection request');
+      //
+      error('Failed', 'Failed to send connection request')
     }
-  };
+  }
 
   const handleAcceptConnection = async (connectionId) => {
     try {
-      await Connection.update(connectionId, { status: 'accepted' });
-      success('Accepted', 'You are now connected');
-      await refreshConnections();
+      await Connection.update(connectionId, { status: 'accepted' })
+      success('Accepted', 'You are now connected')
+      await refreshConnections()
       // Also create a notification to the requester
-      const connection = connections.find(c => c.id === connectionId);
+      const connection = connections.find(c => c.id === connectionId)
       if (connection) {
         await Notification.create({
           recipient_email: connection.requester_email,
@@ -259,60 +259,60 @@ export default function NetworkPage() {
           message: `${user.full_name} accepted your connection request`,
           metadata: { sender_email: user.email, sender_name: user.full_name },
           read: false
-        });
+        })
       }
     } catch (err) {
-      console.error('Error accepting connection:', err);
-      error('Error', 'Failed to accept connection');
+      //
+      error('Error', 'Failed to accept connection')
     }
-  };
+  }
 
   const handleDeclineConnection = async (connectionId) => {
     try {
-      await Connection.update(connectionId, { status: 'declined' });
-      success('Declined', 'Connection request declined');
-      await refreshConnections();
+      await Connection.update(connectionId, { status: 'declined' })
+      success('Declined', 'Connection request declined')
+      await refreshConnections()
     } catch (err) {
-      console.error('Error declining connection:', err);
-      error('Error', 'Failed to decline connection');
+      //
+      error('Error', 'Failed to decline connection')
     }
-  };
+  }
 
   const handleCancelRequest = async (connectionId) => {
     try {
-      await Connection.delete(connectionId);
-      success('Cancelled', 'Connection request withdrawn');
-      await refreshConnections();
+      await Connection.delete(connectionId)
+      success('Cancelled', 'Connection request withdrawn')
+      await refreshConnections()
     } catch (err) {
-      console.error('Error cancelling connection:', err);
-      error('Error', 'Failed to withdraw request');
+      //
+      error('Error', 'Failed to withdraw request')
     }
-  };
+  }
 
   const handleMessage = (person) => {
     // Navigate to MessagesPage with the recipient's email as a query parameter
-    navigate(createPageUrl('Messages') + `?with=${encodeURIComponent(person.email)}`);
-  };
+    navigate(createPageUrl('Messages') + `?with=${encodeURIComponent(person.email)}`)
+  }
 
   const filterPerson = (person) => {
-    if (selectedType !== 'all' && person.type !== selectedType) return false;
+    if (selectedType !== 'all' && person.type !== selectedType) return false
     if ((myType === 'backer' || myType === 'client') && subscriptionFilter !== 'all' && person.type === 'artist') {
-      const isSubscribed = subscribedEmails.has(person.email);
-      if (subscriptionFilter === 'subscribed' && !isSubscribed) return false;
-      if (subscriptionFilter === 'free' && isSubscribed) return false;
+      const isSubscribed = subscribedEmails.has(person.email)
+      if (subscriptionFilter === 'subscribed' && !isSubscribed) return false
+      if (subscriptionFilter === 'free' && isSubscribed) return false
     }
-    const q = searchQuery.toLowerCase();
-    if (!q) return true;
+    const q = searchQuery.toLowerCase()
+    if (!q) return true
     return person.name?.toLowerCase().includes(q) ||
       person.role?.toLowerCase().includes(q) ||
       person.location?.toLowerCase().includes(q) ||
-      person.skills?.some(s => s.toLowerCase().includes(q));
-  };
+      person.skills?.some(s => s.toLowerCase().includes(q))
+  }
 
-  const myConnections = people.filter(p => getConnectionStatus(p) === 'accepted' && filterPerson(p));
-  const notConnected = people.filter(p => getConnectionStatus(p) === 'not_connected' && filterPerson(p));
-  const sentRequests = connections.filter(c => c.requester_email === user.email && c.status === 'pending');
-  const receivedRequests = connections.filter(c => c.recipient_email === user.email && c.status === 'pending');
+  const myConnections = people.filter(p => getConnectionStatus(p) === 'accepted' && filterPerson(p))
+  const notConnected = people.filter(p => getConnectionStatus(p) === 'not_connected' && filterPerson(p))
+  const sentRequests = connections.filter(c => c.requester_email === user.email && c.status === 'pending')
+  const receivedRequests = connections.filter(c => c.recipient_email === user.email && c.status === 'pending')
 
   // Score suggestions by skill/role overlap with my profile — "career/niche" matching
   const myskillSet = new Set([
@@ -321,30 +321,30 @@ export default function NetworkPage() {
     ...((myProfile?.skills_experience || []).map(s => s.skill)),
     ...(myProfile?.specialties || []),
     ...(myProfile?.interests || []),
-  ].filter(Boolean).map(s => s.toLowerCase()));
+  ].filter(Boolean).map(s => s.toLowerCase()))
 
   const scorePerson = (person) => {
-    if (myskillSet.size === 0) return 0;
-    return (person.skills || []).filter(s => myskillSet.has((s || '').toLowerCase())).length;
-  };
+    if (myskillSet.size === 0) return 0
+    return (person.skills || []).filter(s => myskillSet.has((s || '').toLowerCase())).length
+  }
 
   const suggestions = notConnected
     .map(p => ({ ...p, matchScore: scorePerson(p) }))
-    .sort((a, b) => b.matchScore - a.matchScore);
+    .sort((a, b) => b.matchScore - a.matchScore)
 
   const typeIcon = (type) => {
-    if (type === 'team') return Building2;
-    if (type === 'backer') return TrendingUp;
-    if (type === 'client') return Briefcase;
-    return Users;
-  };
+    if (type === 'team') return Building2
+    if (type === 'backer') return TrendingUp
+    if (type === 'client') return Briefcase
+    return Users
+  }
 
   if (!user || loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -489,8 +489,8 @@ export default function NetworkPage() {
                 <div className="p-6 text-center text-sm text-gray-500">No suggestions available</div>
               )}
               {suggestions.map((person) => {
-                const TypeIcon = typeIcon(person.type);
-                const mutuals = getMutualConnections(person.email);
+                const TypeIcon = typeIcon(person.type)
+                const mutuals = getMutualConnections(person.email)
                 return (
                   <div key={`${person.type}-${person.id}`} className="p-4 hover:bg-gray-50">
                     <div className="flex items-start gap-3">
@@ -544,7 +544,7 @@ export default function NetworkPage() {
                       </div>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           </div>
@@ -562,8 +562,8 @@ export default function NetworkPage() {
           ) : (
             <div className="space-y-3">
               {sentRequests.map((request) => {
-                const recipient = people.find(p => p.email === request.recipient_email);
-                const TypeIcon = typeIcon(recipient?.type);
+                const recipient = people.find(p => p.email === request.recipient_email)
+                const TypeIcon = typeIcon(recipient?.type)
                 return (
                   <div key={request.id} className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                     <div className="relative flex-shrink-0">
@@ -581,7 +581,7 @@ export default function NetworkPage() {
                       Cancel
                     </button>
                   </div>
-                );
+                )
               })}
             </div>
           )}
@@ -599,8 +599,8 @@ export default function NetworkPage() {
           ) : (
             <div className="space-y-3">
               {receivedRequests.map((request) => {
-                const requester = people.find(p => p.email === request.requester_email);
-                const TypeIcon = typeIcon(requester?.type);
+                const requester = people.find(p => p.email === request.requester_email)
+                const TypeIcon = typeIcon(requester?.type)
                 return (
                   <div key={request.id} className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                     <div className="relative flex-shrink-0">
@@ -623,7 +623,7 @@ export default function NetworkPage() {
                       </button>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           )}
@@ -653,5 +653,5 @@ export default function NetworkPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

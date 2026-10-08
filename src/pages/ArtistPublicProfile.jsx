@@ -1,79 +1,79 @@
-import React, { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { Artist, PortfolioClip, Endorsement, Testimonial, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
-import { createPageUrl } from '@/shared/utils/routing';
-import ShareProfileButton from '@/components/artist/ShareProfileButton';
-import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge';
+import React, { useEffect, useState } from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
+import { Artist, PortfolioClip, Endorsement, Testimonial, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
+import { createPageUrl } from '@/shared/utils/routing'
+import ShareProfileButton from '@/components/artist/ShareProfileButton'
+import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge'
 import {
   MapPin, MessageCircle, Globe, Instagram, Linkedin, Star, ThumbsUp,
   Play, BadgeCheck, Film, Quote, Sparkles
-} from 'lucide-react';
+} from 'lucide-react'
 
 export default function ArtistPublicProfile() {
-  const [searchParams] = useSearchParams();
-  const [viewer, setViewer] = useState(null);
-  const [viewedArtist, setViewedArtist] = useState(null);
-  const [portfolioClips, setPortfolioClips] = useState([]);
-  const [endorsements, setEndorsements] = useState([]);
-  const [testimonials, setTestimonials] = useState([]);
-  const [subscription, setSubscription] = useState(null);
-  const [subscriptionPackage, setSubscriptionPackage] = useState(null);
-  const [activeClip, setActiveClip] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const [searchParams] = useSearchParams()
+  const [viewer, setViewer] = useState(null)
+  const [viewedArtist, setViewedArtist] = useState(null)
+  const [portfolioClips, setPortfolioClips] = useState([])
+  const [endorsements, setEndorsements] = useState([])
+  const [testimonials, setTestimonials] = useState([])
+  const [subscription, setSubscription] = useState(null)
+  const [subscriptionPackage, setSubscriptionPackage] = useState(null)
+  const [activeClip, setActiveClip] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
-    if (storedUser) setViewer(JSON.parse(storedUser));
-  }, []);
+    const storedUser = localStorage.getItem('ericrabar_user')
+    if (storedUser) setViewer(JSON.parse(storedUser))
+  }, [])
 
   useEffect(() => {
-    const artistId = searchParams.get('id');
+    const artistId = searchParams.get('id')
     if (!artistId) { setLoading(false); setNotFound(true); return; }
 
     const fetchData = async () => {
       try {
-        const artistsData = await Artist.filter({ id: artistId });
-        const artist = artistsData?.[0];
+        const artistsData = await Artist.filter({ id: artistId })
+        const artist = artistsData?.[0]
         if (!artist) { setNotFound(true); setLoading(false); return; }
-        setViewedArtist(artist);
+        setViewedArtist(artist)
 
         const [clipsData, endorsementsData, testimonialsData] = await Promise.all([
           PortfolioClip.filter({ uploaded_by_type: 'artist', uploaded_by_id: artistId, status: 'approved' }),
           Endorsement.filter({ recipient_email: artist.email }),
           Testimonial.filter({ recipient_email: artist.email }),
-        ]);
-        setPortfolioClips(clipsData || []);
-        setEndorsements(endorsementsData || []);
-        setTestimonials(testimonialsData || []);
+        ])
+        setPortfolioClips(clipsData || [])
+        setEndorsements(endorsementsData || [])
+        setTestimonials(testimonialsData || [])
 
         try {
-          const subsData = await Subscription.filter({ user_email: artist.email, status: 'active' });
+          const subsData = await Subscription.filter({ user_email: artist.email, status: 'active' })
           if (subsData?.length > 0) {
-            setSubscription(subsData[0]);
-            const pkgData = await SubscriptionPackage.get(subsData[0].package_id);
-            setSubscriptionPackage(pkgData);
+            setSubscription(subsData[0])
+            const pkgData = await SubscriptionPackage.get(subsData[0].package_id)
+            setSubscriptionPackage(pkgData)
           }
         } catch (subErr) {
-          console.error('Error fetching subscription:', subErr);
+          //
         }
       } catch (err) {
-        console.error('Error fetching artist data:', err);
-        setNotFound(true);
+        //
+        setNotFound(true)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, [searchParams]);
+    fetchData()
+  }, [searchParams])
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   if (notFound || !viewedArtist) {
@@ -85,22 +85,22 @@ export default function ArtistPublicProfile() {
           Go to Homepage
         </Link>
       </div>
-    );
+    )
   }
 
   const groupedEndorsements = endorsements.reduce((acc, e) => {
-    if (!acc[e.skill]) acc[e.skill] = [];
-    acc[e.skill].push(e);
-    return acc;
-  }, {});
+    if (!acc[e.skill]) acc[e.skill] = []
+    acc[e.skill].push(e)
+    return acc
+  }, {})
 
   const avgRating = testimonials.length
     ? (testimonials.reduce((sum, t) => sum + (t.rating || 0), 0) / testimonials.filter(t => t.rating).length || 0).toFixed(1)
-    : null;
+    : null
 
-  const memberSince = viewedArtist.created_at ? new Date(viewedArtist.created_at).getFullYear() : null;
+  const memberSince = viewedArtist.created_at ? new Date(viewedArtist.created_at).getFullYear() : null
 
-  const formatLabel = (val) => (val || 'other').charAt(0).toUpperCase() + (val || 'other').slice(1).replace(/_/g, ' ');
+  const formatLabel = (val) => (val || 'other').charAt(0).toUpperCase() + (val || 'other').slice(1).replace(/_/g, ' ')
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -325,5 +325,5 @@ export default function ArtistPublicProfile() {
         </div>
       )}
     </div>
-  );
+  )
 }

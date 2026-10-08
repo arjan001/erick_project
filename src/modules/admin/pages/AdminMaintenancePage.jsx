@@ -3,20 +3,20 @@
  * Configure maintenance mode settings with rich text editor
  */
 
-import React, { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
 import { 
   Settings, Save, Clock, Shield, CheckCircle2, AlertTriangle, RefreshCw,
   Layout, Mail, Key, Plus, Trash2, Copy, Eye, X
-} from 'lucide-react';
+} from 'lucide-react'
 import { 
   fetchMaintenanceSettings, 
   clearMaintenanceCache,
   MAINTENANCE_TEMPLATES,
   getAllTemplates 
-} from '@/lib/maintenanceMode';
-import { supabase } from '@/lib/supabase';
+} from '@/lib/maintenanceMode'
+import { supabase } from '@/lib/supabase'
 
 const ToggleRow = ({ label, description, checked, onChange }) => (
   <div className="flex items-center justify-between py-2">
@@ -37,14 +37,14 @@ const ToggleRow = ({ label, description, checked, onChange }) => (
       />
     </button>
   </div>
-);
+)
 
 export default function AdminMaintenancePage() {
-  const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [previewMode, setPreviewMode] = useState(false);
-  const [templatePreview, setTemplatePreview] = useState(null);
+  const { success, error } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [previewMode, setPreviewMode] = useState(false)
+  const [templatePreview, setTemplatePreview] = useState(null)
   
   const [settings, setSettings] = useState({
     enabled: false,
@@ -55,23 +55,23 @@ export default function AdminMaintenancePage() {
     showCountdown: true,
     contactEmail: 'support@ericrabar.app',
     template: 'default'
-  });
+  })
 
-  const [templates, setTemplates] = useState([]);
-  const [accessCodes, setAccessCodes] = useState([]);
-  const [newCode, setNewCode] = useState('');
-  const [codeExpiry, setCodeExpiry] = useState('');
+  const [templates, setTemplates] = useState([])
+  const [accessCodes, setAccessCodes] = useState([])
+  const [newCode, setNewCode] = useState('')
+  const [codeExpiry, setCodeExpiry] = useState('')
 
   useEffect(() => {
-    loadSettings();
-    setTemplates(getAllTemplates());
-    loadAccessCodes();
-  }, []);
+    loadSettings()
+    setTemplates(getAllTemplates())
+    loadAccessCodes()
+  }, [])
 
   const loadSettings = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const data = await fetchMaintenanceSettings();
+      const data = await fetchMaintenanceSettings()
       setSettings({
         enabled: data.enabled,
         message: data.message,
@@ -81,17 +81,17 @@ export default function AdminMaintenancePage() {
         showCountdown: data.showCountdown,
         contactEmail: data.contactEmail,
         template: data.template
-      });
+      })
     } catch (err) {
-      console.error('Error loading maintenance settings:', err);
-      error('Error', 'Failed to load maintenance settings');
+      
+      error('Error', 'Failed to load maintenance settings')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSave = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
       // Save each setting individually
       const settingsMap = {
@@ -103,72 +103,72 @@ export default function AdminMaintenancePage() {
         'maintenance_show_countdown': String(settings.showCountdown),
         'maintenance_contact_email': settings.contactEmail,
         'maintenance_template': settings.template
-      };
+      }
 
       for (const [key, value] of Object.entries(settingsMap)) {
         const { data: existing } = await supabase
           .from('admin_settings')
           .select('*')
           .eq('setting_key', key)
-          .single();
+          .single()
         
         if (existing) {
           await supabase
             .from('admin_settings')
             .update({ setting_value: value })
-            .eq('setting_key', key);
+            .eq('setting_key', key)
         } else {
           await supabase
             .from('admin_settings')
-            .insert({ setting_key: key, setting_value: value });
+            .insert({ setting_key: key, setting_value: value })
         }
       }
 
-      clearMaintenanceCache();
-      success('Saved', 'Maintenance settings saved successfully');
+      clearMaintenanceCache()
+      success('Saved', 'Maintenance settings saved successfully')
     } catch (err) {
-      console.error('Error saving maintenance settings:', err);
-      error('Failed', 'Failed to save maintenance settings');
+      
+      error('Failed', 'Failed to save maintenance settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
-  const handleToggle = (key) => setSettings(prev => ({ ...prev, [key]: !prev[key] }));
-  const handleChange = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
+  const handleToggle = (key) => setSettings(prev => ({ ...prev, [key]: !prev[key] }))
+  const handleChange = (key, value) => setSettings(prev => ({ ...prev, [key]: value }))
 
   const applyTemplate = (templateKey) => {
-    const template = MAINTENANCE_TEMPLATES[templateKey];
+    const template = MAINTENANCE_TEMPLATES[templateKey]
     if (template) {
-      setSettings(prev => ({ ...prev, message: template.message, template: templateKey }));
+      setSettings(prev => ({ ...prev, message: template.message, template: templateKey }))
     }
-  };
+  }
 
   const showTemplatePreview = (templateKey) => {
-    const template = MAINTENANCE_TEMPLATES[templateKey];
+    const template = MAINTENANCE_TEMPLATES[templateKey]
     if (template) {
-      setTemplatePreview(template);
+      setTemplatePreview(template)
     }
-  };
+  }
 
   const loadAccessCodes = async () => {
     try {
       const { data, error } = await supabase
         .from('maintenance_access_codes')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
       
-      if (error) throw error;
-      setAccessCodes(data || []);
+      if (error) throw error
+      setAccessCodes(data || [])
     } catch (err) {
-      console.error('Error loading access codes:', err);
+      
     }
-  };
+  }
 
   const handleCreateCode = async () => {
     if (!newCode.trim()) {
-      error('Error', 'Please enter an access code');
-      return;
+      error('Error', 'Please enter an access code')
+      return
     }
 
     try {
@@ -179,60 +179,60 @@ export default function AdminMaintenancePage() {
           is_active: true,
           created_by: localStorage.getItem('ericrabar_user') ? JSON.parse(localStorage.getItem('ericrabar_user')).email : 'admin',
           expires_at: codeExpiry || null
-        });
+        })
       
-      if (error) throw error;
+      if (error) throw error
       
-      success('Success', 'Access code created successfully');
-      setNewCode('');
-      setCodeExpiry('');
-      loadAccessCodes();
+      success('Success', 'Access code created successfully')
+      setNewCode('')
+      setCodeExpiry('')
+      loadAccessCodes()
     } catch (err) {
-      console.error('Error creating access code:', err);
-      error('Error', 'Failed to create access code');
+      
+      error('Error', 'Failed to create access code')
     }
-  };
+  }
 
   const handleDeleteCode = async (codeId) => {
     try {
       const { error } = await supabase
         .from('maintenance_access_codes')
         .delete()
-        .eq('id', codeId);
+        .eq('id', codeId)
       
-      if (error) throw error;
+      if (error) throw error
       
-      success('Success', 'Access code deleted');
-      loadAccessCodes();
+      success('Success', 'Access code deleted')
+      loadAccessCodes()
     } catch (err) {
-      console.error('Error deleting access code:', err);
-      error('Error', 'Failed to delete access code');
+      
+      error('Error', 'Failed to delete access code')
     }
-  };
+  }
 
   const handleToggleCode = async (codeId, isActive) => {
     try {
       const { error } = await supabase
         .from('maintenance_access_codes')
         .update({ is_active: !isActive })
-        .eq('id', codeId);
+        .eq('id', codeId)
       
-      if (error) throw error;
+      if (error) throw error
       
-      success('Success', 'Access code updated');
-      loadAccessCodes();
+      success('Success', 'Access code updated')
+      loadAccessCodes()
     } catch (err) {
-      console.error('Error toggling access code:', err);
-      error('Error', 'Failed to update access code');
+      
+      error('Error', 'Failed to update access code')
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -535,8 +535,8 @@ export default function AdminMaintenancePage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(`/${code.code}`);
-                        success('Copied', 'Access code copied to clipboard');
+                        navigator.clipboard.writeText(`/${code.code}`)
+                        success('Copied', 'Access code copied to clipboard')
                       }}
                       className="p-1.5 hover:bg-gray-200 rounded text-gray-600"
                       title="Copy code"
@@ -657,5 +657,5 @@ export default function AdminMaintenancePage() {
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase';
-import auditLogger from '@/lib/auditLogger';
+import { supabase } from '@/lib/supabase'
+import auditLogger from '@/lib/auditLogger'
 
 export const apiSettingsApi = {
   // ============================================
@@ -18,19 +18,19 @@ export const apiSettingsApi = {
           last_name
         )
       `)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
     
-    if (error) throw error;
-    return data;
+    if (error) throw error
+    return data
   },
 
   // Create a new API key
   createApiKey: async (keyData) => {
-    const { name, scopes, created_by } = keyData;
+    const { name, scopes, created_by } = keyData
     
     // Generate random keys
-    const publicKey = `sk_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 15)}`;
-    const secretKey = `sk_secret_${Math.random().toString(36).substring(2, 20)}`;
+    const publicKey = `sk_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 15)}`
+    const secretKey = `sk_secret_${Math.random().toString(36).substring(2, 20)}`
     
     const { data, error } = await supabase
       .from('api_keys')
@@ -43,14 +43,14 @@ export const apiSettingsApi = {
         created_by
       })
       .select()
-      .single();
+      .single()
 
-    if (error) throw error;
+    if (error) throw error
 
     // Log audit event
-    await auditLogger.api.createApiKey(data.id, name);
+    await auditLogger.api.createApiKey(data.id, name)
 
-    return data;
+    return data
   },
 
   // Revoke an API key
@@ -63,14 +63,14 @@ export const apiSettingsApi = {
       })
       .eq('id', keyId)
       .select()
-      .single();
+      .single()
 
-    if (error) throw error;
+    if (error) throw error
 
     // Log audit event
-    await auditLogger.api.revokeApiKey(keyId, data.name);
+    await auditLogger.api.revokeApiKey(keyId, data.name)
 
-    return data;
+    return data
   },
 
   // Delete an API key
@@ -80,21 +80,21 @@ export const apiSettingsApi = {
       .from('api_keys')
       .select('name')
       .eq('id', keyId)
-      .single();
+      .single()
 
     const { error } = await supabase
       .from('api_keys')
       .delete()
-      .eq('id', keyId);
+      .eq('id', keyId)
 
-    if (error) throw error;
+    if (error) throw error
 
     // Log audit event
     if (key) {
-      await auditLogger.api.deleteApiKey(keyId, key.name);
+      await auditLogger.api.deleteApiKey(keyId, key.name)
     }
 
-    return true;
+    return true
   },
 
   // Update last used timestamp
@@ -102,10 +102,10 @@ export const apiSettingsApi = {
     const { error } = await supabase
       .from('api_keys')
       .update({ last_used_at: new Date().toISOString() })
-      .eq('id', keyId);
+      .eq('id', keyId)
 
-    if (error) throw error;
-    return true;
+    if (error) throw error
+    return true
   },
 
   // ============================================
@@ -117,7 +117,7 @@ export const apiSettingsApi = {
     const { data, error } = await supabase
       .from('rate_limiting_settings')
       .select('*')
-      .single();
+      .single()
 
     if (error) {
       // If no settings exist, return defaults
@@ -128,11 +128,11 @@ export const apiSettingsApi = {
           requests_per_hour: 1000,
           requests_per_day: 10000,
           burst_limit: 20
-        };
+        }
       }
-      throw error;
+      throw error
     }
-    return data;
+    return data
   },
 
   // Update rate limiting settings
@@ -145,14 +145,14 @@ export const apiSettingsApi = {
       })
       .eq('id', settings.id)
       .select()
-      .single();
+      .single()
 
-    if (error) throw error;
+    if (error) throw error
 
     // Log audit event
-    await auditLogger.api.updateRateLimiting(settings);
+    await auditLogger.api.updateRateLimiting(settings)
 
-    return data;
+    return data
   },
 
   // ============================================
@@ -164,7 +164,7 @@ export const apiSettingsApi = {
     const { data, error } = await supabase
       .from('api_configuration')
       .select('*')
-      .single();
+      .single()
 
     if (error) {
       // If no configuration exists, return defaults
@@ -181,11 +181,11 @@ export const apiSettingsApi = {
           current_version: 'v1',
           enable_logging: true,
           log_retention_days: 30
-        };
+        }
       }
-      throw error;
+      throw error
     }
-    return data;
+    return data
   },
 
   // Update API configuration
@@ -198,14 +198,14 @@ export const apiSettingsApi = {
       })
       .eq('id', config.id)
       .select()
-      .single();
+      .single()
 
-    if (error) throw error;
+    if (error) throw error
 
     // Log audit event
-    await auditLogger.api.updateConfiguration(config);
+    await auditLogger.api.updateConfiguration(config)
 
-    return data;
+    return data
   },
 
   // ============================================
@@ -218,15 +218,15 @@ export const apiSettingsApi = {
       .from('integrations_settings')
       .select('*')
       .eq('integration_name', integrationName)
-      .single();
+      .single()
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return null;
+        return null
       }
-      throw error;
+      throw error
     }
-    return data;
+    return data
   },
 
   // Update integration settings
@@ -240,14 +240,14 @@ export const apiSettingsApi = {
         updated_at: new Date().toISOString()
       })
       .select()
-      .single();
+      .single()
 
-    if (error) throw error;
+    if (error) throw error
 
     // Log audit event
-    await auditLogger.api.updateIntegration(integrationName, isEnabled);
+    await auditLogger.api.updateIntegration(integrationName, isEnabled)
 
-    return data;
+    return data
   },
 
   // Get all integrations
@@ -255,10 +255,10 @@ export const apiSettingsApi = {
     const { data, error } = await supabase
       .from('integrations_settings')
       .select('*')
-      .order('integration_name');
+      .order('integration_name')
 
-    if (error) throw error;
-    return data;
+    if (error) throw error
+    return data
   },
 
   // ============================================
@@ -277,10 +277,10 @@ export const apiSettingsApi = {
         )
       `)
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + limit - 1)
 
-    if (error) throw error;
-    return data;
+    if (error) throw error
+    return data
   },
 
   // Log API usage
@@ -290,23 +290,23 @@ export const apiSettingsApi = {
       .insert({
         ...logData,
         created_at: new Date().toISOString()
-      });
+      })
 
-    if (error) throw error;
-    return true;
+    if (error) throw error
+    return true
   },
 
   // Clear old logs based on retention policy
   clearOldLogs: async (retentionDays) => {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - retentionDays)
 
     const { error } = await supabase
       .from('api_usage_logs')
       .delete()
-      .lt('created_at', cutoffDate.toISOString());
+      .lt('created_at', cutoffDate.toISOString())
 
-    if (error) throw error;
-    return true;
+    if (error) throw error
+    return true
   }
-};
+}

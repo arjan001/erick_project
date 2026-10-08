@@ -1,28 +1,28 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Switch } from '@/shared/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Save, Shield, Key, Globe } from 'lucide-react';
+import React, { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Switch } from '@/shared/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
+import { Save, Shield, Key, Globe } from 'lucide-react'
 
 export default function AdminAuthProvidersPage() {
   const [providers, setProviders] = useState({
     google: { enabled: true, clientId: '', clientSecret: '' },
     github: { enabled: false, clientId: '', clientSecret: '' },
     email: { enabled: true, requireVerification: true }
-  });
+  })
 
   const [jwtSettings, setJwtSettings] = useState({
     secret: '',
     expiresIn: '7d',
     algorithm: 'HS256'
-  });
+  })
 
   const handleSave = () => {
-    console.log('Saving auth provider settings:', providers);
-  };
+    
+  }
 
   return (
     <div className="space-y-6">
@@ -227,5 +227,5 @@ export default function AdminAuthProvidersPage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

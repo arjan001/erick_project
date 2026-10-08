@@ -1,15 +1,15 @@
-import React from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { ArrowRight, Clapperboard } from 'lucide-react';
+import React from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { ArrowRight, Clapperboard } from 'lucide-react'
 
 export default function Hero() {
-  const { scrollY } = useScroll();
-  const yBg = useTransform(scrollY, [0, 800], [0, 200]);
-  const yContent = useTransform(scrollY, [0, 600], [0, 120]);
-  const opacity = useTransform(scrollY, [0, 400], [1, 0]);
-  const scale = useTransform(scrollY, [0, 600], [1, 1.15]);
+  const { scrollY } = useScroll()
+  const yBg = useTransform(scrollY, [0, 800], [0, 200])
+  const yContent = useTransform(scrollY, [0, 600], [0, 120])
+  const opacity = useTransform(scrollY, [0, 400], [1, 0])
+  const scale = useTransform(scrollY, [0, 600], [1, 1.15])
 
   return (
     <section className="relative h-screen min-h-[700px] w-full overflow-hidden bg-[#0A0A0A]">
@@ -108,5 +108,5 @@ export default function Hero() {
         </div>
       </motion.div>
     </section>
-  );
+  )
 }

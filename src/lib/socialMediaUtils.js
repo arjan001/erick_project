@@ -41,7 +41,7 @@ export const SOCIAL_MEDIA_PATTERNS = {
     regex: /^https?:\/\//i,
     placeholder: 'example.com'
   }
-};
+}
 
 /**
  * Format a social media URL with the appropriate base domain
@@ -50,28 +50,28 @@ export const SOCIAL_MEDIA_PATTERNS = {
  * @returns {string} Formatted URL
  */
 export function formatSocialMediaUrl(platform, value) {
-  if (!value || !value.trim()) return '';
+  if (!value || !value.trim()) return ''
   
-  const trimmedValue = value.trim();
-  const pattern = SOCIAL_MEDIA_PATTERNS[platform];
+  const trimmedValue = value.trim()
+  const pattern = SOCIAL_MEDIA_PATTERNS[platform]
   
-  if (!pattern) return trimmedValue;
+  if (!pattern) return trimmedValue
   
   // If already has the base URL, return as is
   if (pattern.regex.test(trimmedValue)) {
-    return trimmedValue;
+    return trimmedValue
   }
   
   // If starts with http/https but not the correct domain, return as is
   if (/^https?:\/\//i.test(trimmedValue)) {
-    return trimmedValue;
+    return trimmedValue
   }
   
   // Remove leading @ for platforms that use it
-  const cleanValue = trimmedValue.startsWith('@') ? trimmedValue.slice(1) : trimmedValue;
+  const cleanValue = trimmedValue.startsWith('@') ? trimmedValue.slice(1) : trimmedValue
   
   // Add base URL
-  return pattern.base + cleanValue;
+  return pattern.base + cleanValue
 }
 
 /**
@@ -81,14 +81,14 @@ export function formatSocialMediaUrl(platform, value) {
  * @returns {string} Username without base URL
  */
 export function extractUsername(platform, url) {
-  if (!url) return '';
+  if (!url) return ''
   
-  const pattern = SOCIAL_MEDIA_PATTERNS[platform];
-  if (!pattern) return url;
+  const pattern = SOCIAL_MEDIA_PATTERNS[platform]
+  if (!pattern) return url
   
   if (pattern.regex.test(url)) {
-    return url.replace(pattern.regex, '').replace(/\/$/, '');
+    return url.replace(pattern.regex, '').replace(/\/$/, '')
   }
   
-  return url;
+  return url
 }

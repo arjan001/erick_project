@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Backer, Deal } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { FileText, Plus, Search, Calendar, DollarSign, Check, X, Clock, Eye, Pen } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import ESignatureModal from '@/modules/backer/components/ESignatureModal';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Backer, Deal } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { FileText, Plus, Search, Calendar, DollarSign, Check, X, Clock, Eye, Pen } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import ESignatureModal from '@/modules/backer/components/ESignatureModal'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function BackerDealsPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [backer, setBacker] = useState(null);
-  const [deals, setDeals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [showSignatureModal, setShowSignatureModal] = useState(false);
-  const [signingDealId, setSigningDealId] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [backer, setBacker] = useState(null)
+  const [deals, setDeals] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [showSignatureModal, setShowSignatureModal] = useState(false)
+  const [signingDealId, setSigningDealId] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
   const [dealForm, setDealForm] = useState({
     title: '',
     description: '',
@@ -29,37 +29,37 @@ export default function BackerDealsPage() {
     status: 'pending',
     start_date: '',
     end_date: ''
-  });
+  })
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    fetchData();
-  }, [isAuthenticated]);
+    fetchData()
+  }, [isAuthenticated])
 
   const fetchData = async () => {
     try {
       // Fetch backer profile
-      const backers = await Backer.filter({ contact_email: authUser?.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email })
       if (backers.length > 0) {
-        setBacker(backers[0]);
+        setBacker(backers[0])
       }
 
       // Fetch deals
-      const allDeals = await Deal.filter({ backer_email: authUser?.email });
-      setDeals(allDeals);
+      const allDeals = await Deal.filter({ backer_email: authUser?.email })
+      setDeals(allDeals)
     } catch (err) {
-      console.error('Error fetching deals:', err);
-      toastError('Load Failed', 'Failed to load deals. Please try again.');
+      
+      toastError('Load Failed', 'Failed to load deals. Please try again.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCreateDeal = async () => {
-    if (!backer) return;
+    if (!backer) return
     try {
       await Deal.create({
         ...dealForm,
@@ -67,32 +67,32 @@ export default function BackerDealsPage() {
         backer_id: backer.id,
         amount: parseFloat(dealForm.amount),
         created_at: new Date().toISOString()
-      });
-      success('Deal Created', 'New deal has been created successfully');
-      setShowModal(false);
-      setDealForm({ title: '', description: '', amount: '', counterparty: '', status: 'pending', start_date: '', end_date: '' });
-      fetchData();
+      })
+      success('Deal Created', 'New deal has been created successfully')
+      setShowModal(false)
+      setDealForm({ title: '', description: '', amount: '', counterparty: '', status: 'pending', start_date: '', end_date: '' })
+      fetchData()
     } catch (err) {
-      console.error('Error creating deal:', err);
-      toastError('Creation Failed', 'Failed to create deal');
+      
+      toastError('Creation Failed', 'Failed to create deal')
     }
-  };
+  }
 
   const handleUpdateDealStatus = async (dealId, status) => {
     try {
-      await Deal.update(dealId, { status });
-      success('Status Updated', `Deal status updated to ${status}`);
-      fetchData();
+      await Deal.update(dealId, { status })
+      success('Status Updated', `Deal status updated to ${status}`)
+      fetchData()
     } catch (err) {
-      console.error('Error updating deal:', err);
-      toastError('Update Failed', 'Failed to update deal status');
+      
+      toastError('Update Failed', 'Failed to update deal status')
     }
-  };
+  }
 
   const handleSignDeal = (dealId) => {
-    setSigningDealId(dealId);
-    setShowSignatureModal(true);
-  };
+    setSigningDealId(dealId)
+    setShowSignatureModal(true)
+  }
 
   const handleSignatureSave = async (signatureData) => {
     try {
@@ -100,35 +100,35 @@ export default function BackerDealsPage() {
         signature: signatureData,
         signed_at: new Date().toISOString(),
         status: 'active'
-      });
-      success('Deal Signed', 'Your signature has been recorded and the deal is now active');
-      setShowSignatureModal(false);
-      setSigningDealId(null);
-      fetchData();
+      })
+      success('Deal Signed', 'Your signature has been recorded and the deal is now active')
+      setShowSignatureModal(false)
+      setSigningDealId(null)
+      fetchData()
     } catch (err) {
-      console.error('Error saving signature:', err);
-      toastError('Signature Failed', 'Failed to save signature');
+      
+      toastError('Signature Failed', 'Failed to save signature')
     }
-  };
+  }
 
   const filteredDeals = deals.filter(deal =>
     deal.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     deal.counterparty?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  )
 
   const statusIcons = {
     pending: Clock,
     active: Check,
     completed: Check,
     cancelled: X
-  };
+  }
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -175,7 +175,7 @@ export default function BackerDealsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredDeals.map((deal) => {
-            const StatusIcon = statusIcons[deal.status] || Clock;
+            const StatusIcon = statusIcons[deal.status] || Clock
             return (
               <Card key={deal.id} className="hover:shadow-md transition-shadow">
                 <div className="p-4">
@@ -247,7 +247,7 @@ export default function BackerDealsPage() {
                   </div>
                 </div>
               </Card>
-            );
+            )
           })}
         </div>
       )}
@@ -330,12 +330,12 @@ export default function BackerDealsPage() {
       <ESignatureModal
         isOpen={showSignatureModal}
         onClose={() => {
-          setShowSignatureModal(false);
-          setSigningDealId(null);
+          setShowSignatureModal(false)
+          setSigningDealId(null)
         }}
         onSign={handleSignatureSave}
         title="Sign Investment Deal"
       />
     </div>
-  );
+  )
 }

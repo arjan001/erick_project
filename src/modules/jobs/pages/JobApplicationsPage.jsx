@@ -1,38 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Job, Project, Application } from '@/lib/supabaseEntities';
-import { MapPin, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Job, Project, Application } from '@/lib/supabaseEntities'
+import { MapPin, Clock } from 'lucide-react'
 
 export default function JobApplications() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
+  const [applications, setApplications] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    setUser(JSON.parse(storedUser));
-  }, []);
+    setUser(JSON.parse(storedUser))
+  }, [])
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
     const fetchApplications = async () => {
       try {
-        const userApplications = await Application.filter({ artist_email: user.email });
+        const userApplications = await Application.filter({ artist_email: user.email })
         
         const enrichedApplications = await Promise.all(
           userApplications.map(async (app) => {
             try {
               if (app.job_id) {
-                const job = await Job.get(app.job_id);
-                return { ...app, job };
+                const job = await Job.get(app.job_id)
+                return { ...app, job }
               }
-              const project = await Project.get(app.project_id);
+              const project = await Project.get(app.project_id)
               return { ...app, job: project ? {
                 title: project.title || project.project_type?.replace(/_/g, ' ') + ' project',
                 location: [project.location_city, project.location_country].filter(Boolean).join(', '),
@@ -40,24 +40,24 @@ export default function JobApplications() {
                 budget_min: 0,
                 budget_type: 'fixed',
                 roles_needed: []
-              } : null };
+              } : null }
             } catch (err) {
-              console.error('Error fetching job:', err);
-              return { ...app, job: null };
+              //
+              return { ...app, job: null }
             }
           })
-        );
+        )
         
-        setApplications(enrichedApplications.filter(app => app.job));
+        setApplications(enrichedApplications.filter(app => app.job))
       } catch (err) {
-        console.error('Error fetching applications:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchApplications();
-  }, [user]);
+    fetchApplications()
+  }, [user])
 
   const statusColors = {
     applied: 'bg-blue-100 text-blue-800',
@@ -65,7 +65,7 @@ export default function JobApplications() {
     shortlisted: 'bg-green-100 text-green-800',
     hired: 'bg-emerald-100 text-emerald-800',
     rejected: 'bg-red-100 text-red-800',
-  };
+  }
 
   const statusLabels = {
     applied: 'Applied',
@@ -73,9 +73,9 @@ export default function JobApplications() {
     shortlisted: 'Shortlisted',
     hired: 'Hired',
     rejected: 'Rejected',
-  };
+  }
 
-  if (!user || loading) return null;
+  if (!user || loading) return null
 
   return (
     <div className="h-full bg-white">
@@ -151,5 +151,5 @@ export default function JobApplications() {
         </div>
       </main>
     </div>
-  );
+  )
 }

@@ -1,6 +1,6 @@
 // AI Service for ChatGPT/OpenAI API integration
 
-import { base44 } from '@/api/base44Client';
+import { base44 } from '@/api/base44Client'
 
 /**
  * Generate production plan using ChatGPT via Base44
@@ -8,7 +8,7 @@ import { base44 } from '@/api/base44Client';
  * @returns {Promise<Object>} AI-generated production plan data
  */
 export async function generateProductionPlan(projectData) {
-  console.log('generateProductionPlan called with:', projectData);
+  
   
   const prompt = `You are an expert film production planner for Eric Rabar, a professional video production company that creates high-quality commercial videos, music videos, short films, documentaries, branded content, corporate videos, event coverage, product demos, social media content, and animation projects.
 
@@ -91,10 +91,10 @@ Please generate a detailed production plan with the following sections:
    - deliverables: Array of primary deliverables
    - formats: Array of video format specifications
 
-Return the response as a structured JSON object with all sections populated with SPECIFIC, REAL content based on the project details provided. DO NOT use generic placeholder text.`;
+Return the response as a structured JSON object with all sections populated with SPECIFIC, REAL content based on the project details provided. DO NOT use generic placeholder text.`
 
   try {
-    console.log('Calling Base44 AI with ChatGPT...');
+    
     const response = await base44.integrations.Core.InvokeLLM({
       prompt: prompt,
       response_json_schema: {
@@ -238,35 +238,35 @@ Return the response as a structured JSON object with all sections populated with
       },
       temperature: 0.7,
       max_tokens: 4000
-    });
+    })
 
-    console.log('Base44 response received');
+    
 
     if (!response?.data?.content) {
-      throw new Error('Failed to generate production plan - no content in response');
+      throw new Error('Failed to generate production plan - no content in response')
     }
 
-    let productionPlan;
+    let productionPlan
     try {
       productionPlan = typeof response.data.content === 'string' 
         ? JSON.parse(response.data.content) 
-        : response.data.content;
+        : response.data.content
     } catch (parseError) {
-      console.error('Error parsing production plan JSON:', parseError);
-      throw new Error('Failed to parse generated production plan');
+      
+      throw new Error('Failed to parse generated production plan')
     }
     
-    console.log('Parsed production plan successfully');
-    console.log('Generated tags:', productionPlan.overviewBrief?.tags);
+    
+    
     
     return {
       success: true,
       data: productionPlan,
       rawResponse: response.data.content
-    };
+    }
   } catch (error) {
-    console.error('AI generation error:', error);
-    console.log('Falling back to mock data generation...');
+    
+    
     
     // If API call fails, return dynamic mock data based on project data
     const mockData = {
@@ -321,21 +321,21 @@ Return the response as a structured JSON object with all sections populated with
         formats: generateDynamicDeliverables(projectData?.category || 'commercial').formats,
         additional: generateDynamicDeliverables(projectData?.category || 'commercial').additional
       }
-    };
+    }
     
-    console.log('Generated mock data:', mockData);
+    
     
     return {
       success: true,
       data: mockData,
       isMock: true
-    };
+    }
   }
 }
 
 // Helper functions to generate dynamic mock data based on project category
 function generateDynamicTags(category, description) {
-  const baseTags = ['professional', 'quality', 'creative', 'modern'];
+  const baseTags = ['professional', 'quality', 'creative', 'modern']
   const categoryTags = {
     commercial: ['brand', 'marketing', 'conversion', 'premium'],
     music_video: ['music', 'artist', 'rhythm', 'visual'],
@@ -347,8 +347,8 @@ function generateDynamicTags(category, description) {
     product_demo: ['product', 'demonstration', 'features', 'clear'],
     social_media: ['social', 'engaging', 'viral', 'trending'],
     animation: ['animated', 'creative', 'visual', 'motion']
-  };
-  return [...baseTags, ...(categoryTags[category] || categoryTags.commercial)].slice(0, 10);
+  }
+  return [...baseTags, ...(categoryTags[category] || categoryTags.commercial)].slice(0, 10)
 }
 
 function generateDynamicBudget(category) {
@@ -392,12 +392,12 @@ function generateDynamicBudget(category) {
       team: 'Director (1), Cinematographer (1), 1st AC (1), Gaffer (1), Key Grip (1), Sound Mixer (1), Boom Operator (1), Production Designer (1), Art Director (1), VFX Artist (1), Colorist (1), Sound Designer (1), Editor (1)',
       highlight: false 
     }
-  ];
-  return baseBudgets;
+  ]
+  return baseBudgets
 }
 
 function generateDynamicRoles(category) {
-  const baseRoles = ['Director', 'Cinematographer', 'Sound Mixer', 'Editor'];
+  const baseRoles = ['Director', 'Cinematographer', 'Sound Mixer', 'Editor']
   const categoryRoles = {
     commercial: ['Gaffer', 'Production Assistant'],
     music_video: ['Choreographer', 'Art Director'],
@@ -409,8 +409,8 @@ function generateDynamicRoles(category) {
     product_demo: ['Product Specialist', 'Lighting Designer'],
     social_media: ['Social Media Manager', 'Content Creator'],
     animation: ['Animator', 'Motion Designer']
-  };
-  return [...baseRoles, ...(categoryRoles[category] || categoryRoles.commercial)];
+  }
+  return [...baseRoles, ...(categoryRoles[category] || categoryRoles.commercial)]
 }
 
 function generateDynamicQuestions(category) {
@@ -418,15 +418,15 @@ function generateDynamicQuestions(category) {
     { q: 'How do you handle unexpected challenges during production?', options: ['Cancel immediately', 'Adapt and find solutions', 'Ignore the problem', 'Wait for instructions'], preferred: 1 },
     { q: 'What is your approach to maintaining quality standards?', options: ['Cut corners to save time', 'Focus on details and excellence', 'Follow minimum requirements', 'Depends on budget'], preferred: 1 },
     { q: 'How do you collaborate with clients and team members?', options: ['Work independently', 'Communicate clearly and collaborate', 'Follow client demands blindly', 'Avoid feedback'], preferred: 1 }
-  ];
+  ]
 }
 
 function generateDynamicLocations(category) {
   const baseLocations = [
     { name: 'Professional Studio Space', type: 'Indoor', typeColor: '#dbeafe', typeText: '#1d4ed8', desc: 'Controlled environment with professional lighting and equipment access.', reqs: ['Studio rental', 'Equipment setup', 'Climate control'] },
     { name: 'Urban Location Setting', type: 'Outdoor', typeColor: '#dcfce7', typeText: '#166534', desc: 'Dynamic urban backdrop that adds authenticity and energy.', reqs: ['Location permit', 'Weather contingency', 'Power access'] }
-  ];
-  return baseLocations;
+  ]
+  return baseLocations
 }
 
 function generateDynamicTechnical(category) {
@@ -434,7 +434,7 @@ function generateDynamicTechnical(category) {
     camera: [['Camera Type', 'Professional Cinema Camera'], ['Resolution', '4K UHD'], ['Frame Rate', '24/25/30/60fps'], ['Lenses', 'Prime and zoom lens kit'], ['Camera Support', 'Professional tripod and stabilization']],
     lighting: ['Professional lighting kit', 'Soft boxes and diffusers', 'LED panels for color control', 'Reflectors and bounce cards'],
     audio: ['Professional shotgun microphone', 'Wireless lavalier system', 'Field recorder', 'Wind protection equipment']
-  };
+  }
 }
 
 function generateDynamicSchedule(category) {
@@ -442,7 +442,7 @@ function generateDynamicSchedule(category) {
     { name: 'Pre-Production', days: '7-14 days', items: ['Concept development', 'Location scouting', 'Crew assembly', 'Equipment planning', 'Permits and logistics'] },
     { name: 'Production', days: '1-5 days', items: ['Setup and preparation', 'Principal photography', 'Coverage capture', 'Daily reviews', 'Equipment management'] },
     { name: 'Post-Production', days: '14-21 days', items: ['Footage organization', 'Editorial assembly', 'Client review and revisions', 'Color grading', 'Final delivery preparation'] }
-  ];
+  ]
 }
 
 function generateDynamicCreative(category) {
@@ -452,7 +452,7 @@ function generateDynamicCreative(category) {
     cinematographyNotes: 'Strategic camera movements that enhance storytelling. Professional lighting techniques for optimal image quality.',
     toneMood: 'Professional yet approachable, balancing sophistication with accessibility.',
     referenceStyle: 'Modern commercial aesthetic with cinematic quality.'
-  };
+  }
 }
 
 function generateDynamicDeliverables(category) {
@@ -461,7 +461,7 @@ function generateDynamicDeliverables(category) {
     formats: ['16:9 (standard)', '9:16 (vertical)', '1:1 (square)'],
     additional: ['Color grades', 'Audio mixes', 'Motion graphics'],
     timeline: '2-4 weeks from final approval'
-  };
+  }
 }
 
 /**
@@ -472,7 +472,7 @@ function generateDynamicDeliverables(category) {
  * @returns {Promise<Object>} Updated section data
  */
 export async function regenerateSection(section, currentData, feedback = '') {
-  let prompt = '';
+  let prompt = ''
 
   if (section === 'budgetBreakdown') {
     prompt = `Regenerate the budget breakdown section based on the following user request: "${feedback}"
@@ -501,7 +501,7 @@ Please regenerate the budget breakdown as an array of 3 packages (Conservative, 
 - team: List of team members with counts (e.g., "Director (1), Cinematographer (1), Gaffer (1), Sound Mixer (1), Production Assistant (1), Editor (1), Colorist (1)")
 - highlight: true for the recommended package
 
-Adjust the packages based on the user's request while keeping realistic cost breakdowns across production phases.`;
+Adjust the packages based on the user's request while keeping realistic cost breakdowns across production phases.`
   } else if (section === 'roles') {
     prompt = `Regenerate the roles and team section based on the following user request: "${feedback}"
 
@@ -518,7 +518,7 @@ Please regenerate the team data as an object with:
 - packages: Array of 3 team packages with name, price, teamSize, and roles array
 - team: Array of all required roles
 - Adjust the team composition based on the user's request
-- Consider pricing implications of team size changes`;
+- Consider pricing implications of team size changes`
   } else if (section === 'questions') {
     prompt = `Regenerate the screening questions section based on the following user request: "${feedback}"
 
@@ -535,7 +535,7 @@ The user may be requesting:
 Please regenerate the screening questions as an object with:
 - questions: Array of question objects with q (question text), options (4 possible answers), preferred (index of preferred answer), and weight (importance 1-5)
 
-Generate questions that are relevant to the production requirements and user's feedback.`;
+Generate questions that are relevant to the production requirements and user's feedback.`
   } else if (section === 'locations') {
     prompt = `Regenerate the locations section based on the following user request: "${feedback}"
 
@@ -552,7 +552,7 @@ The user may be requesting:
 Please regenerate the locations as an object with:
 - locations: Array of location suggestions with name, type (Indoor/Outdoor/Hybrid/Studio), typeColor, typeText, description, and requirements array
 
-Generate locations that match the user's preferences and production brief.`;
+Generate locations that match the user's preferences and production brief.`
   } else if (section === 'technicalRequirements') {
     prompt = `Regenerate the technical requirements section based on the following user request: "${feedback}"
 
@@ -572,7 +572,7 @@ Please regenerate the technical requirements as an object with:
 - lighting: Array of lighting equipment items
 - audio: Array of audio equipment items
 
-Adjust equipment based on the user's request and project category while maintaining professional standards.`;
+Adjust equipment based on the user's request and project category while maintaining professional standards.`
   } else if (section === 'productionSchedule') {
     prompt = `Regenerate the production schedule section based on the following user request: "${feedback}"
 
@@ -589,7 +589,7 @@ The user may be requesting:
 Please regenerate the production schedule as an object with:
 - phases: Array of phase objects with name, duration, description, and tasks array
 
-Adjust the schedule based on the user's timeline preference and sequence modifications while maintaining logical production workflow.`;
+Adjust the schedule based on the user's timeline preference and sequence modifications while maintaining logical production workflow.`
   } else if (section === 'creativeDirection') {
     prompt = `Regenerate the creative direction section based on the following user request: "${feedback}"
 
@@ -609,7 +609,7 @@ Please regenerate the creative direction as an object with:
 - toneMood: Overall tone and mood description
 - referenceStyle: Reference style description
 
-Adjust the creative direction based on the user's request while maintaining consistency with the production brief.`;
+Adjust the creative direction based on the user's request while maintaining consistency with the production brief.`
   } else if (section === 'deliverables') {
     prompt = `Regenerate the deliverables section based on the following user request: "${feedback}"
 
@@ -629,7 +629,7 @@ Please regenerate the deliverables as an object with:
 - additional: Array of additional items
 - timeline: Delivery timeline description
 
-Adjust the deliverables based on the user's request and project category while maintaining professional standards.`;
+Adjust the deliverables based on the user's request and project category while maintaining professional standards.`
   } else if (section === 'overviewBrief') {
     prompt = `Regenerate the overviewBrief section based on the following feedback: "${feedback}"
 
@@ -643,53 +643,53 @@ Please provide an improved version of this section as a JSON object with:
 - category: The project category
 - tags: Array of 10 relevant tags
 
-Ensure description and initialIdea are based on the same concept but use different wording.`;
+Ensure description and initialIdea are based on the same concept but use different wording.`
   } else {
     prompt = `Regenerate the "${section}" section of this production plan based on the following feedback: "${feedback}"
 
 Current data for this section:
 ${JSON.stringify(currentData[section] || {}, null, 2)}
 
-Please provide an improved version of this section as a JSON object.`;
+Please provide an improved version of this section as a JSON object.`
   }
 
   try {
-    console.log(`Regenerating section "${section}" via Base44 AI...`);
+    
     const response = await base44.integrations.Core.InvokeLLM({
       prompt: prompt,
       response_format: { type: 'json_object' },
       temperature: 0.7,
       max_tokens: 2000
-    });
+    })
 
-    console.log('Base44 regeneration response received');
+    
 
     if (!response?.data?.content) {
-      throw new Error('Failed to regenerate section - no content in response');
+      throw new Error('Failed to regenerate section - no content in response')
     }
 
-    let updatedSection;
+    let updatedSection
     try {
       updatedSection = typeof response.data.content === 'string' 
         ? JSON.parse(response.data.content) 
-        : response.data.content;
+        : response.data.content
     } catch (parseError) {
-      console.error('Error parsing regenerated section JSON:', parseError);
-      throw new Error('Failed to parse regenerated section');
+      
+      throw new Error('Failed to parse regenerated section')
     }
     
-    console.log('Regenerated section successfully');
+    
     
     return {
       success: true,
       data: updatedSection,
       section
-    };
+    }
   } catch (error) {
-    console.error('Section regeneration error:', error);
+    
     return {
       success: false,
       error: error.message
-    };
+    }
   }
 }

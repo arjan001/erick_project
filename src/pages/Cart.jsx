@@ -1,51 +1,51 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import ShopShell from '@/components/shop/ShopShell';
-import { Minus, Plus, ShoppingBag, Trash2, Trophy } from 'lucide-react';
-import { formatKES } from '@/data/shopProducts';
-import { getCart, removeFromCart, updateCartQuantity, calcTotals, getShopSettings } from '@/services/shopService';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import ShopShell from '@/components/shop/ShopShell'
+import { Minus, Plus, ShoppingBag, Trash2, Trophy } from 'lucide-react'
+import { formatKES } from '@/data/shopProducts'
+import { getCart, removeFromCart, updateCartQuantity, calcTotals, getShopSettings } from '@/services/shopService'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function CartPage() {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const [cart, setCart] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [settings, setSettings] = useState({ enableMpesa: true, enableCard: true, shippingThreshold: 5000, shippingCost: 500 });
+  const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
+  const [cart, setCart] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [settings, setSettings] = useState({ enableMpesa: true, enableCard: true, shippingThreshold: 5000, shippingCost: 500 })
 
   useEffect(() => {
-    loadCart();
+    loadCart()
 
-    const handleStorageChange = () => loadCart();
-    window.addEventListener('cart-updated', handleStorageChange);
-    window.addEventListener('storage', handleStorageChange);
+    const handleStorageChange = () => loadCart()
+    window.addEventListener('cart-updated', handleStorageChange)
+    window.addEventListener('storage', handleStorageChange)
 
     return () => {
-      window.removeEventListener('cart-updated', handleStorageChange);
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
+      window.removeEventListener('cart-updated', handleStorageChange)
+      window.removeEventListener('storage', handleStorageChange)
+    }
+  }, [])
 
   const loadCart = async () => {
-    const cartItems = getCart();
-    setCart(cartItems);
-    const shopSettings = await getShopSettings();
-    setSettings(shopSettings);
-    setLoading(false);
-  };
+    const cartItems = getCart()
+    setCart(cartItems)
+    const shopSettings = await getShopSettings()
+    setSettings(shopSettings)
+    setLoading(false)
+  }
 
   const setQuantity = (id, qty) => {
-    if (qty < 1) return;
-    updateCartQuantity(id, qty);
-    setCart(getCart());
-  };
+    if (qty < 1) return
+    updateCartQuantity(id, qty)
+    setCart(getCart())
+  }
 
   const remove = (id) => {
-    removeFromCart(id);
-    setCart(getCart());
-  };
+    removeFromCart(id)
+    setCart(getCart())
+  }
 
-  const totals = calcTotals(cart, settings);
+  const totals = calcTotals(cart, settings)
 
   return (
     <ShopShell title="Your Cart — SmartGigs Kenya Shop" description="Review the items in your SmartGigs Kenya cart.">
@@ -155,5 +155,5 @@ export default function CartPage() {
         </div>
       </div>
     </ShopShell>
-  );
+  )
 }

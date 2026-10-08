@@ -1,8 +1,8 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { ArrowRight } from 'lucide-react';
+import React from 'react'
+import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { ArrowRight } from 'lucide-react'
 
 export default function CTA() {
   return (
@@ -50,5 +50,5 @@ export default function CTA() {
         </div>
       </motion.div>
     </section>
-  );
+  )
 }

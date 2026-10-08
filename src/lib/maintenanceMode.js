@@ -3,11 +3,11 @@
  * Checks if maintenance mode is enabled and handles maintenance mode logic
  */
 
-import { SystemSetting } from '@/lib/supabaseEntities';
-import { supabase } from '@/lib/supabase';
+import { SystemSetting } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 
-let maintenanceSettings = null;
-let maintenanceCheckPromise = null;
+let maintenanceSettings = null
+let maintenanceCheckPromise = null
 
 /**
  * Fetch maintenance mode settings
@@ -17,7 +17,7 @@ export async function fetchMaintenanceSettings() {
   try {
     const settings = await SystemSetting.filter({ 
       setting_key: ['maintenance_mode', 'maintenance_message', 'maintenance_start_time', 'maintenance_end_time', 'maintenance_allowed_ips', 'maintenance_show_countdown', 'maintenance_contact_email', 'maintenance_template']
-    }, 'setting_key', 100);
+    }, 'setting_key', 100)
     
     if (!settings || settings.length === 0) {
       return {
@@ -29,24 +29,24 @@ export async function fetchMaintenanceSettings() {
         showCountdown: true,
         contactEmail: 'support@ericrabar.app',
         template: 'default'
-      };
+      }
     }
     
-    const settingsMap = {};
+    const settingsMap = {}
     settings.forEach(setting => {
-      const value = setting.setting_value;
+      const value = setting.setting_value
       if (setting.setting_type === 'boolean') {
-        settingsMap[setting.setting_key] = value === 'true';
+        settingsMap[setting.setting_key] = value === 'true'
       } else if (setting.setting_type === 'json') {
         try {
-          settingsMap[setting.setting_key] = JSON.parse(value);
+          settingsMap[setting.setting_key] = JSON.parse(value)
         } catch {
-          settingsMap[setting.setting_key] = [];
+          settingsMap[setting.setting_key] = []
         }
       } else {
-        settingsMap[setting.setting_key] = value;
+        settingsMap[setting.setting_key] = value
       }
-    });
+    })
     
     return {
       enabled: settingsMap.maintenance_mode === true,
@@ -57,9 +57,9 @@ export async function fetchMaintenanceSettings() {
       showCountdown: settingsMap.maintenance_show_countdown !== false,
       contactEmail: settingsMap.maintenance_contact_email || 'support@ericrabar.app',
       template: settingsMap.maintenance_template || 'default'
-    };
+    }
   } catch (error) {
-    console.error('Error fetching maintenance settings:', error);
+    
     return {
       enabled: false,
       message: '<h2>Site Under Maintenance</h2><p>We are currently performing scheduled maintenance. Please check back soon.</p>',
@@ -69,7 +69,7 @@ export async function fetchMaintenanceSettings() {
       showCountdown: true,
       contactEmail: 'support@ericrabar.app',
       template: 'default'
-    };
+    }
   }
 }
 
@@ -79,18 +79,18 @@ export async function fetchMaintenanceSettings() {
  */
 export async function isMaintenanceMode() {
   if (maintenanceSettings) {
-    return maintenanceSettings.enabled;
+    return maintenanceSettings.enabled
   }
   
   if (!maintenanceCheckPromise) {
     maintenanceCheckPromise = fetchMaintenanceSettings().then(settings => {
-      maintenanceSettings = settings;
-      maintenanceCheckPromise = null;
-      return settings.enabled;
-    });
+      maintenanceSettings = settings
+      maintenanceCheckPromise = null
+      return settings.enabled
+    })
   }
   
-  return maintenanceCheckPromise;
+  return maintenanceCheckPromise
 }
 
 /**
@@ -99,23 +99,23 @@ export async function isMaintenanceMode() {
  * @returns {Promise<boolean>} - Whether user is allowed
  */
 export async function isAllowedDuringMaintenance(userIP = null) {
-  const settings = await fetchMaintenanceSettings();
+  const settings = await fetchMaintenanceSettings()
   
   if (!settings.enabled) {
-    return true;
+    return true
   }
   
   // If no IP restriction, allow no one during maintenance
   if (!settings.allowedIPs || settings.allowedIPs.length === 0) {
-    return false;
+    return false
   }
   
   // Check if user IP is in allowed list
   if (userIP && settings.allowedIPs.includes(userIP)) {
-    return true;
+    return true
   }
   
-  return false;
+  return false
 }
 
 /**
@@ -124,7 +124,7 @@ export async function isAllowedDuringMaintenance(userIP = null) {
  * @returns {Promise<boolean>} - Whether code is valid and active
  */
 export async function isValidAccessCode(code) {
-  if (!code) return false;
+  if (!code) return false
   
   try {
     const { data, error } = await supabase
@@ -132,13 +132,13 @@ export async function isValidAccessCode(code) {
       .select('*')
       .eq('code', code)
       .eq('is_active', true)
-      .single();
+      .single()
     
-    if (error || !data) return false;
+    if (error || !data) return false
     
     // Check if code has expired
     if (data.expires_at && new Date(data.expires_at) < new Date()) {
-      return false;
+      return false
     }
     
     // Update usage count
@@ -148,12 +148,12 @@ export async function isValidAccessCode(code) {
         last_used_at: new Date().toISOString(),
         usage_count: (data.usage_count || 0) + 1
       })
-      .eq('id', data.id);
+      .eq('id', data.id)
     
-    return true;
+    return true
   } catch (err) {
-    console.error('Error validating access code:', err);
-    return false;
+    
+    return false
   }
 }
 
@@ -164,20 +164,20 @@ export async function isValidAccessCode(code) {
  * @returns {Promise<boolean>} - Whether user is allowed
  */
 export async function canAccessSite(userIP = null, accessCode = null) {
-  const settings = await fetchMaintenanceSettings();
+  const settings = await fetchMaintenanceSettings()
   
   if (!settings.enabled) {
-    return true;
+    return true
   }
   
   // Check access code first
   if (accessCode) {
-    const validCode = await isValidAccessCode(accessCode);
-    if (validCode) return true;
+    const validCode = await isValidAccessCode(accessCode)
+    if (validCode) return true
   }
   
   // Fall back to IP check
-  return isAllowedDuringMaintenance(userIP);
+  return isAllowedDuringMaintenance(userIP)
 }
 
 /**
@@ -185,8 +185,8 @@ export async function canAccessSite(userIP = null, accessCode = null) {
  * @returns {Promise<string>} - Maintenance message (HTML)
  */
 export async function getMaintenanceMessage() {
-  const settings = await fetchMaintenanceSettings();
-  return settings.message;
+  const settings = await fetchMaintenanceSettings()
+  return settings.message
 }
 
 /**
@@ -194,8 +194,8 @@ export async function getMaintenanceMessage() {
  * @returns {Promise<Date|null>} - Maintenance end time
  */
 export async function getMaintenanceEndTime() {
-  const settings = await fetchMaintenanceSettings();
-  return settings.endTime ? new Date(settings.endTime) : null;
+  const settings = await fetchMaintenanceSettings()
+  return settings.endTime ? new Date(settings.endTime) : null
 }
 
 /**
@@ -203,16 +203,16 @@ export async function getMaintenanceEndTime() {
  * @returns {Promise<boolean>} - Whether maintenance is scheduled
  */
 export async function isMaintenanceScheduled() {
-  const settings = await fetchMaintenanceSettings();
+  const settings = await fetchMaintenanceSettings()
   
   if (!settings.startTime) {
-    return false;
+    return false
   }
   
-  const now = new Date();
-  const startTime = new Date(settings.startTime);
+  const now = new Date()
+  const startTime = new Date(settings.startTime)
   
-  return startTime > now;
+  return startTime > now
 }
 
 /**
@@ -220,16 +220,16 @@ export async function isMaintenanceScheduled() {
  * @returns {Promise<string>} - Maintenance template name
  */
 export async function getMaintenanceTemplate() {
-  const settings = await fetchMaintenanceSettings();
-  return settings.template;
+  const settings = await fetchMaintenanceSettings()
+  return settings.template
 }
 
 /**
  * Clear cached maintenance settings (for admin updates)
  */
 export function clearMaintenanceCache() {
-  maintenanceSettings = null;
-  maintenanceCheckPromise = null;
+  maintenanceSettings = null
+  maintenanceCheckPromise = null
 }
 
 /**
@@ -275,7 +275,7 @@ export const MAINTENANCE_TEMPLATES = {
 </div>
 <p class="text-sm text-gray-500">For urgent inquiries, please contact us at support@ericrabar.app</p>`
   }
-};
+}
 
 /**
  * Get template by name
@@ -283,7 +283,7 @@ export const MAINTENANCE_TEMPLATES = {
  * @returns {Object|null} - Template object
  */
 export function getTemplate(templateName) {
-  return MAINTENANCE_TEMPLATES[templateName] || MAINTENANCE_TEMPLATES.default;
+  return MAINTENANCE_TEMPLATES[templateName] || MAINTENANCE_TEMPLATES.default
 }
 
 /**
@@ -295,5 +295,5 @@ export function getAllTemplates() {
     key,
     name: value.name,
     message: value.message
-  }));
+  }))
 }

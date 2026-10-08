@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 const FOCUS_OPTIONS = [
   'Feature Films',
@@ -9,17 +9,17 @@ const FOCUS_OPTIONS = [
   'Animation',
   'VR/AR Projects',
   'Interactive Media'
-];
+]
 
 export default function BackerStepFocus({ data, updateData }) {
   const toggleFocus = (focus) => {
-    const current = data.investment_focus || [];
+    const current = data.investment_focus || []
     if (current.includes(focus)) {
-      updateData('investment_focus', current.filter(f => f !== focus));
+      updateData('investment_focus', current.filter(f => f !== focus))
     } else {
-      updateData('investment_focus', [...current, focus]);
+      updateData('investment_focus', [...current, focus])
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -64,5 +64,5 @@ export default function BackerStepFocus({ data, updateData }) {
         </select>
       </div>
     </div>
-  );
+  )
 }

@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Plus, Briefcase, Building2, MapPin, Clock, Star, Flame, Sparkles, DollarSign } from 'lucide-react';
-import { Job, Project } from '@/lib/supabaseEntities';
-import { getProjectTags, isNewProject, isPopularProject } from '@/shared/utils/projectTags';
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Plus, Briefcase, Building2, MapPin, Clock, Star, Flame, Sparkles, DollarSign } from 'lucide-react'
+import { Job, Project } from '@/lib/supabaseEntities'
+import { getProjectTags, isNewProject, isPopularProject } from '@/shared/utils/projectTags'
 
 const ICON_COLORS = [
   { bg: '#2A9D8F', text: '#ffffff' },
@@ -11,23 +11,23 @@ const ICON_COLORS = [
   { bg: '#E9C46A', text: '#5a4a1a' },
   { bg: '#264653', text: '#ffffff' },
   { bg: '#2A9D8F', text: '#ffffff' },
-];
+]
 
 const getTimeAgo = (date) => {
-  if (!date) return 'Recently';
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-  if (seconds < 60) return 'Just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(date).toLocaleDateString();
-};
+  if (!date) return 'Recently'
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000)
+  if (seconds < 60) return 'Just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days}d ago`
+  return new Date(date).toLocaleDateString()
+}
 
 export default function JobOpportunitiesCard({ jobs = [] }) {
-  const [allOpportunities, setAllOpportunities] = useState([]);
+  const [allOpportunities, setAllOpportunities] = useState([])
 
   useEffect(() => {
     const fetchOpportunities = async () => {
@@ -36,7 +36,7 @@ export default function JobOpportunitiesCard({ jobs = [] }) {
         const [allJobs, allProjects] = await Promise.all([
           Job.filter({ status: 'open' }, '-created_date', 5),
           Project.filter({ status: 'verified' }, '-created_date', 5)
-        ]);
+        ])
 
         // Convert projects to job-like format
         const projectJobs = allProjects.map(project => ({
@@ -52,25 +52,25 @@ export default function JobOpportunitiesCard({ jobs = [] }) {
           description: project.notes?.substring(0, 80) || 'Project opportunity',
           // Add project data for tags
           projectData: project
-        }));
+        }))
 
         // Combine and take first 5
-        const combined = [...allJobs, ...projectJobs].slice(0, 5);
-        setAllOpportunities(combined);
+        const combined = [...allJobs, ...projectJobs].slice(0, 5)
+        setAllOpportunities(combined)
       } catch (err) {
-        console.error('Error fetching opportunities:', err);
-        setAllOpportunities(jobs.slice(0, 5));
+        
+        setAllOpportunities(jobs.slice(0, 5))
       }
-    };
+    }
 
     if (jobs.length === 0) {
-      fetchOpportunities();
+      fetchOpportunities()
     } else {
-      setAllOpportunities(jobs.slice(0, 5));
+      setAllOpportunities(jobs.slice(0, 5))
     }
-  }, [jobs]);
+  }, [jobs])
 
-  const displayItems = allOpportunities.length > 0 ? allOpportunities : jobs.slice(0, 5);
+  const displayItems = allOpportunities.length > 0 ? allOpportunities : jobs.slice(0, 5)
 
   return (
     <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5">
@@ -160,10 +160,10 @@ export default function JobOpportunitiesCard({ jobs = [] }) {
                   </div>
                 </div>
               </Link>
-            );
+            )
           })}
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -39,7 +39,7 @@ const InputOTPSlot = React.forwardRef(({ index, className, ...props }, ref) => {
         </div>
       )}
     </div>)
-  );
+  )
 })
 InputOTPSlot.displayName = "InputOTPSlot"
 

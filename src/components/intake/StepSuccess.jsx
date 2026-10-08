@@ -1,8 +1,8 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { CheckCircle, ArrowRight, Mail } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { CheckCircle, ArrowRight, Mail } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function StepSuccess({ projectData }) {
   return (
@@ -80,5 +80,5 @@ export default function StepSuccess({ projectData }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

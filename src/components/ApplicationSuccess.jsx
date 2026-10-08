@@ -1,8 +1,8 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { CheckCircle, ArrowRight, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { CheckCircle, ArrowRight, Clock } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function ApplicationSuccess({ type, name, message }) {
   return (
@@ -67,5 +67,5 @@ export default function ApplicationSuccess({ type, name, message }) {
         </Link>
       </div>
     </div>
-  );
+  )
 }

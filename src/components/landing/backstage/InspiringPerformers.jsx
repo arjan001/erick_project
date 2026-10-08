@@ -1,25 +1,25 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import RoleToggle from './RoleToggle';
+import React, { useState } from 'react'
+import { motion } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import RoleToggle from './RoleToggle'
 
 const cards = [
   { title: "Rufus Sewell on 'The Diplomat,' Delivering...", img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop' },
   { title: "Harrison Ford Doesn't Want to Think About It", img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=400&fit=crop' },
   { title: "Sarah Pidgeon's Hollywood 'Love Story' Is Just...", img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=400&fit=crop' },
   { title: "Riz Ahmed Talks 'Bait,' 'Digger,' and the...", img: 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=600&h=400&fit=crop' },
-];
+]
 
 export default function InspiringPerformers() {
-  const [role, setRole] = useState('talent');
-  const [scrollIdx, setScrollIdx] = useState(0);
+  const [role, setRole] = useState('talent')
+  const [scrollIdx, setScrollIdx] = useState(0)
 
   const scroll = (dir) => {
-    const container = document.getElementById('performers-scroll');
-    if (!container) return;
-    container.scrollBy({ left: dir * 360, behavior: 'smooth' });
-    setScrollIdx((s) => Math.max(0, Math.min(cards.length - 1, s + dir)));
-  };
+    const container = document.getElementById('performers-scroll')
+    if (!container) return
+    container.scrollBy({ left: dir * 360, behavior: 'smooth' })
+    setScrollIdx((s) => Math.max(0, Math.min(cards.length - 1, s + dir)))
+  }
 
   return (
     <section className="bg-[#F5F3EF] py-16 md:py-24">
@@ -77,5 +77,5 @@ export default function InspiringPerformers() {
         </div>
       </div>
     </section>
-  );
+  )
 }

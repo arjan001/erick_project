@@ -1,86 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Endorsement, Artist, Notification } from '@/lib/supabaseEntities';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Star, Plus, X, MessageCircle, ThumbsUp, Award, Users } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Endorsement, Artist, Notification } from '@/lib/supabaseEntities'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Star, Plus, X, MessageCircle, ThumbsUp, Award, Users } from 'lucide-react'
 
 export default function EndorsementsPage() {
-  const navigate = useNavigate();
-  const { success, error } = useToast();
-  const [user, setUser] = useState(null);
-  const [endorsements, setEndorsements] = useState([]);
-  const [receivedEndorsements, setReceivedEndorsements] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedPerson, setSelectedPerson] = useState(null);
+  const navigate = useNavigate()
+  const { success, error } = useToast()
+  const [user, setUser] = useState(null)
+  const [endorsements, setEndorsements] = useState([])
+  const [receivedEndorsements, setReceivedEndorsements] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [selectedPerson, setSelectedPerson] = useState(null)
   const [endorsementForm, setEndorsementForm] = useState({
     skill: '',
     message: '',
     rating: 5
-  });
+  })
 
   const skills = [
     'Directing', 'Cinematography', 'Editing', 'VFX', 'Sound Design',
     'Production', 'Art Direction', 'Costume Design', 'Lighting',
     'Photography', 'Motion Graphics', 'Color Grading', 'Screenwriting'
-  ];
+  ]
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    setUser(JSON.parse(storedUser));
-  }, []);
+    setUser(JSON.parse(storedUser))
+  }, [])
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
     const fetchEndorsements = async () => {
       try {
-        const allEndorsements = await Endorsement.list();
+        const allEndorsements = await Endorsement.list()
         
-        const given = allEndorsements.filter(e => e.endorser_email === user.email);
-        const received = allEndorsements.filter(e => e.recipient_email === user.email);
+        const given = allEndorsements.filter(e => e.endorser_email === user.email)
+        const received = allEndorsements.filter(e => e.recipient_email === user.email)
 
         const enrichedGiven = await Promise.all(
           given.map(async (endorsement) => {
             try {
-              const artist = await Artist.filter({ email: endorsement.recipient_email });
-              return { ...endorsement, artist: artist[0] || null };
+              const artist = await Artist.filter({ email: endorsement.recipient_email })
+              return { ...endorsement, artist: artist[0] || null }
             } catch (err) {
-              return { ...endorsement, artist: null };
+              return { ...endorsement, artist: null }
             }
           })
-        );
+        )
 
         const enrichedReceived = await Promise.all(
           received.map(async (endorsement) => {
             try {
-              const endorser = await Artist.filter({ email: endorsement.endorser_email });
-              return { ...endorsement, endorser: endorser[0] || null };
+              const endorser = await Artist.filter({ email: endorsement.endorser_email })
+              return { ...endorsement, endorser: endorser[0] || null }
             } catch (err) {
-              return { ...endorsement, endorser: null };
+              return { ...endorsement, endorser: null }
             }
           })
-        );
+        )
 
-        setEndorsements(enrichedGiven.filter(e => e.artist));
-        setReceivedEndorsements(enrichedReceived.filter(e => e.endorser));
+        setEndorsements(enrichedGiven.filter(e => e.artist))
+        setReceivedEndorsements(enrichedReceived.filter(e => e.endorser))
       } catch (err) {
-        console.error('Error fetching endorsements:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchEndorsements();
-  }, [user]);
+    fetchEndorsements()
+  }, [user])
 
   const handleCreateEndorsement = async () => {
-    if (!selectedPerson || !endorsementForm.skill) return;
+    if (!selectedPerson || !endorsementForm.skill) return
 
     try {
       await Endorsement.create({
@@ -91,7 +91,7 @@ export default function EndorsementsPage() {
         skill: endorsementForm.skill,
         message: endorsementForm.message,
         rating: endorsementForm.rating,
-      });
+      })
 
       await Notification.create({
         recipient_email: selectedPerson.email,
@@ -101,40 +101,40 @@ export default function EndorsementsPage() {
         title: 'New Endorsement',
         message: `${user.full_name} endorsed you for ${endorsementForm.skill}`,
         action_required: false
-      });
+      })
 
-      setShowModal(false);
-      setSelectedPerson(null);
-      setEndorsementForm({ skill: '', message: '', rating: 5 });
+      setShowModal(false)
+      setSelectedPerson(null)
+      setEndorsementForm({ skill: '', message: '', rating: 5 })
 
-      success('Endorsement Sent', `You endorsed ${selectedPerson.full_name} for ${endorsementForm.skill}`);
+      success('Endorsement Sent', `You endorsed ${selectedPerson.full_name} for ${endorsementForm.skill}`)
       // re-fetch after create
-      const allE = await Endorsement.list();
-      setEndorsements(allE.filter(e => e.endorser_email === user.email));
-      setReceivedEndorsements(allE.filter(e => e.endorsed_email === user.email));
+      const allE = await Endorsement.list()
+      setEndorsements(allE.filter(e => e.endorser_email === user.email))
+      setReceivedEndorsements(allE.filter(e => e.endorsed_email === user.email))
     } catch (err) {
-      console.error('Error creating endorsement:', err);
-      error('Failed', 'Failed to create endorsement');
+      //
+      error('Failed', 'Failed to create endorsement')
     }
-  };
+  }
 
   const handleDeleteEndorsement = async (endorsementId) => {
     try {
-      await Endorsement.delete(endorsementId);
-      setEndorsements(prev => prev.filter(e => e.id !== endorsementId));
-      success('Deleted', 'Endorsement deleted successfully');
+      await Endorsement.delete(endorsementId)
+      setEndorsements(prev => prev.filter(e => e.id !== endorsementId))
+      success('Deleted', 'Endorsement deleted successfully')
     } catch (err) {
-      console.error('Error deleting endorsement:', err);
-      error('Failed', 'Failed to delete endorsement');
+      //
+      error('Failed', 'Failed to delete endorsement')
     }
-  };
+  }
 
   if (!user || loading) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   const renderStars = (rating) => {
@@ -143,8 +143,8 @@ export default function EndorsementsPage() {
         key={i}
         className={`w-4 h-4 ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
       />
-    ));
-  };
+    ))
+  }
 
   return (
     <>
@@ -318,5 +318,5 @@ export default function EndorsementsPage() {
           </div>
         )}
     </>
-  );
+  )
 }

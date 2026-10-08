@@ -26,7 +26,7 @@ const Input = React.forwardRef(({ className, type, ...props }, ref) => {
 
       {...props} />)
 
-  );
+  )
 
 })
 

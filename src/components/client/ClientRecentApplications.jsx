@@ -1,38 +1,38 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Briefcase, FolderKanban } from 'lucide-react';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Briefcase, FolderKanban } from 'lucide-react'
 
 export default function ClientRecentApplications({ applications, projects, jobs }) {
   // Group applications by project or job
   const applicationCounts = React.useMemo(() => {
-    const counts = {};
+    const counts = {}
     
     applications.forEach(app => {
-      let key, title, type;
+      let key, title, type
       
       if (app.project_id) {
-        const project = projects?.find(p => p.id === app.project_id);
-        key = `project-${app.project_id}`;
-        title = project?.title || project?.project_type || 'Unknown Project';
-        type = 'project';
+        const project = projects?.find(p => p.id === app.project_id)
+        key = `project-${app.project_id}`
+        title = project?.title || project?.project_type || 'Unknown Project'
+        type = 'project'
       } else if (app.job_id) {
-        const job = jobs?.find(j => j.id === app.job_id);
-        key = `job-${app.job_id}`;
-        title = job?.title || job?.job_type || 'Unknown Job';
-        type = 'job';
+        const job = jobs?.find(j => j.id === app.job_id)
+        key = `job-${app.job_id}`
+        title = job?.title || job?.job_type || 'Unknown Job'
+        type = 'job'
       } else {
-        return;
+        return
       }
       
       if (!counts[key]) {
-        counts[key] = { title, type, count: 0, id: app.project_id || app.job_id };
+        counts[key] = { title, type, count: 0, id: app.project_id || app.job_id }
       }
-      counts[key].count++;
-    });
+      counts[key].count++
+    })
     
-    return Object.values(counts);
-  }, [applications, projects, jobs]);
+    return Object.values(counts)
+  }, [applications, projects, jobs])
 
   return (
     <div>
@@ -70,5 +70,5 @@ export default function ClientRecentApplications({ applications, projects, jobs 
         </div>
       )}
     </div>
-  );
+  )
 }

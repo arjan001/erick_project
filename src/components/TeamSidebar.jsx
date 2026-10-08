@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useSidebar } from '@/layouts/DashboardLayout';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useSidebar } from '@/layouts/DashboardLayout'
+import { useAuth } from '@/lib/AuthContext'
 import { 
   LayoutDashboard, Users, Briefcase, MessageSquare,
   CreditCard, Settings, LogOut, ChevronLeft, ChevronRight, Building2, Share2, Bell, Ticket
-} from 'lucide-react';
-import { Message, Notification } from '@/lib/supabaseEntities';
+} from 'lucide-react'
+import { Message, Notification } from '@/lib/supabaseEntities'
 
 const MENU_ITEMS = [
   { icon: LayoutDashboard, label: 'Dashboard', path: 'TeamDashboard' },
@@ -19,76 +19,76 @@ const MENU_ITEMS = [
   { icon: Ticket, label: 'Support Tickets', path: 'SupportTickets' },
   { icon: CreditCard, label: 'Payments', path: 'TeamPayments' },
   { icon: Settings, label: 'Profile & Settings', path: 'TeamProfile' },
-];
+]
 
 export default function TeamSidebar() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [team, setTeam] = useState(null);
-  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
-  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
-  const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
-  const { logout, user } = useAuth();
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [team, setTeam] = useState(null)
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0)
+  const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar()
+  const { logout, user } = useAuth()
 
   useEffect(() => {
-    if (!user?.email) return;
+    if (!user?.email) return
 
     const fetchUnreadMessages = async () => {
       try {
         // Messages table uses conversation_id and sender_id, not recipient_email
         // For now, set to 0 until proper conversation-based messaging is implemented
-        setUnreadMessageCount(0);
+        setUnreadMessageCount(0)
       } catch {
-        setUnreadMessageCount(0);
+        setUnreadMessageCount(0)
       }
-    };
+    }
 
     const fetchUnreadNotifications = async () => {
       try {
-        const notifs = await Notification.filter({ recipient_email: user.email });
-        setUnreadNotificationCount((notifs || []).filter(n => !n.read).length);
+        const notifs = await Notification.filter({ recipient_email: user.email })
+        setUnreadNotificationCount((notifs || []).filter(n => !n.read).length)
       } catch {
-        setUnreadNotificationCount(0);
+        setUnreadNotificationCount(0)
       }
-    };
+    }
 
-    fetchUnreadMessages();
-    fetchUnreadNotifications();
+    fetchUnreadMessages()
+    fetchUnreadNotifications()
 
     // Poll for updates every 30 seconds instead of using subscribe
     const interval = setInterval(() => {
-      fetchUnreadMessages();
-      fetchUnreadNotifications();
-    }, 30000);
+      fetchUnreadMessages()
+      fetchUnreadNotifications()
+    }, 30000)
 
-    return () => clearInterval(interval);
-  }, [user]);
+    return () => clearInterval(interval)
+  }, [user])
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
-    if (!storedUser) return;
-    const user = JSON.parse(storedUser);
+    const storedUser = localStorage.getItem('ericrabar_user')
+    if (!storedUser) return
+    const user = JSON.parse(storedUser)
     const fetchTeam = async () => {
       try {
-        const { Team } = await import('@/lib/supabaseEntities');
-        const teams = await Team.filter({ contact_email: user.email }, '-created_date', 1);
-        if (teams?.[0]) setTeam(teams[0]);
+        const { Team } = await import('@/lib/supabaseEntities')
+        const teams = await Team.filter({ contact_email: user.email }, '-created_date', 1)
+        if (teams?.[0]) setTeam(teams[0])
       } catch {
         // team not found — leave null
       }
-    };
-    fetchTeam();
-  }, []);
+    }
+    fetchTeam()
+  }, [])
 
   const toggle = () => {
     if (window.innerWidth < 1024) {
-      setMobileSidebarOpen(!mobileSidebarOpen);
+      setMobileSidebarOpen(!mobileSidebarOpen)
     } else {
-      setSidebarExpanded(!expanded);
+      setSidebarExpanded(!expanded)
     }
-  };
+  }
 
-  const handleLogout = () => { logout(true); };
+  const handleLogout = () => { logout(true); }
 
   return (
     <aside
@@ -120,8 +120,8 @@ export default function TeamSidebar() {
       {/* Menu */}
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
         {MENU_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname.toLowerCase().includes(item.path.toLowerCase());
+          const Icon = item.icon
+          const isActive = location.pathname.toLowerCase().includes(item.path.toLowerCase())
           
           if (!expanded) {
             return (
@@ -150,7 +150,7 @@ export default function TeamSidebar() {
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-[#1a1a1a] rotate-45"></div>
                 </div>
               </div>
-            );
+            )
           }
           
           return (
@@ -174,7 +174,7 @@ export default function TeamSidebar() {
                 </span>
               )}
             </button>
-          );
+          )
         })}
       </nav>
 
@@ -226,5 +226,5 @@ export default function TeamSidebar() {
         )}
       </div>
     </aside>
-  );
+  )
 }

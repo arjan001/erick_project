@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, MapPin, BadgeCheck, Search } from 'lucide-react';
-import { Job } from '@/lib/supabaseEntities';
-import GigDetailSlideOut from './GigDetailSlideOut';
+import React, { useState, useRef, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ChevronLeft, ChevronRight, MapPin, BadgeCheck, Search } from 'lucide-react'
+import { Job } from '@/lib/supabaseEntities'
+import GigDetailSlideOut from './GigDetailSlideOut'
 
 const tabs = [
   'Feature Films',
@@ -14,7 +14,7 @@ const tabs = [
   'Crew',
   'Theater',
   'Browse All Gigs',
-];
+]
 
 const fallbackGigs = [
   {
@@ -78,7 +78,7 @@ const fallbackGigs = [
       { name: 'Voiceover Host', detail: 'Any gender, 25-45' },
     ],
   },
-];
+]
 
 // Country data for global API simulation
 const countries = [
@@ -92,20 +92,20 @@ const countries = [
   { code: 'DE', name: 'Germany', regions: ['Berlin', 'Munich', 'Hamburg', 'Cologne', 'Frankfurt'] },
   { code: 'FR', name: 'France', regions: ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice'] },
   { code: 'IN', name: 'India', regions: ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad'] },
-];
+]
 
 export default function FeaturedGigs() {
-  const [activeTab, setActiveTab] = useState('Feature Films');
-  const [active, setActive] = useState(0);
-  const trackRef = useRef(null);
-  const [jobs, setGigs] = useState(fallbackGigs);
-  const [selectedGig, setSelectedGig] = useState(null);
-  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('Feature Films')
+  const [active, setActive] = useState(0)
+  const trackRef = useRef(null)
+  const [jobs, setGigs] = useState(fallbackGigs)
+  const [selectedGig, setSelectedGig] = useState(null)
+  const navigate = useNavigate()
 
   // Filter states
-  const [locationFilter, setLocationFilter] = useState('');
-  const [projectTypeFilter, setProjectTypeFilter] = useState('');
-  const [talentTypeFilter, setTalentTypeFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('')
+  const [projectTypeFilter, setProjectTypeFilter] = useState('')
+  const [talentTypeFilter, setTalentTypeFilter] = useState('')
 
   useEffect(() => {
     Gig.filter({ is_featured: true }, '-posted_at', 7)
@@ -117,36 +117,36 @@ export default function FeaturedGigs() {
             description: j.description || j.short_description || '',
             location: j.location || 'Remote',
             roles: j.roles || [{ name: j.title || 'Role', detail: j.job_type || '' }],
-          })));
+          })))
         }
       })
-      .catch(() => { /* keep fallback data */ });
-  }, []);
+      .catch(() => { /* keep fallback data */ })
+  }, [])
 
   const getCardsPerView = () => {
-    if (typeof window === 'undefined') return 3;
-    return window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
-  };
+    if (typeof window === 'undefined') return 3
+    return window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1
+  }
 
-  const cardsPerView = getCardsPerView();
-  const maxIndex = Math.max(0, jobs.length - cardsPerView);
+  const cardsPerView = getCardsPerView()
+  const maxIndex = Math.max(0, jobs.length - cardsPerView)
 
   const scrollTo = (idx) => {
-    const clamped = Math.max(0, Math.min(idx, maxIndex));
-    setActive(clamped);
+    const clamped = Math.max(0, Math.min(idx, maxIndex))
+    setActive(clamped)
     if (trackRef.current) {
-      const cardWidth = trackRef.current.scrollWidth / jobs.length;
-      trackRef.current.style.transform = `translateX(-${clamped * cardWidth}px)`;
+      const cardWidth = trackRef.current.scrollWidth / jobs.length
+      trackRef.current.style.transform = `translateX(-${clamped * cardWidth}px)`
     }
-  };
+  }
 
   const handleFilterSubmit = () => {
-    const params = new URLSearchParams();
-    if (locationFilter) params.append('location', locationFilter);
-    if (projectTypeFilter) params.append('projectType', projectTypeFilter);
-    if (talentTypeFilter) params.append('talentType', talentTypeFilter);
-    navigate(`/Gigs?${params.toString()}`);
-  };
+    const params = new URLSearchParams()
+    if (locationFilter) params.append('location', locationFilter)
+    if (projectTypeFilter) params.append('projectType', projectTypeFilter)
+    if (talentTypeFilter) params.append('talentType', talentTypeFilter)
+    navigate(`/Gigs?${params.toString()}`)
+  }
 
   return (
     <section className="bg-[#F5F3EF] py-16 md:py-24">
@@ -321,5 +321,5 @@ export default function FeaturedGigs() {
       {/* Gig detail slide-out */}
       <GigDetailSlideOut job={selectedGig} onClose={() => setSelectedGig(null)} />
     </section>
-  );
+  )
 }

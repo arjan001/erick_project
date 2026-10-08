@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
-import TalentCard from './TalentCard';
-import { talentProfiles } from './talentData';
-import { FeaturedCreative } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
+import TalentCard from './TalentCard'
+import { talentProfiles } from './talentData'
+import { FeaturedCreative } from '@/lib/supabaseEntities'
 
 export default function CreativeTeamCarousel() {
-  const [creatives, setCreatives] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [creatives, setCreatives] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadFeaturedCreatives();
-  }, []);
+    loadFeaturedCreatives()
+  }, [])
 
   const loadFeaturedCreatives = async () => {
     try {
-      const data = await FeaturedCreative.filter({ is_active: true }, 'order_index', 50);
+      const data = await FeaturedCreative.filter({ is_active: true }, 'order_index', 50)
       if (data && data.length > 0) {
         // Transform backend data to match TalentCard format
         const transformed = data.map(c => ({
@@ -26,20 +26,20 @@ export default function CreativeTeamCarousel() {
           images: c.images ? (Array.isArray(c.images) ? c.images : JSON.parse(c.images)) : [c.profile_image].filter(Boolean),
           overlayText: c.overlay_text,
           badges: c.badges ? (Array.isArray(c.badges) ? c.badges : JSON.parse(c.badges)) : [],
-        }));
-        setCreatives(transformed);
+        }))
+        setCreatives(transformed)
       } else {
         // Fallback to dummy data if no backend data
-        setCreatives(talentProfiles);
+        setCreatives(talentProfiles)
       }
     } catch (err) {
-      console.error('Error loading featured creatives:', err);
+      
       // Fallback to dummy data on error
-      setCreatives(talentProfiles);
+      setCreatives(talentProfiles)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -56,16 +56,16 @@ export default function CreativeTeamCarousel() {
           </div>
         </div>
       </section>
-    );
+    )
   }
 
   // Duplicate each set so the CSS translate loop is seamless
-  const displayCreatives = creatives.length > 0 ? creatives : talentProfiles;
-  const row1 = [...displayCreatives.slice(0, 6), ...displayCreatives.slice(0, 6)];
-  const row2 = [...displayCreatives.slice(6, 12), ...displayCreatives.slice(6, 12)];
+  const displayCreatives = creatives.length > 0 ? creatives : talentProfiles
+  const row1 = [...displayCreatives.slice(0, 6), ...displayCreatives.slice(0, 6)]
+  const row2 = [...displayCreatives.slice(6, 12), ...displayCreatives.slice(6, 12)]
 
   function AutoScrollRow({ items, direction }) {
-    const [paused, setPaused] = useState(false);
+    const [paused, setPaused] = useState(false)
 
     return (
       <div
@@ -87,7 +87,7 @@ export default function CreativeTeamCarousel() {
           ))}
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -134,5 +134,5 @@ export default function CreativeTeamCarousel() {
         </div>
       </div>
     </section>
-  );
+  )
 }

@@ -1,25 +1,25 @@
-import React, { useState } from 'react';
-import { Star, Flame, MessageCircle, ChevronLeft, ChevronRight, ZoomIn, Home, Heart } from 'lucide-react';
+import React, { useState } from 'react'
+import { Star, Flame, MessageCircle, ChevronLeft, ChevronRight, ZoomIn, Home, Heart } from 'lucide-react'
 
 const badgeConfig = {
   star: { icon: Star, color: '#6366f1' },
   flame: { icon: Flame, color: '#6366f1' },
   chat: { icon: MessageCircle, color: '#6366f1' },
-};
+}
 
 export default function TalentCard({ profile, showActions = true, onOpenProfile }) {
-  const [imgIdx, setImgIdx] = useState(0);
-  const [favorited, setFavorited] = useState(false);
+  const [imgIdx, setImgIdx] = useState(0)
+  const [favorited, setFavorited] = useState(false)
 
   const next = (e) => {
-    e?.stopPropagation();
-    setImgIdx((i) => (i + 1) % profile.images.length);
-  };
+    e?.stopPropagation()
+    setImgIdx((i) => (i + 1) % profile.images.length)
+  }
 
   const prev = (e) => {
-    e?.stopPropagation();
-    setImgIdx((i) => (i - 1 + profile.images.length) % profile.images.length);
-  };
+    e?.stopPropagation()
+    setImgIdx((i) => (i - 1 + profile.images.length) % profile.images.length)
+  }
 
   return (
     <div className="group rounded-xl bg-white p-2 shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md">
@@ -97,9 +97,9 @@ export default function TalentCard({ profile, showActions = true, onOpenProfile 
         {/* Badges */}
         <div className="mt-2 flex items-center gap-1.5">
           {profile.badges.map((b) => {
-            const cfg = badgeConfig[b];
-            if (!cfg) return null;
-            const Icon = cfg.icon;
+            const cfg = badgeConfig[b]
+            if (!cfg) return null
+            const Icon = cfg.icon
             return (
               <span
                 key={b}
@@ -107,7 +107,7 @@ export default function TalentCard({ profile, showActions = true, onOpenProfile 
               >
                 <Icon className="h-3 w-3" style={{ color: cfg.color }} />
               </span>
-            );
+            )
           })}
         </div>
       </div>
@@ -132,5 +132,5 @@ export default function TalentCard({ profile, showActions = true, onOpenProfile 
         </div>
       )}
     </div>
-  );
+  )
 }

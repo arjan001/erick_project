@@ -1,64 +1,64 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Backer, BackedProject, Deal } from '@/lib/supabaseEntities';
-import DashboardStatCard from '@/components/DashboardStatCard';
-import { DollarSign, TrendingUp, Film, Plus, Eye, Edit2, X, ArrowUpRight, ArrowDownRight, Target, Zap, Briefcase, PieChart, BarChart3 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { confirmDialog } from '@/lib/sweetAlert';
-import InviteCodeCard from '@/components/InviteCodeCard';
-import { useAuth } from '@/lib/AuthContext';
-import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { Backer, BackedProject, Deal } from '@/lib/supabaseEntities'
+import DashboardStatCard from '@/components/DashboardStatCard'
+import { DollarSign, TrendingUp, Film, Plus, Eye, Edit2, X, ArrowUpRight, ArrowDownRight, Target, Zap, Briefcase, PieChart, BarChart3 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { confirmDialog } from '@/lib/sweetAlert'
+import InviteCodeCard from '@/components/InviteCodeCard'
+import { useAuth } from '@/lib/AuthContext'
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
 
 export default function BackerDashboardPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [backer, setBacker] = useState(null);
-  const [backedProjects, setBackedProjects] = useState([]);
-  const [deals, setDeals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingProject, setEditingProject] = useState(null);
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [backer, setBacker] = useState(null)
+  const [backedProjects, setBackedProjects] = useState([])
+  const [deals, setDeals] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingProject, setEditingProject] = useState(null)
   const [projectForm, setProjectForm] = useState({
     project_title: '',
     investment_amount: '',
     status: 'active',
     notes: ''
-  });
+  })
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    fetchData();
-  }, [isAuthenticated]);
+    fetchData()
+  }, [isAuthenticated])
 
   const fetchData = async () => {
     try {
-      const backers = await Backer.filter({ contact_email: authUser?.email });
-      const currentBacker = backers?.[0] || null;
-      setBacker(currentBacker);
+      const backers = await Backer.filter({ contact_email: authUser?.email })
+      const currentBacker = backers?.[0] || null
+      setBacker(currentBacker)
 
       const [projects, dealRows] = await Promise.all([
         BackedProject.filter({ backer_email: authUser?.email }, '-investment_date'),
         Deal.filter({ backer_email: authUser?.email })
-      ]);
-      setBackedProjects(projects || []);
-      setDeals(dealRows || []);
+      ])
+      setBackedProjects(projects || [])
+      setDeals(dealRows || [])
     } catch (error) {
-      console.error('Error fetching backer data:', error);
-      toastError('Load Failed', 'Failed to load dashboard data');
+      
+      toastError('Load Failed', 'Failed to load dashboard data')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCreateBackedProject = async () => {
-    if (!projectForm.project_title || !projectForm.investment_amount) return;
+    if (!projectForm.project_title || !projectForm.investment_amount) return
     try {
       await BackedProject.create({
         backer_email: authUser?.email,
@@ -68,112 +68,112 @@ export default function BackerDashboardPage() {
         status: projectForm.status,
         notes: projectForm.notes,
         investment_date: new Date().toISOString()
-      });
+      })
       if (backer) {
         await Backer.update(backer.id, {
           total_invested: (backer.total_invested || 0) + (parseFloat(projectForm.investment_amount) || 0),
           investment_count: (backer.investment_count || 0) + 1
-        });
+        })
       }
-      setShowModal(false);
-      setProjectForm({ project_title: '', investment_amount: '', status: 'active', notes: '' });
-      success('Project Backed', 'Project added to your portfolio');
-      fetchData();
+      setShowModal(false)
+      setProjectForm({ project_title: '', investment_amount: '', status: 'active', notes: '' })
+      success('Project Backed', 'Project added to your portfolio')
+      fetchData()
     } catch (err) {
-      console.error('Error creating backed project:', err);
-      toastError('Creation Failed', 'Failed to back project');
+      
+      toastError('Creation Failed', 'Failed to back project')
     }
-  };
+  }
 
   const handleUpdateBackedProject = async () => {
-    if (!editingProject) return;
+    if (!editingProject) return
     try {
       await BackedProject.update(editingProject.id, {
         project_title: projectForm.project_title,
         investment_amount: parseFloat(projectForm.investment_amount) || 0,
         status: projectForm.status,
         notes: projectForm.notes
-      });
-      setShowModal(false);
-      setEditingProject(null);
-      setProjectForm({ project_title: '', investment_amount: '', status: 'active', notes: '' });
-      success('Project Updated', 'Investment details updated');
-      fetchData();
+      })
+      setShowModal(false)
+      setEditingProject(null)
+      setProjectForm({ project_title: '', investment_amount: '', status: 'active', notes: '' })
+      success('Project Updated', 'Investment details updated')
+      fetchData()
     } catch (err) {
-      console.error('Error updating backed project:', err);
-      toastError('Update Failed', 'Failed to update project');
+      
+      toastError('Update Failed', 'Failed to update project')
     }
-  };
+  }
 
   const handleDeleteBackedProject = async (project) => {
-    if (!(await confirmDialog('Remove this investment?', 'This action cannot be undone'))) return;
+    if (!(await confirmDialog('Remove this investment?', 'This action cannot be undone'))) return
     try {
-      await BackedProject.delete(project.id);
+      await BackedProject.delete(project.id)
       if (backer) {
         await Backer.update(backer.id, {
           total_invested: Math.max(0, (backer.total_invested || 0) - (project.investment_amount || 0)),
           investment_count: Math.max(0, (backer.investment_count || 0) - 1)
-        });
+        })
       }
-      success('Project Removed', 'Project removed from portfolio');
-      fetchData();
+      success('Project Removed', 'Project removed from portfolio')
+      fetchData()
     } catch (err) {
-      console.error('Error deleting backed project:', err);
-      toastError('Deletion Failed', 'Failed to remove project');
+      
+      toastError('Deletion Failed', 'Failed to remove project')
     }
-  };
+  }
 
   const openModal = (project = null) => {
     if (project) {
-      setEditingProject(project);
+      setEditingProject(project)
       setProjectForm({
         project_title: project.project_title || '',
         investment_amount: project.investment_amount || '',
         status: project.status || 'active',
         notes: project.notes || ''
-      });
+      })
     } else {
-      setEditingProject(null);
-      setProjectForm({ project_title: '', investment_amount: '', status: 'active', notes: '' });
+      setEditingProject(null)
+      setProjectForm({ project_title: '', investment_amount: '', status: 'active', notes: '' })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   // Calculate dynamic stats — purely from real data, no placeholders
-  const totalInvested = backedProjects.reduce((sum, p) => sum + (p.investment_amount || 0), 0);
-  const totalExpectedROI = backedProjects.reduce((sum, p) => sum + (p.expected_roi || 0), 0);
-  const totalROI = totalExpectedROI - totalInvested;
-  const roiPercentage = totalInvested > 0 ? ((totalROI / totalInvested) * 100).toFixed(1) : 0;
-  const activeInvestments = backedProjects.filter(p => p.status === 'active').length;
-  const completedInvestments = backedProjects.filter(p => p.status === 'completed').length;
-  const averageDealSize = backedProjects.length > 0 ? (totalInvested / backedProjects.length).toFixed(0) : 0;
-  const activeDeals = deals.filter(d => d.status === 'active').length;
+  const totalInvested = backedProjects.reduce((sum, p) => sum + (p.investment_amount || 0), 0)
+  const totalExpectedROI = backedProjects.reduce((sum, p) => sum + (p.expected_roi || 0), 0)
+  const totalROI = totalExpectedROI - totalInvested
+  const roiPercentage = totalInvested > 0 ? ((totalROI / totalInvested) * 100).toFixed(1) : 0
+  const activeInvestments = backedProjects.filter(p => p.status === 'active').length
+  const completedInvestments = backedProjects.filter(p => p.status === 'completed').length
+  const averageDealSize = backedProjects.length > 0 ? (totalInvested / backedProjects.length).toFixed(0) : 0
+  const activeDeals = deals.filter(d => d.status === 'active').length
 
   // Prepare data for charts
   const investmentByStatus = [
     { name: 'Active', value: activeInvestments, color: '#10b981' },
     { name: 'Completed', value: completedInvestments, color: '#3b82f6' },
     { name: 'Withdrawn', value: backedProjects.filter(p => p.status === 'withdrawn').length, color: '#6b7280' }
-  ];
+  ]
 
   const monthlyInvestments = backedProjects.reduce((acc, p) => {
-    const month = new Date(p.investment_date).toLocaleString('default', { month: 'short' });
-    acc[month] = (acc[month] || 0) + (p.investment_amount || 0);
-    return acc;
-  }, {});
+    const month = new Date(p.investment_date).toLocaleString('default', { month: 'short' })
+    acc[month] = (acc[month] || 0) + (p.investment_amount || 0)
+    return acc
+  }, {})
 
   const investmentTrendData = Object.entries(monthlyInvestments)
     .slice(-6)
-    .map(([month, amount]) => ({ month, amount }));
+    .map(([month, amount]) => ({ month, amount }))
 
-  const COLORS = ['#10b981', '#3b82f6', '#6b7280', '#f59e0b', '#ef4444'];
+  const COLORS = ['#10b981', '#3b82f6', '#6b7280', '#f59e0b', '#ef4444']
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -439,5 +439,5 @@ export default function BackerDashboardPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

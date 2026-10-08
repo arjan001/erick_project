@@ -1,56 +1,56 @@
-import React, { useEffect, useState } from 'react';
-import { TickerEntry, Article } from '@/lib/supabaseEntities';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { features } from '@/lib/settings';
+import React, { useEffect, useState } from 'react'
+import { TickerEntry, Article } from '@/lib/supabaseEntities'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { features } from '@/lib/settings'
 
 export default function TopBanner() {
-  const [entries, setEntries] = useState([]);
-  const [articles, setArticles] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [marqueeEnabled, setMarqueeEnabled] = useState(true);
+  const [entries, setEntries] = useState([])
+  const [articles, setArticles] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [marqueeEnabled, setMarqueeEnabled] = useState(true)
 
   useEffect(() => {
     const checkMarquee = async () => {
-      const enabled = await features.isMarqueeEnabled();
-      setMarqueeEnabled(enabled);
-    };
-    checkMarquee();
-  }, []);
+      const enabled = await features.isMarqueeEnabled()
+      setMarqueeEnabled(enabled)
+    }
+    checkMarquee()
+  }, [])
 
   useEffect(() => {
-    if (!marqueeEnabled) return;
+    if (!marqueeEnabled) return
 
     const fetchData = async () => {
       try {
         const [tickerData, articlesData] = await Promise.all([
           TickerEntry.list('-display_order', 100),
           Article.list('-published_date', 100)
-        ]);
+        ])
         
         const liveEntries = tickerData
           .filter(e => e.status === 'live')
-          .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+          .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
         
-        setEntries(liveEntries.filter(e => e.text));
+        setEntries(liveEntries.filter(e => e.text))
         
         // Create a map of articles for easy lookup
-        const articlesMap = {};
+        const articlesMap = {}
         articlesData.forEach(article => {
-          articlesMap[article.id] = article;
-        });
-        setArticles(articlesMap);
+          articlesMap[article.id] = article
+        })
+        setArticles(articlesMap)
       } catch (error) {
-        console.error('Error fetching data:', error);
+        
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData();
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
-  }, [marqueeEnabled]);
+    fetchData()
+    const interval = setInterval(fetchData, 30000)
+    return () => clearInterval(interval)
+  }, [marqueeEnabled])
 
   const defaultMessages = [
     'New commercial project posted in Berlin',
@@ -65,7 +65,7 @@ export default function TopBanner() {
     'Brand campaign completed ahead of schedule',
     'First project successfully delivered to client',
     'Emerging director added portfolio to platform'
-  ];
+  ]
 
   const displayEntries = entries.length > 0 
     ? entries.map(e => ({ 
@@ -74,13 +74,13 @@ export default function TopBanner() {
         link_url: e.link_url,
         link_target_id: e.link_target_id 
       }))
-    : defaultMessages.map(msg => ({ text: msg, link_type: 'none' }));
+    : defaultMessages.map(msg => ({ text: msg, link_type: 'none' }))
 
-  const tickerItems = [...displayEntries, ...displayEntries];
+  const tickerItems = [...displayEntries, ...displayEntries]
 
   const renderItem = (item, idx) => {
     if (item.link_type === 'article' && item.link_target_id) {
-      const article = articles[item.link_target_id];
+      const article = articles[item.link_target_id]
       if (article) {
         return (
           <Link
@@ -90,7 +90,7 @@ export default function TopBanner() {
           >
             {item.text}
           </Link>
-        );
+        )
       }
     }
 
@@ -105,7 +105,7 @@ export default function TopBanner() {
         >
           {item.text}
         </a>
-      );
+      )
     }
 
     return (
@@ -115,15 +115,15 @@ export default function TopBanner() {
       >
         {item.text}
       </div>
-    );
-  };
+    )
+  }
 
   if (loading) {
-    return null;
+    return null
   }
 
   if (!marqueeEnabled) {
-    return null;
+    return null
   }
 
   return (
@@ -135,10 +135,10 @@ export default function TopBanner() {
             100% { transform: translateX(-50%); }
           }
           .scroll-container {
-            animation: scroll ${40 + displayEntries.length * 3}s linear infinite;
+            animation: scroll ${40 + displayEntries.length * 3}s linear infinite
           }
           .scroll-container:hover {
-            animation-play-state: paused;
+            animation-play-state: paused
           }
         `}</style>
         <div className="scroll-container flex whitespace-nowrap">
@@ -146,5 +146,5 @@ export default function TopBanner() {
         </div>
       </div>
     </div>
-  );
+  )
 }

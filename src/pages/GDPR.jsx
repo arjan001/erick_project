@@ -1,7 +1,7 @@
-import React from 'react';
-import { Globe, Download, Trash2, FileText, UserCheck } from 'lucide-react';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
+import React from 'react'
+import { Globe, Download, Trash2, FileText, UserCheck } from 'lucide-react'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
 
 export default function GDPR() {
   return (
@@ -85,5 +85,5 @@ export default function GDPR() {
 
       <Footer />
     </div>
-  );
+  )
 }

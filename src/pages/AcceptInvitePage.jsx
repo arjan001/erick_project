@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { CheckCircle, XCircle, Loader2, User, Lock, Mail } from 'lucide-react';
-import { validateInvitationToken, acceptInvitation } from '@/lib/teamInvitationService';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast.jsx';
-import { hashData } from '@/lib/dataEncryption';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { CheckCircle, XCircle, Loader2, User, Lock, Mail } from 'lucide-react'
+import { validateInvitationToken, acceptInvitation } from '@/lib/teamInvitationService'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast.jsx'
+import { hashData } from '@/lib/dataEncryption'
 
 export default function AcceptInvitePage() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const { login } = useAuth();
-  const { success, error: toastError } = useToast();
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const { login } = useAuth()
+  const { success, error: toastError } = useToast()
   
-  const [loading, setLoading] = useState(true);
-  const [validating, setValidating] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [invitation, setInvitation] = useState(null);
-  const [validationError, setValidationError] = useState(null);
+  const [loading, setLoading] = useState(true)
+  const [validating, setValidating] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [invitation, setInvitation] = useState(null)
+  const [validationError, setValidationError] = useState(null)
   
   const [formData, setFormData] = useState({
     first_name: '',
@@ -27,94 +27,94 @@ export default function AcceptInvitePage() {
     password: '',
     confirm_password: '',
     skills: ''
-  });
+  })
 
-  const token = searchParams.get('token');
+  const token = searchParams.get('token')
 
   useEffect(() => {
     if (!token) {
-      setValidationError('No invitation token provided');
-      setValidating(false);
-      setLoading(false);
-      return;
+      setValidationError('No invitation token provided')
+      setValidating(false)
+      setLoading(false)
+      return
     }
 
-    validateToken();
-  }, [token]);
+    validateToken()
+  }, [token])
 
   const validateToken = async () => {
     try {
-      const result = await validateInvitationToken(token);
+      const result = await validateInvitationToken(token)
       
       if (result.valid) {
-        setInvitation(result.invitation);
+        setInvitation(result.invitation)
         // Pre-fill email from invitation
         setFormData(prev => ({
           ...prev,
           email: result.invitation.email
-        }));
+        }))
       } else {
-        setValidationError(result.error);
+        setValidationError(result.error)
       }
     } catch (error) {
-      setValidationError('Failed to validate invitation');
+      setValidationError('Failed to validate invitation')
     } finally {
-      setValidating(false);
-      setLoading(false);
+      setValidating(false)
+      setLoading(false)
     }
-  };
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
+    e.preventDefault()
+    setSubmitting(true)
 
     // Validate form
     if (!formData.first_name || !formData.last_name) {
-      toastError('Validation Error', 'Please fill in your name');
-      setSubmitting(false);
-      return;
+      toastError('Validation Error', 'Please fill in your name')
+      setSubmitting(false)
+      return
     }
 
     if (!formData.password || formData.password.length < 8) {
-      toastError('Validation Error', 'Password must be at least 8 characters');
-      setSubmitting(false);
-      return;
+      toastError('Validation Error', 'Password must be at least 8 characters')
+      setSubmitting(false)
+      return
     }
 
     if (formData.password !== formData.confirm_password) {
-      toastError('Validation Error', 'Passwords do not match');
-      setSubmitting(false);
-      return;
+      toastError('Validation Error', 'Passwords do not match')
+      setSubmitting(false)
+      return
     }
 
     try {
       // Hash the password before sending
-      const passwordHash = await hashData(formData.password);
+      const passwordHash = await hashData(formData.password)
       
       const userData = {
         first_name: formData.first_name,
         last_name: formData.last_name,
         password_hash: passwordHash,
         skills: formData.skills ? formData.skills.split(',').map(s => s.trim()) : []
-      };
+      }
 
-      const result = await acceptInvitation(token, userData);
+      const result = await acceptInvitation(token, userData)
 
       if (result.success) {
         // Auto-login the user
-        await login(invitation.email, formData.password);
+        await login(invitation.email, formData.password)
         
-        success('Welcome!', 'You have successfully joined the team');
-        navigate('/teamdashboard');
+        success('Welcome!', 'You have successfully joined the team')
+        navigate('/teamdashboard')
       } else {
-        toastError('Error', result.error || 'Failed to accept invitation');
+        toastError('Error', result.error || 'Failed to accept invitation')
       }
     } catch (error) {
-      toastError('Error', 'An unexpected error occurred');
+      toastError('Error', 'An unexpected error occurred')
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -124,7 +124,7 @@ export default function AcceptInvitePage() {
           <p className="text-gray-600">Validating invitation...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (validationError) {
@@ -141,7 +141,7 @@ export default function AcceptInvitePage() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   return (
@@ -269,5 +269,5 @@ export default function AcceptInvitePage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

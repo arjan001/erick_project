@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 export function ScoreBadge({ score, maxScore = 10, label = "SOTD" }) {
   return (
@@ -13,7 +13,7 @@ export function ScoreBadge({ score, maxScore = 10, label = "SOTD" }) {
         /{maxScore}
       </div>
     </div>
-  );
+  )
 }
 
-export default ScoreBadge;
+export default ScoreBadge

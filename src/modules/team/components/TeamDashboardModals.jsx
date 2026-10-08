@@ -1,9 +1,9 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Plus, X } from 'lucide-react';
+import React from 'react'
+import { Button } from '@/components/ui/button'
+import { Plus, X } from 'lucide-react'
 
 export function PortfolioModal({ show, editing, form, setForm, videoInputRef, uploading, onClose, onSave }) {
-  if (!show) return null;
+  if (!show) return null
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
@@ -60,11 +60,11 @@ export function PortfolioModal({ show, editing, form, setForm, videoInputRef, up
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export function MemberModal({ show, editing, form, setForm, onClose, onSave }) {
-  if (!show) return null;
+  if (!show) return null
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
@@ -111,5 +111,5 @@ export function MemberModal({ show, editing, form, setForm, onClose, onSave }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

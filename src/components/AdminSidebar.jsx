@@ -1,62 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Shield, Settings, Search, HardDrive, Mail, Lock, Key, CreditCard, DollarSign, Activity, ChevronLeft, ChevronRight, LogOut, Briefcase, FolderKanban, Building, MessageSquare, Package, ShoppingCart, Store, Radio, LayoutGrid, BarChart3, Bell, X } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
-import { useSidebar } from '@/layouts/DashboardLayout';
-import { Message, Notification } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { LayoutDashboard, Users, Shield, Settings, Search, HardDrive, Mail, Lock, Key, CreditCard, DollarSign, Activity, ChevronLeft, ChevronRight, LogOut, Briefcase, FolderKanban, Building, MessageSquare, Package, ShoppingCart, Store, Radio, LayoutGrid, BarChart3, Bell, X } from 'lucide-react'
+import { useAuth } from '@/lib/AuthContext'
+import { useSidebar } from '@/layouts/DashboardLayout'
+import { Message, Notification } from '@/lib/supabaseEntities'
 
 export default function AdminSidebar() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user } = useAuth();
-  const { mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
-  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
-  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { user } = useAuth()
+  const { mobileSidebarOpen, setMobileSidebarOpen } = useSidebar()
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0)
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   useEffect(() => {
-    if (!user?.email) return;
-    let unsubscribe;
+    if (!user?.email) return
+    let unsubscribe
 
     const fetchUnreadMessages = async () => {
       try {
-        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_at', 50);
-        setUnreadMessageCount((msgs || []).length);
+        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_at', 50)
+        setUnreadMessageCount((msgs || []).length)
       } catch {
-        setUnreadMessageCount(0);
+        setUnreadMessageCount(0)
       }
-    };
+    }
 
     const fetchUnreadNotifications = async () => {
       try {
-        const notifs = await Notification.filter({ recipient_email: user.email });
-        setUnreadNotificationCount((notifs || []).filter(n => !n.read).length);
+        const notifs = await Notification.filter({ recipient_email: user.email })
+        setUnreadNotificationCount((notifs || []).filter(n => !n.read).length)
       } catch {
-        setUnreadNotificationCount(0);
+        setUnreadNotificationCount(0)
       }
-    };
+    }
 
-    fetchUnreadMessages();
-    fetchUnreadNotifications();
+    fetchUnreadMessages()
+    fetchUnreadNotifications()
 
     (async () => {
       unsubscribe = Message.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchUnreadMessages();
-      });
-    })();
+        if (event.data?.recipient_email === user.email) fetchUnreadMessages()
+      })
+    })()
 
     (async () => {
       const notifUnsubscribe = Notification.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchUnreadNotifications();
-      });
+        if (event.data?.recipient_email === user.email) fetchUnreadNotifications()
+      })
       return () => {
-        unsubscribe && unsubscribe();
-        notifUnsubscribe && notifUnsubscribe();
-      };
-    })();
+        unsubscribe && unsubscribe()
+        notifUnsubscribe && notifUnsubscribe()
+      }
+    })()
 
-    return () => unsubscribe && unsubscribe();
-  }, [user]);
+    return () => unsubscribe && unsubscribe()
+  }, [user])
 
   const menuItems = [
     {
@@ -110,17 +110,17 @@ export default function AdminSidebar() {
         { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: Activity },
       ]
     }
-  ];
+  ]
 
   const toggleSection = (section) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
-  };
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
+  }
 
-  const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
+  const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/')
 
-  const { logout } = useAuth();
+  const { logout } = useAuth()
 
-  const handleLogout = () => { logout(true); };
+  const handleLogout = () => { logout(true); }
 
   return (
     <div 
@@ -248,5 +248,5 @@ export default function AdminSidebar() {
         )}
       </div>
     </div>
-  );
+  )
 }

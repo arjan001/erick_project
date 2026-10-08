@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Lock, Plus, Trash2, Check, AlertCircle, Building2 } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { base44 } from '@/api/base44Client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CreditCard, Lock, Plus, Trash2, Check, AlertCircle, Building2 } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
 
 export default function ArtistBankingPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
-  const [artist, setArtist] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showCardForm, setShowCardForm] = useState(false);
-  const [paymentMethods, setPaymentMethods] = useState([]);
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const [user, setUser] = useState(null)
+  const [artist, setArtist] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [showCardForm, setShowCardForm] = useState(false)
+  const [paymentMethods, setPaymentMethods] = useState([])
   
   const [cardForm, setCardForm] = useState({
     card_number: '',
@@ -24,42 +24,42 @@ export default function ArtistBankingPage() {
     expiry_year: '',
     cvv: '',
     is_primary: false
-  });
+  })
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/signin';
-      return;
+      window.location.href = '/signin'
+      return
     }
-    setUser(JSON.parse(storedUser));
-    fetchData();
-  }, []);
+    setUser(JSON.parse(storedUser))
+    fetchData()
+  }, [])
 
   const fetchData = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('ericrabar_user'));
+      const storedUser = JSON.parse(localStorage.getItem('ericrabar_user'))
       
-      const artists = await base44.entities.Artist.filter({ email: storedUser.email });
+      const artists = await base44.entities.Artist.filter({ email: storedUser.email })
       if (artists.length > 0) {
-        setArtist(artists[0]);
-        setPaymentMethods(artists[0].payment_methods || []);
+        setArtist(artists[0])
+        setPaymentMethods(artists[0].payment_methods || [])
       }
     } catch (err) {
-      console.error('Error fetching payment data:', err);
-      toastError('Load Failed', 'Failed to load payment information');
+      
+      toastError('Load Failed', 'Failed to load payment information')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleAddCard = async () => {
-    if (!artist) return;
+    if (!artist) return
     
     // Validate required fields
     if (!cardForm.card_number || !cardForm.cardholder_name || !cardForm.expiry_month || !cardForm.expiry_year || !cardForm.cvv) {
-      toastError('Validation Error', 'Please fill in all required fields');
-      return;
+      toastError('Validation Error', 'Please fill in all required fields')
+      return
     }
 
     try {
@@ -69,14 +69,14 @@ export default function ArtistBankingPage() {
         card_number: `****${cardForm.card_number.slice(-4)}`,
         card_type: detectCardType(cardForm.card_number),
         created_at: new Date().toISOString()
-      };
+      }
 
       const updatedMethods = cardForm.is_primary 
         ? paymentMethods.map(method => ({ ...method, is_primary: false })).concat(newCard)
-        : [...paymentMethods, newCard];
+        : [...paymentMethods, newCard]
 
-      await base44.entities.Artist.update(artist.id, { payment_methods: updatedMethods });
-      setPaymentMethods(updatedMethods);
+      await base44.entities.Artist.update(artist.id, { payment_methods: updatedMethods })
+      setPaymentMethods(updatedMethods)
       setCardForm({
         card_number: '',
         cardholder_name: '',
@@ -84,58 +84,58 @@ export default function ArtistBankingPage() {
         expiry_year: '',
         cvv: '',
         is_primary: false
-      });
-      setShowCardForm(false);
-      success('Card Added', 'Your payment card has been added successfully');
+      })
+      setShowCardForm(false)
+      success('Card Added', 'Your payment card has been added successfully')
     } catch (err) {
-      console.error('Error adding card:', err);
-      toastError('Add Failed', 'Failed to add payment card');
+      
+      toastError('Add Failed', 'Failed to add payment card')
     }
-  };
+  }
 
   const detectCardType = (cardNumber) => {
-    const number = cardNumber.replace(/\s/g, '');
-    if (/^4/.test(number)) return 'visa';
-    if (/^5[1-5]/.test(number)) return 'mastercard';
-    if (/^3[47]/.test(number)) return 'amex';
-    return 'unknown';
-  };
+    const number = cardNumber.replace(/\s/g, '')
+    if (/^4/.test(number)) return 'visa'
+    if (/^5[1-5]/.test(number)) return 'mastercard'
+    if (/^3[47]/.test(number)) return 'amex'
+    return 'unknown'
+  }
 
   const handleDeleteCard = async (cardId) => {
-    if (!confirm('Are you sure you want to remove this payment method?')) return;
+    if (!confirm('Are you sure you want to remove this payment method?')) return
     
     try {
-      const updatedMethods = paymentMethods.filter(method => method.id !== cardId);
-      await base44.entities.Artist.update(artist.id, { payment_methods: updatedMethods });
-      setPaymentMethods(updatedMethods);
-      success('Card Removed', 'Payment method removed successfully');
+      const updatedMethods = paymentMethods.filter(method => method.id !== cardId)
+      await base44.entities.Artist.update(artist.id, { payment_methods: updatedMethods })
+      setPaymentMethods(updatedMethods)
+      success('Card Removed', 'Payment method removed successfully')
     } catch (err) {
-      console.error('Error deleting card:', err);
-      toastError('Delete Failed', 'Failed to remove payment method');
+      
+      toastError('Delete Failed', 'Failed to remove payment method')
     }
-  };
+  }
 
   const handleSetPrimary = async (cardId) => {
     try {
       const updatedMethods = paymentMethods.map(method => ({
         ...method,
         is_primary: method.id === cardId
-      }));
-      await base44.entities.Artist.update(artist.id, { payment_methods: updatedMethods });
-      setPaymentMethods(updatedMethods);
-      success('Primary Updated', 'Primary payment method updated');
+      }))
+      await base44.entities.Artist.update(artist.id, { payment_methods: updatedMethods })
+      setPaymentMethods(updatedMethods)
+      success('Primary Updated', 'Primary payment method updated')
     } catch (err) {
-      console.error('Error setting primary:', err);
-      toastError('Update Failed', 'Failed to update primary method');
+      
+      toastError('Update Failed', 'Failed to update primary method')
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -351,5 +351,5 @@ export default function ArtistBankingPage() {
           </CardContent>
         </Card>
     </div>
-  );
+  )
 }

@@ -1,55 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { SuccessStory } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Plus, Edit2, Trash2, X, Eye, EyeOff, Star, FileText } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { SuccessStory } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
+import { Plus, Edit2, Trash2, X, Eye, EyeOff, Star, FileText } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
 
 export default function AdminSuccessStoriesPage() {
-  const { success, error: toastError } = useToast();
-  const [stories, setStories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null);
+  const { success, error: toastError } = useToast()
+  const [stories, setStories] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({
     title: '', story: '', images: [], video_url: '',
     testimonial: '', score: 0, category: '', display_order: 0,
     status: 'draft', is_featured: false
-  });
+  })
 
   const fetchData = async () => {
     try {
-      const all = await SuccessStory.list('display_order', 100);
-      setStories(all || []);
+      const all = await SuccessStory.list('display_order', 100)
+      setStories(all || [])
     } catch (err) {
-      console.error('Error fetching success stories:', err);
+      
       // Don't show error toast - table might not exist yet
-      setStories([]);
+      setStories([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [])
 
   const openModal = (story = null) => {
     if (story) {
-      setEditing(story);
+      setEditing(story)
       setForm({
         title: story.title || '', story: story.story || '',
         images: story.images || [], video_url: story.video_url || '',
         testimonial: story.testimonial || '', score: story.score || 0,
         category: story.category || '', display_order: story.display_order || 0,
         status: story.status || 'draft', is_featured: story.is_featured || false
-      });
+      })
     } else {
-      setEditing(null);
-      setForm({ title: '', story: '', images: [], video_url: '', testimonial: '', score: 0, category: '', display_order: 0, status: 'draft', is_featured: false });
+      setEditing(null)
+      setForm({ title: '', story: '', images: [], video_url: '', testimonial: '', score: 0, category: '', display_order: 0, status: 'draft', is_featured: false })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const handleSave = async () => {
     if (!form.title.trim() || !form.story.trim()) { toastError('Validation', 'Title and story are required'); return; }
@@ -65,54 +65,54 @@ export default function AdminSuccessStoriesPage() {
         display_order: form.display_order,
         status: form.status,
         is_featured: form.is_featured
-      };
-      if (editing) {
-        await SuccessStory.update(editing.id, dataToSave);
-        success('Updated', 'Success story updated');
-      } else {
-        await SuccessStory.create(dataToSave);
-        success('Created', 'Success story created');
       }
-      setShowModal(false);
-      fetchData();
+      if (editing) {
+        await SuccessStory.update(editing.id, dataToSave)
+        success('Updated', 'Success story updated')
+      } else {
+        await SuccessStory.create(dataToSave)
+        success('Created', 'Success story created')
+      }
+      setShowModal(false)
+      fetchData()
     } catch (err) {
-      console.error('Error saving success story:', err);
-      toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`);
+      
+      toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`)
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this success story?')) return;
+    if (!confirm('Delete this success story?')) return
     try {
-      await SuccessStory.delete(id);
-      success('Deleted', 'Success story deleted');
-      fetchData();
+      await SuccessStory.delete(id)
+      success('Deleted', 'Success story deleted')
+      fetchData()
     } catch (err) {
-      toastError('Delete Failed', 'Failed to delete success story');
+      toastError('Delete Failed', 'Failed to delete success story')
     }
-  };
+  }
 
   const toggleStatus = async (story) => {
     try {
-      await SuccessStory.update(story.id, { status: story.status === 'published' ? 'draft' : 'published' });
-      fetchData();
+      await SuccessStory.update(story.id, { status: story.status === 'published' ? 'draft' : 'published' })
+      fetchData()
     } catch (err) { toastError('Failed', 'Failed to update status'); }
-  };
+  }
 
   const toggleFeatured = async (story) => {
     try {
-      await SuccessStory.update(story.id, { is_featured: !story.is_featured });
-      fetchData();
+      await SuccessStory.update(story.id, { is_featured: !story.is_featured })
+      fetchData()
     } catch (err) { toastError('Failed', 'Failed to update featured'); }
-  };
-
-  if (loading) {
-    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>;
   }
 
-  const draftStories = stories.filter(s => s.status === 'draft');
-  const publishedStories = stories.filter(s => s.status === 'published');
-  const archivedStories = stories.filter(s => s.status === 'archived');
+  if (loading) {
+    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>
+  }
+
+  const draftStories = stories.filter(s => s.status === 'draft')
+  const publishedStories = stories.filter(s => s.status === 'published')
+  const archivedStories = stories.filter(s => s.status === 'archived')
 
   const StoryCard = ({ story }) => (
     <Card className="overflow-hidden">
@@ -149,7 +149,7 @@ export default function AdminSuccessStoriesPage() {
         <p className="text-sm text-gray-600 line-clamp-2">{story.story}</p>
       </CardContent>
     </Card>
-  );
+  )
 
   return (
     <div className="p-8">
@@ -233,5 +233,5 @@ export default function AdminSuccessStoriesPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

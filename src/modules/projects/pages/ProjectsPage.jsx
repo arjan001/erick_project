@@ -1,52 +1,52 @@
-import React, { useEffect, useState } from 'react';
-import { Project } from '@/lib/supabaseEntities';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, Sparkles, Loader } from 'lucide-react';
-import RequestIntroductionModal from '@/components/RequestIntroductionModal';
-import SEOMetaTags from '@/components/SEOMetaTags';
-import { features } from '@/lib/settings';
+import React, { useEffect, useState } from 'react'
+import { Project } from '@/lib/supabaseEntities'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { MapPin, Calendar, Sparkles, Loader } from 'lucide-react'
+import RequestIntroductionModal from '@/components/RequestIntroductionModal'
+import SEOMetaTags from '@/components/SEOMetaTags'
+import { features } from '@/lib/settings'
 
 export default function Projects() {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedType, setSelectedType] = useState('all');
-  const [viewMode, setViewMode] = useState(() => sessionStorage.getItem('projectViewMode') || 'raster');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [marketplaceEnabled, setMarketplaceEnabled] = useState(true);
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [selectedType, setSelectedType] = useState('all')
+  const [viewMode, setViewMode] = useState(() => sessionStorage.getItem('projectViewMode') || 'raster')
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedProject, setSelectedProject] = useState(null)
+  const [marketplaceEnabled, setMarketplaceEnabled] = useState(true)
 
   useEffect(() => {
     const checkMarketplace = async () => {
-      const enabled = await features.isMarketplaceEnabled();
-      setMarketplaceEnabled(enabled);
-    };
-    checkMarketplace();
-  }, []);
+      const enabled = await features.isMarketplaceEnabled()
+      setMarketplaceEnabled(enabled)
+    }
+    checkMarketplace()
+  }, [])
 
   useEffect(() => {
-    if (!marketplaceEnabled) return;
+    if (!marketplaceEnabled) return
 
     const fetchProjects = async () => {
       try {
-        const allProjects = await Project.list();
-        const verified = allProjects.filter(p => p.status === 'verified');
-        setProjects(verified);
+        const allProjects = await Project.list()
+        const verified = allProjects.filter(p => p.status === 'verified')
+        setProjects(verified)
       } catch (error) {
-        console.error('Error fetching projects:', error);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchProjects();
-  }, [marketplaceEnabled]);
+    fetchProjects()
+  }, [marketplaceEnabled])
 
   const handleViewModeChange = (mode) => {
-    setViewMode(mode);
-    sessionStorage.setItem('projectViewMode', mode);
-  };
+    setViewMode(mode)
+    sessionStorage.setItem('projectViewMode', mode)
+  }
 
   const getProjectTypeLabel = (type) => {
     const labels = {
@@ -55,20 +55,20 @@ export default function Projects() {
       film: 'Feature Film',
       music_video: 'Music Video',
       documentary: 'Documentary'
-    };
-    return labels[type] || type;
-  };
+    }
+    return labels[type] || type
+  }
 
   const getStatusBadge = (project) => {
     if (project.open_to_backing) {
-      return <Badge className="bg-blue-100 text-blue-800">Seeking Backing</Badge>;
+      return <Badge className="bg-blue-100 text-blue-800">Seeking Backing</Badge>
     }
-    return <Badge variant="outline">In Production</Badge>;
-  };
+    return <Badge variant="outline">In Production</Badge>
+  }
 
   const filteredProjects = selectedType === 'all' 
     ? projects 
-    : projects.filter(p => p.project_type === selectedType);
+    : projects.filter(p => p.project_type === selectedType)
 
   const projectTypes = [
     { value: 'all', label: 'All Projects' },
@@ -77,7 +77,7 @@ export default function Projects() {
     { value: 'film', label: 'Feature Films' },
     { value: 'music_video', label: 'Music Videos' },
     { value: 'documentary', label: 'Documentaries' }
-  ];
+  ]
 
   return (
     <div className="min-h-screen bg-white">
@@ -225,8 +225,8 @@ export default function Projects() {
                    <div className="space-y-2">
                      <Button 
                        onClick={() => {
-                         setSelectedProject(project);
-                         setModalOpen(true);
+                         setSelectedProject(project)
+                         setModalOpen(true)
                        }}
                        className="w-full text-xs font-medium bg-black hover:bg-gray-800 text-white"
                      >
@@ -235,8 +235,8 @@ export default function Projects() {
                      {project.open_to_backing && (
                        <Button 
                          onClick={() => {
-                           setSelectedProject(project);
-                           setModalOpen(true);
+                           setSelectedProject(project)
+                           setModalOpen(true)
                          }}
                          variant="outline"
                          className="w-full text-xs font-medium"
@@ -281,8 +281,8 @@ export default function Projects() {
                      {getStatusBadge(project)}
                      <Button 
                        onClick={() => {
-                         setSelectedProject(project);
-                         setModalOpen(true);
+                         setSelectedProject(project)
+                         setModalOpen(true)
                        }}
                        size="sm"
                        className="text-xs bg-black hover:bg-gray-800 text-white"
@@ -316,5 +316,5 @@ export default function Projects() {
         projectTitle={selectedProject?.project_owner_company || selectedProject?.project_owner_name}
       />
     </div>
-  );
+  )
 }

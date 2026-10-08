@@ -1,25 +1,25 @@
-import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { base44 } from '@/api/base44Client';
-import { Artist } from '@/lib/supabaseEntities';
-import ArtistStepRole from '../components/artist/ArtistStepRole';
-import ArtistStepQuestions from '../components/artist/ArtistStepQuestions';
-import ArtistStepPortfolio from '../components/artist/ArtistStepPortfolio';
-import ArtistStepDetails from '../components/artist/ArtistStepDetails';
-import ApplicationSuccess from '../components/ApplicationSuccess';
-import SEOMetaTags from '../components/SEOMetaTags';
+import React, { useState } from 'react'
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { base44 } from '@/api/base44Client'
+import { Artist } from '@/lib/supabaseEntities'
+import ArtistStepRole from '../components/artist/ArtistStepRole'
+import ArtistStepQuestions from '../components/artist/ArtistStepQuestions'
+import ArtistStepPortfolio from '../components/artist/ArtistStepPortfolio'
+import ArtistStepDetails from '../components/artist/ArtistStepDetails'
+import ApplicationSuccess from '../components/ApplicationSuccess'
+import SEOMetaTags from '../components/SEOMetaTags'
 
 const STEPS = [
   { id: 1, name: 'Details', component: ArtistStepDetails },
   { id: 2, name: 'Role', component: ArtistStepRole },
   { id: 3, name: 'Skills', component: ArtistStepQuestions },
   { id: 4, name: 'Portfolio', component: ArtistStepPortfolio },
-];
+]
 
 export default function ApplyArtist() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [artistData, setArtistData] = useState({
     role: '',
     secondary_roles: [],
@@ -35,75 +35,75 @@ export default function ApplyArtist() {
     instagram: '',
     vimeo: '',
     imdb: '',
-  });
-  const [submitted, setSubmitted] = useState(false);
+  })
+  const [submitted, setSubmitted] = useState(false)
 
   const updateData = (field, value) => {
-    setArtistData(prev => ({ ...prev, [field]: value }));
-  };
+    setArtistData(prev => ({ ...prev, [field]: value }))
+  }
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return artistData.full_name !== '' && artistData.email !== '' && artistData.based_in_country !== '';
-      case 2: return artistData.role !== '';
+      case 1: return artistData.full_name !== '' && artistData.email !== '' && artistData.based_in_country !== ''
+      case 2: return artistData.role !== ''
       case 3: return true; // Skills optional
       case 4: return true; // Portfolio optional, allow draft save
-      default: return true;
+      default: return true
     }
-  };
+  }
 
   const handleNext = () => {
     if (canProceed() && currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setCurrentStep(currentStep + 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  };
+  }
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setCurrentStep(currentStep - 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  };
+  }
 
   const handleSaveDraft = async () => {
     try {
       await base44.auth.updateMe({
         artist_draft: artistData
-      });
-      alert('Draft saved. You can come back and complete it anytime.');
+      })
+      alert('Draft saved. You can come back and complete it anytime.')
     } catch (error) {
-      alert('Error saving draft. Please try again.');
-      console.error(error);
+      alert('Error saving draft. Please try again.')
+      //
     }
-  };
+  }
 
   const handleSubmit = async () => {
     if (!artistData.email || !artistData.full_name || !artistData.role || !artistData.based_in_country) {
-      alert('Please fill in name, email, role, and country to submit.');
-      return;
+      alert('Please fill in name, email, role, and country to submit.')
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
       await Artist.create({
         ...artistData,
         status: 'pending'
-      });
-      setSubmitted(true);
+      })
+      setSubmitted(true)
     } catch (error) {
-      alert('Error submitting application. Please try again.');
-      console.error(error);
+      alert('Error submitting application. Please try again.')
+      //
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
-
-  if (submitted) {
-    return <ApplicationSuccess type="artist" name={artistData.full_name} />;
   }
 
-  const CurrentStepComponent = STEPS[currentStep - 1].component;
+  if (submitted) {
+    return <ApplicationSuccess type="artist" name={artistData.full_name} />
+  }
+
+  const CurrentStepComponent = STEPS[currentStep - 1].component
 
   return (
     <div className="min-h-screen bg-white py-8 lg:py-12">
@@ -208,5 +208,5 @@ export default function ApplyArtist() {
         </div>
       </div>
     </div>
-  );
+  )
 }

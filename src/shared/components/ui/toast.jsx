@@ -1,7 +1,7 @@
-import * as React from "react";
-import { cva } from "class-variance-authority";
-import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import * as React from "react"
+import { cva } from "class-variance-authority"
+import { X } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 const ToastProvider = React.forwardRef(({ ...props }, ref) => (
   <div
@@ -9,8 +9,8 @@ const ToastProvider = React.forwardRef(({ ...props }, ref) => (
     className="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
     {...props}
   />
-));
-ToastProvider.displayName = "ToastProvider";
+))
+ToastProvider.displayName = "ToastProvider"
 
 const ToastViewport = React.forwardRef(({ ...props }, ref) => (
   <div
@@ -18,8 +18,8 @@ const ToastViewport = React.forwardRef(({ ...props }, ref) => (
     className="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
     {...props}
   />
-));
-ToastViewport.displayName = "ToastViewport";
+))
+ToastViewport.displayName = "ToastViewport"
 
 const toastVariants = cva(
   "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
@@ -35,7 +35,7 @@ const toastVariants = cva(
       variant: "default",
     },
   }
-);
+)
 
 const Toast = React.forwardRef(({ className, variant, ...props }, ref) => {
   return (
@@ -44,9 +44,9 @@ const Toast = React.forwardRef(({ className, variant, ...props }, ref) => {
       className={cn(toastVariants({ variant }), className)}
       {...props}
     />
-  );
-});
-Toast.displayName = "Toast";
+  )
+})
+Toast.displayName = "Toast"
 
 const ToastAction = React.forwardRef(({ className, ...props }, ref) => (
   <div
@@ -57,8 +57,8 @@ const ToastAction = React.forwardRef(({ className, ...props }, ref) => (
     )}
     {...props}
   />
-));
-ToastAction.displayName = "ToastAction";
+))
+ToastAction.displayName = "ToastAction"
 
 const ToastClose = React.forwardRef(({ className, ...props }, ref) => (
   <button
@@ -72,8 +72,8 @@ const ToastClose = React.forwardRef(({ className, ...props }, ref) => (
   >
     <X className="h-4 w-4" />
   </button>
-));
-ToastClose.displayName = "ToastClose";
+))
+ToastClose.displayName = "ToastClose"
 
 const ToastTitle = React.forwardRef(({ className, ...props }, ref) => (
   <div
@@ -81,8 +81,8 @@ const ToastTitle = React.forwardRef(({ className, ...props }, ref) => (
     className={cn("text-sm font-semibold", className)}
     {...props}
   />
-));
-ToastTitle.displayName = "ToastTitle";
+))
+ToastTitle.displayName = "ToastTitle"
 
 const ToastDescription = React.forwardRef(({ className, ...props }, ref) => (
   <div
@@ -90,8 +90,8 @@ const ToastDescription = React.forwardRef(({ className, ...props }, ref) => (
     className={cn("text-sm opacity-90", className)}
     {...props}
   />
-));
-ToastDescription.displayName = "ToastDescription";
+))
+ToastDescription.displayName = "ToastDescription"
 
 export {
   ToastProvider,

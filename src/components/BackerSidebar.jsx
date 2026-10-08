@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { 
   DollarSign, Film, TrendingUp, User, Briefcase, BarChart3,
   CreditCard, Users, Layers, Bell, LogOut, ChevronLeft, ChevronRight, Share2, MessageSquare, Ticket
-} from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useSidebar } from '@/layouts/DashboardLayout';
-import { useAuth } from '@/lib/AuthContext';
-import { Message, Notification } from '@/lib/supabaseEntities';
+} from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useSidebar } from '@/layouts/DashboardLayout'
+import { useAuth } from '@/lib/AuthContext'
+import { Message, Notification } from '@/lib/supabaseEntities'
 
 const MENU_ITEMS = [
   { label: 'Dashboard', icon: DollarSign, href: 'BackerDashboard' },
@@ -23,75 +23,75 @@ const MENU_ITEMS = [
   { label: 'Investment Tiers', icon: Layers, href: 'BackerInvestmentTiers' },
   { label: 'Project Updates', icon: Bell, href: 'BackerProjectUpdates', showNotificationBadge: true },
   { label: 'Profile & Settings', icon: User, href: 'BackerProfile' }
-];
+]
 
 export default function BackerSidebar() {
-  const location = useLocation();
-  const [user, setUser] = useState(null);
-  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
-  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
-  const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
-  const { logout } = useAuth();
+  const location = useLocation()
+  const [user, setUser] = useState(null)
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0)
+  const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar()
+  const { logout } = useAuth()
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
-    setUser(storedUser ? JSON.parse(storedUser) : null);
-  }, []);
+    const storedUser = localStorage.getItem('ericrabar_user')
+    setUser(storedUser ? JSON.parse(storedUser) : null)
+  }, [])
 
   useEffect(() => {
-    if (!user?.email) return;
-    let unsubscribe;
+    if (!user?.email) return
+    let unsubscribe
 
     const fetchUnreadMessages = async () => {
       try {
         // Messages table uses is_read, not read
-        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_at', 50);
-        setUnreadMessageCount((msgs || []).length);
+        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_at', 50)
+        setUnreadMessageCount((msgs || []).length)
       } catch {
-        setUnreadMessageCount(0);
+        setUnreadMessageCount(0)
       }
-    };
+    }
 
     const fetchUnreadNotifications = async () => {
       try {
-        const notifs = await Notification.filter({ recipient_email: user.email });
-        setUnreadNotificationCount((notifs || []).filter(n => !n.read).length);
+        const notifs = await Notification.filter({ recipient_email: user.email })
+        setUnreadNotificationCount((notifs || []).filter(n => !n.read).length)
       } catch {
-        setUnreadNotificationCount(0);
+        setUnreadNotificationCount(0)
       }
-    };
+    }
 
-    fetchUnreadMessages();
-    fetchUnreadNotifications();
+    fetchUnreadMessages()
+    fetchUnreadNotifications()
 
     (async () => {
       unsubscribe = Message.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchUnreadMessages();
-      });
-    })();
+        if (event.data?.recipient_email === user.email) fetchUnreadMessages()
+      })
+    })()
 
     (async () => {
       const notifUnsubscribe = Notification.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchUnreadNotifications();
-      });
+        if (event.data?.recipient_email === user.email) fetchUnreadNotifications()
+      })
       return () => {
-        unsubscribe && unsubscribe();
-        notifUnsubscribe && notifUnsubscribe();
-      };
-    })();
+        unsubscribe && unsubscribe()
+        notifUnsubscribe && notifUnsubscribe()
+      }
+    })()
 
-    return () => unsubscribe && unsubscribe();
-  }, [user]);
+    return () => unsubscribe && unsubscribe()
+  }, [user])
 
   const toggle = () => {
     if (window.innerWidth < 1024) {
-      setMobileSidebarOpen(!mobileSidebarOpen);
+      setMobileSidebarOpen(!mobileSidebarOpen)
     } else {
-      setSidebarExpanded(!expanded);
+      setSidebarExpanded(!expanded)
     }
-  };
+  }
 
-  const handleLogout = () => { logout(true); };
+  const handleLogout = () => { logout(true); }
 
   return (
     <aside
@@ -115,8 +115,8 @@ export default function BackerSidebar() {
       {/* Menu */}
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
         {MENU_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname.toLowerCase().includes(item.href.toLowerCase());
+          const Icon = item.icon
+          const isActive = location.pathname.toLowerCase().includes(item.href.toLowerCase())
           
           if (!expanded) {
             return (
@@ -145,7 +145,7 @@ export default function BackerSidebar() {
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-[#1a1a1a] rotate-45"></div>
                 </div>
               </div>
-            );
+            )
           }
           
           return (
@@ -169,7 +169,7 @@ export default function BackerSidebar() {
                 </span>
               )}
             </Link>
-          );
+          )
         })}
       </nav>
 
@@ -224,5 +224,5 @@ export default function BackerSidebar() {
         )}
       </div>
     </aside>
-  );
+  )
 }

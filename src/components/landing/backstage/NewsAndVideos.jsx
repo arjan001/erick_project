@@ -1,20 +1,20 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import React from 'react'
+import { motion } from 'framer-motion'
+import { ChevronRight } from 'lucide-react'
 
 const news = [
   { thumb: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=200&h=140&fit=crop', title: "How to Get Cast on 'Holding Court'" },
   { thumb: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=140&fit=crop', title: "Now Casting: Earn $16,500 for a Fantasy-Adventure Film + 3..." },
   { thumb: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=140&fit=crop', title: "I Spent 13 Years Watching Actors. Here's What the Best..." },
   { thumb: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=140&fit=crop', title: "Love 'Spider-Man: Brand New Day'? Apply to These Superhero..." },
-];
+]
 
 const videos = [
   { thumb: 'https://images.unsplash.com/photo-1574732669271-a745c0e2b0e2?w=400&h=225&fit=crop', title: "In the Room With 'Love Story' Casting Directors Courtney Bright + Nicole Daniels", duration: '15:35' },
   { thumb: 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=400&h=225&fit=crop', title: "Eric Rabar With: Chase Stokes on 'Stranger Things' + the Final Season of 'Outer Banks'", duration: '19:54' },
   { thumb: 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=400&h=225&fit=crop', title: "Andrew Garfield + Claire Foy on Acting, Imagination, and 'The Magic Faraway Tree'", duration: '04:51' },
   { thumb: 'https://images.unsplash.com/photo-1502685104226-ee32348fef25?w=400&h=225&fit=crop', title: "Eric Rabar with: Rufus Sewell on 'The Diplomat' + His Way into Hal Wyler", duration: '16:00' },
-];
+]
 
 export default function NewsAndVideos() {
   return (
@@ -90,5 +90,5 @@ export default function NewsAndVideos() {
         </div>
       </div>
     </section>
-  );
+  )
 }

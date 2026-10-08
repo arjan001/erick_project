@@ -1,1 +1,1 @@
-export { default } from '@/modules/team/pages/TeamDashboardPage';
+export { default } from '@/modules/team/pages/TeamDashboardPage'

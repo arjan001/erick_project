@@ -9,20 +9,20 @@
 const DARAJA_BASE_URL = {
   sandbox: 'https://sandbox.safaricom.co.ke',
   production: 'https://api.safaricom.co.ke',
-};
+}
 
 /**
  * Generate an OAuth access token from Daraja API.
  * @param {Object} settings - M-Pesa settings (consumerKey, consumerSecret, mode)
  */
 export async function getMpesaAccessToken(settings) {
-  const { consumerKey, consumerSecret, mode = 'sandbox' } = settings;
+  const { consumerKey, consumerSecret, mode = 'sandbox' } = settings
   if (!consumerKey || !consumerSecret) {
-    throw new Error('M-Pesa consumer key and secret are required');
+    throw new Error('M-Pesa consumer key and secret are required')
   }
 
-  const baseUrl = DARAJA_BASE_URL[mode] || DARAJA_BASE_URL.sandbox;
-  const auth = btoa(`${consumerKey}:${consumerSecret}`);
+  const baseUrl = DARAJA_BASE_URL[mode] || DARAJA_BASE_URL.sandbox
+  const auth = btoa(`${consumerKey}:${consumerSecret}`)
 
   const response = await fetch(`${baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
     method: 'GET',
@@ -30,30 +30,30 @@ export async function getMpesaAccessToken(settings) {
       Authorization: `Basic ${auth}`,
       'Content-Type': 'application/json',
     },
-  });
+  })
 
   if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Daraja auth failed (${response.status}): ${errorBody}`);
+    const errorBody = await response.text()
+    throw new Error(`Daraja auth failed (${response.status}): ${errorBody}`)
   }
 
-  const data = await response.json();
-  return data.access_token;
+  const data = await response.json()
+  return data.access_token
 }
 
 /**
  * Generate the password for STK Push: base64(shortcode + passkey + timestamp)
  */
 function generatePassword(shortcode, passkey, timestamp) {
-  return btoa(`${shortcode}${passkey}${timestamp}`);
+  return btoa(`${shortcode}${passkey}${timestamp}`)
 }
 
 /**
  * Generate a timestamp in YYYYMMDDHHmmss format
  */
 function getTimestamp() {
-  const now = new Date();
-  const pad = (n) => String(n).padStart(2, '0');
+  const now = new Date()
+  const pad = (n) => String(n).padStart(2, '0')
   return (
     now.getFullYear() +
     pad(now.getMonth() + 1) +
@@ -61,14 +61,14 @@ function getTimestamp() {
     pad(now.getHours()) +
     pad(now.getMinutes()) +
     pad(now.getSeconds())
-  );
+  )
 }
 
 /**
  * Generate a unique checkout request ID
  */
 function generateCheckoutRequestId() {
-  return `ER${Date.now()}${Math.floor(Math.random() * 10000)}`;
+  return `ER${Date.now()}${Math.floor(Math.random() * 10000)}`
 }
 
 /**
@@ -91,33 +91,33 @@ export async function initiateStkPush({ settings, phoneNumber, amount, accountRe
     callbackUrl,
     mode = 'sandbox',
     accountType = 'paybill',
-  } = settings;
+  } = settings
 
   // Validate required fields
-  const missing = [];
-  if (!consumerKey) missing.push('consumerKey');
-  if (!consumerSecret) missing.push('consumerSecret');
-  if (!shortcode) missing.push('shortcode');
-  if (!passkey) missing.push('passkey');
-  if (!callbackUrl) missing.push('callbackUrl');
+  const missing = []
+  if (!consumerKey) missing.push('consumerKey')
+  if (!consumerSecret) missing.push('consumerSecret')
+  if (!shortcode) missing.push('shortcode')
+  if (!passkey) missing.push('passkey')
+  if (!callbackUrl) missing.push('callbackUrl')
   if (missing.length > 0) {
-    throw new Error(`M-Pesa settings incomplete. Missing: ${missing.join(', ')}`);
+    throw new Error(`M-Pesa settings incomplete. Missing: ${missing.join(', ')}`)
   }
 
   // Normalize phone number
-  let phone = phoneNumber.replace(/\s+/g, '').replace(/^\+/, '');
+  let phone = phoneNumber.replace(/\s+/g, '').replace(/^\+/, '')
   if (phone.startsWith('0')) {
-    phone = '254' + phone.slice(1);
+    phone = '254' + phone.slice(1)
   } else if (phone.startsWith('254')) {
     // already correct
   } else {
-    phone = '254' + phone;
+    phone = '254' + phone
   }
 
-  const timestamp = getTimestamp();
-  const password = generatePassword(shortcode, passkey, timestamp);
-  const accessToken = await getMpesaAccessToken(settings);
-  const baseUrl = DARAJA_BASE_URL[mode] || DARAJA_BASE_URL.sandbox;
+  const timestamp = getTimestamp()
+  const password = generatePassword(shortcode, passkey, timestamp)
+  const accessToken = await getMpesaAccessToken(settings)
+  const baseUrl = DARAJA_BASE_URL[mode] || DARAJA_BASE_URL.sandbox
 
   const payload = {
     BusinessShortCode: shortcode,
@@ -131,7 +131,7 @@ export async function initiateStkPush({ settings, phoneNumber, amount, accountRe
     CallBackURL: callbackUrl,
     AccountReference: accountRef,
     TransactionDesc: transactionDesc,
-  };
+  }
 
   const response = await fetch(`${baseUrl}/mpesa/stkpush/v1/processrequest`, {
     method: 'POST',
@@ -140,12 +140,12 @@ export async function initiateStkPush({ settings, phoneNumber, amount, accountRe
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
-  });
+  })
 
-  const data = await response.json();
+  const data = await response.json()
 
   if (!response.ok || data.errorCode) {
-    throw new Error(data.errorMessage || data.errorCode || `STK Push failed (${response.status})`);
+    throw new Error(data.errorMessage || data.errorCode || `STK Push failed (${response.status})`)
   }
 
   return {
@@ -154,7 +154,7 @@ export async function initiateStkPush({ settings, phoneNumber, amount, accountRe
     responseCode: data.ResponseCode,
     responseDescription: data.ResponseDescription,
     customerMessage: data.CustomerMessage,
-  };
+  }
 }
 
 /**
@@ -166,19 +166,19 @@ export async function initiateStkPush({ settings, phoneNumber, amount, accountRe
  * @returns {Promise<Object>} Transaction status
  */
 export async function queryStkPushStatus({ settings, checkoutRequestId }) {
-  const { consumerKey, consumerSecret, shortcode, passkey, mode = 'sandbox' } = settings;
+  const { consumerKey, consumerSecret, shortcode, passkey, mode = 'sandbox' } = settings
 
-  const timestamp = getTimestamp();
-  const password = generatePassword(shortcode, passkey, timestamp);
-  const accessToken = await getMpesaAccessToken(settings);
-  const baseUrl = DARAJA_BASE_URL[mode] || DARAJA_BASE_URL.sandbox;
+  const timestamp = getTimestamp()
+  const password = generatePassword(shortcode, passkey, timestamp)
+  const accessToken = await getMpesaAccessToken(settings)
+  const baseUrl = DARAJA_BASE_URL[mode] || DARAJA_BASE_URL.sandbox
 
   const payload = {
     BusinessShortCode: shortcode,
     Password: password,
     Timestamp: timestamp,
     CheckoutRequestID: checkoutRequestId,
-  };
+  }
 
   const response = await fetch(`${baseUrl}/mpesa/stkpushquery/v1/query`, {
     method: 'POST',
@@ -187,9 +187,9 @@ export async function queryStkPushStatus({ settings, checkoutRequestId }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
-  });
+  })
 
-  const data = await response.json();
+  const data = await response.json()
 
   return {
     resultCode: data.ResultCode,
@@ -200,7 +200,7 @@ export async function queryStkPushStatus({ settings, checkoutRequestId }) {
     amount: data.Amount || null,
     transactionDate: data.TransactionDate || null,
     phoneNumber: data.PhoneNumber || null,
-  };
+  }
 }
 
 /**
@@ -212,13 +212,13 @@ export async function queryStkPushStatus({ settings, checkoutRequestId }) {
  */
 export async function testMpesaConnection(settings) {
   try {
-    const token = await getMpesaAccessToken(settings);
+    const token = await getMpesaAccessToken(settings)
     if (token) {
-      return { success: true, message: 'M-Pesa connection successful. Access token generated.' };
+      return { success: true, message: 'M-Pesa connection successful. Access token generated.' }
     }
-    return { success: false, message: 'No access token returned' };
+    return { success: false, message: 'No access token returned' }
   } catch (err) {
-    return { success: false, message: err.message };
+    return { success: false, message: err.message }
   }
 }
 
@@ -230,13 +230,13 @@ export async function testMpesaConnection(settings) {
  * @returns {Object} Parsed transaction result
  */
 export function parseStkCallback(callback) {
-  const stkCallback = callback?.Body?.stkCallback;
+  const stkCallback = callback?.Body?.stkCallback
   if (!stkCallback) {
-    return { success: false, message: 'Invalid callback format' };
+    return { success: false, message: 'Invalid callback format' }
   }
 
-  const metadata = stkCallback?.CallbackMetadata?.Item || [];
-  const getItem = (name) => metadata.find((item) => item.Name === name)?.Value;
+  const metadata = stkCallback?.CallbackMetadata?.Item || []
+  const getItem = (name) => metadata.find((item) => item.Name === name)?.Value
 
   return {
     merchantRequestId: stkCallback.MerchantRequestID,
@@ -248,5 +248,5 @@ export function parseStkCallback(callback) {
     mpesaReceipt: getItem('MpesaReceiptNumber'),
     transactionDate: getItem('TransactionDate'),
     phoneNumber: getItem('PhoneNumber'),
-  };
+  }
 }

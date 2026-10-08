@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { Bold, Italic, Underline, List, ListOrdered, Check, X } from 'lucide-react';
+import React, { useRef, useState } from 'react'
+import { Bold, Italic, Underline, List, ListOrdered, Check, X } from 'lucide-react'
 
 const COLORS = {
   yellow: 'bg-yellow-100 border-yellow-300',
@@ -7,24 +7,24 @@ const COLORS = {
   blue: 'bg-blue-100 border-blue-300',
   green: 'bg-green-100 border-green-300',
   purple: 'bg-purple-100 border-purple-300',
-};
-const COLOR_KEYS = Object.keys(COLORS);
+}
+const COLOR_KEYS = Object.keys(COLORS)
 
 export default function NoteEditor({ note, onSave, onCancel }) {
-  const [title, setTitle] = useState(note?.title || '');
-  const [color, setColor] = useState(note?.color || 'yellow');
-  const contentRef = useRef(null);
+  const [title, setTitle] = useState(note?.title || '')
+  const [color, setColor] = useState(note?.color || 'yellow')
+  const contentRef = useRef(null)
 
   const format = (command) => {
-    document.execCommand(command, false, null);
-    contentRef.current?.focus();
-  };
+    document.execCommand(command, false, null)
+    contentRef.current?.focus()
+  }
 
   const handleSave = () => {
-    const content = contentRef.current?.innerHTML.trim();
-    if (!content || content === '<br>') return;
-    onSave({ title: title.trim(), content, color });
-  };
+    const content = contentRef.current?.innerHTML.trim()
+    if (!content || content === '<br>') return
+    onSave({ title: title.trim(), content, color })
+  }
 
   return (
     <div className={`mb-3 p-3 rounded-lg border ${COLORS[color]}`}>
@@ -68,5 +68,5 @@ export default function NoteEditor({ note, onSave, onCancel }) {
         </button>
       </div>
     </div>
-  );
+  )
 }

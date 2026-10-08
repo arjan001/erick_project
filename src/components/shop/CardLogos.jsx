@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 export const VisaLogo = ({ className = '' }) => (
   <svg
@@ -25,7 +25,7 @@ export const VisaLogo = ({ className = '' }) => (
       fill="white"
     />
   </svg>
-);
+)
 
 export const MastercardLogo = ({ className = '' }) => (
   <svg
@@ -42,7 +42,7 @@ export const MastercardLogo = ({ className = '' }) => (
       fill="#FF5F00"
     />
   </svg>
-);
+)
 
 export const MpesaLogo = ({ className = '' }) => (
   <svg
@@ -65,11 +65,11 @@ export const MpesaLogo = ({ className = '' }) => (
       fill="white"
     />
   </svg>
-);
+)
 
 export const CardBrandLogo = ({ brand, className = '' }) => {
-  const brandLower = (brand || '').toLowerCase();
-  if (brandLower.includes('visa')) return <VisaLogo className={className} />;
-  if (brandLower.includes('master')) return <MastercardLogo className={className} />;
-  return null;
-};
+  const brandLower = (brand || '').toLowerCase()
+  if (brandLower.includes('visa')) return <VisaLogo className={className} />
+  if (brandLower.includes('master')) return <MastercardLogo className={className} />
+  return null
+}

@@ -1,24 +1,24 @@
-import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Artist } from '@/lib/supabaseEntities';
-import ArtistStepRole from './ArtistStepRole';
-import ArtistStepQuestions from './ArtistStepQuestions';
-import ArtistStepPortfolio from './ArtistStepPortfolio';
-import ArtistStepDetails from './ArtistStepDetails';
+import React, { useState } from 'react'
+import { ArrowLeft, ArrowRight, Check, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Artist } from '@/lib/supabaseEntities'
+import ArtistStepRole from './ArtistStepRole'
+import ArtistStepQuestions from './ArtistStepQuestions'
+import ArtistStepPortfolio from './ArtistStepPortfolio'
+import ArtistStepDetails from './ArtistStepDetails'
 
 const STEPS = [
   { id: 1, name: 'Details', component: ArtistStepDetails },
   { id: 2, name: 'Role', component: ArtistStepRole },
   { id: 3, name: 'Skills', component: ArtistStepQuestions },
   { id: 4, name: 'Portfolio', component: ArtistStepPortfolio },
-];
+]
 
 // Modern multi-step "complete your profile" modal, shown right after an
 // artist's first login when their Artist profile record is still incomplete.
 export default function ArtistOnboardingModal({ artist, onClose, onComplete }) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [data, setData] = useState({
     full_name: artist.full_name || '',
     email: artist.email || '',
@@ -35,39 +35,39 @@ export default function ArtistOnboardingModal({ artist, onClose, onComplete }) {
     secondary_roles: artist.secondary_roles || [],
     ai_questionnaire_response: artist.ai_questionnaire_response || {},
     portfolio_clips: artist.portfolio_clips || [],
-  });
+  })
 
-  const updateData = (field, value) => setData(prev => ({ ...prev, [field]: value }));
+  const updateData = (field, value) => setData(prev => ({ ...prev, [field]: value }))
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return data.full_name !== '' && data.based_in_country !== '';
-      case 2: return data.role !== '';
-      default: return true;
+      case 1: return data.full_name !== '' && data.based_in_country !== ''
+      case 2: return data.role !== ''
+      default: return true
     }
-  };
+  }
 
   const handleNext = () => {
-    if (canProceed() && currentStep < STEPS.length) setCurrentStep(currentStep + 1);
-  };
+    if (canProceed() && currentStep < STEPS.length) setCurrentStep(currentStep + 1)
+  }
 
   const handleBack = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
-  };
+    if (currentStep > 1) setCurrentStep(currentStep - 1)
+  }
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
-      await Artist.update(artist.id, { ...data });
-      onComplete({ ...artist, ...data });
+      await Artist.update(artist.id, { ...data })
+      onComplete({ ...artist, ...data })
     } catch (err) {
-      console.error('Error completing profile:', err);
+      
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
-  const CurrentStepComponent = STEPS[currentStep - 1].component;
+  const CurrentStepComponent = STEPS[currentStep - 1].component
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
@@ -134,5 +134,5 @@ export default function ArtistOnboardingModal({ artist, onClose, onComplete }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

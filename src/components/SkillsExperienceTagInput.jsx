@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, X, Plus } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react'
+import { Search, X, Plus } from 'lucide-react'
 
 const DEFAULT_SKILL_SUGGESTIONS = [
   'After Effects', 'Adobe Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'Concept Art', 'Creative Direction', 
@@ -10,45 +10,45 @@ const DEFAULT_SKILL_SUGGESTIONS = [
   'Gaffer', 'Grip', 'Production Design', 'Costume Design', 'Makeup', 'Hair Styling', 'Steadicam',
   'Drone Piloting', 'Underwater Cinematography', 'Rotoscoping', 'Tracking', 'Matte Painting',
   'Green Screen', 'Chroma Keying', 'Color Correction', 'Grading', 'Audio Mixing', 'Music Composition'
-];
+]
 
 export default function SkillsExperienceTagInput({ selected = [], onChange, placeholder = "Search skills...", suggestions = DEFAULT_SKILL_SUGGESTIONS }) {
-  const [query, setQuery] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const containerRef = useRef(null);
+  const [query, setQuery] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
+  const containerRef = useRef(null)
 
   useEffect(() => {
     const handleClick = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setShowDropdown(false);
+        setShowDropdown(false)
       }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   const toggleSkill = (skill) => {
     if (selected.includes(skill)) {
-      onChange(selected.filter(s => s !== skill));
+      onChange(selected.filter(s => s !== skill))
     } else {
-      onChange([...selected, skill]);
+      onChange([...selected, skill])
     }
-    setQuery('');
-    setShowDropdown(false);
-  };
+    setQuery('')
+    setShowDropdown(false)
+  }
 
   const addCustomSkill = () => {
-    const trimmedQuery = query.trim();
+    const trimmedQuery = query.trim()
     if (trimmedQuery && !selected.includes(trimmedQuery)) {
-      onChange([...selected, trimmedQuery]);
-      setQuery('');
-      setShowDropdown(false);
+      onChange([...selected, trimmedQuery])
+      setQuery('')
+      setShowDropdown(false)
     }
-  };
+  }
 
   const filteredSuggestions = suggestions.filter(s => 
     s.toLowerCase().includes(query.toLowerCase()) && !selected.includes(s)
-  ).slice(0, 15);
+  ).slice(0, 15)
 
   return (
     <div className="relative" ref={containerRef}>
@@ -102,5 +102,5 @@ export default function SkillsExperienceTagInput({ selected = [], onChange, plac
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
-import { useAuth } from '@/lib/AuthContext';
+import { useAuth } from '@/lib/AuthContext'
 
-import { createPageUrl } from '@/shared/utils/routing';
-import InviteCodeCard from '@/components/InviteCodeCard';
+import { createPageUrl } from '@/shared/utils/routing'
+import InviteCodeCard from '@/components/InviteCodeCard'
 
 import { 
 
@@ -16,62 +16,62 @@ import {
   Globe, Award, Film, Calendar, Plus, X, Edit2, Play, Instagram, Linkedin, Ticket
 
 
-} from 'lucide-react';
+} from 'lucide-react'
 
-import { Button } from '@/components/ui/button';
-import DashboardStatCard from '@/components/DashboardStatCard';
-import { PortfolioModal, MemberModal } from '@/modules/team/components/TeamDashboardModals';
-import TeamProfileHeaderCard from '@/modules/team/components/TeamProfileHeaderCard';
-import TeamOnboardingModal from '@/components/team/TeamOnboardingModal';
+import { Button } from '@/components/ui/button'
+import DashboardStatCard from '@/components/DashboardStatCard'
+import { PortfolioModal, MemberModal } from '@/modules/team/components/TeamDashboardModals'
+import TeamProfileHeaderCard from '@/modules/team/components/TeamProfileHeaderCard'
+import TeamOnboardingModal from '@/components/team/TeamOnboardingModal'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge'
 
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/input'
 
-import { notifyError, notifySuccess, confirmDialog } from '@/lib/sweetAlert';
+import { notifyError, notifySuccess, confirmDialog } from '@/lib/sweetAlert'
 
-import { base44 } from '@/api/base44Client';
-import { Team, PortfolioClip, Message, Invite, Application, Job, JobInvitation, SupportTicket } from '@/lib/supabaseEntities';
+import { base44 } from '@/api/base44Client'
+import { Team, PortfolioClip, Message, Invite, Application, Job, JobInvitation, SupportTicket } from '@/lib/supabaseEntities'
 
 
 
 export default function TeamDashboard() {
 
-  const { user: authUser, isAuthenticated, isLoadingAuth } = useAuth();
+  const { user: authUser, isAuthenticated, isLoadingAuth } = useAuth()
 
-  // Invited team members carry a team_id and only manage their own profile entry;
+  // Invited team members carry a team_id and only manage their own profile entry
   // the team admin (no team_id, matched by contact_email) manages the whole team.
-  const isTeamMember = !!authUser?.team_id;
+  const isTeamMember = !!authUser?.team_id
 
-  const [team, setTeam] = useState(null);
+  const [team, setTeam] = useState(null)
 
-  const [portfolioClips, setPortfolioClips] = useState([]);
+  const [portfolioClips, setPortfolioClips] = useState([])
 
-  const [teamMembers, setTeamMembers] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([])
 
-  const [applications, setApplications] = useState([]);
+  const [applications, setApplications] = useState([])
 
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([])
 
-  const [supportTickets, setSupportTickets] = useState([]);
+  const [supportTickets, setSupportTickets] = useState([])
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true)
 
-  const [editingProfile, setEditingProfile] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false)
 
-  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false)
 
-  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
+  const [showPortfolioModal, setShowPortfolioModal] = useState(false)
 
-  const [showMemberModal, setShowMemberModal] = useState(false);
+  const [showMemberModal, setShowMemberModal] = useState(false)
 
-  const [editingPortfolio, setEditingPortfolio] = useState(null);
+  const [editingPortfolio, setEditingPortfolio] = useState(null)
 
-  const [editingMember, setEditingMember] = useState(null);
+  const [editingMember, setEditingMember] = useState(null)
 
-  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false)
 
   const [portfolioForm, setPortfolioForm] = useState({
 
@@ -83,7 +83,7 @@ export default function TeamDashboard() {
 
     role: ''
 
-  });
+  })
 
   const [memberForm, setMemberForm] = useState({
 
@@ -97,138 +97,138 @@ export default function TeamDashboard() {
 
     avatar_url: ''
 
-  });
+  })
 
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
-  const [editingBio, setEditingBio] = useState(false);
+  const [editingBio, setEditingBio] = useState(false)
 
-  const [editingSocial, setEditingSocial] = useState(false);
+  const [editingSocial, setEditingSocial] = useState(false)
 
-  const [profileBio, setProfileBio] = useState('');
+  const [profileBio, setProfileBio] = useState('')
 
-  const [profileWebsite, setProfileWebsite] = useState('');
+  const [profileWebsite, setProfileWebsite] = useState('')
 
-  const [profileInstagram, setProfileInstagram] = useState('');
+  const [profileInstagram, setProfileInstagram] = useState('')
 
-  const [profileLinkedin, setProfileLinkedin] = useState('');
+  const [profileLinkedin, setProfileLinkedin] = useState('')
 
-  const [profileSpecialties, setProfileSpecialties] = useState('');
+  const [profileSpecialties, setProfileSpecialties] = useState('')
 
-  const videoInputRef = React.useRef(null);
+  const videoInputRef = React.useRef(null)
 
 
 
   useEffect(() => {
 
     if (!isLoadingAuth && isAuthenticated && authUser) {
-      loadDashboardData(authUser);
+      loadDashboardData(authUser)
     } else if (!isLoadingAuth && !isAuthenticated) {
-      window.location.href = '/';
+      window.location.href = '/'
     }
 
-  }, [isLoadingAuth, isAuthenticated, authUser]);
+  }, [isLoadingAuth, isAuthenticated, authUser])
 
 
 
   const loadDashboardData = async (currentUser) => {
 
-    if (!currentUser) return;
+    if (!currentUser) return
 
     try {
 
       // Load real team profile — invited members look up by team_id (their team's
       // workspace), the team admin looks up by their own contact_email.
-      let teamData = null;
+      let teamData = null
       if (currentUser.team_id) {
-        teamData = await Team.filter({ id: currentUser.team_id }, '-created_at', 1).then(r => r?.[0] || null);
+        teamData = await Team.filter({ id: currentUser.team_id }, '-created_at', 1).then(r => r?.[0] || null)
       } else {
-        const teams = await Team.filter({ contact_email: currentUser.email }, '-created_at', 1);
-        teamData = teams?.[0] || null;
+        const teams = await Team.filter({ contact_email: currentUser.email }, '-created_at', 1)
+        teamData = teams?.[0] || null
       }
-      setTeam(teamData);
+      setTeam(teamData)
 
       if (teamData && !currentUser.team_id && (!teamData.city || !teamData.team_size || !(teamData.specialties && teamData.specialties.length))) {
-        setShowOnboarding(true);
+        setShowOnboarding(true)
       }
 
       if (teamData) {
-        setProfileBio('');
-        setProfileWebsite(teamData.website || '');
-        setProfileInstagram('');
-        setProfileLinkedin('');
-        setProfileSpecialties(Array.isArray(teamData.specialties) ? teamData.specialties.join(', ') : '');
+        setProfileBio('')
+        setProfileWebsite(teamData.website || '')
+        setProfileInstagram('')
+        setProfileLinkedin('')
+        setProfileSpecialties(Array.isArray(teamData.specialties) ? teamData.specialties.join(', ') : '')
 
         // Load real portfolio clips
-        const clips = await PortfolioClip.filter({ uploaded_by_id: teamData.id, uploaded_by_type: 'team' }, '-created_at', 20);
-        setPortfolioClips(clips || []);
+        const clips = await PortfolioClip.filter({ uploaded_by_id: teamData.id, uploaded_by_type: 'team' }, '-created_at', 20)
+        setPortfolioClips(clips || [])
 
         // Load real team members from the team's team_members array (embedded)
-        setTeamMembers(teamData.team_members || []);
+        setTeamMembers(teamData.team_members || [])
 
         // Load real messages
-        const msgs = await Message.filter({ recipient_email: teamData.contact_email }, '-created_at', 5);
-        setMessages(msgs || []);
+        const msgs = await Message.filter({ recipient_email: teamData.contact_email }, '-created_at', 5)
+        setMessages(msgs || [])
 
         // Load team applications
-        const teamApps = await Application.filter({ team_id: teamData.id });
+        const teamApps = await Application.filter({ team_id: teamData.id })
         const enrichedApplications = await Promise.all(
           teamApps.map(async (app) => {
-            const job = await Job.get(app.job_id);
-            return { ...app, job };
+            const job = await Job.get(app.job_id)
+            return { ...app, job }
           })
-        );
-        setApplications(enrichedApplications || []);
+        )
+        setApplications(enrichedApplications || [])
 
         // Load support tickets
-        const tickets = await SupportTicket.filter({ user_email: teamData.contact_email }, '-created_at', 10);
-        setSupportTickets(tickets || []);
+        const tickets = await SupportTicket.filter({ user_email: teamData.contact_email }, '-created_at', 10)
+        setSupportTickets(tickets || [])
       } else {
-        setApplications([]);
-        setSupportTickets([]);
+        setApplications([])
+        setSupportTickets([])
       }
 
     } catch (error) {
 
-      console.error('Error loading dashboard:', error);
+      //
 
     } finally {
 
-      setLoading(false);
+      setLoading(false)
 
     }
 
-  };
+  }
 
 
 
   const handleLogoUpload = async (e) => {
 
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
 
-    if (!file) return;
+    if (!file) return
 
 
 
-    setUploadingLogo(true);
+    setUploadingLogo(true)
 
     try {
 
       // Mock upload - just set a placeholder URL
-      const fileUrl = URL.createObjectURL(file);
-      setTeam({ ...team, team_logo_url: fileUrl });
+      const fileUrl = URL.createObjectURL(file)
+      setTeam({ ...team, team_logo_url: fileUrl })
 
     } catch (error) {
 
-      notifyError('Upload Failed', 'Error uploading logo');
+      notifyError('Upload Failed', 'Error uploading logo')
 
     } finally {
 
-      setUploadingLogo(false);
+      setUploadingLogo(false)
 
     }
 
-  };
+  }
 
 
 
@@ -243,47 +243,47 @@ export default function TeamDashboard() {
           contact_email: team.contact_email,
           phone: team.phone,
           availability: team.availability,
-        });
+        })
       }
 
-      setEditingProfile(false);
+      setEditingProfile(false)
 
     } catch (error) {
 
-      console.error('Update error:', error);
+      //
 
     }
 
-  };
+  }
 
 
 
   const handleSaveBio = async () => {
 
-    if (!team) return;
+    if (!team) return
 
     try {
 
-      await Team.update(team.id, { admin_notes: profileBio });
-      setTeam(prev => ({ ...prev, bio: profileBio }));
+      await Team.update(team.id, { admin_notes: profileBio })
+      setTeam(prev => ({ ...prev, bio: profileBio }))
 
-      setEditingBio(false);
+      setEditingBio(false)
 
     } catch (err) {
 
-      console.error('Error saving bio:', err);
+      //
 
-      notifyError('Save Failed', 'Failed to save bio');
+      notifyError('Save Failed', 'Failed to save bio')
 
     }
 
-  };
+  }
 
 
 
   const handleSaveSocial = async () => {
 
-    if (!team) return;
+    if (!team) return
 
     try {
 
@@ -291,7 +291,7 @@ export default function TeamDashboard() {
         website: profileWebsite,
         instagram: profileInstagram,
         linkedin: profileLinkedin,
-      });
+      })
       setTeam(prev => ({
 
         ...prev,
@@ -302,19 +302,19 @@ export default function TeamDashboard() {
 
         linkedin: profileLinkedin
 
-      }));
+      }))
 
-      setEditingSocial(false);
+      setEditingSocial(false)
 
     } catch (err) {
 
-      console.error('Error saving social links:', err);
+      //
 
-      notifyError('Save Failed', 'Failed to save social links');
+      notifyError('Save Failed', 'Failed to save social links')
 
     }
 
-  };
+  }
 
 
 
@@ -322,29 +322,29 @@ export default function TeamDashboard() {
 
     if (!team || !portfolioForm.title) {
 
-      notifyError('Validation Error', 'Please fill in the required fields');
+      notifyError('Validation Error', 'Please fill in the required fields')
 
-      return;
+      return
 
     }
 
 
 
-    setUploadingVideo(true);
+    setUploadingVideo(true)
 
     try {
 
-      let videoUrl = '';
+      let videoUrl = ''
 
-      let thumbnailUrl = '';
+      let thumbnailUrl = ''
 
 
 
       if (videoInputRef.current?.files?.[0]) {
 
-        const videoFile = videoInputRef.current.files[0];
+        const videoFile = videoInputRef.current.files[0]
 
-        videoUrl = URL.createObjectURL(videoFile);
+        videoUrl = URL.createObjectURL(videoFile)
 
       }
 
@@ -358,54 +358,54 @@ export default function TeamDashboard() {
         description: portfolioForm.description,
         original_video_url: videoUrl || '',
         status: 'pending',
-      });
+      })
 
-      setPortfolioClips(prev => [...prev, newClip]);
+      setPortfolioClips(prev => [...prev, newClip])
 
-      setShowPortfolioModal(false);
+      setShowPortfolioModal(false)
 
-      setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '' });
+      setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '' })
 
     } catch (err) {
 
-      console.error('Error adding portfolio clip:', err);
+      //
 
-      notifyError('Upload Failed', 'Failed to add portfolio clip');
+      notifyError('Upload Failed', 'Failed to add portfolio clip')
 
     } finally {
 
-      setUploadingVideo(false);
+      setUploadingVideo(false)
 
     }
 
-  };
+  }
 
 
 
   const handleDeletePortfolioClip = async (clipId) => {
 
-    if (!(await confirmDialog('Delete portfolio clip?', 'This action cannot be undone'))) return;
+    if (!(await confirmDialog('Delete portfolio clip?', 'This action cannot be undone'))) return
 
     try {
 
-      await PortfolioClip.delete(clipId);
-      setPortfolioClips(prev => prev.filter(clip => clip.id !== clipId));
+      await PortfolioClip.delete(clipId)
+      setPortfolioClips(prev => prev.filter(clip => clip.id !== clipId))
 
     } catch (err) {
 
-      console.error('Error deleting portfolio clip:', err);
+      //
 
-      notifyError('Delete Failed', 'Failed to delete portfolio clip');
+      notifyError('Delete Failed', 'Failed to delete portfolio clip')
 
     }
 
-  };
+  }
 
 
 
   const handleEditPortfolioClip = (clip) => {
 
-    setEditingPortfolio(clip);
+    setEditingPortfolio(clip)
 
     setPortfolioForm({
 
@@ -417,29 +417,29 @@ export default function TeamDashboard() {
 
       role: clip.role || ''
 
-    });
+    })
 
-    setShowPortfolioModal(true);
+    setShowPortfolioModal(true)
 
-  };
+  }
 
 
 
   const handleUpdatePortfolioClip = async () => {
 
-    if (!editingPortfolio) return;
+    if (!editingPortfolio) return
 
     try {
 
-      let videoUrl = editingPortfolio.video_url;
+      let videoUrl = editingPortfolio.video_url
 
-      let thumbnailUrl = editingPortfolio.thumbnail_url;
+      let thumbnailUrl = editingPortfolio.thumbnail_url
 
       if (videoInputRef.current?.files?.[0]) {
 
-        const videoFile = videoInputRef.current.files[0];
+        const videoFile = videoInputRef.current.files[0]
 
-        videoUrl = URL.createObjectURL(videoFile);
+        videoUrl = URL.createObjectURL(videoFile)
 
       }
 
@@ -448,40 +448,40 @@ export default function TeamDashboard() {
         project_type: portfolioForm.project_type,
         description: portfolioForm.description,
         original_video_url: videoUrl || '',
-      });
+      })
       const updatedClip = {
         ...editingPortfolio,
         title: portfolioForm.title,
         project_type: portfolioForm.project_type,
         description: portfolioForm.description,
         original_video_url: videoUrl || '',
-      };
+      }
 
       setPortfolioClips(prev => prev.map(clip => 
         clip.id === editingPortfolio.id ? updatedClip : clip
-      ));
+      ))
 
-      setShowPortfolioModal(false);
+      setShowPortfolioModal(false)
 
-      setEditingPortfolio(null);
+      setEditingPortfolio(null)
 
-      setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '' });
+      setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '' })
 
       if (videoInputRef.current) {
 
-        videoInputRef.current.value = '';
+        videoInputRef.current.value = ''
 
       }
 
     } catch (err) {
 
-      console.error('Error updating portfolio clip:', err);
+      //
 
-      notifyError('Update Failed', 'Failed to update portfolio clip');
+      notifyError('Update Failed', 'Failed to update portfolio clip')
 
     }
 
-  };
+  }
 
 
 
@@ -489,9 +489,9 @@ export default function TeamDashboard() {
 
     if (!team || !memberForm.name || !memberForm.role) {
 
-      notifyError('Validation Error', 'Please fill in name and role');
+      notifyError('Validation Error', 'Please fill in name and role')
 
-      return;
+      return
 
     }
 
@@ -504,10 +504,10 @@ export default function TeamDashboard() {
         email: memberForm.email,
         skills: memberForm.skills.split(',').map(s => s.trim()).filter(s => s),
         avatar_url: memberForm.avatar_url
-      };
-      const updatedMembers = [...teamMembers, newMember];
-      await Team.update(team.id, { team_members: updatedMembers });
-      setTeamMembers(updatedMembers);
+      }
+      const updatedMembers = [...teamMembers, newMember]
+      await Team.update(team.id, { team_members: updatedMembers })
+      setTeamMembers(updatedMembers)
 
       if (memberForm.email) {
         const invite = await Invite.create({
@@ -519,57 +519,57 @@ export default function TeamDashboard() {
           team_name: team.team_name,
           member_name: memberForm.name,
           member_role: memberForm.role,
-        });
+        })
         await base44.functions.invoke('sendTransactionalEmail', {
           to: memberForm.email,
           toName: memberForm.name,
           subject: `You've been added to ${team.team_name} on Eric Rabar`,
           body: `<p>Hi ${memberForm.name},</p><p>${team.contact_name || team.team_name} added you as "${memberForm.role}" to the team "${team.team_name}" on Eric Rabar.</p><p><a href="${window.location.origin}/AcceptTeamInvite?invite=${invite.id}">Set up your login to join the team workspace</a></p><p>— Eric Rabar</p>`
-        });
-        notifySuccess('Member Added', `Invite email sent to ${memberForm.email}`);
+        })
+        notifySuccess('Member Added', `Invite email sent to ${memberForm.email}`)
       }
 
-      setShowMemberModal(false);
+      setShowMemberModal(false)
 
-      setMemberForm({ name: '', role: '', email: '', skills: '', avatar_url: '' });
+      setMemberForm({ name: '', role: '', email: '', skills: '', avatar_url: '' })
 
     } catch (err) {
 
-      console.error('Error adding team member:', err);
+      //
 
-      notifyError('Add Failed', 'Failed to add team member: ' + err.message);
+      notifyError('Add Failed', 'Failed to add team member: ' + err.message)
 
     }
 
-  };
+  }
 
 
 
   const handleDeleteTeamMember = async (memberId) => {
 
-    if (!(await confirmDialog('Remove team member?', 'This action cannot be undone'))) return;
+    if (!(await confirmDialog('Remove team member?', 'This action cannot be undone'))) return
 
     try {
 
-      const updatedMembers = teamMembers.filter(member => member.id !== memberId);
-      await Team.update(team.id, { team_members: updatedMembers });
-      setTeamMembers(updatedMembers);
+      const updatedMembers = teamMembers.filter(member => member.id !== memberId)
+      await Team.update(team.id, { team_members: updatedMembers })
+      setTeamMembers(updatedMembers)
 
     } catch (err) {
 
-      console.error('Error deleting team member:', err);
+      //
 
-      notifyError('Delete Failed', 'Failed to delete team member');
+      notifyError('Delete Failed', 'Failed to delete team member')
 
     }
 
-  };
+  }
 
 
 
   const handleEditTeamMember = (member) => {
 
-    setEditingMember(member);
+    setEditingMember(member)
 
     setMemberForm({
 
@@ -583,17 +583,17 @@ export default function TeamDashboard() {
 
       avatar_url: member.avatar_url || ''
 
-    });
+    })
 
-    setShowMemberModal(true);
+    setShowMemberModal(true)
 
-  };
+  }
 
 
 
   const handleUpdateTeamMember = async () => {
 
-    if (!editingMember) return;
+    if (!editingMember) return
 
     try {
 
@@ -604,28 +604,28 @@ export default function TeamDashboard() {
         email: memberForm.email,
         skills: memberForm.skills.split(',').map(s => s.trim()).filter(s => s),
         avatar_url: memberForm.avatar_url
-      };
+      }
       const updatedMembers = teamMembers.map(member =>
         member.id === editingMember.id ? updatedMember : member
-      );
-      await Team.update(team.id, { team_members: updatedMembers });
-      setTeamMembers(updatedMembers);
+      )
+      await Team.update(team.id, { team_members: updatedMembers })
+      setTeamMembers(updatedMembers)
 
-      setShowMemberModal(false);
+      setShowMemberModal(false)
 
-      setEditingMember(null);
+      setEditingMember(null)
 
-      setMemberForm({ name: '', role: '', email: '', skills: '', avatar_url: '' });
+      setMemberForm({ name: '', role: '', email: '', skills: '', avatar_url: '' })
 
     } catch (err) {
 
-      console.error('Error updating team member:', err);
+      //
 
-      notifyError('Update Failed', 'Failed to update team member: ' + err.message);
+      notifyError('Update Failed', 'Failed to update team member: ' + err.message)
 
     }
 
-  };
+  }
 
 
 
@@ -645,7 +645,7 @@ export default function TeamDashboard() {
 
       </div>
 
-    );
+    )
 
   }
 
@@ -679,7 +679,7 @@ export default function TeamDashboard() {
 
       </div>
 
-    );
+    )
 
   }
 
@@ -695,11 +695,11 @@ export default function TeamDashboard() {
 
       rejected: { icon: AlertCircle, color: 'bg-red-100 text-red-800', label: 'Rejected' }
 
-    };
+    }
 
-    const config = statusConfig[team.status] || statusConfig.pending;
+    const config = statusConfig[team.status] || statusConfig.pending
 
-    const Icon = config.icon;
+    const Icon = config.icon
 
     return (
 
@@ -711,9 +711,9 @@ export default function TeamDashboard() {
 
       </Badge>
 
-    );
+    )
 
-  };
+  }
 
 
 
@@ -727,9 +727,9 @@ export default function TeamDashboard() {
 
       booked: { color: 'bg-red-100 text-red-800', label: 'Fully Booked' }
 
-    };
+    }
 
-    const avail = config[team.availability] || config.available;
+    const avail = config[team.availability] || config.available
 
     return (
 
@@ -739,9 +739,9 @@ export default function TeamDashboard() {
 
       </Badge>
 
-    );
+    )
 
-  };
+  }
 
 
 
@@ -1227,6 +1227,6 @@ export default function TeamDashboard() {
 
     </div>
 
-  );
+  )
 
 }

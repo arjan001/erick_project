@@ -1,74 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
+import React, { useState, useEffect } from 'react'
+import { base44 } from '@/api/base44Client'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
 import { 
   CheckCircle, Clock, AlertCircle, Briefcase, MessageSquare, 
   Eye, Upload, Edit, MapPin, Film, Calendar
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 
 export default function CreatorDashboard() {
-  const [artist, setArtist] = useState(null);
-  const [portfolioClips, setPortfolioClips] = useState([]);
-  const [applications, setApplications] = useState([]);
-  const [messages, setMessages] = useState([]);
-  const [savedProjects, setSavedProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [artist, setArtist] = useState(null)
+  const [portfolioClips, setPortfolioClips] = useState([])
+  const [applications, setApplications] = useState([])
+  const [messages, setMessages] = useState([])
+  const [savedProjects, setSavedProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    loadDashboardData()
+  }, [])
 
   const loadDashboardData = async () => {
     try {
-      const user = await base44.auth.me();
-      const artists = await base44.entities.Artist.filter({ email: user.email });
+      const user = await base44.auth.me()
+      const artists = await base44.entities.Artist.filter({ email: user.email })
       
       if (artists.length > 0) {
-        const artistData = artists[0];
-        setArtist(artistData);
+        const artistData = artists[0]
+        setArtist(artistData)
 
         // Load portfolio clips
         const clips = await base44.entities.PortfolioClip.filter({ 
           uploaded_by_type: 'artist',
           uploaded_by_id: artistData.id 
-        });
-        setPortfolioClips(clips);
+        })
+        setPortfolioClips(clips)
 
         // Load applications (mock for now)
-        setApplications([]);
+        setApplications([])
         
         // Load messages (mock for now)
-        setMessages([]);
+        setMessages([])
       }
     } catch (error) {
-      console.error('Error loading dashboard:', error);
+      //
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handlePhotoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    setUploadingPhoto(true);
+    setUploadingPhoto(true)
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      await base44.entities.Artist.update(artist.id, { profile_photo_url: file_url });
-      setArtist({ ...artist, profile_photo_url: file_url });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file })
+      await base44.entities.Artist.update(artist.id, { profile_photo_url: file_url })
+      setArtist({ ...artist, profile_photo_url: file_url })
     } catch (error) {
-      alert('Error uploading photo');
+      alert('Error uploading photo')
     } finally {
-      setUploadingPhoto(false);
+      setUploadingPhoto(false)
     }
-  };
+  }
 
   const handleSaveProfile = async () => {
     try {
@@ -81,15 +81,15 @@ export default function CreatorDashboard() {
         linkedin: artist.linkedin,
         vimeo: artist.vimeo,
         imdb: artist.imdb
-      });
-      setEditingProfile(false);
-      await loadDashboardData();
-      alert('Profile updated successfully!');
+      })
+      setEditingProfile(false)
+      await loadDashboardData()
+      alert('Profile updated successfully!')
     } catch (error) {
-      console.error('Update error:', error);
-      alert('Error updating profile: ' + (error.message || 'Unknown error'));
+      //
+      alert('Error updating profile: ' + (error.message || 'Unknown error'))
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -99,7 +99,7 @@ export default function CreatorDashboard() {
           <p className="text-gray-600">Loading your dashboard...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!artist) {
@@ -116,7 +116,7 @@ export default function CreatorDashboard() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   const getStatusBadge = () => {
@@ -124,16 +124,16 @@ export default function CreatorDashboard() {
       pending: { icon: Clock, color: 'bg-yellow-100 text-yellow-800', label: 'Under Review' },
       approved: { icon: CheckCircle, color: 'bg-green-100 text-green-800', label: 'Approved' },
       rejected: { icon: AlertCircle, color: 'bg-red-100 text-red-800', label: 'Rejected' }
-    };
-    const config = statusConfig[artist.status] || statusConfig.pending;
-    const Icon = config.icon;
+    }
+    const config = statusConfig[artist.status] || statusConfig.pending
+    const Icon = config.icon
     return (
       <Badge className={`${config.color} flex items-center gap-2 px-4 py-2 text-sm`}>
         <Icon className="w-4 h-4" />
         {config.label}
       </Badge>
-    );
-  };
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -464,5 +464,5 @@ export default function CreatorDashboard() {
         )}
       </div>
     </div>
-  );
+  )
 }

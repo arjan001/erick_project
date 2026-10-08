@@ -1,68 +1,68 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import ShopShell from '@/components/shop/ShopShell';
-import ProductCard from '@/components/shop/ProductCard';
-import { shopCategories, buildSeedProducts } from '@/data/shopProducts';
-import { isAuctionProduct, listProducts } from '@/services/shopService';
-import { Search, Flame, ShoppingBag, Tag } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import ShopShell from '@/components/shop/ShopShell'
+import ProductCard from '@/components/shop/ProductCard'
+import { shopCategories, buildSeedProducts } from '@/data/shopProducts'
+import { isAuctionProduct, listProducts } from '@/services/shopService'
+import { Search, Flame, ShoppingBag, Tag } from 'lucide-react'
 
 const shopTabs = [
   { id: 'all', label: 'All Items', icon: '🛍️' },
   { id: 'auction', label: 'Live Auctions', icon: '🔥' },
   ...shopCategories,
-];
+]
 
 export default function ShopPage() {
-  const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate()
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     const loadProducts = async () => {
-      setLoading(true);
+      setLoading(true)
       try {
-        const products = await listProducts();
-        setProducts(products);
+        const products = await listProducts()
+        setProducts(products)
       } catch (error) {
-        console.error('Failed to load products:', error);
+        //
         // Fallback to seed products on error
-        const seedProducts = buildSeedProducts();
-        setProducts(seedProducts);
+        const seedProducts = buildSeedProducts()
+        setProducts(seedProducts)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    loadProducts();
-  }, []);
+    loadProducts()
+  }, [])
 
   const filteredProducts = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
+    const q = searchQuery.trim().toLowerCase()
     return products.filter((p) => {
-      if (activeTab === 'auction' && !isAuctionProduct(p)) return false;
-      if (activeTab !== 'all' && activeTab !== 'auction' && p.category !== activeTab) return false;
-      if (q && !p.name.toLowerCase().includes(q) && !p.description?.toLowerCase().includes(q)) return false;
-      return true;
-    });
-  }, [products, activeTab, searchQuery]);
+      if (activeTab === 'auction' && !isAuctionProduct(p)) return false
+      if (activeTab !== 'all' && activeTab !== 'auction' && p.category !== activeTab) return false
+      if (q && !p.name.toLowerCase().includes(q) && !p.description?.toLowerCase().includes(q)) return false
+      return true
+    })
+  }, [products, activeTab, searchQuery])
 
-  const auctionCount = products.filter(isAuctionProduct).length;
+  const auctionCount = products.filter(isAuctionProduct).length
 
   const handleSearch = () => {
     // Search is real-time, already applied via filteredProducts
-  };
+  }
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      handleSearch()
     }
-  };
+  }
 
   const handleProductClick = (product) => {
-    navigate(`/shop/${product.id}`);
-  };
+    navigate(`/shop/${product.id}`)
+  }
 
   return (
     <ShopShell
@@ -179,5 +179,5 @@ export default function ShopPage() {
         </div>
       </div>
     </ShopShell>
-  );
+  )
 }

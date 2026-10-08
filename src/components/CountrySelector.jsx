@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Search } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react'
+import { ChevronDown, Search } from 'lucide-react'
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria',
@@ -22,29 +22,29 @@ const COUNTRIES = [
   'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey',
   'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan', 'Vanuatu',
   'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
-];
+]
 
 export default function CountrySelector({ value, onChange, className = '' }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const dropdownRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const dropdownRef = useRef(null)
 
   const filteredCountries = COUNTRIES.filter(country =>
     country.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  )
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
+        setIsOpen(false)
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -81,9 +81,9 @@ export default function CountrySelector({ value, onChange, className = '' }) {
                   key={country}
                   type="button"
                   onClick={() => {
-                    onChange(country);
-                    setIsOpen(false);
-                    setSearchQuery('');
+                    onChange(country)
+                    setIsOpen(false)
+                    setSearchQuery('')
                   }}
                   className={`w-full text-left px-4 py-2 hover:bg-gray-50 text-sm transition-colors ${
                     value === country ? 'bg-amber-50 text-amber-900 font-medium' : 'text-gray-900'
@@ -101,5 +101,5 @@ export default function CountrySelector({ value, onChange, className = '' }) {
         </div>
       )}
     </div>
-  );
+  )
 }

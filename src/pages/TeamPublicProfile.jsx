@@ -1,44 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { Team, PortfolioClip } from '@/lib/supabaseEntities';
-import { MapPin, Users, Wrench, Play } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { createPageUrl } from '@/shared/utils/routing';
+import React, { useState, useEffect } from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
+import { Team, PortfolioClip } from '@/lib/supabaseEntities'
+import { MapPin, Users, Wrench, Play } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { createPageUrl } from '@/shared/utils/routing'
 
 export default function TeamPublicProfile() {
-  const [searchParams] = useSearchParams();
-  const teamId = searchParams.get('id');
-  const [team, setTeam] = useState(null);
-  const [portfolioClips, setPortfolioClips] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams()
+  const teamId = searchParams.get('id')
+  const [team, setTeam] = useState(null)
+  const [portfolioClips, setPortfolioClips] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadTeam();
-  }, [teamId]);
+    loadTeam()
+  }, [teamId])
 
   const loadTeam = async () => {
     try {
-      const teams = await Team.list();
-      const foundTeam = teams.find(t => t.id === teamId);
-      setTeam(foundTeam);
+      const teams = await Team.list()
+      const foundTeam = teams.find(t => t.id === teamId)
+      setTeam(foundTeam)
 
       if (foundTeam?.portfolio_clips?.length > 0) {
-        const clips = await PortfolioClip.list();
-        setPortfolioClips(clips.filter(c => foundTeam.portfolio_clips.includes(c.id)));
+        const clips = await PortfolioClip.list()
+        setPortfolioClips(clips.filter(c => foundTeam.portfolio_clips.includes(c.id)))
       }
     } catch (error) {
-      console.error('Failed to load team:', error);
+      //
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-gray-400">Loading...</div>
       </div>
-    );
+    )
   }
 
   if (!team) {
@@ -51,7 +51,7 @@ export default function TeamPublicProfile() {
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
   const getTeamSizeLabel = (size) => {
@@ -61,18 +61,18 @@ export default function TeamPublicProfile() {
       '6_10': '6-10 members',
       '11_20': '11-20 members',
       '20_plus': '20+ members'
-    };
-    return labels[size] || size;
-  };
+    }
+    return labels[size] || size
+  }
 
   const getAvailabilityColor = (status) => {
     const colors = {
       available: 'bg-green-100 text-green-800',
       limited: 'bg-yellow-100 text-yellow-800',
       booked: 'bg-red-100 text-red-800'
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
+    }
+    return colors[status] || 'bg-gray-100 text-gray-800'
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -215,5 +215,5 @@ export default function TeamPublicProfile() {
         </div>
       </div>
     </div>
-  );
+  )
 }

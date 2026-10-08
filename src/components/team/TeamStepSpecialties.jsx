@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Video, Scissors, Wand2, Box, Music, Camera, Zap, Package, X, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { SKILLS_DATABASE } from '../SkillsDatabase';
+import React, { useState, useRef, useEffect } from 'react'
+import { Video, Scissors, Wand2, Box, Music, Camera, Zap, Package, X, Search } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { SKILLS_DATABASE } from '../SkillsDatabase'
 
 const SPECIALTIES = [
   { value: 'production', label: 'Production', icon: Video },
@@ -12,68 +12,68 @@ const SPECIALTIES = [
   { value: 'camera', label: 'Camera', icon: Camera },
   { value: 'lighting', label: 'Lighting', icon: Zap },
   { value: 'full_service', label: 'Full Service', icon: Package },
-];
+]
 
 export default function TeamStepSpecialties({ data, updateData }) {
-  const [skillSearch, setSkillSearch] = useState('');
-  const [showSkillDropdown, setShowSkillDropdown] = useState(false);
-  const dropdownRef = useRef(null);
+  const [skillSearch, setSkillSearch] = useState('')
+  const [showSkillDropdown, setShowSkillDropdown] = useState(false)
+  const dropdownRef = useRef(null)
 
   const toggleSpecialty = (value) => {
-    const current = data.specialties || [];
+    const current = data.specialties || []
     if (current.includes(value)) {
-      updateData('specialties', current.filter(s => s !== value));
+      updateData('specialties', current.filter(s => s !== value))
     } else {
-      updateData('specialties', [...current, value]);
+      updateData('specialties', [...current, value])
     }
-  };
+  }
 
-  const MAX_SPECIALTIES = 15;
+  const MAX_SPECIALTIES = 15
 
   const addSkillFromDatabase = (skill) => {
-    if ((data.specialties || []).length >= MAX_SPECIALTIES) return;
-    const skillValue = skill.toLowerCase().replace(/\s+/g, '_');
+    if ((data.specialties || []).length >= MAX_SPECIALTIES) return
+    const skillValue = skill.toLowerCase().replace(/\s+/g, '_')
     if (!(data.specialties || []).includes(skillValue)) {
-      updateData('specialties', [...(data.specialties || []), skillValue]);
-      updateData('custom_specialties', [...(data.custom_specialties || []), { value: skillValue, label: skill }]);
+      updateData('specialties', [...(data.specialties || []), skillValue])
+      updateData('custom_specialties', [...(data.custom_specialties || []), { value: skillValue, label: skill }])
     }
-    setSkillSearch('');
-    setShowSkillDropdown(false);
-  };
+    setSkillSearch('')
+    setShowSkillDropdown(false)
+  }
 
   const removeCustomSpecialty = (value) => {
-    updateData('specialties', (data.specialties || []).filter(s => s !== value));
-    updateData('custom_specialties', (data.custom_specialties || []).filter(s => s.value !== value));
-  };
+    updateData('specialties', (data.specialties || []).filter(s => s !== value))
+    updateData('custom_specialties', (data.custom_specialties || []).filter(s => s.value !== value))
+  }
 
   const isCustomSpecialty = (value) => {
-    return (data.custom_specialties || []).some(s => s.value === value);
-  };
+    return (data.custom_specialties || []).some(s => s.value === value)
+  }
 
   const getSpecialtyLabel = (value) => {
-    const predefined = SPECIALTIES.find(s => s.value === value);
-    if (predefined) return predefined.label;
-    const custom = (data.custom_specialties || []).find(s => s.value === value);
-    return custom ? custom.label : value;
-  };
+    const predefined = SPECIALTIES.find(s => s.value === value)
+    if (predefined) return predefined.label
+    const custom = (data.custom_specialties || []).find(s => s.value === value)
+    return custom ? custom.label : value
+  }
 
   const filteredSkills = SKILLS_DATABASE.filter(skill =>
     skill.toLowerCase().includes(skillSearch.toLowerCase()) &&
     !(data.specialties || []).includes(skill.toLowerCase().replace(/\s+/g, '_'))
-  ).slice(0, 20);
+  ).slice(0, 20)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowSkillDropdown(false);
+        setShowSkillDropdown(false)
       }
-    };
+    }
 
     if (showSkillDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [showSkillDropdown]);
+  }, [showSkillDropdown])
 
   return (
     <div>
@@ -82,8 +82,8 @@ export default function TeamStepSpecialties({ data, updateData }) {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {SPECIALTIES.map((specialty) => {
-          const Icon = specialty.icon;
-          const isSelected = (data.specialties || []).includes(specialty.value);
+          const Icon = specialty.icon
+          const isSelected = (data.specialties || []).includes(specialty.value)
           return (
             <button
               key={specialty.value}
@@ -97,7 +97,7 @@ export default function TeamStepSpecialties({ data, updateData }) {
               <Icon className={`w-8 h-8 mb-3 mx-auto ${isSelected ? 'text-amber-600' : 'text-gray-600'}`} />
               <p className="text-sm font-medium text-center">{specialty.label}</p>
             </button>
-          );
+          )
         })}
       </div>
 
@@ -115,8 +115,8 @@ export default function TeamStepSpecialties({ data, updateData }) {
             <Input
               value={skillSearch}
               onChange={(e) => {
-                setSkillSearch(e.target.value);
-                setShowSkillDropdown(true);
+                setSkillSearch(e.target.value)
+                setShowSkillDropdown(true)
               }}
               onFocus={() => setShowSkillDropdown(true)}
               disabled={(data.specialties || []).length >= MAX_SPECIALTIES}
@@ -170,5 +170,5 @@ export default function TeamStepSpecialties({ data, updateData }) {
         )}
       </div>
     </div>
-  );
+  )
 }

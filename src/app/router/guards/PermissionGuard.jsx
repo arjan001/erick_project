@@ -1,7 +1,7 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/lib/AuthContext';
-import { permissionsService } from '@/lib/permissionsService';
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/lib/AuthContext'
+import { permissionsService } from '@/lib/permissionsService'
 
 /**
  * Permission Guard Component
@@ -11,59 +11,59 @@ import { permissionsService } from '@/lib/permissionsService';
  * @param {React.ReactNode} children - Child components to render if authorized
  */
 export function PermissionGuard({ requiredPermissions = [], requireAll = true, children }) {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [authorized, setAuthorized] = React.useState(null);
-  const [error, setError] = React.useState(false);
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [authorized, setAuthorized] = React.useState(null)
+  const [error, setError] = React.useState(false)
 
   React.useEffect(() => {
     const checkPermissions = async () => {
       if (!user) {
-        setAuthorized(false);
-        return;
+        setAuthorized(false)
+        return
       }
 
       if (requiredPermissions.length === 0) {
-        setAuthorized(true);
-        return;
+        setAuthorized(true)
+        return
       }
 
       try {
-        let hasAccess;
+        let hasAccess
         if (requireAll) {
-          hasAccess = await permissionsService.hasAllPermissions(user.id, requiredPermissions);
+          hasAccess = await permissionsService.hasAllPermissions(user.id, requiredPermissions)
         } else {
-          hasAccess = await permissionsService.hasAnyPermission(user.id, requiredPermissions);
+          hasAccess = await permissionsService.hasAnyPermission(user.id, requiredPermissions)
         }
 
-        setAuthorized(hasAccess);
+        setAuthorized(hasAccess)
       } catch (err) {
-        console.error('Error checking permissions:', err);
+        
         // If permission checking fails (e.g., tables don't exist yet), allow access
         // This prevents blocking during migration
-        setAuthorized(true);
-        setError(true);
+        setAuthorized(true)
+        setError(true)
       }
-    };
+    }
 
-    checkPermissions();
-  }, [user, requiredPermissions, requireAll]);
+    checkPermissions()
+  }, [user, requiredPermissions, requireAll])
 
   React.useEffect(() => {
     if (authorized === false && !error) {
-      navigate('/Admin', { replace: true });
+      navigate('/Admin', { replace: true })
     }
-  }, [authorized, error, navigate]);
+  }, [authorized, error, navigate])
 
   if (authorized === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
-  return authorized ? children : null;
+  return authorized ? children : null
 }
 
 /**
@@ -77,8 +77,8 @@ export function createPermissionGuard(permissions, requireAll = true) {
       <PermissionGuard requiredPermissions={permissions} requireAll={requireAll}>
         {children}
       </PermissionGuard>
-    );
-  };
+    )
+  }
 }
 
 /**
@@ -115,13 +115,13 @@ export const ADMIN_ROUTE_PERMISSIONS = {
   '/Admin/FeaturedWork': ['featured.view'],
   '/Admin/SuccessStories': ['success_stories.view'],
   '/Admin/RecentProjects': ['recent_projects.view'],
-};
+}
 
 /**
  * Create a route-specific permission guard
  * @param {string} path - Route path
  */
 export function createRoutePermissionGuard(path) {
-  const permissions = ADMIN_ROUTE_PERMISSIONS[path] || [];
-  return createPermissionGuard(permissions, true);
+  const permissions = ADMIN_ROUTE_PERMISSIONS[path] || []
+  return createPermissionGuard(permissions, true)
 }

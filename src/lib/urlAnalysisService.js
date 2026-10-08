@@ -2,7 +2,7 @@
 // Analyzes URLs to extract project information and generate project briefs
 // Uses Base44 AI with web search capabilities
 
-import { base44 } from '@/api/base44Client';
+import { base44 } from '@/api/base44Client'
 
 /**
  * Analyzes a website URL to extract business information and project context
@@ -13,15 +13,15 @@ import { base44 } from '@/api/base44Client';
 export const analyzeWebsiteUrl = async (url, projectType = 'commercial') => {
   try {
     // Normalize URL - handle plain domains like proton.me
-    let normalizedUrl = url.trim();
+    let normalizedUrl = url.trim()
     if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
-      normalizedUrl = 'https://' + normalizedUrl;
+      normalizedUrl = 'https://' + normalizedUrl
     }
 
-    console.log('Analyzing URL:', normalizedUrl);
+    
 
     // Select prompt template based on project type
-    const prompt = getPromptForProjectType(projectType);
+    const prompt = getPromptForProjectType(projectType)
 
     // Call Base44 AI with web search enabled
     const response = await base44.integrations.Core.InvokeLLM({
@@ -29,27 +29,27 @@ export const analyzeWebsiteUrl = async (url, projectType = 'commercial') => {
       add_context_from_internet: true, // This enables the AI to visit and read the website
       temperature: 0.7,
       max_tokens: 500
-    });
+    })
 
-    console.log('Base44 response:', response);
+    
 
     // Check multiple possible response structures
-    let analysis = null;
+    let analysis = null
     if (response?.data?.content) {
-      analysis = response.data.content;
+      analysis = response.data.content
     } else if (response?.data?.text) {
-      analysis = response.data.text;
+      analysis = response.data.text
     } else if (response?.content) {
-      analysis = response.content;
+      analysis = response.content
     } else if (typeof response === 'string') {
-      analysis = response;
+      analysis = response
     } else if (response?.message) {
-      analysis = response.message;
+      analysis = response.message
     }
 
     if (!analysis) {
-      console.error('No content in response:', response);
-      throw new Error('Failed to analyze website - no content returned');
+      
+      throw new Error('Failed to analyze website - no content returned')
     }
 
     // Remove markdown formatting
@@ -59,26 +59,26 @@ export const analyzeWebsiteUrl = async (url, projectType = 'commercial') => {
       .replace(/\*/g, '') // Remove italic
       .replace(/`/g, '') // Remove code
       .replace(/\n\n+/g, '\n\n') // Fix multiple newlines
-      .trim();
+      .trim()
 
     // Parse the analysis to extract structured data
-    const parsedAnalysis = parseAnalysisResponse(cleanAnalysis);
+    const parsedAnalysis = parseAnalysisResponse(cleanAnalysis)
 
     return {
       success: true,
       url: normalizedUrl,
       rawAnalysis: cleanAnalysis,
       ...parsedAnalysis
-    };
+    }
   } catch (error) {
-    console.error('Error analyzing website URL:', error);
+    
     return {
       success: false,
       error: error.message || 'Failed to analyze website',
       url: url
-    };
+    }
   }
-};
+}
 
 /**
  * Generates a comprehensive project brief from analyzed URL data
@@ -90,66 +90,66 @@ export const analyzeWebsiteUrl = async (url, projectType = 'commercial') => {
  */
 export const generateProjectBrief = async (analysisData, projectType, additionalNotes = '', attachments = []) => {
   try {
-    let attachmentAnalysis = '';
+    let attachmentAnalysis = ''
     
     // Analyze attachments if provided
     if (attachments && attachments.length > 0) {
       const imageAttachments = attachments.filter(att => 
         att.type?.startsWith('image/') || 
         att.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-      );
+      )
       
       const pdfAttachments = attachments.filter(att => 
         att.type === 'application/pdf' || 
         att.name?.match(/\.pdf$/i)
-      );
+      )
       
       const videoAttachments = attachments.filter(att => 
         att.type?.startsWith('video/') || 
         att.name?.match(/\.(mp4|mov|avi|hvec)$/i)
-      );
+      )
       
       const audioAttachments = attachments.filter(att => 
         att.type?.startsWith('audio/') || 
         att.name?.match(/\.(mp3|wav)$/i)
-      );
+      )
       
       if (imageAttachments.length > 0) {
-        attachmentAnalysis += '\n\nIMAGE ATTACHMENTS ANALYSIS:\n';
+        attachmentAnalysis += '\n\nIMAGE ATTACHMENTS ANALYSIS:\n'
         for (const img of imageAttachments) {
           try {
             const imgAnalysis = await base44.integrations.Core.InvokeLLM({
               prompt: `Analyze this image for a ${projectType} project. Extract: visual style, color palette, mood, key elements, any text visible, and how it could inform the production.`,
               file_urls: [img.url],
               max_tokens: 300
-            });
+            })
             if (imgAnalysis?.data?.content) {
-              attachmentAnalysis += `\n- ${img.name}: ${imgAnalysis.data.content}\n`;
+              attachmentAnalysis += `\n- ${img.name}: ${imgAnalysis.data.content}\n`
             }
           } catch (err) {
-            console.error('Error analyzing image:', err);
+            
           }
         }
       }
       
       if (pdfAttachments.length > 0) {
-        attachmentAnalysis += '\n\nPDF ATTACHMENTS:\n';
+        attachmentAnalysis += '\n\nPDF ATTACHMENTS:\n'
         for (const pdf of pdfAttachments) {
-          attachmentAnalysis += `- ${pdf.name} (PDF document attached for reference)\n`;
+          attachmentAnalysis += `- ${pdf.name} (PDF document attached for reference)\n`
         }
       }
       
       if (videoAttachments.length > 0) {
-        attachmentAnalysis += '\n\nVIDEO ATTACHMENTS:\n';
+        attachmentAnalysis += '\n\nVIDEO ATTACHMENTS:\n'
         for (const vid of videoAttachments) {
-          attachmentAnalysis += `- ${vid.name} (Video reference attached)\n`;
+          attachmentAnalysis += `- ${vid.name} (Video reference attached)\n`
         }
       }
       
       if (audioAttachments.length > 0) {
-        attachmentAnalysis += '\n\nAUDIO ATTACHMENTS:\n';
+        attachmentAnalysis += '\n\nAUDIO ATTACHMENTS:\n'
         for (const aud of audioAttachments) {
-          attachmentAnalysis += `- ${aud.name} (Audio reference attached)\n`;
+          attachmentAnalysis += `- ${aud.name} (Audio reference attached)\n`
         }
       }
     }
@@ -230,7 +230,7 @@ Format the response as structured JSON with these exact keys:
   "additional_notes": "...",
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
 }
-`;
+`
 
     const response = await base44.integrations.Core.InvokeLLM({
       prompt: prompt,
@@ -313,35 +313,35 @@ Format the response as structured JSON with these exact keys:
       },
       temperature: 0.7,
       max_tokens: 2000
-    });
+    })
 
     if (!response?.data?.content) {
-      throw new Error('Failed to generate project brief');
+      throw new Error('Failed to generate project brief')
     }
 
-    let briefData;
+    let briefData
     try {
       briefData = typeof response.data.content === 'string' 
         ? JSON.parse(response.data.content) 
-        : response.data.content;
+        : response.data.content
     } catch (parseError) {
-      console.error('Error parsing brief JSON:', parseError);
-      throw new Error('Failed to parse generated brief');
+      
+      throw new Error('Failed to parse generated brief')
     }
 
     return {
       success: true,
       brief: briefData,
       originalAnalysis: analysisData
-    };
+    }
   } catch (error) {
-    console.error('Error generating project brief:', error);
+    
     return {
       success: false,
       error: error.message || 'Failed to generate project brief'
-    };
+    }
   }
-};
+}
 
 /**
  * Re-generates project brief with updated context (category or description changes)
@@ -437,7 +437,7 @@ Format the response as structured JSON with these exact keys:
   "additional_notes": "...",
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
 }
-`;
+`
 
     const response = await base44.integrations.Core.InvokeLLM({
       prompt: prompt,
@@ -520,35 +520,35 @@ Format the response as structured JSON with these exact keys:
       },
       temperature: 0.7,
       max_tokens: 2000
-    });
+    })
 
     if (!response?.data?.content) {
-      throw new Error('Failed to re-generate project brief');
+      throw new Error('Failed to re-generate project brief')
     }
 
-    let briefData;
+    let briefData
     try {
       briefData = typeof response.data.content === 'string' 
         ? JSON.parse(response.data.content) 
-        : response.data.content;
+        : response.data.content
     } catch (parseError) {
-      console.error('Error parsing brief JSON:', parseError);
-      throw new Error('Failed to parse re-generated brief');
+      
+      throw new Error('Failed to parse re-generated brief')
     }
 
     return {
       success: true,
       brief: briefData,
       originalAnalysis: originalAnalysis
-    };
+    }
   } catch (error) {
-    console.error('Error re-generating project brief:', error);
+    
     return {
       success: false,
       error: error.message || 'Failed to re-generate project brief'
-    };
+    }
   }
-};
+}
 
 /**
  * Saves analyzed project data to localStorage
@@ -563,14 +563,14 @@ export const saveAnalyzedProjectToStorage = (projectData) => {
       projectType: projectData.projectType,
       additionalNotes: projectData.additionalNotes,
       timestamp: new Date().toISOString()
-    };
-    localStorage.setItem('ericrabar_analyzed_project', JSON.stringify(dataToSave));
-    return { success: true };
+    }
+    localStorage.setItem('ericrabar_analyzed_project', JSON.stringify(dataToSave))
+    return { success: true }
   } catch (error) {
-    console.error('Error saving to localStorage:', error);
-    return { success: false, error: error.message };
+    
+    return { success: false, error: error.message }
   }
-};
+}
 
 /**
  * Loads analyzed project data from localStorage
@@ -578,29 +578,29 @@ export const saveAnalyzedProjectToStorage = (projectData) => {
  */
 export const loadAnalyzedProjectFromStorage = () => {
   try {
-    const savedData = localStorage.getItem('ericrabar_analyzed_project');
+    const savedData = localStorage.getItem('ericrabar_analyzed_project')
     if (savedData) {
-      return JSON.parse(savedData);
+      return JSON.parse(savedData)
     }
-    return null;
+    return null
   } catch (error) {
-    console.error('Error loading from localStorage:', error);
-    return null;
+    
+    return null
   }
-};
+}
 
 /**
  * Clears analyzed project data from localStorage
  */
 export const clearAnalyzedProjectFromStorage = () => {
   try {
-    localStorage.removeItem('ericrabar_analyzed_project');
-    return { success: true };
+    localStorage.removeItem('ericrabar_analyzed_project')
+    return { success: true }
   } catch (error) {
-    console.error('Error clearing localStorage:', error);
-    return { success: false, error: error.message };
+    
+    return { success: false, error: error.message }
   }
-};
+}
 
 /**
  * Gets the appropriate prompt template based on project type
@@ -648,10 +648,10 @@ Example: "Create [visual style] social media content for [Brand/Creator] showcas
     animation: `Visit {{URL}} and write a concise 2-3 sentence film production brief for an animation. Include: what to convey (story/brand message), target audience, animation style, key visual elements and characters, distribution platform, and production approach.
 
 Example: "Create a [animation style] animation for [Brand/Project] showcasing [story/message]. Target [audience] with [key elements]. Use [visual style] featuring [specific content]. Designed for [distribution platforms]."`
-  };
+  }
 
-  return prompts[projectType] || prompts.commercial;
-};
+  return prompts[projectType] || prompts.commercial
+}
 
 /**
  * Parses the raw analysis response to extract structured data
@@ -666,13 +666,13 @@ const parseAnalysisResponse = (analysis) => {
     businessName: '',
     description: analysis,
     extractedData: {}
-  };
-
-  // Try to extract business name (simple heuristic)
-  const nameMatch = analysis.match(/(?:business|company|brand|artist|organization)[\s:]+([^\n.]+)/i);
-  if (nameMatch) {
-    parsed.businessName = nameMatch[1].trim();
   }
 
-  return parsed;
-};
+  // Try to extract business name (simple heuristic)
+  const nameMatch = analysis.match(/(?:business|company|brand|artist|organization)[\s:]+([^\n.]+)/i)
+  if (nameMatch) {
+    parsed.businessName = nameMatch[1].trim()
+  }
+
+  return parsed
+}

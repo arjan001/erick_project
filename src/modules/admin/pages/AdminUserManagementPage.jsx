@@ -1,37 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { Artist, Team, ProjectOwner, Backer, AuditLog } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Search, Plus, Trash2, Eye, Mail, Star, Building, Users as UsersIcon, DollarSign, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { Artist, Team, ProjectOwner, Backer, AuditLog } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Search, Plus, Trash2, Eye, Mail, Star, Building, Users as UsersIcon, DollarSign, X, ChevronLeft, ChevronRight } from 'lucide-react'
 
-const ROLES = ['admin', 'artist', 'team', 'client', 'project_owner', 'backer'];
-const PAGE_SIZE = 10;
+const ROLES = ['admin', 'artist', 'team', 'client', 'project_owner', 'backer']
+const PAGE_SIZE = 10
 
 const STATUS_STYLES = {
   active: 'bg-green-100 text-green-700',
   suspended: 'bg-gray-200 text-gray-700',
   pending: 'bg-amber-100 text-amber-700',
   inactive: 'bg-red-100 text-red-700'
-};
+}
 
 export default function AdminUserManagementPage() {
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterRole, setFilterRole] = useState('all');
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [inviteForm, setInviteForm] = useState({ email: '', role: 'artist' });
-  const [inviting, setInviting] = useState(false);
-  const [page, setPage] = useState(1);
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterRole, setFilterRole] = useState('all')
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [inviteForm, setInviteForm] = useState({ email: '', role: 'artist' })
+  const [inviting, setInviting] = useState(false)
+  const [page, setPage] = useState(1)
 
   const fetchUsers = async () => {
     try {
-      setLoading(true);
+      setLoading(true)
       // For now, fetch from Artist, Team, ProjectOwner, Backer tables
       // In a real implementation, you'd have a users table or auth.users
       const [artists, teams, projectOwners, backers] = await Promise.all([
@@ -39,7 +39,7 @@ export default function AdminUserManagementPage() {
         Team.list('-created_at', 100),
         ProjectOwner.list('-created_at', 100),
         Backer.list('-created_at', 100)
-      ]);
+      ])
 
       // Map to user-like structure
       const enrichedUsers = [
@@ -47,81 +47,81 @@ export default function AdminUserManagementPage() {
         ...teams.map(t => ({ ...t, role: 'team', roleData: t })),
         ...projectOwners.map(p => ({ ...p, role: 'client', roleData: p })),
         ...backers.map(b => ({ ...b, role: 'backer', roleData: b }))
-      ];
+      ]
 
-      setUsers(enrichedUsers);
+      setUsers(enrichedUsers)
     } catch (err) {
-      console.error('Error fetching users:', err);
-      error('Error', 'Failed to fetch users');
+      
+      error('Error', 'Failed to fetch users')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => { fetchUsers(); }, [])
 
   const handleInviteUser = async () => {
     if (!inviteForm.email) {
-      error('Missing email', 'Please enter an email address');
-      return;
+      error('Missing email', 'Please enter an email address')
+      return
     }
-    setInviting(true);
+    setInviting(true)
     try {
       // Placeholder for invite functionality
-      success('Invited', `Invitation sent to ${inviteForm.email}`);
-      setShowInviteModal(false);
-      setInviteForm({ email: '', role: 'artist' });
-      fetchUsers();
+      success('Invited', `Invitation sent to ${inviteForm.email}`)
+      setShowInviteModal(false)
+      setInviteForm({ email: '', role: 'artist' })
+      fetchUsers()
     } catch (err) {
-      console.error('Error inviting user:', err);
-      error('Failed', 'Failed to send invitation');
+      
+      error('Failed', 'Failed to send invitation')
     } finally {
-      setInviting(false);
+      setInviting(false)
     }
-  };
+  }
 
   const handleRoleChange = async (userId, newRole) => {
     try {
       // Placeholder for role change
-      success('Updated', 'User role updated');
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
-      AuditLog.create({ actor_email: user?.email, action: 'user.role_update', entity_type: 'User', entity_id: userId, details: `Changed role to ${newRole}` }).catch(() => {});
+      success('Updated', 'User role updated')
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u))
+      AuditLog.create({ actor_email: user?.email, action: 'user.role_update', entity_type: 'User', entity_id: userId, details: `Changed role to ${newRole}` }).catch(() => {})
     } catch (err) {
-      console.error('Error updating role:', err);
-      error('Failed', 'Failed to update user role');
+      
+      error('Failed', 'Failed to update user role')
     }
-  };
+  }
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm('Are you sure you want to delete this user? This cannot be undone.')) return;
+    if (!window.confirm('Are you sure you want to delete this user? This cannot be undone.')) return
     try {
       // Placeholder for delete
-      success('Deleted', 'User deleted successfully');
-      setUsers(prev => prev.filter(u => u.id !== userId));
-      AuditLog.create({ actor_email: user?.email, action: 'user.delete', entity_type: 'User', entity_id: userId, details: 'Deleted user' }).catch(() => {});
+      success('Deleted', 'User deleted successfully')
+      setUsers(prev => prev.filter(u => u.id !== userId))
+      AuditLog.create({ actor_email: user?.email, action: 'user.delete', entity_type: 'User', entity_id: userId, details: 'Deleted user' }).catch(() => {})
     } catch (err) {
-      console.error('Error deleting user:', err);
-      error('Failed', 'Failed to delete user');
+      
+      error('Failed', 'Failed to delete user')
     }
-  };
+  }
 
   const filteredUsers = users.filter(u => {
     const matchesSearch = u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          u.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         u.team_name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = filterRole === 'all' || u.role === filterRole;
-    return matchesSearch && matchesRole;
-  });
+                         u.team_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesRole = filterRole === 'all' || u.role === filterRole
+    return matchesSearch && matchesRole
+  })
 
-  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
-  const paginatedUsers = filteredUsers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE)
+  const paginatedUsers = filteredUsers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -391,5 +391,5 @@ export default function AdminUserManagementPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

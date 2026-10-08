@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { X, Building2, MapPin, Globe, Mail, Phone, Users, FileText, Star, Calendar, CheckCircle, ExternalLink, Instagram, Linkedin, Twitter, Youtube, Heart, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react'
+import { X, Building2, MapPin, Globe, Mail, Phone, Users, FileText, Star, Calendar, CheckCircle, ExternalLink, Instagram, Linkedin, Twitter, Youtube, Heart, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function ClientProfileModal({ client, onClose }) {
-  const [projectIdx, setProjectIdx] = useState(0);
-  const [favorited, setFavorited] = useState(false);
+  const [projectIdx, setProjectIdx] = useState(0)
+  const [favorited, setFavorited] = useState(false)
 
-  if (!client) return null;
+  if (!client) return null
 
-  const projects = client.projects || [];
+  const projects = client.projects || []
 
-  const nextProject = () => setProjectIdx((i) => (i + 1) % projects.length);
-  const prevProject = () => setProjectIdx((i) => (i - 1 + projects.length) % projects.length);
+  const nextProject = () => setProjectIdx((i) => (i + 1) % projects.length)
+  const prevProject = () => setProjectIdx((i) => (i - 1 + projects.length) % projects.length)
 
   return (
     <>
@@ -253,5 +253,5 @@ export default function ClientProfileModal({ client, onClose }) {
         </div>
       </div>
     </>
-  );
+  )
 }

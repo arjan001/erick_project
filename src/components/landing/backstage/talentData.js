@@ -1,7 +1,7 @@
 // Curated talent profiles — all images feature Black creatives
 // Images sourced from Unsplash (royalty-free)
 
-const img = (id) => `https://images.unsplash.com/photo-${id}?w=500&h=500&fit=crop`;
+const img = (id) => `https://images.unsplash.com/photo-${id}?w=500&h=500&fit=crop`
 
 export const talentProfiles = [
   {
@@ -686,14 +686,14 @@ export const talentProfiles = [
       passport: true
     }
   },
-];
+]
 
 export const talentTabs = [
   { id: 'actors', label: 'Actors & Performers', icon: '🎭' },
   { id: 'ugc', label: 'UGC Creators', icon: '📱' },
   { id: 'voiceover', label: 'Voiceover Artists', icon: '🎙️' },
   { id: 'crew', label: 'Crew', icon: '🎬' },
-];
+]
 
 export const filterTags = [
   'Female Actors',
@@ -703,4 +703,4 @@ export const filterTags = [
   'NYC Actors',
   'Theatre',
   'Union Actors',
-];
+]

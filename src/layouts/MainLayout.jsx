@@ -1,52 +1,52 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Button } from '@/shared/components/ui/button';
-import { ChevronDown, X, Instagram, Linkedin, Play } from 'lucide-react';
-import TopBanner from '@/components/home/TopBanner';
-import NewProjectForm from '@/components/NewProjectForm';
-import UnifiedSearch from '@/components/UnifiedSearch';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Button } from '@/shared/components/ui/button'
+import { ChevronDown, X, Instagram, Linkedin, Play } from 'lucide-react'
+import TopBanner from '@/components/home/TopBanner'
+import NewProjectForm from '@/components/NewProjectForm'
+import UnifiedSearch from '@/components/UnifiedSearch'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function MainLayout({ children, currentPageName: currentPageNameProp }) {
-  const location = useLocation();
-  const currentPageName = currentPageNameProp || location.pathname.replace('/', '') || 'Home';
-  const [exploreOpen, setExploreOpen] = useState(false);
-  const [academyOpen, setAcademyOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('commercial');
-  const [expandedCategory, setExpandedCategory] = useState('commercial');
-  const [editMode, setEditMode] = useState(false);
-  const [pressTimer, setPressTimer] = useState(null);
+  const location = useLocation()
+  const currentPageName = currentPageNameProp || location.pathname.replace('/', '') || 'Home'
+  const [exploreOpen, setExploreOpen] = useState(false)
+  const [academyOpen, setAcademyOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState('commercial')
+  const [expandedCategory, setExpandedCategory] = useState('commercial')
+  const [editMode, setEditMode] = useState(false)
+  const [pressTimer, setPressTimer] = useState(null)
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
-  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
-  const { logout } = useAuth();
-  const isHomePage = currentPageName === 'Home';
+    const storedUser = localStorage.getItem('ericrabar_user')
+    return storedUser ? JSON.parse(storedUser) : null
+  })
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false)
+  const { logout } = useAuth()
+  const isHomePage = currentPageName === 'Home'
 
   React.useEffect(() => {
-    const justLoggedIn = sessionStorage.getItem('ericrabar_just_logged_in');
+    const justLoggedIn = sessionStorage.getItem('ericrabar_just_logged_in')
     if (justLoggedIn === 'true') {
-      setShowLoadingScreen(true);
-      sessionStorage.removeItem('ericrabar_just_logged_in');
+      setShowLoadingScreen(true)
+      sessionStorage.removeItem('ericrabar_just_logged_in')
       setTimeout(() => {
-        setShowLoadingScreen(false);
-      }, 5000);
+        setShowLoadingScreen(false)
+      }, 5000)
     }
-  }, []);
+  }, [])
 
   React.useEffect(() => {
     const handleStorageChange = () => {
-      const storedUser = localStorage.getItem('ericrabar_user');
-      setUser(storedUser ? JSON.parse(storedUser) : null);
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+      const storedUser = localStorage.getItem('ericrabar_user')
+      setUser(storedUser ? JSON.parse(storedUser) : null)
+    }
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
 
   // MainLayout is only used for public pages — dashboard pages use DashboardLayout
-  const shouldHideMenus = location.pathname === '/AIsubmission';
+  const shouldHideMenus = location.pathname === '/AIsubmission'
 
   const categoryInfo = {
     commercial: {
@@ -69,24 +69,24 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
       title: 'Documentary',
       desc: 'Real world.\nFlexible planning. Research focused.'
     }
-  };
+  }
 
   const getDashboardUrl = () => {
-    if (!user) return '/';
-    const role = user.role;
-    if (role === 'artist' || role === 'artist_admin') return createPageUrl('ArtistDashboard');
-    if (role === 'team' || role === 'team_admin') return createPageUrl('TeamDashboard');
-    if (role === 'client' || role === 'project_owner') return createPageUrl('ClientDashboard');
-    if (role === 'backer') return createPageUrl('Back Dashboard');
-    return '/';
-  };
+    if (!user) return '/'
+    const role = user.role
+    if (role === 'artist' || role === 'artist_admin') return createPageUrl('ArtistDashboard')
+    if (role === 'team' || role === 'team_admin') return createPageUrl('TeamDashboard')
+    if (role === 'client' || role === 'project_owner') return createPageUrl('ClientDashboard')
+    if (role === 'backer') return createPageUrl('Back Dashboard')
+    return '/'
+  }
 
   const bottomNav = [
     { name: 'Projects', href: 'Projects' },
     { name: 'Creators', href: 'SignUp' },
     { name: 'Teams', href: 'SignUp' },
     ...(user ? [{ name: 'Dashboard', href: getDashboardUrl(), highlight: true }] : [{ name: 'Post Project', href: 'SignUp', highlight: true }]),
-  ];
+  ]
 
   return (
     <div className={`min-h-screen ${isHomePage ? 'bg-[#0A0A0A]' : 'bg-white'} text-[#212121] ${exploreOpen ? 'overflow-hidden' : ''}`}>
@@ -272,32 +272,32 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
               <button
                 onMouseDown={() => {
                   const timer = setTimeout(() => {
-                    setEditMode(true);
-                  }, 3000);
-                  setPressTimer(timer);
+                    setEditMode(true)
+                  }, 3000)
+                  setPressTimer(timer)
                 }}
                 onMouseUp={() => {
                   if (pressTimer) {
-                    clearTimeout(pressTimer);
-                    setPressTimer(null);
+                    clearTimeout(pressTimer)
+                    setPressTimer(null)
                   }
                 }}
                 onMouseLeave={() => {
                   if (pressTimer) {
-                    clearTimeout(pressTimer);
-                    setPressTimer(null);
+                    clearTimeout(pressTimer)
+                    setPressTimer(null)
                   }
                 }}
                 onTouchStart={() => {
                   const timer = setTimeout(() => {
-                    setEditMode(true);
-                  }, 3000);
-                  setPressTimer(timer);
+                    setEditMode(true)
+                  }, 3000)
+                  setPressTimer(timer)
                 }}
                 onTouchEnd={() => {
                   if (pressTimer) {
-                    clearTimeout(pressTimer);
-                    setPressTimer(null);
+                    clearTimeout(pressTimer)
+                    setPressTimer(null)
                   }
                 }}
                 className={`flex items-center justify-center px-2 md:px-3 py-2 rounded-lg transition-all mr-1 md:mr-2 flex-shrink-0 ${
@@ -328,7 +328,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             )}
 
             {bottomNav.map((item) => {
-               const isActive = currentPageName === item.href;
+               const isActive = currentPageName === item.href
                return (
                  <Link
                    key={item.name}
@@ -343,7 +343,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                  >
                    {item.name}
                  </Link>
-               );
+               )
              })}
 
             <Link
@@ -434,5 +434,5 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
       </footer>
       )}
         </div>
-        );
+        )
         }

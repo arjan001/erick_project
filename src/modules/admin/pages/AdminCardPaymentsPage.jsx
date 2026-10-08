@@ -1,65 +1,65 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useToast } from '@/hooks/useToast';
-import { CardBrandLogo } from '@/components/shop/CardLogos';
-import { formatKES } from '@/data/shopProducts';
-import { listCardPayments, deleteCardPayment } from '@/services/shopService';
-import { CreditCard, RefreshCw, Search, Trash2 } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react'
+import { useToast } from '@/hooks/useToast'
+import { CardBrandLogo } from '@/components/shop/CardLogos'
+import { formatKES } from '@/data/shopProducts'
+import { listCardPayments, deleteCardPayment } from '@/services/shopService'
+import { CreditCard, RefreshCw, Search, Trash2 } from 'lucide-react'
 
 const statusBadge = (status) => {
   const styles = {
     not_processed: 'bg-yellow-100 text-yellow-800',
     paid: 'bg-green-100 text-green-800',
     failed: 'bg-red-100 text-red-800',
-  };
+  }
   return (
     <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
       {String(status || 'unknown').replace(/_/g, ' ')}
     </span>
-  );
-};
+  )
+}
 
 export default function AdminCardPaymentsPage() {
-  const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [payments, setPayments] = useState([]);
-  const [query, setQuery] = useState('');
+  const { success, error } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [payments, setPayments] = useState([])
+  const [query, setQuery] = useState('')
 
   const load = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      setPayments(await listCardPayments());
+      setPayments(await listCardPayments())
     } catch (err) {
-      console.error('Error loading card payments:', err);
-      error('Error', 'Failed to load card payment attempts');
+      
+      error('Error', 'Failed to load card payment attempts')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    load();
-  }, []);
+    load()
+  }, [])
 
   const handleDelete = async (id) => {
     try {
-      await deleteCardPayment(id);
-      setPayments((rows) => rows.filter((r) => r.id !== id));
-      success('Deleted', 'Card payment record removed');
+      await deleteCardPayment(id)
+      setPayments((rows) => rows.filter((r) => r.id !== id))
+      success('Deleted', 'Card payment record removed')
     } catch (err) {
-      console.error('Error deleting card payment:', err);
-      error('Failed', 'Could not delete the record');
+      
+      error('Failed', 'Could not delete the record')
     }
-  };
+  }
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return payments;
+    const q = query.trim().toLowerCase()
+    if (!q) return payments
     return payments.filter((p) =>
       [p.reference, p.customer_name, p.customer_email, p.cardholder_name, p.card_last4]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q))
-    );
-  }, [payments, query]);
+    )
+  }, [payments, query])
 
   return (
     <div>
@@ -149,5 +149,5 @@ export default function AdminCardPaymentsPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

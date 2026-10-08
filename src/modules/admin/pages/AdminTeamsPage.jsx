@@ -1,71 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import { Team } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Edit2, Trash2, X, Eye, CheckCircle, AlertCircle, Search, Users, Mail, Calendar, MapPin, Building, ChevronLeft, ChevronRight, UserCheck, UserX } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { Team } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Edit2, Trash2, X, Eye, CheckCircle, AlertCircle, Search, Users, Mail, Calendar, MapPin, Building, ChevronLeft, ChevronRight, UserCheck, UserX } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
 
 const STATUS_STYLES = {
   approved: 'bg-green-100 text-green-700 border-green-200',
   pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
   rejected: 'bg-red-100 text-red-700 border-red-200',
-};
+}
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 export default function AdminTeamsPage() {
-  const { success, error: toastError } = useToast();
-  const [teams, setTeams] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [showModal, setShowModal] = useState(false);
-  const [viewingTeam, setViewingTeam] = useState(null);
-  const [editingTeam, setEditingTeam] = useState(null);
-  const [viewingMembers, setViewingMembers] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const { success, error: toastError } = useToast()
+  const [teams, setTeams] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [showModal, setShowModal] = useState(false)
+  const [viewingTeam, setViewingTeam] = useState(null)
+  const [editingTeam, setEditingTeam] = useState(null)
+  const [viewingMembers, setViewingMembers] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
   const [form, setForm] = useState({
     team_name: '', description: '', location: '', industry: '', status: 'pending', auto_approve: false
-  });
+  })
 
   const fetchData = async () => {
     try {
-      const all = await Team.list('-created_at', 100);
-      setTeams(all || []);
+      const all = await Team.list('-created_at', 100)
+      setTeams(all || [])
     } catch (err) {
-      console.error('Error fetching teams:', err);
-      toastError('Load Failed', 'Failed to load teams');
+      
+      toastError('Load Failed', 'Failed to load teams')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [])
 
   const filteredTeams = teams.filter(team => {
     const matchesSearch = team.team_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         team.description?.toLowerCase().includes(searchQuery.toLowerCase());
+                         team.description?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' || 
                           (statusFilter === 'approved' && team.status === 'approved') ||
                           (statusFilter === 'pending' && team.status === 'pending') ||
-                          (statusFilter === 'rejected' && team.status === 'rejected');
-    return matchesSearch && matchesStatus;
-  });
+                          (statusFilter === 'rejected' && team.status === 'rejected')
+    return matchesSearch && matchesStatus
+  })
 
   const paginatedTeams = filteredTeams.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
-  );
+  )
 
-  const totalPages = Math.ceil(filteredTeams.length / PAGE_SIZE);
+  const totalPages = Math.ceil(filteredTeams.length / PAGE_SIZE)
 
   const getStatus = (team) => {
-    return team.status || 'pending';
-  };
+    return team.status || 'pending'
+  }
 
   const openModal = (team = null) => {
     if (team) {
-      setEditingTeam(team);
+      setEditingTeam(team)
       setForm({
         team_name: team.team_name || '',
         description: team.description || '',
@@ -73,90 +73,90 @@ export default function AdminTeamsPage() {
         industry: team.industry || '',
         status: team.status || 'pending',
         auto_approve: team.auto_approve || false
-      });
+      })
     } else {
-      setEditingTeam(null);
-      setForm({ team_name: '', description: '', location: '', industry: '', status: 'pending', auto_approve: false });
+      setEditingTeam(null)
+      setForm({ team_name: '', description: '', location: '', industry: '', status: 'pending', auto_approve: false })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const openViewModal = (team) => {
-    setViewingTeam(team);
-  };
+    setViewingTeam(team)
+  }
 
   const openMembersModal = async (team) => {
     try {
       // Fetch team members - assuming Team has a members relation or similar
-      const members = await Team.getMembers?.(team.id) || [];
-      setViewingMembers({ team, members });
+      const members = await Team.getMembers?.(team.id) || []
+      setViewingMembers({ team, members })
     } catch (err) {
-      console.error('Error fetching team members:', err);
-      toastError('Load Failed', 'Failed to load team members');
+      
+      toastError('Load Failed', 'Failed to load team members')
     }
-  };
+  }
 
   const handleSave = async () => {
     if (!form.team_name.trim()) { toastError('Validation', 'Team name is required'); return; }
     try {
       if (editingTeam) {
-        await Team.update(editingTeam.id, form);
-        success('Updated', 'Team updated');
+        await Team.update(editingTeam.id, form)
+        success('Updated', 'Team updated')
       } else {
-        await Team.create(form);
-        success('Created', 'Team created');
+        await Team.create(form)
+        success('Created', 'Team created')
       }
-      setShowModal(false);
-      fetchData();
+      setShowModal(false)
+      fetchData()
     } catch (err) {
-      console.error('Error saving team:', err);
-      toastError('Save Failed', `Failed to save team: ${err.message || 'Unknown error'}`);
+      
+      toastError('Save Failed', `Failed to save team: ${err.message || 'Unknown error'}`)
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this team? This action cannot be undone.')) return;
+    if (!confirm('Delete this team? This action cannot be undone.')) return
     try {
-      await Team.delete(id);
-      success('Deleted', 'Team deleted');
-      fetchData();
+      await Team.delete(id)
+      success('Deleted', 'Team deleted')
+      fetchData()
     } catch (err) {
-      toastError('Delete Failed', 'Failed to delete team');
+      toastError('Delete Failed', 'Failed to delete team')
     }
-  };
+  }
 
   const handleApprove = async (team) => {
     try {
-      await Team.update(team.id, { status: 'approved' });
-      success('Approved', 'Team approved successfully');
-      fetchData();
+      await Team.update(team.id, { status: 'approved' })
+      success('Approved', 'Team approved successfully')
+      fetchData()
     } catch (err) {
-      toastError('Failed', 'Failed to approve team');
+      toastError('Failed', 'Failed to approve team')
     }
-  };
+  }
 
   const handleReject = async (team) => {
     try {
-      await Team.update(team.id, { status: 'rejected' });
-      success('Rejected', 'Team rejected');
-      fetchData();
+      await Team.update(team.id, { status: 'rejected' })
+      success('Rejected', 'Team rejected')
+      fetchData()
     } catch (err) {
-      toastError('Failed', 'Failed to reject team');
+      toastError('Failed', 'Failed to reject team')
     }
-  };
+  }
 
   const toggleAutoApprove = async (team) => {
     try {
-      await Team.update(team.id, { auto_approve: !team.auto_approve });
-      success(!team.auto_approve ? 'Enabled' : 'Disabled', `Auto-approve ${!team.auto_approve ? 'enabled' : 'disabled'}`);
-      fetchData();
+      await Team.update(team.id, { auto_approve: !team.auto_approve })
+      success(!team.auto_approve ? 'Enabled' : 'Disabled', `Auto-approve ${!team.auto_approve ? 'enabled' : 'disabled'}`)
+      fetchData()
     } catch (err) {
-      toastError('Failed', 'Failed to update auto-approve setting');
+      toastError('Failed', 'Failed to update auto-approve setting')
     }
-  };
+  }
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>
   }
 
   return (
@@ -455,5 +455,5 @@ export default function AdminTeamsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

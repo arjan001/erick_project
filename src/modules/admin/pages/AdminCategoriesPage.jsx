@@ -1,52 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { ContentCategory } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, Star, Upload } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
-import { base44 } from '@/api/base44Client';
+import React, { useState, useEffect } from 'react'
+import { ContentCategory } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, Star, Upload } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
+import { base44 } from '@/api/base44Client'
 
 export default function AdminCategoriesPage() {
-  const { success, error: toastError } = useToast();
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [form, setForm] = useState({ name: '', slug: '', description: '', image_url: '', display_order: 0, status: 'active', is_featured: false });
+  const { success, error: toastError } = useToast()
+  const [categories, setCategories] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [form, setForm] = useState({ name: '', slug: '', description: '', image_url: '', display_order: 0, status: 'active', is_featured: false })
 
   const fetchData = async () => {
     try {
-      console.log('Fetching categories from Supabase...');
-      const all = await ContentCategory.list('display_order', 100);
-      console.log('Categories fetched:', all);
-      setCategories(all || []);
+      
+      const all = await ContentCategory.list('display_order', 100)
+      
+      setCategories(all || [])
     } catch (err) {
-      console.error('Error fetching categories:', err);
-      toastError('Load Failed', 'Failed to load categories');
+      
+      toastError('Load Failed', 'Failed to load categories')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [])
 
   const openModal = (cat = null) => {
     if (cat) {
-      setEditing(cat);
-      setForm({ name: cat.name || '', slug: cat.slug || '', description: cat.description || '', image_url: cat.image_url || '', display_order: cat.display_order || 0, status: cat.status || 'active', is_featured: cat.is_featured || false });
+      setEditing(cat)
+      setForm({ name: cat.name || '', slug: cat.slug || '', description: cat.description || '', image_url: cat.image_url || '', display_order: cat.display_order || 0, status: cat.status || 'active', is_featured: cat.is_featured || false })
     } else {
-      setEditing(null);
-      setForm({ name: '', slug: '', description: '', image_url: '', display_order: 0, status: 'active', is_featured: false });
+      setEditing(null)
+      setForm({ name: '', slug: '', description: '', image_url: '', display_order: 0, status: 'active', is_featured: false })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const handleSave = async () => {
     if (!form.name.trim()) { toastError('Validation', 'Name is required'); return; }
     try {
-      const slug = form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const slug = form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
       const dataToSave = {
         name: form.name,
         slug: slug,
@@ -55,76 +55,76 @@ export default function AdminCategoriesPage() {
         display_order: form.display_order,
         status: form.status,
         is_featured: form.is_featured
-      };
-      if (editing) {
-        await ContentCategory.update(editing.id, dataToSave);
-        success('Updated', 'Category updated');
-      } else {
-        await ContentCategory.create(dataToSave);
-        success('Created', 'Category created');
       }
-      setShowModal(false);
-      fetchData();
+      if (editing) {
+        await ContentCategory.update(editing.id, dataToSave)
+        success('Updated', 'Category updated')
+      } else {
+        await ContentCategory.create(dataToSave)
+        success('Created', 'Category created')
+      }
+      setShowModal(false)
+      fetchData()
     } catch (err) {
-      console.error('Error saving category:', err);
-      toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`);
+      
+      toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`)
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this category?')) return;
+    if (!confirm('Delete this category?')) return
     try {
-      await ContentCategory.delete(id);
-      success('Deleted', 'Category deleted');
-      fetchData();
+      await ContentCategory.delete(id)
+      success('Deleted', 'Category deleted')
+      fetchData()
     } catch (err) {
-      toastError('Delete Failed', 'Failed to delete category');
+      toastError('Delete Failed', 'Failed to delete category')
     }
-  };
+  }
 
   const toggleFeatured = async (cat) => {
     try {
-      await ContentCategory.update(cat.id, { is_featured: !cat.is_featured });
-      fetchData();
+      await ContentCategory.update(cat.id, { is_featured: !cat.is_featured })
+      fetchData()
     } catch (err) { toastError('Failed', 'Failed to update'); }
-  };
+  }
 
   const toggleStatus = async (cat) => {
     try {
-      await ContentCategory.update(cat.id, { status: cat.status === 'active' ? 'hidden' : 'active' });
-      fetchData();
+      await ContentCategory.update(cat.id, { status: cat.status === 'active' ? 'hidden' : 'active' })
+      fetchData()
     } catch (err) { toastError('Failed', 'Failed to update status'); }
-  };
+  }
 
   const moveOrder = async (cat, dir) => {
     try {
-      await ContentCategory.update(cat.id, { display_order: (cat.display_order || 0) + dir });
-      fetchData();
+      await ContentCategory.update(cat.id, { display_order: (cat.display_order || 0) + dir })
+      fetchData()
     } catch (err) { toastError('Failed', 'Failed to reorder'); }
-  };
+  }
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
     
-    setUploadingImage(true);
+    setUploadingImage(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url || response.data?.url;
+      const response = await base44.integrations.Core.UploadFile({ file })
+      const fileUrl = response.file_url || response.url || response.data?.url
       if (!fileUrl) {
-        throw new Error('No file URL returned from upload service');
+        throw new Error('No file URL returned from upload service')
       }
-      setForm({ ...form, image_url: fileUrl });
+      setForm({ ...form, image_url: fileUrl })
     } catch (err) {
-      console.error('Error uploading image:', err);
-      toastError('Upload Failed', `Failed to upload image: ${err.message || 'Unknown error'}`);
+      
+      toastError('Upload Failed', `Failed to upload image: ${err.message || 'Unknown error'}`)
     } finally {
-      setUploadingImage(false);
+      setUploadingImage(false)
     }
-  };
+  }
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>
   }
 
   return (
@@ -222,5 +222,5 @@ export default function AdminCategoriesPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

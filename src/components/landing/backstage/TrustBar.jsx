@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FeaturedBrand } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { FeaturedBrand } from '@/lib/supabaseEntities'
 
 const fallbackBrands = [
   '/brands/brand1.svg',
@@ -8,35 +8,35 @@ const fallbackBrands = [
   '/brands/brand4.svg',
   '/brands/brand5.svg',
   '/brands/brand6.svg',
-];
+]
 
 export default function TrustBar() {
-  const [brands, setBrands] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [brands, setBrands] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadFeaturedBrands();
-  }, []);
+    loadFeaturedBrands()
+  }, [])
 
   const loadFeaturedBrands = async () => {
     try {
-      const data = await FeaturedBrand.filter({ is_active: true }, 'order_index', 50);
+      const data = await FeaturedBrand.filter({ is_active: true }, 'order_index', 50)
       if (data && data.length > 0) {
         // Use backend brand logos
-        const brandLogos = data.map(b => b.logo_url).filter(Boolean);
-        setBrands(brandLogos);
+        const brandLogos = data.map(b => b.logo_url).filter(Boolean)
+        setBrands(brandLogos)
       } else {
         // Fallback to static SVG files
-        setBrands(fallbackBrands);
+        setBrands(fallbackBrands)
       }
     } catch (err) {
-      console.error('Error loading featured brands:', err);
+      
       // Fallback to static SVG files on error
-      setBrands(fallbackBrands);
+      setBrands(fallbackBrands)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -50,11 +50,11 @@ export default function TrustBar() {
           <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
         </div>
       </section>
-    );
+    )
   }
 
   // Duplicate for seamless infinite scroll
-  const allBrands = [...brands, ...brands, ...brands];
+  const allBrands = [...brands, ...brands, ...brands]
 
   return (
     <section className="overflow-hidden bg-[#F5F3EF] py-12">
@@ -86,5 +86,5 @@ export default function TrustBar() {
         </div>
       </div>
     </section>
-  );
+  )
 }

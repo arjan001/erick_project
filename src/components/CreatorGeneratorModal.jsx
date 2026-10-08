@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { X, Sparkles, ChevronDown } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import { Creator } from '@/lib/supabaseEntities';
+import React, { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { X, Sparkles, ChevronDown } from 'lucide-react'
+import { base44 } from '@/api/base44Client'
+import { Creator } from '@/lib/supabaseEntities'
 
-const TYPES = ['freelance', 'studio', 'agency', 'team', 'collective'];
+const TYPES = ['freelance', 'studio', 'agency', 'team', 'collective']
 const CATEGORIES = [
   'cinematography', 'directing', 'lighting', 'production', 'editing',
   'color_grading', 'sound_design', 'music', 'vfx', '3d_animation',
   'motion_graphics', 'art_direction', 'production_design', 'costume',
   'makeup', 'camera_operation', 'drone', 'gaffer', 'grip', 'dop',
   'scriptwriting', 'web_design'
-];
+]
 const COUNTRIES = [
   'Netherlands', 'Germany', 'France', 'Spain', 'Italy',
   'United Kingdom', 'Belgium', 'Sweden', 'Denmark', 'Norway',
   'Finland', 'Austria', 'Switzerland', 'Portugal', 'Poland'
-];
+]
 
 export default function CreatorGeneratorModal({ onClose, onGenerated }) {
   const [config, setConfig] = useState({
@@ -25,14 +25,14 @@ export default function CreatorGeneratorModal({ onClose, onGenerated }) {
     categories: [],
     countries: [],
     count: 10
-  });
-  const [generating, setGenerating] = useState(false);
-  const [progress, setProgress] = useState('');
-  const [openDropdown, setOpenDropdown] = useState(null);
+  })
+  const [generating, setGenerating] = useState(false)
+  const [progress, setProgress] = useState('')
+  const [openDropdown, setOpenDropdown] = useState(null)
 
   const handleGenerate = async () => {
-    setGenerating(true);
-    setProgress('Generating creators with AI...');
+    setGenerating(true)
+    setProgress('Generating creators with AI...')
 
     try {
       const prompt = `YOUR MISSION: Find ${config.count} REAL production companies and get their ACTUAL LOGO from the web.
@@ -75,7 +75,7 @@ FIELDS TO RETURN:
 
 CRITICAL: Better to return 3 companies with REAL logos than 10 with fake ones.
 
-Return ONLY valid JSON array of companies.`;
+Return ONLY valid JSON array of companies.`
 
       const response = await base44.functions.invoke('generateCreators', {
         prompt,
@@ -102,51 +102,51 @@ Return ONLY valid JSON array of companies.`;
             }
           }
         }
-      });
+      })
 
       // Filter out creators without valid logo URLs
       const validCreators = response.creators.filter(c => {
         const hasLogo = c.logo_url && 
                        c.logo_url.startsWith('http') && 
                        c.logo_url.length > 20 &&
-                       !c.logo_url.includes('placeholder');
+                       !c.logo_url.includes('placeholder')
         if (!hasLogo) {
-          console.log(`Skipping ${c.name} - no valid logo found`);
+          
         }
-        return hasLogo;
-      });
+        return hasLogo
+      })
 
       if (validCreators.length === 0) {
-        setProgress('Error: No companies with valid logos were found. Try again with different criteria.');
-        setTimeout(() => setGenerating(false), 3000);
-        return;
+        setProgress('Error: No companies with valid logos were found. Try again with different criteria.')
+        setTimeout(() => setGenerating(false), 3000)
+        return
       }
 
-      setProgress(`Found ${validCreators.length} creators with verified logos. Saving to database...`);
+      setProgress(`Found ${validCreators.length} creators with verified logos. Saving to database...`)
 
       // Save to database
-      await Promise.all(validCreators.map(c => Creator.create(c)));
+      await Promise.all(validCreators.map(c => Creator.create(c)))
 
-      setProgress('Complete!');
+      setProgress('Complete!')
       setTimeout(() => {
-        onGenerated();
-        onClose();
-      }, 1000);
+        onGenerated()
+        onClose()
+      }, 1000)
 
     } catch (error) {
-      console.error('Failed to generate creators:', error);
-      setProgress('Error: ' + error.message);
+      
+      setProgress('Error: ' + error.message)
     } finally {
-      setTimeout(() => setGenerating(false), 2000);
+      setTimeout(() => setGenerating(false), 2000)
     }
-  };
+  }
 
   return (
     <div 
       className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-6"
       onClick={() => {
-        setOpenDropdown(null);
-        onClose();
+        setOpenDropdown(null)
+        onClose()
       }}
     >
       <div 
@@ -176,7 +176,7 @@ Return ONLY valid JSON array of companies.`;
               {openDropdown === 'type' && (
                 <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] max-h-[200px] overflow-y-auto">
                   {TYPES.map(t => {
-                    const isSelected = config.types.includes(t);
+                    const isSelected = config.types.includes(t)
                     return (
                       <label key={t} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer">
                         <input
@@ -185,14 +185,14 @@ Return ONLY valid JSON array of companies.`;
                           onChange={() => {
                             const newTypes = isSelected
                               ? config.types.filter(x => x !== t)
-                              : [...config.types, t];
-                            setConfig({...config, types: newTypes});
+                              : [...config.types, t]
+                            setConfig({...config, types: newTypes})
                           }}
                           className="w-4 h-4"
                         />
                         <span className="capitalize text-sm">{t}</span>
                       </label>
-                    );
+                    )
                   })}
                 </div>
               )}
@@ -223,7 +223,7 @@ Return ONLY valid JSON array of companies.`;
               {openDropdown === 'category' && (
                 <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] max-h-[200px] overflow-y-auto">
                   {CATEGORIES.map(c => {
-                    const isSelected = config.categories.includes(c);
+                    const isSelected = config.categories.includes(c)
                     return (
                       <label key={c} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer">
                         <input
@@ -232,14 +232,14 @@ Return ONLY valid JSON array of companies.`;
                           onChange={() => {
                             const newCats = isSelected
                               ? config.categories.filter(x => x !== c)
-                              : [...config.categories, c];
-                            setConfig({...config, categories: newCats});
+                              : [...config.categories, c]
+                            setConfig({...config, categories: newCats})
                           }}
                           className="w-4 h-4"
                         />
                         <span className="capitalize text-sm">{c.replace('_', ' ')}</span>
                       </label>
-                    );
+                    )
                   })}
                 </div>
               )}
@@ -270,7 +270,7 @@ Return ONLY valid JSON array of companies.`;
               {openDropdown === 'country' && (
                 <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] max-h-[200px] overflow-y-auto">
                   {COUNTRIES.map(c => {
-                    const isSelected = config.countries.includes(c);
+                    const isSelected = config.countries.includes(c)
                     return (
                       <label key={c} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer">
                         <input
@@ -279,14 +279,14 @@ Return ONLY valid JSON array of companies.`;
                           onChange={() => {
                             const newCountries = isSelected
                               ? config.countries.filter(x => x !== c)
-                              : [...config.countries, c];
-                            setConfig({...config, countries: newCountries});
+                              : [...config.countries, c]
+                            setConfig({...config, countries: newCountries})
                           }}
                           className="w-4 h-4"
                         />
                         <span className="text-sm">{c}</span>
                       </label>
-                    );
+                    )
                   })}
                 </div>
               )}
@@ -344,5 +344,5 @@ Return ONLY valid JSON array of companies.`;
         </div>
       </div>
     </div>
-  );
+  )
 }

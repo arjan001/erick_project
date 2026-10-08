@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import ArtistSidebar from '../components/ArtistSidebar';
-import { Button } from '@/components/ui/button';
-import { Briefcase, MessageSquare, Brain, ArrowRight, Clock, MapPin, CheckCircle, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { base44 } from '@/api/base44Client'
+import ArtistSidebar from '../components/ArtistSidebar'
+import { Button } from '@/components/ui/button'
+import { Briefcase, MessageSquare, Brain, ArrowRight, Clock, MapPin, CheckCircle, TrendingUp } from 'lucide-react'
 
 export default function ArtistHome() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [artist, setArtist] = useState(null);
-  const [jobs, setJobs] = useState([]);
-  const [messages, setMessages] = useState([]);
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
+  const [artist, setArtist] = useState(null)
+  const [jobs, setJobs] = useState([])
+  const [messages, setMessages] = useState([])
+  const [applications, setApplications] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      navigate('/signin');
-      return;
+      navigate('/signin')
+      return
     }
-    const userData = JSON.parse(storedUser);
-    setUser(userData);
+    const userData = JSON.parse(storedUser)
+    setUser(userData)
 
     const fetchData = async () => {
       try {
@@ -29,25 +29,25 @@ export default function ArtistHome() {
           base44.entities.Artist.filter({ email: userData.email }),
           base44.entities.Job.filter({ status: 'open' }),
           base44.entities.Application.filter({ artist_email: userData.email })
-        ]);
+        ])
 
         if (artistData.length > 0) {
-          setArtist(artistData[0]);
+          setArtist(artistData[0])
         }
 
-        setJobs(jobsData.slice(0, 5));
-        setApplications(applicationsData);
+        setJobs(jobsData.slice(0, 5))
+        setApplications(applicationsData)
       } catch (err) {
-        console.error('Error fetching data:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, [navigate]);
+    fetchData()
+  }, [navigate])
 
-  if (!user || loading) return null;
+  if (!user || loading) return null
 
   return (
     <div className="h-screen bg-white">
@@ -237,7 +237,7 @@ export default function ArtistHome() {
         </div>
       </main>
     </div>
-  );
+  )
 }
 
 // Eye icon (not in lucide, so define it)
@@ -257,5 +257,5 @@ function Eye(props) {
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
-  );
+  )
 }

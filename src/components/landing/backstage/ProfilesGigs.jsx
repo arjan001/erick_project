@@ -1,15 +1,15 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { UserCircle, Film, CalendarCheck, Lock, Briefcase } from 'lucide-react';
-import { ParallaxLayer } from './Parallax';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { UserCircle, Film, CalendarCheck, Lock, Briefcase } from 'lucide-react'
+import { ParallaxLayer } from './Parallax'
 
 const keyElements = [
   { icon: UserCircle, label: 'Bio', text: 'Introduce yourself and highlight your skills, specialties, and areas of expertise.' },
   { icon: Film, label: 'Portfolio', text: 'Showcase your past work, projects, and achievements to demonstrate your capabilities.' },
   { icon: CalendarCheck, label: 'Availability', text: "Specify your availability for gigs, whether you're looking for short-term opportunities or long-term projects." },
   { icon: Lock, label: 'Contact Information', text: 'Communication is only within the app until an application is accepted.' },
-];
+]
 
 export default function ProfilesGigs() {
   return (
@@ -38,7 +38,7 @@ export default function ProfilesGigs() {
           <h3 className="mt-8 text-sm font-bold uppercase tracking-wider text-black">Key elements of a profile</h3>
           <ul className="mt-4 space-y-4">
             {keyElements.map((k) => {
-              const Icon = k.icon;
+              const Icon = k.icon
               return (
                 <li key={k.label} className="flex items-start gap-3">
                   <Icon className="mt-0.5 h-5 w-5 shrink-0 text-[#4F46E5]" />
@@ -46,7 +46,7 @@ export default function ProfilesGigs() {
                     <strong className="text-black">{k.label}:</strong> {k.text}
                   </p>
                 </li>
-              );
+              )
             })}
           </ul>
           <p className="mt-6 text-sm font-semibold text-black">
@@ -87,5 +87,5 @@ export default function ProfilesGigs() {
         </ParallaxLayer>
       </div>
     </section>
-  );
+  )
 }

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Youtube, Music2, Podcast, Globe, Check } from 'lucide-react';
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Facebook, Twitter, Instagram, Youtube, Music2, Podcast, Globe, Check } from 'lucide-react'
 
 const columns = [
   {
@@ -45,14 +45,14 @@ const columns = [
       { label: 'Pricing', to: '/Pricing' },
     ],
   },
-];
+]
 
 const howItWorks = [
   ['Create Profile', 'Build your profile to highlight your talents.'],
   ['Search Gigs', 'Browse available gigs based on your interests.'],
   ['Apply/Contact', 'Connect with producers and casting directors.'],
   ['Get Hired', 'Land your next gig and start filming!'],
-];
+]
 
 const socials = [
   { icon: Facebook, name: 'Facebook' },
@@ -61,30 +61,30 @@ const socials = [
   { icon: Music2, name: 'TikTok' },
   { icon: Youtube, name: 'YouTube' },
   { icon: Podcast, name: 'Podcast' },
-];
+]
 
 export default function Footer() {
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  const [email, setEmail] = useState('')
+  const [subscribed, setSubscribed] = useState(false)
 
   const handleSubscribe = async () => {
-    if (!email) return;
+    if (!email) return
     const sub = {
       id: Date.now().toString(),
       email,
       source: 'footer',
       status: 'active',
       created_at: new Date().toISOString(),
-    };
+    }
     // Store in localStorage as fallback
-    const raw = localStorage.getItem('smartgigs_mailing_list');
-    const list = raw ? JSON.parse(raw) : [];
-    list.unshift(sub);
-    localStorage.setItem('smartgigs_mailing_list', JSON.stringify(list));
-    setSubscribed(true);
-    setEmail('');
-    setTimeout(() => setSubscribed(false), 4000);
-  };
+    const raw = localStorage.getItem('smartgigs_mailing_list')
+    const list = raw ? JSON.parse(raw) : []
+    list.unshift(sub)
+    localStorage.setItem('smartgigs_mailing_list', JSON.stringify(list))
+    setSubscribed(true)
+    setEmail('')
+    setTimeout(() => setSubscribed(false), 4000)
+  }
 
   return (
     <footer className="bg-[#1a1a1a] text-white px-4 py-10 md:px-8 md:py-14">
@@ -146,7 +146,7 @@ export default function Footer() {
             <h4 className="text-xs font-bold uppercase tracking-wider text-white">Connect</h4>
             <div className="mt-3 flex flex-wrap gap-2 md:mt-4 md:gap-3">
               {socials.map((s) => {
-                const Icon = s.icon;
+                const Icon = s.icon
                 return (
                   <a
                     key={s.name}
@@ -156,7 +156,7 @@ export default function Footer() {
                   >
                     <Icon className="h-4 w-4" />
                   </a>
-                );
+                )
               })}
             </div>
           </div>
@@ -224,5 +224,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  );
+  )
 }

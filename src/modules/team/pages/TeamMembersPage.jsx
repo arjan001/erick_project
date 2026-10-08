@@ -1,91 +1,91 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { Team } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Users, Plus, Mail, Search, MoreVertical, Crown, Shield, User, X, Upload, ChevronDown, ChevronUp } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { useAuth } from '@/lib/AuthContext';
-import { createTeamInvitation, revokeInvitation, resendInvitation } from '@/lib/teamInvitationService';
-import skillsAndRolesData from '@/lib/skillsAndRoles.json';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { base44 } from '@/api/base44Client'
+import { Team } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Users, Plus, Mail, Search, MoreVertical, Crown, Shield, User, X, Upload, ChevronDown, ChevronUp } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
+import { createTeamInvitation, revokeInvitation, resendInvitation } from '@/lib/teamInvitationService'
+import skillsAndRolesData from '@/lib/skillsAndRoles.json'
 
 export default function TeamMembersPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [team, setTeam] = useState(null);
-  const [members, setMembers] = useState([]);
-  const [invitations, setInvitations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('member');
-  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [team, setTeam] = useState(null)
+  const [members, setMembers] = useState([])
+  const [invitations, setInvitations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('member')
+  const [searchTerm, setSearchTerm] = useState('')
 
   // New fields for enhanced invitation
-  const [selectedRoles, setSelectedRoles] = useState([]);
-  const [selectedSkills, setSelectedSkills] = useState([]);
-  const [profileImage, setProfileImage] = useState(null);
-  const [profileImageUrl, setProfileImageUrl] = useState('');
-  const [showRolesDropdown, setShowRolesDropdown] = useState(false);
-  const [showSkillsDropdown, setShowSkillsDropdown] = useState(false);
+  const [selectedRoles, setSelectedRoles] = useState([])
+  const [selectedSkills, setSelectedSkills] = useState([])
+  const [profileImage, setProfileImage] = useState(null)
+  const [profileImageUrl, setProfileImageUrl] = useState('')
+  const [showRolesDropdown, setShowRolesDropdown] = useState(false)
+  const [showSkillsDropdown, setShowSkillsDropdown] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    loadTeamData();
-  }, [isAuthenticated]);
+    loadTeamData()
+  }, [isAuthenticated])
 
   const loadTeamData = async () => {
     try {
-      let teamData = null;
+      let teamData = null
       if (authUser?.team_id) {
-        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null);
+        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null)
       } else {
-        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1);
-        teamData = teams?.[0] || null;
+        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1)
+        teamData = teams?.[0] || null
       }
-      setTeam(teamData);
+      setTeam(teamData)
       if (teamData) {
-        fetchMembers(teamData.id);
+        fetchMembers(teamData.id)
       } else {
-        setLoading(false);
+        setLoading(false)
       }
     } catch (err) {
-      console.error('Error loading team:', err);
-      toastError('Load Failed', 'Failed to load team data');
-      setLoading(false);
+      //
+      toastError('Load Failed', 'Failed to load team data')
+      setLoading(false)
     }
-  };
+  }
 
   const fetchMembers = async (teamId) => {
     try {
-      const teamMembers = await base44.entities.TeamMember.filter({ team_id: teamId });
-      const teamInvitations = await base44.entities.TeamInvitation.filter({ team_id: teamId, status: 'pending' });
-      setMembers(teamMembers);
-      setInvitations(teamInvitations);
+      const teamMembers = await base44.entities.TeamMember.filter({ team_id: teamId })
+      const teamInvitations = await base44.entities.TeamInvitation.filter({ team_id: teamId, status: 'pending' })
+      setMembers(teamMembers)
+      setInvitations(teamInvitations)
     } catch (err) {
-      console.error('Error fetching members:', err);
+      //
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleInvite = async () => {
-    if (!inviteEmail || !team) return;
+    if (!inviteEmail || !team) return
     try {
-      const inviterName = `${authUser?.first_name || ''} ${authUser?.last_name || ''}`.trim() || 'Team Admin';
+      const inviterName = `${authUser?.first_name || ''} ${authUser?.last_name || ''}`.trim() || 'Team Admin'
 
       // Handle image upload if present
-      let imageUrl = profileImageUrl;
+      let imageUrl = profileImageUrl
       if (profileImage) {
         // In a real implementation, you would upload the image to a storage service
         // For now, we'll use a placeholder or the URL if provided
-        imageUrl = URL.createObjectURL(profileImage);
+        imageUrl = URL.createObjectURL(profileImage)
       }
 
       const result = await createTeamInvitation(
@@ -98,118 +98,118 @@ export default function TeamMembersPage() {
           skills: selectedSkills,
           profile_image: imageUrl
         }
-      );
+      )
 
       if (result.success) {
-        success('Invitation Sent', `Invitation sent to ${inviteEmail}. They will receive an email to join your team.`);
-        setInviteEmail('');
-        setInviteRole('member');
-        setSelectedRoles([]);
-        setSelectedSkills([]);
-        setProfileImage(null);
-        setProfileImageUrl('');
-        setShowInviteModal(false);
+        success('Invitation Sent', `Invitation sent to ${inviteEmail}. They will receive an email to join your team.`)
+        setInviteEmail('')
+        setInviteRole('member')
+        setSelectedRoles([])
+        setSelectedSkills([])
+        setProfileImage(null)
+        setProfileImageUrl('')
+        setShowInviteModal(false)
 
         // Refresh members list
-        fetchMembers(team.id);
+        fetchMembers(team.id)
       } else {
-        toastError('Invitation Failed', result.error || 'Failed to send invitation. Please try again.');
+        toastError('Invitation Failed', result.error || 'Failed to send invitation. Please try again.')
       }
     } catch (err) {
-      console.error('Error sending invitation:', err);
-      toastError('Invitation Failed', 'Failed to send invitation. Please try again.');
+      //
+      toastError('Invitation Failed', 'Failed to send invitation. Please try again.')
     }
-  };
+  }
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]
     if (file) {
-      setProfileImage(file);
-      setProfileImageUrl('');
+      setProfileImage(file)
+      setProfileImageUrl('')
     }
-  };
+  }
 
   const toggleRole = (role) => {
     setSelectedRoles(prev =>
       prev.includes(role)
         ? prev.filter(r => r !== role)
         : [...prev, role]
-    );
-  };
+    )
+  }
 
   const toggleSkill = (skill) => {
     setSelectedSkills(prev =>
       prev.includes(skill)
         ? prev.filter(s => s !== skill)
         : [...prev, skill]
-    );
-  };
+    )
+  }
 
   const removeRole = (role) => {
-    setSelectedRoles(prev => prev.filter(r => r !== role));
-  };
+    setSelectedRoles(prev => prev.filter(r => r !== role))
+  }
 
   const removeSkill = (skill) => {
-    setSelectedSkills(prev => prev.filter(s => s !== skill));
-  };
+    setSelectedSkills(prev => prev.filter(s => s !== skill))
+  }
 
   const handleResendInvite = async (invitationId, email) => {
     try {
-      const inviterName = `${authUser?.first_name || ''} ${authUser?.last_name || ''}`.trim() || 'Team Admin';
-      const result = await resendInvitation(invitationId, team.team_name, inviterName);
+      const inviterName = `${authUser?.first_name || ''} ${authUser?.last_name || ''}`.trim() || 'Team Admin'
+      const result = await resendInvitation(invitationId, team.team_name, inviterName)
 
       if (result.success) {
-        success('Invitation Resent', `Invitation resent to ${email}`);
+        success('Invitation Resent', `Invitation resent to ${email}`)
       } else {
-        toastError('Resend Failed', result.error || 'Failed to resend invitation');
+        toastError('Resend Failed', result.error || 'Failed to resend invitation')
       }
     } catch (err) {
-      console.error('Error resending invitation:', err);
-      toastError('Resend Failed', 'Failed to resend invitation');
+      //
+      toastError('Resend Failed', 'Failed to resend invitation')
     }
-  };
+  }
 
   const handleCancelInvite = async (invitationId) => {
-    if (!confirm('Are you sure you want to cancel this invitation?')) return;
+    if (!confirm('Are you sure you want to cancel this invitation?')) return
     try {
-      const result = await revokeInvitation(invitationId);
+      const result = await revokeInvitation(invitationId)
 
       if (result.success) {
-        success('Invitation Cancelled', 'Invitation has been cancelled');
-        fetchMembers(team.id);
+        success('Invitation Cancelled', 'Invitation has been cancelled')
+        fetchMembers(team.id)
       } else {
-        toastError('Cancel Failed', result.error || 'Failed to cancel invitation');
+        toastError('Cancel Failed', result.error || 'Failed to cancel invitation')
       }
     } catch (err) {
-      console.error('Error cancelling invitation:', err);
-      toastError('Cancel Failed', 'Failed to cancel invitation');
-      fetchMembers(team.id);
+      //
+      toastError('Cancel Failed', 'Failed to cancel invitation')
+      fetchMembers(team.id)
     }
-  };
+  }
 
   const handleRemoveMember = async (memberId) => {
-    if (!confirm('Are you sure you want to remove this member?')) return;
+    if (!confirm('Are you sure you want to remove this member?')) return
     try {
-      await base44.entities.TeamMember.delete(memberId);
-      setMembers(members.filter(m => m.id !== memberId));
-      success('Member Removed', 'Member has been removed from the team');
+      await base44.entities.TeamMember.delete(memberId)
+      setMembers(members.filter(m => m.id !== memberId))
+      success('Member Removed', 'Member has been removed from the team')
     } catch (err) {
-      console.error('Error removing member:', err);
-      toastError('Removal Failed', 'Failed to remove member');
+      //
+      toastError('Removal Failed', 'Failed to remove member')
     }
-  };
+  }
 
   const filteredMembers = members.filter(member =>
     member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     member.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  )
 
   if (loading) {
     return (
       <div className="flex items-center justify-center">
         <div className="text-gray-600">Loading...</div>
       </div>
-    );
+    )
   }
 
   return (
@@ -525,11 +525,11 @@ export default function TeamMembersPage() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setShowInviteModal(false);
-                    setSelectedRoles([]);
-                    setSelectedSkills([]);
-                    setProfileImage(null);
-                    setProfileImageUrl('');
+                    setShowInviteModal(false)
+                    setSelectedRoles([])
+                    setSelectedSkills([])
+                    setProfileImage(null)
+                    setProfileImageUrl('')
                   }}
                 >
                   Cancel
@@ -540,5 +540,5 @@ export default function TeamMembersPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

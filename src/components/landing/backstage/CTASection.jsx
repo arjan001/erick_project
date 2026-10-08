@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import RoleToggle from './RoleToggle';
+import React, { useState } from 'react'
+import { motion } from 'framer-motion'
+import RoleToggle from './RoleToggle'
 
 export default function CTASection() {
-  const [role, setRole] = useState('talent');
+  const [role, setRole] = useState('talent')
 
   return (
     <section className="bg-[#F5F3EF] pb-20">
@@ -59,5 +59,5 @@ export default function CTASection() {
         </motion.div>
       </div>
     </section>
-  );
+  )
 }

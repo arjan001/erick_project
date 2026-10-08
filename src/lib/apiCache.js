@@ -4,7 +4,7 @@
  */
 
 // Cache storage (in-memory for demo, use Redis or IndexedDB for production)
-const apiCache = new Map();
+const apiCache = new Map()
 
 // Default cache configuration
 const DEFAULT_CACHE_CONFIG = {
@@ -12,7 +12,7 @@ const DEFAULT_CACHE_CONFIG = {
   ttl: 5 * 60 * 1000, // 5 minutes
   maxSize: 100, // Maximum number of cached items
   cacheKeyPrefix: 'api_cache_'
-};
+}
 
 /**
  * Generate cache key from request parameters
@@ -21,8 +21,8 @@ const DEFAULT_CACHE_CONFIG = {
  * @returns {string} - Cache key
  */
 function generateCacheKey(endpoint, params = {}) {
-  const paramString = JSON.stringify(params);
-  return `${DEFAULT_CACHE_CONFIG.cacheKeyPrefix}${endpoint}_${paramString}`;
+  const paramString = JSON.stringify(params)
+  return `${DEFAULT_CACHE_CONFIG.cacheKeyPrefix}${endpoint}_${paramString}`
 }
 
 /**
@@ -31,31 +31,31 @@ function generateCacheKey(endpoint, params = {}) {
  * @returns {boolean} - Whether entry is expired
  */
 function isExpired(cacheEntry) {
-  return Date.now() > cacheEntry.expiry;
+  return Date.now() > cacheEntry.expiry
 }
 
 /**
  * Clean up expired cache entries
  */
 function cleanupExpiredEntries() {
-  const now = Date.now();
+  const now = Date.now()
   
   for (const [key, value] of apiCache.entries()) {
     if (now > value.expiry) {
-      apiCache.delete(key);
+      apiCache.delete(key)
     }
   }
   
   // Enforce max size
   if (apiCache.size > DEFAULT_CACHE_CONFIG.maxSize) {
-    const entries = Array.from(apiCache.entries());
+    const entries = Array.from(apiCache.entries())
     // Sort by expiry (oldest first)
-    entries.sort((a, b) => a[1].expiry - b[1].expiry);
+    entries.sort((a, b) => a[1].expiry - b[1].expiry)
     
     // Remove oldest entries
-    const toRemove = entries.length - DEFAULT_CACHE_CONFIG.maxSize;
+    const toRemove = entries.length - DEFAULT_CACHE_CONFIG.maxSize
     for (let i = 0; i < toRemove; i++) {
-      apiCache.delete(entries[i][0]);
+      apiCache.delete(entries[i][0])
     }
   }
 }
@@ -68,22 +68,22 @@ function cleanupExpiredEntries() {
  */
 export function getCachedResponse(endpoint, params = {}) {
   if (!DEFAULT_CACHE_CONFIG.enabled) {
-    return null;
+    return null
   }
   
-  const key = generateCacheKey(endpoint, params);
-  const cached = apiCache.get(key);
+  const key = generateCacheKey(endpoint, params)
+  const cached = apiCache.get(key)
   
   if (!cached) {
-    return null;
+    return null
   }
   
   if (isExpired(cached)) {
-    apiCache.delete(key);
-    return null;
+    apiCache.delete(key)
+    return null
   }
   
-  return cached.data;
+  return cached.data
 }
 
 /**
@@ -95,19 +95,19 @@ export function getCachedResponse(endpoint, params = {}) {
  */
 export function setCachedResponse(endpoint, params = {}, data, ttl = DEFAULT_CACHE_CONFIG.ttl) {
   if (!DEFAULT_CACHE_CONFIG.enabled) {
-    return;
+    return
   }
   
-  const key = generateCacheKey(endpoint, params);
-  const expiry = Date.now() + ttl;
+  const key = generateCacheKey(endpoint, params)
+  const expiry = Date.now() + ttl
   
   apiCache.set(key, {
     data,
     expiry,
     timestamp: Date.now()
-  });
+  })
   
-  cleanupExpiredEntries();
+  cleanupExpiredEntries()
 }
 
 /**
@@ -117,14 +117,14 @@ export function setCachedResponse(endpoint, params = {}, data, ttl = DEFAULT_CAC
  */
 export function invalidateCache(endpoint, params = null) {
   if (params) {
-    const key = generateCacheKey(endpoint, params);
-    apiCache.delete(key);
+    const key = generateCacheKey(endpoint, params)
+    apiCache.delete(key)
   } else {
     // Invalidate all entries for this endpoint
-    const prefix = `${DEFAULT_CACHE_CONFIG.cacheKeyPrefix}${endpoint}_`;
+    const prefix = `${DEFAULT_CACHE_CONFIG.cacheKeyPrefix}${endpoint}_`
     for (const key of apiCache.keys()) {
       if (key.startsWith(prefix)) {
-        apiCache.delete(key);
+        apiCache.delete(key)
       }
     }
   }
@@ -134,7 +134,7 @@ export function invalidateCache(endpoint, params = null) {
  * Clear all cache
  */
 export function clearCache() {
-  apiCache.clear();
+  apiCache.clear()
 }
 
 /**
@@ -142,11 +142,11 @@ export function clearCache() {
  * @returns {Object} - Cache statistics
  */
 export function getCacheStats() {
-  const entries = Array.from(apiCache.values());
-  const now = Date.now();
+  const entries = Array.from(apiCache.values())
+  const now = Date.now()
   
-  const validEntries = entries.filter(e => e.expiry > now);
-  const expiredEntries = entries.filter(e => e.expiry <= now);
+  const validEntries = entries.filter(e => e.expiry > now)
+  const expiredEntries = entries.filter(e => e.expiry <= now)
   
   return {
     totalEntries: apiCache.size,
@@ -154,7 +154,7 @@ export function getCacheStats() {
     expiredEntries: expiredEntries.length,
     maxSize: DEFAULT_CACHE_CONFIG.maxSize,
     enabled: DEFAULT_CACHE_CONFIG.enabled
-  };
+  }
 }
 
 /**
@@ -162,7 +162,7 @@ export function getCacheStats() {
  * @param {Object} config - Cache configuration
  */
 export function configureCache(config) {
-  Object.assign(DEFAULT_CACHE_CONFIG, config);
+  Object.assign(DEFAULT_CACHE_CONFIG, config)
 }
 
 /**
@@ -178,25 +178,25 @@ export async function cachedApiCall(apiFunction, endpoint, params = {}, options 
     ttl = DEFAULT_CACHE_CONFIG.ttl,
     forceRefresh = false,
     enabled = DEFAULT_CACHE_CONFIG.enabled
-  } = options;
+  } = options
   
   if (!enabled || forceRefresh) {
-    return await apiFunction(params);
+    return await apiFunction(params)
   }
   
   // Check cache first
-  const cached = getCachedResponse(endpoint, params);
+  const cached = getCachedResponse(endpoint, params)
   if (cached !== null) {
-    return cached;
+    return cached
   }
   
   // Call API function
-  const result = await apiFunction(params);
+  const result = await apiFunction(params)
   
   // Cache the result
-  setCachedResponse(endpoint, params, result, ttl);
+  setCachedResponse(endpoint, params, result, ttl)
   
-  return result;
+  return result
 }
 
 /**
@@ -206,14 +206,14 @@ export async function cachedApiCall(apiFunction, endpoint, params = {}, options 
 export async function prefetchData(prefetchItems) {
   const promises = prefetchItems.map(async (item) => {
     try {
-      const data = await item.apiFunction(item.params);
-      setCachedResponse(item.endpoint, item.params, data);
+      const data = await item.apiFunction(item.params)
+      setCachedResponse(item.endpoint, item.params, data)
     } catch (error) {
-      console.error(`Failed to prefetch ${item.endpoint}:`, error);
+      
     }
-  });
+  })
   
-  await Promise.all(promises);
+  await Promise.all(promises)
 }
 
 /**
@@ -223,22 +223,22 @@ export async function prefetchData(prefetchItems) {
  */
 export function withCache(options = {}) {
   return function(target, propertyKey, descriptor) {
-    const originalMethod = descriptor.value;
+    const originalMethod = descriptor.value
     
     descriptor.value = async function(...args) {
-      const endpoint = propertyKey;
-      const params = args[0] || {};
+      const endpoint = propertyKey
+      const params = args[0] || {}
       
       return cachedApiCall(
         originalMethod.bind(this),
         endpoint,
         params,
         options
-      );
-    };
+      )
+    }
     
-    return descriptor;
-  };
+    return descriptor
+  }
 }
 
 // Start periodic cleanup

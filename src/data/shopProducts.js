@@ -12,12 +12,12 @@
  *             joined, then a random participant wins the discount price.
  */
 
-export const SHOP_CURRENCY = 'KES';
+export const SHOP_CURRENCY = 'KES'
 
 export const formatKES = (amount) =>
-  `KES ${Math.round(Number(amount) || 0).toLocaleString('en-KE')}`;
+  `KES ${Math.round(Number(amount) || 0).toLocaleString('en-KE')}`
 
-const hoursFromNow = (h) => new Date(Date.now() + h * 3600 * 1000).toISOString();
+const hoursFromNow = (h) => new Date(Date.now() + h * 3600 * 1000).toISOString()
 
 export const shopCategories = [
   { id: 'Wardrobe', label: 'Wardrobe', icon: '🎭' },
@@ -25,7 +25,7 @@ export const shopCategories = [
   { id: 'Merchandise', label: 'Merchandise', icon: '👕' },
   { id: 'Collectibles', label: 'Collectibles', icon: '🏆' },
   { id: 'Experiences', label: 'Experiences', icon: '✨' },
-];
+]
 
 const base = {
   status: 'active',
@@ -39,7 +39,7 @@ const base = {
   auction_participants: 0,
   auction_status: 'open',
   fulfillment: 'physical',
-};
+}
 
 export const buildSeedProducts = () => [
   {
@@ -195,4 +195,4 @@ export const buildSeedProducts = () => [
     description:
       'Hardcover photo book featuring exclusive behind-the-scenes shots from award-winning Kenyan productions. 120 pages of cinematic excellence.',
   },
-];
+]

@@ -1,45 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { X, Building2, MapPin, Globe, Mail, Phone, Users, FileText, Star, Calendar, CheckCircle, ExternalLink, Instagram, Linkedin, Twitter, Youtube, ChevronLeft, ChevronRight } from 'lucide-react';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
-import { ProjectOwner, Project } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { X, Building2, MapPin, Globe, Mail, Phone, Users, FileText, Star, Calendar, CheckCircle, ExternalLink, Instagram, Linkedin, Twitter, Youtube, ChevronLeft, ChevronRight } from 'lucide-react'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
+import { ProjectOwner, Project } from '@/lib/supabaseEntities'
 
 export default function ClientPublicProfile() {
-  const { id } = useParams();
-  const [owner, setOwner] = useState(null);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeProjectIdx, setActiveProjectIdx] = useState(0);
+  const { id } = useParams()
+  const [owner, setOwner] = useState(null)
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [activeProjectIdx, setActiveProjectIdx] = useState(0)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch client profile
-        const owners = await ProjectOwner.list();
-        const foundOwner = owners.find(o => o.id === id);
+        const owners = await ProjectOwner.list()
+        const foundOwner = owners.find(o => o.id === id)
         if (foundOwner) {
-          setOwner(foundOwner);
+          setOwner(foundOwner)
           
           // Fetch client's projects
-          const allProjects = await Project.filter({ project_owner_email: foundOwner.email });
-          setProjects(allProjects.filter(p => p.status === 'verified'));
+          const allProjects = await Project.filter({ project_owner_email: foundOwner.email })
+          setProjects(allProjects.filter(p => p.status === 'verified'))
         }
       } catch (err) {
-        console.error('Error fetching client profile:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchData();
-  }, [id]);
+    }
+    fetchData()
+  }, [id])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-gray-500">Loading...</div>
       </div>
-    );
+    )
   }
 
   if (!owner) {
@@ -47,11 +47,11 @@ export default function ClientPublicProfile() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-gray-500">Client profile not found</div>
       </div>
-    );
+    )
   }
 
-  const nextProject = () => setActiveProjectIdx((i) => (i + 1) % projects.length);
-  const prevProject = () => setActiveProjectIdx((i) => (i - 1 + projects.length) % projects.length);
+  const nextProject = () => setActiveProjectIdx((i) => (i + 1) % projects.length)
+  const prevProject = () => setActiveProjectIdx((i) => (i - 1 + projects.length) % projects.length)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -230,5 +230,5 @@ export default function ClientPublicProfile() {
 
       <Footer />
     </div>
-  );
+  )
 }

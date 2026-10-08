@@ -1,84 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Backer, BackedProject } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, Filter, Download } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { confirmDialog } from '@/lib/sweetAlert';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Backer, BackedProject } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { DollarSign, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, Filter, Download } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { confirmDialog } from '@/lib/sweetAlert'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function BackerInvestmentsPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [backer, setBacker] = useState(null);
-  const [investments, setInvestments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [sortBy, setSortBy] = useState('date');
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [backer, setBacker] = useState(null)
+  const [investments, setInvestments] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [sortBy, setSortBy] = useState('date')
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    fetchData();
-  }, [isAuthenticated]);
+    fetchData()
+  }, [isAuthenticated])
 
   const fetchData = async () => {
     try {
       // Fetch backer profile
-      const backers = await Backer.filter({ contact_email: authUser?.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email })
       if (backers.length > 0) {
-        setBacker(backers[0]);
+        setBacker(backers[0])
       }
 
       // Fetch backed projects
-      const backedProjects = await BackedProject.filter({ backer_email: authUser?.email });
-      setInvestments(backedProjects);
+      const backedProjects = await BackedProject.filter({ backer_email: authUser?.email })
+      setInvestments(backedProjects)
     } catch (err) {
-      console.error('Error fetching investments:', err);
-      toastError('Load Failed', 'Failed to load investments. Please try again.');
+      
+      toastError('Load Failed', 'Failed to load investments. Please try again.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const filteredInvestments = investments.filter(inv => {
-    if (filterStatus === 'all') return true;
-    return inv.status === filterStatus;
+    if (filterStatus === 'all') return true
+    return inv.status === filterStatus
   }).sort((a, b) => {
-    if (sortBy === 'date') return new Date(b.investment_date) - new Date(a.investment_date);
-    if (sortBy === 'amount') return b.investment_amount - a.investment_amount;
-    if (sortBy === 'roi') return (b.expected_roi || 0) - (a.expected_roi || 0);
-    return 0;
-  });
+    if (sortBy === 'date') return new Date(b.investment_date) - new Date(a.investment_date)
+    if (sortBy === 'amount') return b.investment_amount - a.investment_amount
+    if (sortBy === 'roi') return (b.expected_roi || 0) - (a.expected_roi || 0)
+    return 0
+  })
 
-  const totalInvested = investments.reduce((sum, inv) => sum + (inv.investment_amount || 0), 0);
-  const totalExpectedROI = investments.reduce((sum, inv) => sum + (inv.expected_roi || 0), 0);
-  const totalROI = totalExpectedROI - totalInvested;
-  const roiPercentage = totalInvested > 0 ? ((totalROI / totalInvested) * 100).toFixed(1) : 0;
+  const totalInvested = investments.reduce((sum, inv) => sum + (inv.investment_amount || 0), 0)
+  const totalExpectedROI = investments.reduce((sum, inv) => sum + (inv.expected_roi || 0), 0)
+  const totalROI = totalExpectedROI - totalInvested
+  const roiPercentage = totalInvested > 0 ? ((totalROI / totalInvested) * 100).toFixed(1) : 0
 
   const handleWithdraw = async (investmentId) => {
-    if (!(await confirmDialog('Withdraw this investment?', 'This action cannot be undone'))) return;
+    if (!(await confirmDialog('Withdraw this investment?', 'This action cannot be undone'))) return
     try {
-      await BackedProject.update(investmentId, { status: 'withdrawn' });
-      success('Withdrawal Initiated', 'Your withdrawal request has been submitted');
-      fetchData();
+      await BackedProject.update(investmentId, { status: 'withdrawn' })
+      success('Withdrawal Initiated', 'Your withdrawal request has been submitted')
+      fetchData()
     } catch (err) {
-      console.error('Error withdrawing:', err);
-      toastError('Withdrawal Failed', 'Failed to process withdrawal');
+      
+      toastError('Withdrawal Failed', 'Failed to process withdrawal')
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -231,5 +231,5 @@ export default function BackerInvestmentsPage() {
           </CardContent>
         </Card>
     </div>
-  );
+  )
 }

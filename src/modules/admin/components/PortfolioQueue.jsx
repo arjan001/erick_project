@@ -1,36 +1,36 @@
-import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Eye, Tag } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import React, { useState } from 'react'
+import { base44 } from '@/api/base44Client'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { CheckCircle, XCircle, Eye, Tag } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 
 export default function PortfolioQueue() {
-  const [selectedClip, setSelectedClip] = useState(null);
-  const [tags, setTags] = useState('');
-  const [useForVisualDirection, setUseForVisualDirection] = useState(false);
-  const queryClient = useQueryClient();
+  const [selectedClip, setSelectedClip] = useState(null)
+  const [tags, setTags] = useState('')
+  const [useForVisualDirection, setUseForVisualDirection] = useState(false)
+  const queryClient = useQueryClient()
 
   const { data: clips, isLoading } = useQuery({
     queryKey: ['admin-portfolio'],
     queryFn: () => base44.entities.PortfolioClip.list('-created_date'),
-  });
+  })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.PortfolioClip.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-portfolio'] });
-      setSelectedClip(null);
-      setTags('');
-      setUseForVisualDirection(false);
+      queryClient.invalidateQueries({ queryKey: ['admin-portfolio'] })
+      setSelectedClip(null)
+      setTags('')
+      setUseForVisualDirection(false)
     },
-  });
+  })
 
   const handleApprove = (clip) => {
-    const tagArray = tags ? tags.split(',').map(t => t.trim()) : [];
+    const tagArray = tags ? tags.split(',').map(t => t.trim()) : []
     updateMutation.mutate({
       id: clip.id,
       data: {
@@ -38,20 +38,20 @@ export default function PortfolioQueue() {
         visual_style_tags: tagArray,
         approved_for_visual_direction: useForVisualDirection
       }
-    });
-  };
+    })
+  }
 
   const handleReject = (clip) => {
     updateMutation.mutate({
       id: clip.id,
       data: { status: 'rejected' }
-    });
-  };
+    })
+  }
 
-  if (isLoading) return <div className="text-center py-12 text-gray-400">Loading portfolio...</div>;
+  if (isLoading) return <div className="text-center py-12 text-gray-400">Loading portfolio...</div>
 
-  const pending = clips?.filter(c => c.status === 'pending') || [];
-  const approved = clips?.filter(c => c.status === 'approved') || [];
+  const pending = clips?.filter(c => c.status === 'pending') || []
+  const approved = clips?.filter(c => c.status === 'approved') || []
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -205,5 +205,5 @@ export default function PortfolioQueue() {
         )}
       </div>
     </div>
-  );
+  )
 }

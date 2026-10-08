@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { supabase } from '@/lib/supabase';
-import { ProjectOwner, Project, TeamMember, BillingInfo, Invoice, SecuritySettings, ActiveSession } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import CountrySelector from '@/components/CountrySelector';
-import { formatSocialMediaUrl } from '@/lib/socialMediaUtils';
-import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2, FolderOpen, Users, CreditCard, Lock, Settings as SettingsIcon, Plus, Eye, MoreVertical, UserPlus, FileText, Monitor, MapPin, Share2 } from 'lucide-react';
-import { useToast } from '@/hooks/useToast';
+import React, { useState, useEffect } from 'react'
+import { base44 } from '@/api/base44Client'
+import { supabase } from '@/lib/supabase'
+import { ProjectOwner, Project, TeamMember, BillingInfo, Invoice, SecuritySettings, ActiveSession } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import CountrySelector from '@/components/CountrySelector'
+import { formatSocialMediaUrl } from '@/lib/socialMediaUtils'
+import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2, FolderOpen, Users, CreditCard, Lock, Settings as SettingsIcon, Plus, Eye, MoreVertical, UserPlus, FileText, Monitor, MapPin, Share2 } from 'lucide-react'
+import { useToast } from '@/hooks/useToast'
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
   return (
@@ -23,175 +23,175 @@ function ToggleRow({ title, description, checked, onChange, isLast }) {
         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
       </button>
     </div>
-  );
+  )
 }
 
 export default function ClientProfilePage() {
-  const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
-  const [owner, setOwner] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [activeTab, setActiveTab] = useState('profile');
-  const [editing, setEditing] = useState(false);
-  const [showBioModal, setShowBioModal] = useState(false);
-  const [projects, setProjects] = useState([]);
-  const [loadingProjects, setLoadingProjects] = useState(false);
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [loadingTeam, setLoadingTeam] = useState(false);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('member');
-  const [billingInfo, setBillingInfo] = useState([]);
-  const [invoices, setInvoices] = useState([]);
-  const [loadingBilling, setLoadingBilling] = useState(false);
-  const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
-  const [securitySettings, setSecuritySettings] = useState(null);
-  const [activeSessions, setActiveSessions] = useState([]);
-  const [loadingSecurity, setLoadingSecurity] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-  const [changingPassword, setChangingPassword] = useState(false);
-  const [deletingAccount, setDeletingAccount] = useState(false);
+  const { success, error: toastError } = useToast()
+  const [user, setUser] = useState(null)
+  const [owner, setOwner] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState(null)
+  const [activeTab, setActiveTab] = useState('profile')
+  const [editing, setEditing] = useState(false)
+  const [showBioModal, setShowBioModal] = useState(false)
+  const [projects, setProjects] = useState([])
+  const [loadingProjects, setLoadingProjects] = useState(false)
+  const [teamMembers, setTeamMembers] = useState([])
+  const [loadingTeam, setLoadingTeam] = useState(false)
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('member')
+  const [billingInfo, setBillingInfo] = useState([])
+  const [invoices, setInvoices] = useState([])
+  const [loadingBilling, setLoadingBilling] = useState(false)
+  const [showAddPaymentModal, setShowAddPaymentModal] = useState(false)
+  const [securitySettings, setSecuritySettings] = useState(null)
+  const [activeSessions, setActiveSessions] = useState([])
+  const [loadingSecurity, setLoadingSecurity] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
+  const [changingPassword, setChangingPassword] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState(false)
 
   const [formData, setFormData] = useState({
     company: '', phone: '', website: '', bio: '', linkedin: '', instagram: '', twitter: '', youtube: '',
     city: '', country: ''
-  });
+  })
 
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [projectUpdates, setProjectUpdates] = useState(true);
-  const [profilePublic, setProfilePublic] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true)
+  const [projectUpdates, setProjectUpdates] = useState(true)
+  const [profilePublic, setProfilePublic] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    const parsedUser = JSON.parse(storedUser);
-    setUser(parsedUser);
+    const parsedUser = JSON.parse(storedUser)
+    setUser(parsedUser)
 
     const fetchData = async () => {
       try {
-        const owners = await ProjectOwner.filter({ email: parsedUser.email });
+        const owners = await ProjectOwner.filter({ email: parsedUser.email })
         if (owners.length > 0) {
-          const o = owners[0];
-          setOwner(o);
+          const o = owners[0]
+          setOwner(o)
           setFormData({
             company: o.company || '', phone: o.phone || '', website: o.website || '', bio: o.bio || '',
             linkedin: o.linkedin || '', instagram: o.instagram || '', twitter: o.twitter || '', youtube: o.youtube || '',
             city: o.city || '', country: o.country || ''
-          });
-          setEmailNotifications(o.email_notifications ?? true);
-          setProjectUpdates(o.project_updates ?? true);
-          setProfilePublic(o.profile_public ?? true);
+          })
+          setEmailNotifications(o.email_notifications ?? true)
+          setProjectUpdates(o.project_updates ?? true)
+          setProfilePublic(o.profile_public ?? true)
         }
       } catch (err) {
-        console.error('Error fetching client profile:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   // Load projects for the Projects tab
   useEffect(() => {
     const loadProjects = async () => {
       if (user?.email && activeTab === 'projects') {
-        setLoadingProjects(true);
+        setLoadingProjects(true)
         try {
-          const userProjects = await Project.filter({ project_owner_email: user.email });
-          setProjects(userProjects || []);
+          const userProjects = await Project.filter({ project_owner_email: user.email })
+          setProjects(userProjects || [])
         } catch (err) {
-          console.error('Error fetching projects:', err);
-          setProjects([]);
+          //
+          setProjects([])
         } finally {
-          setLoadingProjects(false);
+          setLoadingProjects(false)
         }
       }
-    };
-    loadProjects();
-  }, [user, activeTab]);
+    }
+    loadProjects()
+  }, [user, activeTab])
 
   // Load team members for the Team tab
   useEffect(() => {
     const loadTeamMembers = async () => {
       if (owner?.id && activeTab === 'team') {
-        setLoadingTeam(true);
+        setLoadingTeam(true)
         try {
-          const members = await TeamMember.filter({ client_id: owner.id });
-          setTeamMembers(members || []);
+          const members = await TeamMember.filter({ client_id: owner.id })
+          setTeamMembers(members || [])
         } catch (err) {
-          console.error('Error fetching team members:', err);
-          setTeamMembers([]);
+          //
+          setTeamMembers([])
         } finally {
-          setLoadingTeam(false);
+          setLoadingTeam(false)
         }
       }
-    };
-    loadTeamMembers();
-  }, [owner, activeTab]);
+    }
+    loadTeamMembers()
+  }, [owner, activeTab])
 
   // Load billing info for the Billing tab
   useEffect(() => {
     const loadBillingInfo = async () => {
       if (owner?.id && activeTab === 'billing') {
-        setLoadingBilling(true);
+        setLoadingBilling(true)
         try {
           const [billing, invoiceData] = await Promise.all([
             BillingInfo.filter({ client_id: owner.id }),
             Invoice.filter({ client_id: owner.id })
-          ]);
-          setBillingInfo(billing || []);
-          setInvoices(invoiceData || []);
+          ])
+          setBillingInfo(billing || [])
+          setInvoices(invoiceData || [])
         } catch (err) {
-          console.error('Error fetching billing info:', err);
-          setBillingInfo([]);
-          setInvoices([]);
+          //
+          setBillingInfo([])
+          setInvoices([])
         } finally {
-          setLoadingBilling(false);
+          setLoadingBilling(false)
         }
       }
-    };
-    loadBillingInfo();
-  }, [owner, activeTab]);
+    }
+    loadBillingInfo()
+  }, [owner, activeTab])
 
   // Load security settings for the Security tab
   useEffect(() => {
     const loadSecuritySettings = async () => {
       if (owner?.id && activeTab === 'security') {
-        setLoadingSecurity(true);
+        setLoadingSecurity(true)
         try {
           const [settings, sessions] = await Promise.all([
             SecuritySettings.filter({ client_id: owner.id }),
             ActiveSession.filter({ client_id: owner.id })
-          ]);
-          setSecuritySettings(settings[0] || null);
-          setActiveSessions(sessions || []);
+          ])
+          setSecuritySettings(settings[0] || null)
+          setActiveSessions(sessions || [])
         } catch (err) {
-          console.error('Error fetching security settings:', err);
-          setSecuritySettings(null);
-          setActiveSessions([]);
+          //
+          setSecuritySettings(null)
+          setActiveSessions([])
         } finally {
-          setLoadingSecurity(false);
+          setLoadingSecurity(false)
         }
       }
-    };
-    loadSecuritySettings();
-  }, [owner, activeTab]);
+    }
+    loadSecuritySettings()
+  }, [owner, activeTab])
 
   const handleSaveProfile = async () => {
     if (!owner) {
-      toastError('Error', 'Profile not found. Please refresh the page.');
-      return;
+      toastError('Error', 'Profile not found. Please refresh the page.')
+      return
     }
-    setSaving(true);
+    setSaving(true)
     try {
       const updated = await ProjectOwner.update(owner.id, {
         company: formData.company,
@@ -204,278 +204,278 @@ export default function ClientProfilePage() {
         youtube: formData.youtube,
         city: formData.city,
         country: formData.country
-      });
-      setOwner(updated);
-      success('Profile Updated', 'Your profile has been saved');
-      setEditing(false);
+      })
+      setOwner(updated)
+      success('Profile Updated', 'Your profile has been saved')
+      setEditing(false)
     } catch (err) {
-      console.error('Error saving profile:', err);
-      toastError('Save Failed', 'Failed to save profile. Please try again.');
+      //
+      toastError('Save Failed', 'Failed to save profile. Please try again.')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleSaveBio = async () => {
     if (!owner) {
-      toastError('Error', 'Profile not found. Please refresh the page.');
-      return;
+      toastError('Error', 'Profile not found. Please refresh the page.')
+      return
     }
     try {
-      const updated = await ProjectOwner.update(owner.id, { bio: formData.bio });
-      setOwner(updated);
-      success('Bio Updated', 'Your bio has been updated');
-      setShowBioModal(false);
+      const updated = await ProjectOwner.update(owner.id, { bio: formData.bio })
+      setOwner(updated)
+      success('Bio Updated', 'Your bio has been updated')
+      setShowBioModal(false)
     } catch (err) {
-      console.error('Error saving bio:', err);
-      toastError('Save Failed', 'Failed to save bio. Please try again.');
+      //
+      toastError('Save Failed', 'Failed to save bio. Please try again.')
     }
-  };
+  }
 
   const handleSavePreferences = async () => {
     if (!owner) {
-      toastError('Error', 'Profile not found. Please refresh the page.');
-      return;
+      toastError('Error', 'Profile not found. Please refresh the page.')
+      return
     }
     try {
       const updated = await ProjectOwner.update(owner.id, {
         email_notifications: emailNotifications,
         project_updates: projectUpdates,
         profile_public: profilePublic
-      });
-      setOwner(updated);
-      success('Preferences Updated', 'Your settings have been saved');
+      })
+      setOwner(updated)
+      success('Preferences Updated', 'Your settings have been saved')
     } catch (err) {
-      console.error('Error saving preferences:', err);
-      toastError('Save Failed', 'Failed to update preferences');
+      //
+      toastError('Save Failed', 'Failed to update preferences')
     }
-  };
+  }
 
   // Project CRUD operations
   const handleEditProject = (project) => {
-    window.location.href = `/ClientPostProject?edit=${project.id}`;
-  };
+    window.location.href = `/ClientPostProject?edit=${project.id}`
+  }
 
   const handleDeleteProject = async (projectId) => {
-    if (!confirm('Are you sure you want to delete this project?')) return;
+    if (!confirm('Are you sure you want to delete this project?')) return
     try {
-      await Project.delete(projectId);
-      setProjects(projects.filter(p => p.id !== projectId));
-      success('Project Deleted', 'Project has been deleted successfully');
+      await Project.delete(projectId)
+      setProjects(projects.filter(p => p.id !== projectId))
+      success('Project Deleted', 'Project has been deleted successfully')
     } catch (err) {
-      toastError('Delete Failed', err.message || 'Failed to delete project');
+      toastError('Delete Failed', err.message || 'Failed to delete project')
     }
-  };
+  }
 
   // Team CRUD operations
   const handleInviteTeamMember = async () => {
-    if (!inviteEmail || !owner) return;
+    if (!inviteEmail || !owner) return
     try {
       await TeamMember.create({
         client_id: owner.id,
         email: inviteEmail,
         role: inviteRole,
         status: 'pending'
-      });
-      setInviteEmail('');
-      setInviteRole('member');
-      setShowInviteModal(false);
-      success('Invitation Sent', `Invitation sent to ${inviteEmail}`);
+      })
+      setInviteEmail('')
+      setInviteRole('member')
+      setShowInviteModal(false)
+      success('Invitation Sent', `Invitation sent to ${inviteEmail}`)
       // Reload team members
-      const members = await TeamMember.filter({ client_id: owner.id });
-      setTeamMembers(members);
+      const members = await TeamMember.filter({ client_id: owner.id })
+      setTeamMembers(members)
     } catch (err) {
-      toastError('Invite Failed', err.message || 'Failed to send invitation');
+      toastError('Invite Failed', err.message || 'Failed to send invitation')
     }
-  };
+  }
 
   const handleRemoveTeamMember = async (memberId) => {
-    if (!confirm('Are you sure you want to remove this team member?')) return;
+    if (!confirm('Are you sure you want to remove this team member?')) return
     try {
-      await TeamMember.delete(memberId);
-      setTeamMembers(teamMembers.filter(m => m.id !== memberId));
-      success('Member Removed', 'Team member has been removed');
+      await TeamMember.delete(memberId)
+      setTeamMembers(teamMembers.filter(m => m.id !== memberId))
+      success('Member Removed', 'Team member has been removed')
     } catch (err) {
-      toastError('Remove Failed', err.message || 'Failed to remove team member');
+      toastError('Remove Failed', err.message || 'Failed to remove team member')
     }
-  };
+  }
 
   // Billing CRUD operations
   const handleAddPaymentMethod = async (paymentData) => {
-    if (!owner) return;
+    if (!owner) return
     try {
       await BillingInfo.create({
         client_id: owner.id,
         ...paymentData,
         is_default: billingInfo.length === 0
-      });
-      setShowAddPaymentModal(false);
-      success('Payment Method Added', 'Payment method has been added successfully');
+      })
+      setShowAddPaymentModal(false)
+      success('Payment Method Added', 'Payment method has been added successfully')
       // Reload billing info
-      const billing = await BillingInfo.filter({ client_id: owner.id });
-      setBillingInfo(billing);
+      const billing = await BillingInfo.filter({ client_id: owner.id })
+      setBillingInfo(billing)
     } catch (err) {
-      toastError('Add Failed', err.message || 'Failed to add payment method');
+      toastError('Add Failed', err.message || 'Failed to add payment method')
     }
-  };
+  }
 
   const handleDeletePaymentMethod = async (paymentId) => {
-    if (!confirm('Are you sure you want to remove this payment method?')) return;
+    if (!confirm('Are you sure you want to remove this payment method?')) return
     try {
-      await BillingInfo.delete(paymentId);
-      setBillingInfo(billingInfo.filter(b => b.id !== paymentId));
-      success('Payment Method Removed', 'Payment method has been removed');
+      await BillingInfo.delete(paymentId)
+      setBillingInfo(billingInfo.filter(b => b.id !== paymentId))
+      success('Payment Method Removed', 'Payment method has been removed')
     } catch (err) {
-      toastError('Delete Failed', err.message || 'Failed to remove payment method');
+      toastError('Delete Failed', err.message || 'Failed to remove payment method')
     }
-  };
+  }
 
   // Security CRUD operations
   const handleToggle2FA = async () => {
-    if (!owner) return;
+    if (!owner) return
     try {
       if (securitySettings) {
         await SecuritySettings.update(securitySettings.id, {
           two_factor_enabled: !securitySettings.two_factor_enabled
-        });
+        })
         setSecuritySettings({
           ...securitySettings,
           two_factor_enabled: !securitySettings.two_factor_enabled
-        });
+        })
       } else {
         const newSettings = await SecuritySettings.create({
           client_id: owner.id,
           two_factor_enabled: true
-        });
-        setSecuritySettings(newSettings);
+        })
+        setSecuritySettings(newSettings)
       }
-      success('2FA Updated', 'Two-factor authentication has been updated');
+      success('2FA Updated', 'Two-factor authentication has been updated')
     } catch (err) {
-      toastError('Update Failed', err.message || 'Failed to update 2FA settings');
+      toastError('Update Failed', err.message || 'Failed to update 2FA settings')
     }
-  };
+  }
 
   const handleRevokeSession = async (sessionId) => {
-    if (!confirm('Are you sure you want to revoke this session?')) return;
+    if (!confirm('Are you sure you want to revoke this session?')) return
     try {
-      await ActiveSession.delete(sessionId);
-      setActiveSessions(activeSessions.filter(s => s.id !== sessionId));
-      success('Session Revoked', 'Session has been revoked successfully');
+      await ActiveSession.delete(sessionId)
+      setActiveSessions(activeSessions.filter(s => s.id !== sessionId))
+      success('Session Revoked', 'Session has been revoked successfully')
     } catch (err) {
-      toastError('Revoke Failed', err.message || 'Failed to revoke session');
+      toastError('Revoke Failed', err.message || 'Failed to revoke session')
     }
-  };
+  }
 
   const handleChangePassword = async () => {
     if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-      toastError('Validation Error', 'Please fill in all password fields');
-      return;
+      toastError('Validation Error', 'Please fill in all password fields')
+      return
     }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toastError('Validation Error', 'New passwords do not match');
-      return;
+      toastError('Validation Error', 'New passwords do not match')
+      return
     }
     if (passwordForm.newPassword.length < 8) {
-      toastError('Validation Error', 'Password must be at least 8 characters');
-      return;
+      toastError('Validation Error', 'Password must be at least 8 characters')
+      return
     }
 
-    setChangingPassword(true);
+    setChangingPassword(true)
     try {
       const { error } = await supabase.auth.updateUser({
         password: passwordForm.newPassword
-      });
+      })
 
-      if (error) throw error;
+      if (error) throw error
 
       // Update password last changed in security settings
       if (securitySettings) {
         await SecuritySettings.update(securitySettings.id, {
           password_last_changed: new Date().toISOString()
-        });
+        })
       } else {
         await SecuritySettings.create({
           client_id: owner.id,
           password_last_changed: new Date().toISOString()
-        });
+        })
       }
 
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      setShowPasswordModal(false);
-      success('Password Changed', 'Your password has been updated successfully');
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      setShowPasswordModal(false)
+      success('Password Changed', 'Your password has been updated successfully')
     } catch (err) {
-      console.error('Error changing password:', err);
-      toastError('Password Change Failed', err.message || 'Failed to change password');
+      //
+      toastError('Password Change Failed', err.message || 'Failed to change password')
     } finally {
-      setChangingPassword(false);
+      setChangingPassword(false)
     }
-  };
+  }
 
   const handleDeleteAccount = async () => {
-    if (!confirm('Are you sure you want to delete your account? This action cannot be undone. Your account will be suspended for 90 days before permanent deletion.')) return;
+    if (!confirm('Are you sure you want to delete your account? This action cannot be undone. Your account will be suspended for 90 days before permanent deletion.')) return
 
-    setDeletingAccount(true);
+    setDeletingAccount(true)
     try {
       // Mark account for deletion (suspend it)
-      const deletionDate = new Date();
-      deletionDate.setDate(deletionDate.getDate() + 90);
+      const deletionDate = new Date()
+      deletionDate.setDate(deletionDate.getDate() + 90)
 
       await ProjectOwner.update(owner.id, {
         is_suspended: true,
         deletion_requested_at: new Date().toISOString(),
         scheduled_deletion_date: deletionDate.toISOString()
-      });
+      })
 
       // Log out the user
-      await supabase.auth.signOut();
-      localStorage.removeItem('ericrabar_user');
+      await supabase.auth.signOut()
+      localStorage.removeItem('ericrabar_user')
 
-      success('Account Deletion Requested', 'Your account has been suspended and will be permanently deleted in 90 days');
-      window.location.href = '/SignIn';
+      success('Account Deletion Requested', 'Your account has been suspended and will be permanently deleted in 90 days')
+      window.location.href = '/SignIn'
     } catch (err) {
-      console.error('Error deleting account:', err);
-      toastError('Delete Failed', err.message || 'Failed to delete account');
+      //
+      toastError('Delete Failed', err.message || 'Failed to delete account')
     } finally {
-      setDeletingAccount(false);
+      setDeletingAccount(false)
     }
-  };
+  }
 
   // Track current session
   useEffect(() => {
     const trackCurrentSession = async () => {
-      if (!owner?.id) return;
+      if (!owner?.id) return
 
       try {
         // Get device info
-        const userAgent = navigator.userAgent;
-        let browser = 'Unknown';
-        let deviceType = 'Desktop';
+        const userAgent = navigator.userAgent
+        let browser = 'Unknown'
+        let deviceType = 'Desktop'
 
-        if (userAgent.includes('Chrome')) browser = 'Chrome';
-        else if (userAgent.includes('Firefox')) browser = 'Firefox';
-        else if (userAgent.includes('Safari')) browser = 'Safari';
-        else if (userAgent.includes('Edge')) browser = 'Edge';
+        if (userAgent.includes('Chrome')) browser = 'Chrome'
+        else if (userAgent.includes('Firefox')) browser = 'Firefox'
+        else if (userAgent.includes('Safari')) browser = 'Safari'
+        else if (userAgent.includes('Edge')) browser = 'Edge'
 
         if (userAgent.includes('Mobile') || userAgent.includes('Android') || userAgent.includes('iPhone')) {
-          deviceType = 'Mobile';
+          deviceType = 'Mobile'
         } else if (userAgent.includes('Tablet') || userAgent.includes('iPad')) {
-          deviceType = 'Tablet';
+          deviceType = 'Tablet'
         }
 
         // Get IP address (using a free API)
-        const ipResponse = await fetch('https://api.ipify.org?format=json');
-        const ipData = await ipResponse.json();
-        const ipAddress = ipData.ip;
+        const ipResponse = await fetch('https://api.ipify.org?format=json')
+        const ipData = await ipResponse.json()
+        const ipAddress = ipData.ip
 
         // Get location (using a free API)
-        const locationResponse = await fetch(`https://ipapi.co/${ipAddress}/json/`);
-        const locationData = await locationResponse.json();
+        const locationResponse = await fetch(`https://ipapi.co/${ipAddress}/json/`)
+        const locationData = await locationResponse.json()
 
         // Check if session already exists
         const existingSessions = await ActiveSession.filter({
           client_id: owner.id,
           ip_address: ipAddress
-        });
+        })
 
         const sessionData = {
           client_id: owner.id,
@@ -488,63 +488,63 @@ export default function ClientProfilePage() {
           location_city: locationData.city || 'Unknown',
           last_activity: new Date().toISOString(),
           expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
-        };
+        }
 
         if (existingSessions.length > 0) {
           // Update existing session
           await ActiveSession.update(existingSessions[0].id, {
             last_activity: new Date().toISOString()
-          });
+          })
         } else {
           // Create new session
-          await ActiveSession.create(sessionData);
+          await ActiveSession.create(sessionData)
         }
       } catch (err) {
-        console.error('Error tracking session:', err);
+        //
       }
-    };
+    }
 
-    trackCurrentSession();
+    trackCurrentSession()
 
     // Update session activity every 5 minutes
-    const interval = setInterval(trackCurrentSession, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [owner, user]);
+    const interval = setInterval(trackCurrentSession, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [owner, user])
 
   const handleLogoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !owner) return;
+    const file = e.target.files?.[0]
+    if (!file || !owner) return
 
     // Show preview immediately
-    const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
+    const objectUrl = URL.createObjectURL(file)
+    setPreviewUrl(objectUrl)
 
-    setUploadingLogo(true);
+    setUploadingLogo(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url || response.data?.url;
+      const response = await base44.integrations.Core.UploadFile({ file })
+      const fileUrl = response.file_url || response.url || response.data?.url
       if (!fileUrl) {
-        throw new Error('No file URL returned from upload service');
+        throw new Error('No file URL returned from upload service')
       }
-      const updated = await ProjectOwner.update(owner.id, { profile_photo_url: fileUrl });
-      setOwner(updated);
+      const updated = await ProjectOwner.update(owner.id, { profile_photo_url: fileUrl })
+      setOwner(updated)
       setPreviewUrl(null); // Clear preview after successful upload
-      success('Photo Updated', 'Your profile photo has been updated');
+      success('Photo Updated', 'Your profile photo has been updated')
     } catch (err) {
-      console.error('Error uploading photo:', err);
-      toastError('Upload Failed', `Failed to upload photo: ${err.message || 'Unknown error'}`);
+      //
+      toastError('Upload Failed', `Failed to upload photo: ${err.message || 'Unknown error'}`)
       setPreviewUrl(null); // Clear preview on error
     } finally {
-      setUploadingLogo(false);
+      setUploadingLogo(false)
     }
-  };
+  }
 
   if (loading || !user) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -1175,8 +1175,8 @@ export default function ClientProfilePage() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  setShowPasswordModal(false);
-                  setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                  setShowPasswordModal(false)
+                  setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
                 }}
                 className="flex-1"
               >
@@ -1233,5 +1233,5 @@ export default function ClientProfilePage() {
         </div>
       )}
     </div>
-  );
+  )
 }

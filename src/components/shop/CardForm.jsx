@@ -1,47 +1,47 @@
-import React from 'react';
-import { CreditCard, Lock } from 'lucide-react';
+import React from 'react'
+import { CreditCard, Lock } from 'lucide-react'
 
 export const emptyCard = {
   name: '',
   number: '',
   expiry: '',
   cvv: '',
-};
+}
 
 export function validateCard(card) {
-  if (!card.name.trim()) return 'Enter the cardholder name.';
-  const digits = card.number.replace(/\D/g, '');
-  if (digits.length < 13 || digits.length > 19) return 'Enter a valid card number.';
-  if (!/^\d{2}\/\d{2}$/.test(card.expiry)) return 'Enter expiry as MM/YY.';
-  if (!card.cvv || card.cvv.length < 3) return 'Enter the CVV.';
-  return null;
+  if (!card.name.trim()) return 'Enter the cardholder name.'
+  const digits = card.number.replace(/\D/g, '')
+  if (digits.length < 13 || digits.length > 19) return 'Enter a valid card number.'
+  if (!/^\d{2}\/\d{2}$/.test(card.expiry)) return 'Enter expiry as MM/YY.'
+  if (!card.cvv || card.cvv.length < 3) return 'Enter the CVV.'
+  return null
 }
 
 export function detectCardBrand(number) {
-  const digits = number.replace(/\D/g, '');
-  if (/^4/.test(digits)) return 'Visa';
-  if (/^5[1-5]/.test(digits) || /^2[2-7]/.test(digits)) return 'Mastercard';
-  if (/^3[47]/.test(digits)) return 'American Express';
-  if (/^6(?:011|5)/.test(digits)) return 'Discover';
-  return 'Unknown';
+  const digits = number.replace(/\D/g, '')
+  if (/^4/.test(digits)) return 'Visa'
+  if (/^5[1-5]/.test(digits) || /^2[2-7]/.test(digits)) return 'Mastercard'
+  if (/^3[47]/.test(digits)) return 'American Express'
+  if (/^6(?:011|5)/.test(digits)) return 'Discover'
+  return 'Unknown'
 }
 
 export default function CardForm({ value, onChange }) {
   const formatNumber = (v) => {
-    const digits = v.replace(/\D/g, '');
-    return digits.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
-  };
+    const digits = v.replace(/\D/g, '')
+    return digits.replace(/(\d{4})(?=\d)/g, '$1 ').trim()
+  }
 
   const formatExpiry = (v) => {
-    const digits = v.replace(/\D/g, '');
+    const digits = v.replace(/\D/g, '')
     if (digits.length >= 2) {
-      return digits.slice(0, 2) + '/' + digits.slice(2, 4);
+      return digits.slice(0, 2) + '/' + digits.slice(2, 4)
     }
-    return digits;
-  };
+    return digits
+  }
 
   const inputCls =
-    'w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-black placeholder:text-black/35 focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20';
+    'w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-black placeholder:text-black/35 focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20'
 
   return (
     <div className="space-y-3">
@@ -101,5 +101,5 @@ export default function CardForm({ value, onChange }) {
         Your card details are encrypted and secure.
       </p>
     </div>
-  );
+  )
 }

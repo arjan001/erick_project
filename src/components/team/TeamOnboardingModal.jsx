@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { base44 } from '@/api/base44Client';
-import TeamOnboardingDetailsStep from './TeamOnboardingDetailsStep';
-import TeamStepSpecialties from './TeamStepSpecialties';
+import React, { useState } from 'react'
+import { ArrowLeft, ArrowRight, Check, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { base44 } from '@/api/base44Client'
+import TeamOnboardingDetailsStep from './TeamOnboardingDetailsStep'
+import TeamStepSpecialties from './TeamStepSpecialties'
 
 const STEPS = [
   { id: 1, name: 'Details', component: TeamOnboardingDetailsStep },
   { id: 2, name: 'Specialties', component: TeamStepSpecialties },
-];
+]
 
 // Modern multi-step "complete your team profile" modal, shown right after the
 // team admin's first login when their Team record is still incomplete.
 export default function TeamOnboardingModal({ team, onClose, onComplete }) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [data, setData] = useState({
     city: team.city || '',
     country: team.country || '',
@@ -22,39 +22,39 @@ export default function TeamOnboardingModal({ team, onClose, onComplete }) {
     languages_spoken: team.languages_spoken || [],
     specialties: team.specialties || [],
     custom_specialties: team.custom_specialties || [],
-  });
+  })
 
-  const updateData = (field, value) => setData(prev => ({ ...prev, [field]: value }));
+  const updateData = (field, value) => setData(prev => ({ ...prev, [field]: value }))
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return data.city !== '' && data.country !== '';
-      default: return true;
+      case 1: return data.city !== '' && data.country !== ''
+      default: return true
     }
-  };
+  }
 
   const handleNext = () => {
-    if (canProceed() && currentStep < STEPS.length) setCurrentStep(currentStep + 1);
-  };
+    if (canProceed() && currentStep < STEPS.length) setCurrentStep(currentStep + 1)
+  }
 
   const handleBack = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
-  };
+    if (currentStep > 1) setCurrentStep(currentStep - 1)
+  }
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
-      const { custom_specialties, ...rest } = data;
-      await base44.entities.Team.update(team.id, rest);
-      onComplete({ ...team, ...rest });
+      const { custom_specialties, ...rest } = data
+      await base44.entities.Team.update(team.id, rest)
+      onComplete({ ...team, ...rest })
     } catch (err) {
-      console.error('Error completing team profile:', err);
+      
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
-  const CurrentStepComponent = STEPS[currentStep - 1].component;
+  const CurrentStepComponent = STEPS[currentStep - 1].component
 
   return (
     <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
@@ -121,5 +121,5 @@ export default function TeamOnboardingModal({ team, onClose, onComplete }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

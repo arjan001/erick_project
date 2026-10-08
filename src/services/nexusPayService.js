@@ -9,7 +9,7 @@
  * API Version: v1
  */
 
-const NEXUS_BASE_URL = 'https://makamescopay.com';
+const NEXUS_BASE_URL = 'https://makamescopay.com'
 
 /**
  * Initiate an M-Pesa STK Push payment via Nexus Pay.
@@ -25,25 +25,25 @@ const NEXUS_BASE_URL = 'https://makamescopay.com';
  * @returns {Promise<Object>} Nexus Pay STK Push response
  */
 export async function nexusStkPush({ secretKey, phoneNumber, amount, accountReference, transactionDesc, settlementAccountId, tenantCode }) {
-  if (!secretKey) throw new Error('Nexus Pay secret key is required');
-  if (!phoneNumber) throw new Error('Phone number is required');
-  if (!amount || amount < 1) throw new Error('Amount must be at least 1 KES');
-  if (!accountReference) throw new Error('Account reference is required');
-  if (!transactionDesc) throw new Error('Transaction description is required');
+  if (!secretKey) throw new Error('Nexus Pay secret key is required')
+  if (!phoneNumber) throw new Error('Phone number is required')
+  if (!amount || amount < 1) throw new Error('Amount must be at least 1 KES')
+  if (!accountReference) throw new Error('Account reference is required')
+  if (!transactionDesc) throw new Error('Transaction description is required')
 
   // Normalize phone to 254XXXXXXXXX
-  let phone = phoneNumber.replace(/\s+/g, '').replace(/^\+/, '');
-  if (phone.startsWith('0')) phone = '254' + phone.slice(1);
-  else if (!phone.startsWith('254')) phone = '254' + phone;
+  let phone = phoneNumber.replace(/\s+/g, '').replace(/^\+/, '')
+  if (phone.startsWith('0')) phone = '254' + phone.slice(1)
+  else if (!phone.startsWith('254')) phone = '254' + phone
 
   const body = {
     phoneNumber: phone,
     amount: Math.round(amount),
     accountReference,
     transactionDesc,
-  };
-  if (settlementAccountId) body.settlementAccountId = settlementAccountId;
-  if (tenantCode) body.tenantCode = tenantCode;
+  }
+  if (settlementAccountId) body.settlementAccountId = settlementAccountId
+  if (tenantCode) body.tenantCode = tenantCode
 
   const res = await fetch(`${NEXUS_BASE_URL}/api/payments/stkpush`, {
     method: 'POST',
@@ -52,12 +52,12 @@ export async function nexusStkPush({ secretKey, phoneNumber, amount, accountRefe
       'X-API-Key': secretKey,
     },
     body: JSON.stringify(body),
-  });
+  })
 
-  const data = await res.json();
+  const data = await res.json()
 
   if (!res.ok) {
-    throw new Error(data.message || data.error || `Nexus Pay STK Push failed (${res.status})`);
+    throw new Error(data.message || data.error || `Nexus Pay STK Push failed (${res.status})`)
   }
 
   return {
@@ -67,7 +67,7 @@ export async function nexusStkPush({ secretKey, phoneNumber, amount, accountRefe
     responseDescription: data.responseDescription,
     customerMessage: data.customerMessage,
     transactionId: data.transactionId,
-  };
+  }
 }
 
 /**
@@ -80,20 +80,20 @@ export async function nexusStkPush({ secretKey, phoneNumber, amount, accountRefe
  * @returns {Promise<Object>} Transaction status
  */
 export async function nexusCheckStatus({ secretKey, checkoutRequestId }) {
-  if (!secretKey) throw new Error('Nexus Pay secret key is required');
-  if (!checkoutRequestId) throw new Error('Checkout request ID is required');
+  if (!secretKey) throw new Error('Nexus Pay secret key is required')
+  if (!checkoutRequestId) throw new Error('Checkout request ID is required')
 
   const res = await fetch(`${NEXUS_BASE_URL}/api/payments/status/${checkoutRequestId}`, {
     method: 'GET',
     headers: {
       'X-API-Key': secretKey,
     },
-  });
+  })
 
-  const data = await res.json();
+  const data = await res.json()
 
   if (!res.ok) {
-    throw new Error(data.message || data.error || `Status check failed (${res.status})`);
+    throw new Error(data.message || data.error || `Status check failed (${res.status})`)
   }
 
   return {
@@ -108,7 +108,7 @@ export async function nexusCheckStatus({ secretKey, checkoutRequestId }) {
     isPending: data.status === 'pending',
     isFailed: data.status === 'failed',
     isCancelled: data.status === 'cancelled',
-  };
+  }
 }
 
 /**
@@ -123,21 +123,21 @@ export async function nexusCheckStatus({ secretKey, checkoutRequestId }) {
  * @returns {Promise<Object>} Final transaction status
  */
 export async function nexusPollPaymentStatus({ secretKey, checkoutRequestId, interval = 4000, timeout = 60000, onPoll }) {
-  const start = Date.now();
+  const start = Date.now()
 
   while (Date.now() - start < timeout) {
-    const status = await nexusCheckStatus({ secretKey, checkoutRequestId });
-    if (onPoll) onPoll(status);
+    const status = await nexusCheckStatus({ secretKey, checkoutRequestId })
+    if (onPoll) onPoll(status)
 
     if (status.isCompleted || status.isFailed || status.isCancelled) {
-      return status;
+      return status
     }
 
-    await new Promise((r) => setTimeout(r, interval));
+    await new Promise((r) => setTimeout(r, interval))
   }
 
   // Timeout — return last known status or a timeout result
-  return { status: 'timeout', isCompleted: false, isPending: false, isFailed: false, isCancelled: false };
+  return { status: 'timeout', isCompleted: false, isPending: false, isFailed: false, isCancelled: false }
 }
 
 /**
@@ -150,7 +150,7 @@ export async function nexusPollPaymentStatus({ secretKey, checkoutRequestId, int
 export async function testNexusPayConnection(secretKey) {
   try {
     if (!secretKey) {
-      return { success: false, message: 'Nexus Pay secret key is required' };
+      return { success: false, message: 'Nexus Pay secret key is required' }
     }
 
     // Make a lightweight status check call to verify the key works
@@ -159,15 +159,15 @@ export async function testNexusPayConnection(secretKey) {
       headers: {
         'X-API-Key': secretKey,
       },
-    });
+    })
 
     // A 401/403 means the key is invalid; a 404 for the test ID means the key is valid
     if (res.status === 401 || res.status === 403) {
-      return { success: false, message: 'Invalid API key — authentication failed' };
+      return { success: false, message: 'Invalid API key — authentication failed' }
     }
 
-    return { success: true, message: 'Nexus Pay connection successful. API key is valid.' };
+    return { success: true, message: 'Nexus Pay connection successful. API key is valid.' }
   } catch (err) {
-    return { success: false, message: err.message || 'Connection test failed' };
+    return { success: false, message: err.message || 'Connection test failed' }
   }
 }

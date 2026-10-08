@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import RoleToggle from './RoleToggle';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import RoleToggle from './RoleToggle'
 
 const stats = [
   { value: '65+', label: 'YEARS OF INDUSTRY TRUST' },
   { value: '1k+', label: 'TALENT AGENTS SCOUTING' },
   { value: '14k+', label: 'ROLES ADDED MONTHLY' },
   { value: '280k+', label: 'PROS SEARCHING FOR TALENT' },
-];
+]
 
 const rotatingRoles = [
   'theater',
@@ -17,22 +17,22 @@ const rotatingRoles = [
   'commercials',
   'feature films',
   'UGC gigs',
-];
+]
 
 export default function Hero() {
-  const navigate = useNavigate();
-  const [role, setRole] = useState('talent');
-  const [roleIdx, setRoleIdx] = useState(0);
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 500], [0, 80]);
-  const scale = useTransform(scrollY, [0, 500], [1, 1.08]);
+  const navigate = useNavigate()
+  const [role, setRole] = useState('talent')
+  const [roleIdx, setRoleIdx] = useState(0)
+  const { scrollY } = useScroll()
+  const y = useTransform(scrollY, [0, 500], [0, 80])
+  const scale = useTransform(scrollY, [0, 500], [1, 1.08])
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setRoleIdx((i) => (i + 1) % rotatingRoles.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
+      setRoleIdx((i) => (i + 1) % rotatingRoles.length)
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <section className="relative overflow-hidden bg-[#F5F3EF] pt-8 pb-14 md:pt-10 md:pb-16">
@@ -129,5 +129,5 @@ export default function Hero() {
         </div>
       </div>
     </section>
-  );
+  )
 }

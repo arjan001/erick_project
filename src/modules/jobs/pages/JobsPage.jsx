@@ -1,61 +1,61 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Job, Application, Artist, ConnectsTransaction, Project, JobInvitation, Notification } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { MapPin, Clock, Euro, ChevronDown, Calendar, Building2, Users, Star, ExternalLink, Crown, Lock, Eye, EyeOff, AlertCircle, CheckCircle, XCircle, Hourglass, FileText, Mail, ArrowLeft, ArrowRight } from 'lucide-react';
-import { useToast } from '@/hooks/useToast';
-import { supabase } from '@/lib/supabase';
-import skillsAndRoles from '@/lib/skillsAndRoles.json';
-import confetti from 'canvas-confetti';
-import { canApplyForJobs } from '@/services/subscriptionService';
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Job, Application, Artist, ConnectsTransaction, Project, JobInvitation, Notification } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { MapPin, Clock, Euro, ChevronDown, Calendar, Building2, Users, Star, ExternalLink, Crown, Lock, Eye, EyeOff, AlertCircle, CheckCircle, XCircle, Hourglass, FileText, Mail, ArrowLeft, ArrowRight } from 'lucide-react'
+import { useToast } from '@/hooks/useToast'
+import { supabase } from '@/lib/supabase'
+import skillsAndRoles from '@/lib/skillsAndRoles.json'
+import confetti from 'canvas-confetti'
+import { canApplyForJobs } from '@/services/subscriptionService'
 
 function getDeviceType(userAgent) {
-  if (/Mobile|Android|iP(ad|hone)/i.test(userAgent)) return 'mobile';
-  if (/Tablet|iPad/i.test(userAgent)) return 'tablet';
-  return 'desktop';
+  if (/Mobile|Android|iP(ad|hone)/i.test(userAgent)) return 'mobile'
+  if (/Tablet|iPad/i.test(userAgent)) return 'tablet'
+  return 'desktop'
 }
 
 export default function Jobs() {
-  const [jobs, setJobs] = useState([]);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('board');
+  const [jobs, setJobs] = useState([])
+  const [selectedJob, setSelectedJob] = useState(null)
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('board')
   const [jobsViewTab, setJobsViewTab] = useState('production'); // 'production' or 'roles'
-  const [expandedJobId, setExpandedJobId] = useState(null);
-  const [applications, setApplications] = useState([]);
-  const [artistId, setArtistId] = useState(null);
-  const [invitations, setInvitations] = useState([]);
-  const [selectedInvitation, setSelectedInvitation] = useState(null);
+  const [expandedJobId, setExpandedJobId] = useState(null)
+  const [applications, setApplications] = useState([])
+  const [artistId, setArtistId] = useState(null)
+  const [invitations, setInvitations] = useState([])
+  const [selectedInvitation, setSelectedInvitation] = useState(null)
   const [filters, setFilters] = useState({
     roles: [],
     location: [],
     project_types: [],
     skills: [],
     paid: null
-  });
+  })
   const [showFilters, setShowFilters] = useState({
     roles: false,
     location: false,
     project_types: false,
     skills: false,
     paid: false
-  });
-  const [applicationStatusFilter, setApplicationStatusFilter] = useState('all');
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
+  })
+  const [applicationStatusFilter, setApplicationStatusFilter] = useState('all')
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      navigate('/signin');
-      return;
+      navigate('/signin')
+      return
     }
-    setUser(JSON.parse(storedUser));
-  }, [navigate]);
+    setUser(JSON.parse(storedUser))
+  }, [navigate])
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
     const fetchData = async () => {
       try {
@@ -63,27 +63,27 @@ export default function Jobs() {
         const [allJobs, allProjects] = await Promise.all([
           Job.list(),
           Project.filter({ status: 'verified' })
-        ]);
+        ])
 
-        const openJobs = allJobs.filter(j => j.status === 'open');
+        const openJobs = allJobs.filter(j => j.status === 'open')
 
         // Fetch view counts from job_views and project_views tables
         const [jobViewCounts, projectViewCounts] = await Promise.all([
           supabase.from('job_views').select('job_id').then(({ data }) => {
-            const counts = {};
+            const counts = {}
             data?.forEach(v => {
-              counts[v.job_id] = (counts[v.job_id] || 0) + 1;
-            });
-            return counts;
+              counts[v.job_id] = (counts[v.job_id] || 0) + 1
+            })
+            return counts
           }),
           supabase.from('project_views').select('project_id').then(({ data }) => {
-            const counts = {};
+            const counts = {}
             data?.forEach(v => {
-              counts[v.project_id] = (counts[v.project_id] || 0) + 1;
-            });
-            return counts;
+              counts[v.project_id] = (counts[v.project_id] || 0) + 1
+            })
+            return counts
           })
-        ]);
+        ])
 
         // Convert projects to job-like format for unified display
         const projectJobs = allProjects.map(project => ({
@@ -108,34 +108,34 @@ export default function Jobs() {
           image_url: project.image_url,
           requires_subscription: project.is_premium || false,
           view_count: projectViewCounts[project.id] || 0
-        }));
+        }))
 
         // Convert jobs with view counts
         const jobsWithCounts = openJobs.map(job => ({
           ...job,
           view_count: jobViewCounts[job.id] || 0
-        }));
+        }))
 
         // Combine jobs and projects
-        const allListings = [...jobsWithCounts, ...projectJobs];
-        setJobs(allListings);
-        if (allListings.length > 0) setSelectedJob(allListings[0]);
+        const allListings = [...jobsWithCounts, ...projectJobs]
+        setJobs(allListings)
+        if (allListings.length > 0) setSelectedJob(allListings[0])
 
         // Get artist ID first
-        const artists = await Artist.filter({ email: user.email });
-        const artist = artists?.[0];
+        const artists = await Artist.filter({ email: user.email })
+        const artist = artists?.[0]
 
         if (artist) {
-          setArtistId(artist.id);
-          const userApplications = await Application.filter({ artist_id: artist.id });
+          setArtistId(artist.id)
+          const userApplications = await Application.filter({ artist_id: artist.id })
           const enrichedApplications = await Promise.all(
             userApplications.map(async (app) => {
-              let job = null;
+              let job = null
               if (app.job_id) {
-                job = await Job.get(app.job_id);
+                job = await Job.get(app.job_id)
               } else if (app.project_id) {
                 // For projects, fetch the project and convert to job-like format
-                const project = await Project.get(app.project_id);
+                const project = await Project.get(app.project_id)
                 if (project) {
                   job = {
                     id: project.id,
@@ -148,97 +148,97 @@ export default function Jobs() {
                     budget_type: project.budget_range?.includes('hourly') ? 'Hourly' : project.budget_range?.includes('daily') ? 'Daily' : 'Fixed',
                     isProject: true,
                     image_url: project.image_url
-                  };
+                  }
                 }
               }
-              return { ...app, job };
+              return { ...app, job }
             })
-          );
-          setApplications(enrichedApplications);
+          )
+          setApplications(enrichedApplications)
 
           // Fetch job invitations
-          const userInvitations = await JobInvitation.filter({ artist_id: artist.id });
+          const userInvitations = await JobInvitation.filter({ artist_id: artist.id })
           const enrichedInvitations = await Promise.all(
             userInvitations.map(async (inv) => {
-              const job = await Job.get(inv.job_id);
-              return { ...inv, job };
+              const job = await Job.get(inv.job_id)
+              return { ...inv, job }
             })
-          );
-          setInvitations(enrichedInvitations);
+          )
+          setInvitations(enrichedInvitations)
         } else {
-          setArtistId(null);
-          setApplications([]);
-          setInvitations([]);
+          setArtistId(null)
+          setApplications([])
+          setInvitations([])
         }
       } catch (err) {
-        console.error('Error fetching data:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, [user]);
+    fetchData()
+  }, [user])
 
   const handleApply = useCallback(async () => {
-    if (!selectedJob) return;
+    if (!selectedJob) return
 
     // Check if user is authenticated
     if (!user) {
       // Store the current path and job details for redirect after login
-      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+      sessionStorage.setItem('redirectAfterLogin', window.location.pathname)
       sessionStorage.setItem('applyAfterLogin', JSON.stringify({
         jobId: selectedJob.id,
         jobTitle: selectedJob.title,
         selectedRole: selectedJob.selectedRole
-      }));
-      navigate('/SignIn');
-      return;
+      }))
+      navigate('/SignIn')
+      return
     }
 
     try {
-      const artists = await Artist.filter({ email: user.email });
-      const artist = artists?.[0];
+      const artists = await Artist.filter({ email: user.email })
+      const artist = artists?.[0]
 
       if (!artist) {
-        toastError('Profile Required', 'Please complete your artist profile before applying for jobs.');
-        return;
+        toastError('Profile Required', 'Please complete your artist profile before applying for jobs.')
+        return
       }
 
       // Check if user has active subscription
-      const hasSubscription = await canApplyForJobs(artist.id);
+      const hasSubscription = await canApplyForJobs(artist.id)
       if (!hasSubscription) {
-        toastError('Subscription Required', 'Contacting job posters and applying for roles requires an active subscription.');
-        navigate('/Subscribe');
-        return;
+        toastError('Subscription Required', 'Contacting job posters and applying for roles requires an active subscription.')
+        navigate('/Subscribe')
+        return
       }
 
-      const balance = artist?.connects_balance ?? 0;
+      const balance = artist?.connects_balance ?? 0
 
       if (balance <= 0) {
-        toastError('Out of Connects', 'You have no connects left. Buy more connects or upgrade your plan to keep applying for jobs.');
-        return;
+        toastError('Out of Connects', 'You have no connects left. Buy more connects or upgrade your plan to keep applying for jobs.')
+        return
       }
 
       // Check if already applied to this job/project
-      const existingApplications = await Application.filter({ artist_id: artist.id });
+      const existingApplications = await Application.filter({ artist_id: artist.id })
       const alreadyApplied = existingApplications.some(app => {
         if (selectedJob.isProject) {
-          return app.project_id === selectedJob.id;
+          return app.project_id === selectedJob.id
         } else {
-          return app.job_id === selectedJob.id;
+          return app.job_id === selectedJob.id
         }
-      });
+      })
 
       if (alreadyApplied) {
-        toastError('Already Applied', 'You have already applied to this position.');
-        return;
+        toastError('Already Applied', 'You have already applied to this position.')
+        return
       }
 
       // Check if job/project requires team and user is solo artist
       if (selectedJob.requires_team && !artist.is_team) {
-        toastError('Team Required', 'This position requires a team. Solo artists cannot apply.');
-        return;
+        toastError('Team Required', 'This position requires a team. Solo artists cannot apply.')
+        return
       }
 
       // Use project_id for projects, job_id for jobs
@@ -246,24 +246,24 @@ export default function Jobs() {
         artist_id: artist.id,
         status: 'pending',
         applied_at: new Date().toISOString()
-      };
-
-      if (selectedJob.isProject) {
-        applicationData.project_id = selectedJob.id;
-      } else {
-        applicationData.job_id = selectedJob.id;
       }
 
-      await Application.create(applicationData);
+      if (selectedJob.isProject) {
+        applicationData.project_id = selectedJob.id
+      } else {
+        applicationData.job_id = selectedJob.id
+      }
 
-      const newBalance = balance - 1;
-      await Artist.update(artist.id, { connects_balance: newBalance });
+      await Application.create(applicationData)
+
+      const newBalance = balance - 1
+      await Artist.update(artist.id, { connects_balance: newBalance })
       await ConnectsTransaction.create({
         artist_email: user.email,
         amount: -1,
         reason: 'job_application',
         balance_after: newBalance
-      });
+      })
 
       // Send notification for job application submitted
       await Notification.create({
@@ -273,7 +273,7 @@ export default function Jobs() {
         message: `Your application for "${selectedJob.title}" has been submitted successfully.`,
         metadata: { job_title: selectedJob.title, job_id: selectedJob.id },
         read: false
-      });
+      })
 
       // Trigger confetti effect with normal colors
       confetti({
@@ -281,20 +281,20 @@ export default function Jobs() {
         spread: 60,
         origin: { y: 0.7 },
         colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ff8800', '#8800ff']
-      });
+      })
 
-      success('Application Submitted Successfully', `1 connect used. ${newBalance} connect${newBalance === 1 ? '' : 's'} remaining.`);
+      success('Application Submitted Successfully', `1 connect used. ${newBalance} connect${newBalance === 1 ? '' : 's'} remaining.`)
 
       // Refresh applications list - handle both jobs and projects
-      const userApplications = await Application.filter({ artist_id: artist.id });
+      const userApplications = await Application.filter({ artist_id: artist.id })
       const enrichedApplications = await Promise.all(
         userApplications.map(async (app) => {
-          let job = null;
+          let job = null
           if (app.job_id) {
-            job = await Job.get(app.job_id);
+            job = await Job.get(app.job_id)
           } else if (app.project_id) {
             // For projects, fetch the project and convert to job-like format
-            const project = await Project.get(app.project_id);
+            const project = await Project.get(app.project_id)
             if (project) {
               job = {
                 id: project.id,
@@ -307,38 +307,38 @@ export default function Jobs() {
                 budget_type: project.budget_range?.includes('hourly') ? 'Hourly' : project.budget_range?.includes('daily') ? 'Daily' : 'Fixed',
                 isProject: true,
                 image_url: project.image_url
-              };
+              }
             }
           }
-          return { ...app, job };
+          return { ...app, job }
         })
-      );
-      setApplications(enrichedApplications);
+      )
+      setApplications(enrichedApplications)
 
       // Close modal
-      setSelectedJob(null);
+      setSelectedJob(null)
     } catch (err) {
-      console.error('Error applying:', err);
-      toastError('Application Failed', 'Failed to submit application');
+      //
+      toastError('Application Failed', 'Failed to submit application')
     }
-  }, [selectedJob, user, navigate, toastError, artistId]);
+  }, [selectedJob, user, navigate, toastError, artistId])
 
   // Handle auto-apply after login
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
-    const applyAfterLogin = sessionStorage.getItem('applyAfterLogin');
+    const applyAfterLogin = sessionStorage.getItem('applyAfterLogin')
     if (applyAfterLogin) {
-      const applyData = JSON.parse(applyAfterLogin);
-      sessionStorage.removeItem('applyAfterLogin');
+      const applyData = JSON.parse(applyAfterLogin)
+      sessionStorage.removeItem('applyAfterLogin')
 
       // Find the job and select it
       const fetchData = async () => {
         try {
-          const allJobs = await Job.list();
-          const allProjects = await Project.filter({ status: 'verified' });
+          const allJobs = await Job.list()
+          const allProjects = await Project.filter({ status: 'verified' })
 
-          const openJobs = allJobs.filter(j => j.status === 'open');
+          const openJobs = allJobs.filter(j => j.status === 'open')
           const projectJobs = allProjects.map(project => ({
             id: project.id,
             title: project.title || project.project_type?.replace(/_/g, ' ') || 'Project',
@@ -352,52 +352,52 @@ export default function Jobs() {
             budget_type: project.budget_range?.includes('hourly') ? 'Hourly' : project.budget_range?.includes('daily') ? 'Daily' : 'Fixed',
             isProject: true,
             image_url: project.image_url
-          }));
+          }))
 
-          const allListings = [...openJobs, ...projectJobs];
-          const jobToApply = allListings.find(j => j.id === applyData.jobId);
+          const allListings = [...openJobs, ...projectJobs]
+          const jobToApply = allListings.find(j => j.id === applyData.jobId)
 
           if (jobToApply) {
-            setSelectedJob({ ...jobToApply, selectedRole: applyData.selectedRole });
+            setSelectedJob({ ...jobToApply, selectedRole: applyData.selectedRole })
             // Show a toast message that user can click to apply
-            success('Login Successful', 'You can now apply for the job by clicking the Apply button.');
+            success('Login Successful', 'You can now apply for the job by clicking the Apply button.')
           }
         } catch (err) {
-          console.error('Error finding job for auto-apply:', err);
+          //
         }
-      };
+      }
 
-      fetchData();
+      fetchData()
     }
-  }, [user, success]);
+  }, [user, success])
 
   // Check if user has already applied to selected job/project
   const hasAlreadyApplied = () => {
-    if (!selectedJob || !applications) return false;
+    if (!selectedJob || !applications) return false
     return applications.some(app => {
       if (selectedJob.isProject) {
-        return app.project_id === selectedJob.id;
+        return app.project_id === selectedJob.id
       } else {
-        return app.job_id === selectedJob.id;
+        return app.job_id === selectedJob.id
       }
-    });
-  };
+    })
+  }
 
   const handleJobClick = async (job) => {
-    setSelectedJob(job);
+    setSelectedJob(job)
 
     // Track view in job_views or project_views table
     try {
-      const { user } = await import('@/lib/AuthContext');
-      const authUser = user();
+      const { user } = await import('@/lib/AuthContext')
+      const authUser = user()
 
       if (job.isProject) {
         // Insert into project_views - unique constraint will prevent duplicates
         try {
-          const ipResponse = await fetch('https://api.ipify.org?format=json');
-          const { ip } = await ipResponse.json();
-          const userAgent = navigator.userAgent;
-          const deviceType = getDeviceType(userAgent);
+          const ipResponse = await fetch('https://api.ipify.org?format=json')
+          const { ip } = await ipResponse.json()
+          const userAgent = navigator.userAgent
+          const deviceType = getDeviceType(userAgent)
 
           await supabase.from('project_views').insert({
             project_id: job.id,
@@ -405,7 +405,7 @@ export default function Jobs() {
             ip_address: ip,
             user_agent: userAgent,
             device_type: deviceType,
-          });
+          })
         } catch (err) {
           // Ignore duplicate key errors - view already tracked
           if (err.code !== '23505') {
@@ -415,10 +415,10 @@ export default function Jobs() {
       } else {
         // Insert into job_views - unique constraint will prevent duplicates
         try {
-          const ipResponse = await fetch('https://api.ipify.org?format=json');
-          const { ip } = await ipResponse.json();
-          const userAgent = navigator.userAgent;
-          const deviceType = getDeviceType(userAgent);
+          const ipResponse = await fetch('https://api.ipify.org?format=json')
+          const { ip } = await ipResponse.json()
+          const userAgent = navigator.userAgent
+          const deviceType = getDeviceType(userAgent)
 
           await supabase.from('job_views').insert({
             job_id: job.id,
@@ -426,7 +426,7 @@ export default function Jobs() {
             ip_address: ip,
             user_agent: userAgent,
             device_type: deviceType,
-          });
+          })
         } catch (err) {
           // Ignore duplicate key errors - view already tracked
           if (err.code !== '23505') {
@@ -435,9 +435,9 @@ export default function Jobs() {
         }
       }
     } catch (err) {
-      console.error('Error tracking view:', err);
+      //
     }
-  };
+  }
 
   // Handle accepting invitation
   const handleAcceptInvitation = async (invitation) => {
@@ -445,7 +445,7 @@ export default function Jobs() {
       await JobInvitation.update(invitation.id, {
         status: 'accepted',
         responded_at: new Date().toISOString()
-      });
+      })
 
       // Create application automatically when invitation is accepted
       await Application.create({
@@ -453,35 +453,35 @@ export default function Jobs() {
         artist_id: artistId,
         status: 'pending',
         applied_at: new Date().toISOString()
-      });
+      })
 
-      success('Invitation Accepted', 'You have accepted the invitation and applied for the job.');
+      success('Invitation Accepted', 'You have accepted the invitation and applied for the job.')
 
       // Refresh invitations and applications
-      const userInvitations = await JobInvitation.filter({ artist_id: artistId });
+      const userInvitations = await JobInvitation.filter({ artist_id: artistId })
       const enrichedInvitations = await Promise.all(
         userInvitations.map(async (inv) => {
-          const job = await Job.get(inv.job_id);
-          return { ...inv, job };
+          const job = await Job.get(inv.job_id)
+          return { ...inv, job }
         })
-      );
-      setInvitations(enrichedInvitations);
+      )
+      setInvitations(enrichedInvitations)
 
-      const userApplications = await Application.filter({ artist_id: artistId });
+      const userApplications = await Application.filter({ artist_id: artistId })
       const enrichedApplications = await Promise.all(
         userApplications.map(async (app) => {
-          const job = await Job.get(app.job_id);
-          return { ...app, job };
+          const job = await Job.get(app.job_id)
+          return { ...app, job }
         })
-      );
-      setApplications(enrichedApplications);
+      )
+      setApplications(enrichedApplications)
 
-      setSelectedInvitation(null);
+      setSelectedInvitation(null)
     } catch (err) {
-      console.error('Error accepting invitation:', err);
-      toastError('Failed to Accept', 'Could not accept the invitation');
+      //
+      toastError('Failed to Accept', 'Could not accept the invitation')
     }
-  };
+  }
 
   // Handle declining invitation
   const handleDeclineInvitation = async (invitation) => {
@@ -489,116 +489,116 @@ export default function Jobs() {
       await JobInvitation.update(invitation.id, {
         status: 'declined',
         responded_at: new Date().toISOString()
-      });
+      })
 
-      success('Invitation Declined', 'You have declined the invitation.');
+      success('Invitation Declined', 'You have declined the invitation.')
 
       // Refresh invitations
-      const userInvitations = await JobInvitation.filter({ artist_id: artistId });
+      const userInvitations = await JobInvitation.filter({ artist_id: artistId })
       const enrichedInvitations = await Promise.all(
         userInvitations.map(async (inv) => {
-          const job = await Job.get(inv.job_id);
-          return { ...inv, job };
+          const job = await Job.get(inv.job_id)
+          return { ...inv, job }
         })
-      );
-      setInvitations(enrichedInvitations);
+      )
+      setInvitations(enrichedInvitations)
 
-      setSelectedInvitation(null);
+      setSelectedInvitation(null)
     } catch (err) {
-      console.error('Error declining invitation:', err);
-      toastError('Failed to Decline', 'Could not decline the invitation');
+      //
+      toastError('Failed to Decline', 'Could not decline the invitation')
     }
-  };
+  }
 
   // Calculate filter counts from available jobs
   const filterCounts = useMemo(() => {
     const filteredJobsForCounts = jobs.filter(job => {
-      if (filters.roles.length > 0 && !filters.roles.some(r => job.roles_needed?.includes(r))) return false;
-      if (filters.location.length > 0 && !filters.location.includes(job.location)) return false;
-      if (filters.project_types.length > 0 && !filters.project_types.some(t => job.project_types?.includes(t))) return false;
+      if (filters.roles.length > 0 && !filters.roles.some(r => job.roles_needed?.includes(r))) return false
+      if (filters.location.length > 0 && !filters.location.includes(job.location)) return false
+      if (filters.project_types.length > 0 && !filters.project_types.some(t => job.project_types?.includes(t))) return false
       if (filters.paid && job.budget_min !== undefined) {
-        if (filters.paid === 'below100' && job.budget_min >= 100) return false;
-        if (filters.paid === '100-500' && (job.budget_min < 100 || job.budget_min > 500)) return false;
-        if (filters.paid === '500-1000' && (job.budget_min < 500 || job.budget_min > 1000)) return false;
-        if (filters.paid === 'above1000' && job.budget_min <= 1000) return false;
+        if (filters.paid === 'below100' && job.budget_min >= 100) return false
+        if (filters.paid === '100-500' && (job.budget_min < 100 || job.budget_min > 500)) return false
+        if (filters.paid === '500-1000' && (job.budget_min < 500 || job.budget_min > 1000)) return false
+        if (filters.paid === 'above1000' && job.budget_min <= 1000) return false
       }
-      if (filters.skills.length > 0 && !filters.skills.some(s => job.skills_required?.includes(s))) return false;
-      return true;
-    });
+      if (filters.skills.length > 0 && !filters.skills.some(s => job.skills_required?.includes(s))) return false
+      return true
+    })
 
-    const roles = {};
-    const locations = {};
-    const projectTypes = {};
-    const skills = {};
+    const roles = {}
+    const locations = {}
+    const projectTypes = {}
+    const skills = {}
 
     // Use all available roles from JSON (talent roles for job browsing), then count matches
     Object.values(skillsAndRoles.talent_roles_by_category).flat().forEach(role => {
-      roles[role] = filteredJobsForCounts.filter(job => job.roles_needed?.includes(role)).length;
-    });
+      roles[role] = filteredJobsForCounts.filter(job => job.roles_needed?.includes(role)).length
+    })
 
     // Use all available skills from JSON (talent skills for job browsing), then count matches
     Object.values(skillsAndRoles.talent_skills_by_category).flat().forEach(skill => {
-      skills[skill] = filteredJobsForCounts.filter(job => job.skills_required?.includes(skill)).length;
-    });
+      skills[skill] = filteredJobsForCounts.filter(job => job.skills_required?.includes(skill)).length
+    })
 
     filteredJobsForCounts.forEach(job => {
       if (job.location) {
-        locations[job.location] = (locations[job.location] || 0) + 1;
+        locations[job.location] = (locations[job.location] || 0) + 1
       }
       job.project_types?.forEach(type => {
-        projectTypes[type] = (projectTypes[type] || 0) + 1;
-      });
-    });
+        projectTypes[type] = (projectTypes[type] || 0) + 1
+      })
+    })
 
-    return { roles, locations, projectTypes, skills };
-  }, [jobs, filters]);
+    return { roles, locations, projectTypes, skills }
+  }, [jobs, filters])
 
   const filteredJobs = useMemo(() => {
     return jobs.filter(job => {
-      if (filters.roles.length > 0 && !filters.roles.some(r => job.roles_needed?.includes(r))) return false;
-      if (filters.location.length > 0 && !filters.location.includes(job.location)) return false;
-      if (filters.project_types.length > 0 && !filters.project_types.some(t => job.project_types?.includes(t))) return false;
+      if (filters.roles.length > 0 && !filters.roles.some(r => job.roles_needed?.includes(r))) return false
+      if (filters.location.length > 0 && !filters.location.includes(job.location)) return false
+      if (filters.project_types.length > 0 && !filters.project_types.some(t => job.project_types?.includes(t))) return false
       if (filters.paid && job.budget_min !== undefined) {
-        if (filters.paid === 'below100' && job.budget_min >= 100) return false;
-        if (filters.paid === '100-500' && (job.budget_min < 100 || job.budget_min > 500)) return false;
-        if (filters.paid === '500-1000' && (job.budget_min < 500 || job.budget_min > 1000)) return false;
-        if (filters.paid === 'above1000' && job.budget_min <= 1000) return false;
+        if (filters.paid === 'below100' && job.budget_min >= 100) return false
+        if (filters.paid === '100-500' && (job.budget_min < 100 || job.budget_min > 500)) return false
+        if (filters.paid === '500-1000' && (job.budget_min < 500 || job.budget_min > 1000)) return false
+        if (filters.paid === 'above1000' && job.budget_min <= 1000) return false
       }
-      if (filters.skills.length > 0 && !filters.skills.some(s => job.skills_required?.includes(s))) return false;
-      return true;
-    });
-  }, [jobs, filters]);
+      if (filters.skills.length > 0 && !filters.skills.some(s => job.skills_required?.includes(s))) return false
+      return true
+    })
+  }, [jobs, filters])
 
   const toggleFilter = (filterType, value) => {
     setFilters(prev => {
       if (filterType === 'paid') {
-        return { ...prev, paid: prev.paid === value ? null : value };
+        return { ...prev, paid: prev.paid === value ? null : value }
       }
-      const current = prev[filterType];
+      const current = prev[filterType]
       const updated = current.includes(value)
         ? current.filter(v => v !== value)
-        : [...current, value];
-      return { ...prev, [filterType]: updated };
-    });
-  };
+        : [...current, value]
+      return { ...prev, [filterType]: updated }
+    })
+  }
 
   const getTimeAgo = (date) => {
-    if (!date) return 'Recently';
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    if (seconds < 60) return 'Just now';
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    if (days < 7) return `${days}d ago`;
-    return new Date(date).toLocaleDateString();
-  };
+    if (!date) return 'Recently'
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000)
+    if (seconds < 60) return 'Just now'
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    if (days < 7) return `${days}d ago`
+    return new Date(date).toLocaleDateString()
+  }
 
   const isJobExpired = (job) => {
-    if (!job.application_deadline) return false;
-    return new Date(job.application_deadline) < new Date();
-  };
+    if (!job.application_deadline) return false
+    return new Date(job.application_deadline) < new Date()
+  }
 
   const getStatusConfig = (status) => {
     const configs = {
@@ -610,19 +610,19 @@ export default function Jobs() {
       rejected: { icon: XCircle, color: 'bg-red-100 text-red-700 border-red-200', label: 'Rejected' },
       withdrawn: { icon: FileText, color: 'bg-gray-100 text-gray-700 border-gray-200', label: 'Withdrawn' },
       expired: { icon: AlertCircle, color: 'bg-orange-100 text-orange-700 border-orange-200', label: 'Expired' }
-    };
-    return configs[status] || configs.pending;
-  };
+    }
+    return configs[status] || configs.pending
+  }
 
-  if (!user || loading) return null;
+  if (!user || loading) return null
 
   const FilterDropdown = ({ type, label }) => (
     <div className="relative">
       <button
         onClick={() => setShowFilters(prev => {
-          const newState = { roles: false, location: false, project_types: false, skills: false, paid: false };
-          newState[type] = !prev[type];
-          return newState;
+          const newState = { roles: false, location: false, project_types: false, skills: false, paid: false }
+          newState[type] = !prev[type]
+          return newState
         })}
         className="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
       >
@@ -724,7 +724,7 @@ export default function Jobs() {
         </div>
       )}
     </div>
-  );
+  )
 
   return (
     <div className="h-full bg-white">
@@ -963,9 +963,9 @@ export default function Jobs() {
                                 {job.roles_needed.length > 1 && (
                                   <button
                                     onClick={(e) => {
-                                      e.stopPropagation();
+                                      e.stopPropagation()
                                       // Toggle expanded state for this job
-                                      setExpandedJobId(prev => prev === job.id ? null : job.id);
+                                      setExpandedJobId(prev => prev === job.id ? null : job.id)
                                     }}
                                     className="px-2 py-0.5 bg-[#8B5CF6]/10 text-[#8B5CF6] text-[10px] rounded-full flex items-center gap-1"
                                   >
@@ -994,8 +994,8 @@ export default function Jobs() {
                                     <div
                                       key={idx}
                                       onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleJobClick({ ...job, selectedRole: role });
+                                        e.stopPropagation()
+                                        handleJobClick({ ...job, selectedRole: role })
                                       }}
                                       className="flex items-center justify-between p-2 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer"
                                     >
@@ -1159,10 +1159,10 @@ export default function Jobs() {
                     All ({applications.length})
                   </button>
                   {['pending', 'viewed', 'shortlisted', 'interview_scheduled', 'accepted', 'rejected', 'withdrawn', 'expired'].map(status => {
-                    const count = applications.filter(app => app.status === status).length;
-                    if (count === 0) return null;
-                    const config = getStatusConfig(status);
-                    const Icon = config.icon;
+                    const count = applications.filter(app => app.status === status).length
+                    if (count === 0) return null
+                    const config = getStatusConfig(status)
+                    const Icon = config.icon
                     return (
                       <button
                         key={status}
@@ -1175,7 +1175,7 @@ export default function Jobs() {
                         <Icon className="w-3.5 h-3.5" />
                         {config.label} ({count})
                       </button>
-                    );
+                    )
                   })}
                 </div>
 
@@ -1197,10 +1197,10 @@ export default function Jobs() {
                       {applications
                         .filter(app => applicationStatusFilter === 'all' || app.status === applicationStatusFilter)
                         .map((app) => {
-                          const job = app.job;
-                          const statusConfig = getStatusConfig(app.status);
-                          const StatusIcon = statusConfig.icon;
-                          const expired = isJobExpired(job);
+                          const job = app.job
+                          const statusConfig = getStatusConfig(app.status)
+                          const StatusIcon = statusConfig.icon
+                          const expired = isJobExpired(job)
 
                           return (
                             <tr key={app.id} className="hover:bg-gray-50">
@@ -1261,11 +1261,11 @@ export default function Jobs() {
                                     <button
                                       onClick={async () => {
                                         try {
-                                          await Application.update(app.id, { status: 'withdrawn' });
-                                          setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: 'withdrawn' } : a));
-                                          toastError('Withdrawn', 'Application withdrawn successfully');
+                                          await Application.update(app.id, { status: 'withdrawn' })
+                                          setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: 'withdrawn' } : a))
+                                          toastError('Withdrawn', 'Application withdrawn successfully')
                                         } catch (err) {
-                                          console.error('Error withdrawing:', err);
+                                          //
                                         }
                                       }}
                                       className="px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -1276,7 +1276,7 @@ export default function Jobs() {
                                 </div>
                               </td>
                             </tr>
-                          );
+                          )
                         })}
                     </tbody>
                   </table>
@@ -1467,5 +1467,5 @@ export default function Jobs() {
         )}
       </main>
     </div>
-  );
+  )
 }

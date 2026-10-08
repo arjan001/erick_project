@@ -1,7 +1,7 @@
-import React from 'react';
-import { Cookie, Settings, Shield, Info, CheckCircle, XCircle } from 'lucide-react';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
+import React from 'react'
+import { Cookie, Settings, Shield, Info, CheckCircle, XCircle } from 'lucide-react'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
 
 export default function CookiePolicy() {
   return (
@@ -81,5 +81,5 @@ export default function CookiePolicy() {
 
       <Footer />
     </div>
-  );
+  )
 }

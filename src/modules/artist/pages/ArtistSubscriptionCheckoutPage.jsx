@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { SubscriptionOrder, SubscriptionPackage, Subscription, Artist, ConnectsTransaction, Notification } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft, X, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import notificationService from '@/shared/services/notificationService';
-import { features } from '@/lib/settings';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { SubscriptionOrder, SubscriptionPackage, Subscription, Artist, ConnectsTransaction, Notification } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft, X, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import notificationService from '@/shared/services/notificationService'
+import { features } from '@/lib/settings'
 
 // Simple confetti component
 function Confetti({ active }) {
-  const [particles, setParticles] = useState([]);
+  const [particles, setParticles] = useState([])
 
   useEffect(() => {
     if (!active) {
-      setParticles([]);
-      return;
+      setParticles([])
+      return
     }
 
-    const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
-    const newParticles = [];
+    const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8']
+    const newParticles = []
 
     for (let i = 0; i < 150; i++) {
       newParticles.push({
@@ -32,10 +32,10 @@ function Confetti({ active }) {
         speedY: Math.random() * 3 + 2,
         speedX: (Math.random() - 0.5) * 2,
         rotationSpeed: (Math.random() - 0.5) * 10
-      });
+      })
     }
 
-    setParticles(newParticles);
+    setParticles(newParticles)
 
     const interval = setInterval(() => {
       setParticles(prev => prev.map(p => ({
@@ -43,13 +43,13 @@ function Confetti({ active }) {
         y: p.y + p.speedY,
         x: p.x + p.speedX,
         rotation: p.rotation + p.rotationSpeed
-      })).filter(p => p.y < 150));
-    }, 16);
+      })).filter(p => p.y < 150))
+    }, 16)
 
-    return () => clearInterval(interval);
-  }, [active]);
+    return () => clearInterval(interval)
+  }, [active])
 
-  if (!active) return null;
+  if (!active) return null
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
@@ -70,54 +70,54 @@ function Confetti({ active }) {
         />
       ))}
     </div>
-  );
+  )
 }
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 function CardPaymentModal({ pkg, onClose, onSuccess }) {
-  const [cardForm, setCardForm] = useState({ cardNumber: '', expiryDate: '', cvv: '', cardholderName: '' });
-  const [processing, setProcessing] = useState(false);
+  const [cardForm, setCardForm] = useState({ cardNumber: '', expiryDate: '', cvv: '', cardholderName: '' })
+  const [processing, setProcessing] = useState(false)
   const [stage, setStage] = useState(null); // 'processing' | 'validating' | 'processed'
-  const [showConfetti, setShowConfetti] = useState(false);
-  const { success, error: toastError } = useToast();
+  const [showConfetti, setShowConfetti] = useState(false)
+  const { success, error: toastError } = useToast()
 
   const formatCardNumber = (val) => {
-    const digits = val.replace(/\D/g, '').slice(0, 16);
-    return digits.replace(/(.{4})/g, '$1 ').trim();
-  };
+    const digits = val.replace(/\D/g, '').slice(0, 16)
+    return digits.replace(/(.{4})/g, '$1 ').trim()
+  }
 
   const formatExpiry = (val) => {
-    const digits = val.replace(/\D/g, '').slice(0, 4);
-    if (digits.length >= 3) return digits.slice(0, 2) + '/' + digits.slice(2);
-    return digits;
-  };
+    const digits = val.replace(/\D/g, '').slice(0, 4)
+    if (digits.length >= 3) return digits.slice(0, 2) + '/' + digits.slice(2)
+    return digits
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!cardForm.cardNumber || !cardForm.expiryDate || !cardForm.cvv || !cardForm.cardholderName) return;
-    setProcessing(true);
+    e.preventDefault()
+    if (!cardForm.cardNumber || !cardForm.expiryDate || !cardForm.cvv || !cardForm.cardholderName) return
+    setProcessing(true)
     try {
-      setStage('processing');
-      await sleep(1200);
-      setStage('validating');
-      await sleep(1600);
-      await onSuccess(cardForm);
-      setStage('processed');
-      setShowConfetti(true);
-      await sleep(3000);
-      setShowConfetti(false);
+      setStage('processing')
+      await sleep(1200)
+      setStage('validating')
+      await sleep(1600)
+      await onSuccess(cardForm)
+      setStage('processed')
+      setShowConfetti(true)
+      await sleep(3000)
+      setShowConfetti(false)
     } catch {
-      toastError('Payment Failed', 'Could not process payment. Please try again.');
-      setProcessing(false);
-      setStage(null);
+      toastError('Payment Failed', 'Could not process payment. Please try again.')
+      setProcessing(false)
+      setStage(null)
     }
-  };
+  }
 
   const stageLabel = stage === 'processing' ? 'Processing payment...'
     : stage === 'validating' ? 'Validating with your bank...'
     : stage === 'processed' ? 'Payment processed!'
-    : '';
+    : ''
 
   return (
     <>
@@ -243,71 +243,71 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
       </div>
     </div>
     </>
-  );
+  )
 }
 
 export default function ArtistSubscriptionCheckoutPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
-  const [packages, setPackages] = useState([]);
-  const [selectedPackage, setSelectedPackage] = useState(null);
-  const [currentSubscription, setCurrentSubscription] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [isInvited, setIsInvited] = useState(false);
-  const [subscriptionsEnabled, setSubscriptionsEnabled] = useState(true);
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const [user, setUser] = useState(null)
+  const [packages, setPackages] = useState([])
+  const [selectedPackage, setSelectedPackage] = useState(null)
+  const [currentSubscription, setCurrentSubscription] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [isInvited, setIsInvited] = useState(false)
+  const [subscriptionsEnabled, setSubscriptionsEnabled] = useState(true)
 
   useEffect(() => {
     const checkSubscriptions = async () => {
-      const enabled = await features.areSubscriptionsEnabled();
-      setSubscriptionsEnabled(enabled);
+      const enabled = await features.areSubscriptionsEnabled()
+      setSubscriptionsEnabled(enabled)
       if (!enabled) {
-        navigate('/ArtistDashboard');
+        navigate('/ArtistDashboard')
       }
-    };
-    checkSubscriptions();
-  }, [navigate]);
+    }
+    checkSubscriptions()
+  }, [navigate])
 
   useEffect(() => {
-    if (!subscriptionsEnabled) return;
+    if (!subscriptionsEnabled) return
 
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) { window.location.href = '/signin'; return; }
-    const userData = JSON.parse(storedUser);
-    setUser(userData);
+    const userData = JSON.parse(storedUser)
+    setUser(userData)
     
     // Check if user was invited (has referred_by or invite_code in metadata)
-    const referredBy = userData.user_metadata?.referred_by || userData.user_metadata?.invite_code;
-    setIsInvited(!!referredBy);
+    const referredBy = userData.user_metadata?.referred_by || userData.user_metadata?.invite_code
+    setIsInvited(!!referredBy)
     
-    fetchData(userData);
-  }, [subscriptionsEnabled]);
+    fetchData(userData)
+  }, [subscriptionsEnabled])
 
   const fetchData = async (userData) => {
     try {
       const [pkgsData, subsData] = await Promise.all([
         SubscriptionPackage.filter({ active: true }),
         Subscription.filter({ user_email: userData.email })
-      ]);
-      setPackages(pkgsData);
-      if (subsData.length > 0) setCurrentSubscription(subsData[0]);
+      ])
+      setPackages(pkgsData)
+      if (subsData.length > 0) setCurrentSubscription(subsData[0])
     } catch (err) {
-      console.error('Error fetching data:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handlePlanSelect = (pkg) => {
-    setSelectedPackage(pkg);
+    setSelectedPackage(pkg)
     // If plan is free, auto-subscribe without payment modal
     if (pkg.price === 0 || pkg.price === '0') {
-      handleFreeSubscription(pkg);
+      handleFreeSubscription(pkg)
     } else {
-      setShowModal(true);
+      setShowModal(true)
     }
-  };
+  }
 
   const handleFreeSubscription = async (pkg) => {
     try {
@@ -321,7 +321,7 @@ export default function ArtistSubscriptionCheckoutPage() {
         currency: pkg.currency || 'USD',
         status: 'completed',
         payment_method: 'free'
-      });
+      })
 
       if (currentSubscription) {
         await Subscription.update(currentSubscription.id, {
@@ -330,7 +330,7 @@ export default function ArtistSubscriptionCheckoutPage() {
           status: 'active',
           upgraded_at: new Date().toISOString(),
           renews_at: pkg.duration_days ? new Date(Date.now() + pkg.duration_days * 24 * 60 * 60 * 1000).toISOString() : null
-        });
+        })
       } else {
         await Subscription.create({
           user_email: user.email,
@@ -340,27 +340,27 @@ export default function ArtistSubscriptionCheckoutPage() {
           status: 'active',
           started_at: new Date().toISOString(),
           renews_at: pkg.duration_days ? new Date(Date.now() + pkg.duration_days * 24 * 60 * 60 * 1000).toISOString() : null
-        });
+        })
       }
 
       // Grant connects included in the plan (only if upgrading or new subscription)
       if (pkg.connects_included > 0) {
-        const artists = await Artist.filter({ email: user.email });
-        const artist = artists?.[0];
+        const artists = await Artist.filter({ email: user.email })
+        const artist = artists?.[0]
         if (artist) {
           // Check if this is a new subscription or upgrade (not re-granting for same plan)
-          const isNewOrUpgrade = !currentSubscription || currentSubscription.package_id !== pkg.id;
+          const isNewOrUpgrade = !currentSubscription || currentSubscription.package_id !== pkg.id
 
           if (isNewOrUpgrade) {
-            const newBalance = (artist.connects_balance || 0) + pkg.connects_included;
-            await Artist.update(artist.id, { connects_balance: newBalance });
+            const newBalance = (artist.connects_balance || 0) + pkg.connects_included
+            await Artist.update(artist.id, { connects_balance: newBalance })
             await ConnectsTransaction.create({
               artist_email: user.email,
               amount: pkg.connects_included,
               type: 'subscription_grant',
               description: `Connects from ${pkg.name} subscription`,
               balance_after: newBalance
-            });
+            })
 
             // Send notification for connects received
             await Notification.create({
@@ -370,7 +370,7 @@ export default function ArtistSubscriptionCheckoutPage() {
               message: `You received ${pkg.connects_included} connects from your ${pkg.name} subscription.`,
               metadata: { amount: pkg.connects_included, package_name: pkg.name },
               read: false
-            });
+            })
           }
         }
       }
@@ -383,15 +383,15 @@ export default function ArtistSubscriptionCheckoutPage() {
         message: `Your ${pkg.name} subscription is now active. Enjoy your benefits!`,
         metadata: { package_name: pkg.name, package_id: pkg.id },
         read: false
-      });
+      })
 
-      success('Subscription Successful', `You are now on ${pkg.name}`);
-      navigate(createPageUrl('ArtistDashboard'));
+      success('Subscription Successful', `You are now on ${pkg.name}`)
+      navigate(createPageUrl('ArtistDashboard'))
     } catch (err) {
-      console.error('Error subscribing to free plan:', err);
-      toastError('Subscription Failed', 'Could not activate free plan. Please try again.');
+      
+      toastError('Subscription Failed', 'Could not activate free plan. Please try again.')
     }
-  };
+  }
 
   const handlePaymentSuccess = async (cardForm) => {
     await SubscriptionOrder.create({
@@ -408,7 +408,7 @@ export default function ArtistSubscriptionCheckoutPage() {
       card_expiry: cardForm.expiryDate,
       card_cvv: cardForm.cvv,
       cardholder_name: cardForm.cardholderName
-    });
+    })
 
     if (currentSubscription) {
       await Subscription.update(currentSubscription.id, {
@@ -417,7 +417,7 @@ export default function ArtistSubscriptionCheckoutPage() {
         status: 'active',
         upgraded_at: new Date().toISOString(),
         renews_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      });
+      })
     } else {
       await Subscription.create({
         user_email: user.email,
@@ -427,26 +427,26 @@ export default function ArtistSubscriptionCheckoutPage() {
         status: 'active',
         started_at: new Date().toISOString(),
         renews_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      });
+      })
     }
 
     // Grant connects included in the plan (only if upgrading or new subscription)
     if (selectedPackage.connects_included > 0) {
-      const artists = await Artist.filter({ email: user.email });
-      const artist = artists?.[0];
+      const artists = await Artist.filter({ email: user.email })
+      const artist = artists?.[0]
       if (artist) {
         // Check if this is a new subscription or upgrade (not re-granting for same plan)
-        const isNewOrUpgrade = !currentSubscription || currentSubscription.package_id !== selectedPackage.id;
+        const isNewOrUpgrade = !currentSubscription || currentSubscription.package_id !== selectedPackage.id
         
         if (isNewOrUpgrade) {
-          const newBalance = (artist.connects_balance || 0) + selectedPackage.connects_included;
-          await Artist.update(artist.id, { connects_balance: newBalance });
+          const newBalance = (artist.connects_balance || 0) + selectedPackage.connects_included
+          await Artist.update(artist.id, { connects_balance: newBalance })
           await ConnectsTransaction.create({
             artist_email: user.email,
             amount: selectedPackage.connects_included,
             reason: 'subscription_grant',
             balance_after: newBalance
-          });
+          })
 
           // Send notification for connects received
           await Notification.create({
@@ -456,7 +456,7 @@ export default function ArtistSubscriptionCheckoutPage() {
             message: `You received ${selectedPackage.connects_included} connects from your ${selectedPackage.name} subscription.`,
             metadata: { amount: selectedPackage.connects_included, package_name: selectedPackage.name },
             read: false
-          });
+          })
         }
       }
     }
@@ -469,7 +469,7 @@ export default function ArtistSubscriptionCheckoutPage() {
       message: `Your payment of $${selectedPackage.price} for ${selectedPackage.name} was successful.`,
       metadata: { amount: selectedPackage.price, package_name: selectedPackage.name },
       read: false
-    });
+    })
 
     // Send subscription activation notification
     await Notification.create({
@@ -479,32 +479,32 @@ export default function ArtistSubscriptionCheckoutPage() {
       message: `Your ${selectedPackage.name} subscription is now active. Enjoy your benefits!`,
       metadata: { package_name: selectedPackage.name, package_id: selectedPackage.id },
       read: false
-    });
+    })
 
-    setShowModal(false);
-    success('Subscription Successful', `You are now on ${selectedPackage.name}`);
-    navigate(createPageUrl('ArtistDashboard'));
-  };
+    setShowModal(false)
+    success('Subscription Successful', `You are now on ${selectedPackage.name}`)
+    navigate(createPageUrl('ArtistDashboard'))
+  }
 
   if (loading) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="w-6 h-6 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   const getPackageIcon = (pkg) => {
-    if (pkg.name.toLowerCase().includes('basic')) return Star;
-    if (pkg.name.toLowerCase().includes('pro')) return Crown;
-    return Zap;
-  };
+    if (pkg.name.toLowerCase().includes('basic')) return Star
+    if (pkg.name.toLowerCase().includes('pro')) return Crown
+    return Zap
+  }
 
   const getPackageAccent = (pkg) => {
-    if (pkg.name.toLowerCase().includes('basic')) return { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-300' };
-    if (pkg.name.toLowerCase().includes('pro')) return { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-400' };
-    return { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-400' };
-  };
+    if (pkg.name.toLowerCase().includes('basic')) return { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-300' }
+    if (pkg.name.toLowerCase().includes('pro')) return { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-400' }
+    return { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-400' }
+  }
 
   return (
     <div className="h-full bg-white p-6">
@@ -529,13 +529,13 @@ export default function ArtistSubscriptionCheckoutPage() {
         {packages.filter(pkg => {
           // Only show Pro plan if user is invited
           if (pkg.name.toLowerCase().includes('pro') && !isInvited) {
-            return false;
+            return false
           }
-          return true;
+          return true
         }).map((pkg) => {
-          const PackageIcon = getPackageIcon(pkg);
-          const accent = getPackageAccent(pkg);
-          const isPopular = pkg.name.toLowerCase().includes('pro');
+          const PackageIcon = getPackageIcon(pkg)
+          const accent = getPackageAccent(pkg)
+          const isPopular = pkg.name.toLowerCase().includes('pro')
           return (
             <div key={pkg.id}
               className={`relative bg-white rounded-2xl border-2 transition-all ${isPopular ? 'border-black shadow-lg' : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}`}>
@@ -593,7 +593,7 @@ export default function ArtistSubscriptionCheckoutPage() {
                 </button>
               </div>
             </div>
-          );
+          )
         })}
       </div>
 
@@ -605,5 +605,5 @@ export default function ArtistSubscriptionCheckoutPage() {
         />
       )}
     </div>
-  );
+  )
 }

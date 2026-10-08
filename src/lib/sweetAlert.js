@@ -1,4 +1,4 @@
-import Swal from 'sweetalert2';
+import Swal from 'sweetalert2'
 
 const Toast = Swal.mixin({
   toast: true,
@@ -6,11 +6,11 @@ const Toast = Swal.mixin({
   showConfirmButton: false,
   timer: 3000,
   timerProgressBar: true,
-});
+})
 
-export const notifySuccess = (title, text) => Toast.fire({ icon: 'success', title, text });
-export const notifyError = (title, text) => Toast.fire({ icon: 'error', title, text });
-export const notifyInfo = (title, text) => Toast.fire({ icon: 'info', title, text });
+export const notifySuccess = (title, text) => Toast.fire({ icon: 'success', title, text })
+export const notifyError = (title, text) => Toast.fire({ icon: 'error', title, text })
+export const notifyInfo = (title, text) => Toast.fire({ icon: 'info', title, text })
 
 export const confirmDialog = async (title, text, confirmButtonText = 'Yes, delete it') => {
   const result = await Swal.fire({
@@ -21,6 +21,6 @@ export const confirmDialog = async (title, text, confirmButtonText = 'Yes, delet
     confirmButtonText,
     confirmButtonColor: '#111827',
     cancelButtonColor: '#9ca3af',
-  });
-  return result.isConfirmed;
-};
+  })
+  return result.isConfirmed
+}

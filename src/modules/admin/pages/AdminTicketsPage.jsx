@@ -1,78 +1,78 @@
-import React, { useState, useEffect } from 'react';
-import { SupportTicket, TicketResponse, AuditLog } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import React, { useState, useEffect } from 'react'
+import { SupportTicket, TicketResponse, AuditLog } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { 
   Ticket, Search, Eye, Trash2, ChevronLeft, ChevronRight, 
   Filter, Clock, AlertCircle, CheckCircle, X, MessageSquare 
-} from 'lucide-react';
+} from 'lucide-react'
 
-const STATUSES = ['open', 'in_progress', 'resolved', 'closed'];
-const CATEGORIES = ['bug', 'feature', 'suggestion', 'support', 'other'];
-const PRIORITIES = ['low', 'medium', 'high', 'urgent'];
+const STATUSES = ['open', 'in_progress', 'resolved', 'closed']
+const CATEGORIES = ['bug', 'feature', 'suggestion', 'support', 'other']
+const PRIORITIES = ['low', 'medium', 'high', 'urgent']
 
 export default function AdminTicketsPage() {
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [tickets, setTickets] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [filterPriority, setFilterPriority] = useState('all');
-  const [selectedTicket, setSelectedTicket] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [tickets, setTickets] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [filterCategory, setFilterCategory] = useState('all')
+  const [filterPriority, setFilterPriority] = useState('all')
+  const [selectedTicket, setSelectedTicket] = useState(null)
+  const [responses, setResponses] = useState([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
 
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+      setDebouncedSearchQuery(searchQuery)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   const fetchTickets = async () => {
     try {
-      setLoading(true);
-      const rows = await SupportTicket.list('-created_at');
-      setTickets(rows || []);
+      setLoading(true)
+      const rows = await SupportTicket.list('-created_at')
+      setTickets(rows || [])
     } catch (err) {
-      console.error('Error fetching tickets:', err);
-      error('Error', 'Failed to fetch tickets');
+      
+      error('Error', 'Failed to fetch tickets')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const fetchTicketResponses = async (ticketId) => {
     try {
-      const ticketResponses = await TicketResponse.filter({ ticket_id: ticketId }, '-created_at', 100);
-      setResponses(ticketResponses || []);
+      const ticketResponses = await TicketResponse.filter({ ticket_id: ticketId }, '-created_at', 100)
+      setResponses(ticketResponses || [])
     } catch (err) {
-      console.error('Error fetching responses:', err);
-      setResponses([]);
+      
+      setResponses([])
     }
-  };
+  }
 
   useEffect(() => {
-    fetchTickets();
-  }, []);
+    fetchTickets()
+  }, [])
 
   const handleUpdateStatus = async (ticketId, newStatus) => {
     try {
-      const updates = { status: newStatus };
+      const updates = { status: newStatus }
       if (newStatus === 'resolved') {
-        updates.resolved_at = new Date().toISOString();
+        updates.resolved_at = new Date().toISOString()
       } else if (newStatus === 'closed') {
-        updates.closed_at = new Date().toISOString();
+        updates.closed_at = new Date().toISOString()
       }
 
-      await SupportTicket.update(ticketId, updates);
+      await SupportTicket.update(ticketId, updates)
       
       // Log the action
       await AuditLog.create({
@@ -81,23 +81,23 @@ export default function AdminTicketsPage() {
         entity_id: ticketId,
         performed_by: user.email,
         details: `Updated ticket status to ${newStatus}`
-      });
+      })
 
-      success('Success', `Ticket ${newStatus}`);
-      fetchTickets();
+      success('Success', `Ticket ${newStatus}`)
+      fetchTickets()
       if (selectedTicket?.id === ticketId) {
-        setSelectedTicket({ ...selectedTicket, ...updates });
+        setSelectedTicket({ ...selectedTicket, ...updates })
       }
     } catch (err) {
-      console.error('Error updating status:', err);
-      error('Error', 'Failed to update status');
+      
+      error('Error', 'Failed to update status')
     }
-  };
+  }
 
   const handleDeleteTicket = async (ticketId) => {
-    if (!window.confirm('Are you sure you want to delete this ticket?')) return;
+    if (!window.confirm('Are you sure you want to delete this ticket?')) return
     try {
-      await SupportTicket.delete(ticketId);
+      await SupportTicket.delete(ticketId)
       
       // Log the action
       await AuditLog.create({
@@ -106,18 +106,18 @@ export default function AdminTicketsPage() {
         entity_id: ticketId,
         performed_by: user.email,
         details: 'Deleted support ticket'
-      });
+      })
 
-      success('Success', 'Ticket deleted');
-      fetchTickets();
+      success('Success', 'Ticket deleted')
+      fetchTickets()
       if (selectedTicket?.id === ticketId) {
-        setSelectedTicket(null);
+        setSelectedTicket(null)
       }
     } catch (err) {
-      console.error('Error deleting ticket:', err);
-      error('Error', 'Failed to delete ticket');
+      
+      error('Error', 'Failed to delete ticket')
     }
-  };
+  }
 
   const getStatusBadge = (status) => {
     const map = {
@@ -125,9 +125,9 @@ export default function AdminTicketsPage() {
       in_progress: 'bg-yellow-100 text-yellow-800',
       resolved: 'bg-green-100 text-green-800',
       closed: 'bg-gray-100 text-gray-800',
-    };
-    return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[status] || 'bg-gray-100 text-gray-800'}`}>{status.replace('_', ' ')}</span>;
-  };
+    }
+    return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[status] || 'bg-gray-100 text-gray-800'}`}>{status.replace('_', ' ')}</span>
+  }
 
   const getPriorityBadge = (priority) => {
     const map = {
@@ -135,41 +135,41 @@ export default function AdminTicketsPage() {
       medium: 'bg-blue-100 text-blue-800',
       high: 'bg-orange-100 text-orange-800',
       urgent: 'bg-red-100 text-red-800',
-    };
-    return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[priority] || 'bg-gray-100 text-gray-800'}`}>{priority}</span>;
-  };
+    }
+    return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[priority] || 'bg-gray-100 text-gray-800'}`}>{priority}</span>
+  }
 
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = ticket.ticket_number?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
                          ticket.subject?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-                         ticket.user_name?.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || ticket.status === filterStatus;
-    const matchesCategory = filterCategory === 'all' || ticket.category === filterCategory;
-    const matchesPriority = filterPriority === 'all' || ticket.priority === filterPriority;
-    return matchesSearch && matchesStatus && matchesCategory && matchesPriority;
-  });
+                         ticket.user_name?.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+    const matchesStatus = filterStatus === 'all' || ticket.status === filterStatus
+    const matchesCategory = filterCategory === 'all' || ticket.category === filterCategory
+    const matchesPriority = filterPriority === 'all' || ticket.priority === filterPriority
+    return matchesSearch && matchesStatus && matchesCategory && matchesPriority
+  })
 
   const paginatedTickets = filteredTickets.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
+  )
 
-  const totalPages = Math.ceil(filteredTickets.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredTickets.length / itemsPerPage)
 
   const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+    setCurrentPage(page)
+  }
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearchQuery, filterStatus, filterCategory, filterPriority]);
+    setCurrentPage(1)
+  }, [debouncedSearchQuery, filterStatus, filterCategory, filterPriority])
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -416,5 +416,5 @@ export default function AdminTicketsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

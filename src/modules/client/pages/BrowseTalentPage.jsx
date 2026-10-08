@@ -1,61 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { Artist, Connection } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, SlidersHorizontal, Heart, MapPin, Mail, User, MessageCircle, ExternalLink, Star, Filter, ChevronDown } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { Artist, Connection } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Search, SlidersHorizontal, Heart, MapPin, Mail, User, MessageCircle, ExternalLink, Star, Filter, ChevronDown } from 'lucide-react'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { useNavigate } from 'react-router-dom'
 
 export default function BrowseTalentPage() {
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const navigate = useNavigate();
-  const [talent, setTalent] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterRole, setFilterRole] = useState('all');
-  const [filterLocation, setFilterLocation] = useState('all');
-  const [savedArtistIds, setSavedArtistIds] = useState(new Set());
-  const [showFilters, setShowFilters] = useState(false);
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const navigate = useNavigate()
+  const [talent, setTalent] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterRole, setFilterRole] = useState('all')
+  const [filterLocation, setFilterLocation] = useState('all')
+  const [savedArtistIds, setSavedArtistIds] = useState(new Set())
+  const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
-    fetchTalent();
-    fetchSavedTalent();
-  }, [user]);
+    fetchTalent()
+    fetchSavedTalent()
+  }, [user])
 
   const fetchTalent = async () => {
     try {
-      setLoading(true);
-      const artists = await Artist.list('created_at', 100);
-      setTalent(artists || []);
+      setLoading(true)
+      const artists = await Artist.list('created_at', 100)
+      setTalent(artists || [])
     } catch (err) {
-      console.error('Error fetching talent:', err);
-      error('Error', 'Failed to fetch talent');
+      //
+      error('Error', 'Failed to fetch talent')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const fetchSavedTalent = async () => {
-    if (!user?.email) return;
+    if (!user?.email) return
     try {
       const connections = await Connection.filter({ 
         user_email: user.email, 
         connection_type: 'saved',
         status: 'active'
-      });
-      const savedIds = new Set(connections.map(c => c.connected_artist_id).filter(Boolean));
-      setSavedArtistIds(savedIds);
+      })
+      const savedIds = new Set(connections.map(c => c.connected_artist_id).filter(Boolean))
+      setSavedArtistIds(savedIds)
     } catch (err) {
-      console.error('Error fetching saved talent:', err);
+      //
     }
-  };
+  }
 
   const handleSave = async (artistId) => {
     if (!user?.email) {
-      error('Authentication Required', 'Please sign in to save talent');
-      return;
+      error('Authentication Required', 'Please sign in to save talent')
+      return
     }
     try {
       if (savedArtistIds.has(artistId)) {
@@ -64,15 +64,15 @@ export default function BrowseTalentPage() {
           user_email: user.email, 
           connected_artist_id: artistId,
           connection_type: 'saved'
-        });
+        })
         if (connections.length > 0) {
-          await Connection.delete(connections[0].id);
+          await Connection.delete(connections[0].id)
           setSavedArtistIds(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(artistId);
-            return newSet;
-          });
-          success('Removed', 'Talent removed from saved list');
+            const newSet = new Set(prev)
+            newSet.delete(artistId)
+            return newSet
+          })
+          success('Removed', 'Talent removed from saved list')
         }
       } else {
         // Save
@@ -82,44 +82,44 @@ export default function BrowseTalentPage() {
           connection_type: 'saved',
           status: 'active',
           created_at: new Date().toISOString()
-        });
-        setSavedArtistIds(prev => new Set(prev).add(artistId));
-        success('Saved', 'Talent added to saved list');
+        })
+        setSavedArtistIds(prev => new Set(prev).add(artistId))
+        success('Saved', 'Talent added to saved list')
       }
     } catch (err) {
-      console.error('Error saving talent:', err);
-      error('Failed', 'Failed to save talent');
+      //
+      error('Failed', 'Failed to save talent')
     }
-  };
+  }
 
   const handleMessage = (artistEmail) => {
-    navigate('/Messages', { state: { recipientEmail: artistEmail } });
-  };
+    navigate('/Messages', { state: { recipientEmail: artistEmail } })
+  }
 
   const handleViewProfile = (artistId) => {
-    navigate(`/ArtistPublicProfile/${artistId}`);
-  };
+    navigate(`/ArtistPublicProfile/${artistId}`)
+  }
 
   const filteredTalent = talent.filter(artist => {
     const matchesSearch = 
       artist.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       artist.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       artist.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (artist.skills_experience || []).some(s => s.skill?.toLowerCase().includes(searchQuery.toLowerCase()));
+      (artist.skills_experience || []).some(s => s.skill?.toLowerCase().includes(searchQuery.toLowerCase()))
     
-    const matchesRole = filterRole === 'all' || artist.role === filterRole;
+    const matchesRole = filterRole === 'all' || artist.role === filterRole
     const matchesLocation = filterLocation === 'all' || 
       artist.based_in_city?.toLowerCase().includes(filterLocation.toLowerCase()) ||
-      artist.based_in_country?.toLowerCase().includes(filterLocation.toLowerCase());
+      artist.based_in_country?.toLowerCase().includes(filterLocation.toLowerCase())
     
-    return matchesSearch && matchesRole && matchesLocation;
-  });
+    return matchesSearch && matchesRole && matchesLocation
+  })
 
-  const uniqueRoles = [...new Set(talent.map(a => a.role).filter(Boolean))];
+  const uniqueRoles = [...new Set(talent.map(a => a.role).filter(Boolean))]
   const uniqueLocations = [...new Set([
     ...talent.map(a => a.based_in_city).filter(Boolean),
     ...talent.map(a => a.based_in_country).filter(Boolean)
-  ])];
+  ])]
 
   return (
     <div className="bg-white min-h-full">
@@ -275,5 +275,5 @@ export default function BrowseTalentPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

@@ -1,9 +1,9 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
-import ChatWidget from '@/components/landing/backstage/ChatWidget';
-import SEOMetaTags from '@/components/SEOMetaTags';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
+import ChatWidget from '@/components/landing/backstage/ChatWidget'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 const faqs = [
   {
@@ -120,7 +120,7 @@ const faqs = [
       },
     ],
   },
-];
+]
 
 export default function FAQ() {
   return (
@@ -189,5 +189,5 @@ export default function FAQ() {
       <Footer />
       <ChatWidget />
     </div>
-  );
+  )
 }

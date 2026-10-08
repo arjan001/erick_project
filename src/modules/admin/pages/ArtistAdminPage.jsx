@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { adminApi } from '../api/admin.api';
-import { Search, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
-import { notifySuccess } from '@/lib/sweetAlert';
+import React, { useState, useEffect } from 'react'
+import { adminApi } from '../api/admin.api'
+import { Search, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react'
+import { notifySuccess } from '@/lib/sweetAlert'
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 function ArtistModal({ artist, onClose, onApprove, onReject }) {
-  const [notes, setNotes] = useState(artist.admin_notes || '');
+  const [notes, setNotes] = useState(artist.admin_notes || '')
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
       <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -48,43 +48,43 @@ function ArtistModal({ artist, onClose, onApprove, onReject }) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export default function ArtistAdminPage() {
-  const [artists, setArtists] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState(null);
+  const [artists, setArtists] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [page, setPage] = useState(1)
+  const [selected, setSelected] = useState(null)
 
   useEffect(() => {
-    adminApi.artists.list().then(setArtists).catch(console.error).finally(() => setLoading(false));
-  }, []);
+    adminApi.artists.list().then(setArtists).catch(
+  }, [])
 
   const filtered = artists.filter(a => {
-    const matchSearch = !search || a.full_name?.toLowerCase().includes(search.toLowerCase()) || a.email?.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === 'all' || a.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+    const matchSearch = !search || a.full_name?.toLowerCase().includes(search.toLowerCase()) || a.email?.toLowerCase().includes(search.toLowerCase())
+    const matchStatus = statusFilter === 'all' || a.status === statusFilter
+    return matchSearch && matchStatus
+  })
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const handleApprove = async (id, notes) => {
-    await adminApi.artists.approve(id, notes);
-    setArtists(prev => prev.map(a => a.id === id ? { ...a, status: 'approved', admin_notes: notes } : a));
-    setSelected(null);
-    notifySuccess('Creator Approved', 'The creator application has been approved');
-  };
+    await adminApi.artists.approve(id, notes)
+    setArtists(prev => prev.map(a => a.id === id ? { ...a, status: 'approved', admin_notes: notes } : a))
+    setSelected(null)
+    notifySuccess('Creator Approved', 'The creator application has been approved')
+  }
 
   const handleReject = async (id, notes) => {
-    await adminApi.artists.reject(id, notes);
-    setArtists(prev => prev.map(a => a.id === id ? { ...a, status: 'rejected', admin_notes: notes } : a));
-    setSelected(null);
-    notifySuccess('Creator Rejected', 'The creator application has been rejected');
-  };
+    await adminApi.artists.reject(id, notes)
+    setArtists(prev => prev.map(a => a.id === id ? { ...a, status: 'rejected', admin_notes: notes } : a))
+    setSelected(null)
+    notifySuccess('Creator Rejected', 'The creator application has been rejected')
+  }
 
   return (
     <div className="space-y-5">
@@ -186,5 +186,5 @@ export default function ArtistAdminPage() {
 
       {selected && <ArtistModal artist={selected} onClose={() => setSelected(null)} onApprove={handleApprove} onReject={handleReject} />}
     </div>
-  );
+  )
 }

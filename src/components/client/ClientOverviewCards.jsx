@@ -1,11 +1,11 @@
-import React from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import React from 'react'
+import { ArrowUpRight } from 'lucide-react'
 
 export default function ClientOverviewCards({ stats }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat) => {
-        const Icon = stat.icon;
+        const Icon = stat.icon
         return (
           <div
             key={stat.label}
@@ -26,8 +26,8 @@ export default function ClientOverviewCards({ stats }) {
               )}
             </div>
           </div>
-        );
+        )
       })}
     </div>
-  );
+  )
 }

@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Check } from 'lucide-react';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Check } from 'lucide-react'
 
 export default function ProfileCompletionRing({ artist, portfolioCount = 0 }) {
   const checks = [
@@ -9,14 +9,14 @@ export default function ProfileCompletionRing({ artist, portfolioCount = 0 }) {
     { label: 'Location set', done: !!artist?.based_in_country },
     { label: 'Portfolio clips', done: portfolioCount > 0 },
     { label: 'Profile photo', done: !!artist?.profile_photo_url },
-  ];
+  ]
 
-  const filled = checks.filter(c => c.done).length;
-  const percent = Math.round((filled / checks.length) * 100);
+  const filled = checks.filter(c => c.done).length
+  const percent = Math.round((filled / checks.length) * 100)
 
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (percent / 100) * circumference;
+  const radius = 52
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference - (percent / 100) * circumference
 
   return (
     <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5">
@@ -69,5 +69,5 @@ export default function ProfileCompletionRing({ artist, portfolioCount = 0 }) {
         </Link>
       )}
     </div>
-  );
+  )
 }

@@ -1,34 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Job, Connection, Endorsement, Testimonial } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Briefcase, Users, Award, ThumbsUp, MessageCircle, TrendingUp, Clock, Filter, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Job, Connection, Endorsement, Testimonial } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Briefcase, Users, Award, ThumbsUp, MessageCircle, TrendingUp, Clock, Filter, RefreshCw } from 'lucide-react'
 
 export default function ActivityFeedPage() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [activities, setActivities] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
+  const [activities, setActivities] = useState([])
+  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all'); // all, jobs, connections, endorsements, testimonials
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    setUser(JSON.parse(storedUser));
-  }, []);
+    setUser(JSON.parse(storedUser))
+  }, [])
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
     const fetchActivities = async () => {
       try {
-        const allActivities = [];
+        const allActivities = []
         
         // Fetch jobs posted by connections
-        const jobs = await Job.filter({ status: 'open' });
+        const jobs = await Job.filter({ status: 'open' })
         jobs.forEach(job => {
           allActivities.push({
             id: `job-${job.id}`,
@@ -40,14 +40,14 @@ export default function ActivityFeedPage() {
             created_date: job.created_at,
             link: `/jobs/${job.id}`,
             icon: <Briefcase className="w-5 h-5 text-blue-600" />
-          });
-        });
+          })
+        })
 
         // Fetch new connections
-        const connections = await Connection.filter({ status: 'accepted' });
+        const connections = await Connection.filter({ status: 'accepted' })
         connections.forEach(conn => {
           if (conn.recipient_email === user.email || conn.requester_email === user.email) {
-            const otherEmail = conn.recipient_email === user.email ? conn.requester_email : conn.recipient_email;
+            const otherEmail = conn.recipient_email === user.email ? conn.requester_email : conn.recipient_email
             allActivities.push({
               id: `connection-${conn.id}`,
               type: 'connection',
@@ -58,15 +58,15 @@ export default function ActivityFeedPage() {
               created_date: conn.updated_date || conn.created_at,
               link: '/network',
               icon: <Users className="w-5 h-5 text-green-600" />
-            });
+            })
           }
-        });
+        })
 
         // Fetch endorsements
-        const endorsements = await Endorsement.list();
+        const endorsements = await Endorsement.list()
         endorsements.forEach(endorsement => {
           if (endorsement.endorsed_email === user.email || endorsement.endorser_email === user.email) {
-            const isReceived = endorsement.endorsed_email === user.email;
+            const isReceived = endorsement.endorsed_email === user.email
             allActivities.push({
               id: `endorsement-${endorsement.id}`,
               type: 'endorsement',
@@ -79,15 +79,15 @@ export default function ActivityFeedPage() {
               created_date: endorsement.created_at,
               link: '/endorsements',
               icon: <Award className="w-5 h-5 text-yellow-600" />
-            });
+            })
           }
-        });
+        })
 
         // Fetch testimonials
-        const testimonials = await Testimonial.list();
+        const testimonials = await Testimonial.list()
         testimonials.forEach(testimonial => {
           if (testimonial.recipient_email === user.email || testimonial.author_email === user.email) {
-            const isReceived = testimonial.recipient_email === user.email;
+            const isReceived = testimonial.recipient_email === user.email
             allActivities.push({
               id: `testimonial-${testimonial.id}`,
               type: 'testimonial',
@@ -100,34 +100,34 @@ export default function ActivityFeedPage() {
               created_date: testimonial.created_at,
               link: '/testimonials',
               icon: <ThumbsUp className="w-5 h-5 text-purple-600" />
-            });
+            })
           }
-        });
+        })
 
         // Sort by created_date descending
         const sorted = allActivities.sort((a, b) => 
           new Date(b.created_date) - new Date(a.created_date)
-        );
+        )
         
-        setActivities(sorted);
+        setActivities(sorted)
       } catch (err) {
-        console.error('Error fetching activities:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchActivities();
-  }, [user]);
+    fetchActivities()
+  }, [user])
 
   const handleRefresh = () => {
-    setLoading(true);
+    setLoading(true)
     // Re-fetch activities
     const fetchActivities = async () => {
       try {
-        const allActivities = [];
+        const allActivities = []
         
-        const jobs = await Job.filter({ status: 'open' });
+        const jobs = await Job.filter({ status: 'open' })
         jobs.forEach(job => {
           allActivities.push({
             id: `job-${job.id}`,
@@ -139,13 +139,13 @@ export default function ActivityFeedPage() {
             created_date: job.created_at,
             link: `/jobs/${job.id}`,
             icon: <Briefcase className="w-5 h-5 text-blue-600" />
-          });
-        });
+          })
+        })
 
-        const connections = await Connection.filter({ status: 'accepted' });
+        const connections = await Connection.filter({ status: 'accepted' })
         connections.forEach(conn => {
           if (conn.recipient_email === user.email || conn.requester_email === user.email) {
-            const otherEmail = conn.recipient_email === user.email ? conn.requester_email : conn.recipient_email;
+            const otherEmail = conn.recipient_email === user.email ? conn.requester_email : conn.recipient_email
             allActivities.push({
               id: `connection-${conn.id}`,
               type: 'connection',
@@ -156,14 +156,14 @@ export default function ActivityFeedPage() {
               created_date: conn.updated_date || conn.created_at,
               link: '/network',
               icon: <Users className="w-5 h-5 text-green-600" />
-            });
+            })
           }
-        });
+        })
 
-        const endorsements = await Endorsement.list();
+        const endorsements = await Endorsement.list()
         endorsements.forEach(endorsement => {
           if (endorsement.endorsed_email === user.email || endorsement.endorser_email === user.email) {
-            const isReceived = endorsement.endorsed_email === user.email;
+            const isReceived = endorsement.endorsed_email === user.email
             allActivities.push({
               id: `endorsement-${endorsement.id}`,
               type: 'endorsement',
@@ -176,14 +176,14 @@ export default function ActivityFeedPage() {
               created_date: endorsement.created_at,
               link: '/endorsements',
               icon: <Award className="w-5 h-5 text-yellow-600" />
-            });
+            })
           }
-        });
+        })
 
-        const testimonials = await Testimonial.list();
+        const testimonials = await Testimonial.list()
         testimonials.forEach(testimonial => {
           if (testimonial.recipient_email === user.email || testimonial.author_email === user.email) {
-            const isReceived = testimonial.recipient_email === user.email;
+            const isReceived = testimonial.recipient_email === user.email
             allActivities.push({
               id: `testimonial-${testimonial.id}`,
               type: 'testimonial',
@@ -196,49 +196,49 @@ export default function ActivityFeedPage() {
               created_date: testimonial.created_at,
               link: '/testimonials',
               icon: <ThumbsUp className="w-5 h-5 text-purple-600" />
-            });
+            })
           }
-        });
+        })
 
         const sorted = allActivities.sort((a, b) => 
           new Date(b.created_date) - new Date(a.created_date)
-        );
+        )
         
-        setActivities(sorted);
+        setActivities(sorted)
       } catch (err) {
-        console.error('Error fetching activities:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchActivities();
-  };
+    fetchActivities()
+  }
 
   const filteredActivities = activities.filter(activity => {
-    if (filter === 'all') return true;
-    return activity.type === filter;
-  });
+    if (filter === 'all') return true
+    return activity.type === filter
+  })
 
   if (!user || loading) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   const getTimeAgo = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now - date) / 1000);
+    const date = new Date(dateString)
+    const now = new Date()
+    const seconds = Math.floor((now - date) / 1000)
     
-    if (seconds < 60) return 'Just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-    return date.toLocaleDateString();
-  };
+    if (seconds < 60) return 'Just now'
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`
+    return date.toLocaleDateString()
+  }
 
   return (
     <>
@@ -325,5 +325,5 @@ export default function ActivityFeedPage() {
           )}
         </div>
     </>
-  );
+  )
 }

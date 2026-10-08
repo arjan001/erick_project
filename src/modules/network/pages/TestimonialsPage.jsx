@@ -1,81 +1,81 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Testimonial, Artist, Notification } from '@/lib/supabaseEntities';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Star, Plus, X, MessageCircle, ThumbsUp, Award, Users, Briefcase } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Testimonial, Artist, Notification } from '@/lib/supabaseEntities'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Star, Plus, X, MessageCircle, ThumbsUp, Award, Users, Briefcase } from 'lucide-react'
 
 export default function TestimonialsPage() {
-  const navigate = useNavigate();
-  const { success, error } = useToast();
-  const [user, setUser] = useState(null);
-  const [testimonials, setTestimonials] = useState([]);
-  const [receivedTestimonials, setReceivedTestimonials] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedPerson, setSelectedPerson] = useState(null);
+  const navigate = useNavigate()
+  const { success, error } = useToast()
+  const [user, setUser] = useState(null)
+  const [testimonials, setTestimonials] = useState([])
+  const [receivedTestimonials, setReceivedTestimonials] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [selectedPerson, setSelectedPerson] = useState(null)
   const [testimonialForm, setTestimonialForm] = useState({
     project_title: '',
     content: '',
     rating: 5,
     collaboration_type: 'worked_together'
-  });
+  })
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    setUser(JSON.parse(storedUser));
-  }, []);
+    setUser(JSON.parse(storedUser))
+  }, [])
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
     const fetchTestimonials = async () => {
       try {
-        const allTestimonials = await Testimonial.list();
+        const allTestimonials = await Testimonial.list()
         
-        const given = allTestimonials.filter(t => t.author_email === user.email);
-        const received = allTestimonials.filter(t => t.recipient_email === user.email);
+        const given = allTestimonials.filter(t => t.author_email === user.email)
+        const received = allTestimonials.filter(t => t.recipient_email === user.email)
 
         const enrichedGiven = await Promise.all(
           given.map(async (testimonial) => {
             try {
-              const artist = await Artist.filter({ email: testimonial.recipient_email });
-              return { ...testimonial, recipient: artist[0] || null };
+              const artist = await Artist.filter({ email: testimonial.recipient_email })
+              return { ...testimonial, recipient: artist[0] || null }
             } catch (err) {
-              return { ...testimonial, recipient: null };
+              return { ...testimonial, recipient: null }
             }
           })
-        );
+        )
 
         const enrichedReceived = await Promise.all(
           received.map(async (testimonial) => {
             try {
-              const author = await Artist.filter({ email: testimonial.author_email });
-              return { ...testimonial, author: author[0] || null };
+              const author = await Artist.filter({ email: testimonial.author_email })
+              return { ...testimonial, author: author[0] || null }
             } catch (err) {
-              return { ...testimonial, author: null };
+              return { ...testimonial, author: null }
             }
           })
-        );
+        )
 
-        setTestimonials(enrichedGiven.filter(t => t.recipient));
-        setReceivedTestimonials(enrichedReceived.filter(t => t.author));
+        setTestimonials(enrichedGiven.filter(t => t.recipient))
+        setReceivedTestimonials(enrichedReceived.filter(t => t.author))
       } catch (err) {
-        console.error('Error fetching testimonials:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchTestimonials();
-  }, [user]);
+    fetchTestimonials()
+  }, [user])
 
   const handleCreateTestimonial = async () => {
-    if (!selectedPerson || !testimonialForm.project_title || !testimonialForm.content) return;
+    if (!selectedPerson || !testimonialForm.project_title || !testimonialForm.content) return
 
     try {
       await Testimonial.create({
@@ -87,7 +87,7 @@ export default function TestimonialsPage() {
         content: testimonialForm.content,
         rating: testimonialForm.rating,
         collaboration_type: testimonialForm.collaboration_type,
-      });
+      })
 
       await Notification.create({
         recipient_email: selectedPerson.email,
@@ -97,39 +97,39 @@ export default function TestimonialsPage() {
         title: 'New Testimonial',
         message: `${user.full_name} wrote a testimonial about working with you`,
         action_required: false
-      });
+      })
 
-      setShowModal(false);
-      setSelectedPerson(null);
-      setTestimonialForm({ project_title: '', content: '', rating: 5, collaboration_type: 'worked_together' });
+      setShowModal(false)
+      setSelectedPerson(null)
+      setTestimonialForm({ project_title: '', content: '', rating: 5, collaboration_type: 'worked_together' })
 
-      success('Testimonial Sent', `You wrote a testimonial for ${selectedPerson.full_name}`);
-      const allT = await Testimonial.list();
-      setTestimonials(allT.filter(t => t.author_email === user.email));
-      setReceivedTestimonials(allT.filter(t => t.recipient_email === user.email));
+      success('Testimonial Sent', `You wrote a testimonial for ${selectedPerson.full_name}`)
+      const allT = await Testimonial.list()
+      setTestimonials(allT.filter(t => t.author_email === user.email))
+      setReceivedTestimonials(allT.filter(t => t.recipient_email === user.email))
     } catch (err) {
-      console.error('Error creating testimonial:', err);
-      error('Failed', 'Failed to create testimonial');
+      //
+      error('Failed', 'Failed to create testimonial')
     }
-  };
+  }
 
   const handleDeleteTestimonial = async (testimonialId) => {
     try {
-      await Testimonial.delete(testimonialId);
-      setTestimonials(prev => prev.filter(t => t.id !== testimonialId));
-      success('Deleted', 'Testimonial deleted successfully');
+      await Testimonial.delete(testimonialId)
+      setTestimonials(prev => prev.filter(t => t.id !== testimonialId))
+      success('Deleted', 'Testimonial deleted successfully')
     } catch (err) {
-      console.error('Error deleting testimonial:', err);
-      error('Failed', 'Failed to delete testimonial');
+      //
+      error('Failed', 'Failed to delete testimonial')
     }
-  };
+  }
 
   if (!user || loading) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   const renderStars = (rating) => {
@@ -138,8 +138,8 @@ export default function TestimonialsPage() {
         key={i}
         className={`w-4 h-4 ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
       />
-    ));
-  };
+    ))
+  }
 
   return (
     <>
@@ -327,5 +327,5 @@ export default function TestimonialsPage() {
           </div>
         )}
     </>
-  );
+  )
 }

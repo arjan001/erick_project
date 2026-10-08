@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { Team } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { User, Mail, Phone, MapPin, Briefcase, Edit2, Save, Upload, X, Shield } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { base44 } from '@/api/base44Client'
+import { Team } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { User, Mail, Phone, MapPin, Briefcase, Edit2, Save, Upload, X, Shield } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function TeamMemberProfilePage() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [team, setTeam] = useState(null);
-  const [member, setMember] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [team, setTeam] = useState(null)
+  const [member, setMember] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [editing, setEditing] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -28,95 +28,95 @@ export default function TeamMemberProfilePage() {
     skills: '',
     bio: '',
     location: ''
-  });
+  })
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    loadTeamData();
-  }, [isAuthenticated]);
+    loadTeamData()
+  }, [isAuthenticated])
 
   const loadTeamData = async () => {
     try {
-      let teamData = null;
+      let teamData = null
       if (authUser?.team_id) {
-        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null);
+        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null)
       } else {
-        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1);
-        teamData = teams?.[0] || null;
+        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1)
+        teamData = teams?.[0] || null
       }
-      setTeam(teamData);
+      setTeam(teamData)
       
-      const memberId = searchParams.get('id');
+      const memberId = searchParams.get('id')
       if (memberId) {
-        fetchMember(memberId);
+        fetchMember(memberId)
       } else {
-        setLoading(false);
+        setLoading(false)
       }
     } catch (err) {
-      console.error('Error loading team:', err);
-      toastError('Load Failed', 'Failed to load team data');
-      setLoading(false);
+      //
+      toastError('Load Failed', 'Failed to load team data')
+      setLoading(false)
     }
-  };
+  }
 
   const fetchMember = async (memberId) => {
     try {
-      const memberData = await base44.entities.TeamMember.get(memberId);
-      setMember(memberData);
-      setFormData(memberData);
+      const memberData = await base44.entities.TeamMember.get(memberId)
+      setMember(memberData)
+      setFormData(memberData)
     } catch (err) {
-      console.error('Error fetching member:', err);
-      toastError('Load Failed', 'Failed to load member profile. Please try again.');
+      //
+      toastError('Load Failed', 'Failed to load member profile. Please try again.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSave = async () => {
-    if (!member) return;
+    if (!member) return
     try {
       await base44.entities.TeamMember.update(member.id, {
         ...formData,
         updated_at: new Date().toISOString()
-      });
-      setMember({ ...member, ...formData });
-      success('Profile Updated', 'Member profile updated successfully');
-      setEditing(false);
+      })
+      setMember({ ...member, ...formData })
+      success('Profile Updated', 'Member profile updated successfully')
+      setEditing(false)
     } catch (err) {
-      console.error('Error saving profile:', err);
-      toastError('Save Failed', 'Failed to save profile');
+      //
+      toastError('Save Failed', 'Failed to save profile')
     }
-  };
+  }
 
   const handlePhotoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !member) return;
-    setUploadingPhoto(true);
+    const file = e.target.files?.[0]
+    if (!file || !member) return
+    setUploadingPhoto(true)
 
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url;
+      const response = await base44.integrations.Core.UploadFile({ file })
+      const fileUrl = response.file_url || response.url
       
-      await base44.entities.TeamMember.update(member.id, { profile_photo: fileUrl });
-      setMember({ ...member, profile_photo: fileUrl });
-      success('Photo Updated', 'Profile photo updated successfully');
+      await base44.entities.TeamMember.update(member.id, { profile_photo: fileUrl })
+      setMember({ ...member, profile_photo: fileUrl })
+      success('Photo Updated', 'Profile photo updated successfully')
     } catch (err) {
-      console.error('Error uploading photo:', err);
-      toastError('Upload Failed', 'Failed to upload photo');
+      //
+      toastError('Upload Failed', 'Failed to upload photo')
     } finally {
-      setUploadingPhoto(false);
+      setUploadingPhoto(false)
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center">
         <div className="text-gray-600">Loading...</div>
       </div>
-    );
+    )
   }
 
   if (!member) {
@@ -124,7 +124,7 @@ export default function TeamMemberProfilePage() {
       <div className="flex items-center justify-center">
         <div className="text-gray-600">Member not found</div>
       </div>
-    );
+    )
   }
 
   return (
@@ -259,5 +259,5 @@ export default function TeamMemberProfilePage() {
             )}
           </div>
     </div>
-  );
+  )
 }

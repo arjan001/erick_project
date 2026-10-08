@@ -1,7 +1,7 @@
-import React from 'react';
-import { Shield, Eye, Lock, Database, Trash2, Mail } from 'lucide-react';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
+import React from 'react'
+import { Shield, Eye, Lock, Database, Trash2, Mail } from 'lucide-react'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
 
 export default function PrivacyPolicy() {
   return (
@@ -129,5 +129,5 @@ export default function PrivacyPolicy() {
 
       <Footer />
     </div>
-  );
+  )
 }

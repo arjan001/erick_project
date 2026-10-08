@@ -1,219 +1,219 @@
-import React, { useState, useEffect } from 'react';
-import { Role, Permission, RolePermission, UserRole } from '@/lib/supabaseEntities';
-import { permissionsService } from '@/lib/permissionsService';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Shield, Plus, Save, Trash2, X, Users, Search, Settings as SettingsIcon, Lock, Unlock, Copy, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { Role, Permission, RolePermission, UserRole } from '@/lib/supabaseEntities'
+import { permissionsService } from '@/lib/permissionsService'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Shield, Plus, Save, Trash2, X, Users, Search, Settings as SettingsIcon, Lock, Unlock, Copy, Check } from 'lucide-react'
 
 export default function AdminRolesPermissionsPage() {
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const [roles, setRoles] = useState([]);
-  const [permissionsByCategory, setPermissionsByCategory] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [showAddRoleModal, setShowAddRoleModal] = useState(false);
-  const [showEditRoleModal, setShowEditRoleModal] = useState(false);
-  const [newRoleName, setNewRoleName] = useState('');
-  const [newRoleDescription, setNewRoleDescription] = useState('');
-  const [editRoleName, setEditRoleName] = useState('');
-  const [editRoleDescription, setEditRoleDescription] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [copiedPermissions, setCopiedPermissions] = useState(null);
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const [roles, setRoles] = useState([])
+  const [permissionsByCategory, setPermissionsByCategory] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [selectedRole, setSelectedRole] = useState(null)
+  const [showAddRoleModal, setShowAddRoleModal] = useState(false)
+  const [showEditRoleModal, setShowEditRoleModal] = useState(false)
+  const [newRoleName, setNewRoleName] = useState('')
+  const [newRoleDescription, setNewRoleDescription] = useState('')
+  const [editRoleName, setEditRoleName] = useState('')
+  const [editRoleDescription, setEditRoleDescription] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [copiedPermissions, setCopiedPermissions] = useState(null)
 
   const fetchRoles = async () => {
     try {
-      setLoading(true);
-      const rolesData = await Role.list();
+      setLoading(true)
+      const rolesData = await Role.list()
       
       // Get user counts for each role
       const rolesWithCounts = await Promise.all(
         rolesData.map(async (role) => {
           try {
-            const userRoles = await UserRole.filter({ role_id: role.id, is_active: true });
+            const userRoles = await UserRole.filter({ role_id: role.id, is_active: true })
             return {
               ...role,
               userCount: userRoles.length
-            };
+            }
           } catch (err) {
             // If user_roles table doesn't exist yet, return 0
             return {
               ...role,
               userCount: 0
-            };
+            }
           }
         })
-      );
+      )
       
-      setRoles(rolesWithCounts);
+      setRoles(rolesWithCounts)
     } catch (err) {
-      console.error('Error fetching roles:', err);
+      
       // If roles table doesn't exist yet, show empty state
-      setRoles([]);
+      setRoles([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const fetchPermissions = async () => {
     try {
-      const grouped = await permissionsService.getAllPermissions();
-      setPermissionsByCategory(grouped);
+      const grouped = await permissionsService.getAllPermissions()
+      setPermissionsByCategory(grouped)
     } catch (err) {
-      console.error('Error fetching permissions:', err);
+      
       // If permissions tables don't exist yet, show empty state
-      setPermissionsByCategory({});
+      setPermissionsByCategory({})
     }
-  };
+  }
 
   useEffect(() => {
-    fetchRoles();
-    fetchPermissions();
-  }, []);
+    fetchRoles()
+    fetchPermissions()
+  }, [])
 
   const handleCreateRole = async () => {
-    if (!newRoleName.trim()) return;
+    if (!newRoleName.trim()) return
     try {
-      const roleKey = newRoleName.toLowerCase().replace(/\s+/g, '_');
+      const roleKey = newRoleName.toLowerCase().replace(/\s+/g, '_')
       const created = await Role.create({
         role_key: roleKey,
         role_name: newRoleName,
         description: newRoleDescription || 'Custom role',
         is_system_role: false,
         is_active: true
-      });
-      setRoles(prev => [...prev, { ...created, userCount: 0 }]);
-      success('Success', 'Role created successfully');
-      setShowAddRoleModal(false);
-      setNewRoleName('');
-      setNewRoleDescription('');
+      })
+      setRoles(prev => [...prev, { ...created, userCount: 0 }])
+      success('Success', 'Role created successfully')
+      setShowAddRoleModal(false)
+      setNewRoleName('')
+      setNewRoleDescription('')
     } catch (err) {
-      console.error('Error creating role:', err);
-      error('Failed', 'Failed to create role');
+      
+      error('Failed', 'Failed to create role')
     }
-  };
+  }
 
   const handleUpdateRole = async () => {
-    if (!editRoleName.trim()) return;
+    if (!editRoleName.trim()) return
     try {
       const updated = await Role.update(selectedRole.id, {
         role_name: editRoleName,
         description: editRoleDescription
-      });
-      setRoles(prev => prev.map(r => r.id === selectedRole.id ? { ...r, ...updated } : r));
-      setSelectedRole({ ...selectedRole, ...updated });
-      success('Success', 'Role updated successfully');
-      setShowEditRoleModal(false);
+      })
+      setRoles(prev => prev.map(r => r.id === selectedRole.id ? { ...r, ...updated } : r))
+      setSelectedRole({ ...selectedRole, ...updated })
+      success('Success', 'Role updated successfully')
+      setShowEditRoleModal(false)
     } catch (err) {
-      console.error('Error updating role:', err);
-      error('Failed', 'Failed to update role');
+      
+      error('Failed', 'Failed to update role')
     }
-  };
+  }
 
   const handleDeleteRole = async (role) => {
     if (role.is_system_role) {
-      error('Cannot Delete', 'Cannot delete system roles');
-      return;
+      error('Cannot Delete', 'Cannot delete system roles')
+      return
     }
     if (role.userCount > 0) {
-      error('Cannot Delete', 'Cannot delete role with assigned users. Please reassign users first.');
-      return;
+      error('Cannot Delete', 'Cannot delete role with assigned users. Please reassign users first.')
+      return
     }
-    if (!window.confirm(`Delete the "${role.role_name}" role?`)) return;
+    if (!window.confirm(`Delete the "${role.role_name}" role?`)) return
     try {
-      await permissionsService.deleteRole(role.id);
-      setRoles(prev => prev.filter(r => r.id !== role.id));
-      if (selectedRole?.id === role.id) setSelectedRole(null);
-      success('Deleted', 'Role deleted successfully');
+      await permissionsService.deleteRole(role.id)
+      setRoles(prev => prev.filter(r => r.id !== role.id))
+      if (selectedRole?.id === role.id) setSelectedRole(null)
+      success('Deleted', 'Role deleted successfully')
     } catch (err) {
-      console.error('Error deleting role:', err);
-      error('Failed', 'Failed to delete role');
+      
+      error('Failed', 'Failed to delete role')
     }
-  };
+  }
 
   const handleTogglePermission = (permissionKey) => {
     setSelectedRole(prev => {
-      const hasPermission = prev.permissions?.includes(permissionKey);
+      const hasPermission = prev.permissions?.includes(permissionKey)
       return {
         ...prev,
         permissions: hasPermission 
           ? prev.permissions.filter(p => p !== permissionKey) 
           : [...(prev.permissions || []), permissionKey],
-      };
-    });
-  };
+      }
+    })
+  }
 
   const handleSelectAllInCategory = (category, select) => {
-    const categoryPermissions = permissionsByCategory[category] || [];
-    const permissionKeys = categoryPermissions.map(p => p.permission_key);
+    const categoryPermissions = permissionsByCategory[category] || []
+    const permissionKeys = categoryPermissions.map(p => p.permission_key)
     
     setSelectedRole(prev => {
-      const currentPermissions = prev.permissions || [];
-      let newPermissions;
+      const currentPermissions = prev.permissions || []
+      let newPermissions
       
       if (select) {
-        newPermissions = [...new Set([...currentPermissions, ...permissionKeys])];
+        newPermissions = [...new Set([...currentPermissions, ...permissionKeys])]
       } else {
-        newPermissions = currentPermissions.filter(p => !permissionKeys.includes(p));
+        newPermissions = currentPermissions.filter(p => !permissionKeys.includes(p))
       }
       
-      return { ...prev, permissions: newPermissions };
-    });
-  };
+      return { ...prev, permissions: newPermissions }
+    })
+  }
 
   const handleCopyPermissions = () => {
     if (selectedRole?.permissions) {
-      setCopiedPermissions([...selectedRole.permissions]);
-      success('Copied', 'Permissions copied to clipboard');
+      setCopiedPermissions([...selectedRole.permissions])
+      success('Copied', 'Permissions copied to clipboard')
     }
-  };
+  }
 
   const handlePastePermissions = async () => {
     if (copiedPermissions && selectedRole) {
-      setSelectedRole(prev => ({ ...prev, permissions: [...copiedPermissions] }));
-      success('Pasted', 'Permissions pasted successfully');
+      setSelectedRole(prev => ({ ...prev, permissions: [...copiedPermissions] }))
+      success('Pasted', 'Permissions pasted successfully')
     }
-  };
+  }
 
   const handleSavePermissions = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await permissionsService.assignPermissionsToRole(selectedRole.id, selectedRole.permissions);
-      success('Saved', `Permissions for ${selectedRole.role_name} saved successfully`);
+      await permissionsService.assignPermissionsToRole(selectedRole.id, selectedRole.permissions)
+      success('Saved', `Permissions for ${selectedRole.role_name} saved successfully`)
     } catch (err) {
-      console.error('Error saving permissions:', err);
-      error('Failed', 'Failed to save permissions');
+      
+      error('Failed', 'Failed to save permissions')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleSelectRole = async (role) => {
-    setSelectedRole(role);
-    const permissions = await permissionsService.getRolePermissions(role.id);
-    setSelectedRole({ ...role, permissions });
-  };
+    setSelectedRole(role)
+    const permissions = await permissionsService.getRolePermissions(role.id)
+    setSelectedRole({ ...role, permissions })
+  }
 
   const filteredRoles = roles.filter(role => 
     role.role_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     role.role_key.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  )
 
-  const categories = ['all', ...Object.keys(permissionsByCategory)];
+  const categories = ['all', ...Object.keys(permissionsByCategory)]
   const displayedPermissions = selectedCategory === 'all' 
     ? permissionsByCategory 
     
-    : { [selectedCategory]: permissionsByCategory[selectedCategory] };
+    : { [selectedCategory]: permissionsByCategory[selectedCategory] }
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -309,9 +309,9 @@ export default function AdminRolesPermissionsPage() {
                     variant="outline" 
                     size="sm"
                     onClick={() => {
-                      setEditRoleName(selectedRole.role_name);
-                      setEditRoleDescription(selectedRole.description);
-                      setShowEditRoleModal(true);
+                      setEditRoleName(selectedRole.role_name)
+                      setEditRoleDescription(selectedRole.description)
+                      setShowEditRoleModal(true)
                     }}
                     disabled={selectedRole.is_system_role}
                   >
@@ -508,5 +508,5 @@ export default function AdminRolesPermissionsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

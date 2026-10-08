@@ -1,72 +1,72 @@
-import { authApi } from '../api/auth.api';
+import { authApi } from '../api/auth.api'
 
 class AuthService {
   constructor() {
-    this.session = null;
-    this.listeners = new Set();
-    this.loadSession();
+    this.session = null
+    this.listeners = new Set()
+    this.loadSession()
   }
 
   loadSession() {
-    const stored = localStorage.getItem('ericrabar_user');
+    const stored = localStorage.getItem('ericrabar_user')
     if (stored) {
       try {
-        const user = JSON.parse(stored);
-        this.session = { user, source: 'demo' };
+        const user = JSON.parse(stored)
+        this.session = { user, source: 'demo' }
       } catch (e) {
-        this.session = null;
+        this.session = null
       }
     }
   }
 
   subscribe(listener) {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
+    this.listeners.add(listener)
+    return () => this.listeners.delete(listener)
   }
 
   notify() {
-    this.listeners.forEach(listener => listener(this.session));
+    this.listeners.forEach(listener => listener(this.session))
   }
 
   async getSession() {
     if (this.session) {
-      return this.session;
+      return this.session
     }
 
-    const storedSession = await authApi.getSession();
+    const storedSession = await authApi.getSession()
     if (storedSession) {
-      this.session = storedSession;
-      this.notify();
-      return this.session;
+      this.session = storedSession
+      this.notify()
+      return this.session
     }
 
-    return null;
+    return null
   }
 
   async login(credentials) {
-    const session = await authApi.login(credentials);
-    this.session = session;
-    this.notify();
-    return session;
+    const session = await authApi.login(credentials)
+    this.session = session
+    this.notify()
+    return session
   }
 
   logout(shouldRedirect = true) {
-    this.session = null;
-    authApi.logout(shouldRedirect);
-    this.notify();
+    this.session = null
+    authApi.logout(shouldRedirect)
+    this.notify()
   }
 
   hasRole(role) {
-    if (!this.session?.user) return false;
+    if (!this.session?.user) return false
     if (Array.isArray(role)) {
-      return role.includes(this.session.user.role);
+      return role.includes(this.session.user.role)
     }
-    return this.session.user.role === role;
+    return this.session.user.role === role
   }
 
   redirectToLogin(returnUrl) {
-    authApi.redirectToLogin(returnUrl);
+    authApi.redirectToLogin(returnUrl)
   }
 }
 
-export const authService = new AuthService();
+export const authService = new AuthService()

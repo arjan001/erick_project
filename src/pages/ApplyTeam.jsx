@@ -1,28 +1,28 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { base44 } from '@/api/base44Client';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/AuthContext';
-import TeamStepInfo from '../components/team/TeamStepInfo';
-import TeamStepSpecialties from '../components/team/TeamStepSpecialties';
-import TeamStepPortfolio from '../components/team/TeamStepPortfolio';
-import ApplicationSuccess from '../components/ApplicationSuccess';
-import SEOMetaTags from '../components/SEOMetaTags';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { base44 } from '@/api/base44Client'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/lib/AuthContext'
+import TeamStepInfo from '../components/team/TeamStepInfo'
+import TeamStepSpecialties from '../components/team/TeamStepSpecialties'
+import TeamStepPortfolio from '../components/team/TeamStepPortfolio'
+import ApplicationSuccess from '../components/ApplicationSuccess'
+import SEOMetaTags from '../components/SEOMetaTags'
 
 const STEPS = [
   { id: 1, name: 'Info', component: TeamStepInfo },
   { id: 2, name: 'Specialties', component: TeamStepSpecialties },
   { id: 3, name: 'Portfolio', component: TeamStepPortfolio },
-];
+]
 
 export default function ApplyTeam() {
-  const navigate = useNavigate();
-  const { login } = useAuth();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  const navigate = useNavigate()
+  const { login } = useAuth()
+  const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [teamData, setTeamData] = useState({
     contact_email: '',
     contact_name: '',
@@ -35,87 +35,87 @@ export default function ApplyTeam() {
     equipment_owned: [],
     portfolio_clips: [],
     languages_spoken: [],
-  });
-  const [submitted, setSubmitted] = useState(false);
+  })
+  const [submitted, setSubmitted] = useState(false)
 
   const updateData = (field, value) => {
-    setTeamData(prev => ({ ...prev, [field]: value }));
-  };
+    setTeamData(prev => ({ ...prev, [field]: value }))
+  }
 
   const canProceed = () => {
     switch (currentStep) {
       case 1: return teamData.team_name && teamData.contact_name && teamData.contact_email && teamData.phone && teamData.city && teamData.country
-        && teamData.password && teamData.password.length >= 6 && teamData.password === teamData.confirmPassword;
-      case 2: return teamData.specialties && teamData.specialties.length > 0;
+        && teamData.password && teamData.password.length >= 6 && teamData.password === teamData.confirmPassword
+      case 2: return teamData.specialties && teamData.specialties.length > 0
       case 3: return true; // Portfolio optional, allow draft save
-      default: return true;
+      default: return true
     }
-  };
+  }
 
   const handleNext = () => {
     if (canProceed() && currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setCurrentStep(currentStep + 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  };
+  }
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setCurrentStep(currentStep - 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  };
+  }
 
   const handleSaveDraft = async () => {
     try {
       await base44.auth.updateMe({
         team_draft: teamData
-      });
-      alert('Draft saved. You can come back and complete it anytime.');
+      })
+      alert('Draft saved. You can come back and complete it anytime.')
     } catch (error) {
-      alert('Error saving draft. Please try again.');
-      console.error(error);
+      alert('Error saving draft. Please try again.')
+      //
     }
-  };
+  }
 
   const generateTeamCode = () => {
-    const cityCode = teamData.city?.substring(0, 3).toUpperCase() || 'XXX';
-    const randomNum = String(Math.floor(Math.random() * 100) + 1).padStart(2, '0');
-    return `${cityCode} ${randomNum}`;
-  };
+    const cityCode = teamData.city?.substring(0, 3).toUpperCase() || 'XXX'
+    const randomNum = String(Math.floor(Math.random() * 100) + 1).padStart(2, '0')
+    return `${cityCode} ${randomNum}`
+  }
 
   const handleSubmit = async () => {
     if (!teamData.team_name || !teamData.contact_name || !teamData.contact_email || !teamData.phone || !teamData.city || !teamData.country) {
-      alert('Please fill in all required fields to submit.');
-      return;
+      alert('Please fill in all required fields to submit.')
+      return
     }
     if (!teamData.password || teamData.password.length < 6) {
-      alert('Please set a password (min 6 characters) so you can log in as team admin.');
-      return;
+      alert('Please set a password (min 6 characters) so you can log in as team admin.')
+      return
     }
     if (teamData.password !== teamData.confirmPassword) {
-      alert('Passwords do not match.');
-      return;
+      alert('Passwords do not match.')
+      return
     }
 
-    setIsSubmitting(true);
-    setSubmitError('');
+    setIsSubmitting(true)
+    setSubmitError('')
     try {
       // Create the login account first — this is what lets the team admin sign in later.
-      const { password, confirmPassword, ...teamFields } = teamData;
+      const { password, confirmPassword, ...teamFields } = teamData
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: teamData.contact_email,
         password: teamData.password,
         options: { data: { full_name: teamData.contact_name, role: 'team' } },
-      });
-      if (signUpError) throw signUpError;
+      })
+      if (signUpError) throw signUpError
 
       await base44.entities.Team.create({
         ...teamFields,
         team_code: generateTeamCode(),
         status: 'pending',
         availability: 'available'
-      });
+      })
 
       if (signUpData.session) {
         login({
@@ -123,19 +123,19 @@ export default function ApplyTeam() {
           email: signUpData.user.email,
           full_name: teamData.contact_name,
           role: 'team',
-        });
-        navigate('/teamdashboard');
-        return;
+        })
+        navigate('/teamdashboard')
+        return
       }
-      setSubmitted(true);
+      setSubmitted(true)
     } catch (error) {
-      setSubmitError(error.message || 'Error submitting application. Please try again.');
-      alert(error.message || 'Error submitting application. Please try again.');
-      console.error(error);
+      setSubmitError(error.message || 'Error submitting application. Please try again.')
+      alert(error.message || 'Error submitting application. Please try again.')
+      //
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   if (submitted) {
     return (
@@ -143,10 +143,10 @@ export default function ApplyTeam() {
         type="team"
         name={teamData.contact_name}
       />
-    );
+    )
   }
 
-  const CurrentStepComponent = STEPS[currentStep - 1].component;
+  const CurrentStepComponent = STEPS[currentStep - 1].component
 
   return (
     <div className="min-h-screen bg-white py-8 lg:py-12">
@@ -250,5 +250,5 @@ export default function ApplyTeam() {
         </div>
       </div>
     </div>
-  );
+  )
 }

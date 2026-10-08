@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LogOut,
   Home, Search, Briefcase, FileText, Mail, User,
   Network, Bell, Wallet, Users, Star, Settings, Menu, X, ChevronLeft, ChevronRight,
   Shield, CreditCard, DollarSign, BarChart3, Clock
-} from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
-import { Notification, Artist, Connection } from '@/lib/supabaseEntities';
+} from 'lucide-react'
+import { useAuth } from '@/lib/AuthContext'
+import { Notification, Artist, Connection } from '@/lib/supabaseEntities'
 
 // Navigation configuration for different user roles
 const roleNavConfig = {
@@ -175,95 +175,95 @@ const roleNavConfig = {
       },
     ]
   },
-};
+}
 
 export default function UnifiedSidebar({ role = 'creator', mobileSidebarOpen, setMobileSidebarOpen }) {
-  const { user, logout } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('smartgigs_sidebar_collapsed') === 'true');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [pendingConnections, setPendingConnections] = useState(0);
-  const [notificationCount, setNotificationCount] = useState(0);
+  const { user, logout } = useAuth()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('smartgigs_sidebar_collapsed') === 'true')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [pendingConnections, setPendingConnections] = useState(0)
+  const [notificationCount, setNotificationCount] = useState(0)
 
-  const config = roleNavConfig[role] || roleNavConfig.creator;
-  const allNavItems = config.navGroups.flatMap(g => g.items);
+  const config = roleNavConfig[role] || roleNavConfig.creator
+  const allNavItems = config.navGroups.flatMap(g => g.items)
 
   const handleCollapseToggle = () => {
-    const newState = !collapsed;
-    setCollapsed(newState);
-    localStorage.setItem('smartgigs_sidebar_collapsed', String(newState));
+    const newState = !collapsed
+    setCollapsed(newState)
+    localStorage.setItem('smartgigs_sidebar_collapsed', String(newState))
     // Emit event for DashboardLayout
-    window.dispatchEvent(new CustomEvent('sidebar-collapse', { detail: { collapsed: newState } }));
-  };
+    window.dispatchEvent(new CustomEvent('sidebar-collapse', { detail: { collapsed: newState } }))
+  }
 
   const isActive = (path) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
+    return location.pathname === path || location.pathname.startsWith(path + '/')
+  }
 
   // Fetch notification counts
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
     const fetchUnread = async () => {
       try {
-        setUnreadCount(0);
+        setUnreadCount(0)
       } catch {
-        setUnreadCount(0);
+        setUnreadCount(0)
       }
-    };
+    }
 
     const fetchPendingConnections = async () => {
       try {
         const connections = await Connection.filter({
           recipient_email: user.email,
           status: 'pending'
-        }, '-created_date', 50);
-        setPendingConnections((connections || []).length);
+        }, '-created_date', 50)
+        setPendingConnections((connections || []).length)
       } catch {
-        setPendingConnections(0);
+        setPendingConnections(0)
       }
-    };
+    }
 
     const fetchNotifications = async () => {
       try {
-        const notifs = await Notification.filter({ recipient_email: user.email });
-        setNotificationCount((notifs || []).filter(n => !n.read).length);
+        const notifs = await Notification.filter({ recipient_email: user.email })
+        setNotificationCount((notifs || []).filter(n => !n.read).length)
       } catch {
-        setNotificationCount(0);
+        setNotificationCount(0)
       }
-    };
+    }
 
-    fetchUnread();
-    fetchPendingConnections();
-    fetchNotifications();
+    fetchUnread()
+    fetchPendingConnections()
+    fetchNotifications()
 
     const interval = setInterval(() => {
-      fetchUnread();
-      fetchPendingConnections();
-      fetchNotifications();
-    }, 30000);
+      fetchUnread()
+      fetchPendingConnections()
+      fetchNotifications()
+    }, 30000)
 
-    return () => clearInterval(interval);
-  }, [user]);
+    return () => clearInterval(interval)
+  }, [user])
 
   // Close mobile sidebar on route change
   useEffect(() => {
     if (mobileSidebarOpen && setMobileSidebarOpen) {
-      setMobileSidebarOpen(false);
+      setMobileSidebarOpen(false)
     }
-  }, [location.pathname, mobileSidebarOpen, setMobileSidebarOpen]);
+  }, [location.pathname, mobileSidebarOpen, setMobileSidebarOpen])
 
   const filteredNavGroups = config.navGroups.map(group => ({
     ...group,
     items: group.items.filter(item =>
       item.label.toLowerCase().includes(searchQuery.toLowerCase())
     )
-  })).filter(group => group.items.length > 0);
+  })).filter(group => group.items.length > 0)
 
-  const sidebarWidth = collapsed ? 'w-16' : 'w-64';
-  const isOpen = mobileSidebarOpen || false;
+  const sidebarWidth = collapsed ? 'w-16' : 'w-64'
+  const isOpen = mobileSidebarOpen || false
 
   return (
     <aside className={`fixed left-0 top-0 h-screen ${sidebarWidth} bg-white border-r border-gray-100 shadow-[2px_0_12px_rgba(0,0,0,0.03)] flex flex-col z-50 transition-all duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
@@ -332,8 +332,8 @@ export default function UnifiedSidebar({ role = 'creator', mobileSidebarOpen, se
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
         {collapsed ? (
           allNavItems.map((item) => {
-            const active = isActive(item.path);
-            const Icon = item.icon;
+            const active = isActive(item.path)
+            const Icon = item.icon
             return (
               <Link
                 key={item.path}
@@ -346,7 +346,7 @@ export default function UnifiedSidebar({ role = 'creator', mobileSidebarOpen, se
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
               </Link>
-            );
+            )
           })
         ) : (
           filteredNavGroups.map((group) => (
@@ -356,11 +356,11 @@ export default function UnifiedSidebar({ role = 'creator', mobileSidebarOpen, se
               </div>
               <div className="space-y-1">
                 {group.items.map((item) => {
-                  const active = isActive(item.path);
-                  const Icon = item.icon;
+                  const active = isActive(item.path)
+                  const Icon = item.icon
                   const badgeCount = item.showBadge ? unreadCount :
                     item.showConnectionBadge ? pendingConnections :
-                      item.showNotificationBadge ? notificationCount : 0;
+                      item.showNotificationBadge ? notificationCount : 0
                   return (
                     <Link
                       key={item.path}
@@ -378,7 +378,7 @@ export default function UnifiedSidebar({ role = 'creator', mobileSidebarOpen, se
                         </span>
                       )}
                     </Link>
-                  );
+                  )
                 })}
               </div>
             </div>
@@ -412,5 +412,5 @@ export default function UnifiedSidebar({ role = 'creator', mobileSidebarOpen, se
         )}
       </div>
     </aside>
-  );
+  )
 }

@@ -1,8 +1,8 @@
-import React, { memo } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { ExternalLink, Trash2 } from 'lucide-react';
-import { Creator } from '@/lib/supabaseEntities';
+import React, { memo } from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { ExternalLink, Trash2 } from 'lucide-react'
+import { Creator } from '@/lib/supabaseEntities'
 
 const CreatorGrid = memo(function CreatorGrid({ creators, view = 'list', onDelete }) {
   if (view === 'list') {
@@ -55,8 +55,8 @@ const CreatorGrid = memo(function CreatorGrid({ creators, view = 'list', onDelet
                   <button
                     onClick={async () => {
                       if (confirm(`Delete ${creator.name}?`)) {
-                        await Creator.delete(creator.id);
-                        onDelete();
+                        await Creator.delete(creator.id)
+                        onDelete()
                       }
                     }}
                     className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"
@@ -69,7 +69,7 @@ const CreatorGrid = memo(function CreatorGrid({ creators, view = 'list', onDelet
           </div>
         ))}
       </div>
-    );
+    )
   }
 
   return (
@@ -157,7 +157,7 @@ const CreatorGrid = memo(function CreatorGrid({ creators, view = 'list', onDelet
         </Link>
       ))}
     </div>
-  );
-});
+  )
+})
 
-export default CreatorGrid;
+export default CreatorGrid

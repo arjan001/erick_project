@@ -1,7 +1,7 @@
-import React from 'react';
-import { Building2, Mail, Phone, MapPin, Globe } from 'lucide-react';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
+import React from 'react'
+import { Building2, Mail, Phone, MapPin, Globe } from 'lucide-react'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
 
 export default function Imprint() {
   return (
@@ -101,5 +101,5 @@ export default function Imprint() {
 
       <Footer />
     </div>
-  );
+  )
 }

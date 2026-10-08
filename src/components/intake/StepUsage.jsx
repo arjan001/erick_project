@@ -1,5 +1,5 @@
-import React from 'react';
-import { Globe, Film, Tv, Trophy, Building } from 'lucide-react';
+import React from 'react'
+import { Globe, Film, Tv, Trophy, Building } from 'lucide-react'
 
 const USAGE_OPTIONS = [
   { value: 'online', label: 'Online', icon: Globe, description: 'Social media, websites, digital' },
@@ -7,17 +7,17 @@ const USAGE_OPTIONS = [
   { value: 'broadcast', label: 'Broadcast', icon: Tv, description: 'TV and streaming platforms' },
   { value: 'festival', label: 'Festival', icon: Trophy, description: 'Film festival submissions' },
   { value: 'internal', label: 'Internal', icon: Building, description: 'Corporate and internal use' },
-];
+]
 
 export default function StepUsage({ data, updateData }) {
   const toggleUsage = (value) => {
-    const current = data.usage || [];
+    const current = data.usage || []
     if (current.includes(value)) {
-      updateData('usage', current.filter(u => u !== value));
+      updateData('usage', current.filter(u => u !== value))
     } else {
-      updateData('usage', [...current, value]);
+      updateData('usage', [...current, value])
     }
-  };
+  }
 
   return (
     <div>
@@ -26,8 +26,8 @@ export default function StepUsage({ data, updateData }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {USAGE_OPTIONS.map((option) => {
-          const Icon = option.icon;
-          const isSelected = (data.usage || []).includes(option.value);
+          const Icon = option.icon
+          const isSelected = (data.usage || []).includes(option.value)
           return (
             <button
               key={option.value}
@@ -42,9 +42,9 @@ export default function StepUsage({ data, updateData }) {
               <h3 className="text-lg font-semibold mb-1 text-black">{option.label}</h3>
               <p className="text-sm text-gray-600">{option.description}</p>
             </button>
-          );
+          )
         })}
       </div>
     </div>
-  );
+  )
 }

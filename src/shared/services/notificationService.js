@@ -1,7 +1,7 @@
 // Notification Service for system alerts
 // Handles in-app notifications, alerts, and activity feeds
 
-import { Notification } from '@/lib/supabaseEntities';
+import { Notification } from '@/lib/supabaseEntities'
 
 class NotificationService {
   constructor() {
@@ -27,18 +27,18 @@ class NotificationService {
       metadata,
       read: false,
       createdAt: new Date().toISOString()
-    };
+    }
 
     // Store in memory
     if (!this.notifications.has(userId)) {
-      this.notifications.set(userId, []);
+      this.notifications.set(userId, [])
     }
-    this.notifications.get(userId).unshift(notification);
+    this.notifications.get(userId).unshift(notification)
 
     // Keep only last 50 notifications per user
-    const userNotifs = this.notifications.get(userId);
+    const userNotifs = this.notifications.get(userId)
     if (userNotifs.length > 50) {
-      this.notifications.set(userId, userNotifs.slice(0, 50));
+      this.notifications.set(userId, userNotifs.slice(0, 50))
     }
 
     // Also save to database for persistence
@@ -52,52 +52,52 @@ class NotificationService {
         read: false,
         created_at: notification.createdAt,
         metadata: JSON.stringify(metadata)
-      });
+      })
     } catch (err) {
-      console.error('Error saving notification to database:', err);
+      //
     }
 
-    return notification;
+    return notification
   }
 
   // Get notifications for a user
   getUserNotifications(userId, limit = 20) {
-    const userNotifs = this.notifications.get(userId) || [];
-    return userNotifs.slice(0, limit);
+    const userNotifs = this.notifications.get(userId) || []
+    return userNotifs.slice(0, limit)
   }
 
   // Get unread count
   getUnreadCount(userId) {
-    const userNotifs = this.notifications.get(userId) || [];
-    return userNotifs.filter(n => !n.read).length;
+    const userNotifs = this.notifications.get(userId) || []
+    return userNotifs.filter(n => !n.read).length
   }
 
   // Mark as read
   markAsRead(userId, notificationId) {
-    const userNotifs = this.notifications.get(userId) || [];
-    const notification = userNotifs.find(n => n.id === notificationId);
+    const userNotifs = this.notifications.get(userId) || []
+    const notification = userNotifs.find(n => n.id === notificationId)
     if (notification) {
-      notification.read = true;
-      return true;
+      notification.read = true
+      return true
     }
-    return false;
+    return false
   }
 
   // Mark all as read
   markAllAsRead(userId) {
-    const userNotifs = this.notifications.get(userId) || [];
-    userNotifs.forEach(n => n.read = true);
+    const userNotifs = this.notifications.get(userId) || []
+    userNotifs.forEach(n => n.read = true)
   }
 
   // Delete notification
   deleteNotification(userId, notificationId) {
-    const userNotifs = this.notifications.get(userId) || [];
-    const index = userNotifs.findIndex(n => n.id === notificationId);
+    const userNotifs = this.notifications.get(userId) || []
+    const index = userNotifs.findIndex(n => n.id === notificationId)
     if (index !== -1) {
-      userNotifs.splice(index, 1);
-      return true;
+      userNotifs.splice(index, 1)
+      return true
     }
-    return false;
+    return false
   }
 
   // Specific notification creators
@@ -111,7 +111,7 @@ class NotificationService {
       message: `Your project "${projectName}" has been approved and is now live.`,
       actionUrl: `/projects/${projectId}`,
       metadata: { projectName, projectId }
-    });
+    })
   }
 
   // Job opportunity notification
@@ -123,7 +123,7 @@ class NotificationService {
       message: `${companyName} is looking for: ${jobTitle}`,
       actionUrl: `/jobs/${jobId}`,
       metadata: { jobTitle, companyName, jobId }
-    });
+    })
   }
 
   // Connection request notification
@@ -135,7 +135,7 @@ class NotificationService {
       message: `${requesterName} wants to connect with you.`,
       actionUrl: `/connections`,
       metadata: { requesterName, requesterId }
-    });
+    })
   }
 
   // Connection accepted notification
@@ -147,7 +147,7 @@ class NotificationService {
       message: `${accepterName} accepted your connection request.`,
       actionUrl: `/connections`,
       metadata: { accepterName }
-    });
+    })
   }
 
   // Investment notification
@@ -159,7 +159,7 @@ class NotificationService {
       message: `Your investment of $${amount} in "${projectName}" has been confirmed.`,
       actionUrl: '/backerinvestments',
       metadata: { projectName, amount }
-    });
+    })
   }
 
   // Project update notification
@@ -171,7 +171,7 @@ class NotificationService {
       message: `New update for "${projectName}": ${updateTitle}`,
       actionUrl: '/backerinvestments',
       metadata: { projectName, updateTitle }
-    });
+    })
   }
 
   // Deal signed notification
@@ -183,7 +183,7 @@ class NotificationService {
       message: `The deal "${dealTitle}" has been signed and is now active.`,
       actionUrl: '/backerdeals',
       metadata: { dealTitle }
-    });
+    })
   }
 
   // Deal pending notification
@@ -195,7 +195,7 @@ class NotificationService {
       message: `You have a new deal "${dealTitle}" waiting for your signature.`,
       actionUrl: '/backerdeals',
       metadata: { dealTitle }
-    });
+    })
   }
 
   // System notification
@@ -206,7 +206,7 @@ class NotificationService {
       title,
       message,
       actionUrl: '/notifications'
-    });
+    })
   }
 
   // Backer application approval
@@ -218,7 +218,7 @@ class NotificationService {
       message: 'Your backer application has been approved. You can now invest in projects.',
       actionUrl: '/backerdashboard',
       metadata: {}
-    });
+    })
   }
 
   // Team invitation
@@ -230,7 +230,7 @@ class NotificationService {
       message: `You've been invited to join ${teamName}.`,
       actionUrl: `/teams/${teamId}`,
       metadata: { teamName, teamId }
-    });
+    })
   }
 
   // Subscription activated
@@ -242,7 +242,7 @@ class NotificationService {
       message: `You are now subscribed to ${planName}. Enjoy your benefits!`,
       actionUrl: '/subscription',
       metadata: { planName }
-    });
+    })
   }
 
   // Subscription renewal reminder
@@ -254,7 +254,7 @@ class NotificationService {
       message: `Your ${planName} subscription renews on ${new Date(renewalDate).toLocaleDateString()}.`,
       actionUrl: '/subscription',
       metadata: { planName, renewalDate }
-    });
+    })
   }
 
   // Job application submitted
@@ -266,7 +266,7 @@ class NotificationService {
       message: `Your application for "${jobTitle}" at ${companyName} has been submitted.`,
       actionUrl: '/my-applications',
       metadata: { jobTitle, propertyName }
-    });
+    })
   }
 
   // Job application status update
@@ -278,7 +278,7 @@ class NotificationService {
       message: `Your application for "${jobTitle}" is now: ${status}.`,
       actionUrl: '/my-applications',
       metadata: { jobTitle, status }
-    });
+    })
   }
 
   // Connects received
@@ -290,7 +290,7 @@ class NotificationService {
       message: `You received ${amount} connects${reason ? ` for ${reason}` : ''}.`,
       actionUrl: '/connects',
       metadata: { amount, reason }
-    });
+    })
   }
 
   // New message received
@@ -302,7 +302,7 @@ class NotificationService {
       message: `${senderName} sent you a message.`,
       actionUrl: `/messages/${conversationId}`,
       metadata: { senderName, conversationId }
-    });
+    })
   }
 
   // Message limit reached
@@ -314,7 +314,7 @@ class NotificationService {
       message: 'You have reached your monthly message limit. Upgrade to send more messages.',
       actionUrl: '/subscription',
       metadata: {}
-    });
+    })
   }
 
   // Job application limit reached
@@ -326,8 +326,8 @@ class NotificationService {
       message: 'You have reached your monthly job application limit. Upgrade to apply to more jobs.',
       actionUrl: '/subscription',
       metadata: {}
-    });
+    })
   }
 }
 
-export default new NotificationService();
+export default new NotificationService()

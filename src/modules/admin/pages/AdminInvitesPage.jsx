@@ -1,98 +1,98 @@
-import React, { useState, useEffect } from 'react';
-import { Invite } from '@/lib/supabaseEntities';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Badge } from '@/shared/components/ui/badge';
-import { Copy, Mail, Plus, Trash2, Send, X, Eye } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { Invite } from '@/lib/supabaseEntities'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Badge } from '@/shared/components/ui/badge'
+import { Copy, Mail, Plus, Trash2, Send, X, Eye } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
 
 export default function AdminInvitesPage() {
-  const { success, error: toastError } = useToast();
-  const [invites, setInvites] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [viewInvite, setViewInvite] = useState(null);
-  const [newInvite, setNewInvite] = useState({ email: '', role: 'artist' });
+  const { success, error: toastError } = useToast()
+  const [invites, setInvites] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [viewInvite, setViewInvite] = useState(null)
+  const [newInvite, setNewInvite] = useState({ email: '', role: 'artist' })
 
   const fetchInvites = async () => {
     try {
-      const all = await Invite.list('-created_at', 100);
-      setInvites(all || []);
+      const all = await Invite.list('-created_at', 100)
+      setInvites(all || [])
     } catch (err) {
-      console.error('Error fetching invites:', err);
-      toastError('Load Failed', 'Failed to load invites');
+      
+      toastError('Load Failed', 'Failed to load invites')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchInvites(); }, []);
+  useEffect(() => { fetchInvites(); }, [])
 
   const handleCreateInvite = async () => {
     if (!newInvite.email) { toastError('Validation', 'Email is required'); return; }
     try {
       const generateInviteCode = () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let code = '';
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+        let code = ''
         for (let i = 0; i < 8; i++) {
-          code += chars.charAt(Math.floor(Math.random() * chars.length));
+          code += chars.charAt(Math.floor(Math.random() * chars.length))
         }
-        return code;
-      };
+        return code
+      }
       
-      const inviteCode = generateInviteCode();
+      const inviteCode = generateInviteCode()
       const invite = {
         email: newInvite.email,
         role: newInvite.role,
         status: 'pending',
         invite_code: inviteCode,
         expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      };
-      await Invite.create(invite);
-      success('Sent', `Invite sent successfully. Code: ${inviteCode}`);
-      setNewInvite({ email: '', role: 'artist' });
-      setShowModal(false);
-      fetchInvites();
+      }
+      await Invite.create(invite)
+      success('Sent', `Invite sent successfully. Code: ${inviteCode}`)
+      setNewInvite({ email: '', role: 'artist' })
+      setShowModal(false)
+      fetchInvites()
     } catch (err) {
-      console.error('Error creating invite:', err);
-      toastError('Failed', 'Failed to create invite');
+      
+      toastError('Failed', 'Failed to create invite')
     }
-  };
+  }
 
   const handleResend = async (invite) => {
     try {
-      await Invite.update(invite.id, { status: 'pending', expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() });
-      success('Resent', 'Invite resent successfully');
-      fetchInvites();
+      await Invite.update(invite.id, { status: 'pending', expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() })
+      success('Resent', 'Invite resent successfully')
+      fetchInvites()
     } catch (err) {
-      toastError('Failed', 'Failed to resend invite');
+      toastError('Failed', 'Failed to resend invite')
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this invite?')) return;
+    if (!confirm('Delete this invite?')) return
     try {
-      await Invite.delete(id);
-      success('Deleted', 'Invite deleted');
-      fetchInvites();
+      await Invite.delete(id)
+      success('Deleted', 'Invite deleted')
+      fetchInvites()
     } catch (err) {
-      toastError('Failed', 'Failed to delete invite');
+      toastError('Failed', 'Failed to delete invite')
     }
-  };
+  }
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'accepted': return 'bg-green-100 text-green-800';
-      case 'expired': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'accepted': return 'bg-green-100 text-green-800'
+      case 'expired': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
     }
-  };
+  }
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>
   }
 
   return (
@@ -271,5 +271,5 @@ export default function AdminInvitesPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

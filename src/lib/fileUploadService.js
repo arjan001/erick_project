@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from './supabase'
 
 /**
  * File Upload Service
@@ -28,13 +28,13 @@ const ALLOWED_FILE_TYPES = [
   'application/x-7z-compressed',
   'application/x-tar',
   'application/gzip',
-];
+]
 
 const BLOCKED_EXTENSIONS = [
   '.exe', '.bat', '.cmd', '.scr', '.pif', '.com', 
   '.vbs', '.js', '.jar', '.app', '.deb', '.rpm', 
   '.dmg', '.msi', '.sh', '.ps1'
-];
+]
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB in bytes
 
@@ -49,17 +49,17 @@ function validateFile(file) {
     return {
       valid: false,
       error: `File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`
-    };
+    }
   }
 
   // Check file extension
-  const fileName = file.name.toLowerCase();
-  const hasBlockedExtension = BLOCKED_EXTENSIONS.some(ext => fileName.endsWith(ext));
+  const fileName = file.name.toLowerCase()
+  const hasBlockedExtension = BLOCKED_EXTENSIONS.some(ext => fileName.endsWith(ext))
   if (hasBlockedExtension) {
     return {
       valid: false,
       error: 'File type not allowed for security reasons'
-    };
+    }
   }
 
   // Check MIME type (if available)
@@ -67,10 +67,10 @@ function validateFile(file) {
     return {
       valid: false,
       error: 'File type not supported'
-    };
+    }
   }
 
-  return { valid: true };
+  return { valid: true }
 }
 
 /**
@@ -82,21 +82,21 @@ function validateFile(file) {
  */
 export async function uploadFile(file, bucket = 'message-attachments', folder = '') {
   // Validate file
-  const validation = validateFile(file);
+  const validation = validateFile(file)
   if (!validation.valid) {
-    return { data: null, error: validation.error };
+    return { data: null, error: validation.error }
   }
 
   try {
     // Generate unique filename
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    const fileExtension = file.name.split('.').pop();
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const fileName = `${timestamp}_${randomString}_${sanitizedName}`;
+    const timestamp = Date.now()
+    const randomString = Math.random().toString(36).substring(2, 15)
+    const fileExtension = file.name.split('.').pop()
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const fileName = `${timestamp}_${randomString}_${sanitizedName}`
     
     // Construct full path
-    const filePath = folder ? `${folder}/${fileName}` : fileName;
+    const filePath = folder ? `${folder}/${fileName}` : fileName
 
     // Upload to Supabase
     const { data, error: uploadError } = await supabase.storage
@@ -104,17 +104,17 @@ export async function uploadFile(file, bucket = 'message-attachments', folder = 
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false
-      });
+      })
 
     if (uploadError) {
-      console.error('Upload error:', uploadError);
-      return { data: null, error: uploadError.message };
+      
+      return { data: null, error: uploadError.message }
     }
 
     // Get public URL (if bucket is public) or signed URL (if private)
     const { data: urlData } = supabase.storage
       .from(bucket)
-      .getPublicUrl(filePath);
+      .getPublicUrl(filePath)
 
     return {
       data: {
@@ -125,10 +125,10 @@ export async function uploadFile(file, bucket = 'message-attachments', folder = 
         fileType: file.type
       },
       error: null
-    };
+    }
   } catch (error) {
-    console.error('File upload error:', error);
-    return { data: null, error: error.message || 'Failed to upload file' };
+    
+    return { data: null, error: error.message || 'Failed to upload file' }
   }
 }
 
@@ -142,17 +142,17 @@ export async function deleteFile(path, bucket = 'message-attachments') {
   try {
     const { error } = await supabase.storage
       .from(bucket)
-      .remove([path]);
+      .remove([path])
 
     if (error) {
-      console.error('Delete error:', error);
-      return { error: error.message };
+      
+      return { error: error.message }
     }
 
-    return { error: null };
+    return { error: null }
   } catch (error) {
-    console.error('File delete error:', error);
-    return { error: error.message || 'Failed to delete file' };
+    
+    return { error: error.message || 'Failed to delete file' }
   }
 }
 
@@ -164,19 +164,19 @@ export async function deleteFile(path, bucket = 'message-attachments') {
  * @returns {Promise<Object>} - { data: Array, errors: Array }
  */
 export async function uploadMultipleFiles(files, bucket = 'message-attachments', folder = '') {
-  const results = [];
-  const errors = [];
+  const results = []
+  const errors = []
 
   for (const file of files) {
-    const result = await uploadFile(file, bucket, folder);
+    const result = await uploadFile(file, bucket, folder)
     if (result.error) {
-      errors.push({ fileName: file.name, error: result.error });
+      errors.push({ fileName: file.name, error: result.error })
     } else {
-      results.push(result.data);
+      results.push(result.data)
     }
   }
 
-  return { data: results, errors };
+  return { data: results, errors }
 }
 
 /**
@@ -190,15 +190,15 @@ export async function getSignedUrl(path, bucket = 'message-attachments', expires
   try {
     const { data, error } = await supabase.storage
       .from(bucket)
-      .createSignedUrl(path, expiresIn);
+      .createSignedUrl(path, expiresIn)
 
     if (error) {
-      return { data: null, error: error.message };
+      return { data: null, error: error.message }
     }
 
-    return { data: { signedUrl: data.signedUrl }, error: null };
+    return { data: { signedUrl: data.signedUrl }, error: null }
   } catch (error) {
-    console.error('Signed URL error:', error);
-    return { data: null, error: error.message || 'Failed to get signed URL' };
+    
+    return { data: null, error: error.message || 'Failed to get signed URL' }
   }
 }

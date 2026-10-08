@@ -1,38 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { adminApi } from '../api/admin.api';
-import { Subscription } from '@/lib/supabaseEntities';
-import { Search, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, X, Ban, Trash2, RotateCcw, Users, CreditCard } from 'lucide-react';
-import { notifySuccess, confirmDialog } from '@/lib/sweetAlert';
+import React, { useState, useEffect } from 'react'
+import { adminApi } from '../api/admin.api'
+import { Subscription } from '@/lib/supabaseEntities'
+import { Search, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, X, Ban, Trash2, RotateCcw, Users, CreditCard } from 'lucide-react'
+import { notifySuccess, confirmDialog } from '@/lib/sweetAlert'
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 const STATUS_STYLES = {
   approved: 'bg-green-100 text-green-700',
   pending: 'bg-amber-100 text-amber-700',
   suspended: 'bg-gray-200 text-gray-700',
   rejected: 'bg-red-100 text-red-700'
-};
+}
 
 function TeamModal({ team, onClose, onApprove, onReject, onSuspend, onUnsuspend, onDelete }) {
-  const [notes, setNotes] = useState(team.admin_notes || '');
-  const [subscription, setSubscription] = useState(null);
-  const [loadingSub, setLoadingSub] = useState(true);
+  const [notes, setNotes] = useState(team.admin_notes || '')
+  const [subscription, setSubscription] = useState(null)
+  const [loadingSub, setLoadingSub] = useState(true)
 
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false
     const loadSubscription = async () => {
       try {
-        const rows = await Subscription.filter({ user_email: team.contact_email }, '-created_date', 1);
-        if (!cancelled) setSubscription(rows?.[0] || null);
+        const rows = await Subscription.filter({ user_email: team.contact_email }, '-created_date', 1)
+        if (!cancelled) setSubscription(rows?.[0] || null)
       } catch {
-        if (!cancelled) setSubscription(null);
+        if (!cancelled) setSubscription(null)
       } finally {
-        if (!cancelled) setLoadingSub(false);
+        if (!cancelled) setLoadingSub(false)
       }
-    };
-    loadSubscription();
-    return () => { cancelled = true; };
-  }, [team.contact_email]);
+    }
+    loadSubscription()
+    return () => { cancelled = true; }
+  }, [team.contact_email])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
@@ -127,65 +127,65 @@ function TeamModal({ team, onClose, onApprove, onReject, onSuspend, onUnsuspend,
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export default function TeamAdminPage() {
-  const [teams, setTeams] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState(null);
+  const [teams, setTeams] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [page, setPage] = useState(1)
+  const [selected, setSelected] = useState(null)
 
   useEffect(() => {
-    adminApi.teams.list().then(setTeams).catch(console.error).finally(() => setLoading(false));
-  }, []);
+    adminApi.teams.list().then(setTeams).catch(
+  }, [])
 
   const filtered = teams.filter(t => {
-    const matchSearch = !search || t.team_name?.toLowerCase().includes(search.toLowerCase()) || t.team_code?.toLowerCase().includes(search.toLowerCase()) || t.contact_email?.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === 'all' || t.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+    const matchSearch = !search || t.team_name?.toLowerCase().includes(search.toLowerCase()) || t.team_code?.toLowerCase().includes(search.toLowerCase()) || t.contact_email?.toLowerCase().includes(search.toLowerCase())
+    const matchStatus = statusFilter === 'all' || t.status === statusFilter
+    return matchSearch && matchStatus
+  })
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const handleApprove = async (id, notes) => {
-    await adminApi.teams.approve(id, notes);
-    setTeams(prev => prev.map(t => t.id === id ? { ...t, status: 'approved', admin_notes: notes } : t));
-    setSelected(null);
-    notifySuccess('Team Approved', 'The team application has been approved');
-  };
+    await adminApi.teams.approve(id, notes)
+    setTeams(prev => prev.map(t => t.id === id ? { ...t, status: 'approved', admin_notes: notes } : t))
+    setSelected(null)
+    notifySuccess('Team Approved', 'The team application has been approved')
+  }
 
   const handleReject = async (id, notes) => {
-    await adminApi.teams.reject(id, notes);
-    setTeams(prev => prev.map(t => t.id === id ? { ...t, status: 'rejected', admin_notes: notes } : t));
-    setSelected(null);
-    notifySuccess('Team Rejected', 'The team application has been rejected');
-  };
+    await adminApi.teams.reject(id, notes)
+    setTeams(prev => prev.map(t => t.id === id ? { ...t, status: 'rejected', admin_notes: notes } : t))
+    setSelected(null)
+    notifySuccess('Team Rejected', 'The team application has been rejected')
+  }
 
   const handleSuspend = async (id, notes) => {
-    await adminApi.teams.suspend(id, notes);
-    setTeams(prev => prev.map(t => t.id === id ? { ...t, status: 'suspended', admin_notes: notes } : t));
-    setSelected(null);
-    notifySuccess('Team Suspended', 'The team has been suspended');
-  };
+    await adminApi.teams.suspend(id, notes)
+    setTeams(prev => prev.map(t => t.id === id ? { ...t, status: 'suspended', admin_notes: notes } : t))
+    setSelected(null)
+    notifySuccess('Team Suspended', 'The team has been suspended')
+  }
 
   const handleUnsuspend = async (id) => {
-    await adminApi.teams.unsuspend(id);
-    setTeams(prev => prev.map(t => t.id === id ? { ...t, status: 'approved' } : t));
-    setSelected(null);
-    notifySuccess('Team Unsuspended', 'The team is active again');
-  };
+    await adminApi.teams.unsuspend(id)
+    setTeams(prev => prev.map(t => t.id === id ? { ...t, status: 'approved' } : t))
+    setSelected(null)
+    notifySuccess('Team Unsuspended', 'The team is active again')
+  }
 
   const handleDelete = async (id) => {
-    if (!(await confirmDialog('Delete this team?', 'This permanently removes the team and cannot be undone'))) return;
-    await adminApi.teams.remove(id);
-    setTeams(prev => prev.filter(t => t.id !== id));
-    setSelected(null);
-    notifySuccess('Team Deleted', 'The team has been permanently removed');
-  };
+    if (!(await confirmDialog('Delete this team?', 'This permanently removes the team and cannot be undone'))) return
+    await adminApi.teams.remove(id)
+    setTeams(prev => prev.filter(t => t.id !== id))
+    setSelected(null)
+    notifySuccess('Team Deleted', 'The team has been permanently removed')
+  }
 
   return (
     <div className="space-y-5">
@@ -293,5 +293,5 @@ export default function TeamAdminPage() {
         />
       )}
     </div>
-  );
+  )
 }

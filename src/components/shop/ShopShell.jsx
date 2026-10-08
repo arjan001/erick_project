@@ -1,9 +1,9 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
-import ChatWidget from '@/components/landing/backstage/ChatWidget';
-import SEOMetaTags from '@/components/SEOMetaTags';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
+import ChatWidget from '@/components/landing/backstage/ChatWidget'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 /** Shared page frame for the shop: SEO tags + navbar + footer. */
 export default function ShopShell({ title, description, children }) {
@@ -15,7 +15,7 @@ export default function ShopShell({ title, description, children }) {
       <Footer />
       <ChatWidget />
     </div>
-  );
+  )
 }
 
 /** Prompt shown on cart / wishlist / checkout when nobody is signed in. */
@@ -31,5 +31,5 @@ export function SignInPrompt({ what }) {
         Sign in
       </Link>
     </div>
-  );
+  )
 }

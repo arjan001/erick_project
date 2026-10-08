@@ -1,8 +1,8 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, ArrowRight, Info } from 'lucide-react';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Button } from '@/components/ui/button'
+import { CheckCircle, ArrowRight, Info } from 'lucide-react'
 
 const PRICING_TIERS = [
   {
@@ -44,7 +44,7 @@ const PRICING_TIERS = [
       'Festival delivery'
     ]
   }
-];
+]
 
 export default function Pricing() {
   return (
@@ -174,5 +174,5 @@ export default function Pricing() {
         </div>
       </div>
     </div>
-  );
+  )
 }

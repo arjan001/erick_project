@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { Artist, PortfolioClip, Endorsement, Testimonial, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import CountrySelector from '@/components/CountrySelector';
-import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete';
-import skillsAndRoles from '@/lib/skillsAndRoles.json';
-import { ALL_FILM_ROLES } from '@/lib/filmRoles';
-import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2 } from 'lucide-react';
-import { useToast } from '@/hooks/useToast';
-import { confirmDialog } from '@/lib/sweetAlert';
-import ShareProfileButton from '@/components/artist/ShareProfileButton';
-import PortfolioModal from '@/components/artist/PortfolioModal';
-import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge';
-import AboutSection from '@/components/AboutSection';
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { base44 } from '@/api/base44Client'
+import { Artist, PortfolioClip, Endorsement, Testimonial, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import CountrySelector from '@/components/CountrySelector'
+import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete'
+import skillsAndRoles from '@/lib/skillsAndRoles.json'
+import { ALL_FILM_ROLES } from '@/lib/filmRoles'
+import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2 } from 'lucide-react'
+import { useToast } from '@/hooks/useToast'
+import { confirmDialog } from '@/lib/sweetAlert'
+import ShareProfileButton from '@/components/artist/ShareProfileButton'
+import PortfolioModal from '@/components/artist/PortfolioModal'
+import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge'
+import AboutSection from '@/components/AboutSection'
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
   return (
@@ -31,31 +31,31 @@ function ToggleRow({ title, description, checked, onChange, isLast }) {
         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
       </button>
     </div>
-  );
+  )
 }
 
 export default function ArtistProfile() {
-  const { user: authUser, isAuthenticated, isLoadingAuth, updateUser } = useAuth();
-  const [user, setUser] = useState(null);
-  const [artist, setArtist] = useState(null);
-  const [portfolioClips, setPortfolioClips] = useState([]);
-  const [endorsements, setEndorsements] = useState([]);
-  const [testimonials, setTestimonials] = useState([]);
+  const { user: authUser, isAuthenticated, isLoadingAuth, updateUser } = useAuth()
+  const [user, setUser] = useState(null)
+  const [artist, setArtist] = useState(null)
+  const [portfolioClips, setPortfolioClips] = useState([])
+  const [endorsements, setEndorsements] = useState([])
+  const [testimonials, setTestimonials] = useState([])
   const [activeTab, setActiveTab] = useState(() => {
     // Load saved tab from localStorage
-    const savedTab = localStorage.getItem('ericrabar_active_tab');
-    return savedTab || 'profile';
-  });
-  const [subscription, setSubscription] = useState(null);
-  const [subPackage, setSubPackage] = useState(null);
-  const [activeClip, setActiveClip] = useState(null);
-  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
-  const [editingPortfolio, setEditingPortfolio] = useState(null);
-  const [editing, setEditing] = useState(false);
-  const [showBioModal, setShowBioModal] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [uploading, setUploading] = useState(false);
+    const savedTab = localStorage.getItem('ericrabar_active_tab')
+    return savedTab || 'profile'
+  })
+  const [subscription, setSubscription] = useState(null)
+  const [subPackage, setSubPackage] = useState(null)
+  const [activeClip, setActiveClip] = useState(null)
+  const [showPortfolioModal, setShowPortfolioModal] = useState(false)
+  const [editingPortfolio, setEditingPortfolio] = useState(null)
+  const [editing, setEditing] = useState(false)
+  const [showBioModal, setShowBioModal] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState(null)
+  const [uploading, setUploading] = useState(false)
 
   const [formData, setFormData] = useState({
     full_name: '', roles: [], based_in_city: '', based_in_country: '', bio: '',
@@ -79,63 +79,63 @@ export default function ArtistProfile() {
     licensePassport: {
       driverLicense: false, passport: false
     }
-  });
+  })
 
   // Flatten all skills from categories for multi-select
-  const ALL_SKILLS = Object.values(skillsAndRoles.talent_skills_by_category || {}).flat();
-  const ALL_ROLES = Object.values(skillsAndRoles.talent_roles_by_category || {}).flat();
+  const ALL_SKILLS = Object.values(skillsAndRoles.talent_skills_by_category || {}).flat()
+  const ALL_ROLES = Object.values(skillsAndRoles.talent_roles_by_category || {}).flat()
 
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [projectAlerts, setProjectAlerts] = useState(true);
-  const [profilePublic, setProfilePublic] = useState(true);
-  const [googleDriveFolderId, setGoogleDriveFolderId] = useState('');
+  const [emailNotifications, setEmailNotifications] = useState(true)
+  const [projectAlerts, setProjectAlerts] = useState(true)
+  const [profilePublic, setProfilePublic] = useState(true)
+  const [googleDriveFolderId, setGoogleDriveFolderId] = useState('')
 
   const [portfolioForm, setPortfolioForm] = useState(() => {
     // Load draft from localStorage if exists
-    const savedDraft = localStorage.getItem('ericrabar_portfolio_draft');
+    const savedDraft = localStorage.getItem('ericrabar_portfolio_draft')
     if (savedDraft) {
       try {
-        return JSON.parse(savedDraft);
+        return JSON.parse(savedDraft)
       } catch {
-        return { title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' };
+        return { title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' }
       }
     }
-    return { title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' };
-  });
-  const [selectedCoverImage, setSelectedCoverImage] = useState(null);
-  const [selectedVideoFile, setSelectedVideoFile] = useState(null);
-  const MAX_VIDEO_SIZE_MB = 20;
-  const fileInputRef = React.useRef(null);
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
+    return { title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' }
+  })
+  const [selectedCoverImage, setSelectedCoverImage] = useState(null)
+  const [selectedVideoFile, setSelectedVideoFile] = useState(null)
+  const MAX_VIDEO_SIZE_MB = 20
+  const fileInputRef = React.useRef(null)
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
 
   // Auto-save portfolio form draft to localStorage
   useEffect(() => {
-    localStorage.setItem('ericrabar_portfolio_draft', JSON.stringify(portfolioForm));
-  }, [portfolioForm]);
+    localStorage.setItem('ericrabar_portfolio_draft', JSON.stringify(portfolioForm))
+  }, [portfolioForm])
 
   // Save active tab to localStorage
   useEffect(() => {
-    localStorage.setItem('ericrabar_active_tab', activeTab);
-  }, [activeTab]);
+    localStorage.setItem('ericrabar_active_tab', activeTab)
+  }, [activeTab])
 
   useEffect(() => {
-    if (isLoadingAuth) return;
+    if (isLoadingAuth) return
     if (!isAuthenticated) {
-      navigate('/SignIn');
-      return;
+      navigate('/SignIn')
+      return
     }
-    if (authUser) setUser(authUser);
-  }, [authUser, isAuthenticated, isLoadingAuth, navigate]);
+    if (authUser) setUser(authUser)
+  }, [authUser, isAuthenticated, isLoadingAuth, navigate])
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
     const fetchData = async () => {
       try {
-        const artistData = await Artist.filter({ email: user.email });
+        const artistData = await Artist.filter({ email: user.email })
         if (artistData && artistData.length > 0) {
-          const a = artistData[0];
-          setArtist(a);
+          const a = artistData[0]
+          setArtist(a)
           setFormData({
             full_name: a.full_name || '', roles: a.roles || [], based_in_city: a.based_in_city || '',
             based_in_country: a.based_in_country || '', bio: a.bio || '',
@@ -150,26 +150,26 @@ export default function ArtistProfile() {
             representation: a.representation || { agent: '', email: '' },
             unionMembership: a.unionMembership || [],
             licensePassport: a.licensePassport || { driverLicense: false, passport: false }
-          });
-          setEmailNotifications(a.email_notifications ?? true);
-          setProjectAlerts(a.project_alerts ?? true);
-          setProfilePublic(a.profile_public ?? true);
-          setGoogleDriveFolderId(a.google_drive_folder_id || '');
+          })
+          setEmailNotifications(a.email_notifications ?? true)
+          setProjectAlerts(a.project_alerts ?? true)
+          setProfilePublic(a.profile_public ?? true)
+          setGoogleDriveFolderId(a.google_drive_folder_id || '')
 
           const clipsData = await PortfolioClip.filter({
             uploaded_by_type: 'artist', uploaded_by_id: a.id
-          });
-          setPortfolioClips(clipsData || []);
+          })
+          setPortfolioClips(clipsData || [])
         } else {
           // Create artist record if it doesn't exist
-          console.warn('No artist record found for email:', user.email, 'Creating one...');
+          
           try {
             const newArtist = await Artist.create({
               email: user.email,
               full_name: user.full_name || user.email.split('@')[0],
               status: 'pending'
-            });
-            setArtist(newArtist);
+            })
+            setArtist(newArtist)
             setFormData({
               full_name: newArtist.full_name || '', roles: newArtist.roles || [], based_in_city: newArtist.based_in_city || '',
               based_in_country: newArtist.based_in_country || '', bio: newArtist.bio || '',
@@ -184,81 +184,81 @@ export default function ArtistProfile() {
               representation: newArtist.representation || { agent: '', email: '' },
               unionMembership: newArtist.unionMembership || [],
               licensePassport: newArtist.licensePassport || { driverLicense: false, passport: false }
-            });
-            setEmailNotifications(newArtist.email_notifications ?? true);
-            setProjectAlerts(newArtist.project_alerts ?? true);
-            setProfilePublic(newArtist.profile_public ?? true);
-            setPortfolioClips([]);
+            })
+            setEmailNotifications(newArtist.email_notifications ?? true)
+            setProjectAlerts(newArtist.project_alerts ?? true)
+            setProfilePublic(newArtist.profile_public ?? true)
+            setPortfolioClips([])
           } catch (createErr) {
-            console.error('Error creating artist record:', createErr);
+            
           }
         }
 
-        const endorsementsData = await Endorsement.filter({ recipient_email: user.email });
-        setEndorsements(endorsementsData);
+        const endorsementsData = await Endorsement.filter({ recipient_email: user.email })
+        setEndorsements(endorsementsData)
 
-        const testimonialsData = await Testimonial.filter({ recipient_email: user.email });
-        setTestimonials(testimonialsData);
+        const testimonialsData = await Testimonial.filter({ recipient_email: user.email })
+        setTestimonials(testimonialsData)
 
         try {
-          const subs = await Subscription.filter({ user_email: user.email, status: 'active' });
+          const subs = await Subscription.filter({ user_email: user.email, status: 'active' })
           if (subs?.[0]) {
-            setSubscription(subs[0]);
-            const pkgs = await SubscriptionPackage.filter({ id: subs[0].package_id });
-            if (pkgs?.[0]) setSubPackage(pkgs[0]);
+            setSubscription(subs[0])
+            const pkgs = await SubscriptionPackage.filter({ id: subs[0].package_id })
+            if (pkgs?.[0]) setSubPackage(pkgs[0])
           }
         } catch (e) { }
       } catch (err) {
-        console.error('Error fetching profile data:', err);
+        
       }
-    };
-    fetchData();
-  }, [user]);
+    }
+    fetchData()
+  }, [user])
 
   if (isLoadingAuth) return (
     <div className="h-full flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
     </div>
-  );
+  )
 
-  if (!user) return null;
+  if (!user) return null
 
   const handleProfileImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !artist) return;
+    const file = e.target.files?.[0]
+    if (!file || !artist) return
 
     // Show preview immediately
-    const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
+    const objectUrl = URL.createObjectURL(file)
+    setPreviewUrl(objectUrl)
 
-    setUploadingImage(true);
+    setUploadingImage(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url || response.data?.url;
+      const response = await base44.integrations.Core.UploadFile({ file })
+      const fileUrl = response.file_url || response.url || response.data?.url
       if (!fileUrl) {
-        throw new Error('No file URL returned from upload service');
+        throw new Error('No file URL returned from upload service')
       }
-      await Artist.update(artist.id, { profile_photo_url: fileUrl });
-      setArtist(prev => ({ ...prev, profile_photo_url: fileUrl }));
+      await Artist.update(artist.id, { profile_photo_url: fileUrl })
+      setArtist(prev => ({ ...prev, profile_photo_url: fileUrl }))
       setPreviewUrl(null); // Clear preview after successful upload
-      success('Photo Updated', 'Your profile photo has been updated');
+      success('Photo Updated', 'Your profile photo has been updated')
     } catch (err) {
-      console.error('Error uploading image:', err);
-      toastError('Upload Failed', `Failed to upload photo: ${err.message || 'Unknown error'}`);
+      
+      toastError('Upload Failed', `Failed to upload photo: ${err.message || 'Unknown error'}`)
       setPreviewUrl(null); // Clear preview on error
     } finally {
-      setUploadingImage(false);
+      setUploadingImage(false)
     }
-  };
+  }
 
   const handleSaveProfile = async () => {
     if (!artist) {
-      toastError('Error', 'Artist profile not found. Please refresh the page.');
-      return;
+      toastError('Error', 'Artist profile not found. Please refresh the page.')
+      return
     }
     if (!formData.full_name) {
-      toastError('Validation Error', 'Name is required');
-      return;
+      toastError('Validation Error', 'Name is required')
+      return
     }
     try {
       const updated = await Artist.update(artist.id, {
@@ -275,40 +275,40 @@ export default function ArtistProfile() {
         representation: formData.representation,
         unionMembership: formData.unionMembership,
         licensePassport: formData.licensePassport
-      });
-      setArtist(updated);
+      })
+      setArtist(updated)
 
       // Update the auth user name so it reflects in the dropdown
-      await updateUser(formData.full_name);
+      await updateUser(formData.full_name)
 
-      success('Profile Updated', 'Your profile has been saved');
-      setEditing(false);
+      success('Profile Updated', 'Your profile has been saved')
+      setEditing(false)
     } catch (err) {
-      console.error('Error saving profile:', err);
-      toastError('Save Failed', 'Failed to save profile. Please try again.');
+      
+      toastError('Save Failed', 'Failed to save profile. Please try again.')
     }
-  };
+  }
 
   const handleSaveBio = async () => {
     if (!artist) {
-      toastError('Error', 'Artist profile not found. Please refresh the page.');
-      return;
+      toastError('Error', 'Artist profile not found. Please refresh the page.')
+      return
     }
     try {
-      const updated = await Artist.update(artist.id, { bio: formData.bio });
-      setArtist(updated);
-      success('Bio Updated', 'Your bio has been updated');
-      setShowBioModal(false);
+      const updated = await Artist.update(artist.id, { bio: formData.bio })
+      setArtist(updated)
+      success('Bio Updated', 'Your bio has been updated')
+      setShowBioModal(false)
     } catch (err) {
-      console.error('Error saving bio:', err);
-      toastError('Save Failed', 'Failed to save bio. Please try again.');
+      
+      toastError('Save Failed', 'Failed to save bio. Please try again.')
     }
-  };
+  }
 
   const handleSavePreferences = async () => {
     if (!artist) {
-      toastError('Error', 'Artist profile not found. Please refresh the page.');
-      return;
+      toastError('Error', 'Artist profile not found. Please refresh the page.')
+      return
     }
     try {
       const updated = await Artist.update(artist.id, {
@@ -316,17 +316,17 @@ export default function ArtistProfile() {
         project_alerts: projectAlerts,
         profile_public: profilePublic,
         google_drive_folder_id: googleDriveFolderId
-      });
-      setArtist(updated);
-      success('Preferences Updated', 'Your settings have been saved');
+      })
+      setArtist(updated)
+      success('Preferences Updated', 'Your settings have been saved')
     } catch (err) {
-      console.error('Error saving preferences:', err);
-      toastError('Save Failed', 'Failed to update preferences');
+      
+      toastError('Save Failed', 'Failed to update preferences')
     }
-  };
+  }
 
   const extractFolderIdFromLink = (link) => {
-    if (!link) return null;
+    if (!link) return null
 
     // Match various Google Drive folder link patterns
     const patterns = [
@@ -335,117 +335,117 @@ export default function ArtistProfile() {
       /drive\.google\.com\/drive\/u\/\d+\/folders\/([a-zA-Z0-9_-]+)/,
       /drive\.google\.com\/folder\/([a-zA-Z0-9_-]+)/,
       /\/([a-zA-Z0-9_-]{20,})/ // Fallback for long IDs
-    ];
+    ]
 
     for (const pattern of patterns) {
-      const match = link.match(pattern);
+      const match = link.match(pattern)
       if (match && match[1]) {
-        return match[1];
+        return match[1]
       }
     }
 
     // If the input itself looks like a folder ID (long alphanumeric string), return it
     if (/^[a-zA-Z0-9_-]{10,}$/.test(link.trim())) {
-      return link.trim();
+      return link.trim()
     }
 
-    return null;
-  };
+    return null
+  }
 
   const handleConnectGoogleDrive = async () => {
-    const link = googleDriveFolderId.trim();
+    const link = googleDriveFolderId.trim()
 
     if (!link) {
-      toastError('Connection Failed', 'Please enter a Google Drive folder link');
-      return;
+      toastError('Connection Failed', 'Please enter a Google Drive folder link')
+      return
     }
 
-    const folderId = extractFolderIdFromLink(link);
+    const folderId = extractFolderIdFromLink(link)
 
     if (!folderId) {
-      toastError('Invalid Link', 'Could not extract folder ID from the link. Please check the URL and try again.');
-      return;
+      toastError('Invalid Link', 'Could not extract folder ID from the link. Please check the URL and try again.')
+      return
     }
 
     if (!artist) {
-      toastError('Connection Failed', 'Artist profile not found. Please complete your profile first.');
-      return;
+      toastError('Connection Failed', 'Artist profile not found. Please complete your profile first.')
+      return
     }
 
     try {
       // Update the artist profile with the extracted folder ID
-      const updated = await Artist.update(artist.id, { google_drive_folder_id: folderId });
-      setArtist(updated);
-      setGoogleDriveFolderId(folderId);
-      success('Google Drive Connected', 'Your Google Drive folder has been successfully connected');
+      const updated = await Artist.update(artist.id, { google_drive_folder_id: folderId })
+      setArtist(updated)
+      setGoogleDriveFolderId(folderId)
+      success('Google Drive Connected', 'Your Google Drive folder has been successfully connected')
     } catch (err) {
-      console.error('Error connecting Google Drive:', err);
-      toastError('Connection Failed', `Failed to connect Google Drive: ${err.message || 'Please try again.'}`);
+      
+      toastError('Connection Failed', `Failed to connect Google Drive: ${err.message || 'Please try again.'}`)
     }
-  };
+  }
 
   const handleCopyProfileLink = async () => {
-    if (!artist) return;
-    const url = `${window.location.origin}/artist/${artist.id}`;
+    if (!artist) return
+    const url = `${window.location.origin}/artist/${artist.id}`
     try {
-      await navigator.clipboard.writeText(url);
-      success('Link Copied', 'Your public profile link has been copied to clipboard');
+      await navigator.clipboard.writeText(url)
+      success('Link Copied', 'Your public profile link has been copied to clipboard')
     } catch (err) {
-      console.error('Error copying link:', err);
-      toastError('Copy Failed', 'Failed to copy profile link');
+      
+      toastError('Copy Failed', 'Failed to copy profile link')
     }
-  };
+  }
 
   const handleAddPortfolioClip = async () => {
-    console.log('handleAddPortfolioClip called');
-    console.log('portfolioForm:', portfolioForm);
-    console.log('selectedCoverImage:', selectedCoverImage);
-    console.log('selectedVideoFile:', selectedVideoFile);
-    console.log('artist:', artist);
+    
+    
+    
+    
+    
 
     if (!artist) {
-      toastError('Error', 'Artist profile not found. Please complete your profile first.');
-      return;
+      toastError('Error', 'Artist profile not found. Please complete your profile first.')
+      return
     }
     if (!portfolioForm.title || portfolioForm.title.trim() === '') {
-      toastError('Validation Error', 'Please fill in the required fields (title)');
-      return;
+      toastError('Validation Error', 'Please fill in the required fields (title)')
+      return
     }
 
-    setUploading(true);
+    setUploading(true)
 
     try {
-      let videoUrl = '';
-      let videoEmbedUrl = '';
-      let thumbnailUrl = '';
+      let videoUrl = ''
+      let videoEmbedUrl = ''
+      let thumbnailUrl = ''
 
       // Function to get YouTube thumbnail
       const getYouTubeThumbnail = (url) => {
-        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
-        return match ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` : null;
-      };
+        const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/)
+        return match ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` : null
+      }
 
       if (portfolioForm.video_source === 'upload' && selectedVideoFile) {
-        console.log('Uploading video file...');
-        const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedVideoFile });
-        console.log('Video upload response:', uploadResponse);
-        videoUrl = uploadResponse.file_url || uploadResponse.url;
+        
+        const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedVideoFile })
+        
+        videoUrl = uploadResponse.file_url || uploadResponse.url
       } else if (portfolioForm.video_source !== 'upload' && portfolioForm.original_video_url) {
-        videoUrl = portfolioForm.original_video_url;
+        videoUrl = portfolioForm.original_video_url
         // Generate embed URL based on source
-        const { getEmbedUrl } = await import('@/components/artist/PortfolioModal');
-        videoEmbedUrl = getEmbedUrl(portfolioForm.original_video_url, portfolioForm.video_source);
+        const { getEmbedUrl } = await import('@/components/artist/PortfolioModal')
+        videoEmbedUrl = getEmbedUrl(portfolioForm.original_video_url, portfolioForm.video_source)
         // Generate thumbnail for YouTube
         if (portfolioForm.video_source === 'youtube') {
-          thumbnailUrl = getYouTubeThumbnail(portfolioForm.original_video_url);
+          thumbnailUrl = getYouTubeThumbnail(portfolioForm.original_video_url)
         }
       }
 
       if (selectedCoverImage) {
-        console.log('Uploading cover image...');
-        const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedCoverImage });
-        console.log('Image upload response:', uploadResponse);
-        thumbnailUrl = uploadResponse.file_url || uploadResponse.url;
+        
+        const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedCoverImage })
+        
+        thumbnailUrl = uploadResponse.file_url || uploadResponse.url
       }
 
       const clipData = {
@@ -463,50 +463,50 @@ export default function ArtistProfile() {
         status: 'approved',
         uploaded_by_type: 'artist',
         uploaded_by_id: artist.id
-      };
-
-      console.log('Creating portfolio clip with data:', clipData);
-      console.log('Final videoUrl:', videoUrl);
-      console.log('Final videoEmbedUrl:', videoEmbedUrl);
-      console.log('Final thumbnailUrl:', thumbnailUrl);
-
-      let newClip;
-      if (editingPortfolio) {
-        newClip = await PortfolioClip.update(editingPortfolio.id, clipData);
-        setPortfolioClips(prev => prev.map(c => c.id === editingPortfolio.id ? newClip : c));
-      } else {
-        newClip = await PortfolioClip.create(clipData);
-        setPortfolioClips([...portfolioClips, newClip]);
       }
 
-      console.log('Portfolio clip saved:', newClip);
+      
+      
+      
+      
 
-      setShowPortfolioModal(false);
-      setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' });
-      setSelectedCoverImage(null);
-      setSelectedVideoFile(null);
-      setEditingPortfolio(null);
+      let newClip
+      if (editingPortfolio) {
+        newClip = await PortfolioClip.update(editingPortfolio.id, clipData)
+        setPortfolioClips(prev => prev.map(c => c.id === editingPortfolio.id ? newClip : c))
+      } else {
+        newClip = await PortfolioClip.create(clipData)
+        setPortfolioClips([...portfolioClips, newClip])
+      }
+
+      
+
+      setShowPortfolioModal(false)
+      setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' })
+      setSelectedCoverImage(null)
+      setSelectedVideoFile(null)
+      setEditingPortfolio(null)
       localStorage.removeItem('ericrabar_portfolio_draft'); // Clear draft after successful save
-      success(editingPortfolio ? 'Portfolio Updated' : 'Portfolio Added', editingPortfolio ? 'Your portfolio clip has been updated' : 'Your portfolio clip has been submitted for approval');
+      success(editingPortfolio ? 'Portfolio Updated' : 'Portfolio Added', editingPortfolio ? 'Your portfolio clip has been updated' : 'Your portfolio clip has been submitted for approval')
     } catch (err) {
-      console.error('Error adding portfolio clip:', err);
-      toastError('Failed', `Failed to save portfolio clip: ${err.message || 'Unknown error'}`);
+      
+      toastError('Failed', `Failed to save portfolio clip: ${err.message || 'Unknown error'}`)
     } finally {
-      setUploading(false);
+      setUploading(false)
     }
-  };
+  }
 
   const handleDeletePortfolioClip = async (clipId) => {
-    const confirmed = await confirmDialog('Delete portfolio clip?', 'This action cannot be undone');
-    if (!confirmed) return;
+    const confirmed = await confirmDialog('Delete portfolio clip?', 'This action cannot be undone')
+    if (!confirmed) return
     try {
-      await PortfolioClip.delete(clipId);
-      setPortfolioClips(prev => prev.filter(clip => clip.id !== clipId));
+      await PortfolioClip.delete(clipId)
+      setPortfolioClips(prev => prev.filter(clip => clip.id !== clipId))
     } catch (err) {
-      console.error('Error deleting portfolio clip:', err);
-      toastError('Delete Failed', 'Failed to delete portfolio clip');
+      
+      toastError('Delete Failed', 'Failed to delete portfolio clip')
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -698,13 +698,13 @@ export default function ArtistProfile() {
                       {formData.education.map((edu, idx) => (
                         <div key={idx} className="flex gap-2">
                           <Input value={edu} onChange={(e) => {
-                            const newEducation = [...formData.education];
-                            newEducation[idx] = e.target.value;
-                            setFormData({ ...formData, education: newEducation });
+                            const newEducation = [...formData.education]
+                            newEducation[idx] = e.target.value
+                            setFormData({ ...formData, education: newEducation })
                           }} placeholder="Enter education" className="rounded-lg flex-1" />
                           <button onClick={() => {
-                            const newEducation = formData.education.filter((_, i) => i !== idx);
-                            setFormData({ ...formData, education: newEducation });
+                            const newEducation = formData.education.filter((_, i) => i !== idx)
+                            setFormData({ ...formData, education: newEducation })
                           }} className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Remove</button>
                         </div>
                       ))}
@@ -734,13 +734,13 @@ export default function ArtistProfile() {
                       {formData.unionMembership.map((union, idx) => (
                         <div key={idx} className="flex gap-2">
                           <Input value={union} onChange={(e) => {
-                            const newUnions = [...formData.unionMembership];
-                            newUnions[idx] = e.target.value;
-                            setFormData({ ...formData, unionMembership: newUnions });
+                            const newUnions = [...formData.unionMembership]
+                            newUnions[idx] = e.target.value
+                            setFormData({ ...formData, unionMembership: newUnions })
                           }} placeholder="Enter union" className="rounded-lg flex-1" />
                           <button onClick={() => {
-                            const newUnions = formData.unionMembership.filter((_, i) => i !== idx);
-                            setFormData({ ...formData, unionMembership: newUnions });
+                            const newUnions = formData.unionMembership.filter((_, i) => i !== idx)
+                            setFormData({ ...formData, unionMembership: newUnions })
                           }} className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Remove</button>
                         </div>
                       ))}
@@ -993,10 +993,10 @@ export default function ArtistProfile() {
             <X className="w-6 h-6" />
           </button>
           <div className="w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
-            {console.log('Active clip data:', activeClip)}
-            {console.log('video_url:', activeClip.video_url)}
-            {console.log('original_video_url:', activeClip.original_video_url)}
-            {console.log('video_embed_url:', activeClip.video_embed_url)}
+            {//}
+            {//}
+            {//}
+            {//}
             {activeClip.video_embed_url ? (
               <div className="relative aspect-video rounded-lg overflow-hidden bg-black">
                 <iframe src={activeClip.video_embed_url} className="w-full h-full" frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title={activeClip.title || 'Portfolio Video'} />
@@ -1007,7 +1007,7 @@ export default function ArtistProfile() {
                 controls
                 autoPlay
                 className="w-full max-h-[80vh] rounded-lg bg-black"
-                onError={(e) => console.error('Video error:', e)}
+                onError={(e) => //}
               >
                 <source src={activeClip.video_url || activeClip.original_video_url} type="video/mp4" />
                 Your browser does not support the video tag.
@@ -1022,5 +1022,5 @@ export default function ArtistProfile() {
         </div>
       )}
     </div>
-  );
+  )
 }

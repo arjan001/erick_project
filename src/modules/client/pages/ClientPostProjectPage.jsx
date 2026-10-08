@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Project } from '@/lib/supabaseEntities';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { X, Upload, Image as ImageIcon, MapPin, Calendar, DollarSign, ArrowLeft, Check, Film, Video, Tv, Music, FileText, FileText as FileTextIcon, Sparkles, Globe, Building, Trophy, Wand2, Box, Headphones, Code, Scissors, Video as VideoIcon, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/useToast';
-import filmIndustrySkills from '@/data/filmIndustrySkills.json';
-import filmIndustryRoles from '@/data/filmIndustryRoles.json';
-import { useAuth } from '@/lib/AuthContext';
-import { base44 } from '@/api/base44Client';
-import confetti from 'canvas-confetti';
-import SkillsExperienceTagInput from '@/components/SkillsExperienceTagInput';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { Project } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { X, Upload, Image as ImageIcon, MapPin, Calendar, DollarSign, ArrowLeft, Check, Film, Video, Tv, Music, FileText, FileText as FileTextIcon, Sparkles, Globe, Building, Trophy, Wand2, Box, Headphones, Code, Scissors, Video as VideoIcon, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { useToast } from '@/hooks/useToast'
+import filmIndustrySkills from '@/data/filmIndustrySkills.json'
+import filmIndustryRoles from '@/data/filmIndustryRoles.json'
+import { useAuth } from '@/lib/AuthContext'
+import { base44 } from '@/api/base44Client'
+import confetti from 'canvas-confetti'
+import SkillsExperienceTagInput from '@/components/SkillsExperienceTagInput'
 
 const PROJECT_TYPES = [
   { value: 'commercial', label: 'Commercial', icon: Tv, description: 'Brand campaigns and advertising' },
@@ -21,7 +21,7 @@ const PROJECT_TYPES = [
   { value: 'documentary', label: 'Documentary', icon: FileText, description: 'Non-fiction storytelling' },
   { value: 'funding_coproduction', label: 'Funding / Co-Production', icon: Sparkles, description: 'Seeking investment or production partners' },
   { value: 'other', label: 'Other', icon: Sparkles, description: 'Other creative projects' },
-];
+]
 
 const USAGE_OPTIONS = [
   { value: 'online', label: 'Online', icon: Globe, description: 'Social media, websites, digital' },
@@ -29,7 +29,7 @@ const USAGE_OPTIONS = [
   { value: 'broadcast', label: 'Broadcast', icon: Tv, description: 'TV and streaming platforms' },
   { value: 'festival', label: 'Festival', icon: Trophy, description: 'Film festival submissions' },
   { value: 'internal', label: 'Internal', icon: Building, description: 'Corporate and internal use' },
-];
+]
 
 const BUDGET_RANGES = [
   { value: 'under_10k', label: 'Under €10k', description: 'Small projects' },
@@ -39,7 +39,7 @@ const BUDGET_RANGES = [
   { value: '100k_250k', label: '€100k - €250k', description: 'Large scale' },
   { value: '250k_plus', label: '€250k+', description: 'Major productions' },
   { value: 'not_disclosed', label: 'Prefer not to say', description: 'We can discuss later' },
-];
+]
 
 const DEPARTMENTS = [
   { value: 'preproduction', label: 'Pre-production', icon: FileTextIcon, description: 'Scripting, planning, casting' },
@@ -50,7 +50,7 @@ const DEPARTMENTS = [
   { value: '3d', label: '3D', icon: Box, description: '3D animation and CGI' },
   { value: 'music', label: 'Music', icon: Music, description: 'Original composition' },
   { value: 'web_development', label: 'Web Development', icon: Code, description: 'Marketing websites' },
-];
+]
 
 const FUNDING_STAGES = [
   { value: 'development', label: 'Development' },
@@ -58,7 +58,7 @@ const FUNDING_STAGES = [
   { value: 'production_ready', label: 'Production Ready' },
   { value: 'in_production', label: 'In Production' },
   { value: 'post_production', label: 'Post-Production' },
-];
+]
 
 const SEEKING_OPTIONS = [
   { value: 'investment', label: 'Investment' },
@@ -66,12 +66,12 @@ const SEEKING_OPTIONS = [
   { value: 'executive_producer', label: 'Executive Producer' },
   { value: 'strategic_partner', label: 'Strategic Partner' },
   { value: 'distribution', label: 'Distribution Partner' },
-];
+]
 
 const getStepsForProjectType = (projectType) => {
   const baseSteps = [
     { id: 1, name: 'Project Type' },
-  ];
+  ]
 
   if (projectType === 'funding_coproduction') {
     return [
@@ -81,7 +81,7 @@ const getStepsForProjectType = (projectType) => {
       { id: 4, name: 'Timeline' },
       { id: 5, name: 'Location' },
       { id: 6, name: 'Details' },
-    ];
+    ]
   }
 
   return [
@@ -95,28 +95,28 @@ const getStepsForProjectType = (projectType) => {
     { id: 8, name: 'Timeline' },
     { id: 9, name: 'Budget' },
     { id: 10, name: 'Details' },
-  ];
-};
+  ]
+}
 
 export default function ClientPostProject() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [STEPS, setSTEPS] = useState(getStepsForProjectType(''));
-  const [visualClips, setVisualClips] = useState([]);
-  const [loadingClips, setLoadingClips] = useState(false);
-  const [hoveredClipId, setHoveredClipId] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingProject, setEditingProject] = useState(null);
-  const [locationSuggestions, setLocationSuggestions] = useState([]);
-  const [citySuggestions, setCitySuggestions] = useState([]);
-  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
-  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
-  const [searchingLocation, setSearchingLocation] = useState(false);
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [imagePreview, setImagePreview] = useState(null)
+  const [currentStep, setCurrentStep] = useState(1)
+  const [STEPS, setSTEPS] = useState(getStepsForProjectType(''))
+  const [visualClips, setVisualClips] = useState([])
+  const [loadingClips, setLoadingClips] = useState(false)
+  const [hoveredClipId, setHoveredClipId] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingProject, setEditingProject] = useState(null)
+  const [locationSuggestions, setLocationSuggestions] = useState([])
+  const [citySuggestions, setCitySuggestions] = useState([])
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false)
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false)
+  const [searchingLocation, setSearchingLocation] = useState(false)
 
   const [projectForm, setProjectForm] = useState({
     title: '',
@@ -146,14 +146,14 @@ export default function ClientPostProject() {
     open_to_backing: false,
     backing_types: [],
     backing_notes: ''
-  });
+  })
 
-  const [roleSearchQuery, setRoleSearchQuery] = useState('');
-  const [skillSearchQuery, setSkillSearchQuery] = useState('');
-  const [hasDraft, setHasDraft] = useState(false);
+  const [roleSearchQuery, setRoleSearchQuery] = useState('')
+  const [skillSearchQuery, setSkillSearchQuery] = useState('')
+  const [hasDraft, setHasDraft] = useState(false)
 
   // Flatten filmIndustrySkills into a single array for the skills input
-  const allSkills = Object.values(filmIndustrySkills).flat();
+  const allSkills = Object.values(filmIndustrySkills).flat()
 
   // Auto-save form to localStorage
   useEffect(() => {
@@ -161,40 +161,40 @@ export default function ClientPostProject() {
       localStorage.setItem('projectDraft', JSON.stringify({
         ...projectForm,
         currentStep
-      }));
+      }))
     }
-  }, [projectForm, currentStep, isEditing]);
+  }, [projectForm, currentStep, isEditing])
 
   // Load draft from localStorage on mount (if not editing)
   useEffect(() => {
     if (!isEditing) {
-      const savedDraft = localStorage.getItem('projectDraft');
+      const savedDraft = localStorage.getItem('projectDraft')
       if (savedDraft) {
         try {
-          const draft = JSON.parse(savedDraft);
+          const draft = JSON.parse(savedDraft)
           // Only load draft if it has some content
           if (draft.title || draft.description || draft.project_type) {
-            setProjectForm(draft);
-            setCurrentStep(draft.currentStep || 1);
-            setHasDraft(true);
+            setProjectForm(draft)
+            setCurrentStep(draft.currentStep || 1)
+            setHasDraft(true)
           }
         } catch (e) {
-          console.error('Error loading draft:', e);
+          //
         }
       }
     }
-  }, [isEditing]);
+  }, [isEditing])
 
   // Clear draft on successful submission
   const clearDraft = () => {
-    localStorage.removeItem('projectDraft');
-    setHasDraft(false);
-  };
+    localStorage.removeItem('projectDraft')
+    setHasDraft(false)
+  }
 
   // Manually clear draft (for user to start fresh)
   const handleClearDraft = () => {
     if (confirm('Are you sure you want to clear your draft? This cannot be undone.')) {
-      clearDraft();
+      clearDraft()
       setProjectForm({
         title: '',
         description: '',
@@ -223,33 +223,33 @@ export default function ClientPostProject() {
         open_to_backing: false,
         backing_types: [],
         backing_notes: ''
-      });
-      setCurrentStep(1);
+      })
+      setCurrentStep(1)
     }
-  };
+  }
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/SignIn');
-      return;
+      navigate('/SignIn')
+      return
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate])
 
   // Handle editing project from navigation state
   useEffect(() => {
     if (location.state?.editingProject) {
-      setEditingProject(location.state.editingProject);
+      setEditingProject(location.state.editingProject)
     }
-  }, [location.state]);
+  }, [location.state])
 
   useEffect(() => {
-    loadVisualClips();
-  }, []);
+    loadVisualClips()
+  }, [])
 
   // Reset form when editing project changes
   useEffect(() => {
     if (editingProject) {
-      setIsEditing(true);
+      setIsEditing(true)
       setProjectForm({
         title: editingProject.title || '',
         description: editingProject.description || '',
@@ -274,11 +274,11 @@ export default function ClientPostProject() {
         open_to_backing: editingProject.open_to_backing || false,
         backing_types: editingProject.backing_types || [],
         backing_notes: editingProject.backing_notes || ''
-      });
-      setSTEPS(getStepsForProjectType(editingProject.project_type || ''));
-      setImagePreview(editingProject.image_url || null);
+      })
+      setSTEPS(getStepsForProjectType(editingProject.project_type || ''))
+      setImagePreview(editingProject.image_url || null)
     } else {
-      setIsEditing(false);
+      setIsEditing(false)
       setProjectForm({
         title: '',
         description: '',
@@ -303,188 +303,188 @@ export default function ClientPostProject() {
         open_to_backing: false,
         backing_types: [],
         backing_notes: ''
-      });
-      setSTEPS(getStepsForProjectType(''));
-      setImagePreview(null);
+      })
+      setSTEPS(getStepsForProjectType(''))
+      setImagePreview(null)
     }
-  }, [editingProject]);
+  }, [editingProject])
 
   const loadVisualClips = async () => {
-    setLoadingClips(true);
+    setLoadingClips(true)
     try {
       const result = await base44.entities.PortfolioClip.filter({
         approved_for_visual_direction: true,
         status: 'approved'
-      });
-      setVisualClips(result || []);
+      })
+      setVisualClips(result || [])
     } catch (error) {
-      console.error('Error loading clips:', error);
+      //
     } finally {
-      setLoadingClips(false);
+      setLoadingClips(false)
     }
-  };
+  }
 
   const toggleVisualClip = (clipId) => {
-    const current = projectForm.visual_direction_clips || [];
+    const current = projectForm.visual_direction_clips || []
     if (current.includes(clipId)) {
-      updateForm('visual_direction_clips', current.filter(id => id !== clipId));
+      updateForm('visual_direction_clips', current.filter(id => id !== clipId))
     } else if (current.length < 3) {
-      updateForm('visual_direction_clips', [...current, clipId]);
+      updateForm('visual_direction_clips', [...current, clipId])
     }
-  };
+  }
 
   const toggleRole = (role) => {
-    const current = projectForm.roles_needed || [];
+    const current = projectForm.roles_needed || []
     if (current.includes(role)) {
-      updateForm('roles_needed', current.filter(r => r !== role));
+      updateForm('roles_needed', current.filter(r => r !== role))
     } else {
-      updateForm('roles_needed', [...current, role]);
+      updateForm('roles_needed', [...current, role])
     }
-  };
+  }
 
   const toggleSkill = (skill) => {
-    const current = projectForm.skills_needed || [];
+    const current = projectForm.skills_needed || []
     if (current.includes(skill)) {
-      updateForm('skills_needed', current.filter(s => s !== skill));
+      updateForm('skills_needed', current.filter(s => s !== skill))
     } else {
-      updateForm('skills_needed', [...current, skill]);
+      updateForm('skills_needed', [...current, skill])
     }
-  };
+  }
 
   const fetchLocationSuggestions = async (query) => {
     if (!query || query.length < 2) {
-      setLocationSuggestions([]);
-      return;
+      setLocationSuggestions([])
+      return
     }
-    setSearchingLocation(true);
+    setSearchingLocation(true)
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`
-      );
-      const data = await response.json();
-      const countries = [...new Set(data.map(item => item.address?.country).filter(Boolean))];
-      setLocationSuggestions(countries);
+      )
+      const data = await response.json()
+      const countries = [...new Set(data.map(item => item.address?.country).filter(Boolean))]
+      setLocationSuggestions(countries)
     } catch (err) {
-      console.error('Error fetching location suggestions:', err);
+      //
     } finally {
-      setSearchingLocation(false);
+      setSearchingLocation(false)
     }
-  };
+  }
 
   const fetchCitySuggestions = async (query) => {
     if (!query || query.length < 2 || !projectForm.location_country) {
-      setCitySuggestions([]);
-      return;
+      setCitySuggestions([])
+      return
     }
-    setSearchingLocation(true);
+    setSearchingLocation(true)
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&country=${encodeURIComponent(projectForm.location_country)}&limit=5&addressdetails=1`
-      );
-      const data = await response.json();
-      const cities = [...new Set(data.map(item => item.address?.city || item.address?.town || item.address?.village).filter(Boolean))];
-      setCitySuggestions(cities);
+      )
+      const data = await response.json()
+      const cities = [...new Set(data.map(item => item.address?.city || item.address?.town || item.address?.village).filter(Boolean))]
+      setCitySuggestions(cities)
     } catch (err) {
-      console.error('Error fetching city suggestions:', err);
+      //
     } finally {
-      setSearchingLocation(false);
+      setSearchingLocation(false)
     }
-  };
+  }
 
   const updateForm = (field, value) => {
-    setProjectForm(prev => ({ ...prev, [field]: value }));
+    setProjectForm(prev => ({ ...prev, [field]: value }))
     if (field === 'project_type') {
-      setSTEPS(getStepsForProjectType(value));
+      setSTEPS(getStepsForProjectType(value))
     }
-  };
+  }
 
   const toggleUsage = (value) => {
-    const current = projectForm.usage || [];
+    const current = projectForm.usage || []
     if (current.includes(value)) {
-      updateForm('usage', current.filter(u => u !== value));
+      updateForm('usage', current.filter(u => u !== value))
     } else {
-      updateForm('usage', [...current, value]);
+      updateForm('usage', [...current, value])
     }
-  };
+  }
 
   const toggleDepartment = (value) => {
-    const current = projectForm.departments_needed || [];
+    const current = projectForm.departments_needed || []
     if (current.includes(value)) {
-      updateForm('departments_needed', current.filter(d => d !== value));
+      updateForm('departments_needed', current.filter(d => d !== value))
     } else {
-      updateForm('departments_needed', [...current, value]);
+      updateForm('departments_needed', [...current, value])
     }
-  };
+  }
 
   const toggleSeekingPartner = (value) => {
-    const current = projectForm.seeking_partners || [];
+    const current = projectForm.seeking_partners || []
     if (current.includes(value)) {
-      updateForm('seeking_partners', current.filter(v => v !== value));
+      updateForm('seeking_partners', current.filter(v => v !== value))
     } else {
-      updateForm('seeking_partners', [...current, value]);
+      updateForm('seeking_partners', [...current, value])
     }
-  };
+  }
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
     try {
-      const preview = URL.createObjectURL(file);
-      setImagePreview(preview);
+      const preview = URL.createObjectURL(file)
+      setImagePreview(preview)
     } catch (err) {
-      console.error('Error uploading image:', err);
-      toastError('Upload Failed', 'Failed to upload image');
+      //
+      toastError('Upload Failed', 'Failed to upload image')
     }
-  };
+  }
 
   const canProceed = () => {
-    const currentStepName = STEPS[currentStep - 1]?.name;
+    const currentStepName = STEPS[currentStep - 1]?.name
     
     switch (currentStepName) {
       case 'Project Type':
-        return projectForm.project_type !== '';
+        return projectForm.project_type !== ''
       case 'Funding Details':
-        return projectForm.funding_stage !== '' && (projectForm.seeking_partners || []).length > 0;
+        return projectForm.funding_stage !== '' && (projectForm.seeking_partners || []).length > 0
       case 'Usage':
-        return (projectForm.usage || []).length > 0;
+        return (projectForm.usage || []).length > 0
       case 'Visual Direction':
-        return true;
+        return true
       case 'Location':
-        return projectForm.location_country !== '';
+        return projectForm.location_country !== ''
       case 'Roles Needed':
-        return (projectForm.roles_needed || []).length > 0;
+        return (projectForm.roles_needed || []).length > 0
       case 'Skills Required':
-        return (projectForm.skills_needed || []).length > 0;
+        return (projectForm.skills_needed || []).length > 0
       case 'Team Type':
-        return projectForm.team_type !== '';
+        return projectForm.team_type !== ''
       case 'Timeline':
-        return projectForm.timeline_start !== '';
+        return projectForm.timeline_start !== ''
       case 'Budget':
-        return projectForm.budget_range !== '' || projectForm.custom_budget !== '' || projectForm.payment_type !== '';
+        return projectForm.budget_range !== '' || projectForm.custom_budget !== '' || projectForm.payment_type !== ''
       case 'Details':
-        return projectForm.title !== '' && projectForm.description !== '';
+        return projectForm.title !== '' && projectForm.description !== ''
       default:
-        return false;
+        return false
     }
-  };
+  }
 
   const handleNext = () => {
     if (canProceed() && currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep(currentStep + 1)
     }
-  };
+  }
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      setCurrentStep(currentStep - 1)
     }
-  };
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!authUser) return;
+    e.preventDefault()
+    if (!authUser) return
 
-    setLoading(true);
+    setLoading(true)
     try {
       const projectData = {
         project_owner_email: authUser.email,
@@ -519,30 +519,30 @@ export default function ClientPostProject() {
         backing_notes: projectForm.backing_notes,
         image_url: imagePreview,
         status: 'submitted'
-      };
+      }
 
       // Get client_id from clients table
-      let clientId = null;
+      let clientId = null
       
       // Try to get existing client profile
       const { data: clientData, error: clientError } = await supabase
         .from('clients')
         .select('id')
         .eq('user_id', authUser.id)
-        .maybeSingle();
+        .maybeSingle()
 
       if (!clientError && clientData) {
-        clientId = clientData.id;
+        clientId = clientData.id
       } else {
         // Try project_owners table as fallback
         const { data: ownerData, error: ownerError } = await supabase
           .from('project_owners')
           .select('id')
           .eq('user_id', authUser.id)
-          .maybeSingle();
+          .maybeSingle()
 
         if (!ownerError && ownerData) {
-          clientId = ownerData.id;
+          clientId = ownerData.id
         } else {
           // Create client profile if it doesn't exist
           const { data: newClient, error: createError } = await supabase
@@ -553,28 +553,28 @@ export default function ClientPostProject() {
               company_name: authUser.full_name || 'Individual'
             })
             .select('id')
-            .single();
+            .single()
 
           if (createError) {
-            console.error('Error creating client profile:', createError);
-            throw new Error('Could not create client profile. Please contact support.');
+            //
+            throw new Error('Could not create client profile. Please contact support.')
           }
 
-          clientId = newClient.id;
+          clientId = newClient.id
         }
       }
 
-      projectData.client_id = clientId;
+      projectData.client_id = clientId
 
       if (isEditing && editingProject) {
-        await Project.update(editingProject.id, projectData);
-        success('Project Updated', 'Your project has been updated successfully');
+        await Project.update(editingProject.id, projectData)
+        success('Project Updated', 'Your project has been updated successfully')
       } else {
-        await Project.create(projectData);
-        success('Project Posted', 'Your project has been submitted successfully');
+        await Project.create(projectData)
+        success('Project Posted', 'Your project has been submitted successfully')
         
         // Clear draft after successful submission
-        clearDraft();
+        clearDraft()
         
         // Trigger confetti celebration
         confetti({
@@ -582,17 +582,17 @@ export default function ClientPostProject() {
           spread: 70,
           origin: { y: 0.6 },
           colors: ['#f59e0b', '#000000', '#78716c', '#d97706']
-        });
+        })
       }
 
-      navigate('/ClientDashboard');
+      navigate('/ClientDashboard')
     } catch (err) {
-      console.error('Error saving project:', err);
-      toastError(isEditing ? 'Update Failed' : 'Posting Failed', err.message || 'Failed to save project');
+      //
+      toastError(isEditing ? 'Update Failed' : 'Posting Failed', err.message || 'Failed to save project')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -667,7 +667,7 @@ export default function ClientPostProject() {
         {/* Step Content */}
         <div className="mb-12">
           {(() => {
-            const currentStepName = STEPS[currentStep - 1]?.name;
+            const currentStepName = STEPS[currentStep - 1]?.name
 
                 switch (currentStepName) {
                   case 'Project Type':
@@ -678,8 +678,8 @@ export default function ClientPostProject() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {PROJECT_TYPES.map((type) => {
-                            const Icon = type.icon;
-                            const isSelected = projectForm.project_type === type.value;
+                            const Icon = type.icon
+                            const isSelected = projectForm.project_type === type.value
                             return (
                               <button
                                 key={type.value}
@@ -695,11 +695,11 @@ export default function ClientPostProject() {
                                 <h3 className="text-base font-semibold mb-1 text-gray-900">{type.label}</h3>
                                 <p className="text-xs text-gray-500">{type.description}</p>
                               </button>
-                            );
+                            )
                           })}
                         </div>
                       </div>
-                    );
+                    )
 
                   case 'Funding Details':
                     return (
@@ -712,7 +712,7 @@ export default function ClientPostProject() {
                             <label className="text-base font-semibold mb-3 block">Current Production Stage</label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               {FUNDING_STAGES.map((stage) => {
-                                const isSelected = projectForm.funding_stage === stage.value;
+                                const isSelected = projectForm.funding_stage === stage.value
                                 return (
                                   <button
                                     key={stage.value}
@@ -728,7 +728,7 @@ export default function ClientPostProject() {
                                       {stage.label}
                                     </span>
                                   </button>
-                                );
+                                )
                               })}
                             </div>
                           </div>
@@ -738,7 +738,7 @@ export default function ClientPostProject() {
                             <p className="text-sm text-gray-600 mb-4">Select all that apply</p>
                             <div className="space-y-3">
                               {SEEKING_OPTIONS.map((option) => {
-                                const isChecked = (projectForm.seeking_partners || []).includes(option.value);
+                                const isChecked = (projectForm.seeking_partners || []).includes(option.value)
                                 return (
                                   <label
                                     key={option.value}
@@ -752,7 +752,7 @@ export default function ClientPostProject() {
                                     />
                                     <span className="font-medium text-gray-800">{option.label}</span>
                                   </label>
-                                );
+                                )
                               })}
                             </div>
                           </div>
@@ -773,7 +773,7 @@ export default function ClientPostProject() {
                           </div>
                         </div>
                       </div>
-                    );
+                    )
 
                   case 'Usage':
                     return (
@@ -783,8 +783,8 @@ export default function ClientPostProject() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {USAGE_OPTIONS.map((option) => {
-                            const Icon = option.icon;
-                            const isSelected = (projectForm.usage || []).includes(option.value);
+                            const Icon = option.icon
+                            const isSelected = (projectForm.usage || []).includes(option.value)
                             return (
                               <button
                                 key={option.value}
@@ -800,14 +800,14 @@ export default function ClientPostProject() {
                                 <h3 className="text-base font-semibold mb-1 text-gray-900">{option.label}</h3>
                                 <p className="text-xs text-gray-500">{option.description}</p>
                               </button>
-                            );
+                            )
                           })}
                         </div>
                       </div>
-                    );
+                    )
 
                   case 'Visual Direction':
-                    const selectedCount = (projectForm.visual_direction_clips || []).length;
+                    const selectedCount = (projectForm.visual_direction_clips || []).length
                     return (
                       <div>
                         <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-gray-900">Visual Direction</h2>
@@ -828,8 +828,8 @@ export default function ClientPostProject() {
                         ) : (
                           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                             {visualClips.map((clip) => {
-                              const selected = (projectForm.visual_direction_clips || []).includes(clip.id);
-                              const selectionIndex = (projectForm.visual_direction_clips || []).indexOf(clip.id);
+                              const selected = (projectForm.visual_direction_clips || []).includes(clip.id)
+                              const selectionIndex = (projectForm.visual_direction_clips || []).indexOf(clip.id)
 
                               return (
                                 <button
@@ -878,12 +878,12 @@ export default function ClientPostProject() {
                                     selected ? 'border-gray-900' : 'border-transparent group-hover:border-gray-600'
                                   }`} />
                                 </button>
-                              );
+                              )
                             })}
                           </div>
                         )}
                       </div>
-                    );
+                    )
 
                   case 'Location':
                     return (
@@ -897,9 +897,9 @@ export default function ClientPostProject() {
                             <Input
                               value={projectForm.location_country}
                               onChange={(e) => {
-                                updateForm('location_country', e.target.value);
-                                fetchLocationSuggestions(e.target.value);
-                                setShowLocationSuggestions(true);
+                                updateForm('location_country', e.target.value)
+                                fetchLocationSuggestions(e.target.value)
+                                setShowLocationSuggestions(true)
                               }}
                               onFocus={() => setShowLocationSuggestions(true)}
                               onBlur={() => setTimeout(() => setShowLocationSuggestions(false), 200)}
@@ -913,9 +913,9 @@ export default function ClientPostProject() {
                                     key={idx}
                                     type="button"
                                     onClick={() => {
-                                      updateForm('location_country', country);
-                                      setLocationSuggestions([]);
-                                      setShowLocationSuggestions(false);
+                                      updateForm('location_country', country)
+                                      setLocationSuggestions([])
+                                      setShowLocationSuggestions(false)
                                     }}
                                     className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm"
                                   >
@@ -931,9 +931,9 @@ export default function ClientPostProject() {
                             <Input
                               value={projectForm.location_city}
                               onChange={(e) => {
-                                updateForm('location_city', e.target.value);
-                                fetchCitySuggestions(e.target.value);
-                                setShowCitySuggestions(true);
+                                updateForm('location_city', e.target.value)
+                                fetchCitySuggestions(e.target.value)
+                                setShowCitySuggestions(true)
                               }}
                               onFocus={() => setShowCitySuggestions(true)}
                               onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)}
@@ -948,9 +948,9 @@ export default function ClientPostProject() {
                                     key={idx}
                                     type="button"
                                     onClick={() => {
-                                      updateForm('location_city', city);
-                                      setCitySuggestions([]);
-                                      setShowCitySuggestions(false);
+                                      updateForm('location_city', city)
+                                      setCitySuggestions([])
+                                      setShowCitySuggestions(false)
                                     }}
                                     className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm"
                                   >
@@ -975,7 +975,7 @@ export default function ClientPostProject() {
                           </div>
                         </div>
                       </div>
-                    );
+                    )
 
                   case 'Roles Needed':
                     return (
@@ -995,21 +995,21 @@ export default function ClientPostProject() {
 
                         <div className="space-y-6 max-h-96 overflow-y-auto">
                           {Object.entries(filmIndustryRoles).map(([category, roles]) => {
-                            if (category === 'equipment' || category === 'software' || category === 'delivery_types') return null;
-                            if (!Array.isArray(roles)) return null;
+                            if (category === 'equipment' || category === 'software' || category === 'delivery_types') return null
+                            if (!Array.isArray(roles)) return null
                             
                             const filteredRoles = roleSearchQuery 
                               ? roles.filter(role => role.toLowerCase().includes(roleSearchQuery.toLowerCase()))
-                              : roles;
+                              : roles
                             
-                            if (filteredRoles.length === 0) return null;
+                            if (filteredRoles.length === 0) return null
                             
                             return (
                               <div key={category}>
                                 <h3 className="text-sm font-semibold text-gray-900 mb-3 capitalize">{category.replace(/_/g, ' ')}</h3>
                                 <div className="flex flex-wrap gap-2">
                                   {filteredRoles.map((role) => {
-                                    const isSelected = (projectForm.roles_needed || []).includes(role);
+                                    const isSelected = (projectForm.roles_needed || []).includes(role)
                                     return (
                                       <button
                                         key={role}
@@ -1023,11 +1023,11 @@ export default function ClientPostProject() {
                                       >
                                         {role}
                                       </button>
-                                    );
+                                    )
                                   })}
                                 </div>
                               </div>
-                            );
+                            )
                           })}
                         </div>
 
@@ -1039,7 +1039,7 @@ export default function ClientPostProject() {
                           </div>
                         )}
                       </div>
-                    );
+                    )
 
                   case 'Skills Required':
                     return (
@@ -1059,20 +1059,20 @@ export default function ClientPostProject() {
 
                         <div className="space-y-6 max-h-96 overflow-y-auto">
                           {Object.entries(filmIndustrySkills).map(([category, skills]) => {
-                            if (!Array.isArray(skills)) return null;
+                            if (!Array.isArray(skills)) return null
                             
                             const filteredSkills = skillSearchQuery 
                               ? skills.filter(skill => skill.toLowerCase().includes(skillSearchQuery.toLowerCase()))
-                              : skills;
+                              : skills
                             
-                            if (filteredSkills.length === 0) return null;
+                            if (filteredSkills.length === 0) return null
                             
                             return (
                               <div key={category}>
                                 <h3 className="text-sm font-semibold text-gray-900 mb-3 capitalize">{category.replace(/_/g, ' ')}</h3>
                                 <div className="flex flex-wrap gap-2">
                                   {filteredSkills.map((skill) => {
-                                    const isSelected = (projectForm.skills_needed || []).includes(skill);
+                                    const isSelected = (projectForm.skills_needed || []).includes(skill)
                                     return (
                                       <button
                                         key={skill}
@@ -1086,11 +1086,11 @@ export default function ClientPostProject() {
                                       >
                                         {skill}
                                       </button>
-                                    );
+                                    )
                                   })}
                                 </div>
                               </div>
-                            );
+                            )
                           })}
                         </div>
 
@@ -1102,7 +1102,7 @@ export default function ClientPostProject() {
                           </div>
                         )}
                       </div>
-                    );
+                    )
 
                   case 'Team Type':
                     return (
@@ -1149,7 +1149,7 @@ export default function ClientPostProject() {
                           </button>
                         </div>
                       </div>
-                    );
+                    )
 
                   case 'Timeline':
                     return (
@@ -1191,7 +1191,7 @@ export default function ClientPostProject() {
                           </div>
                         </div>
                       </div>
-                    );
+                    )
 
                   case 'Budget':
                     return (
@@ -1214,15 +1214,15 @@ export default function ClientPostProject() {
                                 key={type.value}
                                 type="button"
                                 onClick={() => {
-                                  updateForm('payment_type', type.value);
+                                  updateForm('payment_type', type.value)
                                   if (type.value !== 'fixed') {
-                                    updateForm('fixed_budget', '');
+                                    updateForm('fixed_budget', '')
                                   }
                                   if (type.value !== 'hourly') {
-                                    updateForm('hourly_rate', '');
+                                    updateForm('hourly_rate', '')
                                   }
                                   if (type.value !== 'daily') {
-                                    updateForm('daily_rate', '');
+                                    updateForm('daily_rate', '')
                                   }
                                 }}
                                 className={`p-3 border-2 rounded-lg text-center transition-all ${
@@ -1294,14 +1294,14 @@ export default function ClientPostProject() {
                           <label className="block text-sm font-semibold text-gray-900 mb-3">Or select budget range</label>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {BUDGET_RANGES.map((range) => {
-                              const isSelected = projectForm.budget_range === range.value;
+                              const isSelected = projectForm.budget_range === range.value
                               return (
                                 <button
                                   key={range.value}
                                   type="button"
                                   onClick={() => {
-                                    updateForm('budget_range', range.value);
-                                    updateForm('custom_budget', '');
+                                    updateForm('budget_range', range.value)
+                                    updateForm('custom_budget', '')
                                   }}
                                   className={`p-4 rounded-lg border-2 transition-all text-left ${
                                     isSelected
@@ -1313,7 +1313,7 @@ export default function ClientPostProject() {
                                   <h3 className="text-base font-semibold mb-1 text-gray-900">{range.label}</h3>
                                   <p className="text-xs text-gray-500">{range.description}</p>
                                 </button>
-                              );
+                              )
                             })}
                           </div>
 
@@ -1326,8 +1326,8 @@ export default function ClientPostProject() {
                                 placeholder="Enter custom amount"
                                 value={projectForm.custom_budget}
                                 onChange={(e) => {
-                                  updateForm('custom_budget', e.target.value);
-                                  updateForm('budget_range', 'custom');
+                                  updateForm('custom_budget', e.target.value)
+                                  updateForm('budget_range', 'custom')
                                 }}
                                 className="flex-1"
                               />
@@ -1335,7 +1335,7 @@ export default function ClientPostProject() {
                           </div>
                         </div>
                       </div>
-                    );
+                    )
 
                   case 'Details':
                     return (
@@ -1415,10 +1415,10 @@ export default function ClientPostProject() {
                           </div>
                         </div>
                       </div>
-                    );
+                    )
 
                   default:
-                    return null;
+                    return null
                 }
               })()}
         </div>
@@ -1458,5 +1458,5 @@ export default function ClientPostProject() {
         </div>
       </div>
     </div>
-  );
+  )
 }

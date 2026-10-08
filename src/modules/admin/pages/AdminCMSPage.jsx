@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Edit2, Save, X, FileText, Image, Bold, Italic, Underline, List, Link2, Heading } from 'lucide-react';
-import { CMSPage as CMSPageEntity } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { Search, Edit2, Save, X, FileText, Image, Bold, Italic, Underline, List, Link2, Heading } from 'lucide-react'
+import { CMSPage as CMSPageEntity } from '@/lib/supabaseEntities'
 
-const STORAGE_KEY = 'smartgigs_cms_pages';
+const STORAGE_KEY = 'smartgigs_cms_pages'
 
 const DEFAULT_PAGES = [
   { page_key: 'about', title: 'About Us', content: '', hero_image: '' },
@@ -19,88 +19,88 @@ const DEFAULT_PAGES = [
   { page_key: 'signup', title: 'Sign Up Page', content: '', hero_image: '' },
   { page_key: 'footer', title: 'Footer Content', content: '', hero_image: '' },
   { page_key: 'newsletter', title: 'Newsletter Content', content: '', hero_image: '' },
-];
+]
 
 function loadFromStorage() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : null
   } catch { return null; }
 }
 
 function saveToStorage(pages) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(pages));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(pages))
 }
 
 export default function AdminCMSPage() {
-  const [pages, setPages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [editingPage, setEditingPage] = useState(null);
-  const [formData, setFormData] = useState({ title: '', content: '', hero_image: '' });
+  const [pages, setPages] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [editingPage, setEditingPage] = useState(null)
+  const [formData, setFormData] = useState({ title: '', content: '', hero_image: '' })
 
   useEffect(() => {
-    fetchPages();
-  }, []);
+    fetchPages()
+  }, [])
 
   const fetchPages = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const rows = await CMSPageEntity.list('-updated_at', 100);
+      const rows = await CMSPageEntity.list('-updated_at', 100)
       if (rows && rows.length > 0) {
         const merged = DEFAULT_PAGES.map(dp => {
-          const found = rows.find(r => r.page_key === dp.page_key);
-          return found || dp;
-        });
-        setPages(merged);
+          const found = rows.find(r => r.page_key === dp.page_key)
+          return found || dp
+        })
+        setPages(merged)
       } else {
-        const stored = loadFromStorage();
+        const stored = loadFromStorage()
         if (stored && stored.length > 0) {
-          setPages(stored);
+          setPages(stored)
         } else {
-          setPages(DEFAULT_PAGES);
+          setPages(DEFAULT_PAGES)
         }
       }
     } catch {
-      const stored = loadFromStorage();
-      setPages(stored && stored.length > 0 ? stored : DEFAULT_PAGES);
+      const stored = loadFromStorage()
+      setPages(stored && stored.length > 0 ? stored : DEFAULT_PAGES)
     }
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   const handleEdit = (page) => {
-    setEditingPage(page);
-    setFormData({ title: page.title || '', content: page.content || '', hero_image: page.hero_image || '' });
-  };
+    setEditingPage(page)
+    setFormData({ title: page.title || '', content: page.content || '', hero_image: page.hero_image || '' })
+  }
 
   const handleSave = async () => {
     const updated = pages.map(p =>
       p.page_key === editingPage.page_key
         ? { ...p, ...formData, updated_at: new Date().toISOString() }
         : p
-    );
-    setPages(updated);
-    saveToStorage(updated);
+    )
+    setPages(updated)
+    saveToStorage(updated)
     try {
       if (editingPage.id) {
-        await CMSPageEntity.update(editingPage.id, { ...formData, updated_at: new Date().toISOString() });
+        await CMSPageEntity.update(editingPage.id, { ...formData, updated_at: new Date().toISOString() })
       } else {
-        await CMSPageEntity.create({ page_key: editingPage.page_key, ...formData });
+        await CMSPageEntity.create({ page_key: editingPage.page_key, ...formData })
       }
     } catch { /* fallback to localStorage */ }
-    setEditingPage(null);
-  };
+    setEditingPage(null)
+  }
 
   const execCommand = (cmd, val = null) => {
-    document.execCommand(cmd, false, val);
-    const editor = document.getElementById('cms-rich-editor');
-    if (editor) setFormData(prev => ({ ...prev, content: editor.innerHTML }));
-  };
+    document.execCommand(cmd, false, val)
+    const editor = document.getElementById('cms-rich-editor')
+    if (editor) setFormData(prev => ({ ...prev, content: editor.innerHTML }))
+  }
 
   const filtered = pages.filter(p =>
     (p.title || '').toLowerCase().includes(search.toLowerCase()) ||
     (p.page_key || '').toLowerCase().includes(search.toLowerCase())
-  );
+  )
 
   return (
     <div className="space-y-6">
@@ -228,5 +228,5 @@ export default function AdminCMSPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

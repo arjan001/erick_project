@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { ArrowRight } from 'lucide-react';
-import { FeaturedWork } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { ArrowRight } from 'lucide-react'
+import { FeaturedWork } from '@/lib/supabaseEntities'
 
 export default function FeaturedWork() {
-  const [hoveredId, setHoveredId] = useState(null);
-  const [featuredProjects, setFeaturedProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [hoveredId, setHoveredId] = useState(null)
+  const [featuredProjects, setFeaturedProjects] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchFeaturedProjects = async () => {
       try {
-        const works = await FeaturedWork.filter({ status: 'active' }, 'display_order', 6);
-        console.log('Featured works fetched:', works);
-        setFeaturedProjects(works || []);
+        const works = await FeaturedWork.filter({ status: 'active' }, 'display_order', 6)
+        
+        setFeaturedProjects(works || [])
       } catch (error) {
-        console.error('Error fetching featured projects:', error);
-        setFeaturedProjects([]);
+        
+        setFeaturedProjects([])
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchFeaturedProjects();
-  }, []);
+    fetchFeaturedProjects()
+  }, [])
 
   if (loading) {
     return (
@@ -35,11 +35,11 @@ export default function FeaturedWork() {
           </div>
         </div>
       </section>
-    );
+    )
   }
 
   if (featuredProjects.length === 0) {
-    return null;
+    return null
   }
 
   return (
@@ -121,5 +121,5 @@ export default function FeaturedWork() {
         </div>
       </div>
     </section>
-  );
+  )
 }

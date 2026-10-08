@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
-import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
-import { base44 } from '@/api/base44Client';
-import { Artist, Team, Backer, ProjectOwner, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom'
+import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target } from 'lucide-react'
+import { useAuth } from '@/lib/AuthContext'
+import { base44 } from '@/api/base44Client'
+import { Artist, Team, Backer, ProjectOwner, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -12,13 +12,13 @@ const GoogleIcon = () => (
     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
   </svg>
-);
+)
 
 const AppleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5" fill="white">
     <path d="M17.05 12.04c.03 3.12 2.74 4.16 2.77 4.18-.02.08-.43 1.49-1.43 2.94-.86 1.25-1.76 2.49-3.18 2.52-1.39.03-1.84-.82-3.43-.82-1.59 0-2.09.79-3.41.85-1.37.05-2.32 1.36-3.07 1.58-3.08-1.48-.09-2.36-1.36-3.28-2.61-1.79-2.58-3.16-7.29-1.32-10.47.91-1.58-2.58-2.11-3.33-1.03-.67-.78-1.26-2.03-1.1-3.33 1.17-.09 2.36-.6 3.08-1.48zM14.4 5.45c.73-.88 1.22-2.11 1.09-3.33c.67.78 1.26 2.03 1.1 3.23-1.48z" />
   </svg>
-);
+)
 
 const ROLE_REDIRECTS = {
   artist: '/artistdashboard',
@@ -27,7 +27,7 @@ const ROLE_REDIRECTS = {
   project_owner: '/clientdashboard',
   backer: '/backerdashboard',
   admin: '/Admin',
-};
+}
 
 const DEMO_ACCOUNTS = {
   'artist@artist.com': { role: 'artist', name: 'Alex Chen' },
@@ -35,7 +35,7 @@ const DEMO_ACCOUNTS = {
   'client@client.com': { role: 'client', name: 'Client User' },
   'backer@backer.com': { role: 'backer', name: 'Investment Group' },
   'admin@smartgigskenya.com': { role: 'admin', name: 'Admin User' },
-};
+}
 
 const DEMO_BUTTONS = [
   { email: 'admin@smartgigskenya.com', label: 'Admin', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AD&backgroundColor=4f46e5' },
@@ -43,203 +43,203 @@ const DEMO_BUTTONS = [
   { email: 'artist@artist.com', label: 'Creator', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CR&backgroundColor=00a37e' },
   { email: 'team@team.com', label: 'Team', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=TM&backgroundColor=6366f1' },
   { email: 'backer@backer.com', label: 'Backer', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=BK&backgroundColor=f59e0b' },
-];
+]
 
 const talentBenefits = [
   { icon: Newspaper, text: 'Thousands of fresh jobs every week.' },
   { icon: ShieldCheck, text: 'Jobs vetted to meet our community guidelines.' },
   { icon: Target, text: 'Visibility in the #1 Visited Database for Talent.' },
-];
+]
 
-const trustedLogos = ['Disney', 'YouTube', 'Hulu', 'Netflix', 'HBO'];
+const trustedLogos = ['Disney', 'YouTube', 'Hulu', 'Netflix', 'HBO']
 
 export default function SignIn() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const { login } = useAuth();
-  const location = useLocation();
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const { login } = useAuth()
+  const location = useLocation()
 
-  const [userType, setUserType] = useState(searchParams.get('mode') === 'employer' ? 'employer' : 'talent');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const [modeOverride, setModeOverride] = useState(null);
-  const [returnTo, setReturnTo] = useState(location.state?.returnTo || null);
+  const [userType, setUserType] = useState(searchParams.get('mode') === 'employer' ? 'employer' : 'talent')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [modeOverride, setModeOverride] = useState(null)
+  const [returnTo, setReturnTo] = useState(location.state?.returnTo || null)
 
   useEffect(() => {
-    if (searchParams.get('mode') === 'employer') setUserType('employer');
+    if (searchParams.get('mode') === 'employer') setUserType('employer')
     // Handle role parameter for auto tab selection
-    const roleParam = searchParams.get('role');
+    const roleParam = searchParams.get('role')
     if (roleParam === 'client') {
-      setUserType('employer');
+      setUserType('employer')
     } else if (roleParam === 'creator' || roleParam === 'artist') {
-      setUserType('talent');
+      setUserType('talent')
     }
-  }, [searchParams]);
+  }, [searchParams])
 
   // Password recovery listener — detect a reset token in the URL (Base44
   // password-reset emails link back here with a token to complete the flow).
   useEffect(() => {
-    const hash = window.location.hash;
-    const urlParams = new URLSearchParams(window.location.search);
-    const isRecovery = hash.includes('type=recovery') || urlParams.get('type') === 'recovery';
-    const hasToken = hash.includes('token') || urlParams.get('token') || hash.includes('access_token');
+    const hash = window.location.hash
+    const urlParams = new URLSearchParams(window.location.search)
+    const isRecovery = hash.includes('type=recovery') || urlParams.get('type') === 'recovery'
+    const hasToken = hash.includes('token') || urlParams.get('token') || hash.includes('access_token')
     if (isRecovery || hasToken) {
-      setModeOverride('update_password');
+      setModeOverride('update_password')
     }
-  }, []);
+  }, [])
 
-  const effectiveMode = modeOverride || 'login';
+  const effectiveMode = modeOverride || 'login'
 
   const handleGoogleLogin = () => {
-    setError('');
-    base44.auth.loginWithProvider('google', '/');
-  };
+    setError('')
+    base44.auth.loginWithProvider('google', '/')
+  }
 
   const handleAppleLogin = () => {
-    setError('');
-    base44.auth.loginWithProvider('apple', '/');
-  };
+    setError('')
+    base44.auth.loginWithProvider('apple', '/')
+  }
 
   const quickDemoLogin = async (demoEmail) => {
-    const acc = DEMO_ACCOUNTS[demoEmail];
-    if (!acc) return;
-    setError('');
-    setLoading(true);
+    const acc = DEMO_ACCOUNTS[demoEmail]
+    if (!acc) return
+    setError('')
+    setLoading(true)
     try {
-      login({ id: demoEmail, email: demoEmail, full_name: acc.name, role: acc.role });
+      login({ id: demoEmail, email: demoEmail, full_name: acc.name, role: acc.role })
       if (acc.role === 'team') {
-        localStorage.setItem('smartgigs_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: demoEmail, role: 'team_admin' }));
+        localStorage.setItem('smartgigs_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: demoEmail, role: 'team_admin' }))
       }
-      const redirectDest = sessionStorage.getItem('redirectAfterLogin');
-      sessionStorage.removeItem('redirectAfterLogin');
-      window.location.href = returnTo || redirectDest || ROLE_REDIRECTS[acc.role] || '/';
+      const redirectDest = sessionStorage.getItem('redirectAfterLogin')
+      sessionStorage.removeItem('redirectAfterLogin')
+      window.location.href = returnTo || redirectDest || ROLE_REDIRECTS[acc.role] || '/'
     } catch (err) {
-      setError(err.message || 'Login failed');
-      setLoading(false);
+      setError(err.message || 'Login failed')
+      setLoading(false)
     }
-  };
+  }
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+    e.preventDefault()
+    setError('')
+    setLoading(true)
     try {
       // Demo accounts (localStorage only — no Base44 account needed)
       if (DEMO_ACCOUNTS[email] && password === email) {
-        const acc = DEMO_ACCOUNTS[email];
-        login({ id: email, email, full_name: acc.name, role: acc.role });
+        const acc = DEMO_ACCOUNTS[email]
+        login({ id: email, email, full_name: acc.name, role: acc.role })
         if (acc.role === 'team') {
-          localStorage.setItem('smartgigs_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: email, role: 'team_admin' }));
+          localStorage.setItem('smartgigs_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: email, role: 'team_admin' }))
         }
-        const redirectDest = sessionStorage.getItem('redirectAfterLogin');
-        sessionStorage.removeItem('redirectAfterLogin');
-        window.location.href = redirectDest || ROLE_REDIRECTS[acc.role] || '/';
-        return;
+        const redirectDest = sessionStorage.getItem('redirectAfterLogin')
+        sessionStorage.removeItem('redirectAfterLogin')
+        window.location.href = redirectDest || ROLE_REDIRECTS[acc.role] || '/'
+        return
       }
 
       // Real Base44 email/password login
-      const { user } = await base44.auth.loginViaEmailPassword(email, password);
+      const { user } = await base44.auth.loginViaEmailPassword(email, password)
 
       // Resolve the app role from the linked entity profile
-      let userRole = 'artist';
-      let fullName = user.full_name || user.email?.split('@')[0] || 'User';
+      let userRole = 'artist'
+      let fullName = user.full_name || user.email?.split('@')[0] || 'User'
       try {
-        const artists = await Artist.filter({ email: user.email });
+        const artists = await Artist.filter({ email: user.email })
         if (artists && artists.length > 0) {
-          userRole = 'artist';
+          userRole = 'artist'
         } else {
-          const teams = await Team.filter({ contact_email: user.email });
+          const teams = await Team.filter({ contact_email: user.email })
           if (teams && teams.length > 0) {
-            userRole = 'team';
-            if (teams[0].team_name) fullName = teams[0].team_name;
+            userRole = 'team'
+            if (teams[0].team_name) fullName = teams[0].team_name
           } else {
-            const owners = await ProjectOwner.filter({ email: user.email });
+            const owners = await ProjectOwner.filter({ email: user.email })
             if (owners && owners.length > 0) {
-              userRole = 'client';
+              userRole = 'client'
               if (owners[0].is_suspended) {
-                base44.auth.logout();
-                setError('This account has been suspended. Please contact support for assistance.');
-                setLoading(false);
-                return;
+                base44.auth.logout()
+                setError('This account has been suspended. Please contact support for assistance.')
+                setLoading(false)
+                return
               }
             } else {
-              const backers = await Backer.filter({ contact_email: user.email });
-              if (backers && backers.length > 0) userRole = 'backer';
+              const backers = await Backer.filter({ contact_email: user.email })
+              if (backers && backers.length > 0) userRole = 'backer'
             }
           }
         }
       } catch (dbError) {
-        console.error('Error resolving user role:', dbError);
+        //
       }
 
-      if (user.role === 'admin') userRole = 'admin';
+      if (user.role === 'admin') userRole = 'admin'
 
-      login({ id: user.id, email: user.email, full_name: fullName, role: userRole });
-      const redirectDest = sessionStorage.getItem('redirectAfterLogin');
-      sessionStorage.removeItem('redirectAfterLogin');
-      window.location.href = returnTo || redirectDest || ROLE_REDIRECTS[userRole] || '/';
+      login({ id: user.id, email: user.email, full_name: fullName, role: userRole })
+      const redirectDest = sessionStorage.getItem('redirectAfterLogin')
+      sessionStorage.removeItem('redirectAfterLogin')
+      window.location.href = returnTo || redirectDest || ROLE_REDIRECTS[userRole] || '/'
     } catch (err) {
-      setError(err.message || 'Invalid email or password');
+      setError(err.message || 'Invalid email or password')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const goToSignUp = () => {
-    const role = userType === 'employer' ? 'client' : 'artist';
-    navigate(`/SignUp${role === 'client' ? '?role=client' : ''}`);
-  };
+    const role = userType === 'employer' ? 'client' : 'artist'
+    navigate(`/SignUp${role === 'client' ? '?role=client' : ''}`)
+  }
 
   const handleResetPassword = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+    e.preventDefault()
+    setError('')
+    setLoading(true)
     try {
-      await base44.auth.resetPasswordRequest(email);
-      setMessage('Password reset email sent! Check your inbox.');
-      setTimeout(() => { setShowForgotPassword(false); setMessage(''); }, 6000);
+      await base44.auth.resetPasswordRequest(email)
+      setMessage('Password reset email sent! Check your inbox.')
+      setTimeout(() => { setShowForgotPassword(false); setMessage(''); }, 6000)
     } catch (err) {
-      setError(err.message || 'Failed to send reset email.');
+      setError(err.message || 'Failed to send reset email.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleUpdatePassword = async (e) => {
-    e.preventDefault();
-    setError('');
+    e.preventDefault()
+    setError('')
     if (newPassword.length < 6) { setError('Password must be at least 6 characters'); return; }
     if (newPassword !== confirmNewPassword) { setError('Passwords do not match'); return; }
-    setLoading(true);
+    setLoading(true)
     try {
       // Base44 delivers a reset token via the email link; parse it from the URL.
-      const urlParams = new URLSearchParams(window.location.search);
-      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-      const resetToken = urlParams.get('token') || hashParams.get('token');
+      const urlParams = new URLSearchParams(window.location.search)
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+      const resetToken = urlParams.get('token') || hashParams.get('token')
       if (resetToken) {
-        await base44.auth.resetPassword({ resetToken, newPassword });
+        await base44.auth.resetPassword({ resetToken, newPassword })
       } else {
         // No token — fall back to changing the password for the current session
-        const me = await base44.auth.me();
-        await base44.auth.changePassword({ userId: me.id, currentPassword: password, newPassword });
+        const me = await base44.auth.me()
+        await base44.auth.changePassword({ userId: me.id, currentPassword: password, newPassword })
       }
-      setMessage('Password updated successfully! You can now sign in.');
-      setModeOverride(null);
+      setMessage('Password updated successfully! You can now sign in.')
+      setModeOverride(null)
     } catch (err) {
-      setError(err.message || 'Failed to update password.');
+      setError(err.message || 'Failed to update password.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const isEmployer = userType === 'employer';
+  const isEmployer = userType === 'employer'
 
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
@@ -301,7 +301,7 @@ export default function SignIn() {
 
             <div className="mt-12 space-y-6">
               {talentBenefits.map((b, i) => {
-                const Icon = b.icon;
+                const Icon = b.icon
                 return (
                   <div key={i} className="flex items-start gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-black/[0.06]">
@@ -309,7 +309,7 @@ export default function SignIn() {
                     </div>
                     <p className="pt-2 text-sm text-black/70">{b.text}</p>
                   </div>
-                );
+                )
               })}
             </div>
 
@@ -552,5 +552,5 @@ export default function SignIn() {
         </svg>
       </button>
     </div>
-  );
+  )
 }

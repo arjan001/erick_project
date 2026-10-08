@@ -1,109 +1,109 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { SupportTicket, TicketResponse, Notification } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { SupportTicket, TicketResponse, Notification } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Ticket, Plus, Search, Filter, Clock, AlertCircle, CheckCircle,
   MessageSquare, Paperclip, Send, X, ChevronDown, ChevronUp,
   Eye, Edit2, Trash2, ChevronLeft, ChevronRight, MoreVertical, Reply, Star
-} from 'lucide-react';
+} from 'lucide-react'
 
 export default function SupportTicketsPage() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showNewTicketModal, setShowNewTicketModal] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState(null);
-  const [filter, setFilter] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const [tickets, setTickets] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showNewTicketModal, setShowNewTicketModal] = useState(false)
+  const [selectedTicket, setSelectedTicket] = useState(null)
+  const [filter, setFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
 
   const [newTicketForm, setNewTicketForm] = useState({
     category: 'support',
     priority: 'medium',
     subject: '',
     description: ''
-  });
+  })
 
-  const [responseText, setResponseText] = useState('');
-  const [responses, setResponses] = useState([]);
-  const [replyingTo, setReplyingTo] = useState(null);
-  const [showReplyMenu, setShowReplyMenu] = useState(null);
-  const [swipeAction, setSwipeAction] = useState(null);
-  const [touchStart, setTouchStart] = useState(null);
+  const [responseText, setResponseText] = useState('')
+  const [responses, setResponses] = useState([])
+  const [replyingTo, setReplyingTo] = useState(null)
+  const [showReplyMenu, setShowReplyMenu] = useState(null)
+  const [swipeAction, setSwipeAction] = useState(null)
+  const [touchStart, setTouchStart] = useState(null)
 
   const handleTouchStart = (e, responseId) => {
-    setTouchStart({ x: e.touches[0].clientX, responseId });
-  };
+    setTouchStart({ x: e.touches[0].clientX, responseId })
+  }
 
   const handleTouchMove = (e) => {
-    if (!touchStart) return;
-    const deltaX = e.touches[0].clientX - touchStart.x;
+    if (!touchStart) return
+    const deltaX = e.touches[0].clientX - touchStart.x
     if (deltaX < -50) {
-      setSwipeAction({ type: 'reply', responseId: touchStart.responseId });
+      setSwipeAction({ type: 'reply', responseId: touchStart.responseId })
     } else if (deltaX > 50) {
-      setSwipeAction({ type: 'star', responseId: touchStart.responseId });
+      setSwipeAction({ type: 'star', responseId: touchStart.responseId })
     }
-  };
+  }
 
   const handleTouchEnd = () => {
     if (swipeAction) {
-      const response = responses.find(r => r.id === swipeAction.responseId);
+      const response = responses.find(r => r.id === swipeAction.responseId)
       if (response) {
-        handleSwipeAction(response);
+        handleSwipeAction(response)
       }
     }
-    setTouchStart(null);
-  };
+    setTouchStart(null)
+  }
 
   const handleSwipeAction = (response) => {
     if (swipeAction?.type === 'reply') {
-      setReplyingTo(response.responder_name);
-      setResponseText(`@${response.responder_name} `);
+      setReplyingTo(response.responder_name)
+      setResponseText(`@${response.responder_name} `)
     }
-    setSwipeAction(null);
-  };
+    setSwipeAction(null)
+  }
 
   useEffect(() => {
-    if (!user) return;
-    fetchTickets();
-  }, [user]);
+    if (!user) return
+    fetchTickets()
+  }, [user])
 
   const fetchTickets = async () => {
     try {
-      setLoading(true);
+      setLoading(true)
       // Fetch all public tickets for community viewing
-      const allTickets = await SupportTicket.filter({ is_public: true }, '-created_at', 100);
-      setTickets(allTickets || []);
+      const allTickets = await SupportTicket.filter({ is_public: true }, '-created_at', 100)
+      setTickets(allTickets || [])
     } catch (err) {
-      console.error('Error fetching tickets:', err);
-      error('Error', 'Failed to load tickets');
+      //
+      error('Error', 'Failed to load tickets')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const fetchTicketResponses = async (ticketId) => {
     try {
-      const ticketResponses = await TicketResponse.filter({ ticket_id: ticketId }, '-created_at', 100);
-      setResponses(ticketResponses || []);
+      const ticketResponses = await TicketResponse.filter({ ticket_id: ticketId }, '-created_at', 100)
+      setResponses(ticketResponses || [])
     } catch (err) {
-      console.error('Error fetching responses:', err);
-      setResponses([]);
+      //
+      setResponses([])
     }
-  };
+  }
 
   const handleCreateTicket = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!newTicketForm.subject.trim() || !newTicketForm.description.trim()) {
-      error('Validation Error', 'Please fill in all required fields');
-      return;
+      error('Validation Error', 'Please fill in all required fields')
+      return
     }
 
     try {
@@ -116,21 +116,21 @@ export default function SupportTicketsPage() {
         subject: newTicketForm.subject,
         description: newTicketForm.description,
         status: 'open'
-      });
+      })
 
-      success('Success', 'Ticket created successfully');
-      setShowNewTicketModal(false);
-      setNewTicketForm({ category: 'support', priority: 'medium', subject: '', description: '' });
-      fetchTickets();
+      success('Success', 'Ticket created successfully')
+      setShowNewTicketModal(false)
+      setNewTicketForm({ category: 'support', priority: 'medium', subject: '', description: '' })
+      fetchTickets()
     } catch (err) {
-      console.error('Error creating ticket:', err);
-      error('Error', 'Failed to create ticket');
+      //
+      error('Error', 'Failed to create ticket')
     }
-  };
+  }
 
   const handleAddResponse = async (e) => {
-    e.preventDefault();
-    if (!responseText.trim() || !selectedTicket) return;
+    e.preventDefault()
+    if (!responseText.trim() || !selectedTicket) return
 
     try {
       await TicketResponse.create({
@@ -141,17 +141,17 @@ export default function SupportTicketsPage() {
         response: responseText,
         reply_to: replyingTo || null,
         is_internal: false
-      });
+      })
 
       // Update ticket status if it was open
       if (selectedTicket.status === 'open') {
-        await SupportTicket.update(selectedTicket.id, { status: 'in_progress' });
+        await SupportTicket.update(selectedTicket.id, { status: 'in_progress' })
       }
 
       // Send notification to ticket creator and all participants
       try {
-        const allParticipants = [selectedTicket.user_email, ...responses.map(r => r.responder_email)];
-        const uniqueParticipants = [...new Set(allParticipants)].filter(email => email !== user.email);
+        const allParticipants = [selectedTicket.user_email, ...responses.map(r => r.responder_email)]
+        const uniqueParticipants = [...new Set(allParticipants)].filter(email => email !== user.email)
 
         for (const participantEmail of uniqueParticipants) {
           await Notification.create({
@@ -165,122 +165,122 @@ export default function SupportTicketsPage() {
               responder_name: user.full_name || user.email
             },
             read: false
-          });
+          })
         }
       } catch (notifErr) {
-        console.error('Error sending notifications:', notifErr);
+        //
       }
 
-      success('Success', 'Response added');
-      setResponseText('');
-      setReplyingTo(null);
-      fetchTicketResponses(selectedTicket.id);
-      fetchTickets();
+      success('Success', 'Response added')
+      setResponseText('')
+      setReplyingTo(null)
+      fetchTicketResponses(selectedTicket.id)
+      fetchTickets()
     } catch (err) {
-      console.error('Error adding response:', err);
-      error('Error', 'Failed to add response');
+      //
+      error('Error', 'Failed to add response')
     }
-  };
+  }
 
   const handleUpdateStatus = async (ticketId, newStatus) => {
     try {
-      const ticket = tickets.find(t => t.id === ticketId);
-      if (!ticket) return;
+      const ticket = tickets.find(t => t.id === ticketId)
+      if (!ticket) return
 
       // Only ticket creator or admin can close tickets
       if (newStatus === 'closed' && ticket.user_email !== user.email && user.role !== 'admin') {
-        error('Permission Denied', 'Only the ticket creator or an admin can close this ticket');
-        return;
+        error('Permission Denied', 'Only the ticket creator or an admin can close this ticket')
+        return
       }
 
-      const updates = { status: newStatus };
+      const updates = { status: newStatus }
       if (newStatus === 'resolved') {
-        updates.resolved_at = new Date().toISOString();
+        updates.resolved_at = new Date().toISOString()
       } else if (newStatus === 'closed') {
-        updates.closed_at = new Date().toISOString();
+        updates.closed_at = new Date().toISOString()
       }
 
-      await SupportTicket.update(ticketId, updates);
-      success('Success', `Ticket ${newStatus}`);
-      fetchTickets();
+      await SupportTicket.update(ticketId, updates)
+      success('Success', `Ticket ${newStatus}`)
+      fetchTickets()
       if (selectedTicket?.id === ticketId) {
-        setSelectedTicket({ ...selectedTicket, ...updates });
+        setSelectedTicket({ ...selectedTicket, ...updates })
       }
     } catch (err) {
-      console.error('Error updating status:', err);
-      error('Error', 'Failed to update status');
+      //
+      error('Error', 'Failed to update status')
     }
-  };
+  }
 
   const handleDeleteTicket = async (ticketId) => {
-    if (!window.confirm('Are you sure you want to delete this ticket?')) return;
+    if (!window.confirm('Are you sure you want to delete this ticket?')) return
     try {
-      await SupportTicket.delete(ticketId);
-      success('Success', 'Ticket deleted');
-      fetchTickets();
+      await SupportTicket.delete(ticketId)
+      success('Success', 'Ticket deleted')
+      fetchTickets()
       if (selectedTicket?.id === ticketId) {
-        setSelectedTicket(null);
+        setSelectedTicket(null)
       }
     } catch (err) {
-      console.error('Error deleting ticket:', err);
-      error('Error', 'Failed to delete ticket');
+      //
+      error('Error', 'Failed to delete ticket')
     }
-  };
+  }
 
   const getStatusConfig = (status) => {
     switch (status) {
       case 'open':
-        return { label: 'Open', color: 'bg-blue-100 text-blue-800', icon: Ticket };
+        return { label: 'Open', color: 'bg-blue-100 text-blue-800', icon: Ticket }
       case 'in_progress':
-        return { label: 'In Progress', color: 'bg-yellow-100 text-yellow-800', icon: Clock };
+        return { label: 'In Progress', color: 'bg-yellow-100 text-yellow-800', icon: Clock }
       case 'resolved':
-        return { label: 'Resolved', color: 'bg-green-100 text-green-800', icon: CheckCircle };
+        return { label: 'Resolved', color: 'bg-green-100 text-green-800', icon: CheckCircle }
       case 'closed':
-        return { label: 'Closed', color: 'bg-gray-100 text-gray-800', icon: X };
+        return { label: 'Closed', color: 'bg-gray-100 text-gray-800', icon: X }
       default:
-        return { label: status, color: 'bg-gray-100 text-gray-800', icon: Ticket };
+        return { label: status, color: 'bg-gray-100 text-gray-800', icon: Ticket }
     }
-  };
+  }
 
   const getPriorityConfig = (priority) => {
     switch (priority) {
       case 'low':
-        return { label: 'Low', color: 'bg-gray-100 text-gray-800' };
+        return { label: 'Low', color: 'bg-gray-100 text-gray-800' }
       case 'medium':
-        return { label: 'Medium', color: 'bg-blue-100 text-blue-800' };
+        return { label: 'Medium', color: 'bg-blue-100 text-blue-800' }
       case 'high':
-        return { label: 'High', color: 'bg-orange-100 text-orange-800' };
+        return { label: 'High', color: 'bg-orange-100 text-orange-800' }
       case 'urgent':
-        return { label: 'Urgent', color: 'bg-red-100 text-red-800' };
+        return { label: 'Urgent', color: 'bg-red-100 text-red-800' }
       default:
-        return { label: priority, color: 'bg-gray-100 text-gray-800' };
+        return { label: priority, color: 'bg-gray-100 text-gray-800' }
     }
-  };
+  }
 
   const filteredTickets = tickets.filter(ticket => {
-    const matchesFilter = filter === 'all' || ticket.status === filter;
+    const matchesFilter = filter === 'all' || ticket.status === filter
     const matchesSearch = ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         ticket.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+                         ticket.description.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesFilter && matchesSearch
+  })
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredTickets.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredTickets.length / itemsPerPage)
   const paginatedTickets = filteredTickets.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
+  )
 
   const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+    setCurrentPage(page)
+  }
 
   if (loading) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -347,9 +347,9 @@ export default function SupportTicketsPage() {
                 </tr>
               ) : (
                 paginatedTickets.map((ticket) => {
-                  const statusConfig = getStatusConfig(ticket.status);
-                  const priorityConfig = getPriorityConfig(ticket.priority);
-                  const StatusIcon = statusConfig.icon;
+                  const statusConfig = getStatusConfig(ticket.status)
+                  const priorityConfig = getPriorityConfig(ticket.priority)
+                  const StatusIcon = statusConfig.icon
 
                   return (
                     <tr key={ticket.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => { setSelectedTicket(ticket); fetchTicketResponses(ticket.id); }}>
@@ -401,7 +401,7 @@ export default function SupportTicketsPage() {
                         </div>
                       </td>
                     </tr>
-                  );
+                  )
                 })
               )}
             </tbody>
@@ -705,5 +705,5 @@ export default function SupportTicketsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

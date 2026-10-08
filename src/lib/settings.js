@@ -3,10 +3,10 @@
  * Provides access to application-wide settings stored in admin_settings table
  */
 
-import { SystemSetting } from '@/lib/supabaseEntities';
+import { SystemSetting } from '@/lib/supabaseEntities'
 
-let settingsCache = null;
-let cachePromise = null;
+let settingsCache = null
+let cachePromise = null
 
 /**
  * Fetch all settings from database
@@ -14,48 +14,48 @@ let cachePromise = null;
  */
 export async function fetchAllSettings() {
   if (settingsCache) {
-    return settingsCache;
+    return settingsCache
   }
 
   if (cachePromise) {
-    return cachePromise;
+    return cachePromise
   }
 
   cachePromise = (async () => {
     try {
-      const settingsData = await SystemSetting.filter({}, 'setting_key', 100);
-      const settingsMap = {};
+      const settingsData = await SystemSetting.filter({}, 'setting_key', 100)
+      const settingsMap = {}
       
       if (settingsData && settingsData.length > 0) {
         settingsData.forEach(setting => {
-          const value = setting.setting_value;
+          const value = setting.setting_value
           if (setting.setting_type === 'boolean') {
-            settingsMap[setting.setting_key] = value === 'true';
+            settingsMap[setting.setting_key] = value === 'true'
           } else if (setting.setting_type === 'number') {
-            settingsMap[setting.setting_key] = parseFloat(value);
+            settingsMap[setting.setting_key] = parseFloat(value)
           } else if (setting.setting_type === 'json') {
             try {
-              settingsMap[setting.setting_key] = JSON.parse(value);
+              settingsMap[setting.setting_key] = JSON.parse(value)
             } catch {
-              settingsMap[setting.setting_key] = value;
+              settingsMap[setting.setting_key] = value
             }
           } else {
-            settingsMap[setting.setting_key] = value;
+            settingsMap[setting.setting_key] = value
           }
-        });
+        })
       }
       
-      settingsCache = settingsMap;
-      return settingsMap;
+      settingsCache = settingsMap
+      return settingsMap
     } catch (error) {
-      console.error('Error fetching settings:', error);
-      return {};
+      
+      return {}
     } finally {
-      cachePromise = null;
+      cachePromise = null
     }
-  })();
+  })()
 
-  return cachePromise;
+  return cachePromise
 }
 
 /**
@@ -65,8 +65,8 @@ export async function fetchAllSettings() {
  * @returns {Promise<any>} - Setting value
  */
 export async function getSetting(key, defaultValue = null) {
-  const settings = await fetchAllSettings();
-  return settings[key] !== undefined ? settings[key] : defaultValue;
+  const settings = await fetchAllSettings()
+  return settings[key] !== undefined ? settings[key] : defaultValue
 }
 
 /**
@@ -75,16 +75,16 @@ export async function getSetting(key, defaultValue = null) {
  * @returns {Promise<boolean>} - Whether feature is enabled
  */
 export async function isFeatureEnabled(featureKey) {
-  const value = await getSetting(featureKey, false);
-  return Boolean(value);
+  const value = await getSetting(featureKey, false)
+  return Boolean(value)
 }
 
 /**
  * Clear settings cache (call after updating settings)
  */
 export function clearSettingsCache() {
-  settingsCache = null;
-  cachePromise = null;
+  settingsCache = null
+  cachePromise = null
 }
 
 /**
@@ -134,4 +134,4 @@ export const features = {
   getFeaturedCategories: () => getSetting('featuredCategories', ''),
   getPrimaryColor: () => getSetting('primaryColor', '#6366f1'),
   getSecondaryColor: () => getSetting('secondaryColor', '#8b5cf6')
-};
+}

@@ -1,6 +1,6 @@
-import { supabase } from './supabase';
-import { AuditLog } from './supabaseEntities';
-import crypto from 'crypto';
+import { supabase } from './supabase'
+import { AuditLog } from './supabaseEntities'
+import crypto from 'crypto'
 
 /**
  * Audit Logger - Captures all system activities with production-grade security
@@ -18,29 +18,29 @@ import crypto from 'crypto';
 
 // Simple hash function for browser environment (SHA-256 via Web Crypto API)
 async function hashEntry(entry) {
-  const entryString = JSON.stringify(entry);
-  const encoder = new TextEncoder();
-  const data = encoder.encode(entryString);
+  const entryString = JSON.stringify(entry)
+  const encoder = new TextEncoder()
+  const data = encoder.encode(entryString)
   
   if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
-    const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const hashBuffer = await window.crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
   }
   
   // Fallback for Node.js environment
   if (typeof crypto !== 'undefined' && crypto.createHash) {
-    return crypto.createHash('sha256').update(entryString).digest('hex');
+    return crypto.createHash('sha256').update(entryString).digest('hex')
   }
   
   // Simple fallback
-  return btoa(entryString).substring(0, 64);
+  return btoa(entryString).substring(0, 64)
 }
 
 // Generate unique sequential ID for append-only guarantee
-let sequenceNumber = 0;
+let sequenceNumber = 0
 function getSequenceNumber() {
-  return ++sequenceNumber;
+  return ++sequenceNumber
 }
 
 export const auditLogger = {
@@ -56,14 +56,14 @@ export const auditLogger = {
    */
   log: async ({ action, module, entity_type, entity_id, details, metadata = {} }) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser()
       
-      const actor_email = user?.email || 'system';
-      const actor_role = user?.user_metadata?.role || 'system';
+      const actor_email = user?.email || 'system'
+      const actor_role = user?.user_metadata?.role || 'system'
       
       // Get IP address from client (if available)
-      const ip_address = metadata.ip_address || 'unknown';
-      const user_agent = metadata.user_agent || typeof window !== 'undefined' ? window.navigator.userAgent : 'unknown';
+      const ip_address = metadata.ip_address || 'unknown'
+      const user_agent = metadata.user_agent || typeof window !== 'undefined' ? window.navigator.userAgent : 'unknown'
 
       // Create log entry with immutable properties
       const logEntry = {
@@ -80,20 +80,20 @@ export const auditLogger = {
         sequence_number: getSequenceNumber(),
         created_at: new Date().toISOString(),
         is_immutable: true // Flag to prevent updates/deletes
-      };
+      }
 
       // Generate cryptographic hash for integrity verification
-      const entry_hash = await hashEntry(logEntry);
-      logEntry.entry_hash = entry_hash;
+      const entry_hash = await hashEntry(logEntry)
+      logEntry.entry_hash = entry_hash
 
       // Store in database (append-only - no update/delete operations allowed)
-      await AuditLog.create(logEntry);
+      await AuditLog.create(logEntry)
       
-      return { success: true, sequence_number: logEntry.sequence_number, hash: entry_hash };
+      return { success: true, sequence_number: logEntry.sequence_number, hash: entry_hash }
     } catch (error) {
-      console.error('Failed to log audit event:', error);
+      
       // Don't throw - audit logging failures shouldn't break the app
-      return { success: false, error: error.message };
+      return { success: false, error: error.message }
     }
   },
 
@@ -105,12 +105,12 @@ export const auditLogger = {
   verifyIntegrity: async (logEntry) => {
     try {
       // Remove hash from entry before recomputing
-      const { entry_hash, ...entryWithoutHash } = logEntry;
-      const recomputedHash = await hashEntry(entryWithoutHash);
-      return recomputedHash === entry_hash;
+      const { entry_hash, ...entryWithoutHash } = logEntry
+      const recomputedHash = await hashEntry(entryWithoutHash)
+      return recomputedHash === entry_hash
     } catch (error) {
-      console.error('Failed to verify log integrity:', error);
-      return false;
+      
+      return false
     }
   },
 
@@ -121,11 +121,11 @@ export const auditLogger = {
    */
   getLogs: async (filters = {}) => {
     try {
-      const logs = await AuditLog.filter(filters, '-sequence_number', 100);
-      return logs || [];
+      const logs = await AuditLog.filter(filters, '-sequence_number', 100)
+      return logs || []
     } catch (error) {
-      console.error('Failed to fetch audit logs:', error);
-      return [];
+      
+      return []
     }
   },
 
@@ -136,17 +136,17 @@ export const auditLogger = {
    */
   exportForImmutableStorage: async (filters = {}) => {
     try {
-      const logs = await auditLogger.getLogs(filters);
+      const logs = await auditLogger.getLogs(filters)
       const exportData = {
         logs,
         exported_at: new Date().toISOString(),
         total_count: logs.length,
         checksum: await hashEntry(logs)
-      };
-      return exportData;
+      }
+      return exportData
     } catch (error) {
-      console.error('Failed to export audit logs:', error);
-      return null;
+      
+      return null
     }
   },
 
@@ -162,7 +162,7 @@ export const auditLogger = {
         entity_id: null,
         details: `User ${userEmail} logged in`,
         metadata
-      });
+      })
     },
 
     logout: async (userEmail, metadata = {}) => {
@@ -173,7 +173,7 @@ export const auditLogger = {
         entity_id: null,
         details: `User ${userEmail} logged out`,
         metadata
-      });
+      })
     },
 
     register: async (userEmail, metadata = {}) => {
@@ -184,7 +184,7 @@ export const auditLogger = {
         entity_id: null,
         details: `New user registered: ${userEmail}`,
         metadata
-      });
+      })
     },
 
     failedLogin: async (userEmail, reason, metadata = {}) => {
@@ -195,7 +195,7 @@ export const auditLogger = {
         entity_id: null,
         details: `Failed login attempt for ${userEmail}: ${reason}`,
         metadata
-      });
+      })
     }
   },
 
@@ -211,7 +211,7 @@ export const auditLogger = {
         entity_id: userId,
         details: `Created system user: ${userEmail}`,
         metadata
-      });
+      })
     },
 
     update: async (userId, userEmail, changes, metadata = {}) => {
@@ -222,7 +222,7 @@ export const auditLogger = {
         entity_id: userId,
         details: `Updated user ${userEmail}: ${Object.keys(changes).join(', ')}`,
         metadata
-      });
+      })
     },
 
     delete: async (userId, userEmail, metadata = {}) => {
@@ -233,7 +233,7 @@ export const auditLogger = {
         entity_id: userId,
         details: `Deleted system user: ${userEmail}`,
         metadata
-      });
+      })
     },
 
     suspend: async (userId, userEmail, metadata = {}) => {
@@ -244,7 +244,7 @@ export const auditLogger = {
         entity_id: userId,
         details: `Suspended user: ${userEmail}`,
         metadata
-      });
+      })
     },
 
     activate: async (userId, userEmail, metadata = {}) => {
@@ -255,7 +255,7 @@ export const auditLogger = {
         entity_id: userId,
         details: `Activated user: ${userEmail}`,
         metadata
-      });
+      })
     }
   },
 
@@ -271,7 +271,7 @@ export const auditLogger = {
         entity_id: userId,
         details: `Assigned role ${roleKey} to user ${userEmail}`,
         metadata
-      });
+      })
     },
 
     revoke: async (userId, userEmail, roleKey, metadata = {}) => {
@@ -282,7 +282,7 @@ export const auditLogger = {
         entity_id: userId,
         details: `Revoked role ${roleKey} from user ${userEmail}`,
         metadata
-      });
+      })
     }
   },
 
@@ -298,7 +298,7 @@ export const auditLogger = {
         entity_id: artistId,
         details: `Created artist: ${artistName}`,
         metadata
-      });
+      })
     },
 
     update: async (artistId, artistName, changes, metadata = {}) => {
@@ -309,7 +309,7 @@ export const auditLogger = {
         entity_id: artistId,
         details: `Updated artist ${artistName}: ${Object.keys(changes).join(', ')}`,
         metadata
-      });
+      })
     },
 
     delete: async (artistId, artistName, metadata = {}) => {
@@ -320,7 +320,7 @@ export const auditLogger = {
         entity_id: artistId,
         details: `Deleted artist: ${artistName}`,
         metadata
-      });
+      })
     }
   },
 
@@ -336,7 +336,7 @@ export const auditLogger = {
         entity_id: teamId,
         details: `Created team: ${teamName}`,
         metadata
-      });
+      })
     },
 
     update: async (teamId, teamName, changes, metadata = {}) => {
@@ -347,7 +347,7 @@ export const auditLogger = {
         entity_id: teamId,
         details: `Updated team ${teamName}: ${Object.keys(changes).join(', ')}`,
         metadata
-      });
+      })
     },
 
     delete: async (teamId, teamName, metadata = {}) => {
@@ -358,7 +358,7 @@ export const auditLogger = {
         entity_id: teamId,
         details: `Deleted team: ${teamName}`,
         metadata
-      });
+      })
     }
   },
 
@@ -374,7 +374,7 @@ export const auditLogger = {
         entity_id: projectId,
         details: `Created project: ${projectName}`,
         metadata
-      });
+      })
     },
 
     update: async (projectId, projectName, changes, metadata = {}) => {
@@ -385,7 +385,7 @@ export const auditLogger = {
         entity_id: projectId,
         details: `Updated project ${projectName}: ${Object.keys(changes).join(', ')}`,
         metadata
-      });
+      })
     },
 
     delete: async (projectId, projectName, metadata = {}) => {
@@ -396,7 +396,7 @@ export const auditLogger = {
         entity_id: projectId,
         details: `Deleted project: ${projectName}`,
         metadata
-      });
+      })
     }
   },
 
@@ -412,7 +412,7 @@ export const auditLogger = {
         entity_id: jobId,
         details: `Created job: ${jobTitle}`,
         metadata
-      });
+      })
     },
 
     update: async (jobId, jobTitle, changes, metadata = {}) => {
@@ -423,7 +423,7 @@ export const auditLogger = {
         entity_id: jobId,
         details: `Updated job ${jobTitle}: ${Object.keys(changes).join(', ')}`,
         metadata
-      });
+      })
     },
 
     delete: async (jobId, jobTitle, metadata = {}) => {
@@ -434,7 +434,7 @@ export const auditLogger = {
         entity_id: jobId,
         details: `Deleted job: ${jobTitle}`,
         metadata
-      });
+      })
     }
   },
 
@@ -450,7 +450,7 @@ export const auditLogger = {
         entity_id: featuredId,
         details: `Added featured work: ${projectName}`,
         metadata
-      });
+      })
     },
 
     remove: async (featuredId, projectName, metadata = {}) => {
@@ -461,7 +461,7 @@ export const auditLogger = {
         entity_id: featuredId,
         details: `Removed featured work: ${projectName}`,
         metadata
-      });
+      })
     }
   },
 
@@ -477,7 +477,7 @@ export const auditLogger = {
         entity_id: settingKey,
         details: `Updated setting ${settingKey}`,
         metadata: { ...metadata, old_value: oldValue, new_value: newValue }
-      });
+      })
     }
   },
 
@@ -493,7 +493,7 @@ export const auditLogger = {
         entity_id: entityId,
         details,
         metadata
-      });
+      })
     },
 
     export: async (module, entityType, metadata = {}) => {
@@ -504,7 +504,7 @@ export const auditLogger = {
         entity_id: null,
         details: `Exported ${entityType} data from ${module}`,
         metadata
-      });
+      })
     },
 
     import: async (module, entityType, count, metadata = {}) => {
@@ -515,9 +515,9 @@ export const auditLogger = {
         entity_id: null,
         details: `Imported ${count} ${entityType} records to ${module}`,
         metadata
-      });
+      })
     }
   }
-};
+}
 
-export default auditLogger;
+export default auditLogger

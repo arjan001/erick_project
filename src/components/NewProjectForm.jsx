@@ -1,77 +1,74 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, CheckCircle2, Loader } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { analyzeWebsiteUrl, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService';
+import React, { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Sparkles, CheckCircle2, Loader } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { analyzeWebsiteUrl, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService'
 
 export default function NewProjectForm({ selectedCategory = 'commercial' }) {
-  const navigate = useNavigate();
-  const [referenceUrl, setReferenceUrl] = useState('');
-  const [description, setDescription] = useState('');
+  const navigate = useNavigate()
+  const [referenceUrl, setReferenceUrl] = useState('')
+  const [description, setDescription] = useState('')
   const projectTypeMap = {
     commercial: 'commercial',
     short: 'short_film',
     feature: 'film',
     music: 'music_video',
     documentary: 'documentary'
-  };
-  const [projectType, setProjectType] = useState(projectTypeMap[selectedCategory] || 'commercial');
-  const [extracting, setExtracting] = useState(false);
-  const [extractProgress, setExtractProgress] = useState(null);
-  const [regenerating, setRegenerating] = useState(false);
-  const previousProjectTypeRef = useRef(projectType);
-  const previousDescriptionRef = useRef(description);
+  }
+  const [projectType, setProjectType] = useState(projectTypeMap[selectedCategory] || 'commercial')
+  const [extracting, setExtracting] = useState(false)
+  const [extractProgress, setExtractProgress] = useState(null)
+  const [regenerating, setRegenerating] = useState(false)
+  const previousProjectTypeRef = useRef(projectType)
+  const previousDescriptionRef = useRef(description)
 
-  console.log('NewProjectForm render - selectedCategory:', selectedCategory, 'projectType:', projectType);
+  
 
   React.useEffect(() => {
-    const newProjectType = projectTypeMap[selectedCategory] || 'commercial';
-    console.log('Category changed:', selectedCategory, '→', newProjectType);
-    setProjectType(newProjectType);
-  }, [selectedCategory]);
+    const newProjectType = projectTypeMap[selectedCategory] || 'commercial'
+    
+    setProjectType(newProjectType)
+  }, [selectedCategory])
 
   // Auto-regenerate analysis when project type changes (if URL exists)
   useEffect(() => {
-    console.log('Regeneration effect triggered - projectType:', projectType, 'referenceUrl:', referenceUrl, 'previous:', previousProjectTypeRef.current);
+    
     
     const timer = setTimeout(async () => {
       // Check if project type actually changed and we have a reference URL
       if (previousProjectTypeRef.current !== projectType && referenceUrl && referenceUrl.trim() !== '') {
-        console.log('Regenerating analysis for', referenceUrl, 'with type', projectType);
+        
         
         try {
-          setRegenerating(true);
+          setRegenerating(true)
           
           // Re-analyze the URL with the new project type
-          const analysisResult = await analyzeWebsiteUrl(referenceUrl, projectType);
+          const analysisResult = await analyzeWebsiteUrl(referenceUrl, projectType)
           
-          console.log('Analysis result:', analysisResult);
+          
           
           if (analysisResult.success && analysisResult.rawAnalysis) {
-            setDescription(analysisResult.rawAnalysis);
+            setDescription(analysisResult.rawAnalysis)
           }
         } catch (err) {
-          console.error('Regeneration error:', err);
+          
         } finally {
-          setRegenerating(false);
+          setRegenerating(false)
         }
       } else {
-        console.log('Skipping regeneration - conditions not met:', {
-          typeChanged: previousProjectTypeRef.current !== projectType,
-          hasUrl: !!referenceUrl,
-          urlNotEmpty: referenceUrl?.trim() !== ''
-        });
+        // !== ''
+        })
       }
       
       // Update refs
-      previousProjectTypeRef.current = projectType;
+      previousProjectTypeRef.current = projectType
     }, 500); // 0.5 second debounce
 
-    return () => clearTimeout(timer);
-  }, [projectType, referenceUrl]);
+    return () => clearTimeout(timer)
+  }, [projectType, referenceUrl])
 
   const getCategoryContext = (type) => {
     const contexts = {
@@ -80,60 +77,60 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
       film: 'Feature Film: Full production planning, cast, locations, long schedule, cinematic.',
       music_video: 'Music Video: Visual-first, short schedule, strong art direction, performance-based.',
       documentary: 'Documentary: Real-world content, flexible planning, research-focused, authentic storytelling.'
-    };
-    return contexts[type] || contexts.commercial;
-  };
+    }
+    return contexts[type] || contexts.commercial
+  }
 
   const progressSteps = [
     'Fetching site content',
     'Analyzing brand and tone',
     'Identifying visual language',
     'Translating into a film concept'
-  ];
+  ]
 
   const handleExtract = async () => {
-    if (!referenceUrl) return;
+    if (!referenceUrl) return
     
-    setExtracting(true);
-    setExtractProgress(0);
+    setExtracting(true)
+    setExtractProgress(0)
 
     // Simulate progress through steps
     const progressInterval = setInterval(() => {
       setExtractProgress(prev => {
-        if (prev === null) return 0;
-        if (prev < progressSteps.length - 1) return prev + 1;
-        return prev;
-      });
-    }, 800);
+        if (prev === null) return 0
+        if (prev < progressSteps.length - 1) return prev + 1
+        return prev
+      })
+    }, 800)
 
     try {
       // Use the new urlAnalysisService
-      const analysisResult = await analyzeWebsiteUrl(referenceUrl, projectType);
+      const analysisResult = await analyzeWebsiteUrl(referenceUrl, projectType)
       
-      clearInterval(progressInterval);
+      clearInterval(progressInterval)
       
       if (analysisResult.success && analysisResult.rawAnalysis) {
         // Set description directly from raw analysis for speed
-        setDescription(analysisResult.rawAnalysis);
-        setExtractProgress(progressSteps.length - 1);
+        setDescription(analysisResult.rawAnalysis)
+        setExtractProgress(progressSteps.length - 1)
         setTimeout(() => {
-          setExtractProgress(null);
-        }, 600);
+          setExtractProgress(null)
+        }, 600)
       } else {
-        console.error('Extract error:', analysisResult.error);
-        setExtractProgress(null);
+        
+        setExtractProgress(null)
       }
     } catch (error) {
-      console.error('Extract failed:', error);
-      setExtractProgress(null);
-      clearInterval(progressInterval);
+      
+      setExtractProgress(null)
+      clearInterval(progressInterval)
     } finally {
-      setExtracting(false);
+      setExtracting(false)
     }
-  };
+  }
 
   const handleSubmit = () => {
-    if (!description) return;
+    if (!description) return
     
     // Save analyzed data to localStorage for SubmitProject flow - pass URL as-is without validation
     saveAnalyzedProjectToStorage({
@@ -142,14 +139,14 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
       brief: null,
       projectType: selectedCategory,
       additionalNotes: description
-    });
+    })
     
     // Navigate to SubmitProject with the description
-    const params = new URLSearchParams();
-    params.set('description', description);
-    params.set('category', selectedCategory);
-    navigate(createPageUrl(`SubmitProject?${params.toString()}`));
-  };
+    const params = new URLSearchParams()
+    params.set('description', description)
+    params.set('category', selectedCategory)
+    navigate(createPageUrl(`SubmitProject?${params.toString()}`))
+  }
 
   return (
     <div>
@@ -235,5 +232,5 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
         </Button>
       </div>
     </div>
-  );
+  )
 }

@@ -2,12 +2,12 @@
  * Real-time messaging service using Supabase Realtime subscriptions
  * Provides instant message updates across all dashboards without page reload
  */
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase'
 
 class RealtimeMessagingService {
   constructor() {
-    this.subscriptions = new Map();
-    this.listeners = new Map();
+    this.subscriptions = new Map()
+    this.listeners = new Map()
   }
 
   /**
@@ -18,10 +18,10 @@ class RealtimeMessagingService {
    * @returns {Function} Unsubscribe function
    */
   subscribeToMessages(userEmail, onMessageReceived, onMessageUpdated) {
-    const channelName = `messages:${userEmail}`;
+    const channelName = `messages:${userEmail}`
 
     // Clean up existing subscription if any
-    this.unsubscribeFromMessages(userEmail);
+    this.unsubscribeFromMessages(userEmail)
 
     const channel = supabase
       .channel(channelName)
@@ -34,9 +34,9 @@ class RealtimeMessagingService {
           filter: `recipient_email=eq.${userEmail}`,
         },
         (payload) => {
-          console.log('New message received:', payload);
+          //
           if (onMessageReceived) {
-            onMessageReceived(payload.new);
+            onMessageReceived(payload.new)
           }
         }
       )
@@ -49,9 +49,9 @@ class RealtimeMessagingService {
           filter: `sender_email=eq.${userEmail}`,
         },
         (payload) => {
-          console.log('Message sent confirmation:', payload);
+          //
           if (onMessageReceived) {
-            onMessageReceived(payload.new);
+            onMessageReceived(payload.new)
           }
         }
       )
@@ -64,26 +64,26 @@ class RealtimeMessagingService {
           filter: `recipient_email=eq.${userEmail}`,
         },
         (payload) => {
-          console.log('Message updated:', payload);
+          //
           if (onMessageUpdated) {
-            onMessageUpdated(payload.new);
+            onMessageUpdated(payload.new)
           }
         }
       )
       .subscribe((status) => {
-        console.log('Realtime subscription status:', status);
+        //
         if (status === 'SUBSCRIBED') {
-          console.log(`Successfully subscribed to messages for ${userEmail}`);
+          //
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('Realtime subscription error');
+          //
         }
-      });
+      })
 
-    this.subscriptions.set(userEmail, channel);
-    this.listeners.set(userEmail, { onMessageReceived, onMessageUpdated });
+    this.subscriptions.set(userEmail, channel)
+    this.listeners.set(userEmail, { onMessageReceived, onMessageUpdated })
 
     // Return unsubscribe function
-    return () => this.unsubscribeFromMessages(userEmail);
+    return () => this.unsubscribeFromMessages(userEmail)
   }
 
   /**
@@ -91,12 +91,12 @@ class RealtimeMessagingService {
    * @param {string} userEmail - User's email to unsubscribe from
    */
   unsubscribeFromMessages(userEmail) {
-    const channel = this.subscriptions.get(userEmail);
+    const channel = this.subscriptions.get(userEmail)
     if (channel) {
-      supabase.removeChannel(channel);
-      this.subscriptions.delete(userEmail);
-      this.listeners.delete(userEmail);
-      console.log(`Unsubscribed from messages for ${userEmail}`);
+      supabase.removeChannel(channel)
+      this.subscriptions.delete(userEmail)
+      this.listeners.delete(userEmail)
+      //
     }
   }
 
@@ -105,11 +105,11 @@ class RealtimeMessagingService {
    */
   unsubscribeAll() {
     this.subscriptions.forEach((channel, userEmail) => {
-      supabase.removeChannel(channel);
-    });
-    this.subscriptions.clear();
-    this.listeners.clear();
-    console.log('Unsubscribed from all realtime subscriptions');
+      supabase.removeChannel(channel)
+    })
+    this.subscriptions.clear()
+    this.listeners.clear()
+    //
   }
 
   /**
@@ -119,10 +119,10 @@ class RealtimeMessagingService {
    * @returns {Function} Unsubscribe function
    */
   subscribeToNotifications(userEmail, onNotification) {
-    const channelName = `notifications:${userEmail}`;
+    const channelName = `notifications:${userEmail}`
 
     // Clean up existing subscription if any
-    this.unsubscribeFromNotifications(userEmail);
+    this.unsubscribeFromNotifications(userEmail)
 
     const channel = supabase
       .channel(channelName)
@@ -135,20 +135,20 @@ class RealtimeMessagingService {
           filter: `recipient_email=eq.${userEmail}`,
         },
         (payload) => {
-          console.log('New notification received:', payload);
+          //
           if (onNotification) {
-            onNotification(payload.new);
+            onNotification(payload.new)
           }
         }
       )
       .subscribe((status) => {
-        console.log('Notification subscription status:', status);
-      });
+        //
+      })
 
-    this.subscriptions.set(`notifications:${userEmail}`, channel);
+    this.subscriptions.set(`notifications:${userEmail}`, channel)
 
     // Return unsubscribe function
-    return () => this.unsubscribeFromNotifications(userEmail);
+    return () => this.unsubscribeFromNotifications(userEmail)
   }
 
   /**
@@ -156,11 +156,11 @@ class RealtimeMessagingService {
    * @param {string} userEmail - User's email to unsubscribe from
    */
   unsubscribeFromNotifications(userEmail) {
-    const channel = this.subscriptions.get(`notifications:${userEmail}`);
+    const channel = this.subscriptions.get(`notifications:${userEmail}`)
     if (channel) {
-      supabase.removeChannel(channel);
-      this.subscriptions.delete(`notifications:${userEmail}`);
-      console.log(`Unsubscribed from notifications for ${userEmail}`);
+      supabase.removeChannel(channel)
+      this.subscriptions.delete(`notifications:${userEmail}`)
+      //
     }
   }
 
@@ -171,10 +171,10 @@ class RealtimeMessagingService {
    * @returns {Function} Unsubscribe function
    */
   subscribeToConnections(userEmail, onConnectionRequest) {
-    const channelName = `connections:${userEmail}`;
+    const channelName = `connections:${userEmail}`
 
     // Clean up existing subscription if any
-    this.unsubscribeFromConnections(userEmail);
+    this.unsubscribeFromConnections(userEmail)
 
     const channel = supabase
       .channel(channelName)
@@ -187,9 +187,9 @@ class RealtimeMessagingService {
           filter: `recipient_email=eq.${userEmail}`,
         },
         (payload) => {
-          console.log('New connection request received:', payload);
+          //
           if (onConnectionRequest) {
-            onConnectionRequest(payload.new);
+            onConnectionRequest(payload.new)
           }
         }
       )
@@ -202,20 +202,20 @@ class RealtimeMessagingService {
           filter: `recipient_email=eq.${userEmail}`,
         },
         (payload) => {
-          console.log('Connection status updated:', payload);
+          //
           if (onConnectionRequest) {
-            onConnectionRequest(payload.new);
+            onConnectionRequest(payload.new)
           }
         }
       )
       .subscribe((status) => {
-        console.log('Connection subscription status:', status);
-      });
+        //
+      })
 
-    this.subscriptions.set(`connections:${userEmail}`, channel);
+    this.subscriptions.set(`connections:${userEmail}`, channel)
 
     // Return unsubscribe function
-    return () => this.unsubscribeFromConnections(userEmail);
+    return () => this.unsubscribeFromConnections(userEmail)
   }
 
   /**
@@ -223,16 +223,16 @@ class RealtimeMessagingService {
    * @param {string} userEmail - User's email to unsubscribe from
    */
   unsubscribeFromConnections(userEmail) {
-    const channel = this.subscriptions.get(`connections:${userEmail}`);
+    const channel = this.subscriptions.get(`connections:${userEmail}`)
     if (channel) {
-      supabase.removeChannel(channel);
-      this.subscriptions.delete(`connections:${userEmail}`);
-      console.log(`Unsubscribed from connections for ${userEmail}`);
+      supabase.removeChannel(channel)
+      this.subscriptions.delete(`connections:${userEmail}`)
+      //
     }
   }
 }
 
 // Singleton instance
-const realtimeMessagingService = new RealtimeMessagingService();
+const realtimeMessagingService = new RealtimeMessagingService()
 
-export default realtimeMessagingService;
+export default realtimeMessagingService

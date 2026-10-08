@@ -1,5 +1,5 @@
-import React from 'react';
-import { Play } from 'lucide-react';
+import React from 'react'
+import { Play } from 'lucide-react'
 
 export default function HeroShowcase() {
   return (
@@ -63,5 +63,5 @@ export default function HeroShowcase() {
         </div>
       </div>
     </section>
-  );
+  )
 }

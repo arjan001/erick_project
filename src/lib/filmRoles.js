@@ -40,10 +40,10 @@ export const FILM_ROLES_BY_CATEGORY = {
     'Pipeline TD', 'Render Wrangler', 'Render Farm Manager', 'Software Developer',
     'AI Artist', 'Prompt Engineer',
   ],
-};
+}
 
 // Flat list of all roles for quick lookup / autocomplete
-export const ALL_FILM_ROLES = Object.values(FILM_ROLES_BY_CATEGORY).flat();
+export const ALL_FILM_ROLES = Object.values(FILM_ROLES_BY_CATEGORY).flat()
 
 // Equipment categories
 export const EQUIPMENT_CATEGORIES = {
@@ -69,7 +69,7 @@ export const EQUIPMENT_CATEGORIES = {
   'Grip': [
     'Clamps', 'Sandbags', 'Apple Boxes', 'Magic Arms', 'Monitor Mounts',
   ],
-};
+}
 
 // Software categories
 export const SOFTWARE_CATEGORIES = {
@@ -83,17 +83,17 @@ export const SOFTWARE_CATEGORIES = {
   'Audio': ['Audition', 'Pro Tools', 'Reaper', 'Logic Pro'],
   'Music': ['Suno', 'Udio', 'Ableton Live', 'FL Studio'],
   'AI': ['ChatGPT', 'Midjourney', 'Runway', 'Kling AI', 'Veo', 'ElevenLabs', 'Topaz Video AI'],
-};
+}
 
 // Delivery / output types
 export const DELIVERY_TYPES = [
   '3D Animation', 'CGI', 'VFX', 'Motion Graphics', 'Product Visualization',
   'Commercial', 'Social Media Video', 'Short Film', 'Feature Film',
   'Virtual Production', 'Interactive Experience', 'VR', 'AR',
-];
+]
 
 // File formats
 export const FILE_FORMATS = [
   '.blend', '.fbx', '.obj', '.usd', '.usdz', '.abc (Alembic)', '.exr', '.hdr',
   '.png', '.tif', '.psd', '.mp4', '.mov', '.wav',
-];
+]

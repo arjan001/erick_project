@@ -1,95 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { Invite, AuditLog } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Mail, Plus, Trash2, Send, Clock, CheckCircle, Users } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { base44 } from '@/api/base44Client'
+import { Invite, AuditLog } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Mail, Plus, Trash2, Send, Clock, CheckCircle, Users } from 'lucide-react'
 
-const ROLES = ['admin', 'artist', 'team', 'client', 'project_owner', 'backer'];
+const ROLES = ['admin', 'artist', 'team', 'client', 'project_owner', 'backer']
 
 export default function AdminInvitesManagementPage() {
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [invites, setInvites] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [inviteForm, setInviteForm] = useState({ email: '', role: 'artist', expiresIn: 7 });
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [invites, setInvites] = useState([])
+  const [showModal, setShowModal] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [inviteForm, setInviteForm] = useState({ email: '', role: 'artist', expiresIn: 7 })
 
   const fetchInvites = async () => {
     try {
-      setLoading(true);
-      const rows = await Invite.list('-created_date', 200);
-      setInvites(rows || []);
+      setLoading(true)
+      const rows = await Invite.list('-created_date', 200)
+      setInvites(rows || [])
     } catch (err) {
-      console.error('Error fetching invites:', err);
-      error('Error', 'Failed to fetch invites');
+      
+      error('Error', 'Failed to fetch invites')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchInvites(); }, []);
+  useEffect(() => { fetchInvites(); }, [])
 
   const logAction = (action, entityId, details) => {
-    AuditLog.create({ actor_email: user?.email, action, entity_type: 'Invite', entity_id: entityId, details }).catch(() => {});
-  };
+    AuditLog.create({ actor_email: user?.email, action, entity_type: 'Invite', entity_id: entityId, details }).catch(() => {})
+  }
 
   const handleCreateInvite = async () => {
     if (!inviteForm.email) {
-      error('Missing email', 'Please enter an email address');
-      return;
+      error('Missing email', 'Please enter an email address')
+      return
     }
-    setCreating(true);
+    setCreating(true)
     try {
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + inviteForm.expiresIn);
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + inviteForm.expiresIn)
 
-      await base44.users.inviteUser(inviteForm.email, inviteForm.role === 'admin' ? 'admin' : 'user');
+      await base44.users.inviteUser(inviteForm.email, inviteForm.role === 'admin' ? 'admin' : 'user')
       const created = await Invite.create({
         email: inviteForm.email,
         role: inviteForm.role,
         status: 'pending',
         expires_at: expiresAt.toISOString(),
         invited_by_email: user?.email,
-      });
+      })
 
-      setInvites(prev => [created, ...prev]);
-      logAction('invite.create', created.id, `Invited ${inviteForm.email} as ${inviteForm.role}`);
-      success('Sent', `Invitation sent to ${inviteForm.email}`);
-      setShowModal(false);
-      setInviteForm({ email: '', role: 'artist', expiresIn: 7 });
+      setInvites(prev => [created, ...prev])
+      logAction('invite.create', created.id, `Invited ${inviteForm.email} as ${inviteForm.role}`)
+      success('Sent', `Invitation sent to ${inviteForm.email}`)
+      setShowModal(false)
+      setInviteForm({ email: '', role: 'artist', expiresIn: 7 })
     } catch (err) {
-      console.error('Error creating invite:', err);
-      error('Failed', 'Failed to send invite');
+      
+      error('Failed', 'Failed to send invite')
     } finally {
-      setCreating(false);
+      setCreating(false)
     }
-  };
+  }
 
   const handleResendInvite = async (invite) => {
     try {
-      await base44.users.inviteUser(invite.email, invite.role === 'admin' ? 'admin' : 'user');
-      success('Sent', 'Invite resent successfully');
-      logAction('invite.resend', invite.id, `Resent invite to ${invite.email}`);
+      await base44.users.inviteUser(invite.email, invite.role === 'admin' ? 'admin' : 'user')
+      success('Sent', 'Invite resent successfully')
+      logAction('invite.resend', invite.id, `Resent invite to ${invite.email}`)
     } catch (err) {
-      console.error('Error resending invite:', err);
-      error('Failed', 'Failed to resend invite');
+      
+      error('Failed', 'Failed to resend invite')
     }
-  };
+  }
 
   const handleDeleteInvite = async (inviteId) => {
     try {
-      await Invite.delete(inviteId);
-      setInvites(prev => prev.filter(i => i.id !== inviteId));
-      logAction('invite.delete', inviteId, 'Deleted invite');
-      success('Deleted', 'Invite deleted successfully');
+      await Invite.delete(inviteId)
+      setInvites(prev => prev.filter(i => i.id !== inviteId))
+      logAction('invite.delete', inviteId, 'Deleted invite')
+      success('Deleted', 'Invite deleted successfully')
     } catch (err) {
-      console.error('Error deleting invite:', err);
-      error('Failed', 'Failed to delete invite');
+      
+      error('Failed', 'Failed to delete invite')
     }
-  };
+  }
 
   const getStatusBadge = (status) => {
     const map = {
@@ -97,18 +97,18 @@ export default function AdminInvitesManagementPage() {
       accepted: 'bg-green-100 text-green-800',
       expired: 'bg-gray-100 text-gray-800',
       revoked: 'bg-red-100 text-red-800',
-    };
-    return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[status] || 'bg-gray-100 text-gray-800'}`}>{status}</span>;
-  };
+    }
+    return <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${map[status] || 'bg-gray-100 text-gray-800'}`}>{status}</span>
+  }
 
-  const isExpired = (expiresAt) => expiresAt && new Date(expiresAt) < new Date();
+  const isExpired = (expiresAt) => expiresAt && new Date(expiresAt) < new Date()
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -239,5 +239,5 @@ export default function AdminInvitesManagementPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

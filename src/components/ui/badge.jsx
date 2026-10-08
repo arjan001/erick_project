@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { cva } from "class-variance-authority";
+import { cva } from "class-variance-authority"
 
 
 
@@ -58,7 +58,7 @@ function Badge({
 
 }) {
 
-  return (<div className={cn(badgeVariants({ variant }), className)} {...props} />);
+  return (<div className={cn(badgeVariants({ variant }), className)} {...props} />)
 
 }
 

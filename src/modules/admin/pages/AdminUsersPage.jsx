@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { adminUsersApi } from '../api/adminUsers.api';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Search, Plus, Edit, Trash2, Shield, User, Mail, Eye, X, ChevronLeft, ChevronRight, Loader2, MoreVertical, Ban, CheckCircle, AlertTriangle, Key } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { adminUsersApi } from '../api/adminUsers.api'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
+import { Search, Plus, Edit, Trash2, Shield, User, Mail, Eye, X, ChevronLeft, ChevronRight, Loader2, MoreVertical, Ban, CheckCircle, AlertTriangle, Key } from 'lucide-react'
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 const STATUS_STYLES = {
   active: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle },
   suspended: { bg: 'bg-amber-100', text: 'text-amber-700', icon: Ban },
   inactive: { bg: 'bg-red-100', text: 'text-red-700', icon: X }
-};
+}
 
 const ROLE_STYLES = {
   admin: 'bg-indigo-100 text-indigo-700',
@@ -23,157 +23,157 @@ const ROLE_STYLES = {
   content_manager: 'bg-orange-100 text-orange-700',
   finance_manager: 'bg-amber-100 text-amber-700',
   support: 'bg-gray-100 text-gray-700'
-};
+}
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState([]);
-  const [roles, setRoles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showSuspendDialog, setShowSuspendDialog] = useState(false);
-  const [showRoleDialog, setShowRoleDialog] = useState(false);
-  const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [page, setPage] = useState(1);
+  const [users, setUsers] = useState([])
+  const [roles, setRoles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterRole, setFilterRole] = useState('all')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [showAddDialog, setShowAddDialog] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showSuspendDialog, setShowSuspendDialog] = useState(false)
+  const [showRoleDialog, setShowRoleDialog] = useState(false)
+  const [showDetailDialog, setShowDetailDialog] = useState(false)
+  const [editingUser, setEditingUser] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [page, setPage] = useState(1)
   const [newUserForm, setNewUserForm] = useState({
     email: '',
     password: '',
     first_name: '',
     last_name: ''
-  });
+  })
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   const fetchData = async () => {
     try {
-      setLoading(true);
+      setLoading(true)
       const [usersData, rolesData] = await Promise.all([
         adminUsersApi.getAllUsers(),
         adminUsersApi.getAllRoles()
-      ]);
-      setUsers(usersData || []);
-      setRoles(rolesData || []);
-      console.log('Fetched data - Users:', usersData?.length, 'Roles:', rolesData?.length);
+      ])
+      setUsers(usersData || [])
+      setRoles(rolesData || [])
+      
     } catch (error) {
-      console.error('Error fetching data:', error);
+      
       setRoles([]); // Ensure roles is set to empty array on error
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCreateUser = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await adminUsersApi.createUser(newUserForm);
-      setShowAddDialog(false);
-      setNewUserForm({ email: '', password: '', first_name: '', last_name: '' });
-      await fetchData();
+      await adminUsersApi.createUser(newUserForm)
+      setShowAddDialog(false)
+      setNewUserForm({ email: '', password: '', first_name: '', last_name: '' })
+      await fetchData()
     } catch (error) {
-      console.error('Error creating user:', error);
-      alert('Failed to create user: ' + error.message);
+      
+      alert('Failed to create user: ' + error.message)
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleUpdateUser = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await adminUsersApi.updateUser(editingUser.id, editingUser);
-      setShowEditDialog(false);
-      setEditingUser(null);
-      await fetchData();
+      await adminUsersApi.updateUser(editingUser.id, editingUser)
+      setShowEditDialog(false)
+      setEditingUser(null)
+      await fetchData()
     } catch (error) {
-      console.error('Error updating user:', error);
-      alert('Failed to update user: ' + error.message);
+      
+      alert('Failed to update user: ' + error.message)
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleDeleteUser = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await adminUsersApi.deleteUser(selectedUser.id);
-      setShowDeleteDialog(false);
-      setSelectedUser(null);
-      await fetchData();
+      await adminUsersApi.deleteUser(selectedUser.id)
+      setShowDeleteDialog(false)
+      setSelectedUser(null)
+      await fetchData()
     } catch (error) {
-      console.error('Error deleting user:', error);
-      alert('Failed to delete user: ' + error.message);
+      
+      alert('Failed to delete user: ' + error.message)
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleSuspendUser = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await adminUsersApi.updateUser(selectedUser.id, { is_active: !selectedUser.is_active });
-      setShowSuspendDialog(false);
-      setSelectedUser(null);
-      await fetchData();
+      await adminUsersApi.updateUser(selectedUser.id, { is_active: !selectedUser.is_active })
+      setShowSuspendDialog(false)
+      setSelectedUser(null)
+      await fetchData()
     } catch (error) {
-      console.error('Error suspending user:', error);
-      alert('Failed to suspend user: ' + error.message);
+      
+      alert('Failed to suspend user: ' + error.message)
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const userRoleKey = user?.user_roles?.[0]?.roles?.role_key || 'admin';
-    const matchesRole = filterRole === 'all' || userRoleKey === filterRole;
+                         user.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    const userRoleKey = user?.user_roles?.[0]?.roles?.role_key || 'admin'
+    const matchesRole = filterRole === 'all' || userRoleKey === filterRole
     const matchesStatus = filterStatus === 'all' ||
                           (filterStatus === 'active' && user.is_active) ||
-                          (filterStatus === 'suspended' && !user.is_active);
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+                          (filterStatus === 'suspended' && !user.is_active)
+    return matchesSearch && matchesRole && matchesStatus
+  })
 
-  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
-  const paginatedUsers = filteredUsers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE)
+  const paginatedUsers = filteredUsers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const getUserRole = (user) => {
     if (!user || !user.user_roles || !user.user_roles[0] || !user.user_roles[0].roles) {
-      return 'admin';
+      return 'admin'
     }
-    return user.user_roles[0].roles.role_key || 'admin';
-  };
+    return user.user_roles[0].roles.role_key || 'admin'
+  }
 
   const getUserRoleName = (user) => {
     if (!user || !user.user_roles || !user.user_roles[0] || !user.user_roles[0].roles) {
-      return 'Administrator';
+      return 'Administrator'
     }
-    return user.user_roles[0].roles.role_name || 'Administrator';
-  };
+    return user.user_roles[0].roles.role_name || 'Administrator'
+  }
 
   const getRoleBadge = (roleKey) => {
-    return ROLE_STYLES[roleKey] || 'bg-gray-100 text-gray-700';
-  };
+    return ROLE_STYLES[roleKey] || 'bg-gray-100 text-gray-700'
+  }
 
   const getStatusStyle = (isActive) => {
-    return isActive ? STATUS_STYLES.active : STATUS_STYLES.suspended;
-  };
+    return isActive ? STATUS_STYLES.active : STATUS_STYLES.suspended
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -292,9 +292,9 @@ export default function AdminUsersPage() {
                 <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">No users found</td></tr>
               )}
               {paginatedUsers.map((user) => {
-                const statusStyle = getStatusStyle(user.is_active);
-                const StatusIcon = statusStyle.icon;
-                const hasDeletionRequest = user.deletion_requested_at || user.scheduled_deletion_date;
+                const statusStyle = getStatusStyle(user.is_active)
+                const StatusIcon = statusStyle.icon
+                const hasDeletionRequest = user.deletion_requested_at || user.scheduled_deletion_date
                 return (
                   <tr key={user.id} className={`hover:bg-gray-50 transition-colors ${hasDeletionRequest ? 'bg-red-50' : ''}`}>
                     <td className="px-6 py-4">
@@ -361,7 +361,7 @@ export default function AdminUsersPage() {
                       </div>
                     </td>
                   </tr>
-                );
+                )
               })}
             </tbody>
           </table>
@@ -578,16 +578,16 @@ export default function AdminUsersPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowRoleDialog(false)} className="rounded-xl">Cancel</Button>
             <Button onClick={async () => {
-              setSaving(true);
+              setSaving(true)
               try {
-                await adminUsersApi.updateUser(selectedUser.id, { role_key: editingUser?.role_key });
-                setShowRoleDialog(false);
-                await fetchData();
+                await adminUsersApi.updateUser(selectedUser.id, { role_key: editingUser?.role_key })
+                setShowRoleDialog(false)
+                await fetchData()
               } catch (error) {
-                console.error('Error assigning role:', error);
-                alert('Failed to assign role: ' + error.message);
+                
+                alert('Failed to assign role: ' + error.message)
               } finally {
-                setSaving(false);
+                setSaving(false)
               }
             }} disabled={saving} className="bg-gray-900 hover:bg-gray-800 rounded-xl">
               {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
@@ -636,7 +636,7 @@ export default function AdminUsersPage() {
         </div>
       )}
     </div>
-  );
+  )
 }
 
 

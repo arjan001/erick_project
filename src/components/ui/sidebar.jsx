@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
-import { cva } from "class-variance-authority";
+import { cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -70,7 +70,7 @@ const SidebarProvider = React.forwardRef((
   const toggleSidebar = React.useCallback(() => {
     return isMobile
       ? setOpenMobile((open) => !open)
-      : setOpen((open) => !open);
+      : setOpen((open) => !open)
   }, [isMobile, setOpen, setOpenMobile])
 
   // Adds a keyboard shortcut to toggle the sidebar.
@@ -86,7 +86,7 @@ const SidebarProvider = React.forwardRef((
     }
 
     window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown)
   }, [toggleSidebar])
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
@@ -124,7 +124,7 @@ const SidebarProvider = React.forwardRef((
         </div>
       </TooltipProvider>
     </SidebarContext.Provider>)
-  );
+  )
 })
 SidebarProvider.displayName = "SidebarProvider"
 
@@ -152,7 +152,7 @@ const Sidebar = React.forwardRef((
         {...props}>
         {children}
       </div>)
-    );
+    )
   }
 
   if (isMobile) {
@@ -171,7 +171,7 @@ const Sidebar = React.forwardRef((
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>
       </Sheet>)
-    );
+    )
   }
 
   return (
@@ -212,7 +212,7 @@ const Sidebar = React.forwardRef((
         </div>
       </div>
     </div>)
-  );
+  )
 })
 Sidebar.displayName = "Sidebar"
 
@@ -241,7 +241,7 @@ const SidebarTrigger = React.forwardRef(({ className, onClick, asChild = false, 
         </>
       )}
     </Button>)
-  );
+  )
 })
 SidebarTrigger.displayName = "SidebarTrigger"
 
@@ -266,7 +266,7 @@ const SidebarRail = React.forwardRef(({ className, ...props }, ref) => {
         className
       )}
       {...props} />)
-  );
+  )
 })
 SidebarRail.displayName = "SidebarRail"
 
@@ -280,7 +280,7 @@ const SidebarInset = React.forwardRef(({ className, ...props }, ref) => {
         className
       )}
       {...props} />)
-  );
+  )
 })
 SidebarInset.displayName = "SidebarInset"
 
@@ -294,7 +294,7 @@ const SidebarInput = React.forwardRef(({ className, ...props }, ref) => {
         className
       )}
       {...props} />)
-  );
+  )
 })
 SidebarInput.displayName = "SidebarInput"
 
@@ -305,7 +305,7 @@ const SidebarHeader = React.forwardRef(({ className, ...props }, ref) => {
       data-sidebar="header"
       className={cn("flex flex-col gap-2 p-2", className)}
       {...props} />)
-  );
+  )
 })
 SidebarHeader.displayName = "SidebarHeader"
 
@@ -316,7 +316,7 @@ const SidebarFooter = React.forwardRef(({ className, ...props }, ref) => {
       data-sidebar="footer"
       className={cn("flex flex-col gap-2 p-2", className)}
       {...props} />)
-  );
+  )
 })
 SidebarFooter.displayName = "SidebarFooter"
 
@@ -327,7 +327,7 @@ const SidebarSeparator = React.forwardRef(({ className, ...props }, ref) => {
       data-sidebar="separator"
       className={cn("mx-2 w-auto bg-sidebar-border", className)}
       {...props} />)
-  );
+  )
 })
 SidebarSeparator.displayName = "SidebarSeparator"
 
@@ -341,7 +341,7 @@ const SidebarContent = React.forwardRef(({ className, ...props }, ref) => {
         className
       )}
       {...props} />)
-  );
+  )
 })
 SidebarContent.displayName = "SidebarContent"
 
@@ -352,7 +352,7 @@ const SidebarGroup = React.forwardRef(({ className, ...props }, ref) => {
       data-sidebar="group"
       className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
       {...props} />)
-  );
+  )
 })
 SidebarGroup.displayName = "SidebarGroup"
 
@@ -369,7 +369,7 @@ const SidebarGroupLabel = React.forwardRef(({ className, asChild = false, ...pro
         className
       )}
       {...props} />)
-  );
+  )
 })
 SidebarGroupLabel.displayName = "SidebarGroupLabel"
 
@@ -388,7 +388,7 @@ const SidebarGroupAction = React.forwardRef(({ className, asChild = false, ...pr
         className
       )}
       {...props} />)
-  );
+  )
 })
 SidebarGroupAction.displayName = "SidebarGroupAction"
 
@@ -485,7 +485,7 @@ const SidebarMenuButton = React.forwardRef((
         hidden={state !== "collapsed" || isMobile}
         {...tooltip} />
     </Tooltip>)
-  );
+  )
 })
 SidebarMenuButton.displayName = "SidebarMenuButton"
 
@@ -509,7 +509,7 @@ const SidebarMenuAction = React.forwardRef(({ className, asChild = false, showOn
         className
       )}
       {...props} />)
-  );
+  )
 })
 SidebarMenuAction.displayName = "SidebarMenuAction"
 
@@ -533,7 +533,7 @@ SidebarMenuBadge.displayName = "SidebarMenuBadge"
 const SidebarMenuSkeleton = React.forwardRef(({ className, showIcon = false, ...props }, ref) => {
   // Random width between 50 to 90%.
   const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`;
+    return `${Math.floor(Math.random() * 40) + 50}%`
   }, [])
 
   return (
@@ -554,7 +554,7 @@ const SidebarMenuSkeleton = React.forwardRef(({ className, showIcon = false, ...
           }
         } />
     </div>)
-  );
+  )
 })
 SidebarMenuSkeleton.displayName = "SidebarMenuSkeleton"
 
@@ -593,7 +593,7 @@ const SidebarMenuSubButton = React.forwardRef(
           className
         )}
         {...props} />)
-    );
+    )
   }
 )
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton"

@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target, Check } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
-import { base44 } from '@/api/base44Client';
-import { Artist, Team, Backer, ProjectOwner, Invite, Connection } from '@/lib/supabaseEntities';
-import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete';
-import { ALL_FILM_ROLES } from '@/lib/filmRoles';
-import skillsAndRoles from '@/lib/skillsAndRoles.json';
-import Logo from '@/components/landing/backstage/Logo';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target, Check } from 'lucide-react'
+import { useAuth } from '@/lib/AuthContext'
+import { base44 } from '@/api/base44Client'
+import { Artist, Team, Backer, ProjectOwner, Invite, Connection } from '@/lib/supabaseEntities'
+import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete'
+import { ALL_FILM_ROLES } from '@/lib/filmRoles'
+import skillsAndRoles from '@/lib/skillsAndRoles.json'
+import Logo from '@/components/landing/backstage/Logo'
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -16,13 +16,13 @@ const GoogleIcon = () => (
     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
   </svg>
-);
+)
 
 const AppleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5" fill="white">
     <path d="M17.05 12.04c.03 3.12 2.74 4.16 2.77 4.18-.02.08-.43 1.49-1.43 2.94-.86 1.25-1.76 2.49-3.18 2.52-1.39.03-1.84-.82-3.43-.82-1.59 0-2.09.79-3.41.85-1.37.05-2.32 1.36-3.07 1.58-3.08-1.48-.09-2.36-1.36-3.28-2.61-1.79-2.58-3.16-7.29-1.32-10.47.91-1.58-2.58-2.11-3.33-1.03-.67-.78-1.26-2.03-1.1-3.33 1.17-.09 2.36-.6 3.08-1.48zM14.4 5.45c.73-.88 1.22-2.11 1.09-3.33c.67.78 1.26 2.03 1.1 3.23-1.48z" />
   </svg>
-);
+)
 
 const ROLE_REDIRECTS = {
   artist: '/artistdashboard',
@@ -30,21 +30,21 @@ const ROLE_REDIRECTS = {
   client: '/clientdashboard',
   backer: '/backerdashboard',
   admin: '/admin',
-};
+}
 
 const talentBenefits = [
   { icon: Newspaper, text: 'Thousands of fresh gigs every week.' },
   { icon: ShieldCheck, text: 'Gigs vetted to meet our community guidelines.' },
   { icon: Target, text: 'Visibility in the #1 Visited Database for Talent.' },
-];
+]
 
 export default function SignUp() {
-  const { login } = useAuth();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [userType, setUserType] = useState(searchParams.get('role') === 'client' ? 'employer' : 'talent');
+  const { login } = useAuth()
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const [userType, setUserType] = useState(searchParams.get('role') === 'client' ? 'employer' : 'talent')
   const [formData, setFormData] = useState(() => {
-    const roleParam = searchParams.get('role');
+    const roleParam = searchParams.get('role')
     return {
       firstName: '',
       lastName: '',
@@ -56,123 +56,123 @@ export default function SignUp() {
       inviteCode: '',
       selectedRoles: [],
       selectedSkills: [],
-    };
-  });
+    }
+  })
 
   // Load skills based on user type
   const ALL_SKILLS = userType === 'talent'
     ? Object.values(skillsAndRoles.talent_skills_by_category || {}).flat()
-    : Object.values(skillsAndRoles.client_skills_by_category || {}).flat();
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [inviteCodeValid, setInviteCodeValid] = useState(null);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+    : Object.values(skillsAndRoles.client_skills_by_category || {}).flat()
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [inviteCodeValid, setInviteCodeValid] = useState(null)
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpCode, setOtpCode] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
-    const roleParam = searchParams.get('role');
+    const roleParam = searchParams.get('role')
     if (roleParam === 'client') {
-      setUserType('employer');
-      setFormData(prev => ({ ...prev, role: 'client' }));
+      setUserType('employer')
+      setFormData(prev => ({ ...prev, role: 'client' }))
     } else if (roleParam === 'artist') {
-      setUserType('talent');
-      setFormData(prev => ({ ...prev, role: 'artist' }));
+      setUserType('talent')
+      setFormData(prev => ({ ...prev, role: 'artist' }))
     }
-  }, [searchParams]);
+  }, [searchParams])
 
   // Check for invite code in URL query params or from invite landing
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('ref') || urlParams.get('code');
+    const urlParams = new URLSearchParams(window.location.search)
+    const code = urlParams.get('ref') || urlParams.get('code')
     if (code) {
-      setFormData(prev => ({ ...prev, inviteCode: code }));
-      validateInviteCode(code);
+      setFormData(prev => ({ ...prev, inviteCode: code }))
+      validateInviteCode(code)
     }
-  }, []);
+  }, [])
 
   const validateInviteCode = async (code) => {
     if (!code) {
-      setInviteCodeValid(null);
-      return;
+      setInviteCodeValid(null)
+      return
     }
     try {
-      const invites = await Invite.filter({ code: code });
+      const invites = await Invite.filter({ code: code })
       const validInvite = invites?.find(i =>
         i.status === 'active' &&
         (i.max_uses === null || i.uses_count < i.max_uses)
-      );
-      setInviteCodeValid(!!validInvite);
+      )
+      setInviteCodeValid(!!validInvite)
     } catch (err) {
-      console.error('Error validating invite code:', err);
-      setInviteCodeValid(null);
+      //
+      setInviteCodeValid(null)
     }
-  };
+  }
 
   const handleInviteCodeChange = (e) => {
-    const code = e.target.value.toUpperCase();
-    setFormData(prev => ({ ...prev, inviteCode: code }));
+    const code = e.target.value.toUpperCase()
+    setFormData(prev => ({ ...prev, inviteCode: code }))
     if (code) {
-      validateInviteCode(code);
+      validateInviteCode(code)
     } else {
-      setInviteCodeValid(null);
+      setInviteCodeValid(null)
     }
-  };
+  }
 
   const handleGoogleSignUp = () => {
-    setError('');
-    base44.auth.loginWithProvider('google', '/SignUp');
-  };
+    setError('')
+    base44.auth.loginWithProvider('google', '/SignUp')
+  }
 
   // Step 1: register the account with Base44 (sends an OTP to the user's email)
   const handleSignUp = async (e) => {
-    e.preventDefault();
-    setError('');
+    e.preventDefault()
+    setError('')
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
+      setError('Passwords do not match')
+      return
     }
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
+      setError('Password must be at least 6 characters')
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     try {
       await base44.auth.register({
         email: formData.email,
         password: formData.password,
         referral_code: formData.inviteCode || null,
-      });
-      setOtpSent(true);
+      })
+      setOtpSent(true)
     } catch (err) {
-      console.error('Registration error:', err);
-      setError(err.message || 'Registration failed. Please try again.');
+      //
+      setError(err.message || 'Registration failed. Please try again.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Step 2: verify the OTP code, then log in and create the profile entity
   const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    setError('');
+    e.preventDefault()
+    setError('')
     if (!otpCode || otpCode.length < 4) {
-      setError('Please enter the verification code sent to your email');
-      return;
+      setError('Please enter the verification code sent to your email')
+      return
     }
-    setLoading(true);
+    setLoading(true)
     try {
       // Verify the email — this authenticates the user (token stored by the SDK)
       await base44.auth.verifyOtp({
         email: formData.email,
         otpCode: otpCode,
-      });
+      })
 
-      const me = await base44.auth.me();
-      const fullName = `${formData.firstName} ${formData.lastName}`.trim() || formData.email.split('@')[0];
+      const me = await base44.auth.me()
+      const fullName = `${formData.firstName} ${formData.lastName}`.trim() || formData.email.split('@')[0]
       const appUser = {
         id: me.id,
         email: me.email,
@@ -180,7 +180,7 @@ export default function SignUp() {
         username: formData.username || `${formData.firstName}${formData.lastName}`.toLowerCase(),
         role: formData.role,
         referred_by: formData.inviteCode || null,
-      };
+      }
 
       // Create the role-specific profile record in the Base44 database
       const profileData = {
@@ -188,42 +188,42 @@ export default function SignUp() {
         full_name: fullName,
         invite_code: formData.inviteCode || null,
         referred_by: formData.inviteCode || null,
-      };
+      }
       try {
         if (formData.role === 'artist') {
-          await Artist.create({ ...profileData, username: formData.username, role: 'artist', secondary_roles: formData.selectedRoles, skills: formData.selectedSkills });
+          await Artist.create({ ...profileData, username: formData.username, role: 'artist', secondary_roles: formData.selectedRoles, skills: formData.selectedSkills })
         } else if (formData.role === 'team') {
           await Team.create({
             ...profileData,
             contact_email: formData.email,
             team_name: fullName,
             specialties: [],
-          });
+          })
         } else if (formData.role === 'client') {
-          await ProjectOwner.create({ ...profileData, company: fullName });
+          await ProjectOwner.create({ ...profileData, company: fullName })
         } else if (formData.role === 'backer') {
           await Backer.create({
             ...profileData,
             contact_email: formData.email,
             organization_name: fullName,
             interests: [],
-          });
+          })
         }
       } catch (profileErr) {
-        console.error('Profile creation error:', profileErr);
+        //
         // Don't block the user — the auth account exists, profile can be retried
       }
 
       // Mark invite as used if valid and auto-connect users
       if (formData.inviteCode && inviteCodeValid) {
         try {
-          const invites = await Invite.filter({ code: formData.inviteCode });
-          const validInvite = invites?.[0];
+          const invites = await Invite.filter({ code: formData.inviteCode })
+          const validInvite = invites?.[0]
           if (validInvite) {
             await Invite.update(validInvite.id, {
               used_by_email: formData.email,
               uses_count: (validInvite.uses_count || 0) + 1,
-            });
+            })
             if (validInvite.creator_email) {
               try {
                 await Connection.create({
@@ -232,49 +232,49 @@ export default function SignUp() {
                   recipient_email: formData.email,
                   recipient_type: formData.role,
                   status: 'accepted',
-                });
+                })
               } catch (connErr) {
-                console.error('Error creating auto-connection:', connErr);
+                //
               }
             }
           }
         } catch (err) {
-          console.error('Error processing invite:', err);
+          //
         }
       }
 
       // Persist the session locally and redirect
-      await login(appUser);
-      sessionStorage.setItem('ericrabar_just_logged_in', 'true');
+      await login(appUser)
+      sessionStorage.setItem('ericrabar_just_logged_in', 'true')
 
       if (formData.inviteCode && inviteCodeValid) {
-        setShowInviteModal(true);
-        return;
+        setShowInviteModal(true)
+        return
       }
-      window.location.href = ROLE_REDIRECTS[formData.role] || '/';
+      window.location.href = ROLE_REDIRECTS[formData.role] || '/'
     } catch (err) {
-      console.error('OTP verification error:', err);
-      setError(err.message || 'Invalid or expired verification code. Please try again.');
+      //
+      setError(err.message || 'Invalid or expired verification code. Please try again.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleResendOtp = async () => {
-    setError('');
+    setError('')
     try {
-      await base44.auth.resendOtp(formData.email);
+      await base44.auth.resendOtp(formData.email)
     } catch (err) {
-      setError(err.message || 'Could not resend the code. Please try again.');
+      setError(err.message || 'Could not resend the code. Please try again.')
     }
-  };
+  }
 
   const handleInviteModalClose = () => {
-    setShowInviteModal(false);
-    window.location.href = ROLE_REDIRECTS[formData.role] || '/';
-  };
+    setShowInviteModal(false)
+    window.location.href = ROLE_REDIRECTS[formData.role] || '/'
+  }
 
-  const isEmployer = userType === 'employer';
+  const isEmployer = userType === 'employer'
 
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
@@ -321,7 +321,7 @@ export default function SignUp() {
             </h2>
             <div className="mt-8 space-y-4">
               {talentBenefits.map((b) => {
-                const Icon = b.icon;
+                const Icon = b.icon
                 return (
                   <div key={b.text} className="flex items-start gap-3">
                     <div className="mt-0.5">
@@ -329,7 +329,7 @@ export default function SignUp() {
                     </div>
                     <p className="text-sm text-gray-700">{b.text}</p>
                   </div>
-                );
+                )
               })}
             </div>
           </div>
@@ -616,5 +616,5 @@ export default function SignUp() {
         </div>
       )}
     </div>
-  );
+  )
 }

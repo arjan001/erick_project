@@ -1,49 +1,49 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { Gift, MessageCircle, Briefcase, Star, ArrowRight, Share2, Copy, Check, CheckCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react'
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { Gift, MessageCircle, Briefcase, Star, ArrowRight, Share2, Copy, Check, CheckCircle } from 'lucide-react'
 
 // Use a simple SVG data URI for OG image representing Eric Rabar brand
-const OG_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630"%3E%3Crect fill="%23000" width="1200" height="630"/%3E%3Ctext x="50%25" y="45%25" dominant-baseline="middle" text-anchor="middle" fill="%23fff" font-size="72" font-weight="bold"%3EEric Rabar%3C/text%3E%3Ctext x="50%25" y="55%25" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="36"%3EPro Beta Invite%3C/text%3E%3C/svg%3E';
+const OG_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630"%3E%3Crect fill="%23000" width="1200" height="630"/%3E%3Ctext x="50%25" y="45%25" dominant-baseline="middle" text-anchor="middle" fill="%23fff" font-size="72" font-weight="bold"%3EEric Rabar%3C/text%3E%3Ctext x="50%25" y="55%25" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="36"%3EPro Beta Invite%3C/text%3E%3C/svg%3E'
 
 function setMeta(attr, key, content) {
-  let el = document.querySelector(`meta[${attr}="${key}"]`);
+  let el = document.querySelector(`meta[${attr}="${key}"]`)
   if (!el) {
-    el = document.createElement('meta');
-    el.setAttribute(attr, key);
-    document.head.appendChild(el);
+    el = document.createElement('meta')
+    el.setAttribute(attr, key)
+    document.head.appendChild(el)
   }
-  el.setAttribute('content', content);
+  el.setAttribute('content', content)
 }
 
 export default function InviteLanding() {
-  const { code } = useParams();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [copied, setCopied] = useState(false);
-  const inviterName = searchParams.get('inviter') || 'Eric Rabar';
+  const { code } = useParams()
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const [copied, setCopied] = useState(false)
+  const inviterName = searchParams.get('inviter') || 'Eric Rabar'
 
   useEffect(() => {
-    const url = `${window.location.origin}/invite/${code}`;
-    document.title = `${inviterName} invited you to join Eric Rabar Pro Beta`;
-    setMeta('name', 'description', `${inviterName} has invited you to join Eric Rabar as a Pro Beta user. Connect with top film & creative talent, post projects, and grow your creative career.`);
-    setMeta('property', 'og:title', `${inviterName} invited you to join Eric Rabar Pro Beta`);
-    setMeta('property', 'og:description', `${inviterName} invites you to join Eric Rabar with invite code ${code}. Get Pro Beta access — more messages, more projects, priority features.`);
-    setMeta('property', 'og:image', OG_IMAGE);
-    setMeta('property', 'og:url', url);
-    setMeta('property', 'og:type', 'website');
-    setMeta('property', 'og:site_name', 'Eric Rabar');
-    setMeta('name', 'twitter:card', 'summary_large_image');
-    setMeta('name', 'twitter:title', `${inviterName} invited you to join Eric Rabar Pro Beta`);
-    setMeta('name', 'twitter:description', `${inviterName} invites you to join Eric Rabar with invite code ${code}. Get Pro Beta access free.`);
-    setMeta('name', 'twitter:image', OG_IMAGE);
+    const url = `${window.location.origin}/invite/${code}`
+    document.title = `${inviterName} invited you to join Eric Rabar Pro Beta`
+    setMeta('name', 'description', `${inviterName} has invited you to join Eric Rabar as a Pro Beta user. Connect with top film & creative talent, post projects, and grow your creative career.`)
+    setMeta('property', 'og:title', `${inviterName} invited you to join Eric Rabar Pro Beta`)
+    setMeta('property', 'og:description', `${inviterName} invites you to join Eric Rabar with invite code ${code}. Get Pro Beta access — more messages, more projects, priority features.`)
+    setMeta('property', 'og:image', OG_IMAGE)
+    setMeta('property', 'og:url', url)
+    setMeta('property', 'og:type', 'website')
+    setMeta('property', 'og:site_name', 'Eric Rabar')
+    setMeta('name', 'twitter:card', 'summary_large_image')
+    setMeta('name', 'twitter:title', `${inviterName} invited you to join Eric Rabar Pro Beta`)
+    setMeta('name', 'twitter:description', `${inviterName} invites you to join Eric Rabar with invite code ${code}. Get Pro Beta access free.`)
+    setMeta('name', 'twitter:image', OG_IMAGE)
 
     // Schema.org structured data for SEO
-    let scriptEl = document.getElementById('invite-jsonld');
+    let scriptEl = document.getElementById('invite-jsonld')
     if (!scriptEl) {
-      scriptEl = document.createElement('script');
-      scriptEl.id = 'invite-jsonld';
-      scriptEl.setAttribute('type', 'application/ld+json');
-      document.head.appendChild(scriptEl);
+      scriptEl = document.createElement('script')
+      scriptEl.id = 'invite-jsonld'
+      scriptEl.setAttribute('type', 'application/ld+json')
+      document.head.appendChild(scriptEl)
     }
     scriptEl.textContent = JSON.stringify({
       '@context': 'https://schema.org',
@@ -55,36 +55,36 @@ export default function InviteLanding() {
         '@type': 'Person',
         name: inviterName
       }
-    });
-  }, [code, inviterName]);
+    })
+  }, [code, inviterName])
 
-  const inviteUrl = `${window.location.origin}/invite/${code}`;
-  const signupUrl = `/SignIn?ref=${code}&mode=signup`;
+  const inviteUrl = `${window.location.origin}/invite/${code}`
+  const signupUrl = `/SignIn?ref=${code}&mode=signup`
 
   const handleShare = (platform) => {
-    const text = encodeURIComponent("You're invited to Eric Rabar — get free Pro Beta access!");
-    const url = encodeURIComponent(inviteUrl);
+    const text = encodeURIComponent("You're invited to Eric Rabar — get free Pro Beta access!")
+    const url = encodeURIComponent(inviteUrl)
     if (platform === 'linkedin') {
-      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank')
     } else if (platform === 'whatsapp') {
-      window.open(`https://wa.me/?text=${text}%20${url}`, '_blank');
+      window.open(`https://wa.me/?text=${text}%20${url}`, '_blank')
     } else if (platform === 'facebook') {
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank')
     }
-  };
+  }
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(inviteUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+    navigator.clipboard.writeText(inviteUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const benefits = [
     { icon: MessageCircle, title: 'More Messages', desc: 'Unlimited messaging with clients and collaborators' },
     { icon: Briefcase, title: 'More Projects', desc: 'Priority access to premium project listings' },
     { icon: Star, title: 'Pro Badge', desc: 'Stand out with a Pro creator badge on your profile' },
     { icon: CheckCircle, title: 'Priority Support', desc: 'Fast-track support and featured placement' },
-  ];
+  ]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -182,5 +182,5 @@ export default function InviteLanding() {
         </p>
       </div>
     </div>
-  );
+  )
 }

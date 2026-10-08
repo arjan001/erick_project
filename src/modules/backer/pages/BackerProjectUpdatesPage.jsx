@@ -1,115 +1,115 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Backer, BackedProject, ProjectUpdate } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { FileText, Plus, Search, Calendar, Eye, Edit2, Trash2, Bell, Filter } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Backer, BackedProject, ProjectUpdate } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { FileText, Plus, Search, Calendar, Eye, Edit2, Trash2, Bell, Filter } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function BackerProjectUpdatesPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [backer, setBacker] = useState(null);
-  const [updates, setUpdates] = useState([]);
-  const [investments, setInvestments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterProject, setFilterProject] = useState('all');
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [backer, setBacker] = useState(null)
+  const [updates, setUpdates] = useState([])
+  const [investments, setInvestments] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterProject, setFilterProject] = useState('all')
   const [updateForm, setUpdateForm] = useState({
     project_id: '',
     project_title: '',
     title: '',
     content: '',
     update_type: 'progress'
-  });
+  })
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    fetchData();
-  }, [isAuthenticated]);
+    fetchData()
+  }, [isAuthenticated])
 
   const fetchData = async () => {
     try {
-      const backers = await Backer.filter({ contact_email: authUser?.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email })
       if (backers.length > 0) {
-        setBacker(backers[0]);
+        setBacker(backers[0])
       }
 
       // Fetch investments
-      const backedProjects = await BackedProject.filter({ backer_email: authUser?.email });
-      setInvestments(backedProjects);
+      const backedProjects = await BackedProject.filter({ backer_email: authUser?.email })
+      setInvestments(backedProjects)
 
       // Fetch project updates
-      const allUpdates = await ProjectUpdate.filter({ backer_email: authUser?.email });
-      setUpdates(allUpdates);
+      const allUpdates = await ProjectUpdate.filter({ backer_email: authUser?.email })
+      setUpdates(allUpdates)
     } catch (err) {
-      console.error('Error fetching updates:', err);
-      toastError('Load Failed', 'Failed to load project updates');
+      //
+      toastError('Load Failed', 'Failed to load project updates')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCreateUpdate = async () => {
-    if (!backer) return;
+    if (!backer) return
     try {
       await ProjectUpdate.create({
         ...updateForm,
         backer_email: authUser?.email,
         backer_id: backer.id,
         created_at: new Date().toISOString()
-      });
-      success('Update Created', 'Project update has been created');
-      setShowModal(false);
+      })
+      success('Update Created', 'Project update has been created')
+      setShowModal(false)
       setUpdateForm({
         project_id: '',
         project_title: '',
         title: '',
         content: '',
         update_type: 'progress'
-      });
-      fetchData();
+      })
+      fetchData()
     } catch (err) {
-      console.error('Error creating update:', err);
-      toastError('Creation Failed', 'Failed to create update');
+      //
+      toastError('Creation Failed', 'Failed to create update')
     }
-  };
+  }
 
   const handleDeleteUpdate = async (updateId) => {
-    if (!confirm('Are you sure you want to delete this update?')) return;
+    if (!confirm('Are you sure you want to delete this update?')) return
     try {
-      await ProjectUpdate.delete(updateId);
-      success('Update Deleted', 'Project update has been deleted');
-      fetchData();
+      await ProjectUpdate.delete(updateId)
+      success('Update Deleted', 'Project update has been deleted')
+      fetchData()
     } catch (err) {
-      console.error('Error deleting update:', err);
-      toastError('Delete Failed', 'Failed to delete update');
+      //
+      toastError('Delete Failed', 'Failed to delete update')
     }
-  };
+  }
 
   const filteredUpdates = updates.filter(update => {
     const matchesSearch = update.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      update.content?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesProject = filterProject === 'all' || update.project_id === filterProject;
-    return matchesSearch && matchesProject;
-  }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      update.content?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesProject = filterProject === 'all' || update.project_id === filterProject
+    return matchesSearch && matchesProject
+  }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 
-  const uniqueProjects = [...new Set(investments.map(inv => inv.project_id).filter(Boolean))];
+  const uniqueProjects = [...new Set(investments.map(inv => inv.project_id).filter(Boolean))]
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -160,9 +160,9 @@ export default function BackerProjectUpdatesPage() {
             <div>
               <div className="text-2xl font-bold text-gray-900">
                 {updates.filter(u => {
-                  const weekAgo = new Date();
-                  weekAgo.setDate(weekAgo.getDate() - 7);
-                  return new Date(u.created_at) > weekAgo;
+                  const weekAgo = new Date()
+                  weekAgo.setDate(weekAgo.getDate() - 7)
+                  return new Date(u.created_at) > weekAgo
                 }).length}
               </div>
               <div className="text-xs text-gray-500">This week</div>
@@ -267,12 +267,12 @@ export default function BackerProjectUpdatesPage() {
                 <select
                   value={updateForm.project_id}
                   onChange={(e) => {
-                    const selected = investments.find(inv => inv.project_id === e.target.value);
+                    const selected = investments.find(inv => inv.project_id === e.target.value)
                     setUpdateForm({
                       ...updateForm,
                       project_id: e.target.value,
                       project_title: selected?.project_title || ''
-                    });
+                    })
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                 >
@@ -325,5 +325,5 @@ export default function BackerProjectUpdatesPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

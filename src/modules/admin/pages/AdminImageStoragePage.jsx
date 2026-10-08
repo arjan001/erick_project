@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { HardDrive, Download, Trash2, Search, AlertTriangle, CheckCircle, Clock, Image, FileText, Video } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { base44 } from '@/api/base44Client'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { HardDrive, Download, Trash2, Search, AlertTriangle, CheckCircle, Clock, Image, FileText, Video } from 'lucide-react'
 
 export default function AdminImageStoragePage() {
-  const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [files, setFiles] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [sortBy, setSortBy] = useState('date');
+  const { success, error } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [files, setFiles] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterType, setFilterType] = useState('all')
+  const [sortBy, setSortBy] = useState('date')
 
   useEffect(() => {
     const fetchStorageFiles = async () => {
@@ -21,58 +21,58 @@ export default function AdminImageStoragePage() {
           base44.entities.Project.list('-created_date', 200),
           base44.entities.PortfolioClip.list('-created_date', 200),
           base44.entities.Backer.list('-created_date', 200),
-        ]);
+        ])
 
-        const rows = [];
-        artists.forEach(a => a.profile_photo_url && rows.push({ id: `artist-${a.id}`, name: `${a.full_name || 'artist'}_photo`, type: 'image', uploader: a.email, uploadedAt: a.created_date, url: a.profile_photo_url }));
-        teams.forEach(t => t.team_logo_url && rows.push({ id: `team-${t.id}`, name: `${t.team_name || 'team'}_logo`, type: 'image', uploader: t.contact_email, uploadedAt: t.created_date, url: t.team_logo_url }));
-        projects.forEach(p => p.image_url && rows.push({ id: `project-${p.id}`, name: `${p.project_owner_name || 'project'}_image`, type: 'image', uploader: p.project_owner_email, uploadedAt: p.created_date, url: p.image_url }));
-        backers.forEach(b => b.logo_url && rows.push({ id: `backer-${b.id}`, name: `${b.organization_name || 'backer'}_logo`, type: 'image', uploader: b.contact_email, uploadedAt: b.created_date, url: b.logo_url }));
-        clips.forEach(c => (c.video_url || c.thumbnail_url) && rows.push({ id: `clip-${c.id}`, name: c.title || 'portfolio_clip', type: c.video_url ? 'video' : 'image', uploader: '', uploadedAt: c.created_date, url: c.video_url || c.thumbnail_url }));
+        const rows = []
+        artists.forEach(a => a.profile_photo_url && rows.push({ id: `artist-${a.id}`, name: `${a.full_name || 'artist'}_photo`, type: 'image', uploader: a.email, uploadedAt: a.created_date, url: a.profile_photo_url }))
+        teams.forEach(t => t.team_logo_url && rows.push({ id: `team-${t.id}`, name: `${t.team_name || 'team'}_logo`, type: 'image', uploader: t.contact_email, uploadedAt: t.created_date, url: t.team_logo_url }))
+        projects.forEach(p => p.image_url && rows.push({ id: `project-${p.id}`, name: `${p.project_owner_name || 'project'}_image`, type: 'image', uploader: p.project_owner_email, uploadedAt: p.created_date, url: p.image_url }))
+        backers.forEach(b => b.logo_url && rows.push({ id: `backer-${b.id}`, name: `${b.organization_name || 'backer'}_logo`, type: 'image', uploader: b.contact_email, uploadedAt: b.created_date, url: b.logo_url }))
+        clips.forEach(c => (c.video_url || c.thumbnail_url) && rows.push({ id: `clip-${c.id}`, name: c.title || 'portfolio_clip', type: c.video_url ? 'video' : 'image', uploader: '', uploadedAt: c.created_date, url: c.video_url || c.thumbnail_url }))
 
-        setFiles(rows);
+        setFiles(rows)
       } catch (err) {
-        console.error('Error fetching storage data:', err);
-        error('Error', 'Failed to fetch storage data');
+        
+        error('Error', 'Failed to fetch storage data')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchStorageFiles();
-  }, []);
+    }
+    fetchStorageFiles()
+  }, [])
 
   const handleDeleteFile = (fileId) => {
-    setFiles(prev => prev.filter(f => f.id !== fileId));
-    success('Removed', 'File removed from this list (source record is unchanged)');
-  };
+    setFiles(prev => prev.filter(f => f.id !== fileId))
+    success('Removed', 'File removed from this list (source record is unchanged)')
+  }
 
   const filteredFiles = files.filter(f => {
-    const matchesSearch = f.name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = filterType === 'all' || f.type === filterType;
-    return matchesSearch && matchesType;
+    const matchesSearch = f.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesType = filterType === 'all' || f.type === filterType
+    return matchesSearch && matchesType
   }).sort((a, b) => {
-    if (sortBy === 'date') return new Date(b.uploadedAt) - new Date(a.uploadedAt);
-    if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
-    return 0;
-  });
+    if (sortBy === 'date') return new Date(b.uploadedAt) - new Date(a.uploadedAt)
+    if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '')
+    return 0
+  })
 
   const getFileIcon = (type) => {
     switch (type) {
-      case 'image': return <Image className="w-5 h-5 text-blue-600" />;
-      case 'video': return <Video className="w-5 h-5 text-purple-600" />;
-      default: return <FileText className="w-5 h-5 text-gray-600" />;
+      case 'image': return <Image className="w-5 h-5 text-blue-600" />
+      case 'video': return <Video className="w-5 h-5 text-purple-600" />
+      default: return <FileText className="w-5 h-5 text-gray-600" />
     }
-  };
+  }
 
-  const imageCount = files.filter(f => f.type === 'image').length;
-  const videoCount = files.filter(f => f.type === 'video').length;
+  const imageCount = files.filter(f => f.type === 'image').length
+  const videoCount = files.filter(f => f.type === 'video').length
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -205,5 +205,5 @@ export default function AdminImageStoragePage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

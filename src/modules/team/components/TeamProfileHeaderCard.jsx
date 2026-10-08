@@ -1,8 +1,8 @@
-import React from 'react';
-import { Upload, MapPin, Edit, Edit2, Globe, Instagram, Linkedin } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react'
+import { Upload, MapPin, Edit, Edit2, Globe, Instagram, Linkedin } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 // Team profile header (logo, name, bio, social links + status) and the admin-only
 // "Edit Team Profile" form. Invited members (isTeamMember) get a read-only header —
@@ -185,5 +185,5 @@ export default function TeamProfileHeaderCard({
         </Card>
       )}
     </>
-  );
+  )
 }

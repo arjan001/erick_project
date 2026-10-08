@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { ArrowRight } from 'lucide-react';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { ArrowRight } from 'lucide-react'
 
 const FEATURED_PROJECTS = [
   {
@@ -28,7 +28,7 @@ const FEATURED_PROJECTS = [
     image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800',
     type: 'Documentary'
   },
-];
+]
 
 export default function ProjectGrid() {
   return (
@@ -108,5 +108,5 @@ export default function ProjectGrid() {
         </div>
       </div>
     </section>
-  );
+  )
 }

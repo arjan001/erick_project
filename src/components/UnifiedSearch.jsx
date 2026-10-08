@@ -1,31 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { Project, Artist, Team } from '@/lib/supabaseEntities';
-import { Search, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
+import React, { useState, useEffect } from 'react'
+import { Project, Artist, Team } from '@/lib/supabaseEntities'
+import { Search, X } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
 
 export default function UnifiedSearch() {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
     if (!query.trim()) {
-      setResults(null);
-      return;
+      setResults(null)
+      return
     }
 
     const searchTimeout = setTimeout(async () => {
-      setLoading(true);
+      setLoading(true)
       try {
-        const lowerQuery = query.toLowerCase();
+        const lowerQuery = query.toLowerCase()
 
         const [projects, artists, teams] = await Promise.all([
           Project.list(),
           Artist.list(),
           Team.list()
-        ]);
+        ])
 
         const projectResults = projects
           .filter(p => 
@@ -35,7 +35,7 @@ export default function UnifiedSearch() {
             p.location_city?.toLowerCase().includes(lowerQuery) ||
             p.location_country?.toLowerCase().includes(lowerQuery)
           )
-          .slice(0, 5);
+          .slice(0, 5)
 
         const artistResults = artists
           .filter(a =>
@@ -44,7 +44,7 @@ export default function UnifiedSearch() {
             a.role?.toLowerCase().includes(lowerQuery) ||
             a.based_in_city?.toLowerCase().includes(lowerQuery)
           )
-          .slice(0, 5);
+          .slice(0, 5)
 
         const teamResults = teams
           .filter(t =>
@@ -52,24 +52,24 @@ export default function UnifiedSearch() {
             t.city?.toLowerCase().includes(lowerQuery) ||
             t.country?.toLowerCase().includes(lowerQuery)
           )
-          .slice(0, 5);
+          .slice(0, 5)
 
         setResults({
           projects: projectResults,
           artists: artistResults,
           teams: teamResults,
           hasResults: projectResults.length > 0 || artistResults.length > 0 || teamResults.length > 0
-        });
+        })
       } catch (error) {
-        console.error('Search error:', error);
-        setResults({ projects: [], artists: [], teams: [], hasResults: false });
+        
+        setResults({ projects: [], artists: [], teams: [], hasResults: false })
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    }, 300);
+    }, 300)
 
-    return () => clearTimeout(searchTimeout);
-  }, [query]);
+    return () => clearTimeout(searchTimeout)
+  }, [query])
 
   return (
     <div className="relative w-full">
@@ -80,8 +80,8 @@ export default function UnifiedSearch() {
           placeholder="Search projects, creators, teams..."
           value={query}
           onChange={(e) => {
-            setQuery(e.target.value);
-            setIsOpen(true);
+            setQuery(e.target.value)
+            setIsOpen(true)
           }}
           onFocus={() => query && setIsOpen(true)}
           className="w-full pl-12 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gray-400 focus:bg-white transition-colors"
@@ -89,9 +89,9 @@ export default function UnifiedSearch() {
         {query && (
           <button
             onClick={() => {
-              setQuery('');
-              setResults(null);
-              setIsOpen(false);
+              setQuery('')
+              setResults(null)
+              setIsOpen(false)
             }}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
@@ -188,5 +188,5 @@ export default function UnifiedSearch() {
       {/* Click outside to close */}
       {isOpen && <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />}
     </div>
-  );
+  )
 }

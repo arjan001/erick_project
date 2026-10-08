@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Settings, Save, Store, DollarSign, Truck, Globe, ToggleLeft, ToggleRight, CreditCard, Percent, Package, Bell } from 'lucide-react';
+import React, { useState } from 'react'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Settings, Save, Store, DollarSign, Truck, Globe, ToggleLeft, ToggleRight, CreditCard, Percent, Package, Bell } from 'lucide-react'
 
 export default function AdminShopSettingsPage() {
-  const { success, error } = useToast();
-  const [saving, setSaving] = useState(false);
+  const { success, error } = useToast()
+  const [saving, setSaving] = useState(false)
 
   const [shopSettings, setShopSettings] = useState({
     // General Shop Settings
@@ -56,28 +56,28 @@ export default function AdminShopSettingsPage() {
     notifyNewOrder: true,
     notifyLowStockEmail: 'admin@ericrabar.com',
     notifyOutOfStockEmail: 'admin@ericrabar.com'
-  });
+  })
 
   const handleSaveSettings = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      success('Saved', 'Shop settings saved successfully');
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      success('Saved', 'Shop settings saved successfully')
     } catch (err) {
-      console.error('Error saving shop settings:', err);
-      error('Failed', 'Failed to save shop settings');
+      
+      error('Failed', 'Failed to save shop settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleChange = (key, value) => {
-    setShopSettings({ ...shopSettings, [key]: value });
-  };
+    setShopSettings({ ...shopSettings, [key]: value })
+  }
 
   const handleToggle = (key) => {
-    setShopSettings({ ...shopSettings, [key]: !shopSettings[key] });
-  };
+    setShopSettings({ ...shopSettings, [key]: !shopSettings[key] })
+  }
 
   return (
     <div>
@@ -499,5 +499,5 @@ export default function AdminShopSettingsPage() {
           </div>
       </div>
     </div>
-  );
+  )
 }

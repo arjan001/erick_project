@@ -1,8 +1,8 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase'
 
 class PermissionsService {
   constructor() {
-    this.cache = new Map();
+    this.cache = new Map()
     this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
   }
 
@@ -12,12 +12,12 @@ class PermissionsService {
    * @returns {Promise<string[]>} Array of permission keys
    */
   async getUserPermissions(userId) {
-    if (!userId) return [];
+    if (!userId) return []
 
     // Check cache
-    const cached = this.cache.get(userId);
+    const cached = this.cache.get(userId)
     if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
-      return cached.permissions;
+      return cached.permissions
     }
 
     try {
@@ -36,42 +36,42 @@ class PermissionsService {
           )
         `)
         .eq('user_id', userId)
-        .eq('is_active', true);
+        .eq('is_active', true)
 
       if (error) {
         // If table doesn't exist (migration not run yet), return empty array
         if (error.code === '42P01') {
-          console.warn('Permissions tables not yet created, returning empty permissions');
-          return [];
+          
+          return []
         }
-        throw error;
+        throw error
       }
 
       // Extract all permission keys
-      const permissions = new Set();
+      const permissions = new Set()
       data.forEach(userRole => {
         if (userRole.role_permissions) {
           userRole.role_permissions.forEach(rp => {
             if (rp.permissions) {
-              permissions.add(rp.permissions.permission_key);
+              permissions.add(rp.permissions.permission_key)
             }
-          });
+          })
         }
-      });
+      })
 
-      const permissionArray = Array.from(permissions);
+      const permissionArray = Array.from(permissions)
 
       // Cache the result
       this.cache.set(userId, {
         permissions: permissionArray,
         timestamp: Date.now()
-      });
+      })
 
-      return permissionArray;
+      return permissionArray
     } catch (error) {
-      console.error('Error fetching user permissions:', error);
+      
       // Return empty array on error to prevent blocking
-      return [];
+      return []
     }
   }
 
@@ -82,8 +82,8 @@ class PermissionsService {
    * @returns {Promise<boolean>}
    */
   async hasPermission(userId, permissionKey) {
-    const permissions = await this.getUserPermissions(userId);
-    return permissions.includes(permissionKey);
+    const permissions = await this.getUserPermissions(userId)
+    return permissions.includes(permissionKey)
   }
 
   /**
@@ -93,8 +93,8 @@ class PermissionsService {
    * @returns {Promise<boolean>}
    */
   async hasAnyPermission(userId, permissionKeys) {
-    const permissions = await this.getUserPermissions(userId);
-    return permissionKeys.some(key => permissions.includes(key));
+    const permissions = await this.getUserPermissions(userId)
+    return permissionKeys.some(key => permissions.includes(key))
   }
 
   /**
@@ -104,8 +104,8 @@ class PermissionsService {
    * @returns {Promise<boolean>}
    */
   async hasAllPermissions(userId, permissionKeys) {
-    const permissions = await this.getUserPermissions(userId);
-    return permissionKeys.every(key => permissions.includes(key));
+    const permissions = await this.getUserPermissions(userId)
+    return permissionKeys.every(key => permissions.includes(key))
   }
 
   /**
@@ -114,7 +114,7 @@ class PermissionsService {
    * @returns {Promise<string[]>} Array of role keys
    */
   async getUserRoles(userId) {
-    if (!userId) return [];
+    if (!userId) return []
 
     try {
       const { data, error } = await supabase
@@ -125,14 +125,14 @@ class PermissionsService {
           )
         `)
         .eq('user_id', userId)
-        .eq('is_active', true);
+        .eq('is_active', true)
 
-      if (error) throw error;
+      if (error) throw error
 
-      return data.map(ur => ur.roles?.role_key).filter(Boolean);
+      return data.map(ur => ur.roles?.role_key).filter(Boolean)
     } catch (error) {
-      console.error('Error fetching user roles:', error);
-      return [];
+      
+      return []
     }
   }
 
@@ -143,8 +143,8 @@ class PermissionsService {
    * @returns {Promise<boolean>}
    */
   async hasRole(userId, roleKey) {
-    const roles = await this.getUserRoles(userId);
-    return roles.includes(roleKey);
+    const roles = await this.getUserRoles(userId)
+    return roles.includes(roleKey)
   }
 
   /**
@@ -154,8 +154,8 @@ class PermissionsService {
    * @returns {Promise<boolean>}
    */
   async hasAnyRole(userId, roleKeys) {
-    const roles = await this.getUserRoles(userId);
-    return roleKeys.some(key => roles.includes(key));
+    const roles = await this.getUserRoles(userId)
+    return roleKeys.some(key => roles.includes(key))
   }
 
   /**
@@ -164,9 +164,9 @@ class PermissionsService {
    */
   clearCache(userId) {
     if (userId) {
-      this.cache.delete(userId);
+      this.cache.delete(userId)
     } else {
-      this.cache.clear();
+      this.cache.clear()
     }
   }
 
@@ -181,23 +181,23 @@ class PermissionsService {
         .select('*')
         .eq('is_active', true)
         .order('category', { ascending: true })
-        .order('module', { ascending: true });
+        .order('module', { ascending: true })
 
-      if (error) throw error;
+      if (error) throw error
 
       // Group by category
-      const grouped = {};
+      const grouped = {}
       data.forEach(perm => {
         if (!grouped[perm.category]) {
-          grouped[perm.category] = [];
+          grouped[perm.category] = []
         }
-        grouped[perm.category].push(perm);
-      });
+        grouped[perm.category].push(perm)
+      })
 
-      return grouped;
+      return grouped
     } catch (error) {
-      console.error('Error fetching permissions:', error);
-      return {};
+      
+      return {}
     }
   }
 
@@ -212,14 +212,14 @@ class PermissionsService {
         .select('*')
         .eq('is_active', true)
         .order('is_system_role', { ascending: false })
-        .order('role_name', { ascending: true });
+        .order('role_name', { ascending: true })
 
-      if (error) throw error;
+      if (error) throw error
 
-      return data || [];
+      return data || []
     } catch (error) {
-      console.error('Error fetching roles:', error);
-      return [];
+      
+      return []
     }
   }
 
@@ -237,14 +237,14 @@ class PermissionsService {
             permission_key
           )
         `)
-        .eq('role_id', roleId);
+        .eq('role_id', roleId)
 
-      if (error) throw error;
+      if (error) throw error
 
-      return data.map(rp => rp.permissions?.permission_key).filter(Boolean);
+      return data.map(rp => rp.permissions?.permission_key).filter(Boolean)
     } catch (error) {
-      console.error('Error fetching role permissions:', error);
-      return [];
+      
+      return []
     }
   }
 
@@ -260,37 +260,37 @@ class PermissionsService {
       await supabase
         .from('role_permissions')
         .delete()
-        .eq('role_id', roleId);
+        .eq('role_id', roleId)
 
       // Get permission IDs from permission keys
       const { data: permissionsData, error: permError } = await supabase
         .from('permissions')
         .select('id')
-        .in('permission_key', permissionKeys);
+        .in('permission_key', permissionKeys)
 
-      if (permError) throw permError;
+      if (permError) throw permError
 
       // Insert new role permissions
       if (permissionsData && permissionsData.length > 0) {
         const rolePermissions = permissionsData.map(p => ({
           role_id: roleId,
           permission_id: p.id
-        }));
+        }))
 
         const { error: insertError } = await supabase
           .from('role_permissions')
-          .insert(rolePermissions);
+          .insert(rolePermissions)
 
-        if (insertError) throw insertError;
+        if (insertError) throw insertError
       }
 
       // Clear cache for all users with this role
-      this.clearCache();
+      this.clearCache()
 
-      return true;
+      return true
     } catch (error) {
-      console.error('Error assigning permissions to role:', error);
-      return false;
+      
+      return false
     }
   }
 
@@ -308,9 +308,9 @@ class PermissionsService {
         .from('roles')
         .select('id')
         .eq('role_key', roleKey)
-        .single();
+        .single()
 
-      if (roleError) throw roleError;
+      if (roleError) throw roleError
 
       // Assign role to user
       const { error: assignError } = await supabase
@@ -322,17 +322,17 @@ class PermissionsService {
           is_active: true
         }, {
           onConflict: 'user_id,role_id'
-        });
+        })
 
-      if (assignError) throw assignError;
+      if (assignError) throw assignError
 
       // Clear cache for this user
-      this.clearCache(userId);
+      this.clearCache(userId)
 
-      return true;
+      return true
     } catch (error) {
-      console.error('Error assigning role to user:', error);
-      return false;
+      
+      return false
     }
   }
 
@@ -349,26 +349,26 @@ class PermissionsService {
         .from('roles')
         .select('id')
         .eq('role_key', roleKey)
-        .single();
+        .single()
 
-      if (roleError) throw roleError;
+      if (roleError) throw roleError
 
       // Remove role from user
       const { error: removeError } = await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', userId)
-        .eq('role_id', roleData.id);
+        .eq('role_id', roleData.id)
 
-      if (removeError) throw removeError;
+      if (removeError) throw removeError
 
       // Clear cache for this user
-      this.clearCache(userId);
+      this.clearCache(userId)
 
-      return true;
+      return true
     } catch (error) {
-      console.error('Error removing role from user:', error);
-      return false;
+      
+      return false
     }
   }
 
@@ -389,14 +389,14 @@ class PermissionsService {
           is_active: true
         })
         .select()
-        .single();
+        .single()
 
-      if (error) throw error;
+      if (error) throw error
 
-      return data;
+      return data
     } catch (error) {
-      console.error('Error creating role:', error);
-      throw error;
+      
+      throw error
     }
   }
 
@@ -417,14 +417,14 @@ class PermissionsService {
         })
         .eq('id', roleId)
         .select()
-        .single();
+        .single()
 
-      if (error) throw error;
+      if (error) throw error
 
-      return data;
+      return data
     } catch (error) {
-      console.error('Error updating role:', error);
-      throw error;
+      
+      throw error
     }
   }
 
@@ -440,48 +440,48 @@ class PermissionsService {
         .from('roles')
         .select('is_system_role')
         .eq('id', roleId)
-        .single();
+        .single()
 
-      if (roleError) throw roleError;
+      if (roleError) throw roleError
 
       if (roleData.is_system_role) {
-        throw new Error('Cannot delete system roles');
+        throw new Error('Cannot delete system roles')
       }
 
       // Delete role (cascade will handle role_permissions and user_roles)
       const { error: deleteError } = await supabase
         .from('roles')
         .delete()
-        .eq('id', roleId);
+        .eq('id', roleId)
 
-      if (deleteError) throw deleteError;
+      if (deleteError) throw deleteError
 
       // Clear all cache
-      this.clearCache();
+      this.clearCache()
 
-      return true;
+      return true
     } catch (error) {
-      console.error('Error deleting role:', error);
-      throw error;
+      
+      throw error
     }
   }
 }
 
 // Export singleton instance
-export const permissionsService = new PermissionsService();
+export const permissionsService = new PermissionsService()
 
 // Export convenience functions
 export const hasPermission = (userId, permissionKey) => 
-  permissionsService.hasPermission(userId, permissionKey);
+  permissionsService.hasPermission(userId, permissionKey)
 
 export const hasAnyPermission = (userId, permissionKeys) => 
-  permissionsService.hasAnyPermission(userId, permissionKeys);
+  permissionsService.hasAnyPermission(userId, permissionKeys)
 
 export const hasAllPermissions = (userId, permissionKeys) => 
-  permissionsService.hasAllPermissions(userId, permissionKeys);
+  permissionsService.hasAllPermissions(userId, permissionKeys)
 
 export const hasRole = (userId, roleKey) => 
-  permissionsService.hasRole(userId, roleKey);
+  permissionsService.hasRole(userId, roleKey)
 
 export const hasAnyRole = (userId, roleKeys) => 
-  permissionsService.hasAnyRole(userId, roleKeys);
+  permissionsService.hasAnyRole(userId, roleKeys)

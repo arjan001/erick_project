@@ -1,9 +1,9 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Button } from '@/components/ui/button';
-import { Video, Film, Scissors, Wand2, ArrowRight, CheckCircle } from 'lucide-react';
-import SEOMetaTags from '../components/SEOMetaTags';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Button } from '@/components/ui/button'
+import { Video, Film, Scissors, Wand2, ArrowRight, CheckCircle } from 'lucide-react'
+import SEOMetaTags from '../components/SEOMetaTags'
 
 const SERVICES = [
   {
@@ -54,7 +54,7 @@ const SERVICES = [
       'Real-time rendering & previews'
     ]
   }
-];
+]
 
 export default function Services() {
   return (
@@ -97,7 +97,7 @@ export default function Services() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {SERVICES.map((service, index) => {
-              const Icon = service.icon;
+              const Icon = service.icon
               return (
                 <div
                   key={index}
@@ -117,7 +117,7 @@ export default function Services() {
                     ))}
                   </ul>
                 </div>
-              );
+              )
             })}
           </div>
         </div>
@@ -167,5 +167,5 @@ export default function Services() {
         </div>
       </section>
     </div>
-  );
+  )
 }

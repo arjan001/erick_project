@@ -1,59 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import { RecentProject, Project } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Edit2, Trash2, X, Eye, EyeOff, Clock, ArrowUp, ArrowDown, FolderKanban } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { RecentProject, Project } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { Plus, Edit2, Trash2, X, Eye, EyeOff, Clock, ArrowUp, ArrowDown, FolderKanban } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
 
 export default function AdminRecentProjectsPage() {
-  const { success, error: toastError } = useToast();
-  const [projects, setProjects] = useState([]);
-  const [availableProjects, setAvailableProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null);
+  const { success, error: toastError } = useToast()
+  const [projects, setProjects] = useState([])
+  const [availableProjects, setAvailableProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({
     project_id: '', title: '', description: '', studio: '', type: '',
     images: [], display_order: 0, is_active: true
-  });
+  })
 
   const fetchData = async () => {
     try {
       const [recentProjectsData, allProjectsData] = await Promise.all([
         RecentProject.list('display_order', 100),
         Project.filter({ status: 'open' }, '-created_at', 100)
-      ]);
-      setProjects(recentProjectsData || []);
-      setAvailableProjects(allProjectsData || []);
+      ])
+      setProjects(recentProjectsData || [])
+      setAvailableProjects(allProjectsData || [])
     } catch (err) {
-      console.error('Error fetching data:', err);
+      
       // Don't show error toast - table might not exist yet
-      setProjects([]);
-      setAvailableProjects([]);
+      setProjects([])
+      setAvailableProjects([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [])
 
   const openModal = (project = null) => {
     if (project) {
-      setEditing(project);
+      setEditing(project)
       setForm({
         project_id: project.project_id || '',
         title: project.title || '', description: project.description || '',
         studio: project.studio || '', type: project.type || '',
         images: project.images || [], display_order: project.display_order || 0,
         is_active: project.is_active ?? true
-      });
+      })
     } else {
-      setEditing(null);
-      setForm({ project_id: '', title: '', description: '', studio: '', type: '', images: [], display_order: 0, is_active: true });
+      setEditing(null)
+      setForm({ project_id: '', title: '', description: '', studio: '', type: '', images: [], display_order: 0, is_active: true })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const handleSave = async () => {
     if (!form.title.trim()) { toastError('Validation', 'Title is required'); return; }
@@ -67,51 +67,51 @@ export default function AdminRecentProjectsPage() {
         images: form.images,
         display_order: form.display_order,
         is_active: form.is_active
-      };
-      if (editing) {
-        await RecentProject.update(editing.id, dataToSave);
-        success('Updated', 'Recent project updated');
-      } else {
-        await RecentProject.create(dataToSave);
-        success('Created', 'Recent project created');
       }
-      setShowModal(false);
-      fetchData();
+      if (editing) {
+        await RecentProject.update(editing.id, dataToSave)
+        success('Updated', 'Recent project updated')
+      } else {
+        await RecentProject.create(dataToSave)
+        success('Created', 'Recent project created')
+      }
+      setShowModal(false)
+      fetchData()
     } catch (err) {
-      console.error('Error saving recent project:', err);
-      toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`);
+      
+      toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`)
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this recent project?')) return;
+    if (!confirm('Delete this recent project?')) return
     try {
-      await RecentProject.delete(id);
-      success('Deleted', 'Recent project deleted');
-      fetchData();
+      await RecentProject.delete(id)
+      success('Deleted', 'Recent project deleted')
+      fetchData()
     } catch (err) {
-      toastError('Delete Failed', 'Failed to delete recent project');
+      toastError('Delete Failed', 'Failed to delete recent project')
     }
-  };
+  }
 
   const toggleStatus = async (project) => {
     try {
-      await RecentProject.update(project.id, { is_active: !project.is_active });
-      success(!project.is_active ? 'Activated' : 'Deactivated', `Project ${!project.is_active ? 'activated' : 'deactivated'}`);
-      fetchData();
+      await RecentProject.update(project.id, { is_active: !project.is_active })
+      success(!project.is_active ? 'Activated' : 'Deactivated', `Project ${!project.is_active ? 'activated' : 'deactivated'}`)
+      fetchData()
     } catch (err) { toastError('Failed', 'Failed to update status'); }
-  };
+  }
 
   const moveOrder = async (project, direction) => {
-    const newOrder = (project.display_order || 0) + direction;
+    const newOrder = (project.display_order || 0) + direction
     try {
-      await RecentProject.update(project.id, { display_order: newOrder });
-      fetchData();
+      await RecentProject.update(project.id, { display_order: newOrder })
+      fetchData()
     } catch (err) { toastError('Failed', 'Failed to reorder'); }
-  };
+  }
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>
   }
 
   return (
@@ -197,14 +197,14 @@ export default function AdminRecentProjectsPage() {
                 <select 
                   value={form.project_id} 
                   onChange={(e) => {
-                    const selectedProject = availableProjects.find(p => p.id === e.target.value);
+                    const selectedProject = availableProjects.find(p => p.id === e.target.value)
                     setForm({ 
                       ...form, 
                       project_id: e.target.value,
                       title: selectedProject?.title || form.title,
                       description: selectedProject?.description || form.description,
                       type: selectedProject?.type || form.type
-                    });
+                    })
                   }} 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 >
@@ -237,5 +237,5 @@ export default function AdminRecentProjectsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

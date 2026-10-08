@@ -26,11 +26,11 @@ const GEOLOCATION_APIS = [
       longitude: data.lon
     })
   }
-];
+]
 
 class LocationService {
   constructor() {
-    this.cache = new Map();
+    this.cache = new Map()
     this.cacheTimeout = 24 * 60 * 60 * 1000; // 24 hours
   }
 
@@ -41,39 +41,39 @@ class LocationService {
    */
   async getLocation(ip) {
     if (!ip || ip === '127.0.0.1' || ip === '::1') {
-      return null;
+      return null
     }
 
     // Check cache first
-    const cached = this.cache.get(ip);
+    const cached = this.cache.get(ip)
     if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
-      return cached.data;
+      return cached.data
     }
 
     // Try each API until one succeeds
     for (const api of GEOLOCATION_APIS) {
       try {
-        const response = await fetch(api.url(ip));
-        if (!response.ok) continue;
+        const response = await fetch(api.url(ip))
+        if (!response.ok) continue
 
-        const data = await response.json();
-        const location = api.parser(data);
+        const data = await response.json()
+        const location = api.parser(data)
 
         if (location && location.country) {
           // Cache the result
           this.cache.set(ip, {
             data: location,
             timestamp: Date.now()
-          });
-          return location;
+          })
+          return location
         }
       } catch (error) {
-        console.warn(`Failed to fetch location from ${api.name}:`, error);
-        continue;
+        
+        continue
       }
     }
 
-    return null;
+    return null
   }
 
   /**
@@ -82,7 +82,7 @@ class LocationService {
    */
   async getBrowserLocation() {
     if (typeof window === 'undefined' || !navigator.geolocation) {
-      return null;
+      return null
     }
 
     return new Promise((resolve, reject) => {
@@ -91,15 +91,15 @@ class LocationService {
           resolve({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
-          });
+          })
         },
         (error) => {
-          console.warn('Geolocation error:', error);
-          resolve(null);
+          
+          resolve(null)
         },
         { timeout: 5000 }
-      );
-    });
+      )
+    })
   }
 
   /**
@@ -108,40 +108,40 @@ class LocationService {
    * @returns Device information
    */
   parseUserAgent(userAgent) {
-    const ua = userAgent.toLowerCase();
+    const ua = userAgent.toLowerCase()
 
     // Device type
-    let deviceType = 'desktop';
+    let deviceType = 'desktop'
     if (/mobile|android|iphone|ipad|ipod/i.test(ua)) {
-      deviceType = /tablet|ipad/i.test(ua) ? 'tablet' : 'mobile';
+      deviceType = /tablet|ipad/i.test(ua) ? 'tablet' : 'mobile'
     }
 
     // Browser
-    let browser = 'unknown';
-    if (ua.includes('chrome')) browser = 'Chrome';
-    else if (ua.includes('firefox')) browser = 'Firefox';
-    else if (ua.includes('safari') && !ua.includes('chrome')) browser = 'Safari';
-    else if (ua.includes('edge')) browser = 'Edge';
-    else if (ua.includes('opera')) browser = 'Opera';
+    let browser = 'unknown'
+    if (ua.includes('chrome')) browser = 'Chrome'
+    else if (ua.includes('firefox')) browser = 'Firefox'
+    else if (ua.includes('safari') && !ua.includes('chrome')) browser = 'Safari'
+    else if (ua.includes('edge')) browser = 'Edge'
+    else if (ua.includes('opera')) browser = 'Opera'
 
     // OS
-    let os = 'unknown';
-    if (ua.includes('windows')) os = 'Windows';
-    else if (ua.includes('mac')) os = 'macOS';
-    else if (ua.includes('linux')) os = 'Linux';
-    else if (ua.includes('android')) os = 'Android';
-    else if (ua.includes('ios') || ua.includes('iphone') || ua.includes('ipad')) os = 'iOS';
+    let os = 'unknown'
+    if (ua.includes('windows')) os = 'Windows'
+    else if (ua.includes('mac')) os = 'macOS'
+    else if (ua.includes('linux')) os = 'Linux'
+    else if (ua.includes('android')) os = 'Android'
+    else if (ua.includes('ios') || ua.includes('iphone') || ua.includes('ipad')) os = 'iOS'
 
-    return { deviceType, browser, os };
+    return { deviceType, browser, os }
   }
 
   /**
    * Clear the cache
    */
   clearCache() {
-    this.cache.clear();
+    this.cache.clear()
   }
 }
 
 // Export singleton instance
-export const locationService = new LocationService();
+export const locationService = new LocationService()

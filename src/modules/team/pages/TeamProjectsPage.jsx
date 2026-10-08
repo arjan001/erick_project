@@ -1,72 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Project, Team, Application, Job, JobInvitation } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Briefcase, Plus, Filter, Calendar, DollarSign, MapPin, Check, X, Clock, Eye, Building2, Star, Crown, FileText, Send } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { useAuth } from '@/lib/AuthContext';
-import { supabase } from '@/lib/supabase';
-import confetti from 'canvas-confetti';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Project, Team, Application, Job, JobInvitation } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Briefcase, Plus, Filter, Calendar, DollarSign, MapPin, Check, X, Clock, Eye, Building2, Star, Crown, FileText, Send } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
+import { supabase } from '@/lib/supabase'
+import confetti from 'canvas-confetti'
 
 function getDeviceType(userAgent) {
-  if (/Mobile|Android|iP(ad|hone)/i.test(userAgent)) return 'mobile';
-  if (/Tablet|iPad/i.test(userAgent)) return 'tablet';
-  return 'desktop';
+  if (/Mobile|Android|iP(ad|hone)/i.test(userAgent)) return 'mobile'
+  if (/Tablet|iPad/i.test(userAgent)) return 'tablet'
+  return 'desktop'
 }
 
 export default function TeamProjectsPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [team, setTeam] = useState(null);
-  const [projects, setProjects] = useState([]);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [applications, setApplications] = useState([]);
-  const [invitations, setInvitations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [activeTab, setActiveTab] = useState('board');
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [team, setTeam] = useState(null)
+  const [projects, setProjects] = useState([])
+  const [selectedProject, setSelectedProject] = useState(null)
+  const [applications, setApplications] = useState([])
+  const [invitations, setInvitations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [activeTab, setActiveTab] = useState('board')
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    loadTeamData();
-  }, [isAuthenticated]);
+    loadTeamData()
+  }, [isAuthenticated])
 
   const loadTeamData = async () => {
     try {
-      let teamData = null;
+      let teamData = null
       if (authUser?.team_id) {
-        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null);
+        teamData = await Team.filter({ id: authUser.team_id }, '-created_at', 1).then(r => r?.[0] || null)
       } else {
-        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1);
-        teamData = teams?.[0] || null;
+        const teams = await Team.filter({ contact_email: authUser?.email }, '-created_at', 1)
+        teamData = teams?.[0] || null
       }
-      console.log('Team data loaded:', teamData);
-      setTeam(teamData);
+      //
+      setTeam(teamData)
       if (teamData) {
-        fetchProjects(teamData.id);
+        fetchProjects(teamData.id)
       } else {
-        console.error('No team data found');
-        setLoading(false);
+        //
+        setLoading(false)
       }
     } catch (err) {
-      console.error('Error loading team:', err);
-      toastError('Load Failed', 'Failed to load team data');
-      setLoading(false);
+      //
+      toastError('Load Failed', 'Failed to load team data')
+      setLoading(false)
     }
-  };
+  }
 
   const fetchProjects = async (teamId) => {
     try {
       if (!teamId) {
-        console.error('No teamId provided');
-        setProjects([]);
-        setLoading(false);
-        return;
+        //
+        setProjects([])
+        setLoading(false)
+        return
       }
 
       // Fetch both Jobs and Projects like the artist dashboard does
@@ -74,43 +74,43 @@ export default function TeamProjectsPage() {
       const [allJobs, allProjects] = await Promise.all([
         Job.list(),
         Project.filter({ status: 'verified' })
-      ]);
+      ])
 
       // Try to fetch applications by team_id, but handle error gracefully
-      let teamApplications = [];
+      let teamApplications = []
       try {
-        teamApplications = await Application.filter({ team_id: teamId });
+        teamApplications = await Application.filter({ team_id: teamId })
       } catch (err) {
-        console.log('Team applications fetch failed (team_id column may not exist):', err.message);
+        //:', err.message)
         // Set empty applications array - this means no applications are tracked yet
-        teamApplications = [];
+        teamApplications = []
       }
 
-      setApplications(teamApplications);
+      setApplications(teamApplications)
 
       // Fetch team invitations
-      const teamInvitations = await JobInvitation.filter({ team_id: teamId });
-      setInvitations(teamInvitations || []);
+      const teamInvitations = await JobInvitation.filter({ team_id: teamId })
+      setInvitations(teamInvitations || [])
 
-      const openJobs = allJobs.filter(j => j.status === 'open');
+      const openJobs = allJobs.filter(j => j.status === 'open')
 
       // Fetch view counts from job_views and project_views tables
       const [jobViewCounts, projectViewCounts] = await Promise.all([
         supabase.from('job_views').select('job_id').then(({ data }) => {
-          const counts = {};
+          const counts = {}
           data?.forEach(v => {
-            counts[v.job_id] = (counts[v.job_id] || 0) + 1;
-          });
-          return counts;
+            counts[v.job_id] = (counts[v.job_id] || 0) + 1
+          })
+          return counts
         }),
         supabase.from('project_views').select('project_id').then(({ data }) => {
-          const counts = {};
+          const counts = {}
           data?.forEach(v => {
-            counts[v.project_id] = (counts[v.project_id] || 0) + 1;
-          });
-          return counts;
+            counts[v.project_id] = (counts[v.project_id] || 0) + 1
+          })
+          return counts
         })
-      ]);
+      ])
 
       // Convert projects to job-like format for unified display
       const projectJobs = allProjects.map(project => ({
@@ -135,7 +135,7 @@ export default function TeamProjectsPage() {
         image_url: project.image_url,
         requires_subscription: project.is_premium || false,
         view_count: projectViewCounts[project.id] || 0
-      }));
+      }))
 
       // Convert jobs to project-like format for display
       const jobProjects = openJobs.map(job => ({
@@ -160,55 +160,55 @@ export default function TeamProjectsPage() {
         image_url: null,
         requires_subscription: job.is_premium || false,
         view_count: jobViewCounts[job.id] || 0
-      }));
+      }))
 
       // Combine jobs and projects
-      const allListings = [...jobProjects, ...projectJobs];
-      setProjects(allListings);
-      if (allListings.length > 0) setSelectedProject(allListings[0]);
+      const allListings = [...jobProjects, ...projectJobs]
+      setProjects(allListings)
+      if (allListings.length > 0) setSelectedProject(allListings[0])
     } catch (err) {
-      console.error('Error fetching projects:', err);
-      toastError('Load Failed', 'Failed to load projects. Please try again.');
-      setProjects([]);
+      //
+      toastError('Load Failed', 'Failed to load projects. Please try again.')
+      setProjects([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleAcceptProject = async (projectId) => {
     try {
-      await Project.update(projectId, { status: 'in_progress' });
-      setProjects(projects.map(p => p.id === projectId ? { ...p, status: 'in_progress' } : p));
-      success('Project Accepted', 'Project has been accepted');
+      await Project.update(projectId, { status: 'in_progress' })
+      setProjects(projects.map(p => p.id === projectId ? { ...p, status: 'in_progress' } : p))
+      success('Project Accepted', 'Project has been accepted')
     } catch (err) {
-      console.error('Error accepting project:', err);
-      toastError('Action Failed', 'Failed to accept project');
+      //
+      toastError('Action Failed', 'Failed to accept project')
     }
-  };
+  }
 
   const handleDeclineProject = async (projectId) => {
     try {
-      await Project.update(projectId, { status: 'declined' });
-      setProjects(projects.map(p => p.id === projectId ? { ...p, status: 'declined' } : p));
-      success('Project Declined', 'Project has been declined');
+      await Project.update(projectId, { status: 'declined' })
+      setProjects(projects.map(p => p.id === projectId ? { ...p, status: 'declined' } : p))
+      success('Project Declined', 'Project has been declined')
     } catch (err) {
-      console.error('Error declining project:', err);
-      toastError('Action Failed', 'Failed to decline project');
+      //
+      toastError('Action Failed', 'Failed to decline project')
     }
-  };
+  }
 
   const handleProjectClick = async (project) => {
-    setSelectedProject(project);
+    setSelectedProject(project)
 
     // Track view in job_views or project_views table
     try {
       if (project.isProject) {
         // Insert into project_views - unique constraint will prevent duplicates
         try {
-          const ipResponse = await fetch('https://api.ipify.org?format=json');
-          const { ip } = await ipResponse.json();
-          const userAgent = navigator.userAgent;
-          const deviceType = getDeviceType(userAgent);
+          const ipResponse = await fetch('https://api.ipify.org?format=json')
+          const { ip } = await ipResponse.json()
+          const userAgent = navigator.userAgent
+          const deviceType = getDeviceType(userAgent)
 
           await supabase.from('project_views').insert({
             project_id: project.id,
@@ -216,7 +216,7 @@ export default function TeamProjectsPage() {
             ip_address: ip,
             user_agent: userAgent,
             device_type: deviceType,
-          });
+          })
         } catch (err) {
           // Ignore duplicate key errors - view already tracked
           if (err.code !== '23505') {
@@ -226,10 +226,10 @@ export default function TeamProjectsPage() {
       } else {
         // Insert into job_views - unique constraint will prevent duplicates
         try {
-          const ipResponse = await fetch('https://api.ipify.org?format=json');
-          const { ip } = await ipResponse.json();
-          const userAgent = navigator.userAgent;
-          const deviceType = getDeviceType(userAgent);
+          const ipResponse = await fetch('https://api.ipify.org?format=json')
+          const { ip } = await ipResponse.json()
+          const userAgent = navigator.userAgent
+          const deviceType = getDeviceType(userAgent)
 
           await supabase.from('job_views').insert({
             job_id: project.id,
@@ -237,7 +237,7 @@ export default function TeamProjectsPage() {
             ip_address: ip,
             user_agent: userAgent,
             device_type: deviceType,
-          });
+          })
         } catch (err) {
           // Ignore duplicate key errors - view already tracked
           if (err.code !== '23505') {
@@ -246,28 +246,28 @@ export default function TeamProjectsPage() {
         }
       }
     } catch (err) {
-      console.error('Error tracking view:', err);
+      //
     }
-  };
+  }
 
   // Check if team has already applied to selected job/project
   const hasAlreadyApplied = () => {
-    if (!selectedProject || !applications) return false;
+    if (!selectedProject || !applications) return false
     return applications.some(app => {
       if (selectedProject.isProject) {
-        return app.project_id === selectedProject.id;
+        return app.project_id === selectedProject.id
       } else {
-        return app.job_id === selectedProject.id;
+        return app.job_id === selectedProject.id
       }
-    });
-  };
+    })
+  }
 
   const handleApply = async () => {
-    if (!selectedProject || !team) return;
+    if (!selectedProject || !team) return
 
     if (hasAlreadyApplied()) {
-      toastError('Already Applied', 'You have already applied to this position');
-      return;
+      toastError('Already Applied', 'You have already applied to this position')
+      return
     }
 
     try {
@@ -277,7 +277,7 @@ export default function TeamProjectsPage() {
         team_id: team.id,
         status: 'pending',
         applied_at: new Date().toISOString()
-      });
+      })
 
       // Trigger confetti
       confetti({
@@ -285,30 +285,30 @@ export default function TeamProjectsPage() {
         spread: 60,
         origin: { y: 0.7 },
         colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ff8800', '#8800ff']
-      });
+      })
 
-      success('Application Submitted Successfully', 'Your team application has been submitted');
+      success('Application Submitted Successfully', 'Your team application has been submitted')
 
       // Refresh applications
-      const teamApplications = await Application.filter({ team_id: team.id });
-      setApplications(teamApplications);
+      const teamApplications = await Application.filter({ team_id: team.id })
+      setApplications(teamApplications)
     } catch (err) {
-      console.error('Error applying:', err);
-      toastError('Application Failed', 'Failed to submit application');
+      //
+      toastError('Application Failed', 'Failed to submit application')
     }
-  };
+  }
 
   const filteredProjects = projects.filter(project => {
-    if (filterStatus === 'all') return true;
-    return project.status === filterStatus;
-  });
+    if (filterStatus === 'all') return true
+    return project.status === filterStatus
+  })
 
   if (loading) {
     return (
       <div className="flex items-center justify-center">
         <div className="text-gray-600">Loading...</div>
       </div>
-    );
+    )
   }
 
   return (
@@ -667,5 +667,5 @@ export default function TeamProjectsPage() {
         )}
       </div>
     </>
-  );
+  )
 }

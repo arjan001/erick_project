@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Package, Search, Plus, Edit, Trash2, DollarSign, Box, Eye, ToggleLeft, ToggleRight, Image as ImageIcon, Tag, MoreVertical, ShoppingCart } from 'lucide-react';
-import { ShopProduct } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Package, Search, Plus, Edit, Trash2, DollarSign, Box, Eye, ToggleLeft, ToggleRight, Image as ImageIcon, Tag, MoreVertical, ShoppingCart } from 'lucide-react'
+import { ShopProduct } from '@/lib/supabaseEntities'
 
 export default function AdminProductsPage() {
-  const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [showModal, setShowModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const { success, error } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [products, setProducts] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [filterCategory, setFilterCategory] = useState('all')
+  const [showModal, setShowModal] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState(null)
   const [productForm, setProductForm] = useState({
     name: '',
     description: '',
@@ -32,28 +32,28 @@ export default function AdminProductsPage() {
     auction_participants: 0,
     currency: 'KES',
     fulfillment: 'physical',
-  });
+  })
 
-  const categories = ['Wardrobe', 'Equipment', 'Merchandise', 'Collectibles', 'Experiences'];
-  const currencies = ['KES', 'USD', 'EUR', 'GBP'];
-  const auctionTypes = ['time', 'count'];
-  const fulfillmentTypes = ['physical', 'digital'];
+  const categories = ['Wardrobe', 'Equipment', 'Merchandise', 'Collectibles', 'Experiences']
+  const currencies = ['KES', 'USD', 'EUR', 'GBP']
+  const auctionTypes = ['time', 'count']
+  const fulfillmentTypes = ['physical', 'digital']
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const allProducts = await ShopProduct.list('-created_at');
-        setProducts(allProducts || []);
+        const allProducts = await ShopProduct.list('-created_at')
+        setProducts(allProducts || [])
       } catch (err) {
-        console.error('Error fetching products:', err);
-        error('Error', 'Failed to fetch products');
+        
+        error('Error', 'Failed to fetch products')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchProducts();
-  }, []);
+    fetchProducts()
+  }, [])
 
   const handleCreateProduct = async () => {
     try {
@@ -63,73 +63,73 @@ export default function AdminProductsPage() {
         stock: parseInt(productForm.stock),
         sold: 0,
         images: productForm.images.length > 0 ? productForm.images : ['placeholder.jpg']
-      });
-      setProducts([...products, newProduct]);
-      success('Success', 'Product created successfully');
-      setShowModal(false);
-      setProductForm({ name: '', description: '', price: '', discount_price: '', category: '', stock: '', sku: '', images: [], status: 'active', featured: false, auction_enabled: false, auction_type: 'time', auction_duration_hours: 24, auction_end_time: '', auction_target_count: 1000, auction_participants: 0, currency: 'KES', fulfillment: 'physical' });
+      })
+      setProducts([...products, newProduct])
+      success('Success', 'Product created successfully')
+      setShowModal(false)
+      setProductForm({ name: '', description: '', price: '', discount_price: '', category: '', stock: '', sku: '', images: [], status: 'active', featured: false, auction_enabled: false, auction_type: 'time', auction_duration_hours: 24, auction_end_time: '', auction_target_count: 1000, auction_participants: 0, currency: 'KES', fulfillment: 'physical' })
     } catch (err) {
-      console.error('Error creating product:', err);
-      error('Failed', 'Failed to create product');
+      
+      error('Failed', 'Failed to create product')
     }
-  };
+  }
 
   const handleUpdateProduct = async (productId, updates) => {
     try {
-      setProducts(products.map(p => p.id === productId ? { ...p, ...updates } : p));
-      success('Success', 'Product updated successfully');
+      setProducts(products.map(p => p.id === productId ? { ...p, ...updates } : p))
+      success('Success', 'Product updated successfully')
     } catch (err) {
-      console.error('Error updating product:', err);
-      error('Failed', 'Failed to update product');
+      
+      error('Failed', 'Failed to update product')
     }
-  };
+  }
 
   const handleDeleteProduct = async (productId) => {
     try {
-      setProducts(products.filter(p => p.id !== productId));
-      success('Deleted', 'Product deleted successfully');
+      setProducts(products.filter(p => p.id !== productId))
+      success('Deleted', 'Product deleted successfully')
     } catch (err) {
-      console.error('Error deleting product:', err);
-      error('Failed', 'Failed to delete product');
+      
+      error('Failed', 'Failed to delete product')
     }
-  };
+  }
 
   const handleToggleStatus = async (productId, currentStatus) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    await handleUpdateProduct(productId, { status: newStatus });
-  };
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
+    await handleUpdateProduct(productId, { status: newStatus })
+  }
 
   const handleToggleFeatured = async (productId, currentFeatured) => {
-    await handleUpdateProduct(productId, { featured: !currentFeatured });
-  };
+    await handleUpdateProduct(productId, { featured: !currentFeatured })
+  }
 
   const getStatusBadge = (status) => {
     switch (status) {
       case 'active':
-        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Active</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Active</span>
       case 'inactive':
-        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">Inactive</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">Inactive</span>
       case 'out_of_stock':
-        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Out of Stock</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Out of Stock</span>
       default:
-        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">{status}</span>;
+        return <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">{status}</span>
     }
-  };
+  }
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || product.status === filterStatus;
-    const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
-    return matchesSearch && matchesStatus && matchesCategory;
-  });
+      product.sku.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesStatus = filterStatus === 'all' || product.status === filterStatus
+    const matchesCategory = filterCategory === 'all' || product.category === filterCategory
+    return matchesSearch && matchesStatus && matchesCategory
+  })
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -478,5 +478,5 @@ export default function AdminProductsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

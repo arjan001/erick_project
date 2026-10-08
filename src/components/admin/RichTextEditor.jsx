@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import React, { useState } from 'react'
+import ReactQuill from 'react-quill'
+import 'react-quill/dist/quill.snow.css'
 
 export default function RichTextEditor({ value, onChange, placeholder = 'Write something...', height = '200px' }) {
-  const [editorHtml, setEditorHtml] = useState(value || '');
+  const [editorHtml, setEditorHtml] = useState(value || '')
 
   const handleChange = (html) => {
-    setEditorHtml(html);
-    onChange(html);
-  };
+    setEditorHtml(html)
+    onChange(html)
+  }
 
   const modules = {
     toolbar: [
@@ -21,7 +21,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write s
       ['link', 'image', 'video'],
       ['clean']
     ]
-  };
+  }
 
   const formats = [
     'header', 'font', 'size',
@@ -30,7 +30,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write s
     'link', 'image', 'video',
     'color', 'background',
     'align'
-  ];
+  ]
 
   return (
     <div className="rich-text-editor">
@@ -44,5 +44,5 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write s
         style={{ height }}
       />
     </div>
-  );
+  )
 }

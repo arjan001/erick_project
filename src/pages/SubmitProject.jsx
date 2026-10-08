@@ -1,25 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { base44 } from '@/api/base44Client';
-import { Project } from '@/lib/supabaseEntities';
-import { loadAnalyzedProjectFromStorage, clearAnalyzedProjectFromStorage, regenerateProjectBrief, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService';
-import StepProjectType from '../components/intake/StepProjectType';
-import StepUsage from '../components/intake/StepUsage';
-import StepVisualDirection from '../components/intake/StepVisualDirection';
-import StepLocation from '../components/intake/StepLocation';
-import StepDepartments from '../components/intake/StepDepartments';
-import StepTimeline from '../components/intake/StepTimeline';
-import StepBudget from '../components/intake/StepBudget';
-import StepFinal from '../components/intake/StepFinal';
-import StepFundingDetails from '../components/intake/StepFundingDetails';
-import StepSuccess from '../components/intake/StepSuccess';
+import React, { useState, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
+import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { base44 } from '@/api/base44Client'
+import { Project } from '@/lib/supabaseEntities'
+import { loadAnalyzedProjectFromStorage, clearAnalyzedProjectFromStorage, regenerateProjectBrief, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService'
+import StepProjectType from '../components/intake/StepProjectType'
+import StepUsage from '../components/intake/StepUsage'
+import StepVisualDirection from '../components/intake/StepVisualDirection'
+import StepLocation from '../components/intake/StepLocation'
+import StepDepartments from '../components/intake/StepDepartments'
+import StepTimeline from '../components/intake/StepTimeline'
+import StepBudget from '../components/intake/StepBudget'
+import StepFinal from '../components/intake/StepFinal'
+import StepFundingDetails from '../components/intake/StepFundingDetails'
+import StepSuccess from '../components/intake/StepSuccess'
 
 const getStepsForProjectType = (projectType) => {
   const baseSteps = [
     { id: 1, name: 'Project Type', component: StepProjectType },
-  ];
+  ]
 
   if (projectType === 'funding_coproduction') {
     return [
@@ -29,7 +29,7 @@ const getStepsForProjectType = (projectType) => {
       { id: 4, name: 'Timeline', component: StepTimeline },
       { id: 5, name: 'Location', component: StepLocation },
       { id: 6, name: 'Details', component: StepFinal },
-    ];
+    ]
   }
 
   return [
@@ -41,14 +41,14 @@ const getStepsForProjectType = (projectType) => {
     { id: 6, name: 'Timeline', component: StepTimeline },
     { id: 7, name: 'Budget', component: StepBudget },
     { id: 8, name: 'Details', component: StepFinal },
-  ];
-};
+  ]
+}
 
 export default function SubmitProject() {
-  const location = useLocation();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
+  const location = useLocation()
+  const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isRegenerating, setIsRegenerating] = useState(false)
   const [projectData, setProjectData] = useState({
     project_type: '',
     usage: [],
@@ -65,25 +65,25 @@ export default function SubmitProject() {
     project_owner_email: '',
     project_owner_name: '',
     project_owner_company: '',
-  });
-  const [submitted, setSubmitted] = useState(false);
-  const regenerationTimeoutRef = useRef(null);
-  const previousProjectTypeRef = useRef('');
-  const previousNotesRef = useRef('');
+  })
+  const [submitted, setSubmitted] = useState(false)
+  const regenerationTimeoutRef = useRef(null)
+  const previousProjectTypeRef = useRef('')
+  const previousNotesRef = useRef('')
 
   // Initialize with data from Home page or URL analysis if available
   useEffect(() => {
     // Auto-fill owner email/name from logged-in user
     try {
-      const storedUser = JSON.parse(localStorage.getItem('ericrabar_user') || '{}');
-      if (storedUser.email) setProjectData(prev => ({ ...prev, project_owner_email: storedUser.email }));
-      if (storedUser.full_name) setProjectData(prev => ({ ...prev, project_owner_name: storedUser.full_name }));
+      const storedUser = JSON.parse(localStorage.getItem('ericrabar_user') || '{}')
+      if (storedUser.email) setProjectData(prev => ({ ...prev, project_owner_email: storedUser.email }))
+      if (storedUser.full_name) setProjectData(prev => ({ ...prev, project_owner_name: storedUser.full_name }))
     } catch (e) { /* ignore */ }
 
     // Load analyzed project data from localStorage (from URL analysis)
-    const analyzedProject = loadAnalyzedProjectFromStorage();
+    const analyzedProject = loadAnalyzedProjectFromStorage()
     if (analyzedProject && analyzedProject.brief) {
-      const brief = analyzedProject.brief;
+      const brief = analyzedProject.brief
       setProjectData(prev => ({
         ...prev,
         project_type: analyzedProject.projectType || prev.project_type,
@@ -102,11 +102,11 @@ export default function SubmitProject() {
         _analyzedBrief: brief,
         _originalUrl: analyzedProject.url,
         _originalAnalysis: analyzedProject.analysis
-      }));
+      }))
       
       // Set initial refs for change detection
-      previousProjectTypeRef.current = analyzedProject.projectType || '';
-      previousNotesRef.current = `${brief.project_overview?.goal || ''}\n\n${brief.additional_notes || ''}`;
+      previousProjectTypeRef.current = analyzedProject.projectType || ''
+      previousNotesRef.current = `${brief.project_overview?.goal || ''}\n\n${brief.additional_notes || ''}`
     }
 
     // Also check for data passed via navigation state
@@ -114,50 +114,50 @@ export default function SubmitProject() {
       setProjectData(prev => ({
         ...prev,
         ...location.state.initialData
-      }));
+      }))
     }
-  }, [location.state]);
+  }, [location.state])
 
   // Dynamic re-generation when project type or description changes
   useEffect(() => {
     // Only regenerate if we have an analyzed brief from URL analysis
     if (!projectData._analyzedBrief || !projectData._originalAnalysis) {
-      return;
+      return
     }
 
-    const currentProjectType = projectData.project_type;
-    const currentNotes = projectData.notes;
+    const currentProjectType = projectData.project_type
+    const currentNotes = projectData.notes
 
     // Check if project type or notes changed
-    const typeChanged = currentProjectType !== previousProjectTypeRef.current && currentProjectType !== '';
-    const notesChanged = currentNotes !== previousNotesRef.current && currentNotes !== '';
+    const typeChanged = currentProjectType !== previousProjectTypeRef.current && currentProjectType !== ''
+    const notesChanged = currentNotes !== previousNotesRef.current && currentNotes !== ''
 
     if (!typeChanged && !notesChanged) {
-      return;
+      return
     }
 
     // Clear any pending regeneration timeout
     if (regenerationTimeoutRef.current) {
-      clearTimeout(regenerationTimeoutRef.current);
+      clearTimeout(regenerationTimeoutRef.current)
     }
 
     // Debounce the regeneration (wait 1.5 seconds after user stops typing)
     regenerationTimeoutRef.current = setTimeout(async () => {
       if (!projectData._analyzedBrief || !projectData._originalAnalysis) {
-        return;
+        return
       }
 
-      setIsRegenerating(true);
+      setIsRegenerating(true)
       try {
         const result = await regenerateProjectBrief(
           projectData._analyzedBrief,
           currentProjectType,
           currentNotes,
           projectData._originalAnalysis
-        );
+        )
 
         if (result.success && result.brief) {
-          const newBrief = result.brief;
+          const newBrief = result.brief
           setProjectData(prev => ({
             ...prev,
             notes: `${newBrief.project_overview?.goal || ''}\n\n${newBrief.additional_notes || ''}`,
@@ -166,88 +166,88 @@ export default function SubmitProject() {
             budget_range: newBrief.budget?.range || prev.budget_range,
             project_owner_company: newBrief.project_title || prev.project_owner_company,
             _analyzedBrief: newBrief
-          }));
+          }))
 
           // Update refs
-          previousProjectTypeRef.current = currentProjectType;
-          previousNotesRef.current = currentNotes;
+          previousProjectTypeRef.current = currentProjectType
+          previousNotesRef.current = currentNotes
 
           // Save updated brief to localStorage
-          const analyzedProject = loadAnalyzedProjectFromStorage();
+          const analyzedProject = loadAnalyzedProjectFromStorage()
           if (analyzedProject) {
             saveAnalyzedProjectToStorage({
               ...analyzedProject,
               brief: newBrief,
               projectType: currentProjectType,
               additionalNotes: currentNotes
-            });
+            })
           }
         }
       } catch (error) {
-        console.error('Error regenerating project brief:', error);
+        //
       } finally {
-        setIsRegenerating(false);
+        setIsRegenerating(false)
       }
     }, 1500); // 1.5 second debounce
 
     return () => {
       if (regenerationTimeoutRef.current) {
-        clearTimeout(regenerationTimeoutRef.current);
+        clearTimeout(regenerationTimeoutRef.current)
       }
-    };
-  }, [projectData.project_type, projectData.notes, projectData._analyzedBrief, projectData._originalAnalysis]);
+    }
+  }, [projectData.project_type, projectData.notes, projectData._analyzedBrief, projectData._originalAnalysis])
 
   const updateData = (field, value) => {
-    setProjectData(prev => ({ ...prev, [field]: value }));
-  };
+    setProjectData(prev => ({ ...prev, [field]: value }))
+  }
 
-  const STEPS = getStepsForProjectType(projectData.project_type);
+  const STEPS = getStepsForProjectType(projectData.project_type)
 
   const canProceed = () => {
-    if (currentStep === 1) return projectData.project_type !== '';
+    if (currentStep === 1) return projectData.project_type !== ''
     
-    const currentStepName = STEPS[currentStep - 1]?.name;
+    const currentStepName = STEPS[currentStep - 1]?.name
     
     switch (currentStepName) {
       case 'Funding Details':
-        return projectData.funding_stage && (projectData.seeking_partners || []).length > 0;
+        return projectData.funding_stage && (projectData.seeking_partners || []).length > 0
       case 'Usage':
-        return projectData.usage.length > 0;
+        return projectData.usage.length > 0
       case 'Visual Direction':
-        return projectData.visual_direction_clips.length > 0;
+        return projectData.visual_direction_clips.length > 0
       case 'Location':
-        return projectData.location_country !== '';
+        return projectData.location_country !== ''
       case 'Departments':
-        return projectData.departments_needed.length > 0;
+        return projectData.departments_needed.length > 0
       case 'Timeline':
-        return projectData.timeline_start !== '' && projectData.timeline_deadline !== '';
+        return projectData.timeline_start !== '' && projectData.timeline_deadline !== ''
       case 'Budget':
         return true; // Optional
       case 'Details':
-        return projectData.project_owner_email !== '' && projectData.project_owner_name !== '';
+        return projectData.project_owner_email !== '' && projectData.project_owner_name !== ''
       default:
-        return true;
+        return true
     }
-  };
+  }
 
   const handleNext = () => {
     if (canProceed() && currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setCurrentStep(currentStep + 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  };
+  }
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setCurrentStep(currentStep - 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  };
+  }
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
-      let projectImage = null;
+      let projectImage = null
 
       // Generate and save project image once
       if (projectData.project_type !== 'funding_coproduction') {
@@ -256,12 +256,12 @@ export default function SubmitProject() {
             projectType: projectData.project_type,
             description: projectData.notes,
             company: projectData.project_owner_company || projectData.project_owner_name
-          });
+          })
           if (imageResponse.data?.image_url) {
-            projectImage = imageResponse.data.image_url;
+            projectImage = imageResponse.data.image_url
           }
         } catch (imgError) {
-          console.error('Image generation failed, continuing without image:', imgError);
+          //
         }
       }
 
@@ -288,14 +288,14 @@ export default function SubmitProject() {
         backing_notes: projectData.backing_notes,
         status: 'submitted',
         image_url: projectImage
-      };
+      }
 
       try {
-        await Project.create(fullRecord);
+        await Project.create(fullRecord)
       } catch (createErr) {
         // Fallback: some columns may not exist in the projects table yet.
         // Retry with only the core columns that are guaranteed to exist.
-        console.warn('Full insert failed, retrying with core columns only:', createErr);
+        //
         await Project.create({
           project_type: projectData.project_type,
           location_country: projectData.location_country,
@@ -310,27 +310,27 @@ export default function SubmitProject() {
           open_to_backing: projectData.open_to_backing,
           status: 'submitted',
           image_url: projectImage
-        });
+        })
       }
       
       // Clear analyzed project data from localStorage after successful submission
-      clearAnalyzedProjectFromStorage();
+      clearAnalyzedProjectFromStorage()
       
-      setSubmitted(true);
+      setSubmitted(true)
     } catch (error) {
-      console.error('Project submission error:', error);
-      const msg = error?.message || error?.details || JSON.stringify(error);
-      alert(`Error submitting project: ${msg}`);
+      //
+      const msg = error?.message || error?.details || JSON.stringify(error)
+      alert(`Error submitting project: ${msg}`)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
-
-  if (submitted) {
-    return <StepSuccess projectData={projectData} />;
   }
 
-  const CurrentStepComponent = STEPS[currentStep - 1]?.component || StepProjectType;
+  if (submitted) {
+    return <StepSuccess projectData={projectData} />
+  }
+
+  const CurrentStepComponent = STEPS[currentStep - 1]?.component || StepProjectType
 
   return (
     <div className="min-h-screen bg-white py-8 lg:py-12">
@@ -424,5 +424,5 @@ export default function SubmitProject() {
         </div>
       </div>
     </div>
-  );
+  )
 }

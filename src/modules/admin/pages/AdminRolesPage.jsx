@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
-import { Input } from '@/shared/components/ui/input';
-import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Plus, Edit, Trash2, Shield, Check, X } from 'lucide-react';
+import React, { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Badge } from '@/shared/components/ui/badge'
+import { Input } from '@/shared/components/ui/input'
+import { Checkbox } from '@/shared/components/ui/checkbox'
+import { Plus, Edit, Trash2, Shield, Check, X } from 'lucide-react'
 
 const roles = [
   {
@@ -37,7 +37,7 @@ const roles = [
     description: 'Investment and backing',
     permissions: ['projects.view', 'backing.manage', 'investments.view']
   }
-];
+]
 
 const allPermissions = [
   { id: 'users.manage', label: 'Manage Users', category: 'User Management' },
@@ -55,19 +55,19 @@ const allPermissions = [
   { id: 'messages.send', label: 'Send Messages', category: 'Communication' },
   { id: 'backing.manage', label: 'Manage Backing', category: 'Finance' },
   { id: 'investments.view', label: 'View Investments', category: 'Finance' }
-];
+]
 
 export default function AdminRolesPage() {
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [editingPermissions, setEditingPermissions] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null)
+  const [editingPermissions, setEditingPermissions] = useState(false)
 
   const togglePermission = (permissionId) => {
-    if (!selectedRole) return;
+    if (!selectedRole) return
     const newPermissions = selectedRole.permissions.includes(permissionId)
       ? selectedRole.permissions.filter(p => p !== permissionId)
-      : [...selectedRole.permissions, permissionId];
-    setSelectedRole({ ...selectedRole, permissions: newPermissions });
-  };
+      : [...selectedRole.permissions, permissionId]
+    setSelectedRole({ ...selectedRole, permissions: newPermissions })
+  }
 
   return (
     <div className="space-y-6">
@@ -147,9 +147,9 @@ export default function AdminRolesPage() {
               <div className="space-y-4">
                 {Object.entries(
                   allPermissions.reduce((acc, perm) => {
-                    if (!acc[perm.category]) acc[perm.category] = [];
-                    acc[perm.category].push(perm);
-                    return acc;
+                    if (!acc[perm.category]) acc[perm.category] = []
+                    acc[perm.category].push(perm)
+                    return acc
                   }, {})
                 ).map(([category, permissions]) => (
                   <div key={category}>
@@ -179,5 +179,5 @@ export default function AdminRolesPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

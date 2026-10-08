@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { MapPin, Edit2, X } from 'lucide-react';
+import React from 'react'
+import { Button } from '@/components/ui/button'
+import { MapPin, Edit2, X } from 'lucide-react'
 
 export default function ClientJobRow({ job, onEdit, onDelete }) {
   return (
@@ -27,5 +27,5 @@ export default function ClientJobRow({ job, onEdit, onDelete }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

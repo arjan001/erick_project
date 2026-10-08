@@ -1,51 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Zap, X, Crown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Subscription } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Zap, X, Crown } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Subscription } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
 
 const MESSAGES = [
   { title: 'Looking to apply for more client work?', body: 'Upgrade your plan and get more connects to apply for jobs.' },
   { title: 'Running low on connects?', body: 'Buy more connects to keep applying to great projects.' },
   { title: 'Unlock more opportunities', body: 'Upgrade for featured listing, priority support, and more monthly connects.' },
-];
+]
 
-const DISMISS_KEY = 'ericrabar_upgrade_banner_dismissed_at';
+const DISMISS_KEY = 'ericrabar_upgrade_banner_dismissed_at'
 const REAPPEAR_MS = 45 * 60 * 1000; // 45 minutes
 
 export default function UpgradeConnectsBanner() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [visible, setVisible] = useState(false);
-  const [messageIndex, setMessageIndex] = useState(0);
-  const [subscription, setSubscription] = useState(null);
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const [visible, setVisible] = useState(false)
+  const [messageIndex, setMessageIndex] = useState(0)
+  const [subscription, setSubscription] = useState(null)
 
   useEffect(() => {
-    const dismissedAt = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10);
-    const elapsed = Date.now() - dismissedAt;
+    const dismissedAt = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10)
+    const elapsed = Date.now() - dismissedAt
     if (elapsed > REAPPEAR_MS) {
-      setMessageIndex(Math.floor(Math.random() * MESSAGES.length));
-      setVisible(true);
+      setMessageIndex(Math.floor(Math.random() * MESSAGES.length))
+      setVisible(true)
     }
 
     // Fetch subscription
     if (user) {
       Subscription.filter({ user_email: user.email }).then(subs => {
         if (subs?.length > 0) {
-          setSubscription(subs[0]);
+          setSubscription(subs[0])
         }
-      });
+      })
     }
-  }, [user]);
+  }, [user])
 
   const handleDismiss = () => {
-    localStorage.setItem(DISMISS_KEY, String(Date.now()));
-    setVisible(false);
-  };
+    localStorage.setItem(DISMISS_KEY, String(Date.now()))
+    setVisible(false)
+  }
 
-  if (!visible) return null;
+  if (!visible) return null
 
   // If user has subscription, show welcome banner instead
   if (subscription && subscription.status === 'active') {
@@ -66,10 +66,10 @@ export default function UpgradeConnectsBanner() {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
-  const msg = MESSAGES[messageIndex];
+  const msg = MESSAGES[messageIndex]
 
   return (
     <div className="bg-gray-100 border border-gray-300 rounded-xl p-6 relative">
@@ -94,5 +94,5 @@ export default function UpgradeConnectsBanner() {
         </Button>
       </div>
     </div>
-  );
+  )
 }

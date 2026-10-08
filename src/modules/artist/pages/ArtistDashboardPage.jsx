@@ -1,38 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Briefcase, Bell, FolderKanban, MessageCircle, Crown, TrendingUp, Users, Zap, ArrowRight } from 'lucide-react';
-import ArtistOnboardingFullModal from '@/components/artist/ArtistOnboardingFullModal';
-import UpgradeConnectsBanner from '@/components/artist/UpgradeConnectsBanner';
-import StatCard from '@/components/artist/dashboard/StatCard';
-import ActivityChart from '@/components/artist/dashboard/ActivityChart';
-import RemindersCard from '@/components/artist/dashboard/RemindersCard';
-import JobOpportunitiesCard from '@/components/artist/dashboard/JobOpportunitiesCard';
-import RecentConversations from '@/components/artist/dashboard/RecentConversations';
-import ProfileCompletionRing from '@/components/artist/dashboard/ProfileCompletionRing';
-import ConnectsTrackerCard from '@/components/artist/dashboard/ConnectsTrackerCard';
-import QuickNotesCard from '@/components/artist/QuickNotesCard';
-import { Job, Application, Message, Notification, Artist, Subscription } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Briefcase, Bell, FolderKanban, MessageCircle, Crown, TrendingUp, Users, Zap, ArrowRight } from 'lucide-react'
+import ArtistOnboardingFullModal from '@/components/artist/ArtistOnboardingFullModal'
+import UpgradeConnectsBanner from '@/components/artist/UpgradeConnectsBanner'
+import StatCard from '@/components/artist/dashboard/StatCard'
+import ActivityChart from '@/components/artist/dashboard/ActivityChart'
+import RemindersCard from '@/components/artist/dashboard/RemindersCard'
+import JobOpportunitiesCard from '@/components/artist/dashboard/JobOpportunitiesCard'
+import RecentConversations from '@/components/artist/dashboard/RecentConversations'
+import ProfileCompletionRing from '@/components/artist/dashboard/ProfileCompletionRing'
+import ConnectsTrackerCard from '@/components/artist/dashboard/ConnectsTrackerCard'
+import QuickNotesCard from '@/components/artist/QuickNotesCard'
+import { Job, Application, Message, Notification, Artist, Subscription } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function ArtistDashboard() {
-  const { user, isAuthenticated, isLoadingAuth } = useAuth();
-  const [jobs, setJobs] = useState([]);
-  const [messages, setMessages] = useState([]);
-  const [applications, setApplications] = useState([]);
-  const [invitations, setInvitations] = useState([]);
-  const [artistProfile, setArtistProfile] = useState(null);
-  const [subscription, setSubscription] = useState(null);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const navigate = useNavigate();
+  const { user, isAuthenticated, isLoadingAuth } = useAuth()
+  const [jobs, setJobs] = useState([])
+  const [messages, setMessages] = useState([])
+  const [applications, setApplications] = useState([])
+  const [invitations, setInvitations] = useState([])
+  const [artistProfile, setArtistProfile] = useState(null)
+  const [subscription, setSubscription] = useState(null)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!isLoadingAuth && !isAuthenticated) {
-      navigate('/SignIn');
+      navigate('/SignIn')
     }
-  }, [isLoadingAuth, isAuthenticated, navigate]);
+  }, [isLoadingAuth, isAuthenticated, navigate])
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
     const fetchData = async () => {
       try {
@@ -41,53 +41,53 @@ export default function ArtistDashboard() {
           Application.filter({ artist_email: user.email }, '-created_at', 10),
           Message.filter({ recipient_email: user.email }, '-created_at', 5),
           Subscription.filter({ user_email: user.email }, '-created_at', 1)
-        ]);
+        ])
 
-        setJobs(jobsData || []);
-        setApplications(appsData || []);
-        setMessages(msgsData || []);
-        setSubscription(subsData?.[0] || null);
+        setJobs(jobsData || [])
+        setApplications(appsData || [])
+        setMessages(msgsData || [])
+        setSubscription(subsData?.[0] || null)
 
         const notifs = await Notification.filter({
           recipient_email: user.email,
           type: 'job_invitation'
-        }, '-created_date', 10);
-        setInvitations(notifs || []);
+        }, '-created_date', 10)
+        setInvitations(notifs || [])
 
-        const artists = await Artist.filter({ email: user.email }, '-created_date', 1);
-        const artist = artists?.[0] || null;
-        setArtistProfile(artist);
+        const artists = await Artist.filter({ email: user.email }, '-created_date', 1)
+        const artist = artists?.[0] || null
+        setArtistProfile(artist)
 
-        const alreadySeen = sessionStorage.getItem('ericrabar_onboarding_seen');
-        const isIncomplete = artist && (!artist.based_in_country || artist.onboarding_completed === false);
+        const alreadySeen = sessionStorage.getItem('ericrabar_onboarding_seen')
+        const isIncomplete = artist && (!artist.based_in_country || artist.onboarding_completed === false)
         if (artist && isIncomplete && !alreadySeen) {
-          setShowOnboarding(true);
+          setShowOnboarding(true)
         }
       } catch (err) {
-        console.error('Error fetching dashboard data:', err);
+        
       }
-    };
+    }
 
-    fetchData();
-  }, [user]);
+    fetchData()
+  }, [user])
 
   if (isLoadingAuth) return (
     <div className="h-full flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
     </div>
-  );
+  )
 
-  if (!user) return null;
+  if (!user) return null
 
-  const queuedApplications = applications.filter(a => ['applied', 'chat_started', 'shortlisted'].includes(a.status));
-  const activeProjects = applications.filter(a => a.status === 'hired');
+  const queuedApplications = applications.filter(a => ['applied', 'chat_started', 'shortlisted'].includes(a.status))
+  const activeProjects = applications.filter(a => a.status === 'hired')
 
   const stats = [
     { label: 'In Queue', value: queuedApplications.length, icon: Briefcase, accent: '#2A9D8F' },
     { label: 'Working On', value: activeProjects.length, icon: FolderKanban, accent: '#F4A261' },
     { label: 'Invitations', value: invitations.length, icon: Bell, accent: '#E9C46A' },
     { label: 'Messages', value: messages.length, icon: MessageCircle, accent: '#2A9D8F' },
-  ];
+  ]
 
   return (
     <div className="bg-[#FAFAFA] min-h-screen">
@@ -203,5 +203,5 @@ export default function ArtistDashboard() {
         />
       )}
     </div>
-  );
+  )
 }

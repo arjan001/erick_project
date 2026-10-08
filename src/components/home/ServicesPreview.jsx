@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Film, Clapperboard, Plane, Wand2, Box, Music, Code, ArrowRight } from 'lucide-react';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Film, Clapperboard, Plane, Wand2, Box, Music, Code, ArrowRight } from 'lucide-react'
 
 const SERVICES = [
   {
@@ -46,7 +46,7 @@ const SERVICES = [
     description: 'Full-stack development for marketing and promotion',
     color: 'from-yellow-600 to-amber-600',
   },
-];
+]
 
 export default function ServicesPreview() {
   return (
@@ -65,7 +65,7 @@ export default function ServicesPreview() {
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {SERVICES.map((service, index) => {
-            const Icon = service.icon;
+            const Icon = service.icon
             return (
               <div
                 key={index}
@@ -86,7 +86,7 @@ export default function ServicesPreview() {
                   {service.description}
                 </p>
               </div>
-            );
+            )
           })}
         </div>
 
@@ -102,5 +102,5 @@ export default function ServicesPreview() {
         </div>
       </div>
     </section>
-  );
+  )
 }

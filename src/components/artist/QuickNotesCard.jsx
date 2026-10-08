@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Note } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { StickyNote, Plus, X, Pin, Pencil } from 'lucide-react';
-import NoteEditor from './NoteEditor';
+import React, { useState, useEffect } from 'react'
+import { Note } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { StickyNote, Plus, X, Pin, Pencil } from 'lucide-react'
+import NoteEditor from './NoteEditor'
 
 const COLORS = {
   yellow: 'bg-yellow-100 border-yellow-300',
@@ -10,63 +10,63 @@ const COLORS = {
   blue: 'bg-blue-100 border-blue-300',
   green: 'bg-green-100 border-green-300',
   purple: 'bg-purple-100 border-purple-300',
-};
+}
 
 export default function QuickNotesCard() {
-  const { user } = useAuth();
-  const [notes, setNotes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [adding, setAdding] = useState(false);
-  const [editingId, setEditingId] = useState(null);
+  const { user } = useAuth()
+  const [notes, setNotes] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [adding, setAdding] = useState(false)
+  const [editingId, setEditingId] = useState(null)
 
   const fetchNotes = async () => {
     try {
-      const rows = await Note.filter({ owner_email: user.email }, '-created_date', 20);
-      setNotes(rows || []);
+      const rows = await Note.filter({ owner_email: user.email }, '-created_date', 20)
+      setNotes(rows || [])
     } catch (err) {
-      console.error('Error fetching notes:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { if (user) fetchNotes(); }, [user]);
+  useEffect(() => { if (user) fetchNotes(); }, [user])
 
   const handleCreate = async (data) => {
     try {
-      const created = await Note.create({ ...data, owner_email: user.email });
-      setNotes(prev => [created, ...prev]);
-      setAdding(false);
+      const created = await Note.create({ ...data, owner_email: user.email })
+      setNotes(prev => [created, ...prev])
+      setAdding(false)
     } catch (err) {
-      console.error('Error creating note:', err);
+      
     }
-  };
+  }
 
   const handleUpdate = async (id, data) => {
     try {
-      const updated = await Note.update(id, data);
-      setNotes(prev => prev.map(n => (n.id === id ? updated : n)));
-      setEditingId(null);
+      const updated = await Note.update(id, data)
+      setNotes(prev => prev.map(n => (n.id === id ? updated : n)))
+      setEditingId(null)
     } catch (err) {
-      console.error('Error updating note:', err);
+      
     }
-  };
+  }
 
   const handleDeleteNote = async (id) => {
     try {
-      await Note.delete(id);
-      setNotes(prev => prev.filter(n => n.id !== id));
+      await Note.delete(id)
+      setNotes(prev => prev.filter(n => n.id !== id))
     } catch (err) {
-      console.error('Error deleting note:', err);
+      
     }
-  };
+  }
 
   if (!user || loading) {
     return (
       <div className="border border-gray-200 rounded-lg p-6 bg-blue-50">
         <div className="h-24 flex items-center justify-center text-sm text-gray-400">Loading notes...</div>
       </div>
-    );
+    )
   }
 
   return (
@@ -123,5 +123,5 @@ export default function QuickNotesCard() {
         ))}
       </div>
     </div>
-  );
+  )
 }

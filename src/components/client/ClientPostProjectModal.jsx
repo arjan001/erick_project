@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Project } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { X, Upload, Image as ImageIcon, MapPin, Calendar, Clock, DollarSign, Briefcase, Users, Search, Loader2, ArrowLeft, Check, Film, Video, Tv, Music, FileText, FileText as FileTextIcon, Sparkles, Globe, Building, Trophy, Wand2, Box, Headphones, Code, Scissors, Video as VideoIcon } from 'lucide-react';
-import { useToast } from '@/hooks/useToast';
-import filmIndustrySkills from '@/data/filmIndustrySkills.json';
-import filmIndustryRoles from '@/data/filmIndustryRoles.json';
+import React, { useState, useEffect } from 'react'
+import { Project } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { X, Upload, Image as ImageIcon, MapPin, Calendar, Clock, DollarSign, Briefcase, Users, Search, Loader2, ArrowLeft, Check, Film, Video, Tv, Music, FileText, FileText as FileTextIcon, Sparkles, Globe, Building, Trophy, Wand2, Box, Headphones, Code, Scissors, Video as VideoIcon } from 'lucide-react'
+import { useToast } from '@/hooks/useToast'
+import filmIndustrySkills from '@/data/filmIndustrySkills.json'
+import filmIndustryRoles from '@/data/filmIndustryRoles.json'
 
 const PROJECT_TYPES = [
   { value: 'commercial', label: 'Commercial', icon: Tv, description: 'Brand campaigns and advertising' },
@@ -15,7 +15,7 @@ const PROJECT_TYPES = [
   { value: 'documentary', label: 'Documentary', icon: FileText, description: 'Non-fiction storytelling' },
   { value: 'funding_coproduction', label: 'Funding / Co-Production', icon: Sparkles, description: 'Seeking investment or production partners' },
   { value: 'other', label: 'Other', icon: Sparkles, description: 'Other creative projects' },
-];
+]
 
 const USAGE_OPTIONS = [
   { value: 'online', label: 'Online', icon: Globe, description: 'Social media, websites, digital' },
@@ -23,7 +23,7 @@ const USAGE_OPTIONS = [
   { value: 'broadcast', label: 'Broadcast', icon: Tv, description: 'TV and streaming platforms' },
   { value: 'festival', label: 'Festival', icon: Trophy, description: 'Film festival submissions' },
   { value: 'internal', label: 'Internal', icon: Building, description: 'Corporate and internal use' },
-];
+]
 
 const BUDGET_RANGES = [
   { value: 'under_10k', label: 'Under €10k', description: 'Small projects' },
@@ -33,7 +33,7 @@ const BUDGET_RANGES = [
   { value: '100k_250k', label: '€100k - €250k', description: 'Large scale' },
   { value: '250k_plus', label: '€250k+', description: 'Major productions' },
   { value: 'not_disclosed', label: 'Prefer not to say', description: 'We can discuss later' },
-];
+]
 
 const DEPARTMENTS = [
   { value: 'preproduction', label: 'Pre-production', icon: FileTextIcon, description: 'Scripting, planning, casting' },
@@ -44,7 +44,7 @@ const DEPARTMENTS = [
   { value: '3d', label: '3D', icon: Box, description: '3D animation and CGI' },
   { value: 'music', label: 'Music', icon: Music, description: 'Original composition' },
   { value: 'web_development', label: 'Web Development', icon: Code, description: 'Marketing websites' },
-];
+]
 
 const FUNDING_STAGES = [
   { value: 'development', label: 'Development' },
@@ -52,7 +52,7 @@ const FUNDING_STAGES = [
   { value: 'production_ready', label: 'Production Ready' },
   { value: 'in_production', label: 'In Production' },
   { value: 'post_production', label: 'Post-Production' },
-];
+]
 
 const SEEKING_OPTIONS = [
   { value: 'investment', label: 'Investment' },
@@ -60,12 +60,12 @@ const SEEKING_OPTIONS = [
   { value: 'executive_producer', label: 'Executive Producer' },
   { value: 'strategic_partner', label: 'Strategic Partner' },
   { value: 'distribution', label: 'Distribution Partner' },
-];
+]
 
 const getStepsForProjectType = (projectType) => {
   const baseSteps = [
     { id: 1, name: 'Project Type' },
-  ];
+  ]
 
   if (projectType === 'funding_coproduction') {
     return [
@@ -75,7 +75,7 @@ const getStepsForProjectType = (projectType) => {
       { id: 4, name: 'Timeline' },
       { id: 5, name: 'Location' },
       { id: 6, name: 'Details' },
-    ];
+    ]
   }
 
   return [
@@ -87,32 +87,32 @@ const getStepsForProjectType = (projectType) => {
     { id: 6, name: 'Timeline' },
     { id: 7, name: 'Budget' },
     { id: 8, name: 'Details' },
-  ];
-};
+  ]
+}
 
 // Flatten skills from JSON and deduplicate
-const ALL_SKILLS = [...new Set(Object.values(filmIndustrySkills).flat())];
+const ALL_SKILLS = [...new Set(Object.values(filmIndustrySkills).flat())]
 // Flatten roles from JSON
-const ALL_ROLES = Object.values(filmIndustryRoles).flat().filter(item => typeof item === 'string');
-const ALL_OPTIONS = [...new Set([...ALL_SKILLS, ...ALL_ROLES])];
+const ALL_ROLES = Object.values(filmIndustryRoles).flat().filter(item => typeof item === 'string')
+const ALL_OPTIONS = [...new Set([...ALL_SKILLS, ...ALL_ROLES])]
 
 export default function ClientPostProjectModal({ open, onClose, user, editingProject = null }) {
-  const { success, error: toastError } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isMobile, setIsMobile] = useState(false);
+  const { success, error: toastError } = useToast()
+  const [loading, setLoading] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imagePreview, setImagePreview] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [currentStep, setCurrentStep] = useState(1)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const [projectForm, setProjectForm] = useState({
     title: '',
@@ -136,23 +136,23 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
     open_to_backing: false,
     backing_types: [],
     backing_notes: ''
-  });
+  })
 
-  const [selectedSkills, setSelectedSkills] = useState([]);
-  const [skillSearch, setSkillSearch] = useState('');
-  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
+  const [selectedSkills, setSelectedSkills] = useState([])
+  const [skillSearch, setSkillSearch] = useState('')
+  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false)
 
-  const [locationSearch, setLocationSearch] = useState('');
-  const [locationSuggestions, setLocationSuggestions] = useState([]);
-  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
-  const [searchingLocation, setSearchingLocation] = useState(false);
+  const [locationSearch, setLocationSearch] = useState('')
+  const [locationSuggestions, setLocationSuggestions] = useState([])
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false)
+  const [searchingLocation, setSearchingLocation] = useState(false)
 
   // Reset form when modal opens or when editing project changes
   useEffect(() => {
     if (open) {
-      setCurrentStep(1);
+      setCurrentStep(1)
       if (editingProject) {
-        setIsEditing(true);
+        setIsEditing(true)
         setProjectForm({
           title: editingProject.title || '',
           description: editingProject.description || '',
@@ -175,11 +175,11 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
           open_to_backing: editingProject.open_to_backing || false,
           backing_types: editingProject.backing_types || [],
           backing_notes: editingProject.backing_notes || ''
-        });
-        setSelectedSkills(editingProject.departments_needed || []);
-        setImagePreview(editingProject.image_url || null);
+        })
+        setSelectedSkills(editingProject.departments_needed || [])
+        setImagePreview(editingProject.image_url || null)
       } else {
-        setIsEditing(false);
+        setIsEditing(false)
         setProjectForm({
           title: '',
           description: '',
@@ -202,164 +202,164 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
           open_to_backing: false,
           backing_types: [],
           backing_notes: ''
-        });
-        setSelectedSkills([]);
-        setImagePreview(null);
+        })
+        setSelectedSkills([])
+        setImagePreview(null)
       }
-      setSkillSearch('');
-      setLocationSearch('');
+      setSkillSearch('')
+      setLocationSearch('')
     }
-  }, [open, editingProject]);
+  }, [open, editingProject])
 
   const handleNext = () => {
     if (canProceed() && currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep(currentStep + 1)
     }
-  };
+  }
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      setCurrentStep(currentStep - 1)
     }
-  };
+  }
 
-  const STEPS = getStepsForProjectType(projectForm.project_type);
+  const STEPS = getStepsForProjectType(projectForm.project_type)
 
   const canProceed = () => {
-    const currentStepName = STEPS[currentStep - 1]?.name;
+    const currentStepName = STEPS[currentStep - 1]?.name
     
     switch (currentStepName) {
       case 'Project Type':
-        return projectForm.project_type !== '';
+        return projectForm.project_type !== ''
       case 'Funding Details':
-        return projectForm.funding_stage !== '' && (projectForm.seeking_partners || []).length > 0;
+        return projectForm.funding_stage !== '' && (projectForm.seeking_partners || []).length > 0
       case 'Usage':
-        return (projectForm.usage || []).length > 0;
+        return (projectForm.usage || []).length > 0
       case 'Visual Direction':
         return true; // Optional step
       case 'Location':
-        return projectForm.location_country !== '';
+        return projectForm.location_country !== ''
       case 'Departments':
-        return (projectForm.departments_needed || []).length > 0;
+        return (projectForm.departments_needed || []).length > 0
       case 'Timeline':
-        return projectForm.timeline_start !== '';
+        return projectForm.timeline_start !== ''
       case 'Budget':
-        return projectForm.budget_range !== '';
+        return projectForm.budget_range !== ''
       case 'Details':
-        return projectForm.title !== '' && projectForm.description !== '';
+        return projectForm.title !== '' && projectForm.description !== ''
       default:
-        return false;
+        return false
     }
-  };
+  }
 
   const updateForm = (field, value) => {
-    setProjectForm(prev => ({ ...prev, [field]: value }));
-  };
+    setProjectForm(prev => ({ ...prev, [field]: value }))
+  }
 
   const toggleUsage = (value) => {
-    const current = projectForm.usage || [];
+    const current = projectForm.usage || []
     if (current.includes(value)) {
-      updateForm('usage', current.filter(u => u !== value));
+      updateForm('usage', current.filter(u => u !== value))
     } else {
-      updateForm('usage', [...current, value]);
+      updateForm('usage', [...current, value])
     }
-  };
+  }
 
   const toggleDepartment = (value) => {
-    const current = projectForm.departments_needed || [];
+    const current = projectForm.departments_needed || []
     if (current.includes(value)) {
-      updateForm('departments_needed', current.filter(d => d !== value));
+      updateForm('departments_needed', current.filter(d => d !== value))
     } else {
-      updateForm('departments_needed', [...current, value]);
+      updateForm('departments_needed', [...current, value])
     }
-  };
+  }
 
   const toggleSeekingPartner = (value) => {
-    const current = projectForm.seeking_partners || [];
+    const current = projectForm.seeking_partners || []
     if (current.includes(value)) {
-      updateForm('seeking_partners', current.filter(v => v !== value));
+      updateForm('seeking_partners', current.filter(v => v !== value))
     } else {
-      updateForm('seeking_partners', [...current, value]);
+      updateForm('seeking_partners', [...current, value])
     }
-  };
+  }
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
     
-    setUploadingImage(true);
+    setUploadingImage(true)
     try {
-      const preview = URL.createObjectURL(file);
-      setImagePreview(preview);
+      const preview = URL.createObjectURL(file)
+      setImagePreview(preview)
     } catch (err) {
-      console.error('Error uploading image:', err);
-      toastError('Upload Failed', 'Failed to upload image');
+      
+      toastError('Upload Failed', 'Failed to upload image')
     } finally {
-      setUploadingImage(false);
+      setUploadingImage(false)
     }
-  };
+  }
 
   const toggleSkill = (skill) => {
     if (selectedSkills.includes(skill)) {
-      setSelectedSkills(selectedSkills.filter(s => s !== skill));
+      setSelectedSkills(selectedSkills.filter(s => s !== skill))
     } else {
-      setSelectedSkills([...selectedSkills, skill]);
+      setSelectedSkills([...selectedSkills, skill])
     }
-  };
+  }
 
   // Filter skills based on search
   const filteredSkills = ALL_OPTIONS.filter(skill =>
     skill.toLowerCase().includes(skillSearch.toLowerCase())
-  ).slice(0, 20);
+  ).slice(0, 20)
 
   // OpenStreetMap location search
   const searchLocation = async (query) => {
     if (!query || query.length < 3) {
-      setLocationSuggestions([]);
-      return;
+      setLocationSuggestions([])
+      return
     }
 
-    setSearchingLocation(true);
+    setSearchingLocation(true)
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`
-      );
-      const data = await response.json();
+      )
+      const data = await response.json()
       setLocationSuggestions(data.map(item => ({
         display: item.display_name,
         city: item.address?.city || item.address?.town || item.address?.village || '',
         country: item.address?.country || '',
         lat: item.lat,
         lon: item.lon
-      })));
+      })))
     } catch (err) {
-      console.error('Error searching location:', err);
+      
     } finally {
-      setSearchingLocation(false);
+      setSearchingLocation(false)
     }
-  };
+  }
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
       if (locationSearch) {
-        searchLocation(locationSearch);
+        searchLocation(locationSearch)
       }
-    }, 300);
+    }, 300)
 
-    return () => clearTimeout(debounceTimer);
-  }, [locationSearch]);
+    return () => clearTimeout(debounceTimer)
+  }, [locationSearch])
 
   const selectLocation = (location) => {
-    setProjectForm({ ...projectForm, location: location.display });
-    setLocationSearch(location.display);
-    setShowLocationSuggestions(false);
-  };
+    setProjectForm({ ...projectForm, location: location.display })
+    setLocationSearch(location.display)
+    setShowLocationSuggestions(false)
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!user) return;
+    e.preventDefault()
+    if (!user) return
 
-    setLoading(true);
+    setLoading(true)
     try {
       const projectData = {
         project_owner_email: user.email,
@@ -386,28 +386,28 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
         backing_notes: projectForm.backing_notes,
         image_url: imagePreview,
         status: 'submitted'
-      };
-
-      if (isEditing && editingProject) {
-        await Project.update(editingProject.id, projectData);
-        success('Project Updated', 'Your project has been updated successfully');
-      } else {
-        await Project.create(projectData);
-        success('Project Posted', 'Your project has been submitted successfully');
       }
 
-      onClose();
-      // Refresh the page to show changes
-      window.location.reload();
-    } catch (err) {
-      console.error('Error saving project:', err);
-      toastError(isEditing ? 'Update Failed' : 'Posting Failed', isEditing ? 'Failed to update project' : 'Failed to post project');
-    } finally {
-      setLoading(false);
-    }
-  };
+      if (isEditing && editingProject) {
+        await Project.update(editingProject.id, projectData)
+        success('Project Updated', 'Your project has been updated successfully')
+      } else {
+        await Project.create(projectData)
+        success('Project Posted', 'Your project has been submitted successfully')
+      }
 
-  if (!open) return null;
+      onClose()
+      // Refresh the page to show changes
+      window.location.reload()
+    } catch (err) {
+      
+      toastError(isEditing ? 'Update Failed' : 'Posting Failed', isEditing ? 'Failed to update project' : 'Failed to post project')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!open) return null
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -469,7 +469,7 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
           {/* Step Content */}
           <div className="bg-gray-50 rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 border border-gray-200 min-h-[300px] sm:min-h-[400px]">
             {(() => {
-              const currentStepName = STEPS[currentStep - 1]?.name;
+              const currentStepName = STEPS[currentStep - 1]?.name
 
               switch (currentStepName) {
                 case 'Project Type':
@@ -480,8 +480,8 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
 
                       <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
                         {PROJECT_TYPES.map((type) => {
-                          const Icon = type.icon;
-                          const isSelected = projectForm.project_type === type.value;
+                          const Icon = type.icon
+                          const isSelected = projectForm.project_type === type.value
                           return (
                             <button
                               key={type.value}
@@ -497,11 +497,11 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                               <h3 className={`font-semibold mb-1 text-black ${isMobile ? 'text-base' : 'text-lg'}`}>{type.label}</h3>
                               <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>{type.description}</p>
                             </button>
-                          );
+                          )
                         })}
                       </div>
                     </div>
-                  );
+                  )
 
                 case 'Funding Details':
                   return (
@@ -514,7 +514,7 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                           <label className={`font-semibold mb-3 block ${isMobile ? 'text-sm' : 'text-base'}`}>Current Production Stage</label>
                           <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
                             {FUNDING_STAGES.map((stage) => {
-                              const isSelected = projectForm.funding_stage === stage.value;
+                              const isSelected = projectForm.funding_stage === stage.value
                               return (
                                 <button
                                   key={stage.value}
@@ -530,7 +530,7 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                                     {stage.label}
                                   </span>
                                 </button>
-                              );
+                              )
                             })}
                           </div>
                         </div>
@@ -540,7 +540,7 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                           <p className={`text-gray-600 mb-4 ${isMobile ? 'text-xs' : 'text-sm'}`}>Select all that apply</p>
                           <div className="space-y-3">
                             {SEEKING_OPTIONS.map((option) => {
-                              const isChecked = (projectForm.seeking_partners || []).includes(option.value);
+                              const isChecked = (projectForm.seeking_partners || []).includes(option.value)
                               return (
                                 <label
                                   key={option.value}
@@ -554,7 +554,7 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                                   />
                                   <span className={`font-medium text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{option.label}</span>
                                 </label>
-                              );
+                              )
                             })}
                           </div>
                         </div>
@@ -575,7 +575,7 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                         </div>
                       </div>
                     </div>
-                  );
+                  )
 
                 case 'Usage':
                   return (
@@ -585,8 +585,8 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
 
                       <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
                         {USAGE_OPTIONS.map((option) => {
-                          const Icon = option.icon;
-                          const isSelected = (projectForm.usage || []).includes(option.value);
+                          const Icon = option.icon
+                          const isSelected = (projectForm.usage || []).includes(option.value)
                           return (
                             <button
                               key={option.value}
@@ -602,11 +602,11 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                               <h3 className={`font-semibold mb-1 text-black ${isMobile ? 'text-base' : 'text-lg'}`}>{option.label}</h3>
                               <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>{option.description}</p>
                             </button>
-                          );
+                          )
                         })}
                       </div>
                     </div>
-                  );
+                  )
 
                 case 'Visual Direction':
                   return (
@@ -621,7 +621,7 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                         <p className={`text-gray-500 mt-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>For now, you can skip this step.</p>
                       </div>
                     </div>
-                  );
+                  )
 
                 case 'Location':
                   return (
@@ -668,7 +668,7 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                         </div>
                       </div>
                     </div>
-                  );
+                  )
 
                 case 'Departments':
                   return (
@@ -678,8 +678,8 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
 
                       <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
                         {DEPARTMENTS.map((dept) => {
-                          const Icon = dept.icon;
-                          const isSelected = (projectForm.departments_needed || []).includes(dept.value);
+                          const Icon = dept.icon
+                          const isSelected = (projectForm.departments_needed || []).includes(dept.value)
                           return (
                             <button
                               key={dept.value}
@@ -695,11 +695,11 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                               <h3 className={`font-semibold mb-1 text-black ${isMobile ? 'text-sm' : 'text-base'}`}>{dept.label}</h3>
                               <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>{dept.description}</p>
                             </button>
-                          );
+                          )
                         })}
                       </div>
                     </div>
-                  );
+                  )
 
                 case 'Timeline':
                   return (
@@ -741,7 +741,7 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                         </div>
                       </div>
                     </div>
-                  );
+                  )
 
                 case 'Budget':
                   return (
@@ -752,7 +752,7 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
 
                       <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
                         {BUDGET_RANGES.map((range) => {
-                          const isSelected = projectForm.budget_range === range.value;
+                          const isSelected = projectForm.budget_range === range.value
                           return (
                             <button
                               key={range.value}
@@ -768,11 +768,11 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                               <h3 className={`font-semibold mb-1 text-black ${isMobile ? 'text-sm' : 'text-base'}`}>{range.label}</h3>
                               <p className={`text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>{range.description}</p>
                             </button>
-                          );
+                          )
                         })}
                       </div>
                     </div>
-                  );
+                  )
 
                 case 'Details':
                   return (
@@ -852,10 +852,10 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
                         </div>
                       </div>
                     </div>
-                  );
+                  )
 
                 default:
-                  return null;
+                  return null
               }
             })()}
           </div>
@@ -896,5 +896,5 @@ export default function ClientPostProjectModal({ open, onClose, user, editingPro
         </div>
       </div>
     </div>
-  );
+  )
 }

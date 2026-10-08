@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { TickerEntry } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { TickerEntry } from '@/lib/supabaseEntities'
 
 const defaultItems = [
   '🎬 New: Feature Film Casting in Atlanta',
@@ -10,30 +10,30 @@ const defaultItems = [
   '✨ UGC Creator Gigs — $500+/day',
   '🎬 HBO Documentary Casting',
   '🎭 Broadway Musical Open Call',
-];
+]
 
 export default function Marquee() {
-  const [items, setItems] = useState(defaultItems);
-  const [isLoading, setIsLoading] = useState(false);
+  const [items, setItems] = useState(defaultItems)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    let cancelled = false;
-    setIsLoading(true);
+    let cancelled = false
+    setIsLoading(true)
     TickerEntry.list('-created_at', 20)
       .then((data) => {
-        if (cancelled) return;
+        if (cancelled) return
         if (data && data.length > 0) {
-          setItems(data.map((e) => e.text || e.title || e.content).filter(Boolean));
+          setItems(data.map((e) => e.text || e.title || e.content).filter(Boolean))
         }
       })
       .catch(() => {
         // Silently fail and keep default items
       })
       .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, []);
+        if (!cancelled) setIsLoading(false)
+      })
+    return () => { cancelled = true; }
+  }, [])
 
   return (
     <div className="relative z-[60] overflow-hidden bg-black py-2">
@@ -45,5 +45,5 @@ export default function Marquee() {
         ))}
       </div>
     </div>
-  );
+  )
 }

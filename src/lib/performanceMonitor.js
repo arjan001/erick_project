@@ -8,18 +8,18 @@ const performanceMetrics = {
   pageLoad: null,
   apiResponse: [],
   customMetrics: new Map()
-};
+}
 
 /**
  * Measure page load time
  */
 export function measurePageLoad() {
   if (typeof window === 'undefined' || !window.performance) {
-    return null;
+    return null
   }
 
-  const timing = window.performance.timing;
-  const navigation = window.performance.navigation;
+  const timing = window.performance.timing
+  const navigation = window.performance.navigation
 
   const metrics = {
     // Navigation timing
@@ -36,10 +36,10 @@ export function measurePageLoad() {
     // Navigation type
     navigationType: navigation.type,
     redirectCount: navigation.redirectCount
-  };
+  }
 
-  performanceMetrics.pageLoad = metrics;
-  return metrics;
+  performanceMetrics.pageLoad = metrics
+  return metrics
 }
 
 /**
@@ -49,24 +49,24 @@ export function measurePageLoad() {
  * @returns {Promise<*>} - API response
  */
 export async function measureAPIResponse(endpoint, apiFunction) {
-  const startTime = performance.now();
+  const startTime = performance.now()
   
   try {
-    const result = await apiFunction();
-    const endTime = performance.now();
-    const duration = endTime - startTime;
+    const result = await apiFunction()
+    const endTime = performance.now()
+    const duration = endTime - startTime
     
     performanceMetrics.apiResponse.push({
       endpoint,
       duration,
       timestamp: Date.now(),
       success: true
-    });
+    })
     
-    return result;
+    return result
   } catch (error) {
-    const endTime = performance.now();
-    const duration = endTime - startTime;
+    const endTime = performance.now()
+    const duration = endTime - startTime
     
     performanceMetrics.apiResponse.push({
       endpoint,
@@ -74,9 +74,9 @@ export async function measureAPIResponse(endpoint, apiFunction) {
       timestamp: Date.now(),
       success: false,
       error: error.message
-    });
+    })
     
-    throw error;
+    throw error
   }
 }
 
@@ -85,7 +85,7 @@ export async function measureAPIResponse(endpoint, apiFunction) {
  */
 export function measureCoreWebVitals() {
   if (typeof window === 'undefined' || !window.performance) {
-    return null;
+    return null
   }
 
   const vitals = {
@@ -103,65 +103,65 @@ export function measureCoreWebVitals() {
     
     // Time to First Byte (TTFB)
     ttfb: null
-  };
+  }
 
   // Measure LCP
   if ('PerformanceObserver' in window) {
     try {
       const lcpObserver = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1];
-        vitals.lcp = lastEntry.renderTime || lastEntry.loadTime;
-      });
-      lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+        const entries = list.getEntries()
+        const lastEntry = entries[entries.length - 1]
+        vitals.lcp = lastEntry.renderTime || lastEntry.loadTime
+      })
+      lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true })
     } catch (e) {
-      console.error('LCP measurement failed:', e);
+      
     }
 
     // Measure FID
     try {
       const fidObserver = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
-        vitals.fid = entries[0].processingStart - entries[0].startTime;
-      });
-      fidObserver.observe({ type: 'first-input', buffered: true });
+        const entries = list.getEntries()
+        vitals.fid = entries[0].processingStart - entries[0].startTime
+      })
+      fidObserver.observe({ type: 'first-input', buffered: true })
     } catch (e) {
-      console.error('FID measurement failed:', e);
+      
     }
 
     // Measure CLS
     try {
-      let clsValue = 0;
+      let clsValue = 0
       const clsObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           if (!entry.hadRecentInput) {
-            clsValue += entry.value;
+            clsValue += entry.value
           }
         }
-        vitals.cls = clsValue;
-      });
-      clsObserver.observe({ type: 'layout-shift', buffered: true });
+        vitals.cls = clsValue
+      })
+      clsObserver.observe({ type: 'layout-shift', buffered: true })
     } catch (e) {
-      console.error('CLS measurement failed:', e);
+      
     }
 
     // Measure FCP
     try {
       const fcpObserver = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
-        vitals.fcp = entries[0].startTime;
-      });
-      fcpObserver.observe({ type: 'paint', buffered: true });
+        const entries = list.getEntries()
+        vitals.fcp = entries[0].startTime
+      })
+      fcpObserver.observe({ type: 'paint', buffered: true })
     } catch (e) {
-      console.error('FCP measurement failed:', e);
+      
     }
   }
 
   // Measure TTFB
-  const timing = window.performance.timing;
-  vitals.ttfb = timing.responseStart - timing.navigationStart;
+  const timing = window.performance.timing
+  vitals.ttfb = timing.responseStart - timing.navigationStart
 
-  return vitals;
+  return vitals
 }
 
 /**
@@ -175,7 +175,7 @@ export function trackMetric(name, value, metadata = {}) {
     value,
     timestamp: Date.now(),
     metadata
-  });
+  })
 }
 
 /**
@@ -188,7 +188,7 @@ export function getPerformanceMetrics() {
     apiResponse: performanceMetrics.apiResponse,
     customMetrics: Object.fromEntries(performanceMetrics.customMetrics),
     coreWebVitals: measureCoreWebVitals()
-  };
+  }
 }
 
 /**
@@ -196,7 +196,7 @@ export function getPerformanceMetrics() {
  * @returns {Object} - API statistics
  */
 export function getAPIStatistics() {
-  const responses = performanceMetrics.apiResponse;
+  const responses = performanceMetrics.apiResponse
   
   if (responses.length === 0) {
     return {
@@ -208,24 +208,24 @@ export function getAPIStatistics() {
       maxResponseTime: 0,
       slowestEndpoint: null,
       fastestEndpoint: null
-    };
+    }
   }
 
-  const successful = responses.filter(r => r.success);
-  const failed = responses.filter(r => !r.success);
-  const durations = responses.map(r => r.duration);
+  const successful = responses.filter(r => r.success)
+  const failed = responses.filter(r => !r.success)
+  const durations = responses.map(r => r.duration)
   
-  const averageDuration = durations.reduce((sum, d) => sum + d, 0) / durations.length;
-  const minDuration = Math.min(...durations);
-  const maxDuration = Math.max(...durations);
+  const averageDuration = durations.reduce((sum, d) => sum + d, 0) / durations.length
+  const minDuration = Math.min(...durations)
+  const maxDuration = Math.max(...durations)
   
   const slowest = responses.reduce((prev, current) => 
     (prev.duration > current.duration) ? prev : current
-  );
+  )
   
   const fastest = responses.reduce((prev, current) => 
     (prev.duration < current.duration) ? prev : current
-  );
+  )
 
   return {
     totalRequests: responses.length,
@@ -239,7 +239,7 @@ export function getAPIStatistics() {
     fastestEndpoint: fastest.endpoint,
     slowestResponseTime: slowest.duration,
     fastestResponseTime: fastest.duration
-  };
+  }
 }
 
 /**
@@ -247,8 +247,8 @@ export function getAPIStatistics() {
  * @returns {Object} - Performance check results
  */
 export function checkPerformanceTargets() {
-  const metrics = getPerformanceMetrics();
-  const apiStats = getAPIStatistics();
+  const metrics = getPerformanceMetrics()
+  const apiStats = getAPIStatistics()
   
   const targets = {
     pageLoadTime: 3000, // 3 seconds
@@ -256,7 +256,7 @@ export function checkPerformanceTargets() {
     lcp: 2500, // 2.5 seconds
     fid: 100, // 100ms
     cls: 0.1
-  };
+  }
 
   const results = {
     pageLoadTime: {
@@ -284,30 +284,30 @@ export function checkPerformanceTargets() {
       actual: metrics.coreWebVitals?.cls,
       passed: metrics.coreWebVitals?.cls <= targets.cls
     }
-  };
+  }
 
-  const allPassed = Object.values(results).every(r => r.passed);
+  const allPassed = Object.values(results).every(r => r.passed)
 
   return {
     allPassed,
     results
-  };
+  }
 }
 
 /**
  * Log performance metrics to console
  */
 export function logPerformanceMetrics() {
-  const metrics = getPerformanceMetrics();
-  const apiStats = getAPIStatistics();
-  const targets = checkPerformanceTargets();
+  const metrics = getPerformanceMetrics()
+  const apiStats = getAPIStatistics()
+  const targets = checkPerformanceTargets()
 
-  console.group('📊 Performance Metrics');
-  console.log('Page Load:', metrics.pageLoad);
-  console.log('API Statistics:', apiStats);
-  console.log('Core Web Vitals:', metrics.coreWebVitals);
-  console.log('Performance Targets:', targets);
-  console.groupEnd();
+  console.group('📊 Performance Metrics')
+  
+  
+  
+  
+  console.groupEnd()
 }
 
 /**
@@ -316,8 +316,8 @@ export function logPerformanceMetrics() {
  */
 export function sendMetricsToAnalytics(metrics) {
   // In production, send to analytics service
-  // Example: analytics.track('performance_metrics', metrics);
-  console.log('Metrics sent to analytics:', metrics);
+  // Example: analytics.track('performance_metrics', metrics)
+  
 }
 
 /**
@@ -328,16 +328,16 @@ export function startPerformanceMonitoring() {
   if (typeof window !== 'undefined') {
     window.addEventListener('load', () => {
       setTimeout(() => {
-        measurePageLoad();
-        measureCoreWebVitals();
-      }, 0);
-    });
+        measurePageLoad()
+        measureCoreWebVitals()
+      }, 0)
+    })
   }
 
   // Log metrics periodically
   setInterval(() => {
-    const metrics = getPerformanceMetrics();
-    sendMetricsToAnalytics(metrics);
+    const metrics = getPerformanceMetrics()
+    sendMetricsToAnalytics(metrics)
   }, 60000); // Every minute
 }
 
@@ -348,39 +348,39 @@ export function startPerformanceMonitoring() {
  */
 export function withPerformanceTracking(metricName) {
   return function(target, propertyKey, descriptor) {
-    const originalMethod = descriptor.value;
+    const originalMethod = descriptor.value
     
     descriptor.value = async function(...args) {
-      const startTime = performance.now();
+      const startTime = performance.now()
       
       try {
-        const result = await originalMethod.apply(this, args);
-        const endTime = performance.now();
-        const duration = endTime - startTime;
+        const result = await originalMethod.apply(this, args)
+        const endTime = performance.now()
+        const duration = endTime - startTime
         
         trackMetric(`${metricName}_${propertyKey}`, duration, {
           success: true
-        });
+        })
         
-        return result;
+        return result
       } catch (error) {
-        const endTime = performance.now();
-        const duration = endTime - startTime;
+        const endTime = performance.now()
+        const duration = endTime - startTime
         
         trackMetric(`${metricName}_${propertyKey}`, duration, {
           success: false,
           error: error.message
-        });
+        })
         
-        throw error;
+        throw error
       }
-    };
+    }
     
-    return descriptor;
-  };
+    return descriptor
+  }
 }
 
 // Initialize performance monitoring
 if (typeof window !== 'undefined') {
-  startPerformanceMonitoring();
+  startPerformanceMonitoring()
 }

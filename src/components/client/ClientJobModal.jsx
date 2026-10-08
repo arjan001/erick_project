@@ -1,22 +1,22 @@
-import React, { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Sparkles, Loader, X, Paperclip, Upload, CheckCircle2 } from 'lucide-react';
-import filmIndustryRoles from '@/data/filmIndustryRoles.json';
-import { analyzeWebsiteUrl, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService';
-import { base44 } from '@/api/base44Client';
-import AISubmissionModal from './AISubmissionModal';
+import React, { useState, useRef } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Sparkles, Loader, X, Paperclip, Upload, CheckCircle2 } from 'lucide-react'
+import filmIndustryRoles from '@/data/filmIndustryRoles.json'
+import { analyzeWebsiteUrl, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService'
+import { base44 } from '@/api/base44Client'
+import AISubmissionModal from './AISubmissionModal'
 
 // Flatten roles from JSON for display
 const ROLES_OPTIONS = Object.values(filmIndustryRoles)
   .filter(Array.isArray)
-  .flat();
+  .flat()
 
 const EMPLOYMENT_TYPES = [
   { value: 'fulltime', label: 'Full-time' },
   { value: 'day_payment', label: 'Day Payment' },
   { value: 'gig', label: 'Gig' }
-];
+]
 
 const projectCategories = [
   { value: 'commercial', label: 'Commercial' },
@@ -29,47 +29,47 @@ const projectCategories = [
   { value: 'product_demo', label: 'Product Demo' },
   { value: 'social_media', label: 'Social Media' },
   { value: 'animation', label: 'Animation' }
-];
+]
 
 const progressSteps = [
   'Fetching site content',
   'Analyzing brand and tone',
   'Identifying visual language',
   'Translating into a film concept'
-];
+]
 
 export default function ClientJobModal({ open, editing, form, setForm, onClose, onSubmit }) {
-  const [projectUrl, setProjectUrl] = useState('');
-  const [projectCategory, setProjectCategory] = useState('commercial');
-  const [extracting, setExtracting] = useState(false);
-  const [extractProgress, setExtractProgress] = useState(null);
-  const [attachments, setAttachments] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const [showAIModal, setShowAIModal] = useState(false);
-  const fileInputRef = useRef(null);
-  const previousCategoryRef = useRef(projectCategory);
+  const [projectUrl, setProjectUrl] = useState('')
+  const [projectCategory, setProjectCategory] = useState('commercial')
+  const [extracting, setExtracting] = useState(false)
+  const [extractProgress, setExtractProgress] = useState(null)
+  const [attachments, setAttachments] = useState([])
+  const [uploading, setUploading] = useState(false)
+  const [showAIModal, setShowAIModal] = useState(false)
+  const fileInputRef = useRef(null)
+  const previousCategoryRef = useRef(projectCategory)
 
   const handleExtract = async () => {
-    if (!projectUrl) return;
+    if (!projectUrl) return
 
-    setExtracting(true);
-    setExtractProgress(0);
+    setExtracting(true)
+    setExtractProgress(0)
 
     const progressInterval = setInterval(() => {
       setExtractProgress(prev => {
-        if (prev === null) return 0;
-        if (prev < progressSteps.length - 1) return prev + 1;
-        return prev;
-      });
-    }, 800);
+        if (prev === null) return 0
+        if (prev < progressSteps.length - 1) return prev + 1
+        return prev
+      })
+    }, 800)
 
     try {
-      const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory);
-      clearInterval(progressInterval);
+      const analysisResult = await analyzeWebsiteUrl(projectUrl, projectCategory)
+      clearInterval(progressInterval)
 
       if (analysisResult.success && analysisResult.rawAnalysis) {
-        setForm({ ...form, description: analysisResult.rawAnalysis });
-        setExtractProgress(progressSteps.length - 1);
+        setForm({ ...form, description: analysisResult.rawAnalysis })
+        setExtractProgress(progressSteps.length - 1)
 
         saveAnalyzedProjectToStorage({
           url: analysisResult.url,
@@ -78,37 +78,37 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
           projectType: projectCategory,
           additionalNotes: analysisResult.rawAnalysis,
           attachments: attachments
-        });
+        })
 
         setTimeout(() => {
-          setExtractProgress(null);
-          setShowAIModal(true);
-        }, 600);
+          setExtractProgress(null)
+          setShowAIModal(true)
+        }, 600)
       } else {
-        console.error('Extract error:', analysisResult.error);
-        setExtractProgress(null);
+        
+        setExtractProgress(null)
       }
     } catch (error) {
-      console.error('Extract failed:', error);
-      setExtractProgress(null);
-      clearInterval(progressInterval);
+      
+      setExtractProgress(null)
+      clearInterval(progressInterval)
     } finally {
-      setExtracting(false);
+      setExtracting(false)
     }
-  };
+  }
 
   const handleAIComplete = (aiData) => {
     // Process AI-generated data and populate form
-    setShowAIModal(false);
-    onSubmit();
-  };
+    setShowAIModal(false)
+    onSubmit()
+  }
 
   const handleFileUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
+    const files = Array.from(e.target.files)
+    if (files.length === 0) return
 
-    setUploading(true);
-    const uploadedFiles = [];
+    setUploading(true)
+    const uploadedFiles = []
 
     for (const file of files) {
       const validTypes = [
@@ -122,23 +122,23 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
         'video/mp4',
         'video/quicktime',
         'video/x-msvideo'
-      ];
+      ]
 
-      const validExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp3', '.mp4', '.mov', '.avi', '.hvec'];
-      const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+      const validExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp3', '.mp4', '.mov', '.avi', '.hvec']
+      const fileExtension = '.' + file.name.split('.').pop().toLowerCase()
 
       if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension)) {
-        console.warn(`Invalid file type: ${file.type}, skipping ${file.name}`);
-        continue;
+        
+        continue
       }
 
       if (file.size > 50 * 1024 * 1024) {
-        console.warn(`File too large: ${file.name}, skipping`);
-        continue;
+        
+        continue
       }
 
       try {
-        const uploadResult = await base44.integrations.Core.UploadFile({ file });
+        const uploadResult = await base44.integrations.Core.UploadFile({ file })
 
         if (uploadResult.data?.file_url) {
           uploadedFiles.push({
@@ -146,26 +146,26 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
             type: file.type,
             size: file.size,
             url: uploadResult.data.file_url
-          });
+          })
         }
       } catch (error) {
-        console.error('Error uploading file:', error);
+        
       }
     }
 
-    setAttachments(prev => [...prev, ...uploadedFiles]);
-    setUploading(false);
+    setAttachments(prev => [...prev, ...uploadedFiles])
+    setUploading(false)
 
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = ''
     }
-  };
+  }
 
   const removeAttachment = (index) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
-  };
+    setAttachments(prev => prev.filter((_, i) => i !== index))
+  }
 
-  if (!open) return null;
+  if (!open) return null
   
   // Show AI Modal when active
   if (showAIModal) {
@@ -180,7 +180,7 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
         budget: form.budget,
         title: form.title
       }}
-    />;
+    />
   }
 
   return (
@@ -397,5 +397,5 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
         </div>
       </div>
     </div>
-  );
+  )
 }

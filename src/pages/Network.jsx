@@ -1,1 +1,1 @@
-export { default } from '@/modules/network/pages/NetworkPage';
+export { default } from '@/modules/network/pages/NetworkPage'

@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Textarea } from '@/shared/components/ui/textarea';
-import { Switch } from '@/shared/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Save, Globe, Mail, Bell, Shield, Users, CreditCard, Store, Settings as SettingsIcon, Layout, FileText, Link as LinkIcon, ScrollText, Grid3x3, CheckCircle, AlertTriangle, Info, Zap, Lock, Palette, Smartphone, Database, Globe2, Gavel } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { SystemSetting } from '@/lib/supabaseEntities';
-import { useToast } from '@/hooks/useToast.jsx';
-import { clearSettingsCache } from '@/lib/settings';
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Textarea } from '@/shared/components/ui/textarea'
+import { Switch } from '@/shared/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
+import { Save, Globe, Mail, Bell, Shield, Users, CreditCard, Store, Settings as SettingsIcon, Layout, FileText, Link as LinkIcon, ScrollText, Grid3x3, CheckCircle, AlertTriangle, Info, Zap, Lock, Palette, Smartphone, Database, Globe2, Gavel } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { SystemSetting } from '@/lib/supabaseEntities'
+import { useToast } from '@/hooks/useToast.jsx'
+import { clearSettingsCache } from '@/lib/settings'
 
 export default function AdminSettingsPage() {
-  const { success, error: toastError } = useToast();
+  const { success, error: toastError } = useToast()
   const [settings, setSettings] = useState({
     siteName: 'Eric Rabar',
     siteUrl: 'https://ericrabar.com',
@@ -48,20 +48,20 @@ export default function AdminSettingsPage() {
     apiRateLimit: '1000',
     enableCache: true,
     cacheTimeout: '3600'
-  });
+  })
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('general');
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [activeTab, setActiveTab] = useState('general')
 
   const loadSettings = async () => {
     try {
-      const settingsData = await SystemSetting.filter({}, 'setting_key', 100);
+      const settingsData = await SystemSetting.filter({}, 'setting_key', 100)
       if (settingsData && settingsData.length > 0) {
-        const settingsMap = {};
+        const settingsMap = {}
         settingsData.forEach(setting => {
-          settingsMap[setting.setting_key] = setting.setting_value;
-        });
+          settingsMap[setting.setting_key] = setting.setting_value
+        })
         setSettings(prev => ({
           ...prev,
           ...settingsMap,
@@ -80,47 +80,47 @@ export default function AdminSettingsPage() {
           enableDarkMode: settingsMap.enableDarkMode === 'true',
           enableMobileApp: settingsMap.enableMobileApp === 'true',
           enableCache: settingsMap.enableCache === 'true'
-        }));
+        }))
       }
     } catch (err) {
-      console.error('Error loading settings:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    loadSettings();
-  }, []);
+    loadSettings()
+  }, [])
 
   const handleSave = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
       const settingsToSave = Object.entries(settings).map(([key, value]) => ({
         setting_key: key,
         setting_value: typeof value === 'boolean' ? value.toString() : value
-      }));
+      }))
 
       for (const setting of settingsToSave) {
-        const existing = await SystemSetting.filter({ setting_key: setting.setting_key });
+        const existing = await SystemSetting.filter({ setting_key: setting.setting_key })
         if (existing && existing.length > 0) {
-          await SystemSetting.update(existing[0].id, { setting_value: setting.setting_value });
+          await SystemSetting.update(existing[0].id, { setting_value: setting.setting_value })
         } else {
-          await SystemSetting.create({ setting_key: setting.setting_key, setting_value: setting.setting_value });
+          await SystemSetting.create({ setting_key: setting.setting_key, setting_value: setting.setting_value })
         }
       }
 
       // Clear settings cache so changes take effect immediately
-      clearSettingsCache();
+      clearSettingsCache()
 
-      success('Settings Saved', 'Your settings have been updated successfully');
+      success('Settings Saved', 'Your settings have been updated successfully')
     } catch (err) {
-      console.error('Error saving settings:', err);
-      toastError('Save Failed', 'Failed to save settings');
+      
+      toastError('Save Failed', 'Failed to save settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const quickLinks = [
     { icon: ScrollText, label: 'Marquee/Ticker', href: '/Admin/Ticker', color: 'bg-gray-50 text-gray-600' },
@@ -135,7 +135,7 @@ export default function AdminSettingsPage() {
     { icon: Users, label: 'Featured Creatives', href: '/Admin/FeaturedCreatives', color: 'bg-gray-50 text-gray-600' },
     { icon: Building2, label: 'Featured Brands', href: '/Admin/FeaturedBrands', color: 'bg-gray-50 text-gray-600' },
     { icon: Gavel, label: 'Shop Auctions', href: '/Admin/ShopAuctions', color: 'bg-gray-50 text-gray-600' },
-  ];
+  ]
 
   const SettingCard = ({ icon: Icon, title, description, children, warning }) => (
     <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
@@ -152,7 +152,7 @@ export default function AdminSettingsPage() {
       </CardHeader>
       <CardContent className="pt-0">{children}</CardContent>
     </Card>
-  );
+  )
 
   const ToggleSetting = ({ label, description, checked, onChange, warning }) => (
     <div className={`flex items-center justify-between p-4 rounded-xl border ${warning ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-gray-50'}`}>
@@ -162,7 +162,7 @@ export default function AdminSettingsPage() {
       </div>
       <Switch checked={checked} onCheckedChange={onChange} />
     </div>
-  );
+  )
 
   if (loading) {
     return (
@@ -172,7 +172,7 @@ export default function AdminSettingsPage() {
           <p className="text-gray-600">Loading settings...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -596,6 +596,6 @@ export default function AdminSettingsPage() {
         </Tabs>
       </div>
     </div>
-  );
+  )
 }
 

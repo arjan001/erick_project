@@ -1,86 +1,86 @@
-import MainLayout from '@/layouts/MainLayout';
-import AdminLayout from '@/layouts/AdminLayout';
-import DashboardLayout from '@/layouts/DashboardLayout';
-import AuthLayout from '@/layouts/AuthLayout';
-import { AuthGuard } from '@/app/router/guards/AuthGuard';
-import { RoleGuard, createRoleGuard } from '@/app/router/guards/RoleGuard';
-import { GuestGuard } from '@/app/router/guards/GuestGuard';
-import { HomeGuard } from '@/app/router/guards/HomeGuard';
-import { MaintenanceGuard } from '@/app/router/guards/MaintenanceGuard';
+import MainLayout from '@/layouts/MainLayout'
+import AdminLayout from '@/layouts/AdminLayout'
+import DashboardLayout from '@/layouts/DashboardLayout'
+import AuthLayout from '@/layouts/AuthLayout'
+import { AuthGuard } from '@/app/router/guards/AuthGuard'
+import { RoleGuard, createRoleGuard } from '@/app/router/guards/RoleGuard'
+import { GuestGuard } from '@/app/router/guards/GuestGuard'
+import { HomeGuard } from '@/app/router/guards/HomeGuard'
+import { MaintenanceGuard } from '@/app/router/guards/MaintenanceGuard'
 // Temporarily disable permission guards until migration is complete
-// import { createRoutePermissionGuard } from '@/app/router/guards/PermissionGuard';
+// import { createRoutePermissionGuard } from '@/app/router/guards/PermissionGuard'
 
 // Create permission-based guards for admin routes (DISABLED TEMPORARILY)
-// const AdminDashboardGuard = createRoutePermissionGuard('/Admin');
-// const ArtistsGuard = createRoutePermissionGuard('/Admin/Artists');
-// const TeamsGuard = createRoutePermissionGuard('/Admin/Teams');
-// const ProjectsGuard = createRoutePermissionGuard('/Admin/Projects');
-// const UserManagementGuard = createRoutePermissionGuard('/Admin/UserManagement');
-// const RolesPermissionsGuard = createRoutePermissionGuard('/Admin/RolesPermissions');
-// const SettingsGuard = createRoutePermissionGuard('/Admin/Settings');
-// const SEOCMSGuard = createRoutePermissionGuard('/Admin/SEOCMS');
-// const ImageStorageGuard = createRoutePermissionGuard('/Admin/ImageStorage');
-// const InvitesGuard = createRoutePermissionGuard('/Admin/Invites');
-// const LoginProvidersGuard = createRoutePermissionGuard('/Admin/LoginProviders');
-// const APISettingsGuard = createRoutePermissionGuard('/Admin/APISettings');
-// const PaymentSettingsGuard = createRoutePermissionGuard('/Admin/PaymentSettings');
-// const AnalyticsGuard = createRoutePermissionGuard('/Admin/Analytics');
-// const FinanceDashboardGuard = createRoutePermissionGuard('/Admin/FinanceDashboard');
-// const JobsGuard = createRoutePermissionGuard('/Admin/Jobs');
-// const ClientsGuard = createRoutePermissionGuard('/Admin/Clients');
-// const MessagesGuard = createRoutePermissionGuard('/Admin/Messages');
-// const ProductsGuard = createRoutePermissionGuard('/Admin/Products');
-// const OrdersGuard = createRoutePermissionGuard('/Admin/Orders');
-// const ShopSettingsGuard = createRoutePermissionGuard('/Admin/ShopSettings');
-// const AuditLogsGuard = createRoutePermissionGuard('/Admin/AuditLogs');
-// const SubscriptionsGuard = createRoutePermissionGuard('/Admin/Subscriptions');
-// const TickerGuard = createRoutePermissionGuard('/Admin/Ticker');
-// const CategoriesGuard = createRoutePermissionGuard('/Admin/Categories');
-// const BackersGuard = createRoutePermissionGuard('/Admin/Backers');
-// const FeaturedWorkGuard = createRoutePermissionGuard('/Admin/FeaturedWork');
-// const SuccessStoriesGuard = createRoutePermissionGuard('/Admin/SuccessStories');
-// const RecentProjectsGuard = createRoutePermissionGuard('/Admin/RecentProjects');
+// const AdminDashboardGuard = createRoutePermissionGuard('/Admin')
+// const ArtistsGuard = createRoutePermissionGuard('/Admin/Artists')
+// const TeamsGuard = createRoutePermissionGuard('/Admin/Teams')
+// const ProjectsGuard = createRoutePermissionGuard('/Admin/Projects')
+// const UserManagementGuard = createRoutePermissionGuard('/Admin/UserManagement')
+// const RolesPermissionsGuard = createRoutePermissionGuard('/Admin/RolesPermissions')
+// const SettingsGuard = createRoutePermissionGuard('/Admin/Settings')
+// const SEOCMSGuard = createRoutePermissionGuard('/Admin/SEOCMS')
+// const ImageStorageGuard = createRoutePermissionGuard('/Admin/ImageStorage')
+// const InvitesGuard = createRoutePermissionGuard('/Admin/Invites')
+// const LoginProvidersGuard = createRoutePermissionGuard('/Admin/LoginProviders')
+// const APISettingsGuard = createRoutePermissionGuard('/Admin/APISettings')
+// const PaymentSettingsGuard = createRoutePermissionGuard('/Admin/PaymentSettings')
+// const AnalyticsGuard = createRoutePermissionGuard('/Admin/Analytics')
+// const FinanceDashboardGuard = createRoutePermissionGuard('/Admin/FinanceDashboard')
+// const JobsGuard = createRoutePermissionGuard('/Admin/Jobs')
+// const ClientsGuard = createRoutePermissionGuard('/Admin/Clients')
+// const MessagesGuard = createRoutePermissionGuard('/Admin/Messages')
+// const ProductsGuard = createRoutePermissionGuard('/Admin/Products')
+// const OrdersGuard = createRoutePermissionGuard('/Admin/Orders')
+// const ShopSettingsGuard = createRoutePermissionGuard('/Admin/ShopSettings')
+// const AuditLogsGuard = createRoutePermissionGuard('/Admin/AuditLogs')
+// const SubscriptionsGuard = createRoutePermissionGuard('/Admin/Subscriptions')
+// const TickerGuard = createRoutePermissionGuard('/Admin/Ticker')
+// const CategoriesGuard = createRoutePermissionGuard('/Admin/Categories')
+// const BackersGuard = createRoutePermissionGuard('/Admin/Backers')
+// const FeaturedWorkGuard = createRoutePermissionGuard('/Admin/FeaturedWork')
+// const SuccessStoriesGuard = createRoutePermissionGuard('/Admin/SuccessStories')
+// const RecentProjectsGuard = createRoutePermissionGuard('/Admin/RecentProjects')
 
 // Use role-based guards temporarily (only using existing roles from database)
-const AdminDashboardGuard = createRoleGuard(['admin']);
-const ArtistsGuard = createRoleGuard(['admin']);
-const TeamsGuard = createRoleGuard(['admin']);
-const ProjectsGuard = createRoleGuard(['admin']);
-const UserManagementGuard = createRoleGuard(['admin']);
-const RolesPermissionsGuard = createRoleGuard(['admin']);
-const SettingsGuard = createRoleGuard(['admin']);
-const SEOCMSGuard = createRoleGuard(['admin']);
-const ImageStorageGuard = createRoleGuard(['admin']);
-const InvitesGuard = createRoleGuard(['admin']);
-const LoginProvidersGuard = createRoleGuard(['admin']);
-const APISettingsGuard = createRoleGuard(['admin']);
-const PaymentSettingsGuard = createRoleGuard(['admin']);
-const AnalyticsGuard = createRoleGuard(['admin']);
-const FinanceDashboardGuard = createRoleGuard(['admin']);
-const JobsGuard = createRoleGuard(['admin']);
-const ClientsGuard = createRoleGuard(['admin']);
-const MessagesGuard = createRoleGuard(['admin']);
-const ProductsGuard = createRoleGuard(['admin']);
-const OrdersGuard = createRoleGuard(['admin']);
-const ShopSettingsGuard = createRoleGuard(['admin']);
-const AuditLogsGuard = createRoleGuard(['admin']);
-const SubscriptionsGuard = createRoleGuard(['admin']);
-const TickerGuard = createRoleGuard(['admin']);
-const CategoriesGuard = createRoleGuard(['admin']);
-const BackersGuard = createRoleGuard(['admin']);
-const FeaturedWorkGuard = createRoleGuard(['admin']);
-const SuccessStoriesGuard = createRoleGuard(['admin']);
-const RecentProjectsGuard = createRoleGuard(['admin']);
+const AdminDashboardGuard = createRoleGuard(['admin'])
+const ArtistsGuard = createRoleGuard(['admin'])
+const TeamsGuard = createRoleGuard(['admin'])
+const ProjectsGuard = createRoleGuard(['admin'])
+const UserManagementGuard = createRoleGuard(['admin'])
+const RolesPermissionsGuard = createRoleGuard(['admin'])
+const SettingsGuard = createRoleGuard(['admin'])
+const SEOCMSGuard = createRoleGuard(['admin'])
+const ImageStorageGuard = createRoleGuard(['admin'])
+const InvitesGuard = createRoleGuard(['admin'])
+const LoginProvidersGuard = createRoleGuard(['admin'])
+const APISettingsGuard = createRoleGuard(['admin'])
+const PaymentSettingsGuard = createRoleGuard(['admin'])
+const AnalyticsGuard = createRoleGuard(['admin'])
+const FinanceDashboardGuard = createRoleGuard(['admin'])
+const JobsGuard = createRoleGuard(['admin'])
+const ClientsGuard = createRoleGuard(['admin'])
+const MessagesGuard = createRoleGuard(['admin'])
+const ProductsGuard = createRoleGuard(['admin'])
+const OrdersGuard = createRoleGuard(['admin'])
+const ShopSettingsGuard = createRoleGuard(['admin'])
+const AuditLogsGuard = createRoleGuard(['admin'])
+const SubscriptionsGuard = createRoleGuard(['admin'])
+const TickerGuard = createRoleGuard(['admin'])
+const CategoriesGuard = createRoleGuard(['admin'])
+const BackersGuard = createRoleGuard(['admin'])
+const FeaturedWorkGuard = createRoleGuard(['admin'])
+const SuccessStoriesGuard = createRoleGuard(['admin'])
+const RecentProjectsGuard = createRoleGuard(['admin'])
 
 // Keep role-based guards for non-admin routes (using existing roles from database)
-const AdminGuard = createRoleGuard(['admin']);
-const ArtistAdminGuard = createRoleGuard(['admin', 'artist']);
-const TeamAdminGuard = createRoleGuard(['admin', 'team']);
-const ProjectAdminGuard = createRoleGuard(['admin', 'client', 'project_owner']);
-const ArtistGuard = createRoleGuard(['artist']);
-const ClientGuard = createRoleGuard(['client', 'project_owner']);
-const TeamGuard = createRoleGuard(['team']);
-const BackerGuard = createRoleGuard(['backer']);
+const AdminGuard = createRoleGuard(['admin'])
+const ArtistAdminGuard = createRoleGuard(['admin', 'artist'])
+const TeamAdminGuard = createRoleGuard(['admin', 'team'])
+const ProjectAdminGuard = createRoleGuard(['admin', 'client', 'project_owner'])
+const ArtistGuard = createRoleGuard(['artist'])
+const ClientGuard = createRoleGuard(['client', 'project_owner'])
+const TeamGuard = createRoleGuard(['team'])
+const BackerGuard = createRoleGuard(['backer'])
 
 // Public pages (no auth required)
 const publicRoutes = [
@@ -291,7 +291,7 @@ const publicRoutes = [
     component: () => import('@/pages/FAQ'),
     layout: null
   }
-];
+]
 
 // Auth pages (guest only - redirect if logged in)
 const authRoutes = [
@@ -313,7 +313,7 @@ const authRoutes = [
     layout: AuthLayout,
     guard: GuestGuard
   }
-];
+]
 
 // Admin routes (permission-based access control)
 const adminRoutes = [
@@ -557,7 +557,7 @@ const adminRoutes = [
     layout: AdminLayout,
     guard: AdminDashboardGuard
   }
-];
+]
 
 // Artist routes (artist role required)
 const artistRoutes = [
@@ -645,7 +645,7 @@ const artistRoutes = [
     layout: DashboardLayout,
     guard: ArtistGuard
   }
-];
+]
 
 // Client routes (client role required)
 const clientRoutes = [
@@ -715,7 +715,7 @@ const clientRoutes = [
     layout: DashboardLayout,
     guard: ClientGuard
   }
-];
+]
 
 // Team routes (team role required)
 const teamRoutes = [
@@ -773,7 +773,7 @@ const teamRoutes = [
     layout: DashboardLayout,
     guard: TeamGuard
   }
-];
+]
 
 // Backer routes (backer role required)
 const backerRoutes = [
@@ -855,7 +855,7 @@ const backerRoutes = [
     layout: null,
     guard: null
   }
-];
+]
 
 // Protected routes (auth required, no specific role) — shared across artist/team/client/backer
 const protectedRoutes = [
@@ -871,7 +871,7 @@ const protectedRoutes = [
     layout: DashboardLayout,
     guard: AuthGuard
   }
-];
+]
 
 // Combine all routes
 export const routes = [
@@ -888,7 +888,7 @@ export const routes = [
     component: () => import('@/pages/NotFoundPage'),
     layout: null
   }
-];
+]
 
 // Export route groups for easier access
 export const routeGroups = {
@@ -900,4 +900,4 @@ export const routeGroups = {
   team: teamRoutes,
   backer: backerRoutes,
   protected: protectedRoutes
-};
+}

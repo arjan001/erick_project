@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
-import ChatWidget from '@/components/landing/backstage/ChatWidget';
-import SEOMetaTags from '@/components/SEOMetaTags';
-import TalentCard from '@/components/landing/backstage/TalentCard';
-import CreatorProfileModal from '@/components/landing/backstage/CreatorProfileModal';
-import { talentProfiles, talentTabs, filterTags } from '@/components/landing/backstage/talentData';
-import { Search, SlidersHorizontal, ChevronDown, CheckSquare, HelpCircle, ZoomIn } from 'lucide-react';
+import React, { useState } from 'react'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
+import ChatWidget from '@/components/landing/backstage/ChatWidget'
+import SEOMetaTags from '@/components/SEOMetaTags'
+import TalentCard from '@/components/landing/backstage/TalentCard'
+import CreatorProfileModal from '@/components/landing/backstage/CreatorProfileModal'
+import { talentProfiles, talentTabs, filterTags } from '@/components/landing/backstage/talentData'
+import { Search, SlidersHorizontal, ChevronDown, CheckSquare, HelpCircle, ZoomIn } from 'lucide-react'
 
 export default function TalentPage() {
-  const [activeTab, setActiveTab] = useState('actors');
-  const [activeTag, setActiveTag] = useState(null);
-  const [autoplay, setAutoplay] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [activeTab, setActiveTab] = useState('actors')
+  const [activeTag, setActiveTag] = useState(null)
+  const [autoplay, setAutoplay] = useState(false)
+  const [selectedProfile, setSelectedProfile] = useState(null)
 
   return (
     <div className="min-h-screen bg-[#1a1a23]">
@@ -166,5 +166,5 @@ export default function TalentPage() {
         onClose={() => setSelectedProfile(null)}
       />
     </div>
-  );
+  )
 }

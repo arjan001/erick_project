@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { SubscriptionOrder, Subscription } from '@/lib/supabaseEntities';
-import { DollarSign, TrendingUp, Users, CreditCard, BarChart3, PieChart, Activity, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { SubscriptionOrder, Subscription } from '@/lib/supabaseEntities'
+import { DollarSign, TrendingUp, Users, CreditCard, BarChart3, PieChart, Activity, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function AdminFinanceDashboardPage() {
-  const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState([]);
-  const [activeSubscriptions, setActiveSubscriptions] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [page, setPage] = useState(1);
-  const PAGE_SIZE = 10;
+  const [loading, setLoading] = useState(true)
+  const [orders, setOrders] = useState([])
+  const [activeSubscriptions, setActiveSubscriptions] = useState(0)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 10
 
   useEffect(() => {
     const fetchData = async () => {
@@ -17,80 +17,80 @@ export default function AdminFinanceDashboardPage() {
         const [orderRows, subs] = await Promise.all([
           SubscriptionOrder.list('-created_at', 500),
           Subscription.filter({ status: 'active' })
-        ]);
-        setOrders(orderRows || []);
-        setActiveSubscriptions(subs?.length || 0);
+        ])
+        setOrders(orderRows || [])
+        setActiveSubscriptions(subs?.length || 0)
       } catch (err) {
-        console.error('Error fetching finance data:', err);
+        
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchData();
-  }, []);
+    }
+    fetchData()
+  }, [])
 
-  const fmt = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v || 0);
-  const getDate = (o) => new Date(o.created_at || o.created_date);
+  const fmt = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v || 0)
+  const getDate = (o) => new Date(o.created_at || o.created_date)
 
-  const completedOrders = orders.filter(o => o.status === 'completed');
-  const totalRevenue = completedOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
-  const now = new Date();
+  const completedOrders = orders.filter(o => o.status === 'completed')
+  const totalRevenue = completedOrders.reduce((sum, o) => sum + (o.amount || 0), 0)
+  const now = new Date()
   const monthlyRevenue = completedOrders
     .filter(o => { const d = getDate(o); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); })
-    .reduce((sum, o) => sum + (o.amount || 0), 0);
+    .reduce((sum, o) => sum + (o.amount || 0), 0)
 
   const statCards = [
     { label: 'Total Revenue', value: fmt(totalRevenue), icon: DollarSign },
     { label: 'This Month', value: fmt(monthlyRevenue), icon: TrendingUp },
     { label: 'Total Transactions', value: orders.length.toLocaleString(), icon: CreditCard },
     { label: 'Active Subscriptions', value: activeSubscriptions, icon: Users },
-  ];
+  ]
 
   // Last 6 months revenue trend
   const months = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
-    return { month: d.toLocaleString('en-US', { month: 'short' }), year: d.getFullYear(), monthIndex: d.getMonth() };
-  });
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+    return { month: d.toLocaleString('en-US', { month: 'short' }), year: d.getFullYear(), monthIndex: d.getMonth() }
+  })
   const monthlyChart = months.map(m => ({
     month: m.month,
     revenue: completedOrders
       .filter(o => { const d = getDate(o); return d.getMonth() === m.monthIndex && d.getFullYear() === m.year; })
       .reduce((sum, o) => sum + (o.amount || 0), 0)
-  }));
-  const maxRevenue = Math.max(...monthlyChart.map(m => m.revenue), 1);
+  }))
+  const maxRevenue = Math.max(...monthlyChart.map(m => m.revenue), 1)
 
   // Revenue by payment method
-  const bySource = {};
+  const bySource = {}
   completedOrders.forEach(o => {
-    const key = o.payment_method || 'card';
-    bySource[key] = (bySource[key] || 0) + (o.amount || 0);
-  });
+    const key = o.payment_method || 'card'
+    bySource[key] = (bySource[key] || 0) + (o.amount || 0)
+  })
   const revenueBySource = Object.entries(bySource)
     .map(([source, amount]) => ({ source, amount, percentage: totalRevenue ? (amount / totalRevenue) * 100 : 0 }))
-    .sort((a, b) => b.amount - a.amount);
+    .sort((a, b) => b.amount - a.amount)
 
   const statusBadge = (status) => {
-    const map = { completed: 'bg-green-100 text-green-700', pending: 'bg-amber-100 text-amber-700', failed: 'bg-red-100 text-red-700', refunded: 'bg-gray-100 text-gray-600' };
-    return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${map[status] || 'bg-gray-100 text-gray-600'}`}>{status}</span>;
-  };
+    const map = { completed: 'bg-green-100 text-green-700', pending: 'bg-amber-100 text-amber-700', failed: 'bg-red-100 text-red-700', refunded: 'bg-gray-100 text-gray-600' }
+    return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${map[status] || 'bg-gray-100 text-gray-600'}`}>{status}</span>
+  }
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = (order.user_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (order.user_email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (order.package_name || '').toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+                         (order.package_name || '').toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = filterStatus === 'all' || order.status === filterStatus
+    return matchesSearch && matchesStatus
+  })
 
-  const totalPages = Math.ceil(filteredOrders.length / PAGE_SIZE);
-  const paginatedOrders = filteredOrders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(filteredOrders.length / PAGE_SIZE)
+  const paginatedOrders = filteredOrders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -228,5 +228,5 @@ export default function AdminFinanceDashboardPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

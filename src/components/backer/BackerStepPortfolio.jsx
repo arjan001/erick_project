@@ -1,6 +1,6 @@
-import React from 'react';
-import { Upload, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from 'react'
+import { Upload, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function BackerStepPortfolio({ data, updateData }) {
   const handleAddClip = () => {
@@ -9,20 +9,20 @@ export default function BackerStepPortfolio({ data, updateData }) {
       description: '',
       video_url: '',
       thumbnail_url: ''
-    };
-    updateData('portfolio_clips', [...(data.portfolio_clips || []), newClip]);
-  };
+    }
+    updateData('portfolio_clips', [...(data.portfolio_clips || []), newClip])
+  }
 
   const handleRemoveClip = (index) => {
-    updateData('portfolio_clips', data.portfolio_clips.filter((_, i) => i !== index));
-  };
+    updateData('portfolio_clips', data.portfolio_clips.filter((_, i) => i !== index))
+  }
 
   const handleUpdateClip = (index, field, value) => {
     const updated = data.portfolio_clips.map((clip, i) =>
       i === index ? { ...clip, [field]: value } : clip
-    );
-    updateData('portfolio_clips', updated);
-  };
+    )
+    updateData('portfolio_clips', updated)
+  }
 
   return (
     <div className="space-y-6">
@@ -108,5 +108,5 @@ export default function BackerStepPortfolio({ data, updateData }) {
         )}
       </div>
     </div>
-  );
+  )
 }

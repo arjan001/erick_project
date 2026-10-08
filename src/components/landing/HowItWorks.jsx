@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { FileText, Users, Clapperboard } from 'lucide-react';
+import React from 'react'
+import { motion } from 'framer-motion'
+import { FileText, Users, Clapperboard } from 'lucide-react'
 
 const steps = [
   {
@@ -18,7 +18,7 @@ const steps = [
     title: 'Start Creating',
     description: 'Hire, collaborate, and manage your production — all in one place. From brief to final cut.',
   },
-];
+]
 
 export default function HowItWorks() {
   return (
@@ -35,7 +35,7 @@ export default function HowItWorks() {
 
         <div className="grid gap-8 md:grid-cols-3">
           {steps.map((step, i) => {
-            const Icon = step.icon;
+            const Icon = step.icon
             return (
               <motion.div
                 key={step.title}
@@ -59,10 +59,10 @@ export default function HowItWorks() {
                   <div className="absolute top-8 -right-4 hidden h-px w-8 bg-white/10 md:block" />
                 )}
               </motion.div>
-            );
+            )
           })}
         </div>
       </div>
     </section>
-  );
+  )
 }

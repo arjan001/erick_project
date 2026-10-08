@@ -1,19 +1,19 @@
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import LocationMapSelector from '../LocationMapSelector';
-import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete';
-import languages from '@/data/languages.json';
-import { formatSocialMediaUrl } from '@/lib/socialMediaUtils';
+import React from 'react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import LocationMapSelector from '../LocationMapSelector'
+import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete'
+import languages from '@/data/languages.json'
+import { formatSocialMediaUrl } from '@/lib/socialMediaUtils'
 
 export default function ArtistStepDetails({ data, updateData }) {
-  const selectedLanguages = data.languages_spoken || [];
+  const selectedLanguages = data.languages_spoken || []
 
   const handleLocationSelect = (location) => {
-    updateData('based_in_city', location.city);
-    updateData('based_in_country', location.country);
-    updateData('coordinates', { lat: location.lat, lng: location.lng });
-  };
+    updateData('based_in_city', location.city)
+    updateData('based_in_country', location.country)
+    updateData('coordinates', { lat: location.lat, lng: location.lng })
+  }
 
   return (
     <div>
@@ -131,5 +131,5 @@ export default function ArtistStepDetails({ data, updateData }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

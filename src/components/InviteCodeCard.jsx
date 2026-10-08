@@ -1,68 +1,68 @@
-import React, { useState, useEffect } from 'react';
-import { Artist, Team, Backer, ProjectOwner, Invite } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { Copy, Check, Gift, UserPlus, Share2, Link as LinkIcon } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { Artist, Team, Backer, ProjectOwner, Invite } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { Copy, Check, Gift, UserPlus, Share2, Link as LinkIcon } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
 
 export default function InviteCodeCard() {
-  const { user } = useAuth();
-  const { success, error: toastError } = useToast();
-  const [inviteCode, setInviteCode] = useState('');
-  const [trackingCode, setTrackingCode] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
-  const [applicants, setApplicants] = useState([]);
+  const { user } = useAuth()
+  const { success, error: toastError } = useToast()
+  const [inviteCode, setInviteCode] = useState('')
+  const [trackingCode, setTrackingCode] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
+  const [copiedCode, setCopiedCode] = useState(false)
+  const [copiedLink, setCopiedLink] = useState(false)
+  const [applicants, setApplicants] = useState([])
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!user?.email) return;
+      if (!user?.email) return
       try {
-        let profile = null;
-        let entity = null;
+        let profile = null
+        let entity = null
         
         if (user.role === 'artist' || user.role === 'artist_admin') {
-          const artists = await Artist.filter({ email: user.email });
-          profile = artists?.[0];
-          entity = Artist;
+          const artists = await Artist.filter({ email: user.email })
+          profile = artists?.[0]
+          entity = Artist
         } else if (user.role === 'team' || user.role === 'team_admin') {
-          const teams = await Team.filter({ contact_email: user.email });
-          profile = teams?.[0];
-          entity = Team;
+          const teams = await Team.filter({ contact_email: user.email })
+          profile = teams?.[0]
+          entity = Team
         } else if (user.role === 'backer') {
-          const backers = await Backer.filter({ contact_email: user.email });
-          profile = backers?.[0];
-          entity = Backer;
+          const backers = await Backer.filter({ contact_email: user.email })
+          profile = backers?.[0]
+          entity = Backer
         } else {
-          const owners = await ProjectOwner.filter({ email: user.email });
-          profile = owners?.[0];
-          entity = ProjectOwner;
+          const owners = await ProjectOwner.filter({ email: user.email })
+          profile = owners?.[0]
+          entity = ProjectOwner
         }
 
         if (profile?.invite_code) {
-          setInviteCode(profile.invite_code);
+          setInviteCode(profile.invite_code)
           // Generate tracking code if not exists
           if (!trackingCode) {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let trackCode = '';
-            for (let i = 0; i < 8; i++) trackCode += chars[Math.floor(Math.random() * chars.length)];
-            setTrackingCode(trackCode);
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+            let trackCode = ''
+            for (let i = 0; i < 8; i++) trackCode += chars[Math.floor(Math.random() * chars.length)]
+            setTrackingCode(trackCode)
           }
         } else if (profile && entity) {
           // Don't auto-generate - let user click button to generate
-          setInviteCode('');
+          setInviteCode('')
         }
 
         // Fetch applicants who used this invite code
         if (inviteCode || profile?.invite_code) {
-          const code = inviteCode || profile?.invite_code;
+          const code = inviteCode || profile?.invite_code
           try {
-            const inviteRecords = await Invite.filter({ code });
+            const inviteRecords = await Invite.filter({ code })
             if (inviteRecords && inviteRecords.length > 0) {
               const applicantEmails = inviteRecords
                 .filter(inv => inv.used_by_email)
-                .map(inv => inv.used_by_email);
+                .map(inv => inv.used_by_email)
               
               // Get user details for each applicant
               const applicantDetails = await Promise.all(
@@ -73,109 +73,109 @@ export default function InviteCodeCard() {
                       Team.filter({ contact_email: email }),
                       Backer.filter({ contact_email: email }),
                       ProjectOwner.filter({ email })
-                    ]);
-                    const artist = artists?.[0];
-                    const team = teams?.[0];
-                    const backer = backers?.[0];
-                    const owner = owners?.[0];
+                    ])
+                    const artist = artists?.[0]
+                    const team = teams?.[0]
+                    const backer = backers?.[0]
+                    const owner = owners?.[0]
                     
                     return {
                       email,
                       name: artist?.full_name || team?.team_name || backer?.organization_name || owner?.full_name || email,
                       type: artist ? 'artist' : team ? 'team' : backer ? 'backer' : 'client',
                       avatar: artist?.profile_photo_url || team?.team_logo_url || backer?.logo_url || owner?.profile_photo_url || null
-                    };
+                    }
                   } catch {
-                    return { email, name: email, type: 'user', avatar: null };
+                    return { email, name: email, type: 'user', avatar: null }
                   }
                 })
-              );
-              setApplicants(applicantDetails);
+              )
+              setApplicants(applicantDetails)
             }
           } catch (err) {
-            console.error('Error fetching applicants:', err);
+            
           }
         }
       } catch (err) {
-        console.error('Error fetching invite code:', err);
-        toastError('Error', 'Failed to load invite code');
+        
+        toastError('Error', 'Failed to load invite code')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchProfile();
-  }, [user]);
+    }
+    fetchProfile()
+  }, [user])
 
-  const referralLink = `${window.location.origin}/invite/${inviteCode}?inviter=${encodeURIComponent(user?.full_name || 'Eric Rabar')}&track=${trackingCode}`;
+  const referralLink = `${window.location.origin}/invite/${inviteCode}?inviter=${encodeURIComponent(user?.full_name || 'Eric Rabar')}&track=${trackingCode}`
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(inviteCode);
-    setCopiedCode(true);
-    success('Copied', 'Invite code copied to clipboard');
-    setTimeout(() => setCopiedCode(false), 2000);
-  };
+    navigator.clipboard.writeText(inviteCode)
+    setCopiedCode(true)
+    success('Copied', 'Invite code copied to clipboard')
+    setTimeout(() => setCopiedCode(false), 2000)
+  }
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(referralLink);
-    setCopiedLink(true);
-    success('Copied', 'Referral link copied');
-    setTimeout(() => setCopiedLink(false), 2000);
-  };
+    navigator.clipboard.writeText(referralLink)
+    setCopiedLink(true)
+    success('Copied', 'Referral link copied')
+    setTimeout(() => setCopiedLink(false), 2000)
+  }
 
   const handleGenerateCode = async () => {
-    if (!user?.email) return;
-    setGenerating(true);
+    if (!user?.email) return
+    setGenerating(true)
     try {
-      let profile = null;
-      let entity = null;
+      let profile = null
+      let entity = null
       
       if (user.role === 'artist' || user.role === 'artist_admin') {
-        const artists = await Artist.filter({ email: user.email });
-        profile = artists?.[0];
-        entity = Artist;
+        const artists = await Artist.filter({ email: user.email })
+        profile = artists?.[0]
+        entity = Artist
       } else if (user.role === 'team' || user.role === 'team_admin') {
-        const teams = await Team.filter({ contact_email: user.email });
-        profile = teams?.[0];
-        entity = Team;
+        const teams = await Team.filter({ contact_email: user.email })
+        profile = teams?.[0]
+        entity = Team
       } else if (user.role === 'backer') {
-        const backers = await Backer.filter({ contact_email: user.email });
-        profile = backers?.[0];
-        entity = Backer;
+        const backers = await Backer.filter({ contact_email: user.email })
+        profile = backers?.[0]
+        entity = Backer
       } else {
-        const owners = await ProjectOwner.filter({ email: user.email });
-        profile = owners?.[0];
-        entity = ProjectOwner;
+        const owners = await ProjectOwner.filter({ email: user.email })
+        profile = owners?.[0]
+        entity = ProjectOwner
       }
 
       if (!profile || !entity) {
-        toastError('Error', 'Profile not found');
-        setGenerating(false);
-        return;
+        toastError('Error', 'Profile not found')
+        setGenerating(false)
+        return
       }
 
       // Generate unique invite code
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let code = 'ER-';
-      for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+      let code = 'ER-'
+      for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
       
       // Check if code already exists
-      let isUnique = false;
-      let attempts = 0;
+      let isUnique = false
+      let attempts = 0
       while (!isUnique && attempts < 10) {
-        const existing = await Invite.filter({ code });
+        const existing = await Invite.filter({ code })
         if (!existing || existing.length === 0) {
-          isUnique = true;
+          isUnique = true
         } else {
-          code = 'ER-';
-          for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-          attempts++;
+          code = 'ER-'
+          for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
+          attempts++
         }
       }
 
-      setInviteCode(code);
+      setInviteCode(code)
       
       // Save to profile
-      await entity.update(profile.id, { invite_code: code });
+      await entity.update(profile.id, { invite_code: code })
       
       // Also save to invites table for tracking
       try {
@@ -186,22 +186,22 @@ export default function InviteCodeCard() {
           uses_count: 0,
           max_uses: 100,
           status: 'active'
-        });
+        })
       } catch (inviteErr) {
-        console.error('Error creating invite record:', inviteErr);
+        
         // Don't fail if invite table doesn't exist yet
       }
       
-      setGenerating(false);
-      success('Invite Code Generated', 'Your unique invite code has been created');
+      setGenerating(false)
+      success('Invite Code Generated', 'Your unique invite code has been created')
     } catch (err) {
-      console.error('Error generating invite code:', err);
-      toastError('Error', 'Failed to generate invite code');
-      setGenerating(false);
+      
+      toastError('Error', 'Failed to generate invite code')
+      setGenerating(false)
     }
-  };
+  }
 
-  if (loading) return null;
+  if (loading) return null
 
   return (
     <div className="rounded-2xl border border-gray-100 p-6 bg-white">
@@ -304,5 +304,5 @@ export default function InviteCodeCard() {
         )}
       </div>
     </div>
-  );
+  )
 }

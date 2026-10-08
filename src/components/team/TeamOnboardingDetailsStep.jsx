@@ -1,8 +1,8 @@
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import CountrySelector from '../CountrySelector';
-import LanguageMultiSelect from '@/components/LanguageMultiSelect';
+import React from 'react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import CountrySelector from '../CountrySelector'
+import LanguageMultiSelect from '@/components/LanguageMultiSelect'
 
 export default function TeamOnboardingDetailsStep({ data, updateData }) {
   return (
@@ -57,5 +57,5 @@ export default function TeamOnboardingDetailsStep({ data, updateData }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

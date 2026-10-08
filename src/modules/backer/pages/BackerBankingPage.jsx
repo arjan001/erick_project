@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Backer } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, CreditCard, Lock, Plus, Trash2, Check, AlertCircle } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Backer } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Building2, CreditCard, Lock, Plus, Trash2, Check, AlertCircle } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function BackerBankingPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [backer, setBacker] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showBankForm, setShowBankForm] = useState(false);
-  const [bankAccounts, setBankAccounts] = useState([]);
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [backer, setBacker] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [showBankForm, setShowBankForm] = useState(false)
+  const [bankAccounts, setBankAccounts] = useState([])
   
   const [bankForm, setBankForm] = useState({
     bank_name: '',
@@ -25,38 +25,38 @@ export default function BackerBankingPage() {
     account_type: 'checking',
     account_holder_name: '',
     is_primary: false
-  });
+  })
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    fetchData();
-  }, [isAuthenticated]);
+    fetchData()
+  }, [isAuthenticated])
 
   const fetchData = async () => {
     try {
-      const backers = await Backer.filter({ contact_email: authUser?.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email })
       if (backers.length > 0) {
-        setBacker(backers[0]);
-        setBankAccounts(backers[0].bank_accounts || []);
+        setBacker(backers[0])
+        setBankAccounts(backers[0].bank_accounts || [])
       }
     } catch (err) {
-      console.error('Error fetching banking data:', err);
-      toastError('Load Failed', 'Failed to load banking information');
+      
+      toastError('Load Failed', 'Failed to load banking information')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleAddBankAccount = async () => {
-    if (!backer) return;
+    if (!backer) return
     
     // Validate required fields
     if (!bankForm.bank_name || !bankForm.account_number || !bankForm.routing_number || !bankForm.account_holder_name) {
-      toastError('Validation Error', 'Please fill in all required fields');
-      return;
+      toastError('Validation Error', 'Please fill in all required fields')
+      return
     }
 
     try {
@@ -65,14 +65,14 @@ export default function BackerBankingPage() {
         ...bankForm,
         account_number: bankForm.account_number.slice(-4).padStart(bankForm.account_number.length - 4, '*'),
         created_at: new Date().toISOString()
-      };
+      }
 
       const updatedAccounts = bankForm.is_primary 
         ? bankAccounts.map(acc => ({ ...acc, is_primary: false })).concat(newAccount)
-        : [...bankAccounts, newAccount];
+        : [...bankAccounts, newAccount]
 
-      await Backer.update(backer.id, { bank_accounts: updatedAccounts });
-      setBankAccounts(updatedAccounts);
+      await Backer.update(backer.id, { bank_accounts: updatedAccounts })
+      setBankAccounts(updatedAccounts)
       setBankForm({
         bank_name: '',
         account_number: '',
@@ -80,50 +80,50 @@ export default function BackerBankingPage() {
         account_type: 'checking',
         account_holder_name: '',
         is_primary: false
-      });
-      setShowBankForm(false);
-      success('Bank Account Added', 'Your bank account has been added successfully');
+      })
+      setShowBankForm(false)
+      success('Bank Account Added', 'Your bank account has been added successfully')
     } catch (err) {
-      console.error('Error adding bank account:', err);
-      toastError('Add Failed', 'Failed to add bank account');
+      
+      toastError('Add Failed', 'Failed to add bank account')
     }
-  };
+  }
 
   const handleDeleteBankAccount = async (accountId) => {
-    if (!confirm('Are you sure you want to remove this bank account?')) return;
+    if (!confirm('Are you sure you want to remove this bank account?')) return
     
     try {
-      const updatedAccounts = bankAccounts.filter(acc => acc.id !== accountId);
-      await Backer.update(backer.id, { bank_accounts: updatedAccounts });
-      setBankAccounts(updatedAccounts);
-      success('Account Removed', 'Bank account removed successfully');
+      const updatedAccounts = bankAccounts.filter(acc => acc.id !== accountId)
+      await Backer.update(backer.id, { bank_accounts: updatedAccounts })
+      setBankAccounts(updatedAccounts)
+      success('Account Removed', 'Bank account removed successfully')
     } catch (err) {
-      console.error('Error deleting bank account:', err);
-      toastError('Delete Failed', 'Failed to remove bank account');
+      
+      toastError('Delete Failed', 'Failed to remove bank account')
     }
-  };
+  }
 
   const handleSetPrimary = async (accountId) => {
     try {
       const updatedAccounts = bankAccounts.map(acc => ({
         ...acc,
         is_primary: acc.id === accountId
-      }));
-      await Backer.update(backer.id, { bank_accounts: updatedAccounts });
-      setBankAccounts(updatedAccounts);
-      success('Primary Updated', 'Primary bank account updated');
+      }))
+      await Backer.update(backer.id, { bank_accounts: updatedAccounts })
+      setBankAccounts(updatedAccounts)
+      success('Primary Updated', 'Primary bank account updated')
     } catch (err) {
-      console.error('Error setting primary:', err);
-      toastError('Update Failed', 'Failed to update primary account');
+      
+      toastError('Update Failed', 'Failed to update primary account')
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -330,5 +330,5 @@ export default function BackerBankingPage() {
           </div>
         </Card>
     </div>
-  );
+  )
 }

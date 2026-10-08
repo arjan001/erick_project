@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 export default function RoleToggle({ active = 'talent', onChange, dark = false }) {
   return (
@@ -32,5 +32,5 @@ export default function RoleToggle({ active = 'talent', onChange, dark = false }
         I'm Hiring Talent
       </button>
     </div>
-  );
+  )
 }

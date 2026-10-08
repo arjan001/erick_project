@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { X, MapPin, Star, ExternalLink, Mail, Phone, Calendar, FileText, Award, GraduationCap, Shield, Users, Globe, Instagram, Linkedin, Twitter, Youtube, CheckCircle, XCircle, Heart, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react'
+import { X, MapPin, Star, ExternalLink, Mail, Phone, Calendar, FileText, Award, GraduationCap, Shield, Users, Globe, Instagram, Linkedin, Twitter, Youtube, CheckCircle, XCircle, Heart, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function CreatorProfileModal({ profile, onClose }) {
-  const [imgIdx, setImgIdx] = useState(0);
-  const [favorited, setFavorited] = useState(false);
+  const [imgIdx, setImgIdx] = useState(0)
+  const [favorited, setFavorited] = useState(false)
 
-  if (!profile) return null;
+  if (!profile) return null
 
-  const nextImg = () => setImgIdx((i) => (i + 1) % profile.images.length);
-  const prevImg = () => setImgIdx((i) => (i - 1 + profile.images.length) % profile.images.length);
+  const nextImg = () => setImgIdx((i) => (i + 1) % profile.images.length)
+  const prevImg = () => setImgIdx((i) => (i - 1 + profile.images.length) % profile.images.length)
 
   return (
     <>
@@ -332,5 +332,5 @@ export default function CreatorProfileModal({ profile, onClose }) {
         </div>
       </div>
     </>
-  );
+  )
 }

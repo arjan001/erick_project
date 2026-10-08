@@ -1,6 +1,6 @@
-import React from 'react';
-import { Helmet } from 'react-helmet-async';
-import { useLocation } from 'react-router-dom';
+import React from 'react'
+import { Helmet } from 'react-helmet-async'
+import { useLocation } from 'react-router-dom'
 
 const SEOMetaTags = ({
   title,
@@ -17,48 +17,48 @@ const SEOMetaTags = ({
   authorWebsite = 'oneplusafrica.com',
   authorLinkedIn = 'https://ke.linkedin.com/in/edwin-nyongesa-770658230'
 }) => {
-  const location = useLocation();
-  const [seoData, setSeoData] = React.useState(null);
-  const [pageData, setPageData] = React.useState(null);
-  const [schemaJson, setSchemaJson] = React.useState(null);
+  const location = useLocation()
+  const [seoData, setSeoData] = React.useState(null)
+  const [pageData, setPageData] = React.useState(null)
+  const [schemaJson, setSchemaJson] = React.useState(null)
 
   React.useEffect(() => {
     const loadSEOData = async () => {
       try {
         // Dynamically import SEO API to avoid breaking if tables don't exist
-        const seoApi = await import('@/modules/admin/api/seo.api');
+        const seoApi = await import('@/modules/admin/api/seo.api')
         const [settings, pageMetadata, schema] = await Promise.all([
           seoApi.getSeoSettings().catch(() => null),
           seoApi.getPageMetadataBySlug(location.pathname).catch(() => null),
           seoApi.generateSchemaForPage(location.pathname).catch(() => null)
-        ]);
-        setSeoData(settings);
-        setPageData(pageMetadata);
-        setSchemaJson(schema);
+        ])
+        setSeoData(settings)
+        setPageData(pageMetadata)
+        setSchemaJson(schema)
       } catch (error) {
-        console.error('Error loading SEO data:', error);
+        
         // Silently fail - don't break the page
       }
-    };
-    loadSEOData();
-  }, [location.pathname]);
+    }
+    loadSEOData()
+  }, [location.pathname])
 
   // Use props if provided, otherwise fall back to database data
-  const pageTitle = title || pageData?.meta_title || seoData?.site_title || 'SmartGigs Kenya';
-  const pageDescription = description || pageData?.meta_description || seoData?.site_description || '';
-  const pageKeywords = keywords || pageData?.meta_keywords || seoData?.site_keywords || '';
-  const pageOgImage = ogImage || pageData?.og_image || seoData?.og_image || '';
-  const pageOgType = ogType || pageData?.og_type || seoData?.og_type || 'website';
-  const pageOgLocale = seoData?.og_locale || 'en_US';
-  const pageCanonical = canonicalUrl || pageData?.canonical_url || seoData?.canonical_url || '';
-  const pageNoIndex = noIndex || pageData?.no_index || false;
-  const twitterCard = seoData?.twitter_card || 'summary_large_image';
-  const twitterSite = seoData?.twitter_site || '';
-  const twitterCreator = seoData?.twitter_creator || '';
-  const twitterImage = seoData?.twitter_image || pageOgImage || '';
+  const pageTitle = title || pageData?.meta_title || seoData?.site_title || 'SmartGigs Kenya'
+  const pageDescription = description || pageData?.meta_description || seoData?.site_description || ''
+  const pageKeywords = keywords || pageData?.meta_keywords || seoData?.site_keywords || ''
+  const pageOgImage = ogImage || pageData?.og_image || seoData?.og_image || ''
+  const pageOgType = ogType || pageData?.og_type || seoData?.og_type || 'website'
+  const pageOgLocale = seoData?.og_locale || 'en_US'
+  const pageCanonical = canonicalUrl || pageData?.canonical_url || seoData?.canonical_url || ''
+  const pageNoIndex = noIndex || pageData?.no_index || false
+  const twitterCard = seoData?.twitter_card || 'summary_large_image'
+  const twitterSite = seoData?.twitter_site || ''
+  const twitterCreator = seoData?.twitter_creator || ''
+  const twitterImage = seoData?.twitter_image || pageOgImage || ''
 
   // Build canonical URL
-  const fullCanonical = pageCanonical || `${window.location.origin}${location.pathname}`;
+  const fullCanonical = pageCanonical || `${window.location.origin}${location.pathname}`
 
   return (
     <Helmet>
@@ -147,7 +147,7 @@ const SEOMetaTags = ({
         </script>
       )}
     </Helmet>
-  );
-};
+  )
+}
 
-export default SEOMetaTags;
+export default SEOMetaTags

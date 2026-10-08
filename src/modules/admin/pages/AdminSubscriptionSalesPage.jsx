@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { SubscriptionOrder, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities';
-import { DollarSign, TrendingUp, Users, CreditCard, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { SubscriptionOrder, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
+import { DollarSign, TrendingUp, Users, CreditCard, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 
 export default function AdminSubscriptionSalesPage() {
-  const [orders, setOrders] = useState([]);
-  const [subscriptions, setSubscriptions] = useState([]);
-  const [packages, setPackages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('30');
+  const [orders, setOrders] = useState([])
+  const [subscriptions, setSubscriptions] = useState([])
+  const [packages, setPackages] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [timeRange, setTimeRange] = useState('30')
 
   useEffect(() => {
-    fetchData();
-  }, [timeRange]);
+    fetchData()
+  }, [timeRange])
 
   const fetchData = async () => {
     try {
@@ -19,34 +19,34 @@ export default function AdminSubscriptionSalesPage() {
         SubscriptionOrder.list('-created_at'),
         Subscription.list(),
         SubscriptionPackage.list()
-      ]);
-      setOrders(ordersData);
-      setSubscriptions(subsData);
-      setPackages(pkgsData);
+      ])
+      setOrders(ordersData)
+      setSubscriptions(subsData)
+      setPackages(pkgsData)
     } catch (err) {
-      console.error('Error fetching data:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const getPackageName = (packageId) => {
-    const pkg = packages.find(p => p.id === packageId);
-    return pkg?.name || 'Unknown';
-  };
+    const pkg = packages.find(p => p.id === packageId)
+    return pkg?.name || 'Unknown'
+  }
 
   const calculateStats = () => {
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.amount || 0), 0);
-    const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length;
-    const totalSubscriptions = subscriptions.length;
+    const totalRevenue = orders.reduce((sum, order) => sum + (order.amount || 0), 0)
+    const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length
+    const totalSubscriptions = subscriptions.length
     const recentOrders = orders.filter(o => {
-      const days = parseInt(timeRange);
-      const orderDate = new Date(o.created_at);
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - days);
-      return orderDate >= cutoffDate;
-    });
-    const recentRevenue = recentOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
+      const days = parseInt(timeRange)
+      const orderDate = new Date(o.created_at)
+      const cutoffDate = new Date()
+      cutoffDate.setDate(cutoffDate.getDate() - days)
+      return orderDate >= cutoffDate
+    })
+    const recentRevenue = recentOrders.reduce((sum, order) => sum + (order.amount || 0), 0)
 
     return {
       totalRevenue,
@@ -54,13 +54,13 @@ export default function AdminSubscriptionSalesPage() {
       totalSubscriptions,
       recentRevenue,
       recentOrders: recentOrders.length
-    };
-  };
+    }
+  }
 
-  const stats = calculateStats();
+  const stats = calculateStats()
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-6">Loading...</div>
   }
 
   return (
@@ -146,9 +146,9 @@ export default function AdminSubscriptionSalesPage() {
         <h2 className="text-xl font-bold text-gray-900 mb-4">Revenue by Package</h2>
         <div className="space-y-4">
           {packages.map(pkg => {
-            const packageOrders = orders.filter(o => o.package_id === pkg.id);
-            const packageRevenue = packageOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
-            const percentage = stats.totalRevenue > 0 ? (packageRevenue / stats.totalRevenue) * 100 : 0;
+            const packageOrders = orders.filter(o => o.package_id === pkg.id)
+            const packageRevenue = packageOrders.reduce((sum, o) => sum + (o.amount || 0), 0)
+            const percentage = stats.totalRevenue > 0 ? (packageRevenue / stats.totalRevenue) * 100 : 0
 
             return (
               <div key={pkg.id}>
@@ -163,7 +163,7 @@ export default function AdminSubscriptionSalesPage() {
                   />
                 </div>
               </div>
-            );
+            )
           })}
         </div>
       </div>
@@ -218,5 +218,5 @@ export default function AdminSubscriptionSalesPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

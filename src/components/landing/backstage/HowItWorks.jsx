@@ -1,13 +1,13 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { UserCircle, Upload, Bell, Smartphone } from 'lucide-react';
+import React from 'react'
+import { motion } from 'framer-motion'
+import { UserCircle, Upload, Bell, Smartphone } from 'lucide-react'
 
 const features = [
   { icon: UserCircle, text: 'Create multiple profiles to showcase your different specialties.' },
   { icon: Upload, text: 'Upload unlimited media—photos, videos, and audio.' },
   { icon: Bell, text: 'Never miss a job with custom job searches with instant alerts.' },
   { icon: Smartphone, text: 'Apply anywhere with the top-rated SmartGigs Kenya iOS app.' },
-];
+]
 
 export default function HowItWorks() {
   return (
@@ -58,7 +58,7 @@ export default function HowItWorks() {
 
               <div className="mt-6 space-y-4">
                 {features.map((f, i) => {
-                  const Icon = f.icon;
+                  const Icon = f.icon
                   return (
                     <motion.div
                       key={i}
@@ -71,7 +71,7 @@ export default function HowItWorks() {
                       <Icon className="mt-0.5 h-5 w-5 shrink-0 text-[#5850EC]" />
                       <p className="text-sm text-[#1F1F1F] md:text-[15px]">{f.text}</p>
                     </motion.div>
-                  );
+                  )
                 })}
               </div>
 
@@ -83,5 +83,5 @@ export default function HowItWorks() {
         </motion.div>
       </div>
     </section>
-  );
+  )
 }

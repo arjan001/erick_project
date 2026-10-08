@@ -1,34 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { Search, ChevronDown, LogOut, Settings, MessageCircle, Menu, Users, Home, Bell, CreditCard, UserCheck, Briefcase, MessageSquare, Heart, Star, Ticket, Zap, CheckCheck, X } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/lib/AuthContext';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Message, Artist, Team, ProjectOwner, Backer, Notification } from '@/lib/supabaseEntities';
-import { useSidebar } from '@/layouts/DashboardLayout';
-import realtimeMessagingService from '@/services/realtimeMessagingService';
+import React, { useState, useEffect } from 'react'
+import { Search, ChevronDown, LogOut, Settings, MessageCircle, Menu, Users, Home, Bell, CreditCard, UserCheck, Briefcase, MessageSquare, Heart, Star, Ticket, Zap, CheckCheck, X } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/lib/AuthContext'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Message, Artist, Team, ProjectOwner, Backer, Notification } from '@/lib/supabaseEntities'
+import { useSidebar } from '@/layouts/DashboardLayout'
+import realtimeMessagingService from '@/services/realtimeMessagingService'
 
 // Modern TailAdmin-style top bar shared across all dashboard roles.
 export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const { setMobileSidebarOpen } = useSidebar();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [messagesOpen, setMessagesOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [recentSenders, setRecentSenders] = useState([]);
-  const [artistProfile, setArtistProfile] = useState(null);
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const { setMobileSidebarOpen } = useSidebar()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [messagesOpen, setMessagesOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [messages, setMessages] = useState([])
+  const [notifications, setNotifications] = useState([])
+  const [recentSenders, setRecentSenders] = useState([])
+  const [artistProfile, setArtistProfile] = useState(null)
 
   const fetchMessages = async () => {
-    if (!user?.email) return;
+    if (!user?.email) return
     try {
       // Messages table uses is_read, not read
-      const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_at', 10);
-      setMessages(msgs || []);
+      const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_at', 10)
+      setMessages(msgs || [])
       
       // Get unique senders
-      const senderEmails = [...new Set(msgs.map(m => m.sender_email))];
+      const senderEmails = [...new Set(msgs.map(m => m.sender_email))]
       const sendersData = await Promise.all(
         senderEmails.map(async (email) => {
           try {
@@ -37,161 +37,161 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
               Team.filter({ contact_email: email }),
               ProjectOwner.filter({ email }),
               Backer.filter({ contact_email: email })
-            ]);
-            const artist = artists?.[0];
-            const team = teams?.[0];
-            const owner = owners?.[0];
-            const backer = backers?.[0];
+            ])
+            const artist = artists?.[0]
+            const team = teams?.[0]
+            const owner = owners?.[0]
+            const backer = backers?.[0]
             
             return {
               email,
               name: artist?.full_name || team?.team_name || owner?.full_name || backer?.organization_name || email,
               avatar: artist?.profile_photo_url || team?.team_logo_url || owner?.profile_photo_url || backer?.logo_url || null
-            };
+            }
           } catch {
-            return { email, name: email, avatar: null };
+            return { email, name: email, avatar: null }
           }
         })
-      );
-      setRecentSenders(sendersData.slice(0, 5));
+      )
+      setRecentSenders(sendersData.slice(0, 5))
     } catch (err) {
-      console.error('Error fetching messages:', err);
+      
     }
-  };
+  }
 
   const fetchNotifications = async () => {
-    if (!user?.email) return;
+    if (!user?.email) return
     try {
-      const notifs = await Notification.filter({ recipient_email: user.email }, '-created_at', 10);
-      setNotifications(notifs || []);
+      const notifs = await Notification.filter({ recipient_email: user.email }, '-created_at', 10)
+      setNotifications(notifs || [])
     } catch (err) {
-      console.error('Error fetching notifications:', err);
+      
     }
-  };
+  }
 
   useEffect(() => {
-    fetchMessages();
-    fetchNotifications();
-  }, [user]);
+    fetchMessages()
+    fetchNotifications()
+  }, [user])
 
   // Real-time message subscription
   useEffect(() => {
-    if (!user?.email) return;
+    if (!user?.email) return
 
     const handleNewMessage = (newMessage) => {
-      console.log('Real-time new message received in topbar:', newMessage);
-      fetchMessages();
-    };
+      
+      fetchMessages()
+    }
 
     const unsubscribe = realtimeMessagingService.subscribeToMessages(
       user.email,
       handleNewMessage
-    );
+    )
 
-    return () => unsubscribe();
-  }, [user]);
+    return () => unsubscribe()
+  }, [user])
 
   // Real-time notification subscription
   useEffect(() => {
-    if (!user?.email) return;
+    if (!user?.email) return
 
     const handleNewNotification = (newNotification) => {
-      console.log('Real-time new notification received:', newNotification);
-      setNotifications(prev => [newNotification, ...prev]);
-    };
+      
+      setNotifications(prev => [newNotification, ...prev])
+    }
 
     const unsubscribe = realtimeMessagingService.subscribeToNotifications(
       user.email,
       handleNewNotification
-    );
+    )
 
-    return () => unsubscribe();
-  }, [user]);
+    return () => unsubscribe()
+  }, [user])
 
 
   useEffect(() => {
-    if (!user?.email) return;
+    if (!user?.email) return
     const interval = setInterval(() => {
-      fetchMessages();
-      fetchNotifications();
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [user]);
+      fetchMessages()
+      fetchNotifications()
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [user])
 
   useEffect(() => {
-    if (!user?.email) return;
+    if (!user?.email) return
     const fetchProfile = async () => {
       try {
         if (user.role === 'artist' || user.role === 'artist_admin') {
-          const artists = await Artist.filter({ email: user.email });
+          const artists = await Artist.filter({ email: user.email })
           if (artists?.[0]) {
-            setArtistProfile(artists[0]);
+            setArtistProfile(artists[0])
           }
         } else if (user.role === 'team' || user.role === 'team_admin') {
-          const teams = await Team.filter({ contact_email: user.email });
+          const teams = await Team.filter({ contact_email: user.email })
           if (teams?.[0]) {
-            setArtistProfile(teams[0]);
+            setArtistProfile(teams[0])
           }
         } else if (user.role === 'backer') {
-          const backers = await Backer.filter({ contact_email: user.email });
+          const backers = await Backer.filter({ contact_email: user.email })
           if (backers?.[0]) {
-            setArtistProfile(backers[0]);
+            setArtistProfile(backers[0])
           }
         } else if (user.role === 'client' || user.role === 'project_owner') {
-          const owners = await ProjectOwner.filter({ email: user.email });
+          const owners = await ProjectOwner.filter({ email: user.email })
           if (owners?.[0]) {
-            setArtistProfile(owners[0]);
+            setArtistProfile(owners[0])
           }
         }
       } catch (err) {
-        console.error('Error fetching profile:', err);
+        
       }
-    };
-    fetchProfile();
-  }, [user]);
+    }
+    fetchProfile()
+  }, [user])
 
-  const unreadMessagesCount = messages.length;
-  const unreadNotificationsCount = notifications.filter(n => !n.read).length;
+  const unreadMessagesCount = messages.length
+  const unreadNotificationsCount = notifications.filter(n => !n.read).length
 
   const handleOpenMessages = () => {
-    setMessagesOpen(!messagesOpen);
-    setNotificationsOpen(false);
-    setMenuOpen(false);
-  };
+    setMessagesOpen(!messagesOpen)
+    setNotificationsOpen(false)
+    setMenuOpen(false)
+  }
 
   const handleOpenNotifications = () => {
-    setNotificationsOpen(!notificationsOpen);
-    setMessagesOpen(false);
-    setMenuOpen(false);
-  };
+    setNotificationsOpen(!notificationsOpen)
+    setMessagesOpen(false)
+    setMenuOpen(false)
+  }
 
   const handleMarkAsRead = async (notificationId) => {
     try {
-      await Notification.update(notificationId, { read: true });
-      setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, read: true } : n));
+      await Notification.update(notificationId, { read: true })
+      setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, read: true } : n))
     } catch (err) {
-      console.error('Error marking notification as read:', err);
+      
     }
-  };
+  }
 
   const handleMarkAllAsRead = async () => {
     try {
-      const unreadNotifications = notifications.filter(n => !n.read);
-      await Promise.all(unreadNotifications.map(n => Notification.update(n.id, { read: true })));
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      const unreadNotifications = notifications.filter(n => !n.read)
+      await Promise.all(unreadNotifications.map(n => Notification.update(n.id, { read: true })))
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
     } catch (err) {
-      console.error('Error marking all notifications as read:', err);
+      
     }
-  };
+  }
 
   const handleDeleteNotification = async (notificationId) => {
     try {
-      await Notification.delete(notificationId);
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      await Notification.delete(notificationId)
+      setNotifications(prev => prev.filter(n => n.id !== notificationId))
     } catch (err) {
-      console.error('Error deleting notification:', err);
+      
     }
-  };
+  }
 
   const getNotificationIcon = (type) => {
     const iconMap = {
@@ -207,9 +207,9 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
       'testimonial': <Star className="w-4 h-4 text-white" />,
       'project_update': <Briefcase className="w-4 h-4 text-white" />,
       'system': <Bell className="w-4 h-4 text-white" />,
-    };
-    return iconMap[type] || <Bell className="w-4 h-4 text-white" />;
-  };
+    }
+    return iconMap[type] || <Bell className="w-4 h-4 text-white" />
+  }
 
   const getNotificationIconColor = (type) => {
     const colorMap = {
@@ -225,24 +225,24 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
       'testimonial': 'bg-rose-500',
       'project_update': 'bg-teal-500',
       'system': 'bg-gray-500',
-    };
-    return colorMap[type] || 'bg-gray-500';
-  };
+    }
+    return colorMap[type] || 'bg-gray-500'
+  }
 
   const formatNotificationTime = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now - date
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    return date.toLocaleDateString()
+  }
 
 
   return (
@@ -396,8 +396,8 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
                           )}
                           <button
                             onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteNotification(notification.id);
+                              e.stopPropagation()
+                              handleDeleteNotification(notification.id)
                             }}
                             className="p-1 hover:bg-gray-200 rounded transition-colors"
                             title="Delete notification"
@@ -459,5 +459,5 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
         </div>
       </div>
     </header>
-  );
+  )
 }

@@ -1,34 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { ContentCategory } from '@/lib/supabaseEntities';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react'
+import { ContentCategory } from '@/lib/supabaseEntities'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const all = await ContentCategory.filter({ status: 'active' }, 'display_order', 100);
-        setCategories(all || []);
+        const all = await ContentCategory.filter({ status: 'active' }, 'display_order', 100)
+        setCategories(all || [])
       } catch (err) {
-        console.error('Error fetching categories:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchData();
-  }, []);
+    }
+    fetchData()
+  }, [])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -74,5 +74,5 @@ export default function CategoriesPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

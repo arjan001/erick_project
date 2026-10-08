@@ -1,186 +1,186 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { Job, Project, Application, Notification, Artist, Team } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { FileText, User, Calendar, MapPin, Check, X, Crown, Star, Briefcase, Eye, Bookmark, BookmarkCheck, Play, Download, Globe, Linkedin, Instagram, Youtube, Twitter, Award, Languages, Globe2, Building2, Mail, Phone, Tag, Clock, DollarSign, GraduationCap, Search, Filter, MessageSquare, ChevronDown, ChevronUp, TrendingUp, Users, ExternalLink } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast';
-import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge';
-import ApplicationRankingEngine from '@/lib/applicationRankingEngine';
+import React, { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { base44 } from '@/api/base44Client'
+import { Job, Project, Application, Notification, Artist, Team } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { FileText, User, Calendar, MapPin, Check, X, Crown, Star, Briefcase, Eye, Bookmark, BookmarkCheck, Play, Download, Globe, Linkedin, Instagram, Youtube, Twitter, Award, Languages, Globe2, Building2, Mail, Phone, Tag, Clock, DollarSign, GraduationCap, Search, Filter, MessageSquare, ChevronDown, ChevronUp, TrendingUp, Users, ExternalLink } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast'
+import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge'
+import ApplicationRankingEngine from '@/lib/applicationRankingEngine'
 
 export default function ClientApplications() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const [user, setUser] = useState(null);
-  const [applications, setApplications] = useState([]);
-  const [artistSubscriptions, setArtistSubscriptions] = useState({});
-  const [artistProfiles, setArtistProfiles] = useState({});
-  const [artistPortfolios, setArtistPortfolios] = useState({});
-  const [teamProfiles, setTeamProfiles] = useState({});
-  const [teamPortfolios, setTeamPortfolios] = useState({});
-  const [jobs, setJobs] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [selectedApplication, setSelectedApplication] = useState(null);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [generatingPDF, setGeneratingPDF] = useState(false);
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const [user, setUser] = useState(null)
+  const [applications, setApplications] = useState([])
+  const [artistSubscriptions, setArtistSubscriptions] = useState({})
+  const [artistProfiles, setArtistProfiles] = useState({})
+  const [artistPortfolios, setArtistPortfolios] = useState({})
+  const [teamProfiles, setTeamProfiles] = useState({})
+  const [teamPortfolios, setTeamPortfolios] = useState({})
+  const [jobs, setJobs] = useState([])
+  const [projects, setProjects] = useState([])
+  const [selectedApplication, setSelectedApplication] = useState(null)
+  const [showReviewModal, setShowReviewModal] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [generatingPDF, setGeneratingPDF] = useState(false)
 
   // Filter states
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedJob, setSelectedJob] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedJob, setSelectedJob] = useState('all')
+  const [selectedStatus, setSelectedStatus] = useState('all')
   const [selectedType, setSelectedType] = useState('all'); // 'artist', 'team', 'all'
-  const [minScore, setMinScore] = useState(0);
-  const [showFilters, setShowFilters] = useState(false);
+  const [minScore, setMinScore] = useState(0)
+  const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState('score'); // 'score', 'date', 'name'
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [sortOrder, setSortOrder] = useState('desc')
 
   // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   // Ranking
-  const [rankedApplications, setRankedApplications] = useState([]);
-  const [showBestFit, setShowBestFit] = useState(true);
+  const [rankedApplications, setRankedApplications] = useState([])
+  const [showBestFit, setShowBestFit] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    setUser(JSON.parse(storedUser));
+    setUser(JSON.parse(storedUser))
 
     const fetchApplications = async () => {
       try {
-        const clientEmail = JSON.parse(storedUser).email;
+        const clientEmail = JSON.parse(storedUser).email
 
         // Fetch jobs posted by this client
-        const clientJobs = await Job.filter({ client_email: clientEmail });
-        setJobs(clientJobs);
+        const clientJobs = await Job.filter({ client_email: clientEmail })
+        setJobs(clientJobs)
 
         const jobApplicationsLists = await Promise.all(
           clientJobs.map(async (job) => {
-            const jobApplications = await Application.filter({ job_id: job.id });
-            return jobApplications.map(app => ({ ...app, job_title: job.title, job_type: job.job_type, job_location: job.location, job_required_skills: job.required_skills }));
+            const jobApplications = await Application.filter({ job_id: job.id })
+            return jobApplications.map(app => ({ ...app, job_title: job.title, job_type: job.job_type, job_location: job.location, job_required_skills: job.required_skills }))
           })
-        );
+        )
 
         // Fetch projects posted by this client
-        const clientProjects = await Project.filter({ project_owner_email: clientEmail });
-        setProjects(clientProjects);
+        const clientProjects = await Project.filter({ project_owner_email: clientEmail })
+        setProjects(clientProjects)
 
         const projectApplicationsLists = await Promise.all(
           clientProjects.map(async (project) => {
-            const projectApplications = await Application.filter({ project_id: project.id });
-            return projectApplications.map(app => ({ ...app, job_title: project.title || project.project_type?.replace(/_/g, ' ') + ' project', job_type: project.project_type, job_location: project.location_city, job_required_skills: project.departments_needed }));
+            const projectApplications = await Application.filter({ project_id: project.id })
+            return projectApplications.map(app => ({ ...app, job_title: project.title || project.project_type?.replace(/_/g, ' ') + ' project', job_type: project.project_type, job_location: project.location_city, job_required_skills: project.departments_needed }))
           })
-        );
+        )
 
-        const flatApplications = [...jobApplicationsLists.flat(), ...projectApplicationsLists.flat()];
-        setApplications(flatApplications);
+        const flatApplications = [...jobApplicationsLists.flat(), ...projectApplicationsLists.flat()]
+        setApplications(flatApplications)
 
         // Fetch subscriptions, profiles, and portfolios for all artists who applied
-        const artistEmails = [...new Set(flatApplications.map(app => app.artist_email).filter(Boolean))];
-        const subscriptionsData = {};
-        const profilesData = {};
-        const portfoliosData = {};
+        const artistEmails = [...new Set(flatApplications.map(app => app.artist_email).filter(Boolean))]
+        const subscriptionsData = {}
+        const profilesData = {}
+        const portfoliosData = {}
 
         await Promise.all(
           artistEmails.map(async (email) => {
             try {
               // Fetch subscription
-              const subs = await base44.entities.Subscription.filter({ user_email: email, status: 'active' });
+              const subs = await base44.entities.Subscription.filter({ user_email: email, status: 'active' })
               if (subs.length > 0) {
-                const pkg = await base44.entities.SubscriptionPackage.get(subs[0].package_id);
-                subscriptionsData[email] = { subscription: subs[0], package: pkg };
+                const pkg = await base44.entities.SubscriptionPackage.get(subs[0].package_id)
+                subscriptionsData[email] = { subscription: subs[0], package: pkg }
               }
 
               // Fetch artist profile
-              const artists = await Artist.filter({ email });
+              const artists = await Artist.filter({ email })
               if (artists.length > 0) {
-                profilesData[email] = artists[0];
+                profilesData[email] = artists[0]
 
                 // Fetch portfolio clips
                 const clips = await base44.entities.PortfolioClip.filter({
                   uploaded_by_type: 'artist',
                   uploaded_by_id: artists[0].id,
                   status: 'approved'
-                });
-                portfoliosData[email] = clips;
+                })
+                portfoliosData[email] = clips
               }
             } catch (err) {
-              console.error('Error fetching artist data:', err);
+              //
             }
           })
-        );
+        )
 
         // Fetch team profiles for team applications
-        const teamIds = [...new Set(flatApplications.map(app => app.team_id).filter(Boolean))];
-        const teamProfilesData = {};
-        const teamPortfoliosData = {};
+        const teamIds = [...new Set(flatApplications.map(app => app.team_id).filter(Boolean))]
+        const teamProfilesData = {}
+        const teamPortfoliosData = {}
 
         await Promise.all(
           teamIds.map(async (teamId) => {
             try {
-              const teams = await base44.entities.Team.filter({ id: teamId });
+              const teams = await base44.entities.Team.filter({ id: teamId })
               if (teams.length > 0) {
-                teamProfilesData[teamId] = teams[0];
+                teamProfilesData[teamId] = teams[0]
 
                 // Fetch team portfolio clips
                 const clips = await base44.entities.PortfolioClip.filter({
                   uploaded_by_type: 'team',
                   uploaded_by_id: teamId,
                   status: 'approved'
-                });
-                teamPortfoliosData[teamId] = clips;
+                })
+                teamPortfoliosData[teamId] = clips
               }
             } catch (err) {
-              console.error('Error fetching team data:', err);
+              //
             }
           })
-        );
+        )
 
-        setArtistSubscriptions(subscriptionsData);
-        setArtistProfiles(profilesData);
-        setArtistPortfolios(portfoliosData);
-        setTeamProfiles(teamProfilesData);
-        setTeamPortfolios(teamPortfoliosData);
+        setArtistSubscriptions(subscriptionsData)
+        setArtistProfiles(profilesData)
+        setArtistPortfolios(portfoliosData)
+        setTeamProfiles(teamProfilesData)
+        setTeamPortfolios(teamPortfoliosData)
       } catch (err) {
-        console.error('Error fetching applications:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchApplications();
-  }, []);
+    fetchApplications()
+  }, [])
 
   // Rank applications using the ranking engine
   useEffect(() => {
-    if (applications.length === 0) return;
+    if (applications.length === 0) return
 
-    const rankingEngine = new ApplicationRankingEngine();
+    const rankingEngine = new ApplicationRankingEngine()
     const applicationsWithProfiles = applications.map(app => {
-      let profile = null;
-      let type = 'unknown';
-      let portfolio = [];
+      let profile = null
+      let type = 'unknown'
+      let portfolio = []
 
       if (app.artist_email && artistProfiles[app.artist_email]) {
-        profile = artistProfiles[app.artist_email];
-        type = 'artist';
-        portfolio = artistPortfolios[app.artist_email] || [];
+        profile = artistProfiles[app.artist_email]
+        type = 'artist'
+        portfolio = artistPortfolios[app.artist_email] || []
       } else if (app.team_id && teamProfiles[app.team_id]) {
-        profile = teamProfiles[app.team_id];
-        type = 'team';
-        portfolio = teamPortfolios[app.team_id] || [];
+        profile = teamProfiles[app.team_id]
+        type = 'team'
+        portfolio = teamPortfolios[app.team_id] || []
       }
 
       // Add portfolio to profile for scoring
       if (profile) {
-        profile.portfolio_clips = portfolio;
+        profile.portfolio_clips = portfolio
       }
 
       return {
@@ -192,20 +192,20 @@ export default function ClientApplications() {
           location: app.job_location,
           job_type: app.job_type
         }
-      };
-    });
+      }
+    })
 
-    const ranked = rankingEngine.rankApplications(applicationsWithProfiles);
-    setRankedApplications(ranked);
-  }, [applications, artistProfiles, teamProfiles, artistPortfolios, teamPortfolios]);
+    const ranked = rankingEngine.rankApplications(applicationsWithProfiles)
+    setRankedApplications(ranked)
+  }, [applications, artistProfiles, teamProfiles, artistPortfolios, teamPortfolios])
 
   const handleAccept = async (applicationId) => {
     try {
-      const application = applications.find(app => app.id === applicationId);
-      await Application.update(applicationId, { status: 'accepted' });
+      const application = applications.find(app => app.id === applicationId)
+      await Application.update(applicationId, { status: 'accepted' })
       setApplications(prev => prev.map(app =>
         app.id === applicationId ? { ...app, status: 'accepted' } : app
-      ));
+      ))
 
       // Send notification to applicant
       if (application?.artist_email) {
@@ -216,23 +216,23 @@ export default function ClientApplications() {
           message: `Your application for "${application.job_title || application.project_title}" has been accepted!`,
           metadata: { job_title: application.job_title || application.project_title, application_id: applicationId },
           read: false
-        });
+        })
       }
 
-      success('Application Accepted', 'Application has been accepted');
+      success('Application Accepted', 'Application has been accepted')
     } catch (err) {
-      console.error('Error accepting application:', err);
-      toastError('Action Failed', 'Failed to accept application');
+      //
+      toastError('Action Failed', 'Failed to accept application')
     }
-  };
+  }
 
   const handleReject = async (applicationId) => {
     try {
-      const application = applications.find(app => app.id === applicationId);
-      await Application.update(applicationId, { status: 'rejected' });
+      const application = applications.find(app => app.id === applicationId)
+      await Application.update(applicationId, { status: 'rejected' })
       setApplications(prev => prev.map(app =>
         app.id === applicationId ? { ...app, status: 'rejected' } : app
-      ));
+      ))
 
       // Send notification to applicant
       if (application?.artist_email) {
@@ -243,26 +243,26 @@ export default function ClientApplications() {
           message: `Your application for "${application.job_title || application.project_title}" was not selected.`,
           metadata: { job_title: application.job_title || application.project_title, application_id: applicationId },
           read: false
-        });
+        })
       }
 
-      success('Application Rejected', 'Application has been rejected');
+      success('Application Rejected', 'Application has been rejected')
     } catch (err) {
-      console.error('Error rejecting application:', err);
-      toastError('Action Failed', 'Failed to reject application');
+      //
+      toastError('Action Failed', 'Failed to reject application')
     }
-  };
+  }
 
   const handleShortlist = async (applicationId) => {
     try {
-      const application = applications.find(app => app.id === applicationId);
-      await Application.update(applicationId, { status: 'shortlisted' });
+      const application = applications.find(app => app.id === applicationId)
+      await Application.update(applicationId, { status: 'shortlisted' })
       setApplications(prev => prev.map(app =>
         app.id === applicationId ? { ...app, status: 'shortlisted' } : app
-      ));
+      ))
 
       // Send notification to applicant
-      const recipientEmail = application?.artist_email || application?.team_email;
+      const recipientEmail = application?.artist_email || application?.team_email
       if (recipientEmail) {
         await Notification.create({
           recipient_email: recipientEmail,
@@ -271,33 +271,33 @@ export default function ClientApplications() {
           message: `Your application for "${application.job_title}" has been shortlisted.`,
           metadata: { job_title: application.job_title, application_id: applicationId },
           read: false
-        });
+        })
       }
 
-      success('Application Shortlisted', 'Application has been shortlisted');
+      success('Application Shortlisted', 'Application has been shortlisted')
     } catch (err) {
-      console.error('Error shortlisting application:', err);
-      toastError('Action Failed', 'Failed to shortlist application');
+      //
+      toastError('Action Failed', 'Failed to shortlist application')
     }
-  };
+  }
 
   const handleViewProfile = (application) => {
-    setSelectedApplication(application);
-    setShowReviewModal(true);
-  };
+    setSelectedApplication(application)
+    setShowReviewModal(true)
+  }
 
   const handleContact = (application) => {
-    const recipientEmail = application.artist_email || application.team_email;
+    const recipientEmail = application.artist_email || application.team_email
     if (recipientEmail) {
-      navigate('/Messages', { state: { recipientEmail } });
+      navigate('/Messages', { state: { recipientEmail } })
     }
-  };
+  }
 
   const handleGeneratePDF = async (application) => {
-    setGeneratingPDF(true);
+    setGeneratingPDF(true)
     try {
-      const artist = artistProfiles[application.artist_email];
-      const portfolio = artistPortfolios[application.artist_email] || [];
+      const artist = artistProfiles[application.artist_email]
+      const portfolio = artistPortfolios[application.artist_email] || []
 
       // Create a simple HTML content for PDF
       const pdfContent = `
@@ -452,61 +452,61 @@ export default function ClientApplications() {
             </div>
           </body>
         </html>
-      `;
+      `
 
       // Create a blob and download
-      const blob = new Blob([pdfContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `applicant-profile-${artist?.full_name?.replace(/\s+/g, '-').toLowerCase() || 'profile'}.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const blob = new Blob([pdfContent], { type: 'text/html' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `applicant-profile-${artist?.full_name?.replace(/\s+/g, '-').toLowerCase() || 'profile'}.html`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
 
-      success('PDF Generated', 'Applicant profile downloaded successfully');
+      success('PDF Generated', 'Applicant profile downloaded successfully')
     } catch (err) {
-      console.error('Error generating PDF:', err);
-      toastError('Generation Failed', 'Failed to generate PDF');
+      //
+      toastError('Generation Failed', 'Failed to generate PDF')
     } finally {
-      setGeneratingPDF(false);
+      setGeneratingPDF(false)
     }
-  };
+  }
 
   // Filter and sort applications
   const filteredAndSortedApplications = useMemo(() => {
-    let filtered = rankedApplications;
+    let filtered = rankedApplications
 
     // Filter by job
     if (selectedJob !== 'all') {
       filtered = filtered.filter(item =>
         item.application.job_title === selectedJob ||
         item.application.job_id === selectedJob
-      );
+      )
     }
 
     // Filter by status
     if (selectedStatus !== 'all') {
-      filtered = filtered.filter(item => item.application.status === selectedStatus);
+      filtered = filtered.filter(item => item.application.status === selectedStatus)
     }
 
     // Filter by type (artist/team)
     if (selectedType !== 'all') {
-      filtered = filtered.filter(item => item.type === selectedType);
+      filtered = filtered.filter(item => item.type === selectedType)
     }
 
     // Filter by minimum score
     if (minScore > 0) {
-      filtered = filtered.filter(item => item.totalScore >= minScore);
+      filtered = filtered.filter(item => item.totalScore >= minScore)
     }
 
     // Search filter
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+      const query = searchQuery.toLowerCase()
       filtered = filtered.filter(item => {
-        const profile = item.profile;
-        const app = item.application;
+        const profile = item.profile
+        const app = item.application
         return (
           profile?.full_name?.toLowerCase().includes(query) ||
           profile?.display_name?.toLowerCase().includes(query) ||
@@ -514,51 +514,51 @@ export default function ClientApplications() {
           app.job_title?.toLowerCase().includes(query) ||
           profile?.roles?.some(r => r.toLowerCase().includes(query)) ||
           profile?.skills_experience?.some(s => s.skill.toLowerCase().includes(query))
-        );
-      });
+        )
+      })
     }
 
     // Sort
     filtered.sort((a, b) => {
-      let comparison = 0;
+      let comparison = 0
 
       if (sortBy === 'score') {
-        comparison = a.totalScore - b.totalScore;
+        comparison = a.totalScore - b.totalScore
       } else if (sortBy === 'date') {
-        comparison = new Date(a.application.applied_at) - new Date(b.application.applied_at);
+        comparison = new Date(a.application.applied_at) - new Date(b.application.applied_at)
       } else if (sortBy === 'name') {
-        comparison = (a.profile?.full_name || '').localeCompare(b.profile?.full_name || '');
+        comparison = (a.profile?.full_name || '').localeCompare(b.profile?.full_name || '')
       }
 
-      return sortOrder === 'desc' ? -comparison : comparison;
-    });
+      return sortOrder === 'desc' ? -comparison : comparison
+    })
 
-    return filtered;
-  }, [rankedApplications, selectedJob, selectedStatus, selectedType, minScore, searchQuery, sortBy, sortOrder]);
+    return filtered
+  }, [rankedApplications, selectedJob, selectedStatus, selectedType, minScore, searchQuery, sortBy, sortOrder])
 
   // Pagination
-  const totalPages = Math.ceil(filteredAndSortedApplications.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredAndSortedApplications.length / itemsPerPage)
   const paginatedApplications = filteredAndSortedApplications.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
+  )
 
   // Get best fit candidates
   const bestFitCandidates = useMemo(() => {
-    return rankedApplications.filter(item => item.totalScore >= 75).slice(0, 5);
-  }, [rankedApplications]);
+    return rankedApplications.filter(item => item.totalScore >= 75).slice(0, 5)
+  }, [rankedApplications])
 
   // Reset pagination when filters change
   useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedJob, selectedStatus, selectedType, minScore, searchQuery]);
+    setCurrentPage(1)
+  }, [selectedJob, selectedStatus, selectedType, minScore, searchQuery])
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
         <div className="text-gray-600">Loading applications...</div>
       </div>
-    );
+    )
   }
 
   return (
@@ -713,10 +713,10 @@ export default function ClientApplications() {
                   size="sm"
                   onClick={() => {
                     if (sortBy === 'score') {
-                      setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
+                      setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')
                     } else {
-                      setSortBy('score');
-                      setSortOrder('desc');
+                      setSortBy('score')
+                      setSortOrder('desc')
                     }
                   }}
                   className="flex items-center gap-2"
@@ -1194,8 +1194,8 @@ export default function ClientApplications() {
                                     allowFullScreen
                                     title={clip.title}
                                     onError={(e) => {
-                                      e.target.style.display = 'none';
-                                      e.target.nextSibling.style.display = 'flex';
+                                      e.target.style.display = 'none'
+                                      e.target.nextSibling.style.display = 'flex'
                                     }}
                                   />
                                 ) : clip.video_embed_url.includes('vimeo.com') ? (
@@ -1205,8 +1205,8 @@ export default function ClientApplications() {
                                     allowFullScreen
                                     title={clip.title}
                                     onError={(e) => {
-                                      e.target.style.display = 'none';
-                                      e.target.nextSibling.style.display = 'flex';
+                                      e.target.style.display = 'none'
+                                      e.target.nextSibling.style.display = 'flex'
                                     }}
                                   />
                                 ) : (
@@ -1216,8 +1216,8 @@ export default function ClientApplications() {
                                     className="w-full h-full object-cover"
                                     title={clip.title}
                                     onError={(e) => {
-                                      e.target.style.display = 'none';
-                                      e.target.nextSibling.style.display = 'flex';
+                                      e.target.style.display = 'none'
+                                      e.target.nextSibling.style.display = 'flex'
                                     }}
                                   />
                                 )}
@@ -1231,7 +1231,7 @@ export default function ClientApplications() {
                                 alt={clip.title}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
-                                  e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25"%3E%3Crect width="100%25" height="100%25" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%236b7280"%3ENo thumbnail%3C/text%3E%3C/svg%3E';
+                                  e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25"%3E%3Crect width="100%25" height="100%25" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%236b7280"%3ENo thumbnail%3C/text%3E%3C/svg%3E'
                                 }}
                               />
                             ) : (
@@ -1300,8 +1300,8 @@ export default function ClientApplications() {
                     <>
                       <Button
                         onClick={() => {
-                          handleShortlist(selectedApplication.id);
-                          setShowReviewModal(false);
+                          handleShortlist(selectedApplication.id)
+                          setShowReviewModal(false)
                         }}
                         className="bg-blue-600 text-white hover:bg-blue-700"
                       >
@@ -1310,8 +1310,8 @@ export default function ClientApplications() {
                       </Button>
                       <Button
                         onClick={() => {
-                          handleAccept(selectedApplication.id);
-                          setShowReviewModal(false);
+                          handleAccept(selectedApplication.id)
+                          setShowReviewModal(false)
                         }}
                         className="bg-green-600 text-white hover:bg-green-700"
                       >
@@ -1324,8 +1324,8 @@ export default function ClientApplications() {
                     <>
                       <Button
                         onClick={() => {
-                          handleAccept(selectedApplication.id);
-                          setShowReviewModal(false);
+                          handleAccept(selectedApplication.id)
+                          setShowReviewModal(false)
                         }}
                         className="bg-green-600 text-white hover:bg-green-700"
                       >
@@ -1334,8 +1334,8 @@ export default function ClientApplications() {
                       </Button>
                       <Button
                         onClick={() => {
-                          handleReject(selectedApplication.id);
-                          setShowReviewModal(false);
+                          handleReject(selectedApplication.id)
+                          setShowReviewModal(false)
                         }}
                         variant="outline"
                         className="border-red-300 text-red-600 hover:bg-red-50"
@@ -1355,5 +1355,5 @@ export default function ClientApplications() {
         </div>
       )}
     </div>
-  );
+  )
 }

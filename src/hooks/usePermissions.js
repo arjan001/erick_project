@@ -1,17 +1,17 @@
-import { useAuth } from '@/lib/AuthContext';
-import { supabase } from '@/lib/supabase';
-import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/AuthContext'
+import { supabase } from '@/lib/supabase'
+import { useState, useEffect } from 'react'
 
 export const usePermissions = () => {
-  const { user } = useAuth();
-  const [permissions, setPermissions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth()
+  const [permissions, setPermissions] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!user?.id) {
-      setPermissions([]);
-      setLoading(false);
-      return;
+      setPermissions([])
+      setLoading(false)
+      return
     }
 
     const fetchPermissions = async () => {
@@ -32,49 +32,49 @@ export const usePermissions = () => {
             )
           `)
           .eq('user_id', user.id)
-          .eq('is_active', true);
+          .eq('is_active', true)
 
-        if (error) throw error;
+        if (error) throw error
 
         // Flatten permissions
-        const userPermissions = [];
+        const userPermissions = []
         data.forEach(userRole => {
           if (userRole.roles?.role_permissions) {
             userRole.roles.role_permissions.forEach(rp => {
               if (rp.permissions) {
-                userPermissions.push(rp.permissions.permission_key);
+                userPermissions.push(rp.permissions.permission_key)
               }
-            });
+            })
           }
-        });
+        })
 
-        setPermissions(userPermissions);
+        setPermissions(userPermissions)
       } catch (error) {
-        console.error('Error fetching permissions:', error);
-        setPermissions([]);
+        
+        setPermissions([])
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchPermissions();
-  }, [user?.id]);
+    fetchPermissions()
+  }, [user?.id])
 
   const hasPermission = (permissionKey) => {
-    return permissions.includes(permissionKey);
-  };
+    return permissions.includes(permissionKey)
+  }
 
   const hasAnyPermission = (permissionKeys) => {
-    return permissionKeys.some(key => permissions.includes(key));
-  };
+    return permissionKeys.some(key => permissions.includes(key))
+  }
 
   const hasAllPermissions = (permissionKeys) => {
-    return permissionKeys.every(key => permissions.includes(key));
-  };
+    return permissionKeys.every(key => permissions.includes(key))
+  }
 
   const hasModuleAccess = (module) => {
-    return permissions.some(p => p.startsWith(`${module}.`));
-  };
+    return permissions.some(p => p.startsWith(`${module}.`))
+  }
 
   return {
     permissions,
@@ -83,5 +83,5 @@ export const usePermissions = () => {
     hasAnyPermission,
     hasAllPermissions,
     hasModuleAccess
-  };
-};
+  }
+}

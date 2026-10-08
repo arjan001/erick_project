@@ -10,8 +10,8 @@
 export const getClientIP = () => {
   // In a real implementation, this would come from the request headers
   // For client-side apps, you'd need to use an API endpoint that returns the client IP
-  return null;
-};
+  return null
+}
 
 /**
  * Get user agent string
@@ -19,10 +19,10 @@ export const getClientIP = () => {
  */
 export const getUserAgent = () => {
   if (typeof navigator !== 'undefined') {
-    return navigator.userAgent;
+    return navigator.userAgent
   }
-  return null;
-};
+  return null
+}
 
 /**
  * Create audit log entry with automatic IP and user agent capture
@@ -51,5 +51,5 @@ export const createAuditLogEntry = (params) => {
     ip_address: getClientIP(),
     user_agent: getUserAgent(),
     metadata: params.metadata || {}
-  };
-};
+  }
+}

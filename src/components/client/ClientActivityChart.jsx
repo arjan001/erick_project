@@ -1,5 +1,5 @@
-import React from 'react';
-import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
+import React from 'react'
+import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip } from 'recharts'
 
 export default function ClientActivityChart({ data }) {
   return (
@@ -12,5 +12,5 @@ export default function ClientActivityChart({ data }) {
         </BarChart>
       </ResponsiveContainer>
     </div>
-  );
+  )
 }

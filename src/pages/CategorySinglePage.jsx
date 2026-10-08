@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ContentCategory, FeaturedWork, SuccessStory, RecentProject } from '@/lib/supabaseEntities';
-import { createPageUrl } from '@/shared/utils/routing';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { ContentCategory, FeaturedWork, SuccessStory, RecentProject } from '@/lib/supabaseEntities'
+import { createPageUrl } from '@/shared/utils/routing'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function CategorySinglePage() {
-  const { slug } = useParams();
-  const [category, setCategory] = useState(null);
-  const [featuredWorks, setFeaturedWorks] = useState([]);
-  const [successStories, setSuccessStories] = useState([]);
-  const [recentProjects, setRecentProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { slug } = useParams()
+  const [category, setCategory] = useState(null)
+  const [featuredWorks, setFeaturedWorks] = useState([])
+  const [successStories, setSuccessStories] = useState([])
+  const [recentProjects, setRecentProjects] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch category by slug
-        const categories = await ContentCategory.filter({ slug, status: 'active' });
-        const cat = categories?.[0] || null;
-        setCategory(cat);
+        const categories = await ContentCategory.filter({ slug, status: 'active' })
+        const cat = categories?.[0] || null
+        setCategory(cat)
 
         if (cat) {
           // Fetch related content for this category
@@ -27,26 +27,26 @@ export default function CategorySinglePage() {
             FeaturedWork.filter({ category: cat.name, status: 'active' }, 'display_order', 9),
             SuccessStory.filter({ category: cat.name, status: 'published' }, 'display_order', 6),
             RecentProject.filter({ category: cat.name, is_active: true }, 'display_order', 4)
-          ]);
-          setFeaturedWorks(works || []);
-          setSuccessStories(stories || []);
-          setRecentProjects(projects || []);
+          ])
+          setFeaturedWorks(works || [])
+          setSuccessStories(stories || [])
+          setRecentProjects(projects || [])
         }
       } catch (err) {
-        console.error('Error fetching category data:', err);
+        //
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchData();
-  }, [slug]);
+    }
+    fetchData()
+  }, [slug])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   if (!category) {
@@ -60,7 +60,7 @@ export default function CategorySinglePage() {
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -178,5 +178,5 @@ export default function CategorySinglePage() {
         </Link>
       </div>
     </div>
-  );
+  )
 }

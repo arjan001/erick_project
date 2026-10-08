@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Edit2, Globe, Upload } from 'lucide-react';
+import React from 'react'
+import { Button } from '@/components/ui/button'
+import { Edit2, Globe, Upload } from 'lucide-react'
 
 export default function ClientProfileHeader({
   user, projectOwner, uploadingLogo, logoInputRef, onLogoUpload,
@@ -128,5 +128,5 @@ export default function ClientProfileHeader({
         </div>
       )}
     </div>
-  );
+  )
 }

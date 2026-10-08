@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react'
 
 const CITIES = [
   // Headquarters
@@ -44,33 +44,33 @@ const CITIES = [
   { name: 'Buenos Aires', country: 'Argentina', teams: 1, status: 'global', image: 'https://images.unsplash.com/photo-1589909202802-8f4aadce1849?q=80&w=400', x: 10, y: 120, lat: -34.60, lng: -58.38 },
   { name: 'Singapore', country: 'Singapore', teams: 2, status: 'global', image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=400', x: 90, y: 95, lat: 1.35, lng: 103.82 },
   { name: 'Abu Dhabi', country: 'UAE', teams: 1, status: 'global', image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=400', x: 78, y: 75, lat: 24.47, lng: 54.37 }
-];
+]
 
 export default function EuropeanPresenceMap() {
-  const [hoveredCity, setHoveredCity] = useState(null);
-  const [visibleCities, setVisibleCities] = useState([]);
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
-  const mapRef = useRef(null);
+  const [hoveredCity, setHoveredCity] = useState(null)
+  const [visibleCities, setVisibleCities] = useState([])
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
+  const mapRef = useRef(null)
 
   // Rotate visible city names every 3 seconds
   useEffect(() => {
     const updateVisibleCities = () => {
-      const shuffled = [...CITIES].sort(() => Math.random() - 0.5);
-      setVisibleCities(shuffled.slice(0, 3));
-    };
+      const shuffled = [...CITIES].sort(() => Math.random() - 0.5)
+      setVisibleCities(shuffled.slice(0, 3))
+    }
     
-    updateVisibleCities();
-    const interval = setInterval(updateVisibleCities, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    updateVisibleCities()
+    const interval = setInterval(updateVisibleCities, 3000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleMouseMove = (e) => {
-    if (!mapRef.current) return;
-    const rect = mapRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setMousePos({ x, y });
-  };
+    if (!mapRef.current) return
+    const rect = mapRef.current.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    setMousePos({ x, y })
+  }
 
   return (
     <section className="py-32 bg-black relative overflow-hidden">
@@ -168,7 +168,7 @@ export default function EuropeanPresenceMap() {
                           loading="lazy"
                           decoding="async"
                           onError={(e) => {
-                            e.target.src = 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=400';
+                            e.target.src = 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=400'
                           }}
                         />
                         <div className="p-4 bg-white">
@@ -206,7 +206,7 @@ export default function EuropeanPresenceMap() {
                 loading="lazy"
                 decoding="async"
                 onError={(e) => {
-                  e.target.src = 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=400';
+                  e.target.src = 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=400'
                 }}
               />
               <div className="p-3">
@@ -229,5 +229,5 @@ export default function EuropeanPresenceMap() {
         </div>
       </div>
     </section>
-  );
+  )
 }

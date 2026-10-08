@@ -1,11 +1,11 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, BadgeCheck } from 'lucide-react';
-import Navbar from '@/components/landing/backstage/Navbar';
-import Footer from '@/components/landing/backstage/Footer';
-import Marquee from '@/components/landing/backstage/Marquee';
-import GigDetailSlideOut from '@/components/landing/backstage/GigDetailSlideOut';
-import { Job } from '@/lib/supabaseEntities';
+import React, { useState, useMemo, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, BadgeCheck } from 'lucide-react'
+import Navbar from '@/components/landing/backstage/Navbar'
+import Footer from '@/components/landing/backstage/Footer'
+import Marquee from '@/components/landing/backstage/Marquee'
+import GigDetailSlideOut from '@/components/landing/backstage/GigDetailSlideOut'
+import { Job } from '@/lib/supabaseEntities'
 
 const dummyJobs = [
   {
@@ -74,17 +74,17 @@ const dummyJobs = [
     tags: ['Voiceover', 'Audiobook', 'Remote'],
     roles: [{ title: 'Narrator — Any Gender', pay: '$300/finished hour' }],
   },
-];
+]
 
 const filterOptions = {
   location: ['Any Location', 'New York, NY', 'Los Angeles, CA', 'Atlanta, GA', 'Chicago, IL', 'Remote', 'Worldwide'],
   jobType: ['Any Type', 'Feature Film', 'TV Series', 'Commercial', 'Theater', 'Voiceover', 'UGC', 'Short Film'],
   gender: ['Any Gender', 'Male', 'Female', 'Non-Binary'],
   age: ['Any Age', '18-25', '25-35', '30-45', '45-55', '55+'],
-};
+}
 
 function FilterDropdown({ label, options, value, onChange }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
   return (
     <div className="relative min-w-[140px] flex-1 sm:flex-none">
       <button
@@ -111,26 +111,26 @@ function FilterDropdown({ label, options, value, onChange }) {
         </>
       )}
     </div>
-  );
+  )
 }
 
 export default function FindJobsPage() {
-  const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState({ location: '', jobType: '', gender: '', age: '' });
-  const [view, setView] = useState('roles');
-  const [page, setPage] = useState(1);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [savedJobs, setSavedJobs] = useState(new Set());
-  const [allJobs, setAllJobs] = useState(dummyJobs);
-  const [showFilters, setShowFilters] = useState(false);
-  const perPage = 5;
+  const [search, setSearch] = useState('')
+  const [filters, setFilters] = useState({ location: '', jobType: '', gender: '', age: '' })
+  const [view, setView] = useState('roles')
+  const [page, setPage] = useState(1)
+  const [selectedJob, setSelectedJob] = useState(null)
+  const [savedJobs, setSavedJobs] = useState(new Set())
+  const [allJobs, setAllJobs] = useState(dummyJobs)
+  const [showFilters, setShowFilters] = useState(false)
+  const perPage = 5
 
   // Fetch jobs from base44 database on mount, fall back to dummy data
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false
     Job.list('-created_at', 50)
       .then((data) => {
-        if (cancelled || !data || data.length === 0) return;
+        if (cancelled || !data || data.length === 0) return
         const mapped = data.map((j) => ({
           id: j.id,
           title: j.title || j.name || 'Untitled Job',
@@ -142,46 +142,46 @@ export default function FindJobsPage() {
           tags: j.tags || [],
           roles: j.roles || [],
           project: j.project || j.company || '',
-        }));
-        if (!cancelled) setAllJobs(mapped);
+        }))
+        if (!cancelled) setAllJobs(mapped)
       })
-      .catch(() => { });
-    return () => { cancelled = true; };
-  }, []);
+      .catch(() => { })
+    return () => { cancelled = true; }
+  }, [])
 
   const filtered = useMemo(() => {
     return allJobs.filter((j) => {
-      if (search && !j.title.toLowerCase().includes(search.toLowerCase()) && !(j.tags || []).some(t => t.toLowerCase().includes(search.toLowerCase()))) return false;
-      if (filters.location && j.location !== filters.location) return false;
-      if (filters.jobType && !(j.tags || []).some(t => t.toLowerCase().includes(filters.jobType.toLowerCase()))) return false;
-      return true;
-    });
-  }, [search, filters, allJobs]);
+      if (search && !j.title.toLowerCase().includes(search.toLowerCase()) && !(j.tags || []).some(t => t.toLowerCase().includes(search.toLowerCase()))) return false
+      if (filters.location && j.location !== filters.location) return false
+      if (filters.jobType && !(j.tags || []).some(t => t.toLowerCase().includes(filters.jobType.toLowerCase()))) return false
+      return true
+    })
+  }, [search, filters, allJobs])
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const pageJobs = filtered.slice((page - 1) * perPage, page * perPage);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage))
+  const pageJobs = filtered.slice((page - 1) * perPage, page * perPage)
 
   const toggleSave = (id) => {
     setSavedJobs((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
 
   const handleShare = (job) => {
-    const url = window.location.origin + '/FindJobs';
+    const url = window.location.origin + '/FindJobs'
     if (navigator.share) {
-      navigator.share({ title: job.title, text: job.description?.slice(0, 100) || '', url });
+      navigator.share({ title: job.title, text: job.description?.slice(0, 100) || '', url })
     } else {
-      navigator.clipboard?.writeText(url);
+      navigator.clipboard?.writeText(url)
     }
-  };
+  }
 
   const handleSaveSearch = () => {
-    const searchState = JSON.stringify({ search, filters });
-    localStorage.setItem('savedJobSearch', searchState);
-  };
+    const searchState = JSON.stringify({ search, filters })
+    localStorage.setItem('savedJobSearch', searchState)
+  }
 
   return (
     <div className="min-h-screen bg-[#f9fafb]">
@@ -394,5 +394,5 @@ export default function FindJobsPage() {
       {/* Slide-out detail panel */}
       <GigDetailSlideOut job={selectedJob} onClose={() => setSelectedJob(null)} />
     </div>
-  );
+  )
 }

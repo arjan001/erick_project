@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Textarea } from '@/shared/components/ui/textarea';
-import { Switch } from '@/shared/components/ui/switch';
-import { Plus, Edit2, Trash2, Upload, X } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import { useToast } from '@/hooks/useToast';
-import { FeaturedBrand } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Textarea } from '@/shared/components/ui/textarea'
+import { Switch } from '@/shared/components/ui/switch'
+import { Plus, Edit2, Trash2, Upload, X } from 'lucide-react'
+import { base44 } from '@/api/base44Client'
+import { useToast } from '@/hooks/useToast'
+import { FeaturedBrand } from '@/lib/supabaseEntities'
 
 export default function AdminFeaturedBrandsPage() {
-  const { success, error: toastError } = useToast();
-  const [brands, setBrands] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingBrand, setEditingBrand] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const { success, error: toastError } = useToast()
+  const [brands, setBrands] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingBrand, setEditingBrand] = useState(null)
+  const [uploading, setUploading] = useState(false)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -25,76 +25,76 @@ export default function AdminFeaturedBrandsPage() {
     description: '',
     order_index: 0,
     is_active: true,
-  });
+  })
 
   useEffect(() => {
-    loadBrands();
-  }, []);
+    loadBrands()
+  }, [])
 
   const loadBrands = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const data = await FeaturedBrand.filter({}, 'order_index', 100);
-      setBrands(data || []);
+      const data = await FeaturedBrand.filter({}, 'order_index', 100)
+      setBrands(data || [])
     } catch (err) {
-      console.error('Error loading brands:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleLogoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    setUploading(true);
+    setUploading(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url;
-      setFormData({ ...formData, logo_url: fileUrl });
+      const response = await base44.integrations.Core.UploadFile({ file })
+      const fileUrl = response.file_url || response.url
+      setFormData({ ...formData, logo_url: fileUrl })
     } catch (err) {
-      console.error('Error uploading logo:', err);
-      toastError('Upload Failed', 'Failed to upload logo');
+      
+      toastError('Upload Failed', 'Failed to upload logo')
     } finally {
-      setUploading(false);
+      setUploading(false)
     }
-  };
+  }
 
   const handleSave = async () => {
     try {
       if (editingBrand) {
-        await FeaturedBrand.update(editingBrand.id, formData);
-        success('Brand Updated', 'Featured brand has been updated');
+        await FeaturedBrand.update(editingBrand.id, formData)
+        success('Brand Updated', 'Featured brand has been updated')
       } else {
-        await FeaturedBrand.create(formData);
-        success('Brand Created', 'Featured brand has been created');
+        await FeaturedBrand.create(formData)
+        success('Brand Created', 'Featured brand has been created')
       }
 
-      setShowModal(false);
-      setEditingBrand(null);
-      resetForm();
-      loadBrands();
+      setShowModal(false)
+      setEditingBrand(null)
+      resetForm()
+      loadBrands()
     } catch (err) {
-      console.error('Error saving brand:', err);
-      toastError('Save Failed', 'Failed to save brand');
+      
+      toastError('Save Failed', 'Failed to save brand')
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this featured brand?')) return;
+    if (!confirm('Are you sure you want to delete this featured brand?')) return
 
     try {
-      await FeaturedBrand.delete(id);
-      success('Brand Deleted', 'Featured brand has been deleted');
-      loadBrands();
+      await FeaturedBrand.delete(id)
+      success('Brand Deleted', 'Featured brand has been deleted')
+      loadBrands()
     } catch (err) {
-      console.error('Error deleting brand:', err);
-      toastError('Delete Failed', 'Failed to delete brand');
+      
+      toastError('Delete Failed', 'Failed to delete brand')
     }
-  };
+  }
 
   const handleEdit = (brand) => {
-    setEditingBrand(brand);
+    setEditingBrand(brand)
     setFormData({
       name: brand.name || '',
       logo_url: brand.logo_url || '',
@@ -102,9 +102,9 @@ export default function AdminFeaturedBrandsPage() {
       description: brand.description || '',
       order_index: brand.order_index || 0,
       is_active: brand.is_active ?? true,
-    });
-    setShowModal(true);
-  };
+    })
+    setShowModal(true)
+  }
 
   const resetForm = () => {
     setFormData({
@@ -114,15 +114,15 @@ export default function AdminFeaturedBrandsPage() {
       description: '',
       order_index: 0,
       is_active: true,
-    });
-  };
+    })
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -136,9 +136,9 @@ export default function AdminFeaturedBrandsPage() {
             </div>
             <Button
               onClick={() => {
-                resetForm();
-                setEditingBrand(null);
-                setShowModal(true);
+                resetForm()
+                setEditingBrand(null)
+                setShowModal(true)
               }}
               className="bg-gray-900 text-white hover:bg-gray-800"
             >
@@ -310,5 +310,5 @@ export default function AdminFeaturedBrandsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

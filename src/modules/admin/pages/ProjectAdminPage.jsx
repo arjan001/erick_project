@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { adminApi } from '../api/admin.api';
-import { Search, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, X, Ban, Pause, Trash2, AlertTriangle } from 'lucide-react';
-import { notifySuccess } from '@/lib/sweetAlert';
+import React, { useState, useEffect } from 'react'
+import { adminApi } from '../api/admin.api'
+import { Search, CheckCircle, XCircle, ChevronLeft, ChevronRight, Eye, X, Ban, Pause, Trash2, AlertTriangle } from 'lucide-react'
+import { notifySuccess } from '@/lib/sweetAlert'
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 function ProjectModal({ project, onClose, onApprove, onReject, onSuspend, onPause, onDelete }) {
-  const [showSuspendDialog, setShowSuspendDialog] = useState(false);
-  const [showPauseDialog, setShowPauseDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [reason, setReason] = useState('');
-  const [adminNotes, setAdminNotes] = useState('');
+  const [showSuspendDialog, setShowSuspendDialog] = useState(false)
+  const [showPauseDialog, setShowPauseDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [reason, setReason] = useState('')
+  const [adminNotes, setAdminNotes] = useState('')
 
   const handleAction = async (action) => {
-    const actionFn = action === 'suspend' ? onSuspend : action === 'pause' ? onPause : onDelete;
-    await actionFn(project.id, reason, adminNotes);
-    setShowSuspendDialog(false);
-    setShowPauseDialog(false);
-    setShowDeleteDialog(false);
-    setReason('');
-    setAdminNotes('');
-    onClose();
-  };
+    const actionFn = action === 'suspend' ? onSuspend : action === 'pause' ? onPause : onDelete
+    await actionFn(project.id, reason, adminNotes)
+    setShowSuspendDialog(false)
+    setShowPauseDialog(false)
+    setShowDeleteDialog(false)
+    setReason('')
+    setAdminNotes('')
+    onClose()
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
@@ -228,61 +228,61 @@ function ProjectModal({ project, onClose, onApprove, onReject, onSuspend, onPaus
         </div>
       )}
     </div>
-  );
+  )
 }
 
 export default function ProjectAdminPage() {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState(null);
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [page, setPage] = useState(1)
+  const [selected, setSelected] = useState(null)
 
   useEffect(() => {
-    adminApi.projects.list().then(setProjects).catch(console.error).finally(() => setLoading(false));
-  }, []);
+    adminApi.projects.list().then(setProjects).catch(
+  }, [])
 
   const filtered = projects.filter(p => {
-    const matchSearch = !search || p.project_owner_name?.toLowerCase().includes(search.toLowerCase()) || p.project_owner_email?.toLowerCase().includes(search.toLowerCase()) || p.project_type?.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === 'all' || p.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+    const matchSearch = !search || p.project_owner_name?.toLowerCase().includes(search.toLowerCase()) || p.project_owner_email?.toLowerCase().includes(search.toLowerCase()) || p.project_type?.toLowerCase().includes(search.toLowerCase())
+    const matchStatus = statusFilter === 'all' || p.status === statusFilter
+    return matchSearch && matchStatus
+  })
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const handleApprove = async (id) => {
-    await adminApi.projects.approve(id);
-    setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'verified' } : p));
-    setSelected(null);
-    notifySuccess('Project Verified', 'The project has been verified');
-  };
+    await adminApi.projects.approve(id)
+    setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'verified' } : p))
+    setSelected(null)
+    notifySuccess('Project Verified', 'The project has been verified')
+  }
 
   const handleReject = async (id) => {
-    await adminApi.projects.reject(id);
-    setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'rejected' } : p));
-    setSelected(null);
-    notifySuccess('Project Rejected', 'The project has been rejected');
-  };
+    await adminApi.projects.reject(id)
+    setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'rejected' } : p))
+    setSelected(null)
+    notifySuccess('Project Rejected', 'The project has been rejected')
+  }
 
   const handleSuspend = async (id, reason, adminNotes) => {
-    await adminApi.projects.suspend(id, { reason, admin_notes: adminNotes });
-    setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'suspended', suspension_reason: reason, admin_notes: adminNotes } : p));
-    notifySuccess('Project Suspended', 'The project has been suspended');
-  };
+    await adminApi.projects.suspend(id, { reason, admin_notes: adminNotes })
+    setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'suspended', suspension_reason: reason, admin_notes: adminNotes } : p))
+    notifySuccess('Project Suspended', 'The project has been suspended')
+  }
 
   const handlePause = async (id, reason, adminNotes) => {
-    await adminApi.projects.pause(id, { reason, admin_notes: adminNotes });
-    setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'paused', suspension_reason: reason, admin_notes: adminNotes } : p));
-    notifySuccess('Project Paused', 'The project has been paused');
-  };
+    await adminApi.projects.pause(id, { reason, admin_notes: adminNotes })
+    setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'paused', suspension_reason: reason, admin_notes: adminNotes } : p))
+    notifySuccess('Project Paused', 'The project has been paused')
+  }
 
   const handleDelete = async (id, reason) => {
-    await adminApi.projects.delete(id, { reason });
-    setProjects(prev => prev.filter(p => p.id !== id));
-    notifySuccess('Project Deleted', 'The project has been deleted');
-  };
+    await adminApi.projects.delete(id, { reason })
+    setProjects(prev => prev.filter(p => p.id !== id))
+    notifySuccess('Project Deleted', 'The project has been deleted')
+  }
 
   return (
     <div className="space-y-5">
@@ -375,5 +375,5 @@ export default function ProjectAdminPage() {
       </div>
       {selected && <ProjectModal project={selected} onClose={() => setSelected(null)} onApprove={handleApprove} onReject={handleReject} onSuspend={handleSuspend} onPause={handlePause} onDelete={handleDelete} />}
     </div>
-  );
+  )
 }

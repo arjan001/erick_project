@@ -1,40 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { WorkApproval } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Check, X, Eye, Shuffle, Edit2, Trash2, FileText, User, Plus } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { WorkApproval } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
+import { Check, X, Eye, Shuffle, Edit2, Trash2, FileText, User, Plus } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
 
 export default function AdminWorkApprovalPage() {
-  const { success, error: toastError } = useToast();
-  const [approvals, setApprovals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null);
+  const { success, error: toastError } = useToast()
+  const [approvals, setApprovals] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({
     submitter_type: 'artist', submitter_id: '', title: '', description: '',
     images: [], video_url: '', category: '', tags: [], randomize: false, display_order: 0
-  });
+  })
 
   const fetchData = async () => {
     try {
-      const all = await WorkApproval.list('created_at', 100);
-      setApprovals(all || []);
+      const all = await WorkApproval.list('created_at', 100)
+      setApprovals(all || [])
     } catch (err) {
-      console.error('Error fetching work approvals:', err);
-      toastError('Load Failed', 'Failed to load work approvals');
+      
+      toastError('Load Failed', 'Failed to load work approvals')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [])
 
   const openModal = (approval = null) => {
     if (approval) {
-      setEditing(approval);
+      setEditing(approval)
       setForm({
         submitter_type: approval.submitter_type || 'artist',
         submitter_id: approval.submitter_id || '',
@@ -42,84 +42,84 @@ export default function AdminWorkApprovalPage() {
         images: approval.images || [], video_url: approval.video_url || '',
         category: approval.category || '', tags: approval.tags || [],
         randomize: approval.randomize || false, display_order: approval.display_order || 0
-      });
+      })
     } else {
-      setEditing(null);
-      setForm({ submitter_type: 'artist', submitter_id: '', title: '', description: '', images: [], video_url: '', category: '', tags: [], randomize: false, display_order: 0 });
+      setEditing(null)
+      setForm({ submitter_type: 'artist', submitter_id: '', title: '', description: '', images: [], video_url: '', category: '', tags: [], randomize: false, display_order: 0 })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const handleSave = async () => {
     if (!form.title.trim()) { toastError('Validation', 'Title is required'); return; }
     try {
       if (editing) {
-        await WorkApproval.update(editing.id, form);
-        success('Updated', 'Work approval updated');
+        await WorkApproval.update(editing.id, form)
+        success('Updated', 'Work approval updated')
       } else {
-        await WorkApproval.create({ ...form, status: 'pending' });
-        success('Created', 'Work approval created');
+        await WorkApproval.create({ ...form, status: 'pending' })
+        success('Created', 'Work approval created')
       }
-      setShowModal(false);
-      fetchData();
+      setShowModal(false)
+      fetchData()
     } catch (err) {
-      console.error('Error saving work approval:', err);
-      toastError('Save Failed', 'Failed to save work approval');
+      
+      toastError('Save Failed', 'Failed to save work approval')
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this work approval?')) return;
+    if (!confirm('Delete this work approval?')) return
     try {
-      await WorkApproval.delete(id);
-      success('Deleted', 'Work approval deleted');
-      fetchData();
+      await WorkApproval.delete(id)
+      success('Deleted', 'Work approval deleted')
+      fetchData()
     } catch (err) {
-      toastError('Delete Failed', 'Failed to delete work approval');
+      toastError('Delete Failed', 'Failed to delete work approval')
     }
-  };
+  }
 
   const approveWork = async (approval) => {
     try {
       await WorkApproval.update(approval.id, {
         status: 'approved',
         approved_at: new Date().toISOString()
-      });
-      success('Approved', 'Work has been approved');
-      fetchData();
+      })
+      success('Approved', 'Work has been approved')
+      fetchData()
     } catch (err) {
-      toastError('Failed', 'Failed to approve work');
+      toastError('Failed', 'Failed to approve work')
     }
-  };
+  }
 
   const rejectWork = async (approval) => {
-    const reason = prompt('Rejection reason (optional):');
+    const reason = prompt('Rejection reason (optional):')
     try {
       await WorkApproval.update(approval.id, {
         status: 'rejected',
         rejection_reason: reason || ''
-      });
-      success('Rejected', 'Work has been rejected');
-      fetchData();
+      })
+      success('Rejected', 'Work has been rejected')
+      fetchData()
     } catch (err) {
-      toastError('Failed', 'Failed to reject work');
+      toastError('Failed', 'Failed to reject work')
     }
-  };
+  }
 
   const toggleRandomize = async (approval) => {
     try {
-      await WorkApproval.update(approval.id, { randomize: !approval.randomize });
-      fetchData();
+      await WorkApproval.update(approval.id, { randomize: !approval.randomize })
+      fetchData()
     } catch (err) { toastError('Failed', 'Failed to update randomize'); }
-  };
-
-  if (loading) {
-    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>;
   }
 
-  const pendingApprovals = approvals.filter(a => a.status === 'pending');
-  const approvedApprovals = approvals.filter(a => a.status === 'approved');
-  const rejectedApprovals = approvals.filter(a => a.status === 'rejected');
+  if (loading) {
+    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>
+  }
+
+  const pendingApprovals = approvals.filter(a => a.status === 'pending')
+  const approvedApprovals = approvals.filter(a => a.status === 'approved')
+  const rejectedApprovals = approvals.filter(a => a.status === 'rejected')
 
   const ApprovalCard = ({ approval }) => (
     <Card className="overflow-hidden">
@@ -166,7 +166,7 @@ export default function AdminWorkApprovalPage() {
         )}
       </CardContent>
     </Card>
-  );
+  )
 
   return (
     <div className="p-8">
@@ -251,5 +251,5 @@ export default function AdminWorkApprovalPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

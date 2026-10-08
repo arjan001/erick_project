@@ -1,8 +1,8 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { ArrowRight, MapPin, Briefcase } from 'lucide-react';
+import React from 'react'
+import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { ArrowRight, MapPin, Briefcase } from 'lucide-react'
 
 const jobs = [
   {
@@ -47,7 +47,7 @@ const jobs = [
     type: 'Full-time',
     avatar: 'https://images.unsplash.com/photo-1463453091185-61582084d557?w=100&h=100&fit=crop',
   },
-];
+]
 
 export default function FeaturedJobs() {
   return (
@@ -109,5 +109,5 @@ export default function FeaturedJobs() {
         </div>
       </div>
     </section>
-  );
+  )
 }

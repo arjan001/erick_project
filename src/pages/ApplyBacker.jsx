@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Backer } from '@/lib/supabaseEntities';
-import BackerStepInfo from '@/components/backer/BackerStepInfo';
-import BackerStepFocus from '@/components/backer/BackerStepFocus';
-import BackerStepPortfolio from '@/components/backer/BackerStepPortfolio';
-import ApplicationSuccess from '@/components/ApplicationSuccess';
+import React, { useState } from 'react'
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Backer } from '@/lib/supabaseEntities'
+import BackerStepInfo from '@/components/backer/BackerStepInfo'
+import BackerStepFocus from '@/components/backer/BackerStepFocus'
+import BackerStepPortfolio from '@/components/backer/BackerStepPortfolio'
+import ApplicationSuccess from '@/components/ApplicationSuccess'
 
 const STEPS = [
   { id: 1, name: 'Info', component: BackerStepInfo },
   { id: 2, name: 'Investment Focus', component: BackerStepFocus },
   { id: 3, name: 'Portfolio', component: BackerStepPortfolio },
-];
+]
 
 export default function ApplyBacker() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [backerData, setBackerData] = useState({
     contact_email: '',
     contact_name: '',
@@ -27,38 +27,38 @@ export default function ApplyBacker() {
     portfolio_clips: [],
     website: '',
     social_media: '',
-  });
-  const [submitted, setSubmitted] = useState(false);
+  })
+  const [submitted, setSubmitted] = useState(false)
 
   const updateData = (field, value) => {
-    setBackerData(prev => ({ ...prev, [field]: value }));
-  };
+    setBackerData(prev => ({ ...prev, [field]: value }))
+  }
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return backerData.contact_name && backerData.contact_email && backerData.organization_name && backerData.city && backerData.country;
-      case 2: return backerData.investment_focus && backerData.investment_focus.length > 0;
+      case 1: return backerData.contact_name && backerData.contact_email && backerData.organization_name && backerData.city && backerData.country
+      case 2: return backerData.investment_focus && backerData.investment_focus.length > 0
       case 3: return true; // Portfolio optional, allow draft save
-      default: return true;
+      default: return true
     }
-  };
+  }
 
   const handleNext = () => {
     if (canProceed() && currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setCurrentStep(currentStep + 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  };
+  }
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setCurrentStep(currentStep - 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  };
+  }
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
       await Backer.create({
         email: backerData.contact_email,
@@ -72,20 +72,20 @@ export default function ApplyBacker() {
         website: backerData.website,
         social_media: backerData.social_media,
         admin_approval_status: 'pending'
-      });
-      setSubmitted(true);
+      })
+      setSubmitted(true)
     } catch (error) {
-      console.error('Error submitting application:', error);
-      alert('Error submitting application. Please try again.');
+      //
+      alert('Error submitting application. Please try again.')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
-  const CurrentStepComponent = STEPS[currentStep - 1].component;
+  const CurrentStepComponent = STEPS[currentStep - 1].component
 
   if (submitted) {
-    return <ApplicationSuccess type="backer" />;
+    return <ApplicationSuccess type="backer" />
   }
 
   return (
@@ -162,5 +162,5 @@ export default function ApplyBacker() {
         </div>
       </div>
     </div>
-  );
+  )
 }

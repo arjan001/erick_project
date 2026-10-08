@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
-import { DollarSign, TrendingUp, TrendingDown, CreditCard, Wallet, ArrowUpRight, ArrowDownRight, Search, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import React, { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Badge } from '@/shared/components/ui/badge'
+import { DollarSign, TrendingUp, TrendingDown, CreditCard, Wallet, ArrowUpRight, ArrowDownRight, Search, ChevronLeft, ChevronRight, Filter } from 'lucide-react'
 
 export default function AdminFinancePage() {
-  const [timeRange, setTimeRange] = useState('30d');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [page, setPage] = useState(1);
-  const PAGE_SIZE = 10;
+  const [timeRange, setTimeRange] = useState('30d')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterType, setFilterType] = useState('all')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 10
 
   const stats = [
     {
@@ -41,7 +41,7 @@ export default function AdminFinancePage() {
       trend: 'down',
       icon: ArrowDownRight
     }
-  ];
+  ]
 
   const transactions = [
     { id: 1, type: 'subscription', user: 'John Doe', amount: '$29.00', status: 'completed', date: '2024-01-15' },
@@ -56,27 +56,27 @@ export default function AdminFinancePage() {
     { id: 10, type: 'payout', user: 'Music Label', amount: '$5,200.00', status: 'completed', date: '2024-01-07' },
     { id: 11, type: 'subscription', user: 'Emily Davis', amount: '$29.00', status: 'completed', date: '2024-01-06' },
     { id: 12, type: 'backing', user: 'VC Firm', amount: '$50,000.00', status: 'pending', date: '2024-01-05' },
-  ];
+  ]
 
   const filteredTransactions = transactions.filter(transaction => {
     const matchesSearch = transaction.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || transaction.type === filterType;
-    const matchesStatus = filterStatus === 'all' || transaction.status === filterStatus;
-    return matchesSearch && matchesType && matchesStatus;
-  });
+                         transaction.type.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesType = filterType === 'all' || transaction.type === filterType
+    const matchesStatus = filterStatus === 'all' || transaction.status === filterStatus
+    return matchesSearch && matchesType && matchesStatus
+  })
 
-  const totalPages = Math.ceil(filteredTransactions.length / PAGE_SIZE);
-  const paginatedTransactions = filteredTransactions.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(filteredTransactions.length / PAGE_SIZE)
+  const paginatedTransactions = filteredTransactions.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const getStatusBadge = (status) => {
     const styles = {
       completed: 'bg-green-100 text-green-700',
       pending: 'bg-amber-100 text-amber-700',
       failed: 'bg-red-100 text-red-700'
-    };
-    return styles[status] || 'bg-gray-100 text-gray-700';
-  };
+    }
+    return styles[status] || 'bg-gray-100 text-gray-700'
+  }
 
   return (
     <div className="space-y-6">
@@ -102,8 +102,8 @@ export default function AdminFinancePage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => {
-          const Icon = stat.icon;
-          const TrendIcon = stat.trend === 'up' ? TrendingUp : TrendingDown;
+          const Icon = stat.icon
+          const TrendIcon = stat.trend === 'up' ? TrendingUp : TrendingDown
           return (
             <Card key={stat.title}>
               <CardContent className="p-4">
@@ -124,7 +124,7 @@ export default function AdminFinancePage() {
                 </div>
               </CardContent>
             </Card>
-          );
+          )
         })}
       </div>
 
@@ -239,5 +239,5 @@ export default function AdminFinancePage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

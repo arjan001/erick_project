@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/react';
+import * as Sentry from '@sentry/react'
 
 // Initialize Sentry for error tracking and performance monitoring
 // Note: Set SENTRY_DSN in your .env file to enable Sentry
@@ -28,10 +28,10 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
     beforeSend(event, hint) {
       // Remove sensitive data from events
       if (event.request) {
-        delete event.request.cookies;
-        delete event.request.headers;
+        delete event.request.cookies
+        delete event.request.headers
       }
-      return event;
+      return event
     },
     
     // Ignore specific errors
@@ -46,13 +46,13 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
     // Performance monitoring
     beforeSendTransaction(transaction) {
       // Filter out slow transactions that are not critical
-      return transaction;
+      return transaction
     },
-  });
+  })
   
-  console.log('Sentry initialized for error tracking');
+  
 } else {
-  console.log('Sentry not initialized: running in development or DSN not configured');
+  
 }
 
-export default Sentry;
+export default Sentry

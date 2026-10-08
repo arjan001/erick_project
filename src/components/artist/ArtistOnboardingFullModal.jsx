@@ -1,39 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
-import { Artist } from '@/lib/supabaseEntities';
-import { FILM_ROLES_BY_CATEGORY, ALL_FILM_ROLES, SOFTWARE_CATEGORIES } from '@/lib/filmRoles';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { X, ArrowRight, ArrowLeft, Check, Plus, X as XIcon } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
-import confetti from 'canvas-confetti';
+import React, { useState, useEffect } from 'react'
+import { base44 } from '@/api/base44Client'
+import { Artist } from '@/lib/supabaseEntities'
+import { FILM_ROLES_BY_CATEGORY, ALL_FILM_ROLES, SOFTWARE_CATEGORIES } from '@/lib/filmRoles'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { X, ArrowRight, ArrowLeft, Check, Plus, X as XIcon } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
+import confetti from 'canvas-confetti'
 
 export default function ArtistOnboardingFullModal({ user, onClose }) {
-  const { success, error: toastError } = useToast();
-  const [step, setStep] = useState(1);
-  const [saving, setSaving] = useState(false);
-  const [artist, setArtist] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [roleSearch, setRoleSearch] = useState('');
+  const { success, error: toastError } = useToast()
+  const [step, setStep] = useState(1)
+  const [saving, setSaving] = useState(false)
+  const [artist, setArtist] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [roleSearch, setRoleSearch] = useState('')
 
   const [formData, setFormData] = useState({
     full_name: '', email: '', phone: '', role: '', roles: [],
     based_in_city: '', based_in_country: '', languages_spoken: [],
     website: '', instagram: '', vimeo: '', imdb: '', linkedin: '',
     skills_experience: [],
-  });
-  const [skillInput, setSkillInput] = useState('');
-  const [languageInput, setLanguageInput] = useState('');
-  const [skillSearch, setSkillSearch] = useState('');
+  })
+  const [skillInput, setSkillInput] = useState('')
+  const [languageInput, setLanguageInput] = useState('')
+  const [skillSearch, setSkillSearch] = useState('')
 
   useEffect(() => {
     const fetchArtist = async () => {
-      if (!user?.email) return;
+      if (!user?.email) return
       try {
-        const artists = await Artist.filter({ email: user.email });
+        const artists = await Artist.filter({ email: user.email })
         if (artists?.[0]) {
-          const a = artists[0];
-          setArtist(a);
+          const a = artists[0]
+          setArtist(a)
           setFormData({
             full_name: a.full_name || user.full_name || '',
             email: a.email || user.email || '',
@@ -49,66 +49,66 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
             imdb: a.imdb || '',
             linkedin: a.linkedin || '',
             skills_experience: a.skills_experience || [],
-          });
+          })
         }
       } catch (err) {
-        console.error('Error fetching artist:', err);
+        
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchArtist();
-  }, [user]);
+    }
+    fetchArtist()
+  }, [user])
 
-  const update = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+  const update = (field, value) => setFormData(prev => ({ ...prev, [field]: value }))
 
   const toggleRole = (role) => {
     update('roles', formData.roles.includes(role)
       ? formData.roles.filter(r => r !== role)
-      : [...formData.roles, role]);
-    if (!formData.role) update('role', role);
-  };
+      : [...formData.roles, role])
+    if (!formData.role) update('role', role)
+  }
 
   const addSkill = () => {
     if (skillInput.trim() && !formData.skills_experience.some(s => s.skill === skillInput.trim())) {
-      update('skills_experience', [...formData.skills_experience, { skill: skillInput.trim(), years: 0 }]);
-      setSkillInput('');
+      update('skills_experience', [...formData.skills_experience, { skill: skillInput.trim(), years: 0 }])
+      setSkillInput('')
     }
-  };
+  }
 
   const toggleSkill = (skill) => {
     if (formData.skills_experience.some(s => s.skill === skill)) {
-      removeSkill(skill);
+      removeSkill(skill)
     } else {
-      update('skills_experience', [...formData.skills_experience, { skill, years: 0 }]);
+      update('skills_experience', [...formData.skills_experience, { skill, years: 0 }])
     }
-  };
+  }
 
   const removeSkill = (skill) => {
-    update('skills_experience', formData.skills_experience.filter(s => s.skill !== skill));
-  };
+    update('skills_experience', formData.skills_experience.filter(s => s.skill !== skill))
+  }
 
   const addLanguage = () => {
     if (languageInput.trim() && !formData.languages_spoken.includes(languageInput.trim())) {
-      update('languages_spoken', [...formData.languages_spoken, languageInput.trim()]);
-      setLanguageInput('');
+      update('languages_spoken', [...formData.languages_spoken, languageInput.trim()])
+      setLanguageInput('')
     }
-  };
+  }
 
   const removeLanguage = (lang) => {
-    update('languages_spoken', formData.languages_spoken.filter(l => l !== lang));
-  };
+    update('languages_spoken', formData.languages_spoken.filter(l => l !== lang))
+  }
 
   const canProceed = () => {
-    if (step === 1) return formData.full_name && formData.based_in_country;
-    if (step === 2) return formData.roles.length > 0 || formData.role;
-    return true;
-  };
+    if (step === 1) return formData.full_name && formData.based_in_country
+    if (step === 2) return formData.roles.length > 0 || formData.role
+    return true
+  }
 
   const handleSave = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
-      const primaryRole = formData.role || formData.roles[0] || 'director';
+      const primaryRole = formData.role || formData.roles[0] || 'director'
       const updated = await Artist.update(artist.id, {
         full_name: formData.full_name,
         phone: formData.phone,
@@ -125,9 +125,9 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
         linkedin: formData.linkedin,
         skills_experience: formData.skills_experience,
         onboarding_completed: true,
-      });
-      setArtist(updated);
-      success('Profile Complete', 'Your artist profile has been updated');
+      })
+      setArtist(updated)
+      success('Profile Complete', 'Your artist profile has been updated')
       
       // Trigger confetti effect
       confetti({
@@ -135,35 +135,35 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
         spread: 70,
         origin: { y: 0.6 },
         colors: ['#000000', '#666666', '#999999', '#CCCCCC']
-      });
+      })
       
-      setTimeout(() => onClose(), 1500);
+      setTimeout(() => onClose(), 1500)
     } catch (err) {
-      console.error('Error saving profile:', err);
-      toastError('Save Failed', 'Failed to save profile');
+      
+      toastError('Save Failed', 'Failed to save profile')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-white rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
-  const steps = ['Details', 'Roles', 'Skills & Links', 'Review'];
+  const steps = ['Details', 'Roles', 'Skills & Links', 'Review']
 
   const filteredRoles = roleSearch
     ? ALL_FILM_ROLES.filter(r => r.toLowerCase().includes(roleSearch.toLowerCase()))
-    : ALL_FILM_ROLES;
+    : ALL_FILM_ROLES
 
-  const allSoftwareSkills = Object.values(SOFTWARE_CATEGORIES).flat();
+  const allSoftwareSkills = Object.values(SOFTWARE_CATEGORIES).flat()
   const filteredSkills = skillSearch
     ? allSoftwareSkills.filter(s => s.toLowerCase().includes(skillSearch.toLowerCase()))
-    : allSoftwareSkills;
+    : allSoftwareSkills
 
   return (
     <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 overflow-y-auto">
@@ -238,8 +238,8 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
                 <Input value={roleSearch} onChange={e => setRoleSearch(e.target.value)} placeholder="Search roles..." className="mb-3" />
                 <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3 space-y-3">
                   {Object.entries(FILM_ROLES_BY_CATEGORY).map(([category, roles]) => {
-                    const visible = roles.filter(r => !roleSearch || r.toLowerCase().includes(roleSearch.toLowerCase()));
-                    if (visible.length === 0) return null;
+                    const visible = roles.filter(r => !roleSearch || r.toLowerCase().includes(roleSearch.toLowerCase()))
+                    if (visible.length === 0) return null
                     return (
                       <div key={category}>
                         <div className="text-xs font-bold uppercase text-gray-500 mb-1">{category}</div>
@@ -251,7 +251,7 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
                           ))}
                         </div>
                       </div>
-                    );
+                    )
                   })}
                 </div>
                 {formData.roles.length > 0 && (
@@ -275,8 +275,8 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
                 <Input value={skillSearch} onChange={e => setSkillSearch(e.target.value)} placeholder="Search skills..." className="mb-3" />
                 <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3 space-y-3">
                   {Object.entries(SOFTWARE_CATEGORIES).map(([category, skills]) => {
-                    const visible = skills.filter(s => !skillSearch || s.toLowerCase().includes(skillSearch.toLowerCase()));
-                    if (visible.length === 0) return null;
+                    const visible = skills.filter(s => !skillSearch || s.toLowerCase().includes(skillSearch.toLowerCase()))
+                    if (visible.length === 0) return null
                     return (
                       <div key={category}>
                         <div className="text-xs font-bold uppercase text-gray-500 mb-1">{category}</div>
@@ -288,7 +288,7 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
                           ))}
                         </div>
                       </div>
-                    );
+                    )
                   })}
                 </div>
                 {formData.skills_experience.length > 0 && (
@@ -360,5 +360,5 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

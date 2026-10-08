@@ -1,40 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import React, { useState, useEffect } from 'react'
+import { base44 } from '@/api/base44Client'
 
 export default function StepVisualDirection({ data, updateData }) {
-  const [clips, setClips] = useState([]);
-  const [hoveredId, setHoveredId] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [clips, setClips] = useState([])
+  const [hoveredId, setHoveredId] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    loadClips();
-  }, []);
+    loadClips()
+  }, [])
 
   const loadClips = async () => {
     try {
       const result = await base44.entities.PortfolioClip.filter({
         approved_for_visual_direction: true,
         status: 'approved'
-      });
-      setClips(result || []);
+      })
+      setClips(result || [])
     } catch (error) {
-      console.error('Error loading clips:', error);
+      
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const toggleClip = (clipId) => {
-    const current = data.visual_direction_clips || [];
+    const current = data.visual_direction_clips || []
     if (current.includes(clipId)) {
-      updateData('visual_direction_clips', current.filter(id => id !== clipId));
+      updateData('visual_direction_clips', current.filter(id => id !== clipId))
     } else if (current.length < 3) {
-      updateData('visual_direction_clips', [...current, clipId]);
+      updateData('visual_direction_clips', [...current, clipId])
     }
-  };
+  }
 
-  const isSelected = (clipId) => (data.visual_direction_clips || []).includes(clipId);
-  const selectedCount = (data.visual_direction_clips || []).length;
+  const isSelected = (clipId) => (data.visual_direction_clips || []).includes(clipId)
+  const selectedCount = (data.visual_direction_clips || []).length
 
   if (isLoading) {
     return (
@@ -47,7 +47,7 @@ export default function StepVisualDirection({ data, updateData }) {
           ))}
         </div>
       </div>
-    );
+    )
   }
 
   if (clips.length === 0) {
@@ -56,7 +56,7 @@ export default function StepVisualDirection({ data, updateData }) {
         <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Visual Direction</h2>
         <p className="text-gray-600 mb-8">No approved clips available yet. You can skip this step.</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -67,8 +67,8 @@ export default function StepVisualDirection({ data, updateData }) {
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {clips.map((clip) => {
-          const selected = isSelected(clip.id);
-          const selectionIndex = (data.visual_direction_clips || []).indexOf(clip.id);
+          const selected = isSelected(clip.id)
+          const selectionIndex = (data.visual_direction_clips || []).indexOf(clip.id)
 
           return (
             <button
@@ -123,9 +123,9 @@ export default function StepVisualDirection({ data, updateData }) {
                 selected ? 'border-amber-600' : 'border-transparent group-hover:border-zinc-600'
               }`} />
             </button>
-          );
+          )
         })}
       </div>
     </div>
-  );
+  )
 }

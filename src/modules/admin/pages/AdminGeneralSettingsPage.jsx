@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { SystemSetting } from '@/lib/supabaseEntities';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Settings, Save, Globe, Bell, Shield, Clock, Users, Database, ToggleLeft, ToggleRight, Layers, ArrowRight, Mail, Send, CheckCircle2, Trash2, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { SystemSetting } from '@/lib/supabaseEntities'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Settings, Save, Globe, Bell, Shield, Clock, Users, Database, ToggleLeft, ToggleRight, Layers, ArrowRight, Mail, Send, CheckCircle2, Trash2, RefreshCw } from 'lucide-react'
 
 const DEFAULT_SETTINGS = {
   site_name: 'Eric Rabar',
@@ -51,7 +51,7 @@ const DEFAULT_SETTINGS = {
   brevo_sender_name: 'Eric Rabar',
   brevo_sms_enabled: false,
   brevo_email_enabled: false,
-};
+}
 
 const ToggleRow = ({ label, description, checked, onChange }) => (
   <div className="flex items-center justify-between">
@@ -63,53 +63,53 @@ const ToggleRow = ({ label, description, checked, onChange }) => (
       {checked ? <ToggleRight className="w-6 h-6 text-green-600" /> : <ToggleLeft className="w-6 h-6 text-gray-400" />}
     </button>
   </div>
-);
+)
 
 export default function AdminGeneralSettingsPage() {
-  const { success, error } = useToast();
-  const [settingsId, setSettingsId] = useState(null);
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [clearingCache, setClearingCache] = useState(false);
+  const { success, error } = useToast()
+  const [settingsId, setSettingsId] = useState(null)
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [clearingCache, setClearingCache] = useState(false)
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const rows = await SystemSetting.filter({}, 'setting_key', 100);
+        const rows = await SystemSetting.filter({}, 'setting_key', 100)
         if (rows && rows.length > 0) {
-          const settingsMap = {};
+          const settingsMap = {}
           rows.forEach(setting => {
-            const value = setting.setting_value;
+            const value = setting.setting_value
             // Parse JSON values or convert to appropriate types
             if (setting.setting_type === 'boolean') {
-              settingsMap[setting.setting_key] = value === 'true';
+              settingsMap[setting.setting_key] = value === 'true'
             } else if (setting.setting_type === 'number') {
-              settingsMap[setting.setting_key] = parseFloat(value);
+              settingsMap[setting.setting_key] = parseFloat(value)
             } else if (setting.setting_type === 'array') {
               try {
-                settingsMap[setting.setting_key] = JSON.parse(value);
+                settingsMap[setting.setting_key] = JSON.parse(value)
               } catch {
-                settingsMap[setting.setting_key] = [];
+                settingsMap[setting.setting_key] = []
               }
             } else {
-              settingsMap[setting.setting_key] = value;
+              settingsMap[setting.setting_key] = value
             }
-          });
-          setSettings({ ...DEFAULT_SETTINGS, ...settingsMap });
+          })
+          setSettings({ ...DEFAULT_SETTINGS, ...settingsMap })
         }
       } catch (err) {
-        console.error('Error fetching settings:', err);
-        error('Error', 'Failed to fetch settings');
+        
+        error('Error', 'Failed to fetch settings')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchSettings();
-  }, []);
+    }
+    fetchSettings()
+  }, [])
 
   const handleSaveSettings = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
       // Convert settings object to array of setting records
       const settingsToSave = Object.entries(settings).map(([key, value]) => ({
@@ -119,90 +119,90 @@ export default function AdminGeneralSettingsPage() {
                      typeof value === 'number' ? 'number' : 
                      Array.isArray(value) ? 'array' : 'string',
         description: ''
-      }));
+      }))
 
       for (const setting of settingsToSave) {
-        const existing = await SystemSetting.filter({ setting_key: setting.setting_key });
+        const existing = await SystemSetting.filter({ setting_key: setting.setting_key })
         if (existing && existing.length > 0) {
           await SystemSetting.update(existing[0].id, { 
             setting_value: setting.setting_value,
             setting_type: setting.setting_type
-          });
+          })
         } else {
-          await SystemSetting.create(setting);
+          await SystemSetting.create(setting)
         }
       }
-      success('Saved', 'Settings saved successfully');
+      success('Saved', 'Settings saved successfully')
     } catch (err) {
-      console.error('Error saving settings:', err);
-      error('Failed', 'Failed to save settings');
+      
+      error('Failed', 'Failed to save settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
-  const handleToggle = (key) => setSettings(prev => ({ ...prev, [key]: !prev[key] }));
-  const handleChange = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
+  const handleToggle = (key) => setSettings(prev => ({ ...prev, [key]: !prev[key] }))
+  const handleChange = (key, value) => setSettings(prev => ({ ...prev, [key]: value }))
 
   const handleClearCache = async () => {
-    setClearingCache(true);
+    setClearingCache(true)
     try {
       // Clear localStorage
-      localStorage.clear();
+      localStorage.clear()
       
       // Clear sessionStorage
-      sessionStorage.clear();
+      sessionStorage.clear()
       
       // Clear all cookies
       document.cookie.split(';').forEach(c => {
-        const eq = c.indexOf('=');
-        const name = eq > -1 ? c.slice(0, eq).trim() : c.trim();
-        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + window.location.hostname;
-      });
+        const eq = c.indexOf('=')
+        const name = eq > -1 ? c.slice(0, eq).trim() : c.trim()
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + window.location.hostname
+      })
       
       // Clear Supabase session
-      const { supabase } = await import('@/lib/supabase');
-      await supabase.auth.signOut({ scope: 'local' });
+      const { supabase } = await import('@/lib/supabase')
+      await supabase.auth.signOut({ scope: 'local' })
       
       // Clear service worker caches if available
       if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)));
+        const cacheNames = await caches.keys()
+        await Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)))
       }
       
       // Clear IndexedDB if available
       if ('indexedDB' in window) {
-        const databases = await indexedDB.databases();
+        const databases = await indexedDB.databases()
         await Promise.all(databases.map(db => {
           return new Promise((resolve, reject) => {
-            const request = indexedDB.deleteDatabase(db.name);
-            request.onsuccess = resolve;
-            request.onerror = reject;
-          });
-        }));
+            const request = indexedDB.deleteDatabase(db.name)
+            request.onsuccess = resolve
+            request.onerror = reject
+          })
+        }))
       }
       
-      success('Cache Cleared', 'All browser and application cache has been cleared successfully');
+      success('Cache Cleared', 'All browser and application cache has been cleared successfully')
       
       // Reload page after short delay
       setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+        window.location.reload()
+      }, 1500)
     } catch (err) {
-      console.error('Error clearing cache:', err);
-      error('Failed', 'Failed to clear cache');
+      
+      error('Failed', 'Failed to clear cache')
     } finally {
-      setClearingCache(false);
+      setClearingCache(false)
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -547,5 +547,5 @@ export default function AdminGeneralSettingsPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

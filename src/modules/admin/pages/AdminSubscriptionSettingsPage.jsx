@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { CreditCard, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, DollarSign, Users, Check } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { base44 } from '@/api/base44Client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { CreditCard, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, DollarSign, Users, Check } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
 
 export default function AdminSubscriptionSettingsPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const [packages, setPackages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingPackage, setEditingPackage] = useState(null);
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const [packages, setPackages] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingPackage, setEditingPackage] = useState(null)
 
   const [packageForm, setPackageForm] = useState({
     name: '',
@@ -29,31 +29,31 @@ export default function AdminSubscriptionSettingsPage() {
     priority_support: false,
     analytics_access: false,
     active: true
-  });
+  })
 
   useEffect(() => {
-    fetchPackages();
-  }, []);
+    fetchPackages()
+  }, [])
 
   const fetchPackages = async () => {
     try {
-      const data = await base44.entities.SubscriptionPackage.list();
-      setPackages(data);
+      const data = await base44.entities.SubscriptionPackage.list()
+      setPackages(data)
     } catch (err) {
-      console.error('Error fetching packages:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCreatePackage = async () => {
     try {
       await base44.entities.SubscriptionPackage.create({
         ...packageForm,
         created_at: new Date().toISOString()
-      });
-      success('Package Created', 'Subscription package created successfully');
-      setShowModal(false);
+      })
+      success('Package Created', 'Subscription package created successfully')
+      setShowModal(false)
       setPackageForm({
         name: '',
         description: '',
@@ -68,24 +68,24 @@ export default function AdminSubscriptionSettingsPage() {
         priority_support: false,
         analytics_access: false,
         active: true
-      });
-      fetchPackages();
+      })
+      fetchPackages()
     } catch (err) {
-      console.error('Error creating package:', err);
-      toastError('Creation Failed', 'Failed to create package');
+      
+      toastError('Creation Failed', 'Failed to create package')
     }
-  };
+  }
 
   const handleUpdatePackage = async () => {
-    if (!editingPackage) return;
+    if (!editingPackage) return
     try {
       await base44.entities.SubscriptionPackage.update(editingPackage.id, {
         ...packageForm,
         updated_at: new Date().toISOString()
-      });
-      success('Package Updated', 'Subscription package updated successfully');
-      setShowModal(false);
-      setEditingPackage(null);
+      })
+      success('Package Updated', 'Subscription package updated successfully')
+      setShowModal(false)
+      setEditingPackage(null)
       setPackageForm({
         name: '',
         description: '',
@@ -100,46 +100,46 @@ export default function AdminSubscriptionSettingsPage() {
         priority_support: false,
         analytics_access: false,
         active: true
-      });
-      fetchPackages();
+      })
+      fetchPackages()
     } catch (err) {
-      console.error('Error updating package:', err);
-      toastError('Update Failed', 'Failed to update package');
+      
+      toastError('Update Failed', 'Failed to update package')
     }
-  };
+  }
 
   const handleToggleActive = async (pkg) => {
     try {
       await base44.entities.SubscriptionPackage.update(pkg.id, {
         active: !pkg.active,
         updated_at: new Date().toISOString()
-      });
-      success('Status Updated', `Package ${pkg.active ? 'disabled' : 'enabled'}`);
-      fetchPackages();
+      })
+      success('Status Updated', `Package ${pkg.active ? 'disabled' : 'enabled'}`)
+      fetchPackages()
     } catch (err) {
-      console.error('Error toggling package:', err);
-      toastError('Update Failed', 'Failed to update package status');
+      
+      toastError('Update Failed', 'Failed to update package status')
     }
-  };
+  }
 
   const handleDeletePackage = async (pkgId) => {
-    if (!confirm('Are you sure you want to delete this package?')) return;
+    if (!confirm('Are you sure you want to delete this package?')) return
     try {
-      await base44.entities.SubscriptionPackage.delete(pkgId);
-      success('Package Deleted', 'Subscription package deleted successfully');
-      fetchPackages();
+      await base44.entities.SubscriptionPackage.delete(pkgId)
+      success('Package Deleted', 'Subscription package deleted successfully')
+      fetchPackages()
     } catch (err) {
-      console.error('Error deleting package:', err);
-      toastError('Delete Failed', 'Failed to delete package');
+      
+      toastError('Delete Failed', 'Failed to delete package')
     }
-  };
+  }
 
   const openModal = (pkg = null) => {
     if (pkg) {
-      setEditingPackage(pkg);
-      setPackageForm(pkg);
+      setEditingPackage(pkg)
+      setPackageForm(pkg)
     } else {
-      setEditingPackage(null);
+      setEditingPackage(null)
       setPackageForm({
         name: '',
         description: '',
@@ -154,13 +154,13 @@ export default function AdminSubscriptionSettingsPage() {
         priority_support: false,
         analytics_access: false,
         active: true
-      });
+      })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-6">Loading...</div>
   }
 
   return (
@@ -399,5 +399,5 @@ export default function AdminSubscriptionSettingsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

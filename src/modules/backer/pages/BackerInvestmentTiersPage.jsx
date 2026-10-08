@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Backer, InvestmentTier } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Layers, Plus, Edit2, Trash2, TrendingUp, Crown, Gem, Sparkles, Percent, DollarSign } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useToast } from '@/hooks/useToast.jsx';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Backer, InvestmentTier } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Layers, Plus, Edit2, Trash2, TrendingUp, Crown, Gem, Sparkles, Percent, DollarSign } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
 
 const DEFAULT_TIERS = [
   {
@@ -50,17 +50,17 @@ const DEFAULT_TIERS = [
     icon: 'platinum',
     color: 'bg-gray-100 text-gray-700'
   }
-];
+]
 
 export default function BackerInvestmentTiersPage() {
-  const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const [backer, setBacker] = useState(null);
-  const [tiers, setTiers] = useState(DEFAULT_TIERS);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingTier, setEditingTier] = useState(null);
+  const navigate = useNavigate()
+  const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
+  const [backer, setBacker] = useState(null)
+  const [tiers, setTiers] = useState(DEFAULT_TIERS)
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingTier, setEditingTier] = useState(null)
   const [tierForm, setTierForm] = useState({
     name: '',
     min_investment: '',
@@ -68,40 +68,40 @@ export default function BackerInvestmentTiersPage() {
     roi_percentage: '',
     benefits: '',
     color: 'bg-blue-100 text-blue-700'
-  });
+  })
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    fetchData();
-  }, [isAuthenticated]);
+    fetchData()
+  }, [isAuthenticated])
 
   const fetchData = async () => {
     try {
-      const backers = await Backer.filter({ contact_email: authUser?.email });
+      const backers = await Backer.filter({ contact_email: authUser?.email })
       if (backers.length > 0) {
-        setBacker(backers[0]);
+        setBacker(backers[0])
       }
 
       // Fetch custom tiers if they exist
-      const customTiers = await InvestmentTier.filter({ backer_email: authUser?.email });
+      const customTiers = await InvestmentTier.filter({ backer_email: authUser?.email })
       if (customTiers.length > 0) {
-        setTiers(customTiers);
+        setTiers(customTiers)
       }
     } catch (err) {
-      console.error('Error fetching tiers:', err);
-      toastError('Load Failed', 'Failed to load investment tiers');
+      
+      toastError('Load Failed', 'Failed to load investment tiers')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCreateTier = async () => {
-    if (!backer) return;
+    if (!backer) return
     try {
-      const benefitsArray = tierForm.benefits.split('\n').filter(b => b.trim());
+      const benefitsArray = tierForm.benefits.split('\n').filter(b => b.trim())
       await InvestmentTier.create({
         ...tierForm,
         backer_email: user.email,
@@ -111,9 +111,9 @@ export default function BackerInvestmentTiersPage() {
         roi_percentage: parseFloat(tierForm.roi_percentage),
         benefits: benefitsArray,
         created_at: new Date().toISOString()
-      });
-      success('Tier Created', 'New investment tier has been created');
-      setShowModal(false);
+      })
+      success('Tier Created', 'New investment tier has been created')
+      setShowModal(false)
       setTierForm({
         name: '',
         min_investment: '',
@@ -121,28 +121,28 @@ export default function BackerInvestmentTiersPage() {
         roi_percentage: '',
         benefits: '',
         color: 'bg-blue-100 text-blue-700'
-      });
-      fetchData();
+      })
+      fetchData()
     } catch (err) {
-      console.error('Error creating tier:', err);
-      toastError('Creation Failed', 'Failed to create tier');
+      
+      toastError('Creation Failed', 'Failed to create tier')
     }
-  };
+  }
 
   const handleUpdateTier = async () => {
-    if (!editingTier) return;
+    if (!editingTier) return
     try {
-      const benefitsArray = tierForm.benefits.split('\n').filter(b => b.trim());
+      const benefitsArray = tierForm.benefits.split('\n').filter(b => b.trim())
       await InvestmentTier.update(editingTier.id, {
         ...tierForm,
         min_investment: parseFloat(tierForm.min_investment),
         max_investment: tierForm.max_investment ? parseFloat(tierForm.max_investment) : null,
         roi_percentage: parseFloat(tierForm.roi_percentage),
         benefits: benefitsArray
-      });
-      success('Tier Updated', 'Investment tier has been updated');
-      setShowModal(false);
-      setEditingTier(null);
+      })
+      success('Tier Updated', 'Investment tier has been updated')
+      setShowModal(false)
+      setEditingTier(null)
       setTierForm({
         name: '',
         min_investment: '',
@@ -150,29 +150,29 @@ export default function BackerInvestmentTiersPage() {
         roi_percentage: '',
         benefits: '',
         color: 'bg-blue-100 text-blue-700'
-      });
-      fetchData();
+      })
+      fetchData()
     } catch (err) {
-      console.error('Error updating tier:', err);
-      toastError('Update Failed', 'Failed to update tier');
+      
+      toastError('Update Failed', 'Failed to update tier')
     }
-  };
+  }
 
   const handleDeleteTier = async (tierId) => {
-    if (!confirm('Are you sure you want to delete this investment tier?')) return;
+    if (!confirm('Are you sure you want to delete this investment tier?')) return
     try {
-      await InvestmentTier.delete(tierId);
-      success('Tier Deleted', 'Investment tier has been deleted');
-      fetchData();
+      await InvestmentTier.delete(tierId)
+      success('Tier Deleted', 'Investment tier has been deleted')
+      fetchData()
     } catch (err) {
-      console.error('Error deleting tier:', err);
-      toastError('Delete Failed', 'Failed to delete tier');
+      
+      toastError('Delete Failed', 'Failed to delete tier')
     }
-  };
+  }
 
   const openModal = (tier = null) => {
     if (tier) {
-      setEditingTier(tier);
+      setEditingTier(tier)
       setTierForm({
         name: tier.name,
         min_investment: tier.min_investment,
@@ -180,9 +180,9 @@ export default function BackerInvestmentTiersPage() {
         roi_percentage: tier.roi_percentage,
         benefits: tier.benefits ? tier.benefits.join('\n') : '',
         color: tier.color || 'bg-blue-100 text-blue-700'
-      });
+      })
     } else {
-      setEditingTier(null);
+      setEditingTier(null)
       setTierForm({
         name: '',
         min_investment: '',
@@ -190,27 +190,27 @@ export default function BackerInvestmentTiersPage() {
         roi_percentage: '',
         benefits: '',
         color: 'bg-blue-100 text-blue-700'
-      });
+      })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const getTierIcon = (icon) => {
     switch (icon) {
-      case 'bronze': return <Layers className="w-6 h-6" />;
-      case 'silver': return <Sparkles className="w-6 h-6" />;
-      case 'gold': return <Crown className="w-6 h-6" />;
-      case 'platinum': return <Gem className="w-6 h-6" />;
-      default: return <TrendingUp className="w-6 h-6" />;
+      case 'bronze': return <Layers className="w-6 h-6" />
+      case 'silver': return <Sparkles className="w-6 h-6" />
+      case 'gold': return <Crown className="w-6 h-6" />
+      case 'platinum': return <Gem className="w-6 h-6" />
+      default: return <TrendingUp className="w-6 h-6" />
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -371,5 +371,5 @@ export default function BackerInvestmentTiersPage() {
           </div>
         )}
     </div>
-  );
+  )
 }

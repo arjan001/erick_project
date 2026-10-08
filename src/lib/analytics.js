@@ -4,12 +4,12 @@ export function reportWebVitals(onPerfEntry) {
   if (onPerfEntry && onPerfEntry instanceof Function) {
     try {
       import('web-vitals').then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
-        onCLS?.(onPerfEntry);
-        onFCP?.(onPerfEntry);
- onLCP?.(onPerfEntry);
-        onTTFB?.(onPerfEntry);
-        onINP?.(onPerfEntry);
-      }).catch(() => {});
+        onCLS?.(onPerfEntry)
+        onFCP?.(onPerfEntry)
+ onLCP?.(onPerfEntry)
+        onTTFB?.(onPerfEntry)
+        onINP?.(onPerfEntry)
+      }).catch(() => {})
     } catch {
       // web-vitals not available — silently skip
     }
@@ -19,7 +19,7 @@ export function reportWebVitals(onPerfEntry) {
 export function logWebVitals() {
   if (import.meta.env.DEV) {
     reportWebVitals((metric) => {
-      console.log(`[Web Vitals] ${metric.name}:`, metric.value, metric.rating);
-    });
+      
+    })
   }
 }

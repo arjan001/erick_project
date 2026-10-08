@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { 
   Search, Briefcase, FileText, Mail, User,
   Home as HomeIcon, Network, ChevronLeft, ChevronRight, LogOut, Wallet, Bell, Users, Ticket
-} from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
-import { useSidebar } from '@/layouts/DashboardLayout';
-import { useAuth } from '@/lib/AuthContext';
-import { Notification, Artist } from '@/lib/supabaseEntities';
+} from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
+import { useSidebar } from '@/layouts/DashboardLayout'
+import { useAuth } from '@/lib/AuthContext'
+import { Notification, Artist } from '@/lib/supabaseEntities'
 
 const MENU_ITEMS = [
   { label: 'Dashboard', icon: HomeIcon, href: 'artistdashboard' },
@@ -20,106 +20,106 @@ const MENU_ITEMS = [
   { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets' },
   { label: 'Finances', icon: Wallet, href: 'ArtistFinance' },
   { label: 'My Profile & Settings', icon: User, href: 'ArtistProfile' }
-];
+]
 
 export default function ArtistSidebar() {
-  const location = useLocation();
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [pendingConnections, setPendingConnections] = useState(0);
-  const [notificationCount, setNotificationCount] = useState(0);
-  const [artistProfile, setArtistProfile] = useState(null);
-  const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar();
-  const { logout, user } = useAuth();
+  const location = useLocation()
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [pendingConnections, setPendingConnections] = useState(0)
+  const [notificationCount, setNotificationCount] = useState(0)
+  const [artistProfile, setArtistProfile] = useState(null)
+  const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar()
+  const { logout, user } = useAuth()
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
     const fetchUnread = async () => {
       try {
         // Messages table uses conversation_id and sender_id, not recipient_email
         // For now, set to 0 until proper conversation-based messaging is implemented
-        setUnreadCount(0);
+        setUnreadCount(0)
       } catch {
-        setUnreadCount(0);
+        setUnreadCount(0)
       }
-    };
-    fetchUnread();
+    }
+    fetchUnread()
 
     // Poll for updates every 30 seconds instead of using subscribe
     const interval = setInterval(() => {
-      fetchUnread();
-    }, 30000);
+      fetchUnread()
+    }, 30000)
 
-    return () => clearInterval(interval);
-  }, [user]);
+    return () => clearInterval(interval)
+  }, [user])
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
     const fetchPendingConnections = async () => {
       try {
-        const { Connection } = await import('@/lib/supabaseEntities');
+        const { Connection } = await import('@/lib/supabaseEntities')
         const connections = await Connection.filter({ 
           recipient_email: user.email, 
           status: 'pending' 
-        }, '-created_date', 50);
-        setPendingConnections((connections || []).length);
+        }, '-created_date', 50)
+        setPendingConnections((connections || []).length)
       } catch {
-        setPendingConnections(0);
+        setPendingConnections(0)
       }
-    };
-    fetchPendingConnections();
+    }
+    fetchPendingConnections()
 
     // Poll for updates every 30 seconds instead of using subscribe
     const interval = setInterval(() => {
-      fetchPendingConnections();
-    }, 30000);
+      fetchPendingConnections()
+    }, 30000)
 
-    return () => clearInterval(interval);
-  }, [user]);
+    return () => clearInterval(interval)
+  }, [user])
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
     const fetchNotifications = async () => {
       try {
-        const notifs = await Notification.filter({ recipient_email: user.email });
-        setNotificationCount((notifs || []).filter(n => !n.read).length);
+        const notifs = await Notification.filter({ recipient_email: user.email })
+        setNotificationCount((notifs || []).filter(n => !n.read).length)
       } catch {
-        setNotificationCount(0);
+        setNotificationCount(0)
       }
-    };
-    fetchNotifications();
+    }
+    fetchNotifications()
 
     // Poll for updates every 30 seconds instead of using subscribe
     const interval = setInterval(() => {
-      fetchNotifications();
-    }, 30000);
+      fetchNotifications()
+    }, 30000)
 
-    return () => clearInterval(interval);
-  }, [user]);
+    return () => clearInterval(interval)
+  }, [user])
 
   useEffect(() => {
-    if (!user?.email) return;
+    if (!user?.email) return
     const fetchArtistProfile = async () => {
       try {
-        const artists = await Artist.filter({ email: user.email });
+        const artists = await Artist.filter({ email: user.email })
         if (artists?.[0]) {
-          setArtistProfile(artists[0]);
+          setArtistProfile(artists[0])
         }
       } catch (err) {
-        console.error('Error fetching artist profile:', err);
+        
       }
-    };
-    fetchArtistProfile();
-  }, [user]);
+    }
+    fetchArtistProfile()
+  }, [user])
 
   const toggle = () => {
     if (window.innerWidth < 1024) {
-      setMobileSidebarOpen(!mobileSidebarOpen);
+      setMobileSidebarOpen(!mobileSidebarOpen)
     } else {
-      setSidebarExpanded(!expanded);
+      setSidebarExpanded(!expanded)
     }
-  };
+  }
 
-  const handleLogout = () => { logout(true); };
+  const handleLogout = () => { logout(true); }
 
   return (
     <aside
@@ -143,8 +143,8 @@ export default function ArtistSidebar() {
       {/* Menu */}
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
         {MENU_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname.toLowerCase().includes(item.href.toLowerCase());
+          const Icon = item.icon
+          const isActive = location.pathname.toLowerCase().includes(item.href.toLowerCase())
           
           if (!expanded) {
             return (
@@ -178,7 +178,7 @@ export default function ArtistSidebar() {
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-[#1a1a1a] rotate-45"></div>
                 </div>
               </div>
-            );
+            )
           }
           
           return (
@@ -207,7 +207,7 @@ export default function ArtistSidebar() {
                 </span>
               )}
             </Link>
-          );
+          )
         })}
       </nav>
 
@@ -270,5 +270,5 @@ export default function ArtistSidebar() {
         )}
       </div>
     </aside>
-  );
+  )
 }

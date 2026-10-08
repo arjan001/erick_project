@@ -1,14 +1,14 @@
 // Brevo Email Service Client
 // Handles email sending for team member invitations
 
-const BREVO_API_KEY = import.meta.env.VITE_BREVO_API_KEY || '';
-const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
+const BREVO_API_KEY = import.meta.env.VITE_BREVO_API_KEY || ''
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email'
 
 export const sendTeamInvitationEmail = async (email, teamName, inviterName, inviteToken, inviteUrl) => {
   try {
     if (!BREVO_API_KEY) {
-      console.error('Brevo API key not configured');
-      return { success: false, error: 'Email service not configured' };
+      
+      return { success: false, error: 'Email service not configured' }
     }
 
     const response = await fetch(BREVO_API_URL, {
@@ -75,27 +75,27 @@ export const sendTeamInvitationEmail = async (email, teamName, inviterName, invi
           This invitation will expire in 7 days.
         `
       })
-    });
+    })
 
-    const data = await response.json();
+    const data = await response.json()
     
     if (response.ok) {
-      return { success: true, messageId: data.messageId };
+      return { success: true, messageId: data.messageId }
     } else {
-      console.error('Brevo API error:', data);
-      return { success: false, error: data.message || 'Failed to send email' };
+      
+      return { success: false, error: data.message || 'Failed to send email' }
     }
   } catch (error) {
-    console.error('Error sending invitation email:', error);
-    return { success: false, error: error.message };
+    
+    return { success: false, error: error.message }
   }
-};
+}
 
 export const sendPasswordResetEmail = async (email, resetToken, resetUrl) => {
   try {
     if (!BREVO_API_KEY) {
-      console.error('Brevo API key not configured');
-      return { success: false, error: 'Email service not configured' };
+      
+      return { success: false, error: 'Email service not configured' }
     }
 
     const response = await fetch(BREVO_API_URL, {
@@ -163,18 +163,18 @@ export const sendPasswordResetEmail = async (email, resetToken, resetUrl) => {
           If you didn't request this, please ignore this email.
         `
       })
-    });
+    })
 
-    const data = await response.json();
+    const data = await response.json()
     
     if (response.ok) {
-      return { success: true, messageId: data.messageId };
+      return { success: true, messageId: data.messageId }
     } else {
-      console.error('Brevo API error:', data);
-      return { success: false, error: data.message || 'Failed to send email' };
+      
+      return { success: false, error: data.message || 'Failed to send email' }
     }
   } catch (error) {
-    console.error('Error sending password reset email:', error);
-    return { success: false, error: error.message };
+    
+    return { success: false, error: error.message }
   }
-};
+}

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
-import { Artist } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Plus, X, Sparkles, ThumbsUp, Edit2, Check, Globe, Instagram, Linkedin, MapPin, Languages, Award, Briefcase, Users as UsersIcon } from 'lucide-react';
-import SkillsExperienceTagInput from '@/components/SkillsExperienceTagInput';
-import worldLanguages from '@/data/languages.json';
+import React, { useState } from 'react'
+import { base44 } from '@/api/base44Client'
+import { Artist } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Plus, X, Sparkles, ThumbsUp, Edit2, Check, Globe, Instagram, Linkedin, MapPin, Languages, Award, Briefcase, Users as UsersIcon } from 'lucide-react'
+import SkillsExperienceTagInput from '@/components/SkillsExperienceTagInput'
+import worldLanguages from '@/data/languages.json'
 
 const SKILL_SUGGESTIONS = [
   'After Effects', 'Adobe Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'Concept Art', 'Creative Direction', 
@@ -15,7 +15,7 @@ const SKILL_SUGGESTIONS = [
   'Gaffer', 'Grip', 'Production Design', 'Costume Design', 'Makeup', 'Hair Styling', 'Steadicam',
   'Drone Piloting', 'Underwater Cinematography', 'Rotoscoping', 'Tracking', 'Matte Painting',
   'Green Screen', 'Chroma Keying', 'Color Correction', 'Grading', 'Audio Mixing', 'Music Composition'
-];
+]
 
 const CLIENT_SUGGESTIONS = [
   'Nike', 'Apple', 'Google', 'Coca-Cola', 'BMW', 'Sony', 'Netflix', 'Amazon', 'Meta',
@@ -24,7 +24,7 @@ const CLIENT_SUGGESTIONS = [
   'Porsche', 'Mercedes', 'Tesla', 'Audi', 'Lamborghini', 'Rolls Royce', 'Rolex', 'Louis Vuitton',
   'Gucci', 'Hermès', 'Chanel', 'Dior', 'Prada', 'Burberry', 'Versace', 'Balenciaga',
   'Givenchy', 'Fendi', 'Celine', 'Saint Laurent', 'Valentino', 'Dolce Gabbana', 'Armani'
-];
+]
 
 const PROJECT_TYPE_SUGGESTIONS = [
   'Branded Content', 'Commercials', 'Music Videos', 'Documentaries', 'Feature Films',
@@ -34,9 +34,9 @@ const PROJECT_TYPE_SUGGESTIONS = [
   'Event Coverage', 'Weddings', 'Sports', 'Fitness', 'Gaming Content', 'Animation',
   'Motion Graphics', 'Graphic Design', 'Web Design', 'App Design', 'UX/UI', 'Photo Editing',
   'Photo Retouching', 'Podcast Production', 'Video Podcast', 'Live Streaming', 'Virtual Events'
-];
+]
 
-const LANGUAGE_SUGGESTIONS = worldLanguages;
+const LANGUAGE_SUGGESTIONS = worldLanguages
 
 const COUNTRY_SUGGESTIONS = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
@@ -67,49 +67,49 @@ const COUNTRY_SUGGESTIONS = [
   'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam',
   'Yemen',
   'Zambia', 'Zimbabwe'
-];
+]
 
 export default function AboutSection({ artist, endorsements, onUpdate }) {
-  const [bio, setBio] = useState(artist?.bio || '');
-  const [editingBio, setEditingBio] = useState(false);
-  const [bioLoading, setBioLoading] = useState(false);
+  const [bio, setBio] = useState(artist?.bio || '')
+  const [editingBio, setEditingBio] = useState(false)
+  const [bioLoading, setBioLoading] = useState(false)
   
-  const [skills, setSkills] = useState(artist?.skills_experience?.map(s => s.skill) || []);
-  const [editingSkills, setEditingSkills] = useState(false);
+  const [skills, setSkills] = useState(artist?.skills_experience?.map(s => s.skill) || [])
+  const [editingSkills, setEditingSkills] = useState(false)
   
-  const [clients, setClients] = useState(artist?.past_clients || []);
-  const [newClient, setNewClient] = useState('');
-  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
-  const [editingClients, setEditingClients] = useState(false);
+  const [clients, setClients] = useState(artist?.past_clients || [])
+  const [newClient, setNewClient] = useState('')
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false)
+  const [editingClients, setEditingClients] = useState(false)
   
-  const [projectTypes, setProjectTypes] = useState(artist?.project_specialties || []);
-  const [newProjectType, setNewProjectType] = useState('');
-  const [showProjectSuggestions, setShowProjectSuggestions] = useState(false);
-  const [editingProjects, setEditingProjects] = useState(false);
+  const [projectTypes, setProjectTypes] = useState(artist?.project_specialties || [])
+  const [newProjectType, setNewProjectType] = useState('')
+  const [showProjectSuggestions, setShowProjectSuggestions] = useState(false)
+  const [editingProjects, setEditingProjects] = useState(false)
 
-  const [languages, setLanguages] = useState(artist?.languages_spoken || []);
-  const [newLanguage, setNewLanguage] = useState('');
-  const [showLanguageSuggestions, setShowLanguageSuggestions] = useState(false);
-  const [editingLanguages, setEditingLanguages] = useState(false);
+  const [languages, setLanguages] = useState(artist?.languages_spoken || [])
+  const [newLanguage, setNewLanguage] = useState('')
+  const [showLanguageSuggestions, setShowLanguageSuggestions] = useState(false)
+  const [editingLanguages, setEditingLanguages] = useState(false)
 
-  const [countries, setCountries] = useState(artist?.countries_worked || []);
-  const [newCountry, setNewCountry] = useState('');
-  const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
-  const [editingCountries, setEditingCountries] = useState(false);
+  const [countries, setCountries] = useState(artist?.countries_worked || [])
+  const [newCountry, setNewCountry] = useState('')
+  const [showCountrySuggestions, setShowCountrySuggestions] = useState(false)
+  const [editingCountries, setEditingCountries] = useState(false)
 
 
   const groupedEndorsements = endorsements.reduce((acc, e) => {
-    if (!acc[e.skill]) acc[e.skill] = [];
-    acc[e.skill].push(e);
-    return acc;
-  }, {});
+    if (!acc[e.skill]) acc[e.skill] = []
+    acc[e.skill].push(e)
+    return acc
+  }, {})
 
   const generateBioWithAI = async () => {
-    setBioLoading(true);
+    setBioLoading(true)
     try {
-      const skillsList = skills.join(', ');
-      const clientsList = clients.join(', ');
-      const specialties = projectTypes.join(', ');
+      const skillsList = skills.join(', ')
+      const clientsList = clients.join(', ')
+      const specialties = projectTypes.join(', ')
       
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Create a professional, compelling bio for a creative professional with the following:
@@ -124,76 +124,76 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
             bio: { type: 'string' }
           }
         }
-      });
+      })
       
-      setBio(result.bio);
+      setBio(result.bio)
     } catch (err) {
-      console.error('Error generating bio:', err);
+      
     } finally {
-      setBioLoading(false);
+      setBioLoading(false)
     }
-  };
+  }
 
   const addClient = (client) => {
     if (client && !clients.includes(client)) {
-      setClients([...clients, client]);
-      setNewClient('');
+      setClients([...clients, client])
+      setNewClient('')
     }
-  };
+  }
 
   const removeClient = (client) => {
-    setClients(clients.filter(c => c !== client));
-  };
+    setClients(clients.filter(c => c !== client))
+  }
 
   const addProjectType = (type) => {
     if (type && !projectTypes.includes(type)) {
-      setProjectTypes([...projectTypes, type]);
-      setNewProjectType('');
+      setProjectTypes([...projectTypes, type])
+      setNewProjectType('')
     }
-  };
+  }
 
   const removeProjectType = (type) => {
-    setProjectTypes(projectTypes.filter(t => t !== type));
-  };
+    setProjectTypes(projectTypes.filter(t => t !== type))
+  }
 
   const filteredClientSuggestions = CLIENT_SUGGESTIONS.filter(c =>
     c.toLowerCase().includes(newClient.toLowerCase()) && !clients.includes(c)
-  );
+  )
 
   const filteredProjectSuggestions = PROJECT_TYPE_SUGGESTIONS.filter(p =>
     p.toLowerCase().includes(newProjectType.toLowerCase()) && !projectTypes.includes(p)
-  );
+  )
 
   const filteredLanguageSuggestions = LANGUAGE_SUGGESTIONS.filter(l =>
     l.toLowerCase().includes(newLanguage.toLowerCase()) && !languages.includes(l)
-  );
+  )
 
   const filteredCountrySuggestions = COUNTRY_SUGGESTIONS.filter(c =>
     c.toLowerCase().includes(newCountry.toLowerCase()) && !countries.includes(c)
-  );
+  )
 
 
   const addLanguage = (lang) => {
     if (lang && !languages.includes(lang)) {
-      setLanguages([...languages, lang]);
-      setNewLanguage('');
+      setLanguages([...languages, lang])
+      setNewLanguage('')
     }
-  };
+  }
 
   const removeLanguage = (lang) => {
-    setLanguages(languages.filter(l => l !== lang));
-  };
+    setLanguages(languages.filter(l => l !== lang))
+  }
 
   const addCountry = (country) => {
     if (country && !countries.includes(country)) {
-      setCountries([...countries, country]);
-      setNewCountry('');
+      setCountries([...countries, country])
+      setNewCountry('')
     }
-  };
+  }
 
   const removeCountry = (country) => {
-    setCountries(countries.filter(c => c !== country));
-  };
+    setCountries(countries.filter(c => c !== country))
+  }
 
 
   return (
@@ -230,10 +230,10 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 <Button
                     onClick={async () => {
                       if (artist) {
-                        const updated = await Artist.update(artist.id, { bio });
-                        if (onUpdate) onUpdate(updated);
+                        const updated = await Artist.update(artist.id, { bio })
+                        if (onUpdate) onUpdate(updated)
                       }
-                      setEditingBio(false);
+                      setEditingBio(false)
                     }}
                     className="flex-1 bg-black text-white hover:bg-gray-800"
                   >
@@ -286,11 +286,11 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               <Button
                 onClick={async () => {
                   if (artist) {
-                    const skillsData = skills.map(s => ({ skill: s, years: 0 }));
-                    const updated = await Artist.update(artist.id, { skills_experience: skillsData });
-                    if (onUpdate) onUpdate(updated);
+                    const skillsData = skills.map(s => ({ skill: s, years: 0 }))
+                    const updated = await Artist.update(artist.id, { skills_experience: skillsData })
+                    if (onUpdate) onUpdate(updated)
                   }
-                  setEditingSkills(false);
+                  setEditingSkills(false)
                 }}
                 className="w-full bg-blue-600 text-white hover:bg-blue-700"
               >
@@ -301,7 +301,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
           ) : (
             <div className="flex flex-wrap gap-2">
               {skills.length > 0 ? skills.map((skill) => {
-                const endorsementCount = groupedEndorsements[skill]?.length || 0;
+                const endorsementCount = groupedEndorsements[skill]?.length || 0
                 return (
                   <button
                     key={skill}
@@ -315,7 +315,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                       </span>
                     )}
                   </button>
-                );
+                )
               }) : (
                 <p className="text-gray-600 text-sm">No skills added yet. Click Edit to get started.</p>
               )}
@@ -385,8 +385,8 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                       <button
                         key={client}
                         onClick={() => {
-                          addClient(client);
-                          setShowClientSuggestions(false);
+                          addClient(client)
+                          setShowClientSuggestions(false)
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-purple-50 text-sm border-b border-purple-100 last:border-0"
                       >
@@ -400,10 +400,10 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               <Button
                 onClick={async () => {
                   if (artist) {
-                    const updated = await Artist.update(artist.id, { past_clients: clients });
-                    if (onUpdate) onUpdate(updated);
+                    const updated = await Artist.update(artist.id, { past_clients: clients })
+                    if (onUpdate) onUpdate(updated)
                   }
-                  setEditingClients(false);
+                  setEditingClients(false)
                 }}
                 className="w-full bg-purple-600 text-white hover:bg-purple-700"
               >
@@ -480,8 +480,8 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                       <button
                         key={type}
                         onClick={() => {
-                          addProjectType(type);
-                          setShowProjectSuggestions(false);
+                          addProjectType(type)
+                          setShowProjectSuggestions(false)
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-green-50 text-sm border-b border-green-100 last:border-0"
                       >
@@ -495,10 +495,10 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               <Button
                 onClick={async () => {
                   if (artist) {
-                    const updated = await Artist.update(artist.id, { project_specialties: projectTypes });
-                    if (onUpdate) onUpdate(updated);
+                    const updated = await Artist.update(artist.id, { project_specialties: projectTypes })
+                    if (onUpdate) onUpdate(updated)
                   }
-                  setEditingProjects(false);
+                  setEditingProjects(false)
                 }}
                 className="w-full bg-green-600 text-white hover:bg-green-700"
               >
@@ -574,8 +574,8 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                       <button
                         key={lang}
                         onClick={() => {
-                          addLanguage(lang);
-                          setShowLanguageSuggestions(false);
+                          addLanguage(lang)
+                          setShowLanguageSuggestions(false)
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-orange-50 text-sm border-b border-orange-100 last:border-0"
                       >
@@ -588,10 +588,10 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
 
               <Button onClick={async () => {
                 if (artist) {
-                  const updated = await Artist.update(artist.id, { languages_spoken: languages });
-                  if (onUpdate) onUpdate(updated);
+                  const updated = await Artist.update(artist.id, { languages_spoken: languages })
+                  if (onUpdate) onUpdate(updated)
                 }
-                setEditingLanguages(false);
+                setEditingLanguages(false)
               }} className="w-full bg-orange-600 text-white hover:bg-orange-700">
                 <Check className="w-4 h-4 mr-1" /> Done
               </Button>
@@ -659,8 +659,8 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                       <button
                         key={country}
                         onClick={() => {
-                          addCountry(country);
-                          setShowCountrySuggestions(false);
+                          addCountry(country)
+                          setShowCountrySuggestions(false)
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-teal-50 text-sm border-b border-teal-100 last:border-0"
                       >
@@ -673,10 +673,10 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
 
               <Button onClick={async () => {
                 if (artist) {
-                  const updated = await Artist.update(artist.id, { countries_worked: countries });
-                  if (onUpdate) onUpdate(updated);
+                  const updated = await Artist.update(artist.id, { countries_worked: countries })
+                  if (onUpdate) onUpdate(updated)
                 }
-                setEditingCountries(false);
+                setEditingCountries(false)
               }} className="w-full bg-teal-600 text-white hover:bg-teal-700">
                 <Check className="w-4 h-4 mr-1" /> Done
               </Button>
@@ -726,5 +726,5 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
         </div>
       </div>
     </div>
-  );
+  )
 }

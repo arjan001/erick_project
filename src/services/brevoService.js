@@ -1,21 +1,21 @@
 // Brevo API Service for SMS and Email
 // Documentation: https://developers.brevo.com/
 
-const BREVO_API_BASE = 'https://api.brevo.com/v3';
+const BREVO_API_BASE = 'https://api.brevo.com/v3'
 
 /**
  * Get Brevo API key from environment variables or settings
  */
 const getApiKey = () => {
-  return import.meta.env.VITE_BREVO_API_KEY || localStorage.getItem('brevo_api_key');
-};
+  return import.meta.env.VITE_BREVO_API_KEY || localStorage.getItem('brevo_api_key')
+}
 
 /**
  * Get Brevo sender name from environment variables or settings
  */
 const getSenderName = () => {
-  return import.meta.env.VITE_BREVO_SENDER_NAME || localStorage.getItem('brevo_sender_name') || 'Eric Rabar';
-};
+  return import.meta.env.VITE_BREVO_SENDER_NAME || localStorage.getItem('brevo_sender_name') || 'Eric Rabar'
+}
 
 /**
  * Send SMS via Brevo API
@@ -26,12 +26,12 @@ const getSenderName = () => {
  */
 export const sendSMS = async (recipient, content, type = 'transactional') => {
   try {
-    const apiKey = getApiKey();
+    const apiKey = getApiKey()
     if (!apiKey) {
-      throw new Error('Brevo API key not configured');
+      throw new Error('Brevo API key not configured')
     }
 
-    const sender = getSenderName();
+    const sender = getSenderName()
 
     const response = await fetch(`${BREVO_API_BASE}/transactionalSMS/send`, {
       method: 'POST',
@@ -47,19 +47,19 @@ export const sendSMS = async (recipient, content, type = 'transactional') => {
         type,
         unicodeEnabled: true,
       }),
-    });
+    })
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to send SMS');
+      const error = await response.json()
+      throw new Error(error.message || 'Failed to send SMS')
     }
 
-    return await response.json();
+    return await response.json()
   } catch (error) {
-    console.error('Brevo SMS Error:', error);
-    throw error;
+    //
+    throw error
   }
-};
+}
 
 /**
  * Send OTP via SMS
@@ -68,9 +68,9 @@ export const sendSMS = async (recipient, content, type = 'transactional') => {
  * @returns {Promise<Object>} API response
  */
 export const sendOTP = async (phoneNumber, otp) => {
-  const content = `Your verification code is: ${otp}. This code will expire in 10 minutes. Do not share this code with anyone.`;
-  return sendSMS(phoneNumber, content, 'transactional');
-};
+  const content = `Your verification code is: ${otp}. This code will expire in 10 minutes. Do not share this code with anyone.`
+  return sendSMS(phoneNumber, content, 'transactional')
+}
 
 /**
  * Send transactional email via Brevo API
@@ -90,9 +90,9 @@ export const sendEmail = async ({
   senderEmail,
 }) => {
   try {
-    const apiKey = getApiKey();
+    const apiKey = getApiKey()
     if (!apiKey) {
-      throw new Error('Brevo API key not configured');
+      throw new Error('Brevo API key not configured')
     }
 
     const response = await fetch(`${BREVO_API_BASE}/smtp/email`, {
@@ -115,19 +115,19 @@ export const sendEmail = async ({
         subject,
         htmlContent,
       }),
-    });
+    })
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to send email');
+      const error = await response.json()
+      throw new Error(error.message || 'Failed to send email')
     }
 
-    return await response.json();
+    return await response.json()
   } catch (error) {
-    console.error('Brevo Email Error:', error);
-    throw error;
+    //
+    throw error
   }
-};
+}
 
 /**
  * Send welcome email after signup
@@ -148,14 +148,14 @@ export const sendWelcomeEmail = async (email, name) => {
         <p>Best regards,<br>The Eric Rabar Team</p>
       </body>
     </html>
-  `;
+  `
 
   return sendEmail({
     to: email,
     subject: 'Welcome to Eric Rabar!',
     htmlContent,
-  });
-};
+  })
+}
 
 /**
  * Send password reset email
@@ -177,14 +177,14 @@ export const sendPasswordResetEmail = async (email, resetLink) => {
         <p>Best regards,<br>The Eric Rabar Team</p>
       </body>
     </html>
-  `;
+  `
 
   return sendEmail({
     to: email,
     subject: 'Reset Your Eric Rabar Password',
     htmlContent,
-  });
-};
+  })
+}
 
 /**
  * Send email verification email
@@ -206,14 +206,14 @@ export const sendEmailVerification = async (email, verificationLink) => {
         <p>Best regards,<br>The Eric Rabar Team</p>
       </body>
     </html>
-  `;
+  `
 
   return sendEmail({
     to: email,
     subject: 'Verify Your Eric Rabar Email',
     htmlContent,
-  });
-};
+  })
+}
 
 export default {
   sendSMS,
@@ -222,4 +222,4 @@ export default {
   sendWelcomeEmail,
   sendPasswordResetEmail,
   sendEmailVerification,
-};
+}

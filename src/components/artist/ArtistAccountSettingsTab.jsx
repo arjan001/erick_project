@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Artist, Subscription } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Globe, Instagram, Linkedin, Check, Bell, Shield, Phone, Film, Star, Crown, Save } from 'lucide-react';
-import { useToast } from '@/hooks/useToast';
-import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge';
+import React, { useState, useEffect } from 'react'
+import { Artist, Subscription } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Globe, Instagram, Linkedin, Check, Bell, Shield, Phone, Film, Star, Crown, Save } from 'lucide-react'
+import { useToast } from '@/hooks/useToast'
+import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge'
 
-const inputClass = "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:bg-white transition-all";
+const inputClass = "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:bg-white transition-all"
 
 function ModernToggle({ title, description, checked, onChange, isLast }) {
   return (
@@ -21,7 +21,7 @@ function ModernToggle({ title, description, checked, onChange, isLast }) {
         <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
       </button>
     </div>
-  );
+  )
 }
 
 function SectionCard({ title, icon: Icon, children, action }) {
@@ -38,60 +38,60 @@ function SectionCard({ title, icon: Icon, children, action }) {
       </div>
       <div className="p-6">{children}</div>
     </div>
-  );
+  )
 }
 
 export default function ArtistAccountSettingsTab({ artist, userEmail, onUpdate }) {
-  const { success, error: toastError } = useToast();
+  const { success, error: toastError } = useToast()
 
-  const [phone, setPhone] = useState(artist?.phone || '');
-  const [vimeo, setVimeo] = useState(artist?.vimeo || '');
-  const [imdb, setImdb] = useState(artist?.imdb || '');
-  const [website, setWebsite] = useState(artist?.website || '');
-  const [instagram, setInstagram] = useState(artist?.instagram || '');
-  const [linkedin, setLinkedin] = useState(artist?.linkedin || '');
+  const [phone, setPhone] = useState(artist?.phone || '')
+  const [vimeo, setVimeo] = useState(artist?.vimeo || '')
+  const [imdb, setImdb] = useState(artist?.imdb || '')
+  const [website, setWebsite] = useState(artist?.website || '')
+  const [instagram, setInstagram] = useState(artist?.instagram || '')
+  const [linkedin, setLinkedin] = useState(artist?.linkedin || '')
 
-  const [emailNotifications, setEmailNotifications] = useState(artist?.email_notifications ?? true);
-  const [jobAlerts, setJobAlerts] = useState(artist?.job_alerts ?? true);
-  const [messageNotifications, setMessageNotifications] = useState(artist?.message_notifications ?? true);
+  const [emailNotifications, setEmailNotifications] = useState(artist?.email_notifications ?? true)
+  const [jobAlerts, setJobAlerts] = useState(artist?.job_alerts ?? true)
+  const [messageNotifications, setMessageNotifications] = useState(artist?.message_notifications ?? true)
 
-  const [profilePublic, setProfilePublic] = useState(artist?.profile_public ?? true);
-  const [showEmail, setShowEmail] = useState(artist?.show_email ?? false);
-  const [showPhone, setShowPhone] = useState(artist?.show_phone ?? false);
+  const [profilePublic, setProfilePublic] = useState(artist?.profile_public ?? true)
+  const [showEmail, setShowEmail] = useState(artist?.show_email ?? false)
+  const [showPhone, setShowPhone] = useState(artist?.show_phone ?? false)
 
-  const [subscription, setSubscription] = useState(null);
-  const [subPackage, setSubPackage] = useState(null);
+  const [subscription, setSubscription] = useState(null)
+  const [subPackage, setSubPackage] = useState(null)
 
   React.useEffect(() => {
     const fetchSub = async () => {
-      if (!userEmail) return;
+      if (!userEmail) return
       try {
-        const subs = await Subscription.filter({ user_email: userEmail, status: 'active' });
+        const subs = await Subscription.filter({ user_email: userEmail, status: 'active' })
         if (subs?.[0]) {
-          setSubscription(subs[0]);
-          const { SubscriptionPackage } = await import('@/lib/supabaseEntities');
-          const pkgs = await SubscriptionPackage.filter({ id: subs[0].package_id });
-          if (pkgs?.[0]) setSubPackage(pkgs[0]);
+          setSubscription(subs[0])
+          const { SubscriptionPackage } = await import('@/lib/supabaseEntities')
+          const pkgs = await SubscriptionPackage.filter({ id: subs[0].package_id })
+          if (pkgs?.[0]) setSubPackage(pkgs[0])
         }
       } catch (e) { /* no subscription */ }
-    };
-    fetchSub();
-  }, [userEmail]);
+    }
+    fetchSub()
+  }, [userEmail])
 
   const handleSaveContact = async () => {
-    if (!artist) return;
+    if (!artist) return
     try {
-      const updated = await Artist.update(artist.id, { phone, website, instagram, linkedin, vimeo, imdb });
-      onUpdate(updated);
-      success('Saved', 'Your contact info has been updated');
+      const updated = await Artist.update(artist.id, { phone, website, instagram, linkedin, vimeo, imdb })
+      onUpdate(updated)
+      success('Saved', 'Your contact info has been updated')
     } catch (err) {
-      console.error('Error saving profile:', err);
-      toastError('Save Failed', 'Failed to update profile');
+      
+      toastError('Save Failed', 'Failed to update profile')
     }
-  };
+  }
 
   const handleSavePreferences = async () => {
-    if (!artist) return;
+    if (!artist) return
     try {
       const updated = await Artist.update(artist.id, {
         email_notifications: emailNotifications,
@@ -100,14 +100,14 @@ export default function ArtistAccountSettingsTab({ artist, userEmail, onUpdate }
         profile_public: profilePublic,
         show_email: showEmail,
         show_phone: showPhone
-      });
-      onUpdate(updated);
-      success('Saved', 'Your preferences have been updated');
+      })
+      onUpdate(updated)
+      success('Saved', 'Your preferences have been updated')
     } catch (err) {
-      console.error('Error saving preferences:', err);
-      toastError('Save Failed', 'Failed to update preferences');
+      
+      toastError('Save Failed', 'Failed to update preferences')
     }
-  };
+  }
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -203,5 +203,5 @@ export default function ArtistAccountSettingsTab({ artist, userEmail, onUpdate }
         <ModernToggle title="Show Phone Number" description="Display phone on your public profile" checked={showPhone} onChange={() => setShowPhone(!showPhone)} isLast />
       </SectionCard>
     </div>
-  );
+  )
 }

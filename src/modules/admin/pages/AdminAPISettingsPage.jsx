@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { Key, Save, Plus, Trash2, Copy, RefreshCw, Shield, Clock, AlertTriangle, CheckCircle, ToggleLeft, ToggleRight, Code, Eye, EyeOff, Bot } from 'lucide-react';
-import { apiSettingsApi } from '../api/apiSettings.api';
-import { useAuth } from '@/lib/AuthContext';
+import React, { useState, useEffect } from 'react'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { Key, Save, Plus, Trash2, Copy, RefreshCw, Shield, Clock, AlertTriangle, CheckCircle, ToggleLeft, ToggleRight, Code, Eye, EyeOff, Bot } from 'lucide-react'
+import { apiSettingsApi } from '../api/apiSettings.api'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function AdminAPISettingsPage() {
-  const { success, error } = useToast();
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [showSecrets, setShowSecrets] = useState({});
+  const { success, error } = useToast()
+  const { user } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [showSecrets, setShowSecrets] = useState({})
   
-  const [apiKeys, setApiKeys] = useState([]);
+  const [apiKeys, setApiKeys] = useState([])
   const [rateLimits, setRateLimits] = useState({
     enabled: true,
     requestsPerMinute: 100,
@@ -20,7 +20,7 @@ export default function AdminAPISettingsPage() {
     requestsPerDay: 10000,
     burstLimit: 20,
     id: null
-  });
+  })
 
   const [apiSettings, setApiSettings] = useState({
     enableCORS: true,
@@ -35,7 +35,7 @@ export default function AdminAPISettingsPage() {
     enableLogging: true,
     logRetentionDays: 30,
     id: null
-  });
+  })
 
   const [googleDriveSettings, setGoogleDriveSettings] = useState({
     enabled: false,
@@ -44,7 +44,7 @@ export default function AdminAPISettingsPage() {
     apiKey: '',
     scopes: ['https://www.googleapis.com/auth/drive.readonly'],
     id: null
-  });
+  })
 
   const [chatGPTSettings, setChatGPTSettings] = useState({
     enabled: false,
@@ -53,30 +53,30 @@ export default function AdminAPISettingsPage() {
     temperature: 0.7,
     maxTokens: 2000,
     id: null
-  });
+  })
 
-  const [showAddKeyModal, setShowAddKeyModal] = useState(false);
+  const [showAddKeyModal, setShowAddKeyModal] = useState(false)
   const [newKeyForm, setNewKeyForm] = useState({
     name: '',
     scopes: ['read']
-  });
+  })
 
   // Fetch all data on mount
   useEffect(() => {
-    fetchAllData();
-  }, []);
+    fetchAllData()
+  }, [])
 
   const fetchAllData = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       const [keysData, rateLimitData, apiConfigData, integrationsData] = await Promise.all([
         apiSettingsApi.getAllApiKeys(),
         apiSettingsApi.getRateLimitingSettings(),
         apiSettingsApi.getApiConfiguration(),
         apiSettingsApi.getAllIntegrations()
-      ]);
+      ])
 
-      setApiKeys(keysData || []);
+      setApiKeys(keysData || [])
       
       if (rateLimitData) {
         setRateLimits({
@@ -86,7 +86,7 @@ export default function AdminAPISettingsPage() {
           requestsPerDay: rateLimitData.requests_per_day,
           burstLimit: rateLimitData.burst_limit,
           id: rateLimitData.id
-        });
+        })
       }
 
       if (apiConfigData) {
@@ -103,13 +103,13 @@ export default function AdminAPISettingsPage() {
           enableLogging: apiConfigData.enable_logging,
           logRetentionDays: apiConfigData.log_retention_days,
           id: apiConfigData.id
-        });
+        })
       }
 
       // Parse integrations
       if (integrationsData) {
-        const googleDrive = integrationsData.find(i => i.integration_name === 'google_drive');
-        const chatgpt = integrationsData.find(i => i.integration_name === 'chatgpt');
+        const googleDrive = integrationsData.find(i => i.integration_name === 'google_drive')
+        const chatgpt = integrationsData.find(i => i.integration_name === 'chatgpt')
 
         if (googleDrive) {
           setGoogleDriveSettings({
@@ -119,7 +119,7 @@ export default function AdminAPISettingsPage() {
             apiKey: googleDrive.settings?.api_key || '',
             scopes: googleDrive.settings?.scopes || ['https://www.googleapis.com/auth/drive.readonly'],
             id: googleDrive.id
-          });
+          })
         }
 
         if (chatgpt) {
@@ -130,19 +130,19 @@ export default function AdminAPISettingsPage() {
             temperature: chatgpt.settings?.temperature || 0.7,
             maxTokens: chatgpt.settings?.max_tokens || 2000,
             id: chatgpt.id
-          });
+          })
         }
       }
     } catch (err) {
-      console.error('Error fetching API settings data:', err);
-      error('Error', 'Failed to load API settings');
+      
+      error('Error', 'Failed to load API settings')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSaveSettings = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
       // Save rate limiting settings
       if (rateLimits.id) {
@@ -153,7 +153,7 @@ export default function AdminAPISettingsPage() {
           requests_per_hour: rateLimits.requestsPerHour,
           requests_per_day: rateLimits.requestsPerDay,
           burst_limit: rateLimits.burstLimit
-        });
+        })
       }
 
       // Save API configuration
@@ -171,7 +171,7 @@ export default function AdminAPISettingsPage() {
           current_version: apiSettings.currentVersion,
           enable_logging: apiSettings.enableLogging,
           log_retention_days: apiSettings.logRetentionDays
-        });
+        })
       }
 
       // Save Google Drive settings
@@ -180,7 +180,7 @@ export default function AdminAPISettingsPage() {
         client_secret: googleDriveSettings.clientSecret,
         api_key: googleDriveSettings.apiKey,
         scopes: googleDriveSettings.scopes
-      }, googleDriveSettings.enabled);
+      }, googleDriveSettings.enabled)
 
       // Save ChatGPT settings
       await apiSettingsApi.updateIntegrationSettings('chatgpt', {
@@ -188,16 +188,16 @@ export default function AdminAPISettingsPage() {
         model: chatGPTSettings.model,
         temperature: chatGPTSettings.temperature,
         max_tokens: chatGPTSettings.maxTokens
-      }, chatGPTSettings.enabled);
+      }, chatGPTSettings.enabled)
 
-      success('Saved', 'API settings saved successfully');
+      success('Saved', 'API settings saved successfully')
     } catch (err) {
-      console.error('Error saving settings:', err);
-      error('Failed', 'Failed to save settings');
+      
+      error('Failed', 'Failed to save settings')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleCreateAPIKey = async () => {
     try {
@@ -205,55 +205,55 @@ export default function AdminAPISettingsPage() {
         name: newKeyForm.name,
         scopes: newKeyForm.scopes,
         created_by: user?.id
-      });
+      })
       
-      setApiKeys([...apiKeys, newKey]);
-      success('Created', 'API key created successfully');
-      setShowAddKeyModal(false);
-      setNewKeyForm({ name: '', scopes: ['read'] });
+      setApiKeys([...apiKeys, newKey])
+      success('Created', 'API key created successfully')
+      setShowAddKeyModal(false)
+      setNewKeyForm({ name: '', scopes: ['read'] })
     } catch (err) {
-      console.error('Error creating API key:', err);
-      error('Failed', 'Failed to create API key');
+      
+      error('Failed', 'Failed to create API key')
     }
-  };
+  }
 
   const handleDeleteAPIKey = async (keyId) => {
     try {
-      await apiSettingsApi.deleteApiKey(keyId);
-      setApiKeys(apiKeys.filter(k => k.id !== keyId));
-      success('Deleted', 'API key deleted successfully');
+      await apiSettingsApi.deleteApiKey(keyId)
+      setApiKeys(apiKeys.filter(k => k.id !== keyId))
+      success('Deleted', 'API key deleted successfully')
     } catch (err) {
-      console.error('Error deleting API key:', err);
-      error('Failed', 'Failed to delete API key');
+      
+      error('Failed', 'Failed to delete API key')
     }
-  };
+  }
 
   const handleRevokeAPIKey = async (keyId) => {
     try {
-      await apiSettingsApi.revokeApiKey(keyId);
-      setApiKeys(apiKeys.map(k => k.id === keyId ? { ...k, status: 'revoked' } : k));
-      success('Revoked', 'API key revoked successfully');
+      await apiSettingsApi.revokeApiKey(keyId)
+      setApiKeys(apiKeys.map(k => k.id === keyId ? { ...k, status: 'revoked' } : k))
+      success('Revoked', 'API key revoked successfully')
     } catch (err) {
-      console.error('Error revoking API key:', err);
-      error('Failed', 'Failed to revoke API key');
+      
+      error('Failed', 'Failed to revoke API key')
     }
-  };
+  }
 
   const handleCopyKey = (key) => {
-    navigator.clipboard.writeText(key);
-    success('Copied', 'API key copied to clipboard');
-  };
+    navigator.clipboard.writeText(key)
+    success('Copied', 'API key copied to clipboard')
+  }
 
   const toggleSecretVisibility = (keyId) => {
-    setShowSecrets(prev => ({ ...prev, [keyId]: !prev[keyId] }));
-  };
+    setShowSecrets(prev => ({ ...prev, [keyId]: !prev[keyId] }))
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <RefreshCw className="w-8 h-8 animate-spin text-gray-400" />
       </div>
-    );
+    )
   }
 
   return (
@@ -721,22 +721,22 @@ export default function AdminAPISettingsPage() {
                 <div className="space-y-2">
                   <label className="flex items-center gap-2">
                     <input type="checkbox" checked={newKeyForm.scopes.includes('read')} onChange={(e) => {
-                      if (e.target.checked) setNewKeyForm({ ...newKeyForm, scopes: [...newKeyForm.scopes, 'read'] });
-                      else setNewKeyForm({ ...newKeyForm, scopes: newKeyForm.scopes.filter(s => s !== 'read') });
+                      if (e.target.checked) setNewKeyForm({ ...newKeyForm, scopes: [...newKeyForm.scopes, 'read'] })
+                      else setNewKeyForm({ ...newKeyForm, scopes: newKeyForm.scopes.filter(s => s !== 'read') })
                     }} />
                     <span>Read</span>
                   </label>
                   <label className="flex items-center gap-2">
                     <input type="checkbox" checked={newKeyForm.scopes.includes('write')} onChange={(e) => {
-                      if (e.target.checked) setNewKeyForm({ ...newKeyForm, scopes: [...newKeyForm.scopes, 'write'] });
-                      else setNewKeyForm({ ...newKeyForm, scopes: newKeyForm.scopes.filter(s => s !== 'write') });
+                      if (e.target.checked) setNewKeyForm({ ...newKeyForm, scopes: [...newKeyForm.scopes, 'write'] })
+                      else setNewKeyForm({ ...newKeyForm, scopes: newKeyForm.scopes.filter(s => s !== 'write') })
                     }} />
                     <span>Write</span>
                   </label>
                   <label className="flex items-center gap-2">
                     <input type="checkbox" checked={newKeyForm.scopes.includes('admin')} onChange={(e) => {
-                      if (e.target.checked) setNewKeyForm({ ...newKeyForm, scopes: [...newKeyForm.scopes, 'admin'] });
-                      else setNewKeyForm({ ...newKeyForm, scopes: newKeyForm.scopes.filter(s => s !== 'admin') });
+                      if (e.target.checked) setNewKeyForm({ ...newKeyForm, scopes: [...newKeyForm.scopes, 'admin'] })
+                      else setNewKeyForm({ ...newKeyForm, scopes: newKeyForm.scopes.filter(s => s !== 'admin') })
                     }} />
                     <span>Admin</span>
                   </label>
@@ -751,5 +751,5 @@ export default function AdminAPISettingsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

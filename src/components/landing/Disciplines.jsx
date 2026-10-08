@@ -1,7 +1,7 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
+import React from 'react'
+import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
 import {
   Film,
   Video,
@@ -13,7 +13,7 @@ import {
   Mic,
   Clapperboard,
   Monitor,
-} from 'lucide-react';
+} from 'lucide-react'
 
 const disciplines = [
   { name: 'Directing', icon: Clapperboard, image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80' },
@@ -26,7 +26,7 @@ const disciplines = [
   { name: 'Music & Score', icon: Music, image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80' },
   { name: 'Commercials', icon: Film, image: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600&q=80' },
   { name: 'Documentary', icon: Video, image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600&q=80' },
-];
+]
 
 export default function Disciplines() {
   return (
@@ -43,7 +43,7 @@ export default function Disciplines() {
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {disciplines.map((d, i) => {
-            const Icon = d.icon;
+            const Icon = d.icon
             return (
               <motion.div
                 key={d.name}
@@ -62,10 +62,10 @@ export default function Disciplines() {
                   </span>
                 </Link>
               </motion.div>
-            );
+            )
           })}
         </div>
       </div>
     </section>
-  );
+  )
 }

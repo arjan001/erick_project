@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Check, MessageCircle } from 'lucide-react';
-import SEOMetaTags from '@/components/SEOMetaTags';
+import React, { useState } from 'react'
+import { Check, MessageCircle } from 'lucide-react'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
-const steps = ['Plan', 'Account', 'Payment', 'Review'];
+const steps = ['Plan', 'Account', 'Payment', 'Review']
 
 const plans = [
   {
@@ -37,10 +37,10 @@ const plans = [
     btnBg: '#8D8D8D',
     checkStyle: 'faint',
   },
-];
+]
 
 export default function PricingPage() {
-  const [selected, setSelected] = useState(0);
+  const [selected, setSelected] = useState(0)
 
   return (
     <div className="min-h-screen bg-white">
@@ -191,5 +191,5 @@ export default function PricingPage() {
         <MessageCircle className="h-6 w-6 text-white" />
       </button>
     </div>
-  );
+  )
 }

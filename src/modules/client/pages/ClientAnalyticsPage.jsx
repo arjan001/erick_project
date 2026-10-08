@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Project, Job, Application } from '@/lib/supabaseEntities';
-import { BarChart3, TrendingUp, Users, Briefcase, Eye } from 'lucide-react';
-import { createPageUrl } from '@/shared/utils/routing';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Project, Job, Application } from '@/lib/supabaseEntities'
+import { BarChart3, TrendingUp, Users, Briefcase, Eye } from 'lucide-react'
+import { createPageUrl } from '@/shared/utils/routing'
 
 export default function ClientAnalytics() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
   const [stats, setStats] = useState({
     totalProjects: 0,
     activeProjects: 0,
@@ -14,32 +14,32 @@ export default function ClientAnalytics() {
     openJobs: 0,
     totalApplications: 0,
     acceptedApplications: 0
-  });
-  const [loading, setLoading] = useState(true);
+  })
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user');
+    const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/';
-      return;
+      window.location.href = '/'
+      return
     }
-    setUser(JSON.parse(storedUser));
+    setUser(JSON.parse(storedUser))
 
     const fetchStats = async () => {
-      if (!storedUser) return;
+      if (!storedUser) return
       try {
-        const userEmail = JSON.parse(storedUser).email;
+        const userEmail = JSON.parse(storedUser).email
 
         const [projects, jobs] = await Promise.all([
           Project.filter({ project_owner_email: userEmail }),
           Job.filter({ client_email: userEmail })
-        ]);
+        ])
 
-        const jobIds = jobs.map(j => j.id);
+        const jobIds = jobs.map(j => j.id)
         const allApplications = await Promise.all(
           jobIds.map(jobId => Application.filter({ job_id: jobId }))
-        );
-        const applications = allApplications.flat();
+        )
+        const applications = allApplications.flat()
 
         setStats({
           totalProjects: projects.length,
@@ -48,9 +48,9 @@ export default function ClientAnalytics() {
           openJobs: jobs.filter(j => j.status === 'open').length,
           totalApplications: applications.length,
           acceptedApplications: applications.filter(a => a.status === 'accepted').length
-        });
+        })
       } catch (err) {
-        console.error('Error fetching analytics:', err);
+        //
         setStats({
           totalProjects: 0,
           activeProjects: 0,
@@ -58,21 +58,21 @@ export default function ClientAnalytics() {
           openJobs: 0,
           totalApplications: 0,
           acceptedApplications: 0
-        });
+        })
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchStats();
-  }, []);
+    fetchStats()
+  }, [])
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
         <div className="text-gray-600">Loading analytics...</div>
       </div>
-    );
+    )
   }
 
   const statCards = [
@@ -82,7 +82,7 @@ export default function ClientAnalytics() {
     { label: 'Open Jobs', value: stats.openJobs, icon: Eye, color: 'bg-amber-600' },
     { label: 'Total Applications', value: stats.totalApplications, icon: BarChart3, color: 'bg-gray-700' },
     { label: 'Accepted Applications', value: stats.acceptedApplications, icon: TrendingUp, color: 'bg-amber-700' }
-  ];
+  ]
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
@@ -127,5 +127,5 @@ export default function ClientAnalytics() {
         </div>
       </div>
     </div>
-  );
+  )
 }

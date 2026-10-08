@@ -1,86 +1,86 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { X, MapPin, Clock, DollarSign, Share2, Heart, Building2, BadgeCheck, Briefcase, ChevronDown, ChevronUp, Crown, ExternalLink, Play, Youtube, Video } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { canApplyForJobs, canContactJobPoster } from '@/services/subscriptionService';
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { X, MapPin, Clock, DollarSign, Share2, Heart, Building2, BadgeCheck, Briefcase, ChevronDown, ChevronUp, Crown, ExternalLink, Play, Youtube, Video } from 'lucide-react'
+import { useAuth } from '@/lib/AuthContext'
+import { useNavigate } from 'react-router-dom'
+import { canApplyForJobs, canContactJobPoster } from '@/services/subscriptionService'
 
 export default function GigDetailSlideOut({ job, onClose }) {
-  const { isAuthenticated, user } = useAuth();
-  const navigate = useNavigate();
-  const [expandedRoles, setExpandedRoles] = useState(false);
-  const [requiresSubscription, setRequiresSubscription] = useState(false);
-  const [showVideo, setShowVideo] = useState(false);
+  const { isAuthenticated, user } = useAuth()
+  const navigate = useNavigate()
+  const [expandedRoles, setExpandedRoles] = useState(false)
+  const [requiresSubscription, setRequiresSubscription] = useState(false)
+  const [showVideo, setShowVideo] = useState(false)
 
-  if (!job) return null;
+  if (!job) return null
 
   const getEmbedUrl = (url) => {
-    if (!url) return null;
+    if (!url) return null
 
     // YouTube
-    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
+    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/)
     if (youtubeMatch) {
-      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`
     }
 
     // Vimeo
-    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
     if (vimeoMatch) {
-      return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+      return `https://player.vimeo.com/video/${vimeoMatch[1]}`
     }
 
-    return url;
-  };
+    return url
+  }
 
-  const hasVideo = job.video_url || job.video_embed_url || job.showreel_url;
-  const embedUrl = hasVideo ? getEmbedUrl(job.video_url || job.video_embed_url || job.showreel_url) : null;
-  const isExternalVideo = embedUrl && (embedUrl.includes('youtube') || embedUrl.includes('vimeo'));
+  const hasVideo = job.video_url || job.video_embed_url || job.showreel_url
+  const embedUrl = hasVideo ? getEmbedUrl(job.video_url || job.video_embed_url || job.showreel_url) : null
+  const isExternalVideo = embedUrl && (embedUrl.includes('youtube') || embedUrl.includes('vimeo'))
 
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({ title: job.title, text: job.description || job.body || '', url: window.location.href });
+      navigator.share({ title: job.title, text: job.description || job.body || '', url: window.location.href })
     } else {
-      navigator.clipboard?.writeText(window.location.href);
+      navigator.clipboard?.writeText(window.location.href)
     }
-  };
+  }
 
   const handleApply = async (role) => {
     if (!isAuthenticated) {
-      navigate('/SignIn', { state: { returnTo: window.location.pathname, job: job.title } });
-      return;
+      navigate('/SignIn', { state: { returnTo: window.location.pathname, job: job.title } })
+      return
     }
 
     // Check if user has active subscription
-    const canApply = await canApplyForJobs(user?.id);
+    const canApply = await canApplyForJobs(user?.id)
     if (!canApply) {
-      setRequiresSubscription(true);
-      return;
+      setRequiresSubscription(true)
+      return
     }
 
     // Handle application logic here
-    console.log('Applying for role:', role);
-  };
+    
+  }
 
   const handleContactPoster = async () => {
     if (!isAuthenticated) {
-      navigate('/SignIn', { state: { returnTo: window.location.pathname, job: job.title } });
-      return;
+      navigate('/SignIn', { state: { returnTo: window.location.pathname, job: job.title } })
+      return
     }
 
     // Check if user has active subscription
-    const canContact = await canContactJobPoster(user?.id);
+    const canContact = await canContactJobPoster(user?.id)
     if (!canContact) {
-      setRequiresSubscription(true);
-      return;
+      setRequiresSubscription(true)
+      return
     }
 
     // Handle contact logic here
-    console.log('Contacting job poster');
-  };
+    
+  }
 
   const toggleRoles = () => {
-    setExpandedRoles(!expandedRoles);
-  };
+    setExpandedRoles(!expandedRoles)
+  }
 
   return (
     <>
@@ -317,5 +317,5 @@ export default function GigDetailSlideOut({ job, onClose }) {
         </div>
       </div>
     </>
-  );
+  )
 }

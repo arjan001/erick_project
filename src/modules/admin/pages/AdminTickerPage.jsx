@@ -1,56 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { TickerEntry, Article } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, ExternalLink } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { TickerEntry, Article } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, ExternalLink } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
 
 export default function AdminTickerPage() {
-  const { success, error: toastError } = useToast();
-  const [entries, setEntries] = useState([]);
-  const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingEntry, setEditingEntry] = useState(null);
+  const { success, error: toastError } = useToast()
+  const [entries, setEntries] = useState([])
+  const [articles, setArticles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingEntry, setEditingEntry] = useState(null)
   const [form, setForm] = useState({
     text: '', category: 'news', link_type: 'none',
     link_url: '', link_target_id: null, status: 'draft', display_order: 0,
-  });
+  })
 
   const fetchData = async () => {
     try {
       const [tickerData, articlesData] = await Promise.all([
         TickerEntry.list('-display_order', 100),
         Article.list('-published_date', 100)
-      ]);
-      setEntries(tickerData || []);
-      setArticles(articlesData || []);
+      ])
+      setEntries(tickerData || [])
+      setArticles(articlesData || [])
     } catch (err) {
-      console.error('Error fetching data:', err);
-      toastError('Load Failed', 'Failed to load data');
+      
+      toastError('Load Failed', 'Failed to load data')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [])
 
   const openModal = (entry = null) => {
     if (entry) {
-      setEditingEntry(entry);
+      setEditingEntry(entry)
       setForm({
         text: entry.text || '',
         category: entry.category || 'news', link_type: entry.link_type || 'none',
         link_url: entry.link_url || '', link_target_id: entry.link_target_id || null,
         status: entry.status || 'draft', display_order: entry.display_order || 0,
-      });
+      })
     } else {
-      setEditingEntry(null);
-      setForm({ text: '', category: 'news', link_type: 'none', link_url: '', link_target_id: null, status: 'draft', display_order: 0 });
+      setEditingEntry(null)
+      setForm({ text: '', category: 'news', link_type: 'none', link_url: '', link_target_id: null, status: 'draft', display_order: 0 })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const handleSave = async () => {
     if (!form.text.trim()) { toastError('Validation', 'Text is required'); return; }
@@ -58,61 +58,61 @@ export default function AdminTickerPage() {
       const dataToSave = {
         ...form,
         link_target_id: form.link_target_id || null
-      };
-      if (editingEntry) {
-        await TickerEntry.update(editingEntry.id, dataToSave);
-        success('Updated', 'Ticker entry updated');
-      } else {
-        await TickerEntry.create({ ...dataToSave, published_date: new Date().toISOString() });
-        success('Created', 'Ticker entry created');
       }
-      setShowModal(false);
-      fetchData();
+      if (editingEntry) {
+        await TickerEntry.update(editingEntry.id, dataToSave)
+        success('Updated', 'Ticker entry updated')
+      } else {
+        await TickerEntry.create({ ...dataToSave, published_date: new Date().toISOString() })
+        success('Created', 'Ticker entry created')
+      }
+      setShowModal(false)
+      fetchData()
     } catch (err) {
-      console.error('Error saving ticker entry:', err);
-      toastError('Save Failed', `Failed to save ticker entry: ${err.message || 'Unknown error'}`);
+      
+      toastError('Save Failed', `Failed to save ticker entry: ${err.message || 'Unknown error'}`)
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this ticker entry?')) return;
+    if (!confirm('Delete this ticker entry?')) return
     try {
-      await TickerEntry.delete(id);
-      success('Deleted', 'Ticker entry deleted');
-      fetchData();
+      await TickerEntry.delete(id)
+      success('Deleted', 'Ticker entry deleted')
+      fetchData()
     } catch (err) {
-      console.error('Error deleting:', err);
-      toastError('Delete Failed', 'Failed to delete entry');
+      
+      toastError('Delete Failed', 'Failed to delete entry')
     }
-  };
+  }
 
   const toggleStatus = async (entry) => {
     try {
-      const newStatus = entry.status === 'live' ? 'draft' : 'live';
-      await TickerEntry.update(entry.id, { status: newStatus, published_date: newStatus === 'live' ? new Date().toISOString() : entry.published_date });
-      success(newStatus === 'live' ? 'Published' : 'Unpublished', `Entry is now ${newStatus}`);
-      fetchData();
+      const newStatus = entry.status === 'live' ? 'draft' : 'live'
+      await TickerEntry.update(entry.id, { status: newStatus, published_date: newStatus === 'live' ? new Date().toISOString() : entry.published_date })
+      success(newStatus === 'live' ? 'Published' : 'Unpublished', `Entry is now ${newStatus}`)
+      fetchData()
     } catch (err) {
-      toastError('Failed', 'Failed to update status');
+      toastError('Failed', 'Failed to update status')
     }
-  };
+  }
 
   const moveOrder = async (entry, direction) => {
-    const newOrder = (entry.display_order || 0) + direction;
+    const newOrder = (entry.display_order || 0) + direction
     try {
-      await TickerEntry.update(entry.id, { display_order: newOrder });
-      fetchData();
+      await TickerEntry.update(entry.id, { display_order: newOrder })
+      fetchData()
     } catch (err) {
-      toastError('Failed', 'Failed to reorder');
+      toastError('Failed', 'Failed to reorder')
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -249,5 +249,5 @@ export default function AdminTickerPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { analyticsApi } from '../api/analytics.api';
-import { Users, Globe, Activity, AlertTriangle, TrendingUp, DollarSign, Clock, Eye, MapPin, BarChart3, LineChart, PieChart } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, LineChart as RechartsLineChart, Line } from 'recharts';
+import React, { useEffect, useState } from 'react'
+import { analyticsApi } from '../api/analytics.api'
+import { Users, Globe, Activity, AlertTriangle, TrendingUp, DollarSign, Clock, Eye, MapPin, BarChart3, LineChart, PieChart } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, LineChart as RechartsLineChart, Line } from 'recharts'
 
-const COLORS = ['#1a1a1a', '#6b7280', '#d1d5db', '#374151', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+const COLORS = ['#1a1a1a', '#6b7280', '#d1d5db', '#374151', '#3b82f6', '#10b981', '#f59e0b', '#ef4444']
 
 const COUNTRY_FLAGS = {
   'US': '🇺🇸', 'GB': '🇬🇧', 'CA': '🇨🇦', 'AU': '🇦🇺', 'DE': '🇩🇪', 'FR': '🇫🇷', 'ES': '🇪🇸', 'IT': '🇮🇹', 'NL': '🇳🇱', 'JP': '🇯🇵',
@@ -20,38 +20,38 @@ const COUNTRY_FLAGS = {
   'HT': '🇭🇹', 'DO': '🇩🇴', 'JM': '🇯🇲', 'TT': '🇹🇹', 'BB': '🇧🇧', 'GD': '🇬🇩', 'LC': '🇱🇨', 'VC': '🇻🇨', 'AG': '🇦🇬', 'DM': '🇩🇲',
   'KN': '🇰🇳', 'BS': '🇧🇸', 'BM': '🇧🇲', 'KY': '🇰🇾', 'PA': '🇵🇦', 'CR': '🇨🇷', 'NI': '🇳🇮', 'SV': '🇸🇻', 'GT': '🇬🇹', 'HN': '🇭🇳',
   'MX': '🇲🇽'
-};
+}
 
-const getCountryFlag = (code) => COUNTRY_FLAGS[code?.toUpperCase()] || '🌐';
+const getCountryFlag = (code) => COUNTRY_FLAGS[code?.toUpperCase()] || '🌐'
 
 export default function AdminAnalyticsPage() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true)
   const [dateRange, setDateRange] = useState('7d'); // 7d, 30d, 90d
-  const [liveUsers, setLiveUsers] = useState([]);
-  const [liveUserCount, setLiveUserCount] = useState(0);
-  const [countryStats, setCountryStats] = useState([]);
-  const [topPages, setTopPages] = useState([]);
-  const [sessionStats, setSessionStats] = useState(null);
-  const [errorStats, setErrorStats] = useState(null);
-  const [recentErrors, setRecentErrors] = useState([]);
-  const [subscriptionStats, setSubscriptionStats] = useState(null);
-  const [overviewStats, setOverviewStats] = useState(null);
-  const [transactionalStats, setTransactionalStats] = useState(null);
+  const [liveUsers, setLiveUsers] = useState([])
+  const [liveUserCount, setLiveUserCount] = useState(0)
+  const [countryStats, setCountryStats] = useState([])
+  const [topPages, setTopPages] = useState([])
+  const [sessionStats, setSessionStats] = useState(null)
+  const [errorStats, setErrorStats] = useState(null)
+  const [recentErrors, setRecentErrors] = useState([])
+  const [subscriptionStats, setSubscriptionStats] = useState(null)
+  const [overviewStats, setOverviewStats] = useState(null)
+  const [transactionalStats, setTransactionalStats] = useState(null)
 
   useEffect(() => {
-    fetchAnalyticsData();
+    fetchAnalyticsData()
     // Refresh live users every 30 seconds
     const interval = setInterval(() => {
-      fetchLiveUsers();
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [dateRange]);
+      fetchLiveUsers()
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [dateRange])
 
   const fetchAnalyticsData = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const endDate = new Date().toISOString();
-      const startDate = new Date(Date.now() - getDaysInMs(dateRange)).toISOString();
+      const endDate = new Date().toISOString()
+      const startDate = new Date(Date.now() - getDaysInMs(dateRange)).toISOString()
 
       const [
         liveUsersData,
@@ -77,58 +77,58 @@ export default function AdminAnalyticsPage() {
         analyticsApi.getSubscriptionStats(),
         analyticsApi.getOverviewStats(startDate, endDate),
         analyticsApi.getTransactionalStats(startDate, endDate)
-      ]);
+      ])
 
-      setLiveUsers(liveUsersData);
-      setLiveUserCount(liveCount);
-      setCountryStats(countries);
-      setTopPages(pages);
-      setSessionStats(sessions);
-      setErrorStats(errorStatsData);
-      setRecentErrors(recentErrorsData.slice(0, 5));
-      setSubscriptionStats(subStats);
-      setOverviewStats(overview);
-      setTransactionalStats(transactional);
+      setLiveUsers(liveUsersData)
+      setLiveUserCount(liveCount)
+      setCountryStats(countries)
+      setTopPages(pages)
+      setSessionStats(sessions)
+      setErrorStats(errorStatsData)
+      setRecentErrors(recentErrorsData.slice(0, 5))
+      setSubscriptionStats(subStats)
+      setOverviewStats(overview)
+      setTransactionalStats(transactional)
     } catch (err) {
-      console.error('Error fetching analytics:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const fetchLiveUsers = async () => {
     try {
       const [users, count] = await Promise.all([
         analyticsApi.getLiveUsers(),
         analyticsApi.getLiveUserCount()
-      ]);
-      setLiveUsers(users);
-      setLiveUserCount(count);
+      ])
+      setLiveUsers(users)
+      setLiveUserCount(count)
     } catch (err) {
-      console.error('Error fetching live users:', err);
+      
     }
-  };
+  }
 
   const getDaysInMs = (range) => {
-    const days = { '7d': 7, '30d': 30, '90d': 90 };
-    return (days[range] || 7) * 24 * 60 * 60 * 1000;
-  };
+    const days = { '7d': 7, '30d': 30, '90d': 90 }
+    return (days[range] || 7) * 24 * 60 * 60 * 1000
+  }
 
   const resolveError = async (errorId) => {
     try {
-      await analyticsApi.resolveError(errorId, localStorage.getItem('user_id'));
-      fetchAnalyticsData();
+      await analyticsApi.resolveError(errorId, localStorage.getItem('user_id'))
+      fetchAnalyticsData()
     } catch (err) {
-      console.error('Error resolving error:', err);
+      
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-6 h-6 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -511,7 +511,7 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function StatCard({ label, value, sub, icon: Icon, color }) {
@@ -526,5 +526,5 @@ function StatCard({ label, value, sub, icon: Icon, color }) {
       <div className="text-sm text-gray-500 mt-0.5">{label}</div>
       <div className="text-xs text-gray-400 mt-1">{sub}</div>
     </div>
-  );
+  )
 }

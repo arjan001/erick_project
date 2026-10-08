@@ -1,81 +1,81 @@
-import React, { useState, useEffect } from 'react';
-import { FeaturedWork, Artist, PortfolioClip, Subscription } from '@/lib/supabaseEntities';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Edit2, Trash2, X, Eye, EyeOff, Star, Calendar, DollarSign, User, Search, Check, Play, CheckCircle2 } from 'lucide-react';
-import { useToast } from '@/hooks/useToast.jsx';
+import React, { useState, useEffect } from 'react'
+import { FeaturedWork, Artist, PortfolioClip, Subscription } from '@/lib/supabaseEntities'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Plus, Edit2, Trash2, X, Eye, EyeOff, Star, Calendar, DollarSign, User, Search, Check, Play, CheckCircle2 } from 'lucide-react'
+import { useToast } from '@/hooks/useToast.jsx'
 
 export default function AdminFeaturedWorkPage() {
-  const { success, error: toastError } = useToast();
-  const [works, setWorks] = useState([]);
-  const [artists, setArtists] = useState([]);
-  const [artistPortfolioClips, setArtistPortfolioClips] = useState([]);
-  const [selectedProjects, setSelectedProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingClips, setLoadingClips] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [selectedPortfolioClip, setSelectedPortfolioClip] = useState(null);
+  const { success, error: toastError } = useToast()
+  const [works, setWorks] = useState([])
+  const [artists, setArtists] = useState([])
+  const [artistPortfolioClips, setArtistPortfolioClips] = useState([])
+  const [selectedProjects, setSelectedProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadingClips, setLoadingClips] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [selectedPortfolioClip, setSelectedPortfolioClip] = useState(null)
   const [form, setForm] = useState({
     artist_id: '', portfolio_clip_id: '', title: '', description: '', images: [], video_url: '',
     featured_type: 'paid', featured_until: '', display_order: 0, status: 'active'
-  });
+  })
 
   const fetchData = async () => {
     try {
       const [worksData, artistsData] = await Promise.all([
         FeaturedWork.list('display_order', 100),
         Artist.list('-created_at', 100)
-      ]);
-      setWorks(worksData || []);
-      setArtists(artistsData || []);
+      ])
+      setWorks(worksData || [])
+      setArtists(artistsData || [])
     } catch (err) {
-      console.error('Error fetching data:', err);
-      setWorks([]);
-      setArtists([]);
+      
+      setWorks([])
+      setArtists([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const getActiveSubscriptionArtists = async () => {
     try {
-      const activeSubscriptions = await Subscription.filter({ status: 'active' });
-      const artistEmails = activeSubscriptions.map(sub => sub.user_email);
-      const allArtists = await Artist.list('-created_at', 100);
-      return allArtists.filter(artist => artistEmails.includes(artist.email));
+      const activeSubscriptions = await Subscription.filter({ status: 'active' })
+      const artistEmails = activeSubscriptions.map(sub => sub.user_email)
+      const allArtists = await Artist.list('-created_at', 100)
+      return allArtists.filter(artist => artistEmails.includes(artist.email))
     } catch (err) {
-      console.error('Error fetching active subscription artists:', err);
-      return [];
+      
+      return []
     }
-  };
+  }
 
   const fetchArtistPortfolioClips = async (artistId) => {
     if (!artistId) {
-      setArtistPortfolioClips([]);
-      return;
+      setArtistPortfolioClips([])
+      return
     }
-    setLoadingClips(true);
+    setLoadingClips(true)
     try {
       const clips = await PortfolioClip.filter({
         uploaded_by_type: 'artist',
         uploaded_by_id: artistId
-      });
-      setArtistPortfolioClips(clips || []);
+      })
+      setArtistPortfolioClips(clips || [])
     } catch (err) {
-      console.error('Error fetching portfolio clips:', err);
-      setArtistPortfolioClips([]);
+      
+      setArtistPortfolioClips([])
     } finally {
-      setLoadingClips(false);
+      setLoadingClips(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [])
 
   const openModal = async (work = null) => {
     if (work) {
-      setEditing(work);
+      setEditing(work)
       setForm({
         artist_id: work.artist_id || '',
         portfolio_clip_id: work.portfolio_clip_id || '',
@@ -85,31 +85,31 @@ export default function AdminFeaturedWorkPage() {
         featured_until: work.featured_until || '',
         display_order: work.display_order || 0,
         status: work.status || 'active'
-      });
+      })
       if (work.artist_id) {
-        await fetchArtistPortfolioClips(work.artist_id);
+        await fetchArtistPortfolioClips(work.artist_id)
       }
     } else {
-      setEditing(null);
-      setForm({ artist_id: '', portfolio_clip_id: '', title: '', description: '', images: [], video_url: '', featured_type: 'paid', featured_until: '', display_order: 0, status: 'active' });
-      setArtistPortfolioClips([]);
-      setSelectedPortfolioClip(null);
-      setSelectedProjects([]);
-      const activeArtists = await getActiveSubscriptionArtists();
-      setArtists(activeArtists);
+      setEditing(null)
+      setForm({ artist_id: '', portfolio_clip_id: '', title: '', description: '', images: [], video_url: '', featured_type: 'paid', featured_until: '', display_order: 0, status: 'active' })
+      setArtistPortfolioClips([])
+      setSelectedPortfolioClip(null)
+      setSelectedProjects([])
+      const activeArtists = await getActiveSubscriptionArtists()
+      setArtists(activeArtists)
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const handleSave = async () => {
     if (!editing && works.length >= 6) {
-      toastError('Limit Reached', 'Maximum 6 featured projects allowed (3 per line)');
-      return;
+      toastError('Limit Reached', 'Maximum 6 featured projects allowed (3 per line)')
+      return
     }
 
     if (selectedProjects.length === 0 && !editing) {
-      toastError('Validation', 'Please select at least one project');
-      return;
+      toastError('Validation', 'Please select at least one project')
+      return
     }
 
     try {
@@ -125,15 +125,15 @@ export default function AdminFeaturedWorkPage() {
           featured_until: form.featured_until,
           display_order: form.display_order,
           status: form.status
-        };
-        await FeaturedWork.update(editing.id, dataToSave);
-        success('Updated', 'Featured work updated');
+        }
+        await FeaturedWork.update(editing.id, dataToSave)
+        success('Updated', 'Featured work updated')
       } else {
-        const totalSlots = 6 - works.length;
-        const projectsToAdd = selectedProjects.slice(0, totalSlots);
+        const totalSlots = 6 - works.length
+        const projectsToAdd = selectedProjects.slice(0, totalSlots)
 
         for (let i = 0; i < projectsToAdd.length; i++) {
-          const project = projectsToAdd[i];
+          const project = projectsToAdd[i]
           await FeaturedWork.create({
             artist_id: form.artist_id,
             portfolio_clip_id: project.id,
@@ -144,44 +144,44 @@ export default function AdminFeaturedWorkPage() {
             featured_type: 'admin_pick',
             display_order: works.length + i,
             status: 'active'
-          });
+          })
         }
 
         if (selectedProjects.length > totalSlots) {
-          toastError('Partial Success', `Only ${totalSlots} projects added (max 6 total)`);
+          toastError('Partial Success', `Only ${totalSlots} projects added (max 6 total)`)
         } else {
-          success('Created', `${projectsToAdd.length} featured works created`);
+          success('Created', `${projectsToAdd.length} featured works created`)
         }
       }
-      setShowModal(false);
-      setSelectedProjects([]);
-      fetchData();
+      setShowModal(false)
+      setSelectedProjects([])
+      fetchData()
     } catch (err) {
-      console.error('Error saving featured work:', err);
-      toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`);
+      
+      toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`)
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this featured work?')) return;
+    if (!confirm('Delete this featured work?')) return
     try {
-      await FeaturedWork.delete(id);
-      success('Deleted', 'Featured work deleted');
-      fetchData();
+      await FeaturedWork.delete(id)
+      success('Deleted', 'Featured work deleted')
+      fetchData()
     } catch (err) {
-      toastError('Delete Failed', 'Failed to delete featured work');
+      toastError('Delete Failed', 'Failed to delete featured work')
     }
-  };
+  }
 
   const toggleStatus = async (work) => {
     try {
-      await FeaturedWork.update(work.id, { status: work.status === 'active' ? 'suspended' : 'active' });
-      fetchData();
+      await FeaturedWork.update(work.id, { status: work.status === 'active' ? 'suspended' : 'active' })
+      fetchData()
     } catch (err) { toastError('Failed', 'Failed to update status'); }
-  };
+  }
 
   if (loading) {
-    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" /></div>
   }
 
   return (
@@ -280,10 +280,10 @@ export default function AdminFeaturedWorkPage() {
                     <select
                       value={form.artist_id}
                       onChange={(e) => {
-                        setForm({ ...form, artist_id: e.target.value, portfolio_clip_id: '' });
-                        setSelectedPortfolioClip(null);
-                        setSelectedProjects([]);
-                        fetchArtistPortfolioClips(e.target.value);
+                        setForm({ ...form, artist_id: e.target.value, portfolio_clip_id: '' })
+                        setSelectedPortfolioClip(null)
+                        setSelectedProjects([])
+                        fetchArtistPortfolioClips(e.target.value)
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                     >
@@ -314,11 +314,11 @@ export default function AdminFeaturedWorkPage() {
                             <div
                               key={clip.id}
                               onClick={() => {
-                                const isSelected = selectedProjects.some(p => p.id === clip.id);
+                                const isSelected = selectedProjects.some(p => p.id === clip.id)
                                 if (isSelected) {
-                                  setSelectedProjects(selectedProjects.filter(p => p.id !== clip.id));
+                                  setSelectedProjects(selectedProjects.filter(p => p.id !== clip.id))
                                 } else if (selectedProjects.length < 6 - works.length) {
-                                  setSelectedProjects([...selectedProjects, clip]);
+                                  setSelectedProjects([...selectedProjects, clip])
                                 }
                               }}
                               className={`cursor-pointer border-2 rounded-lg p-3 transition-all relative ${selectedProjects.some(p => p.id === clip.id)
@@ -394,5 +394,5 @@ export default function AdminFeaturedWorkPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

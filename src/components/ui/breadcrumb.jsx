@@ -36,7 +36,7 @@ const BreadcrumbLink = React.forwardRef(({ asChild, className, ...props }, ref) 
       ref={ref}
       className={cn("transition-colors hover:text-foreground", className)}
       {...props} />)
-  );
+  )
 })
 BreadcrumbLink.displayName = "BreadcrumbLink"
 

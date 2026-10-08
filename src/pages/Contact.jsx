@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/shared/utils/routing';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Mail, MapPin, Send } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import EuropeanPresenceMap from '../components/home/EuropeanPresenceMap';
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Mail, MapPin, Send } from 'lucide-react'
+import { base44 } from '@/api/base44Client'
+import EuropeanPresenceMap from '../components/home/EuropeanPresenceMap'
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -15,13 +15,13 @@ export default function Contact() {
     email: '',
     subject: '',
     message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+    e.preventDefault()
+    setIsSubmitting(true)
 
     try {
       await base44.integrations.Core.SendEmail({
@@ -35,15 +35,15 @@ Subject: ${formData.subject}
 Message:
 ${formData.message}
         `
-      });
+      })
       
-      setSubmitted(true);
+      setSubmitted(true)
     } catch (error) {
-      alert('Error sending message. Please try again.');
+      alert('Error sending message. Please try again.')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   if (submitted) {
     return (
@@ -63,7 +63,7 @@ ${formData.message}
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -208,5 +208,5 @@ ${formData.message}
         </div>
       </div>
     </div>
-  );
+  )
 }

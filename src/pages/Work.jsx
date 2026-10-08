@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { PortfolioClip } from '@/lib/supabaseEntities';
-import { useQuery } from '@tanstack/react-query';
-import { Badge } from '@/components/ui/badge';
-import { Play, Filter } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React, { useState } from 'react'
+import { PortfolioClip } from '@/lib/supabaseEntities'
+import { useQuery } from '@tanstack/react-query'
+import { Badge } from '@/components/ui/badge'
+import { Play, Filter } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 export default function Work() {
-  const [filterType, setFilterType] = useState('all');
-  const [filterStyle, setFilterStyle] = useState('all');
+  const [filterType, setFilterType] = useState('all')
+  const [filterStyle, setFilterStyle] = useState('all')
 
   const { data: clips, isLoading } = useQuery({
     queryKey: ['approved-clips'],
@@ -15,15 +15,15 @@ export default function Work() {
       status: 'approved',
       approved_for_visual_direction: true 
     }),
-  });
+  })
 
   const filteredClips = clips?.filter(clip => {
-    const typeMatch = filterType === 'all' || clip.project_type === filterType;
-    const styleMatch = filterStyle === 'all' || clip.visual_style_tags?.includes(filterStyle);
-    return typeMatch && styleMatch;
-  }) || [];
+    const typeMatch = filterType === 'all' || clip.project_type === filterType
+    const styleMatch = filterStyle === 'all' || clip.visual_style_tags?.includes(filterStyle)
+    return typeMatch && styleMatch
+  }) || []
 
-  const allStyles = [...new Set(clips?.flatMap(c => c.visual_style_tags || []))];
+  const allStyles = [...new Set(clips?.flatMap(c => c.visual_style_tags || []))]
 
   return (
     <div className="min-h-screen bg-white py-12">
@@ -130,5 +130,5 @@ export default function Work() {
         )}
       </div>
     </div>
-  );
+  )
 }

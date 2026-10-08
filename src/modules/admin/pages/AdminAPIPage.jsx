@@ -1,37 +1,37 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Badge } from '@/shared/components/ui/badge';
-import { Save, Key, Database, Shield, Copy, Plus, Trash2 } from 'lucide-react';
-import { Switch } from '@/shared/components/ui/switch';
+import React, { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
+import { Badge } from '@/shared/components/ui/badge'
+import { Save, Key, Database, Shield, Copy, Plus, Trash2 } from 'lucide-react'
+import { Switch } from '@/shared/components/ui/switch'
 
 export default function AdminAPIPage() {
   const [apiKeys, setApiKeys] = useState([
     { id: 1, name: 'Production API', key: 'sk_live_xxxxxxxxxxxx', lastUsed: '2024-01-15', status: 'active' },
     { id: 2, name: 'Test API', key: 'sk_test_xxxxxxxxxxxx', lastUsed: '2024-01-14', status: 'active' },
-  ]);
+  ])
 
   const [rateLimits, setRateLimits] = useState({
     enabled: true,
     requestsPerMinute: '100',
     requestsPerHour: '1000',
     requestsPerDay: '10000'
-  });
+  })
 
   const handleSave = () => {
-    console.log('Saving API settings');
-  };
+    
+  }
 
   const handleCopyKey = (key) => {
-    navigator.clipboard.writeText(key);
-  };
+    navigator.clipboard.writeText(key)
+  }
 
   const handleDeleteKey = (id) => {
-    setApiKeys(apiKeys.filter(k => k.id !== id));
-  };
+    setApiKeys(apiKeys.filter(k => k.id !== id))
+  }
 
   return (
     <div className="space-y-6">
@@ -182,5 +182,5 @@ export default function AdminAPIPage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

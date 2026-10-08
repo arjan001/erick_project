@@ -1,56 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { Message } from '@/lib/supabaseEntities';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/hooks/useToast';
-import { Button } from '@/components/ui/button';
-import { MessageSquare, Search, Send, Trash2, User } from 'lucide-react';
-import realtimeMessagingService from '@/services/realtimeMessagingService';
+import React, { useState, useEffect } from 'react'
+import { Message } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
+import { Button } from '@/components/ui/button'
+import { MessageSquare, Search, Send, Trash2, User } from 'lucide-react'
+import realtimeMessagingService from '@/services/realtimeMessagingService'
 
 export default function AdminMessagesPage() {
-  const { user } = useAuth();
-  const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [conversations, setConversations] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
-  const [newMessage, setNewMessage] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sending, setSending] = useState(false);
+  const { user } = useAuth()
+  const { success, error } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [conversations, setConversations] = useState([])
+  const [selectedId, setSelectedId] = useState(null)
+  const [newMessage, setNewMessage] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sending, setSending] = useState(false)
 
   const fetchMessages = async () => {
     try {
-      setLoading(true);
-      const rows = await Message.list('-created_at', 500);
-      const grouped = {};
+      setLoading(true)
+      const rows = await Message.list('-created_at', 500)
+      const grouped = {}
       (rows || []).forEach(m => {
-        if (!grouped[m.conversation_id]) grouped[m.conversation_id] = [];
-        grouped[m.conversation_id].push(m);
-      });
+        if (!grouped[m.conversation_id]) grouped[m.conversation_id] = []
+        grouped[m.conversation_id].push(m)
+      })
       const convs = Object.entries(grouped).map(([id, msgs]) => {
-        const sorted = msgs.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-        const last = sorted[sorted.length - 1];
-        const otherParty = sorted.find(m => m.sender_email !== user?.email)?.sender_email || last.sender_email;
-        return { id, messages: sorted, lastMessage: last.text, lastMessageTime: last.created_at, participant: otherParty };
-      }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
-      setConversations(convs);
+        const sorted = msgs.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+        const last = sorted[sorted.length - 1]
+        const otherParty = sorted.find(m => m.sender_email !== user?.email)?.sender_email || last.sender_email
+        return { id, messages: sorted, lastMessage: last.text, lastMessageTime: last.created_at, participant: otherParty }
+      }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime))
+      setConversations(convs)
     } catch (err) {
-      console.error('Error fetching messages:', err);
-      error('Error', 'Failed to fetch messages');
+      
+      error('Error', 'Failed to fetch messages')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => { fetchMessages(); }, []);
+  useEffect(() => { fetchMessages(); }, [])
 
   // Real-time message subscription using Supabase Realtime
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
     const handleNewMessage = (newMessage) => {
-      console.log('Real-time new message received:', newMessage);
+      
       
       // Check if conversation already exists
-      const existingConv = conversations.find(c => c.id === newMessage.conversation_id);
+      const existingConv = conversations.find(c => c.id === newMessage.conversation_id)
       
       if (existingConv) {
         // Update existing conversation
@@ -61,10 +61,10 @@ export default function AdminMessagesPage() {
               messages: [...c.messages, newMessage],
               lastMessage: newMessage.text || '',
               lastMessageTime: newMessage.created_at
-            };
+            }
           }
-          return c;
-        }));
+          return c
+        }))
       } else {
         // Create new conversation
         const newConv = {
@@ -73,73 +73,73 @@ export default function AdminMessagesPage() {
           lastMessage: newMessage.text || '',
           lastMessageTime: newMessage.created_at,
           participant: newMessage.sender_email === user.email ? newMessage.recipient_email : newMessage.sender_email
-        };
-        setConversations(prev => [newConv, ...prev]);
+        }
+        setConversations(prev => [newConv, ...prev])
       }
-    };
+    }
 
     // Subscribe to real-time messages
     const unsubscribe = realtimeMessagingService.subscribeToMessages(
       user.email,
       handleNewMessage
-    );
+    )
 
     // Cleanup on unmount
     return () => {
-      unsubscribe();
-    };
-  }, [user]);
+      unsubscribe()
+    }
+  }, [user])
 
-  const selectedConversation = conversations.find(c => c.id === selectedId);
+  const selectedConversation = conversations.find(c => c.id === selectedId)
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation) return;
-    setSending(true);
+    if (!newMessage.trim() || !selectedConversation) return
+    setSending(true)
     try {
       const created = await Message.create({
         conversation_id: selectedConversation.id,
         sender_email: user?.email,
         recipient_email: selectedConversation.participant,
         text: newMessage,
-      });
+      })
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
         ? { ...c, messages: [...c.messages, created], lastMessage: created.text, lastMessageTime: created.created_at }
         : c
-      ));
-      setNewMessage('');
-      success('Sent', 'Message sent successfully');
+      ))
+      setNewMessage('')
+      success('Sent', 'Message sent successfully')
     } catch (err) {
-      console.error('Error sending message:', err);
-      error('Failed', 'Failed to send message');
+      
+      error('Failed', 'Failed to send message')
     } finally {
-      setSending(false);
+      setSending(false)
     }
-  };
+  }
 
   const handleDeleteConversation = async (conversationId) => {
-    if (!window.confirm('Delete this entire conversation? This cannot be undone.')) return;
+    if (!window.confirm('Delete this entire conversation? This cannot be undone.')) return
     try {
-      const conv = conversations.find(c => c.id === conversationId);
-      await Promise.all(conv.messages.map(m => Message.delete(m.id)));
-      setConversations(prev => prev.filter(c => c.id !== conversationId));
-      if (selectedId === conversationId) setSelectedId(null);
-      success('Deleted', 'Conversation deleted successfully');
+      const conv = conversations.find(c => c.id === conversationId)
+      await Promise.all(conv.messages.map(m => Message.delete(m.id)))
+      setConversations(prev => prev.filter(c => c.id !== conversationId))
+      if (selectedId === conversationId) setSelectedId(null)
+      success('Deleted', 'Conversation deleted successfully')
     } catch (err) {
-      console.error('Error deleting conversation:', err);
-      error('Failed', 'Failed to delete conversation');
+      
+      error('Failed', 'Failed to delete conversation')
     }
-  };
+  }
 
   const filteredConversations = conversations.filter(c =>
     c.participant?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  )
 
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -240,5 +240,5 @@ export default function AdminMessagesPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

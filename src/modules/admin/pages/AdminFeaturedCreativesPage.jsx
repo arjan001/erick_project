@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Textarea } from '@/shared/components/ui/textarea';
-import { Switch } from '@/shared/components/ui/switch';
-import { Plus, Edit2, Trash2, Upload, Star, Flame, MessageCircle, X } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import { useToast } from '@/hooks/useToast';
-import { FeaturedCreative, Artist } from '@/lib/supabaseEntities';
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Textarea } from '@/shared/components/ui/textarea'
+import { Switch } from '@/shared/components/ui/switch'
+import { Plus, Edit2, Trash2, Upload, Star, Flame, MessageCircle, X } from 'lucide-react'
+import { base44 } from '@/api/base44Client'
+import { useToast } from '@/hooks/useToast'
+import { FeaturedCreative, Artist } from '@/lib/supabaseEntities'
 
 export default function AdminFeaturedCreativesPage() {
-  const { success, error: toastError } = useToast();
-  const [creatives, setCreatives] = useState([]);
-  const [artists, setArtists] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingCreative, setEditingCreative] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const { success, error: toastError } = useToast()
+  const [creatives, setCreatives] = useState([])
+  const [artists, setArtists] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingCreative, setEditingCreative] = useState(null)
+  const [uploading, setUploading] = useState(false)
 
   const [formData, setFormData] = useState({
     creator_id: '',
@@ -32,80 +32,80 @@ export default function AdminFeaturedCreativesPage() {
     featured: false,
     order_index: 0,
     is_active: true,
-  });
+  })
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData()
+  }, [])
 
   const loadData = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       const [creativesData, artistsData] = await Promise.all([
         FeaturedCreative.filter({}, 'order_index', 100),
         Artist.filter({}, 'full_name', 500),
-      ]);
-      setCreatives(creativesData || []);
-      setArtists(artistsData || []);
+      ])
+      setCreatives(creativesData || [])
+      setArtists(artistsData || [])
     } catch (err) {
-      console.error('Error loading data:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleImageUpload = async (e, type) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    setUploading(true);
+    setUploading(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url;
+      const response = await base44.integrations.Core.UploadFile({ file })
+      const fileUrl = response.file_url || response.url
       if (type === 'profile') {
-        setFormData({ ...formData, profile_image: fileUrl });
+        setFormData({ ...formData, profile_image: fileUrl })
       } else if (type === 'cover') {
-        setFormData({ ...formData, cover_image: fileUrl });
+        setFormData({ ...formData, cover_image: fileUrl })
       }
     } catch (err) {
-      console.error('Error uploading image:', err);
-      toastError('Upload Failed', 'Failed to upload image');
+      
+      toastError('Upload Failed', 'Failed to upload image')
     } finally {
-      setUploading(false);
+      setUploading(false)
     }
-  };
+  }
 
   const handleAddImage = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    setUploading(true);
+    setUploading(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url;
-      setFormData({ ...formData, images: [...formData.images, fileUrl] });
+      const response = await base44.integrations.Core.UploadFile({ file })
+      const fileUrl = response.file_url || response.url
+      setFormData({ ...formData, images: [...formData.images, fileUrl] })
     } catch (err) {
-      console.error('Error uploading image:', err);
-      toastError('Upload Failed', 'Failed to upload image');
+      
+      toastError('Upload Failed', 'Failed to upload image')
     } finally {
-      setUploading(false);
+      setUploading(false)
     }
-  };
+  }
 
   const handleRemoveImage = (index) => {
     setFormData({
       ...formData,
       images: formData.images.filter((_, i) => i !== index),
-    });
-  };
+    })
+  }
 
   const handleToggleBadge = (badge) => {
     if (formData.badges.includes(badge)) {
-      setFormData({ ...formData, badges: formData.badges.filter(b => b !== badge) });
+      setFormData({ ...formData, badges: formData.badges.filter(b => b !== badge) })
     } else {
-      setFormData({ ...formData, badges: [...formData.badges, badge] });
+      setFormData({ ...formData, badges: [...formData.badges, badge] })
     }
-  };
+  }
 
   const handleSave = async () => {
     try {
@@ -113,41 +113,41 @@ export default function AdminFeaturedCreativesPage() {
         ...formData,
         images: JSON.stringify(formData.images),
         badges: JSON.stringify(formData.badges),
-      };
-
-      if (editingCreative) {
-        await FeaturedCreative.update(editingCreative.id, dataToSave);
-        success('Creative Updated', 'Featured creative has been updated');
-      } else {
-        await FeaturedCreative.create(dataToSave);
-        success('Creative Created', 'Featured creative has been created');
       }
 
-      setShowModal(false);
-      setEditingCreative(null);
-      resetForm();
-      loadData();
+      if (editingCreative) {
+        await FeaturedCreative.update(editingCreative.id, dataToSave)
+        success('Creative Updated', 'Featured creative has been updated')
+      } else {
+        await FeaturedCreative.create(dataToSave)
+        success('Creative Created', 'Featured creative has been created')
+      }
+
+      setShowModal(false)
+      setEditingCreative(null)
+      resetForm()
+      loadData()
     } catch (err) {
-      console.error('Error saving creative:', err);
-      toastError('Save Failed', 'Failed to save creative');
+      
+      toastError('Save Failed', 'Failed to save creative')
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this featured creative?')) return;
+    if (!confirm('Are you sure you want to delete this featured creative?')) return
 
     try {
-      await FeaturedCreative.delete(id);
-      success('Creative Deleted', 'Featured creative has been deleted');
-      loadData();
+      await FeaturedCreative.delete(id)
+      success('Creative Deleted', 'Featured creative has been deleted')
+      loadData()
     } catch (err) {
-      console.error('Error deleting creative:', err);
-      toastError('Delete Failed', 'Failed to delete creative');
+      
+      toastError('Delete Failed', 'Failed to delete creative')
     }
-  };
+  }
 
   const handleEdit = (creative) => {
-    setEditingCreative(creative);
+    setEditingCreative(creative)
     setFormData({
       creator_id: creative.creator_id || '',
       name: creative.name || '',
@@ -161,9 +161,9 @@ export default function AdminFeaturedCreativesPage() {
       featured: creative.featured || false,
       order_index: creative.order_index || 0,
       is_active: creative.is_active ?? true,
-    });
-    setShowModal(true);
-  };
+    })
+    setShowModal(true)
+  }
 
   const resetForm = () => {
     setFormData({
@@ -179,15 +179,15 @@ export default function AdminFeaturedCreativesPage() {
       featured: false,
       order_index: 0,
       is_active: true,
-    });
-  };
+    })
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -202,9 +202,9 @@ export default function AdminFeaturedCreativesPage() {
             </div>
             <Button
               onClick={() => {
-                resetForm();
-                setEditingCreative(null);
-                setShowModal(true);
+                resetForm()
+                setEditingCreative(null)
+                setShowModal(true)
               }}
               className="bg-gray-900 text-white hover:bg-gray-800"
             >
@@ -505,5 +505,5 @@ export default function AdminFeaturedCreativesPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

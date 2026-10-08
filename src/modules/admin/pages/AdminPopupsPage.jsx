@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Textarea } from '@/shared/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Switch } from '@/shared/components/ui/switch';
-import { Plus, Edit2, Trash2, Upload, Play, X, ExternalLink } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import { useToast } from '@/hooks/useToast';
-import DynamicPopupModal from '@/components/landing/backstage/DynamicPopupModal';
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import { Textarea } from '@/shared/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
+import { Switch } from '@/shared/components/ui/switch'
+import { Plus, Edit2, Trash2, Upload, Play, X, ExternalLink } from 'lucide-react'
+import { base44 } from '@/api/base44Client'
+import { useToast } from '@/hooks/useToast'
+import DynamicPopupModal from '@/components/landing/backstage/DynamicPopupModal'
 
 const popupEntity = base44.entities.popups || {
   list: async () => [],
@@ -18,15 +18,15 @@ const popupEntity = base44.entities.popups || {
   create: async () => null,
   update: async () => null,
   delete: async () => null,
-};
+}
 
 export default function AdminPopupsPage() {
-  const { success, error: toastError } = useToast();
-  const [popups, setPopups] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingPopup, setEditingPopup] = useState(null);
-  const [previewPopup, setPreviewPopup] = useState(null);
+  const { success, error: toastError } = useToast()
+  const [popups, setPopups] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editingPopup, setEditingPopup] = useState(null)
+  const [previewPopup, setPreviewPopup] = useState(null)
 
   const [formData, setFormData] = useState({
     title: '',
@@ -46,59 +46,59 @@ export default function AdminPopupsPage() {
     show_once_per_session: true,
     show_after_seconds: 0,
     priority: 0,
-  });
+  })
 
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
-    loadPopups();
-  }, []);
+    loadPopups()
+  }, [])
 
   const loadPopups = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const data = await popupEntity.filter({}, '-created_at', 100);
-      setPopups(data || []);
+      const data = await popupEntity.filter({}, '-created_at', 100)
+      setPopups(data || [])
     } catch (err) {
-      console.error('Error loading popups:', err);
+      
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    setUploading(true);
+    setUploading(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url;
-      setFormData({ ...formData, image_url: fileUrl });
+      const response = await base44.integrations.Core.UploadFile({ file })
+      const fileUrl = response.file_url || response.url
+      setFormData({ ...formData, image_url: fileUrl })
     } catch (err) {
-      console.error('Error uploading image:', err);
-      toastError('Upload Failed', 'Failed to upload image');
+      
+      toastError('Upload Failed', 'Failed to upload image')
     } finally {
-      setUploading(false);
+      setUploading(false)
     }
-  };
+  }
 
   const handleVideoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    setUploading(true);
+    setUploading(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = response.file_url || response.url;
-      setFormData({ ...formData, video_url: fileUrl, video_source: 'upload' });
+      const response = await base44.integrations.Core.UploadFile({ file })
+      const fileUrl = response.file_url || response.url
+      setFormData({ ...formData, video_url: fileUrl, video_source: 'upload' })
     } catch (err) {
-      console.error('Error uploading video:', err);
-      toastError('Upload Failed', 'Failed to upload video');
+      
+      toastError('Upload Failed', 'Failed to upload video')
     } finally {
-      setUploading(false);
+      setUploading(false)
     }
-  };
+  }
 
   const handleSave = async () => {
     try {
@@ -106,41 +106,41 @@ export default function AdminPopupsPage() {
         ...formData,
         target_audience: Array.isArray(formData.target_audience) ? formData.target_audience : [formData.target_audience],
         show_on_pages: Array.isArray(formData.show_on_pages) ? formData.show_on_pages : [formData.show_on_pages],
-      };
-
-      if (editingPopup) {
-        await popupEntity.update(editingPopup.id, dataToSave);
-        success('Popup Updated', 'Popup has been updated successfully');
-      } else {
-        await popupEntity.create(dataToSave);
-        success('Popup Created', 'Popup has been created successfully');
       }
 
-      setShowModal(false);
-      setEditingPopup(null);
-      resetForm();
-      loadPopups();
+      if (editingPopup) {
+        await popupEntity.update(editingPopup.id, dataToSave)
+        success('Popup Updated', 'Popup has been updated successfully')
+      } else {
+        await popupEntity.create(dataToSave)
+        success('Popup Created', 'Popup has been created successfully')
+      }
+
+      setShowModal(false)
+      setEditingPopup(null)
+      resetForm()
+      loadPopups()
     } catch (err) {
-      console.error('Error saving popup:', err);
-      toastError('Save Failed', 'Failed to save popup');
+      
+      toastError('Save Failed', 'Failed to save popup')
     }
-  };
+  }
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this popup?')) return;
+    if (!confirm('Are you sure you want to delete this popup?')) return
 
     try {
-      await popupEntity.delete(id);
-      success('Popup Deleted', 'Popup has been deleted');
-      loadPopups();
+      await popupEntity.delete(id)
+      success('Popup Deleted', 'Popup has been deleted')
+      loadPopups()
     } catch (err) {
-      console.error('Error deleting popup:', err);
-      toastError('Delete Failed', 'Failed to delete popup');
+      
+      toastError('Delete Failed', 'Failed to delete popup')
     }
-  };
+  }
 
   const handleEdit = (popup) => {
-    setEditingPopup(popup);
+    setEditingPopup(popup)
     setFormData({
       title: popup.title || '',
       body: popup.body || '',
@@ -159,9 +159,9 @@ export default function AdminPopupsPage() {
       show_once_per_session: popup.show_once_per_session ?? true,
       show_after_seconds: popup.show_after_seconds || 0,
       priority: popup.priority || 0,
-    });
-    setShowModal(true);
-  };
+    })
+    setShowModal(true)
+  }
 
   const resetForm = () => {
     setFormData({
@@ -182,19 +182,19 @@ export default function AdminPopupsPage() {
       show_once_per_session: true,
       show_after_seconds: 0,
       priority: 0,
-    });
-  };
+    })
+  }
 
   const handlePreview = (popup) => {
-    setPreviewPopup(popup);
-  };
+    setPreviewPopup(popup)
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -209,9 +209,9 @@ export default function AdminPopupsPage() {
             </div>
             <Button
               onClick={() => {
-                resetForm();
-                setEditingPopup(null);
-                setShowModal(true);
+                resetForm()
+                setEditingPopup(null)
+                setShowModal(true)
               }}
               className="bg-gray-900 text-white hover:bg-gray-800"
             >
@@ -510,5 +510,5 @@ export default function AdminPopupsPage() {
         <DynamicPopupModal popup={previewPopup} onClose={() => setPreviewPopup(null)} />
       )}
     </div>
-  );
+  )
 }
