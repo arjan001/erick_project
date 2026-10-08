@@ -512,13 +512,13 @@ export default function Jobs() {
     const projectTypes = {};
     const skills = {};
 
-    // Use all available roles from JSON, then count matches
-    Object.values(skillsAndRoles.film_roles_by_category).flat().forEach(role => {
+    // Use all available roles from JSON (talent roles for job browsing), then count matches
+    Object.values(skillsAndRoles.talent_roles_by_category).flat().forEach(role => {
       roles[role] = filteredJobsForCounts.filter(job => job.roles_needed?.includes(role)).length;
     });
 
-    // Use all available skills from JSON, then count matches
-    Object.values(skillsAndRoles.skills_by_category).flat().forEach(skill => {
+    // Use all available skills from JSON (talent skills for job browsing), then count matches
+    Object.values(skillsAndRoles.talent_skills_by_category).flat().forEach(skill => {
       skills[skill] = filteredJobsForCounts.filter(job => job.skills_required?.includes(skill)).length;
     });
 

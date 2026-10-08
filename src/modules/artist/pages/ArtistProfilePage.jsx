@@ -82,8 +82,8 @@ export default function ArtistProfile() {
   });
 
   // Flatten all skills from categories for multi-select
-  const ALL_SKILLS = Object.values(skillsAndRoles.skills_by_category || {}).flat();
-  const ALL_ROLES = Object.values(skillsAndRoles.film_roles_by_category || {}).flat();
+  const ALL_SKILLS = Object.values(skillsAndRoles.talent_skills_by_category || {}).flat();
+  const ALL_ROLES = Object.values(skillsAndRoles.talent_roles_by_category || {}).flat();
 
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [projectAlerts, setProjectAlerts] = useState(true);

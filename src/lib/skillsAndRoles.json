@@ -1,110 +1,171 @@
 {
-  "film_roles_by_category": {
-    "Pre-Production": [
-      "Director", "Producer", "Executive Producer", "Writer / Screenwriter",
-      "Storyboard Artist", "Concept Artist", "Art Director", "Production Designer",
-      "Location Scout", "Casting Director"
+  "talent_roles_by_category": {
+    "On-Screen Acting": [
+      "Lead Actor", "Supporting Actor", "Extra / Background Actor", "Featured Extra",
+      "Day Player", "Double / Stunt Double", "Body Double", "Photo Double"
     ],
-    "Production": [
-      "Director of Photography (Cinematographer)", "Camera Operator", "1st AC (Focus Puller)",
-      "2nd AC", "Drone Pilot", "FPV Pilot", "Gaffer", "Best Boy Electric",
-      "Lighting Technician", "Grip", "Key Grip", "Dolly Grip", "Sound Recordist",
-      "Boom Operator", "Production Assistant", "Set Designer", "Set Decorator",
-      "Prop Master", "Hair Artist", "Makeup Artist", "Costume Designer"
+    "Voice & Audio": [
+      "Voice Over Artist", "Voice Actor", "Narrator", "Commercial Voice Over",
+      "Audio Book Narrator", "Character Voice", "Dubbing Artist", "ADR Artist"
     ],
-    "3D & CGI": [
-      "3D Generalist", "Hard Surface Modeler", "Character Artist", "Environment Artist",
-      "Texture Artist", "Material Artist", "Look Development Artist", "Lighting Artist",
-      "Rendering Artist", "Animator", "Character Animator", "Motion Designer",
-      "VFX Artist", "FX Artist (Fire, Smoke, Water, Destruction)", "Houdini Artist",
-      "Cloth Artist", "Groom Artist (Hair/Fur)", "Rigger", "Technical Artist",
-      "Unreal Engine Artist", "Virtual Production Artist"
+    "Performance": [
+      "Actor", "Performer", "Model", "Dancer", "Choreographer", "Stunt Performer",
+      "Circus Performer", "Theater Actor", "Stage Actor"
     ],
-    "Post-Production": [
-      "Video Editor", "Assistant Editor", "Colorist", "Online Editor", "Compositor",
-      "Matchmove Artist", "Rotoscope Artist", "Paint Artist", "Cleanup Artist",
-      "Motion Graphics Designer", "Title Designer", "Sound Designer", "Foley Artist",
-      "Dialogue Editor", "Re-Recording Mixer", "Music Composer", "Music Producer",
-      "Voice Over Artist"
+    "Content Creation": [
+      "UGC Creator", "Content Creator", "TikTok Creator", "Instagram Creator",
+      "YouTube Creator", "Social Media Influencer", "Brand Ambassador"
     ],
-    "Photography & Product": [
-      "Product Photographer", "Automotive Photographer", "Retoucher", "CGI Product Artist"
+    "Commercial & Ads": [
+      "Commercial Actor", "TV Commercial Actor", "Radio Commercial Actor",
+      "Print Model", "Fashion Model", "Fitness Model", "Brand Representative"
     ],
-    "Marketing & Social Media": [
-      "Creative Director", "Content Creator", "Social Media Manager", "Thumbnail Designer",
-      "Graphic Designer", "Copywriter", "Community Manager", "SEO Specialist"
-    ],
-    "Technical": [
-      "Pipeline TD", "Render Wrangler", "Render Farm Manager", "Software Developer",
-      "AI Artist", "Prompt Engineer"
+    "Specialized Performance": [
+      "Sign Language Actor", "Hand Model", "Foot Model", "Hair Model",
+      "Fitness Model", "Plus Size Model", "Pet Actor / Animal Wrangler"
     ]
   },
-  "skills_by_category": {
-    "Pre-Production": [
-      "Executive Producer", "Storyboard Artist", "Concept Artist", "Art Director",
-      "Production Designer", "Location Scout", "Casting Director", "Scriptwriter", "Screenwriter"
+  "client_roles_by_category": {
+    "Production Leadership": [
+      "Director", "Producer", "Executive Producer", "Line Producer",
+      "Production Manager", "Production Coordinator", "Unit Production Manager"
     ],
-    "Camera & Cinematography": [
-      "Director of Photography", "Camera Operator", "ARRI Alexa", "RED Camera", "Sony FX Series",
-      "Canon Cinema", "Blackmagic", "Steadicam Operator", "Gimbal Operation", "Crane Operation",
-      "Dolly Grip", "Focus Pulling", "1st AC", "2nd AC", "DIT", "Camera Assistant",
-      "Drone Pilot", "FPV Pilot"
+    "Creative & Story": [
+      "Writer / Screenwriter", "Scriptwriter", "Story Editor", "Creative Director",
+      "Art Director", "Storyboard Artist", "Concept Artist", "Production Designer"
     ],
-    "Lighting": [
-      "Gaffer", "Best Boy Electric", "Lighting Technician", "LED Lighting",
-      "HMI Lighting", "Tungsten Lighting", "Practical Lighting", "Natural Light"
+    "Technical Leadership": [
+      "Director of Photography (Cinematographer)", "Production Designer",
+      "Visual Effects Supervisor", "Post-Production Supervisor"
     ],
-    "Grip": [
-      "Key Grip", "Best Boy Grip", "Grip", "Rigging", "Dolly Operator"
+    "Camera Department": [
+      "Camera Operator", "1st AC (Focus Puller)", "2nd AC", "Drone Pilot",
+      "FPV Pilot", "Steadicam Operator", "Gimbal Operator", "Crane Operator / Jib Operator"
     ],
-    "Production": [
-      "Line Producer", "Production Manager", "Production Coordinator", "Sound Recordist",
-      "Location Manager", "Production Assistant", "Set Designer", "Set Decorator"
+    "Lighting Department": [
+      "Gaffer", "Best Boy Electric", "Lighting Technician", "Key Grip",
+      "Dolly Grip", "Crane Grip", "Rigging Grip"
     ],
-    "Directing": [
-      "Commercial Director", "Music Video Director", "Documentary Director",
-      "Film Director", "Assistant Director", "1st AD", "2nd AD"
-    ],
-    "3D & CGI": [
-      "3D Generalist", "Hard Surface Modeler", "Character Artist", "Environment Artist",
-      "Texture Artist", "Material Artist", "Look Development Artist", "Lighting Artist",
-      "Rendering Artist", "Animator", "Character Animator", "Motion Designer", "VFX Artist",
-      "FX Artist", "Houdini Artist", "Cloth Artist", "Groom Artist", "Rigger", "Technical Artist",
-      "Unreal Engine Artist", "Virtual Production Artist", "Blender", "Maya", "Cinema 4D", "3ds Max", "Houdini"
-    ],
-    "Post-Production": [
-      "Video Editor", "Assistant Editor", "Colorist", "Online Editor", "Offline Editor",
-      "Compositor", "Matchmove Artist", "Rotoscope Artist", "Paint Artist", "Cleanup Artist",
-      "Motion Graphics Designer", "Title Designer", "Premiere Pro", "Final Cut Pro",
-      "DaVinci Resolve", "Avid Media Composer", "Conform", "Finishing"
-    ],
-    "Sound & Music": [
-      "Sound Designer", "Sound Mixer", "Boom Operator", "Sound Editor", "Foley Artist",
-      "ADR", "Dialogue Editor", "Re-Recording Mixer", "Music Composer", "Music Producer",
-      "Music Supervisor", "Scoring", "Voice Over Artist", "Pro Tools", "Logic Pro", "Ableton Live"
-    ],
-    "Photography & Product": [
-      "Product Photographer", "Automotive Photographer", "Retoucher", "CGI Product Artist",
-      "Aerial Photography", "Product Photography"
-    ],
-    "Marketing & Social Media": [
-      "Creative Director", "Content Creator", "Social Media Manager", "Thumbnail Designer",
-      "Graphic Designer", "Copywriter", "Community Manager", "SEO Specialist"
+    "Sound Department": [
+      "Sound Recordist", "Boom Operator", "Sound Mixer", "Sound Designer",
+      "Foley Artist", "ADR Mixer", "Dialogue Editor"
     ],
     "Art Department": [
-      "Art Director", "Production Designer", "Set Designer", "Set Decorator",
-      "Props Master", "Prop Maker", "Scenic Artist", "Construction Coordinator"
+      "Set Designer", "Set Decorator", "Prop Master", "Prop Maker",
+      "Scenic Artist", "Construction Coordinator", "Art Director", "Production Designer"
     ],
     "Costume & Makeup": [
       "Costume Designer", "Wardrobe Stylist", "Makeup Artist", "Hair Stylist",
-      "Special Effects Makeup", "Prosthetics"
+      "Special Effects Makeup", "Prosthetics Artist", "Costume Supervisor"
     ],
-    "Technical": [
-      "Pipeline TD", "Render Wrangler", "Render Farm Manager", "Software Developer",
-      "AI Artist", "Prompt Engineer"
+    "Post-Production": [
+      "Video Editor", "Assistant Editor", "Colorist", "Online Editor",
+      "Compositor", "VFX Artist", "Motion Graphics Designer", "Sound Designer",
+      "Music Composer", "Music Producer", "Re-Recording Mixer"
     ],
-    "Other": [
-      "Talent Coordinator", "Previsualization", "Stunt Coordinator", "Choreographer"
+    "3D & CGI": [
+      "3D Artist", "3D Modeler", "Character Artist", "Environment Artist",
+      "Texture Artist", "VFX Artist", "Houdini Artist", "Technical Director"
+    ],
+    "Casting & Talent": [
+      "Casting Director", "Casting Assistant", "Talent Coordinator",
+      "Talent Scout", "Extras Casting Director"
+    ],
+    "Location & Logistics": [
+      "Location Scout", "Location Manager", "Transportation Coordinator",
+      "Catering Coordinator", "Accommodation Coordinator"
+    ]
+  },
+  "talent_skills_by_category": {
+    "Acting Skills": [
+      "Method Acting", "Improvisation", "Script Reading", "Memorization",
+      "Character Development", "Emotional Range", "Physical Acting", "Stage Combat",
+      "Movement", "Dance", "Singing", "Accents & Dialects", "Foreign Languages"
+    ],
+    "Voice Skills": [
+      "Voice Over", "Narration", "Character Voices", "Commercial Voice",
+      "Audio Book Recording", "ADR / Dubbing", "Singing", "Voice Control",
+      "Breathing Techniques", "Projection", "Diction"
+    ],
+    "Modeling Skills": [
+      "Pose", "Walk the Runway", "Photogenic", "Facial Expressions",
+      "Body Language", "Portfolio Posing", "Commercial Modeling", "Editorial Modeling"
+    ],
+    "Content Creation": [
+      "Script Writing", "Video Editing", "Content Planning", "Social Media Strategy",
+      "Engagement Techniques", "Video Production", "Photography", "Camera Operation"
+    ],
+    "Performance Skills": [
+      "Public Speaking", "Stage Presence", "Character Immersion",
+      "Improvisation", "Physical Fitness", "Stunts", "Choreography",
+      "Teamwork", "Direction Following"
+    ],
+    "Audition Skills": [
+      "Self-Tape Audition", "Cold Reading", "Monologue Preparation",
+      "Slate Techniques", "Interview Skills", "Demo Reel Creation",
+      "Portfolio Building", "Networking"
+    ],
+    "Special Skills": [
+      "Swimming", "Driving License", "Passport", "Multiple Languages",
+      "Sports", "Musical Instruments", "Dancing Styles", "Martial Arts",
+      "Horse Riding", "Stage Combat", "Sign Language"
+    ]
+  },
+  "client_skills_by_category": {
+    "Pre-Production": [
+      "Screenwriting", "Script Supervision", "Budgeting", "Scheduling",
+      "Storyboarding", "Shot Listing", "Shot List Creation", "Production Design",
+      "Location Scouting", "Casting", "Permitting", "Insurance"
+    ],
+    "Directing": [
+      "Film Directing", "Commercial Directing", "Music Video Directing",
+      "Documentary Directing", "TV Directing", "Assistant Directing",
+      "1st AD", "2nd AD", "Blocking", "Actor Coaching"
+    ],
+    "Cinematography": [
+      "Cinematography", "Camera Operation", "Focus Pulling", "Lens Selection",
+      "Lighting Design", "Camera Movement", "Framing", "Composition",
+      "Drone Operation", "FPV Operation", "Steadicam", "Gimbal Operation"
+    ],
+    "Lighting": [
+      "Lighting Design", "Gaffing", "Lighting Setup", "LED Lighting",
+      "Natural Light", "Practical Lighting", "Color Temperature", "Light Shaping"
+    ],
+    "Sound": [
+      "Sound Recording", "Boom Operation", "Sound Mixing", "Sound Design",
+      "Foley Recording", "ADR", "Dialogue Editing", "Music Supervision"
+    ],
+    "Art Direction": [
+      "Art Direction", "Set Design", "Set Decoration", "Prop Design",
+      "Production Design", "Color Theory", "Architecture", "History",
+      "Budgeting Art Department"
+    ],
+    "Costume Design": [
+      "Costume Design", "Wardrobe Styling", "Makeup Artistry", "Hair Styling",
+      "Period Research", "Fabric Selection", "Fitting", "Alterations"
+    ],
+    "Post-Production": [
+      "Video Editing", "Color Grading", "VFX Compositing", "Motion Graphics",
+      "Sound Design", "Music Scoring", "Sound Mixing", "Online Editing",
+      "Offline Editing", "Conforming", "Finishing"
+    ],
+    "VFX & 3D": [
+      "3D Modeling", "3D Animation", "Texturing", "Lighting", "Rendering",
+      "Compositing", "Rotoscoping", "Matchmoving", "Particle Effects",
+      "Houdini", "Maya", "Blender", "Cinema 4D", "Unreal Engine"
+    ],
+    "Production Management": [
+      "Line Producing", "Production Management", "Production Coordination",
+      "Budget Management", "Scheduling", "Call Sheet Creation", "Team Management",
+      "Vendor Relations", "Problem Solving"
+    ],
+    "Location Management": [
+      "Location Scouting", "Location Management", "Permitting", "Site Surveys",
+      "Logistics Coordination", "Weather Planning", "Transportation Coordination"
+    ],
+    "Casting": [
+      "Casting Directing", "Talent Coordination", "Audition Organization",
+      "Contract Negotiation", "SAG/Union Regulations", "Actor Database Management"
     ]
   },
   "equipment_categories": {

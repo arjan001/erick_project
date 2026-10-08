@@ -23,7 +23,7 @@ export default function TeamMembersPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('member');
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // New fields for enhanced invitation
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState([]);
@@ -79,7 +79,7 @@ export default function TeamMembersPage() {
     if (!inviteEmail || !team) return;
     try {
       const inviterName = `${authUser?.first_name || ''} ${authUser?.last_name || ''}`.trim() || 'Team Admin';
-      
+
       // Handle image upload if present
       let imageUrl = profileImageUrl;
       if (profileImage) {
@@ -87,7 +87,7 @@ export default function TeamMembersPage() {
         // For now, we'll use a placeholder or the URL if provided
         imageUrl = URL.createObjectURL(profileImage);
       }
-      
+
       const result = await createTeamInvitation(
         team.id,
         inviteEmail,
@@ -99,7 +99,7 @@ export default function TeamMembersPage() {
           profile_image: imageUrl
         }
       );
-      
+
       if (result.success) {
         success('Invitation Sent', `Invitation sent to ${inviteEmail}. They will receive an email to join your team.`);
         setInviteEmail('');
@@ -109,7 +109,7 @@ export default function TeamMembersPage() {
         setProfileImage(null);
         setProfileImageUrl('');
         setShowInviteModal(false);
-        
+
         // Refresh members list
         fetchMembers(team.id);
       } else {
@@ -130,16 +130,16 @@ export default function TeamMembersPage() {
   };
 
   const toggleRole = (role) => {
-    setSelectedRoles(prev => 
-      prev.includes(role) 
+    setSelectedRoles(prev =>
+      prev.includes(role)
         ? prev.filter(r => r !== role)
         : [...prev, role]
     );
   };
 
   const toggleSkill = (skill) => {
-    setSelectedSkills(prev => 
-      prev.includes(skill) 
+    setSelectedSkills(prev =>
+      prev.includes(skill)
         ? prev.filter(s => s !== skill)
         : [...prev, skill]
     );
@@ -157,7 +157,7 @@ export default function TeamMembersPage() {
     try {
       const inviterName = `${authUser?.first_name || ''} ${authUser?.last_name || ''}`.trim() || 'Team Admin';
       const result = await resendInvitation(invitationId, team.team_name, inviterName);
-      
+
       if (result.success) {
         success('Invitation Resent', `Invitation resent to ${email}`);
       } else {
@@ -173,7 +173,7 @@ export default function TeamMembersPage() {
     if (!confirm('Are you sure you want to cancel this invitation?')) return;
     try {
       const result = await revokeInvitation(invitationId);
-      
+
       if (result.success) {
         success('Invitation Cancelled', 'Invitation has been cancelled');
         fetchMembers(team.id);
@@ -223,105 +223,105 @@ export default function TeamMembersPage() {
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search members..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+        <div className="relative">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search members..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Pending Invitations */}
+        {invitations.map((invitation) => (
+          <div key={invitation.id} className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-yellow-700" />
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">{invitation.email}</div>
+                  <div className="text-sm text-yellow-700">Pending Invitation</div>
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Pending Invitations */}
-            {invitations.map((invitation) => (
-              <div key={invitation.id} className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center">
-                      <Mail className="w-6 h-6 text-yellow-700" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">{invitation.email}</div>
-                      <div className="text-sm text-yellow-700">Pending Invitation</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleResendInvite(invitation.id, invitation.email)}
-                    className="flex-1"
-                  >
-                    Resend
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleCancelInvite(invitation.id)}
-                    className="text-red-600 border-red-300 hover:bg-red-50"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ))}
-
-            {/* Active Members */}
-            {filteredMembers.map((member) => (
-              <div key={member.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="w-6 h-6 text-gray-500" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">{member.name}</div>
-                      <div className="text-sm text-gray-500">{member.email}</div>
-                    </div>
-                  </div>
-                  {member.role === 'admin' && (
-                    <Crown className="w-5 h-5 text-yellow-500" />
-                  )}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                  <Shield className="w-4 h-4" />
-                  <span className="capitalize">{member.role}</span>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="flex-1">
-                    View Profile
-                  </Button>
-                  {member.role !== 'admin' && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleRemoveMember(member.id)}
-                      className="text-red-600 border-red-300 hover:bg-red-50"
-                    >
-                      Remove
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {filteredMembers.length === 0 && (
-            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
-              <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-gray-900 mb-2">No members yet</h3>
-              <p className="text-gray-600 mb-4">Invite team members to get started</p>
-              <Button onClick={() => setShowInviteModal(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Invite First Member
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleResendInvite(invitation.id, invitation.email)}
+                className="flex-1"
+              >
+                Resend
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleCancelInvite(invitation.id)}
+                className="text-red-600 border-red-300 hover:bg-red-50"
+              >
+                Cancel
               </Button>
             </div>
-          )}
+          </div>
+        ))}
+
+        {/* Active Members */}
+        {filteredMembers.map((member) => (
+          <div key={member.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                  <User className="w-6 h-6 text-gray-500" />
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">{member.name}</div>
+                  <div className="text-sm text-gray-500">{member.email}</div>
+                </div>
+              </div>
+              {member.role === 'admin' && (
+                <Crown className="w-5 h-5 text-yellow-500" />
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+              <Shield className="w-4 h-4" />
+              <span className="capitalize">{member.role}</span>
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" className="flex-1">
+                View Profile
+              </Button>
+              {member.role !== 'admin' && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleRemoveMember(member.id)}
+                  className="text-red-600 border-red-300 hover:bg-red-50"
+                >
+                  Remove
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {filteredMembers.length === 0 && (
+        <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+          <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-bold text-gray-900 mb-2">No members yet</h3>
+          <p className="text-gray-600 mb-4">Invite team members to get started</p>
+          <Button onClick={() => setShowInviteModal(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Invite First Member
+          </Button>
+        </div>
+      )}
 
       {/* Invite Modal */}
       {showInviteModal && (
@@ -338,7 +338,7 @@ export default function TeamMembersPage() {
                   placeholder="member@email.com"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">Role</label>
                 <select
@@ -406,10 +406,10 @@ export default function TeamMembersPage() {
                     </span>
                     {showRolesDropdown ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
-                  
+
                   {showRolesDropdown && (
                     <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                      {Object.entries(skillsAndRolesData.film_roles_by_category).map(([category, roles]) => (
+                      {Object.entries(skillsAndRolesData.client_roles_by_category).map(([category, roles]) => (
                         <div key={category}>
                           <div className="px-3 py-2 bg-gray-100 font-medium text-xs text-gray-700 sticky top-0">
                             {category}
@@ -433,7 +433,7 @@ export default function TeamMembersPage() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Selected Roles Tags */}
                 {selectedRoles.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -468,10 +468,10 @@ export default function TeamMembersPage() {
                     </span>
                     {showSkillsDropdown ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
-                  
+
                   {showSkillsDropdown && (
                     <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                      {Object.entries(skillsAndRolesData.skills_by_category).map(([category, skills]) => (
+                      {Object.entries(skillsAndRolesData.client_skills_by_category).map(([category, skills]) => (
                         <div key={category}>
                           <div className="px-3 py-2 bg-gray-100 font-medium text-xs text-gray-700 sticky top-0">
                             {category}
@@ -495,7 +495,7 @@ export default function TeamMembersPage() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Selected Skills Tags */}
                 {selectedSkills.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -522,8 +522,8 @@ export default function TeamMembersPage() {
                   <Mail className="w-4 h-4 mr-2" />
                   Send Invitation
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setShowInviteModal(false);
                     setSelectedRoles([]);

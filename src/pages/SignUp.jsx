@@ -59,7 +59,10 @@ export default function SignUp() {
     };
   });
 
-  const ALL_SKILLS = Object.values(skillsAndRoles.film_roles_by_category || {}).flat();
+  // Load skills based on user type
+  const ALL_SKILLS = userType === 'talent'
+    ? Object.values(skillsAndRoles.talent_skills_by_category || {}).flat()
+    : Object.values(skillsAndRoles.client_skills_by_category || {}).flat();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [inviteCodeValid, setInviteCodeValid] = useState(null);
