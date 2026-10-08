@@ -4,7 +4,9 @@ import ShopShell from '@/components/shop/ShopShell';
 import { useAuth } from '@/lib/AuthContext';
 import { formatKES } from '@/data/shopProducts';
 import { CheckCircle2, Loader2, ShoppingBag, Smartphone } from 'lucide-react';
-import { getCart } from '@/services/shopService';
+import { getCart, clearCart, createOrder, getShopSettings, calcTotals } from '@/services/shopService';
+import { useShop } from '@/contexts/ShopContext';
+import { useToast } from '@/hooks/useToast';
 
 const inputCls =
   'w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-black placeholder:text-black/35 focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20';
@@ -20,7 +22,9 @@ function Field({ label, children }) {
 
 export default function CheckoutPage() {
   const { user, isAuthenticated } = useAuth();
-  const [cart, setCart] = useState([]);
+  const { cart } = useShop();
+  const { clear } = useShop();
+  const { success, error: toastError } = useToast();
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({ enableMpesa: true, enableCard: true, shippingThreshold: 5000, shippingCost: 500 });
   const [customer, setCustomer] = useState({ name: '', email: '', phone: '', address: '', city: '', county: '', notes: '' });
@@ -31,18 +35,17 @@ export default function CheckoutPage() {
   const [completed, setCompleted] = useState(null);
 
   useEffect(() => {
-    const loadCart = async () => {
+    const loadData = async () => {
       try {
-        const cartItems = getCart();
-        setCart(cartItems || []);
+        const shopSettings = await getShopSettings();
+        setSettings(shopSettings);
       } catch (err) {
-        console.error('Failed to load cart:', err);
-        setCart([]);
+        console.error('Failed to load shop settings:', err);
       } finally {
         setLoading(false);
       }
     };
-    loadCart();
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -55,12 +58,7 @@ export default function CheckoutPage() {
     }));
   }, [user]);
 
-  const totals = {
-    subtotal: cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0),
-    shipping: cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0) >= settings.shippingThreshold ? 0 : settings.shippingCost,
-  };
-  totals.total = totals.subtotal + totals.shipping;
-  totals.needsShipping = true;
+  const totals = calcTotals(cart, settings);
 
   const busy = phase === 'waiting';
   const set = (patch) => setCustomer((c) => ({ ...c, ...patch }));
@@ -85,25 +83,37 @@ export default function CheckoutPage() {
       return;
     }
     try {
-      if (method === 'mpesa') {
-        setPhase('waiting');
-        // Simulate M-Pesa payment
-        setTimeout(() => {
-          setCompleted({
-            order_number: 'ORD-' + Date.now(),
-            mpesa_receipt: 'TXN' + Date.now(),
-            customer_email: customer.email,
-          });
-          setPhase('done');
-          setCart([]);
-        }, 3000);
-      } else {
-        setNotice('Card payments are not enabled on this store yet, so nothing was charged. Please pay with M-Pesa for now.');
+      setPhase('waiting');
+
+      // Create order in backend
+      const order = await createOrder({
+        user,
+        items: cart,
+        customer,
+        totals,
+        paymentMethod: method,
+      });
+
+      if (!order) {
+        throw new Error('Failed to create order');
       }
+
+      // Simulate M-Pesa payment
+      setTimeout(() => {
+        setCompleted({
+          order_number: order.order_number,
+          mpesa_receipt: 'TXN' + Date.now(),
+          customer_email: customer.email,
+        });
+        setPhase('done');
+        clear(); // Clear cart from context
+        success('Order placed!', `Your order ${order.order_number} has been created successfully.`);
+      }, 3000);
     } catch (err) {
       console.error('Checkout failed', err);
       setError(err?.message || 'Something went wrong. Please try again.');
       setPhase('idle');
+      toastError('Checkout failed', err?.message || 'Something went wrong');
     }
   };
 
