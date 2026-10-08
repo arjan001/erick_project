@@ -1,9 +1,16 @@
 /**
- * M-Pesa Daraja API Service — Eric Rabar
+ * M-Pesa Daraja API Service — SmartGigs Kenya
  *
  * Handles M-Pesa STK Push, C2B, and transaction verification via the
- * Safaricom Daraja API. Settings are loaded from the payment_settings
- * Base44 entity (managed in AdminPaymentSettingsPage).
+ * Safaricom Daraja API (Official M-Pesa API).
+ *
+ * NOTE: This uses the official Safaricom Daraja API, not Makamesco.
+ * Makamesco is a different service (WhatsApp bot platform) and is not
+ * a payment gateway. For M-Pesa integration, use Daraja API credentials
+ * from https://developer.safaricom.co.ke/
+ *
+ * Settings are loaded from the payment_settings entity
+ * (managed in AdminPaymentSettingsPage).
  */
 
 const DARAJA_BASE_URL = {

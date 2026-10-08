@@ -981,6 +981,7 @@ CREATE TRIGGER trg_cart_updated_at BEFORE UPDATE ON public.cart FOR EACH ROW EXE
 CREATE TRIGGER trg_feature_flags_updated_at BEFORE UPDATE ON public.feature_flags FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_file_upload_settings_updated_at BEFORE UPDATE ON public.file_upload_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_auth_providers_updated_at BEFORE UPDATE ON public.auth_providers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_email_settings_updated_at BEFORE UPDATE ON public.email_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_storage_buckets_config_updated_at BEFORE UPDATE ON public.storage_buckets_config FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_partners_updated_at BEFORE UPDATE ON public.partners FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_categories_updated_at BEFORE UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -1235,6 +1236,19 @@ CREATE TABLE IF NOT EXISTS public.auth_providers (
   is_enabled BOOLEAN DEFAULT false,
   is_default BOOLEAN DEFAULT false,
   config JSONB, -- Store provider-specific config (API keys, etc.)
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Email settings configuration (SMTP, Resend, etc.)
+CREATE TABLE IF NOT EXISTS public.email_settings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  provider TEXT DEFAULT 'smtp', -- smtp, resend
+  from_email TEXT NOT NULL,
+  from_name TEXT NOT NULL,
+  smtp_config JSONB, -- { host, port, secure, auth: { user, pass } }
+  resend_api_key TEXT,
+  is_enabled BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
