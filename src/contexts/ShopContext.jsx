@@ -52,19 +52,27 @@ export function ShopProvider({ children }) {
   };
 
   const toggleWish = (product) => {
-    const isWished = wishlist.some(w => w.id === product.id);
+    const isWished = wishlist.some(w => w.product_id === product.id);
     let updated;
     if (isWished) {
-      updated = wishlist.filter(w => w.id !== product.id);
+      updated = wishlist.filter(w => w.product_id !== product.id);
     } else {
-      updated = [...wishlist, product];
+      updated = [...wishlist, {
+        id: Date.now().toString(),
+        product_id: product.id,
+        product_name: product.name,
+        image: product.image || product.images?.[0],
+        price: product.price,
+        added_at: new Date().toISOString(),
+      }];
     }
     setWishlistState(updated);
     localStorage.setItem(wishlistStorageKey, JSON.stringify(updated));
+    window.dispatchEvent(new Event('wishlist-updated'));
   };
 
   const isWished = (productId) => {
-    return wishlist.some(w => w.id === productId);
+    return wishlist.some(w => w.product_id === productId);
   };
 
   return (

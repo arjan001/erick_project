@@ -2,17 +2,39 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Flame, Gavel, Heart, ShoppingCart } from 'lucide-react';
 import { formatKES } from '@/data/shopProducts';
-import { discountPercent, isAuctionProduct } from '@/services/shopService';
+import { discountPercent, isAuctionProduct, addToCart, removeFromWishlist, addToWishlist, isInWishlist } from '@/services/shopService';
 import { AuctionMeta } from './AuctionMeta';
+import { useShop } from '@/contexts/ShopContext';
+import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '@/hooks/useToast';
 
 /** Price shown for a straight purchase: auction items sell at full price unless the buyer wins the draw. */
 export const buyNowPrice = (p) => (isAuctionProduct(p) ? p.price : p.discount_price || p.price);
 
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
+  const { add, toggleWish, isWished } = useShop();
+  const { isAuthenticated } = useAuth();
+  const { success, info } = useToast();
   const auction = isAuctionProduct(product);
   const outOfStock = Number(product.stock) <= 0;
   const sale = !auction && discountPercent(product) > 0;
+  const wished = isWished(product.id);
+
+  const handleAddToCart = () => {
+    if (outOfStock) return;
+    add(product);
+    success('Added to cart', `${product.name} has been added to your cart.`);
+  };
+
+  const handleToggleWishlist = () => {
+    toggleWish(product);
+    if (wished) {
+      info('Removed from wishlist', `${product.name} has been removed from your wishlist.`);
+    } else {
+      success('Added to wishlist', `${product.name} has been added to your wishlist.`);
+    }
+  };
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl border border-black/5 bg-white transition-all hover:shadow-lg">
@@ -64,17 +86,17 @@ export default function ProductCard({ product }) {
       </Link>
 
       <button
-        onClick={() => console.log('Toggle wishlist')}
+        onClick={handleToggleWishlist}
         aria-label="Add to wishlist"
         className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow hover:bg-white"
       >
-        <Heart className="h-4 w-4 text-black/60" />
+        <Heart className={`h-4 w-4 ${wished ? 'fill-red-500 text-red-500' : 'text-black/60'}`} />
       </button>
 
       <div className="mt-auto grid gap-2 p-3 pt-3">
         <button
           disabled={outOfStock}
-          onClick={() => console.log('Add to cart')}
+          onClick={handleAddToCart}
           className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#4F46E5] py-2 text-xs font-semibold text-white transition-colors hover:bg-[#4338CA] disabled:cursor-not-allowed disabled:bg-black/20"
         >
           <ShoppingCart className="h-3.5 w-3.5" /> Add to Cart

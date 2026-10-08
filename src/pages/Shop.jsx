@@ -20,34 +20,23 @@ export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    let cancelled = false;
-    // Load products from backend
-    loadProducts();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const loadProducts = async () => {
-    setLoading(true);
-    try {
-      const products = await listProducts();
-      if (!cancelled) {
+    const loadProducts = async () => {
+      setLoading(true);
+      try {
+        const products = await listProducts();
         setProducts(products);
-      }
-    } catch (error) {
-      console.error('Failed to load products:', error);
-      if (!cancelled) {
+      } catch (error) {
+        console.error('Failed to load products:', error);
         // Fallback to seed products on error
         const seedProducts = buildSeedProducts();
         setProducts(seedProducts);
-      }
-    } finally {
-      if (!cancelled) {
+      } finally {
         setLoading(false);
       }
-    }
-  };
+    };
+
+    loadProducts();
+  }, []);
 
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -72,7 +61,7 @@ export default function ShopPage() {
   };
 
   const handleProductClick = (product) => {
-    navigate(`/ShopProduct/${product.id}`);
+    navigate(`/shop/${product.id}`);
   };
 
   return (

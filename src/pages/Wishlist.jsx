@@ -3,44 +3,49 @@ import { Link } from 'react-router-dom';
 import ShopShell from '@/components/shop/ShopShell';
 import { Heart, ShoppingBag, Trash2 } from 'lucide-react';
 import { formatKES } from '@/data/shopProducts';
+import { useShop } from '@/contexts/ShopContext';
+import { getWishlist, removeFromWishlist as removeFromWishlistService } from '@/services/shopService';
+import { useToast } from '@/hooks/useToast';
 
 export default function WishlistPage() {
+  const { addToCart } = useShop();
+  const { success } = useToast();
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock wishlist data
-    const mockWishlist = [
-      {
-        id: 'seed-1',
-        name: "Selina's Iconic Dress",
-        image: 'https://images.unsplash.com/photo-1539109236226-a51a09e5105f?w=600&h=600&fit=crop',
-        price: 65000,
-        discount_price: 6500,
-        category: 'Wardrobe',
-        auction_enabled: true,
-      },
-      {
-        id: 'seed-3',
-        name: 'SmartGigs Branded Hoodie',
-        image: 'https://images.unsplash.com/photo-1556821840-3a63f95109ea?w=600&h=600&fit=crop',
-        price: 5800,
-        discount_price: 3200,
-        category: 'Merchandise',
-        auction_enabled: false,
-      },
-    ];
-    setWishlist(mockWishlist);
-    setLoading(false);
+    // Load wishlist from localStorage on mount
+    const loadWishlist = () => {
+      setWishlist(getWishlist());
+      setLoading(false);
+    };
+
+    loadWishlist();
+
+    // Listen for wishlist updates from other components
+    const handleWishlistUpdate = () => {
+      setWishlist(getWishlist());
+    };
+
+    window.addEventListener('wishlist-updated', handleWishlistUpdate);
+    return () => window.removeEventListener('wishlist-updated', handleWishlistUpdate);
   }, []);
 
-  const removeFromWishlist = (id) => {
-    setWishlist(wishlist.filter((item) => item.id !== id));
+  const removeFromWishlist = (itemId) => {
+    removeFromWishlistService(itemId);
+    setWishlist(getWishlist());
   };
 
   const moveToCart = (item) => {
-    // Add to cart logic here
-    alert(`${item.name} added to cart`);
+    // Create a product object from wishlist item
+    const product = {
+      id: item.product_id,
+      name: item.product_name,
+      image: item.image,
+      price: item.price,
+    };
+    addToCart(product);
+    success('Added to cart', `${item.product_name} has been added to your cart.`);
   };
 
   if (loading) {
@@ -75,25 +80,17 @@ export default function WishlistPage() {
             <div className="grid gap-4">
               {wishlist.map((item) => (
                 <div key={item.id} className="flex gap-4 rounded-2xl bg-white p-4">
-                  <Link to={`/shop/${item.id}`} className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100">
-                    <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                  <Link to={`/shop/${item.product_id}`} className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100">
+                    <img src={item.image} alt={item.product_name} className="h-full w-full object-cover" />
                   </Link>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <Link to={`/shop/${item.id}`} className="block truncate text-sm font-bold text-black hover:underline">
-                          {item.name}
+                        <Link to={`/shop/${item.product_id}`} className="block truncate text-sm font-bold text-black hover:underline">
+                          {item.product_name}
                         </Link>
-                        <p className="mt-1 text-xs text-black/50">{item.category}</p>
                         <p className="mt-1 text-sm font-bold text-black">
-                          {item.discount_price ? (
-                            <>
-                              {formatKES(item.discount_price)}
-                              <span className="ml-2 text-xs text-black/40 line-through">{formatKES(item.price)}</span>
-                            </>
-                          ) : (
-                            formatKES(item.price)
-                          )}
+                          {formatKES(item.price)}
                         </p>
                       </div>
                       <button
@@ -112,9 +109,6 @@ export default function WishlistPage() {
                         <ShoppingBag className="h-3.5 w-3.5" />
                         Add to Cart
                       </button>
-                      {item.auction_enabled && (
-                        <span className="text-xs text-red-600 font-semibold">Live Auction</span>
-                      )}
                     </div>
                   </div>
                 </div>
