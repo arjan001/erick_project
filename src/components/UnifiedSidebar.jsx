@@ -99,7 +99,7 @@ const roleNavConfig = {
         label: 'Main',
         items: [
           { path: '/clientdashboard', label: 'Dashboard', icon: Home },
-          { path: '/ClientPostProject', label: 'Post a Job', icon: Briefcase },
+          { path: '/ClientPostProject', label: 'Post a Gig', icon: Briefcase },
         ]
       },
       {

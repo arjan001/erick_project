@@ -699,7 +699,7 @@ const clientRoutes = [
   },
   {
     path: '/BrowseTalent',
-    component: () => import('@/pages/TalentPage'),
+    component: () => import('@/modules/client/pages/BrowseTalentPage'),
     layout: DashboardLayout,
     guard: ClientGuard
   },

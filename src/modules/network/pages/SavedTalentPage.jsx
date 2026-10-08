@@ -1,29 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { Artist } from '@/lib/supabaseEntities';
+import { Artist, Connection } from '@/lib/supabaseEntities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Star, Search, Heart, MapPin, Mail, User } from 'lucide-react';
+import { Star, Search, Heart, MapPin, Mail, User, MessageCircle, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/useToast';
+import { useNavigate } from 'react-router-dom';
 
 export default function SavedTalentPage() {
   const { user } = useAuth();
   const { success, error } = useToast();
+  const navigate = useNavigate();
   const [savedTalent, setSavedTalent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchSavedTalent();
-  }, []);
+  }, [user]);
 
   const fetchSavedTalent = async () => {
+    if (!user?.email) return;
     try {
       setLoading(true);
-      // Fetch all artists and filter by saved status
-      // For now, this is a placeholder - implement actual saved logic
-      const artists = await Artist.list('created_at', 50);
-      setSavedTalent(artists || []);
+      // Fetch connections where the current user has saved artists
+      const connections = await Connection.filter({
+        user_email: user.email,
+        connection_type: 'saved',
+        status: 'active'
+      });
+
+      if (connections && connections.length > 0) {
+        // Fetch artist details for each saved connection
+        const artistIds = connections.map(c => c.connected_artist_id).filter(Boolean);
+        const artists = await Promise.all(
+          artistIds.map(id => Artist.get(id))
+        );
+        setSavedTalent(artists.filter(Boolean));
+      } else {
+        setSavedTalent([]);
+      }
     } catch (err) {
       console.error('Error fetching saved talent:', err);
       error('Error', 'Failed to fetch saved talent');
@@ -33,14 +49,32 @@ export default function SavedTalentPage() {
   };
 
   const handleUnsave = async (artistId) => {
+    if (!user?.email) return;
     try {
-      // Implement actual unsave logic
-      setSavedTalent(prev => prev.filter(a => a.id !== artistId));
-      success('Removed', 'Talent removed from saved list');
+      // Find and delete the connection
+      const connections = await Connection.filter({
+        user_email: user.email,
+        connected_artist_id: artistId,
+        connection_type: 'saved'
+      });
+
+      if (connections.length > 0) {
+        await Connection.delete(connections[0].id);
+        setSavedTalent(prev => prev.filter(a => a.id !== artistId));
+        success('Removed', 'Talent removed from saved list');
+      }
     } catch (err) {
       console.error('Error removing saved talent:', err);
       error('Failed', 'Failed to remove saved talent');
     }
+  };
+
+  const handleMessage = (artistEmail) => {
+    navigate('/Messages', { state: { recipientEmail: artistEmail } });
+  };
+
+  const handleViewProfile = (artistId) => {
+    navigate(`/ArtistPublicProfile/${artistId}`);
   };
 
   const filteredTalent = savedTalent.filter(a =>
@@ -86,18 +120,34 @@ export default function SavedTalentPage() {
             {filteredTalent.map((artist) => (
               <div key={artist.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
                 <div className="flex items-start gap-4 mb-3">
-                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold flex-shrink-0">
-                    {artist.full_name?.[0] || 'U'}
+                  <div
+                    className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center text-gray-500 font-semibold flex-shrink-0 cursor-pointer"
+                    onClick={() => handleViewProfile(artist.id)}
+                  >
+                    {artist.profile_photo_url ? (
+                      <img src={artist.profile_photo_url} alt={artist.full_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{artist.full_name?.[0] || 'U'}</span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 truncate">{artist.full_name}</h3>
+                    <h3
+                      className="font-semibold text-gray-900 truncate cursor-pointer hover:text-[#4F46E5]"
+                      onClick={() => handleViewProfile(artist.id)}
+                    >{artist.full_name}</h3>
                     <p className="text-xs text-gray-500 capitalize">{artist.role || 'Artist'}</p>
+                    {artist.based_in_city && (
+                      <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                        <MapPin className="w-3 h-3" />
+                        {artist.based_in_city}
+                      </p>
+                    )}
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleUnsave(artist.id)}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
                   >
                     <Heart className="w-4 h-4 fill-current" />
                   </Button>
@@ -115,13 +165,22 @@ export default function SavedTalentPage() {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <User className="w-3 h-3 mr-1" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleViewProfile(artist.id)}
+                  >
+                    <ExternalLink className="w-3 h-3 mr-1" />
                     View Profile
                   </Button>
-                  <Button size="sm" className="flex-1 bg-[#4F46E5] hover:bg-[#4338CA]">
-                    <Mail className="w-3 h-3 mr-1" />
-                    Contact
+                  <Button
+                    size="sm"
+                    className="flex-1 bg-[#4F46E5] hover:bg-[#4338CA]"
+                    onClick={() => handleMessage(artist.email)}
+                  >
+                    <MessageCircle className="w-3 h-3 mr-1" />
+                    Message
                   </Button>
                 </div>
               </div>
