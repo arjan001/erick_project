@@ -1081,5 +1081,88 @@ CREATE POLICY "Users can update own testimonials" ON public.testimonials FOR UPD
 CREATE POLICY "Users can delete own testimonials" ON public.testimonials FOR DELETE USING (auth.uid() = user_id);
 
 -- ============================================================
+-- DYNAMIC POPUPS / MODALS
+-- ============================================================
+
+-- Popups/Modals table for newsletter, announcements, promotional content
+CREATE TABLE IF NOT EXISTS public.popups (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title TEXT NOT NULL,
+  body TEXT,
+  image_url TEXT,
+  video_url TEXT,
+  video_source TEXT DEFAULT 'upload', -- upload, youtube, vimeo, external
+  video_embed_url TEXT,
+  cta_text TEXT,
+  cta_link TEXT,
+  popup_type TEXT DEFAULT 'announcement', -- announcement, newsletter, promotion, trailer
+  display_type TEXT DEFAULT 'modal', -- modal, banner, slide-in
+  position TEXT DEFAULT 'center', -- center, top, bottom, left, right
+  target_audience TEXT[], -- all, artists, clients, teams, backers
+  show_on_pages TEXT[], -- all, home, about, shop, dashboard
+  schedule_start TIMESTAMP WITH TIME ZONE,
+  schedule_end TIMESTAMP WITH TIME ZONE,
+  is_active BOOLEAN DEFAULT true,
+  is_dismissible BOOLEAN DEFAULT true,
+  show_once_per_session BOOLEAN DEFAULT true,
+  show_after_seconds INTEGER DEFAULT 0,
+  max_impressions INTEGER,
+  current_impressions INTEGER DEFAULT 0,
+  priority INTEGER DEFAULT 0,
+  created_by UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Index for popups
+CREATE INDEX IF NOT EXISTS idx_popups_is_active ON public.popups(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_popups_schedule ON public.popups(schedule_start, schedule_end) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_popups_type ON public.popups(popup_type);
+
+-- Voice recordings table for artist voice-over submissions
+CREATE TABLE IF NOT EXISTS public.voice_recordings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  creator_id UUID REFERENCES public.creators(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  audio_url TEXT,
+  audio_duration INTEGER, -- in seconds
+  file_size INTEGER, -- in bytes
+  format TEXT, -- mp3, wav, m4a
+  recording_type TEXT DEFAULT 'voiceover', -- voiceover, audition, demo
+  tags TEXT[],
+  is_public BOOLEAN DEFAULT false,
+  play_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Index for voice recordings
+CREATE INDEX IF NOT EXISTS idx_voice_recordings_user ON public.voice_recordings(user_id);
+CREATE INDEX IF NOT EXISTS idx_voice_recordings_creator ON public.voice_recordings(creator_id);
+CREATE INDEX IF NOT EXISTS idx_voice_recordings_public ON public.voice_recordings(is_public) WHERE is_public = true;
+
+-- Popups RLS
+CREATE POLICY "Public can view active popups" ON public.popups FOR SELECT USING (is_active = true);
+CREATE POLICY "Admin can manage popups" ON public.popups FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
+    SELECT id FROM public.roles WHERE role_key = 'admin'
+  ))
+);
+
+-- Voice Recordings RLS
+CREATE POLICY "Users can view own recordings" ON public.voice_recordings FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view public recordings" ON public.voice_recordings FOR SELECT USING (is_public = true);
+CREATE POLICY "Users can create recordings" ON public.voice_recordings FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own recordings" ON public.voice_recordings FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own recordings" ON public.voice_recordings FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Admin can manage all recordings" ON public.voice_recordings FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
+    SELECT id FROM public.roles WHERE role_key = 'admin'
+  ))
+);
+
+-- ============================================================
 -- END OF SCHEMA
 -- ============================================================

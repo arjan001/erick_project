@@ -102,5 +102,7 @@ export const ShopProduct = buildEntity('ShopProduct');
 export const ShopOrder = buildEntity('ShopOrder');
 export const ShopOrderItem = buildEntity('ShopOrderItem');
 export const CardPayment = buildEntity('CardPayment');
+export const Popup = buildEntity('popups');
+export const VoiceRecording = buildEntity('voice_recordings');
 export const Wishlist = buildEntity('Wishlist');
 export const ShopSettings = buildEntity('ShopSettings');

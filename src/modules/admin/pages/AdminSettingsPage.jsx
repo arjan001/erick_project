@@ -131,6 +131,7 @@ export default function AdminSettingsPage() {
     { icon: SettingsIcon, label: 'General', href: '/Admin/GeneralSettings', color: 'bg-gray-50 text-gray-600' },
     { icon: FileText, label: 'SEO & CMS', href: '/Admin/SEOCMS', color: 'bg-gray-50 text-gray-600' },
     { icon: LinkIcon, label: 'API', href: '/Admin/APISettings', color: 'bg-gray-50 text-gray-600' },
+    { icon: FileText, label: 'Popups', href: '/Admin/Popups', color: 'bg-gray-50 text-gray-600' },
   ];
 
   const SettingCard = ({ icon: Icon, title, description, children, warning }) => (

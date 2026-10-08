@@ -532,6 +532,12 @@ const adminRoutes = [
     component: () => import('@/modules/admin/pages/AdminRecentProjectsPage'),
     layout: AdminLayout,
     guard: RecentProjectsGuard
+  },
+  {
+    path: '/Admin/Popups',
+    component: () => import('@/modules/admin/pages/AdminPopupsPage'),
+    layout: AdminLayout,
+    guard: AdminDashboardGuard
   }
 ];
 

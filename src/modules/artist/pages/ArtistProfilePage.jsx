@@ -6,7 +6,9 @@ import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CountrySelector from '@/components/CountrySelector';
-import RolesTagInput from '@/components/artist/RolesTagInput';
+import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete';
+import skillsAndRoles from '@/lib/skillsAndRoles.json';
+import { ALL_FILM_ROLES } from '@/lib/filmRoles';
 import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { confirmDialog } from '@/lib/sweetAlert';
@@ -78,6 +80,10 @@ export default function ArtistProfile() {
       driverLicense: false, passport: false
     }
   });
+
+  // Flatten all skills from categories for multi-select
+  const ALL_SKILLS = Object.values(skillsAndRoles.skills_by_category || {}).flat();
+  const ALL_ROLES = Object.values(skillsAndRoles.film_roles_by_category || {}).flat();
 
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [projectAlerts, setProjectAlerts] = useState(true);
@@ -578,7 +584,13 @@ export default function ArtistProfile() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">Roles/Title</label>
-                      <RolesTagInput selected={formData.roles} onChange={(roles) => setFormData({ ...formData, roles })} />
+                      <MultiSelectAutocomplete
+                        options={ALL_ROLES}
+                        selected={formData.roles}
+                        onChange={(selected) => setFormData({ ...formData, roles: selected })}
+                        placeholder="Search and select your roles..."
+                        searchable={true}
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">Gender</label>
@@ -638,21 +650,16 @@ export default function ArtistProfile() {
                   {/* Skills Section */}
                   <div className="border-t border-gray-200 pt-6">
                     <h4 className="text-md font-semibold text-gray-900 mb-4">Skills</h4>
-                    <div className="space-y-2">
-                      {formData.skills.map((skill, idx) => (
-                        <div key={idx} className="flex gap-2">
-                          <Input value={skill} onChange={(e) => {
-                            const newSkills = [...formData.skills];
-                            newSkills[idx] = e.target.value;
-                            setFormData({ ...formData, skills: newSkills });
-                          }} placeholder="Enter skill" className="rounded-lg flex-1" />
-                          <button onClick={() => {
-                            const newSkills = formData.skills.filter((_, i) => i !== idx);
-                            setFormData({ ...formData, skills: newSkills });
-                          }} className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Remove</button>
-                        </div>
-                      ))}
-                      <button onClick={() => setFormData({ ...formData, skills: [...formData.skills, ''] })} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">+ Add Skill</button>
+                    <div className="space-y-4">
+                      <MultiSelectAutocomplete
+                        options={ALL_SKILLS}
+                        selected={formData.skills}
+                        onChange={(selected) => setFormData({ ...formData, skills: selected })}
+                        placeholder="Search and select your skills..."
+                        label="Select Your Skills"
+                        searchable={true}
+                      />
+                      <p className="text-xs text-gray-500">Choose from pre-defined film industry skills or type to search</p>
                     </div>
                   </div>
 
