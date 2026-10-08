@@ -26,7 +26,7 @@ export default function ClientApplications() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [generatingPDF, setGeneratingPDF] = useState(false);
-  
+
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedJob, setSelectedJob] = useState('all');
@@ -36,11 +36,11 @@ export default function ClientApplications() {
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('score'); // 'score', 'date', 'name'
   const [sortOrder, setSortOrder] = useState('desc');
-  
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  
+
   // Ranking
   const [rankedApplications, setRankedApplications] = useState([]);
   const [showBestFit, setShowBestFit] = useState(true);
@@ -60,7 +60,7 @@ export default function ClientApplications() {
         // Fetch jobs posted by this client
         const clientJobs = await Job.filter({ client_email: clientEmail });
         setJobs(clientJobs);
-        
+
         const jobApplicationsLists = await Promise.all(
           clientJobs.map(async (job) => {
             const jobApplications = await Application.filter({ job_id: job.id });
@@ -71,7 +71,7 @@ export default function ClientApplications() {
         // Fetch projects posted by this client
         const clientProjects = await Project.filter({ project_owner_email: clientEmail });
         setProjects(clientProjects);
-        
+
         const projectApplicationsLists = await Promise.all(
           clientProjects.map(async (project) => {
             const projectApplications = await Application.filter({ project_id: project.id });
@@ -87,7 +87,7 @@ export default function ClientApplications() {
         const subscriptionsData = {};
         const profilesData = {};
         const portfoliosData = {};
-        
+
         await Promise.all(
           artistEmails.map(async (email) => {
             try {
@@ -104,7 +104,7 @@ export default function ClientApplications() {
                 profilesData[email] = artists[0];
 
                 // Fetch portfolio clips
-                const clips = await base44.entities.PortfolioClip.filter({ 
+                const clips = await base44.entities.PortfolioClip.filter({
                   uploaded_by_type: 'artist',
                   uploaded_by_id: artists[0].id,
                   status: 'approved'
@@ -116,12 +116,12 @@ export default function ClientApplications() {
             }
           })
         );
-        
+
         // Fetch team profiles for team applications
         const teamIds = [...new Set(flatApplications.map(app => app.team_id).filter(Boolean))];
         const teamProfilesData = {};
         const teamPortfoliosData = {};
-        
+
         await Promise.all(
           teamIds.map(async (teamId) => {
             try {
@@ -130,7 +130,7 @@ export default function ClientApplications() {
                 teamProfilesData[teamId] = teams[0];
 
                 // Fetch team portfolio clips
-                const clips = await base44.entities.PortfolioClip.filter({ 
+                const clips = await base44.entities.PortfolioClip.filter({
                   uploaded_by_type: 'team',
                   uploaded_by_id: teamId,
                   status: 'approved'
@@ -142,7 +142,7 @@ export default function ClientApplications() {
             }
           })
         );
-        
+
         setArtistSubscriptions(subscriptionsData);
         setArtistProfiles(profilesData);
         setArtistPortfolios(portfoliosData);
@@ -157,17 +157,17 @@ export default function ClientApplications() {
 
     fetchApplications();
   }, []);
-  
+
   // Rank applications using the ranking engine
   useEffect(() => {
     if (applications.length === 0) return;
-    
+
     const rankingEngine = new ApplicationRankingEngine();
     const applicationsWithProfiles = applications.map(app => {
       let profile = null;
       let type = 'unknown';
       let portfolio = [];
-      
+
       if (app.artist_email && artistProfiles[app.artist_email]) {
         profile = artistProfiles[app.artist_email];
         type = 'artist';
@@ -177,12 +177,12 @@ export default function ClientApplications() {
         type = 'team';
         portfolio = teamPortfolios[app.team_id] || [];
       }
-      
+
       // Add portfolio to profile for scoring
       if (profile) {
         profile.portfolio_clips = portfolio;
       }
-      
+
       return {
         application: app,
         profile,
@@ -194,7 +194,7 @@ export default function ClientApplications() {
         }
       };
     });
-    
+
     const ranked = rankingEngine.rankApplications(applicationsWithProfiles);
     setRankedApplications(ranked);
   }, [applications, artistProfiles, teamProfiles, artistPortfolios, teamPortfolios]);
@@ -298,7 +298,7 @@ export default function ClientApplications() {
     try {
       const artist = artistProfiles[application.artist_email];
       const portfolio = artistPortfolios[application.artist_email] || [];
-      
+
       // Create a simple HTML content for PDF
       const pdfContent = `
         <html>
@@ -480,8 +480,8 @@ export default function ClientApplications() {
 
     // Filter by job
     if (selectedJob !== 'all') {
-      filtered = filtered.filter(item => 
-        item.application.job_title === selectedJob || 
+      filtered = filtered.filter(item =>
+        item.application.job_title === selectedJob ||
         item.application.job_id === selectedJob
       );
     }
@@ -521,7 +521,7 @@ export default function ClientApplications() {
     // Sort
     filtered.sort((a, b) => {
       let comparison = 0;
-      
+
       if (sortBy === 'score') {
         comparison = a.totalScore - b.totalScore;
       } else if (sortBy === 'date') {
@@ -529,7 +529,7 @@ export default function ClientApplications() {
       } else if (sortBy === 'name') {
         comparison = (a.profile?.full_name || '').localeCompare(b.profile?.full_name || '');
       }
-      
+
       return sortOrder === 'desc' ? -comparison : comparison;
     });
 
@@ -776,22 +776,20 @@ export default function ClientApplications() {
                         <p className="text-xs text-gray-500">{item.type === 'team' ? 'Team' : 'Artist'}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <div className={`px-3 py-1 rounded-full text-sm font-bold ${
-                          item.totalScore >= 75 ? 'bg-green-100 text-green-700' :
-                          item.totalScore >= 60 ? 'bg-blue-100 text-blue-700' :
-                          item.totalScore >= 40 ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
+                        <div className={`px-3 py-1 rounded-full text-sm font-bold ${item.totalScore >= 75 ? 'bg-green-100 text-green-700' :
+                            item.totalScore >= 60 ? 'bg-blue-100 text-blue-700' :
+                              item.totalScore >= 40 ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-red-100 text-red-700'
+                          }`}>
                           {item.totalScore}%
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          item.application.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                          item.application.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                          item.application.status === 'shortlisted' ? 'bg-blue-100 text-blue-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.application.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                            item.application.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                              item.application.status === 'shortlisted' ? 'bg-blue-100 text-blue-800' :
+                                'bg-yellow-100 text-yellow-800'
+                          }`}>
                           {item.application.status}
                         </span>
                       </td>
@@ -953,8 +951,8 @@ export default function ClientApplications() {
                   <div className="flex items-start gap-6">
                     <div className="w-24 h-24 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 ring-4 ring-white shadow-lg">
                       {artistProfiles[selectedApplication.artist_email].profile_photo_url ? (
-                        <img 
-                          src={artistProfiles[selectedApplication.artist_email].profile_photo_url} 
+                        <img
+                          src={artistProfiles[selectedApplication.artist_email].profile_photo_url}
                           alt={artistProfiles[selectedApplication.artist_email].full_name}
                           className="w-full h-full object-cover"
                         />
@@ -973,18 +971,17 @@ export default function ClientApplications() {
                           </p>
                           {artistSubscriptions[selectedApplication.artist_email] && (
                             <div className="mt-2">
-                              <SubscriptionBadge 
+                              <SubscriptionBadge
                                 subscription={artistSubscriptions[selectedApplication.artist_email].subscription}
                                 package={artistSubscriptions[selectedApplication.artist_email].package}
                               />
                             </div>
                           )}
                         </div>
-                        <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          artistProfiles[selectedApplication.artist_email].availability_status === 'available' ? 'bg-green-100 text-green-700' :
-                          artistProfiles[selectedApplication.artist_email].availability_status === 'busy' ? 'bg-red-100 text-red-700' :
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
+                        <div className={`px-3 py-1 rounded-full text-sm font-medium ${artistProfiles[selectedApplication.artist_email].availability_status === 'available' ? 'bg-green-100 text-green-700' :
+                            artistProfiles[selectedApplication.artist_email].availability_status === 'busy' ? 'bg-red-100 text-red-700' :
+                              'bg-yellow-100 text-yellow-700'
+                          }`}>
                           {artistProfiles[selectedApplication.artist_email].availability_status || 'Unknown'}
                         </div>
                       </div>
@@ -1178,15 +1175,35 @@ export default function ClientApplications() {
                       {artistPortfolios[selectedApplication.artist_email].map((clip) => (
                         <div key={clip.id} className="bg-gray-50 rounded-lg overflow-hidden">
                           <div className="aspect-video bg-gray-300 flex items-center justify-center relative">
-                            {clip.thumbnail_url ? (
+                            {clip.video_embed_url ? (
+                              <>
+                                {clip.video_embed_url.includes('youtube.com') || clip.video_embed_url.includes('youtu.be') ? (
+                                  <iframe
+                                    src={clip.video_embed_url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                                    className="w-full h-full"
+                                    allowFullScreen
+                                    title={clip.title}
+                                  />
+                                ) : clip.video_embed_url.includes('vimeo.com') ? (
+                                  <iframe
+                                    src={clip.video_embed_url.replace('vimeo.com/', 'player.vimeo.com/video/')}
+                                    className="w-full h-full"
+                                    allowFullScreen
+                                    title={clip.title}
+                                  />
+                                ) : (
+                                  <video
+                                    src={clip.video_embed_url}
+                                    controls
+                                    className="w-full h-full object-cover"
+                                    title={clip.title}
+                                  />
+                                )}
+                              </>
+                            ) : clip.thumbnail_url ? (
                               <img src={clip.thumbnail_url} alt={clip.title} className="w-full h-full object-cover" />
                             ) : (
                               <Play className="w-8 h-8 text-gray-500" />
-                            )}
-                            {clip.video_embed_url && (
-                              <a href={clip.video_embed_url} target="_blank" rel="noopener noreferrer" className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/50 transition-colors">
-                                <Play className="w-12 h-12 text-white" />
-                              </a>
                             )}
                           </div>
                           <div className="p-3">
@@ -1234,12 +1251,11 @@ export default function ClientApplications() {
                     </div>
                     <div>
                       <p className="text-gray-600">Status</p>
-                      <p className={`font-medium ${
-                        selectedApplication.status === 'accepted' ? 'text-green-600' :
-                        selectedApplication.status === 'rejected' ? 'text-red-600' :
-                        selectedApplication.status === 'shortlisted' ? 'text-blue-600' :
-                        'text-yellow-600'
-                      }`}>
+                      <p className={`font-medium ${selectedApplication.status === 'accepted' ? 'text-green-600' :
+                          selectedApplication.status === 'rejected' ? 'text-red-600' :
+                            selectedApplication.status === 'shortlisted' ? 'text-blue-600' :
+                              'text-yellow-600'
+                        }`}>
                         {selectedApplication.status}
                       </p>
                     </div>
