@@ -2,10 +2,18 @@ import React from 'react'
 import { Cookie, Settings, Shield, Info, CheckCircle, XCircle } from 'lucide-react'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 export default function CookiePolicy() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOMetaTags
+        title="Cookie Policy — SmartGigs Kenya"
+        description="Learn how SmartGigs Kenya uses cookies to improve your experience. Information about cookie types, management, and third-party cookies."
+        keywords="cookie policy, cookies, privacy, smartgigs kenya"
+        ogImage="https://smartgigs.co.ke/og-cookie.jpg"
+        ogType="website"
+      />
       <Navbar />
 
       {/* Header */}

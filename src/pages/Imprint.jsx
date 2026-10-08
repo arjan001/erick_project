@@ -2,10 +2,18 @@ import React from 'react'
 import { Building2, Mail, Phone, MapPin, Globe } from 'lucide-react'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 export default function Imprint() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOMetaTags
+        title="Imprint — SmartGigs Kenya"
+        description="Legal information and company details for SmartGigs Kenya. Find our business address, contact information, and legal disclaimers."
+        keywords="imprint, legal information, company details, smartgigs kenya"
+        ogImage="https://smartgigs.co.ke/og-imprint.jpg"
+        ogType="website"
+      />
       <Navbar />
 
       {/* Header */}

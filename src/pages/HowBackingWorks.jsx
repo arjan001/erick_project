@@ -4,6 +4,7 @@ import { Lightbulb, Handshake, Building2, Users, Trophy, ArrowRight } from 'luci
 import { Button } from '@/components/ui/button'
 import { Link } from 'react-router-dom'
 import { createPageUrl } from '@/shared/utils/routing'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 export default function HowBackingWorks() {
   const backingTypes = [
@@ -40,139 +41,148 @@ export default function HowBackingWorks() {
   ]
 
   return (
-    <div className="min-h-screen bg-white py-12">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-16">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-black">How Backing Works</h1>
-          <p className="text-lg text-gray-600 max-w-3xl">
-            Backing is about collaboration and mutual benefit. Eric Rabar connects creative projects with supporters who share 
-            values, vision, and ambition. We facilitate introductions and partnerships—we don't handle payments, equity, or financial arrangements.
-          </p>
-        </div>
+    <>
+      <SEOMetaTags
+        title="How Backing Works — SmartGigs Kenya"
+        description="Learn about different types of project backing including sponsorship, co-production, cultural support, and strategic partnerships on SmartGigs Kenya."
+        keywords="backing, sponsorship, co-production, project funding, smartgigs kenya"
+        ogImage="https://smartgigs.co.ke/og-backing.jpg"
+        ogType="website"
+      />
+      <div className="min-h-screen bg-white py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="mb-16">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-black">How Backing Works</h1>
+            <p className="text-lg text-gray-600 max-w-3xl">
+              Backing is about collaboration and mutual benefit. Eric Rabar connects creative projects with supporters who share
+              values, vision, and ambition. We facilitate introductions and partnerships—we don't handle payments, equity, or financial arrangements.
+            </p>
+          </div>
 
-        {/* Backing Types */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          {backingTypes.map((type, idx) => {
-            const Icon = type.icon
-            return (
-              <Card key={idx} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-6 h-6 text-amber-700" />
+          {/* Backing Types */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+            {backingTypes.map((type, idx) => {
+              const Icon = type.icon
+              return (
+                <Card key={idx} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-6 h-6 text-amber-700" />
+                      </div>
+                      <CardTitle className="text-xl">{type.title}</CardTitle>
                     </div>
-                    <CardTitle className="text-xl">{type.title}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-700">{type.description}</p>
-                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <p className="text-sm text-gray-600">
-                      <span className="font-semibold text-gray-900">Example: </span>
-                      {type.example}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-
-        {/* How Eric Rabar Helps */}
-        <div className="bg-gray-50 rounded-2xl p-8 md:p-12 mb-16 border border-gray-200">
-          <h2 className="text-2xl font-bold mb-8 text-black">Eric Rabar's Role</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold mb-3 text-black">What Eric Rabar Does</h3>
-              <ul className="space-y-3 text-gray-700">
-                <li className="flex gap-3">
-                  <ArrowRight className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <span>Curates projects seeking backing and matches them with suitable supporters</span>
-                </li>
-                <li className="flex gap-3">
-                  <ArrowRight className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <span>Facilitates introductions between creative teams and potential partners</span>
-                </li>
-                <li className="flex gap-3">
-                  <ArrowRight className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <span>Provides a platform to showcase projects and build creative networks</span>
-                </li>
-                <li className="flex gap-3">
-                  <ArrowRight className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <span>Manages project visibility and approves backing projects</span>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-3 text-black">What Eric Rabar Does NOT Do</h3>
-              <ul className="space-y-3 text-gray-700">
-                <li className="flex gap-3">
-                  <span className="text-gray-400 font-bold">✗</span>
-                  <span>Handle financial transactions or payments</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-gray-400 font-bold">✗</span>
-                  <span>Manage equity stakes or ownership arrangements</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-gray-400 font-bold">✗</span>
-                  <span>Negotiate contracts or legal terms</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-gray-400 font-bold">✗</span>
-                  <span>Guarantee financial returns or outcomes</span>
-                </li>
-              </ul>
-            </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-gray-700">{type.description}</p>
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <p className="text-sm text-gray-600">
+                        <span className="font-semibold text-gray-900">Example: </span>
+                        {type.example}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
-        </div>
 
-        {/* Process */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-bold mb-8 text-black">The Process</h2>
-          <div className="space-y-4">
-            {[
-              { step: '1', title: 'Project Submission', desc: 'A creator submits their project and marks it as "Open to Backing" with details about what support they\'re seeking.' },
-              { step: '2', title: 'Eric Rabar Review', desc: 'We review the project to ensure it aligns with our community standards and is clearly articulated.' },
-              { step: '3', title: 'Visibility & Discovery', desc: 'Approved backing projects appear on our platform, visible to potential supporters and partners.' },
-              { step: '4', title: 'Introductions', desc: 'When we identify aligned interests, we facilitate introductions between creators and potential backing partners.' },
-              { step: '5', title: 'Direct Negotiation', desc: 'All partnership terms, agreements, and arrangements are handled directly between the parties involved.' },
-              { step: '6', title: 'Collaboration & Visibility', desc: 'Partners collaborate on the project. Eric Rabar continues to provide production support and creative services.' }
-            ].map((item, idx) => (
-              <div key={idx} className="flex gap-6 pb-6 border-b border-gray-200 last:border-b-0">
-                <div className="w-10 h-10 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold flex-shrink-0">
-                  {item.step}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-black mb-1">{item.title}</h3>
-                  <p className="text-gray-600">{item.desc}</p>
-                </div>
+          {/* How Eric Rabar Helps */}
+          <div className="bg-gray-50 rounded-2xl p-8 md:p-12 mb-16 border border-gray-200">
+            <h2 className="text-2xl font-bold mb-8 text-black">Eric Rabar's Role</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-black">What Eric Rabar Does</h3>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex gap-3">
+                    <ArrowRight className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <span>Curates projects seeking backing and matches them with suitable supporters</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <ArrowRight className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <span>Facilitates introductions between creative teams and potential partners</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <ArrowRight className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <span>Provides a platform to showcase projects and build creative networks</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <ArrowRight className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <span>Manages project visibility and approves backing projects</span>
+                  </li>
+                </ul>
               </div>
-            ))}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-black">What Eric Rabar Does NOT Do</h3>
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex gap-3">
+                    <span className="text-gray-400 font-bold">✗</span>
+                    <span>Handle financial transactions or payments</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="text-gray-400 font-bold">✗</span>
+                    <span>Manage equity stakes or ownership arrangements</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="text-gray-400 font-bold">✗</span>
+                    <span>Negotiate contracts or legal terms</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="text-gray-400 font-bold">✗</span>
+                    <span>Guarantee financial returns or outcomes</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* CTA */}
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-8 md:p-12 border border-amber-200 text-center">
-          <h2 className="text-2xl font-bold mb-4 text-black">Ready to Explore Backing Opportunities?</h2>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Browse projects seeking support or post your own project to connect with potential backing partners.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to={createPageUrl('BackedProjects')}>
-              <Button className="bg-amber-600 hover:bg-amber-700">
-                Browse Backed Projects
-              </Button>
-            </Link>
-            <Link to={createPageUrl('SubmitProject')}>
-              <Button variant="outline" className="border-amber-600 text-amber-600 hover:bg-amber-50">
-                Post Your Project
-              </Button>
-            </Link>
+          {/* Process */}
+          <div className="mb-16">
+            <h2 className="text-2xl font-bold mb-8 text-black">The Process</h2>
+            <div className="space-y-4">
+              {[
+                { step: '1', title: 'Project Submission', desc: 'A creator submits their project and marks it as "Open to Backing" with details about what support they\'re seeking.' },
+                { step: '2', title: 'Eric Rabar Review', desc: 'We review the project to ensure it aligns with our community standards and is clearly articulated.' },
+                { step: '3', title: 'Visibility & Discovery', desc: 'Approved backing projects appear on our platform, visible to potential supporters and partners.' },
+                { step: '4', title: 'Introductions', desc: 'When we identify aligned interests, we facilitate introductions between creators and potential backing partners.' },
+                { step: '5', title: 'Direct Negotiation', desc: 'All partnership terms, agreements, and arrangements are handled directly between the parties involved.' },
+                { step: '6', title: 'Collaboration & Visibility', desc: 'Partners collaborate on the project. Eric Rabar continues to provide production support and creative services.' }
+              ].map((item, idx) => (
+                <div key={idx} className="flex gap-6 pb-6 border-b border-gray-200 last:border-b-0">
+                  <div className="w-10 h-10 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold flex-shrink-0">
+                    {item.step}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-black mb-1">{item.title}</h3>
+                    <p className="text-gray-600">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-8 md:p-12 border border-amber-200 text-center">
+            <h2 className="text-2xl font-bold mb-4 text-black">Ready to Explore Backing Opportunities?</h2>
+            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+              Browse projects seeking support or post your own project to connect with potential backing partners.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to={createPageUrl('BackedProjects')}>
+                <Button className="bg-amber-600 hover:bg-amber-700">
+                  Browse Backed Projects
+                </Button>
+              </Link>
+              <Link to={createPageUrl('SubmitProject')}>
+                <Button variant="outline" className="border-amber-600 text-amber-600 hover:bg-amber-50">
+                  Post Your Project
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }

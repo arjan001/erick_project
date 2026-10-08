@@ -2,10 +2,18 @@ import React from 'react'
 import { Globe, Download, Trash2, FileText, UserCheck } from 'lucide-react'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 export default function GDPR() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOMetaTags
+        title="GDPR Compliance — SmartGigs Kenya"
+        description="Learn about SmartGigs Kenya's GDPR compliance, your data rights, and how we protect your personal information under EU regulations."
+        keywords="GDPR, data protection, privacy rights, smartgigs kenya"
+        ogImage="https://smartgigs.co.ke/og-gdpr.jpg"
+        ogType="website"
+      />
       <Navbar />
 
       {/* Header */}
