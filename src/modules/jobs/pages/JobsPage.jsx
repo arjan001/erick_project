@@ -4,11 +4,16 @@ import { Job, Application, Artist, ConnectsTransaction, Project, JobInvitation, 
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Euro, ChevronDown, Calendar, Building2, Users, Star, ExternalLink, Crown, Lock, Eye, EyeOff, AlertCircle, CheckCircle, XCircle, Hourglass, FileText, Mail, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
-import { base44 } from '@/api/base44Client';
 import { supabase } from '@/lib/supabase';
 import skillsAndRoles from '@/lib/skillsAndRoles.json';
 import confetti from 'canvas-confetti';
 import { canApplyForJobs } from '@/services/subscriptionService';
+
+function getDeviceType(userAgent) {
+  if (/Mobile|Android|iP(ad|hone)/i.test(userAgent)) return 'mobile';
+  if (/Tablet|iPad/i.test(userAgent)) return 'tablet';
+  return 'desktop';
+}
 
 export default function Jobs() {
   const [jobs, setJobs] = useState([]);
@@ -389,29 +394,43 @@ export default function Jobs() {
       if (job.isProject) {
         // Insert into project_views - unique constraint will prevent duplicates
         try {
+          const ipResponse = await fetch('https://api.ipify.org?format=json');
+          const { ip } = await ipResponse.json();
+          const userAgent = navigator.userAgent;
+          const deviceType = getDeviceType(userAgent);
+
           await supabase.from('project_views').insert({
             project_id: job.id,
             user_id: authUser?.id || null,
-            ip_address: null // TODO: Add IP tracking if needed
+            ip_address: ip,
+            user_agent: userAgent,
+            device_type: deviceType,
           });
         } catch (err) {
           // Ignore duplicate key errors - view already tracked
           if (err.code !== '23505') {
-            console.error('Error tracking project view:', err);
+            // Silent fail - tracking is not critical
           }
         }
       } else {
         // Insert into job_views - unique constraint will prevent duplicates
         try {
+          const ipResponse = await fetch('https://api.ipify.org?format=json');
+          const { ip } = await ipResponse.json();
+          const userAgent = navigator.userAgent;
+          const deviceType = getDeviceType(userAgent);
+
           await supabase.from('job_views').insert({
             job_id: job.id,
             user_id: authUser?.id || null,
-            ip_address: null // TODO: Add IP tracking if needed
+            ip_address: ip,
+            user_agent: userAgent,
+            device_type: deviceType,
           });
         } catch (err) {
           // Ignore duplicate key errors - view already tracked
           if (err.code !== '23505') {
-            console.error('Error tracking job view:', err);
+            // Silent fail - tracking is not critical
           }
         }
       }

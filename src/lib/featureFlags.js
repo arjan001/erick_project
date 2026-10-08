@@ -1,10 +1,13 @@
 /**
  * Feature Flags for SmartGigs Kenya
  * These control which features are enabled/disabled
+ * Stored in Supabase database
  */
 
-// Default values (fallback if admin settings not loaded)
-export const FEATURE_FLAGS = {
+import { FeatureFlag } from '@/lib/supabaseEntities';
+
+// Default values (fallback if database not loaded)
+export const DEFAULT_FEATURE_FLAGS = {
   // Actors portal - enabled on launch
   ACTORS_PORTAL_ENABLED: true,
 
@@ -21,38 +24,103 @@ export const FEATURE_FLAGS = {
   COOKIE_BANNER_ENABLED: false,
 };
 
+// Cached feature flags
+let cachedFlags = null;
+let cacheExpiry = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Fetch feature flags from database
+ */
+async function fetchFeatureFlags() {
+  try {
+    const flags = await FeatureFlag.list('-created_at', 100);
+    const flagMap = {};
+    flags.forEach(flag => {
+      flagMap[flag.flag_key] = flag.flag_value;
+    });
+    return flagMap;
+  } catch (error) {
+    console.error('Error fetching feature flags:', error);
+    return {};
+  }
+}
+
 /**
  * Check if a feature is enabled
- * First checks admin settings from localStorage, falls back to defaults
+ * First checks database (with cache), falls back to defaults
  */
-export function isFeatureEnabled(featureKey) {
-  // Try to get from admin settings
-  try {
-    const adminSettings = localStorage.getItem('admin_settings');
-    if (adminSettings) {
-      const settings = JSON.parse(adminSettings);
-      // Map feature keys to setting keys
-      const settingMap = {
-        'CREW_PORTAL_ENABLED': 'enableCrewPortal',
-        'SHOP_ENABLED': 'enableMarketplace',
-        'AUCTIONS_ENABLED': 'enableMarketplace',
-        'COOKIE_BANNER_ENABLED': 'enableCookieBanner',
-      };
-      const settingKey = settingMap[featureKey];
-      if (settingKey && settings[settingKey] !== undefined) {
-        return settings[settingKey] === 'true' || settings[settingKey] === true;
-      }
-    }
-  } catch (err) {
-    console.error('Error reading admin settings for feature flag:', err);
+export async function isFeatureEnabled(featureKey) {
+  // Check cache first
+  if (cachedFlags && cacheExpiry && Date.now() < cacheExpiry) {
+    const value = cachedFlags[featureKey];
+    if (value !== undefined) return value;
   }
+
+  // Fetch from database
+  const flags = await fetchFeatureFlags();
+  cachedFlags = flags;
+  cacheExpiry = Date.now() + CACHE_DURATION;
+
+  const value = flags[featureKey];
+  if (value !== undefined) return value;
+
   // Fallback to default
-  return FEATURE_FLAGS[featureKey] || false;
+  return DEFAULT_FEATURE_FLAGS[featureKey] || false;
+}
+
+/**
+ * Synchronous version for use in render (uses cached value only)
+ */
+export function isFeatureEnabledSync(featureKey) {
+  if (cachedFlags && cacheExpiry && Date.now() < cacheExpiry) {
+    const value = cachedFlags[featureKey];
+    if (value !== undefined) return value;
+  }
+  return DEFAULT_FEATURE_FLAGS[featureKey] || false;
 }
 
 /**
  * Get all feature flags (for admin panel)
  */
-export function getAllFeatureFlags() {
-  return { ...FEATURE_FLAGS };
+export async function getAllFeatureFlags() {
+  const flags = await fetchFeatureFlags();
+  // Merge with defaults
+  return { ...DEFAULT_FEATURE_FLAGS, ...flags };
+}
+
+/**
+ * Update a feature flag (admin only)
+ */
+export async function setFeatureFlag(flagKey, flagValue, description) {
+  try {
+    const existing = await FeatureFlag.filter({ flag_key: flagKey });
+    if (existing && existing.length > 0) {
+      await FeatureFlag.update(existing[0].id, {
+        flag_value: flagValue,
+        description: description || existing[0].description,
+      });
+    } else {
+      await FeatureFlag.create({
+        flag_key: flagKey,
+        flag_value: flagValue,
+        description: description || '',
+      });
+    }
+    // Clear cache
+    cachedFlags = null;
+    cacheExpiry = null;
+    return true;
+  } catch (error) {
+    console.error('Error setting feature flag:', error);
+    return false;
+  }
+}
+
+/**
+ * Invalidate cache (call after updating flags)
+ */
+export function invalidateFeatureFlagCache() {
+  cachedFlags = null;
+  cacheExpiry = null;
 }

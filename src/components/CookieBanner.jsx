@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { isFeatureEnabled } from '@/lib/featureFlags';
+import { isFeatureEnabledSync } from '@/lib/featureFlags';
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     // Check if cookie banner is enabled via feature flag
-    if (!isFeatureEnabled('COOKIE_BANNER_ENABLED')) return;
+    if (!isFeatureEnabledSync('COOKIE_BANNER_ENABLED')) return;
 
     const consent = localStorage.getItem('smartgigs_cookie_consent');
     if (!consent) setVisible(true);

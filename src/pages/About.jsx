@@ -8,7 +8,7 @@ import SEOMetaTags from '@/components/SEOMetaTags';
 import { ParallaxBackground } from '@/components/landing/backstage/Parallax';
 import CreativeTeamCarousel from '@/components/landing/backstage/CreativeTeamCarousel';
 import CTASection from '@/components/landing/backstage/CTASection';
-import { isFeatureEnabled } from '@/lib/featureFlags';
+import { isFeatureEnabledSync } from '@/lib/featureFlags';
 
 const audiences = [
   'a filmmaker seeking the perfect cast',
@@ -145,7 +145,7 @@ export default function About() {
             <div className="rounded-3xl border border-black/5 p-8">
               <h3 className="text-xl font-bold text-black">Actors &amp; Crew</h3>
               <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-[#4F46E5]">
-                Actors portal open {isFeatureEnabled('CREW_PORTAL_ENABLED') ? '· Crew portal open' : '· Crew portal opening soon'}
+                Actors portal open {isFeatureEnabledSync('CREW_PORTAL_ENABLED') ? '· Crew portal open' : '· Crew portal opening soon'}
               </p>
               <ul className="mt-5 space-y-3 text-sm leading-relaxed text-gray-700">
                 {forTalent.map((t) => (

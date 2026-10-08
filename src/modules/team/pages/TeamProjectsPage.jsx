@@ -9,6 +9,12 @@ import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import confetti from 'canvas-confetti';
 
+function getDeviceType(userAgent) {
+  if (/Mobile|Android|iP(ad|hone)/i.test(userAgent)) return 'mobile';
+  if (/Tablet|iPad/i.test(userAgent)) return 'tablet';
+  return 'desktop';
+}
+
 export default function TeamProjectsPage() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
@@ -199,29 +205,43 @@ export default function TeamProjectsPage() {
       if (project.isProject) {
         // Insert into project_views - unique constraint will prevent duplicates
         try {
+          const ipResponse = await fetch('https://api.ipify.org?format=json');
+          const { ip } = await ipResponse.json();
+          const userAgent = navigator.userAgent;
+          const deviceType = getDeviceType(userAgent);
+
           await supabase.from('project_views').insert({
             project_id: project.id,
             user_id: authUser?.id || null,
-            ip_address: null // TODO: Add IP tracking if needed
+            ip_address: ip,
+            user_agent: userAgent,
+            device_type: deviceType,
           });
         } catch (err) {
           // Ignore duplicate key errors - view already tracked
           if (err.code !== '23505') {
-            console.error('Error tracking project view:', err);
+            // Silent fail - tracking is not critical
           }
         }
       } else {
         // Insert into job_views - unique constraint will prevent duplicates
         try {
+          const ipResponse = await fetch('https://api.ipify.org?format=json');
+          const { ip } = await ipResponse.json();
+          const userAgent = navigator.userAgent;
+          const deviceType = getDeviceType(userAgent);
+
           await supabase.from('job_views').insert({
             job_id: project.id,
             user_id: authUser?.id || null,
-            ip_address: null // TODO: Add IP tracking if needed
+            ip_address: ip,
+            user_agent: userAgent,
+            device_type: deviceType,
           });
         } catch (err) {
           // Ignore duplicate key errors - view already tracked
           if (err.code !== '23505') {
-            console.error('Error tracking job view:', err);
+            // Silent fail - tracking is not critical
           }
         }
       }
@@ -304,31 +324,28 @@ export default function TeamProjectsPage() {
           <div className="flex gap-6 border-b border-gray-200">
             <button
               onClick={() => setActiveTab('board')}
-              className={`pb-4 font-semibold text-base transition-colors ${
-                activeTab === 'board'
-                  ? 'text-black border-b-2 border-black -mb-0.5'
-                  : 'text-gray-600 hover:text-black'
-              }`}
+              className={`pb-4 font-semibold text-base transition-colors ${activeTab === 'board'
+                ? 'text-black border-b-2 border-black -mb-0.5'
+                : 'text-gray-600 hover:text-black'
+                }`}
             >
               Job Board
             </button>
             <button
               onClick={() => setActiveTab('applications')}
-              className={`pb-4 font-semibold text-base transition-colors ${
-                activeTab === 'applications'
-                  ? 'text-black border-b-2 border-black -mb-0.5'
-                  : 'text-gray-600 hover:text-black'
-              }`}
+              className={`pb-4 font-semibold text-base transition-colors ${activeTab === 'applications'
+                ? 'text-black border-b-2 border-black -mb-0.5'
+                : 'text-gray-600 hover:text-black'
+                }`}
             >
               Applications {applications.length > 0 && `(${applications.length})`}
             </button>
             <button
               onClick={() => setActiveTab('invitations')}
-              className={`pb-4 font-semibold text-base transition-colors ${
-                activeTab === 'invitations'
-                  ? 'text-black border-b-2 border-black -mb-0.5'
-                  : 'text-gray-600 hover:text-black'
-              }`}
+              className={`pb-4 font-semibold text-base transition-colors ${activeTab === 'invitations'
+                ? 'text-black border-b-2 border-black -mb-0.5'
+                : 'text-gray-600 hover:text-black'
+                }`}
             >
               Invitations {invitations.length > 0 && `(${invitations.length})`}
             </button>
@@ -365,222 +382,220 @@ export default function TeamProjectsPage() {
                 ) : (
                   <div className="space-y-3">
                     {filteredProjects.map((project) => (
-                    <button
-                      key={project.id}
-                      onClick={() => handleProjectClick(project)}
-                      className={`w-full text-left bg-white rounded-2xl border-2 transition-all overflow-hidden shadow-sm hover:shadow-lg ${
-                        selectedProject?.id === project.id
+                      <button
+                        key={project.id}
+                        onClick={() => handleProjectClick(project)}
+                        className={`w-full text-left bg-white rounded-2xl border-2 transition-all overflow-hidden shadow-sm hover:shadow-lg ${selectedProject?.id === project.id
                           ? 'border-black shadow-md ring-2 ring-black/5'
                           : 'border-gray-100 hover:border-gray-300'
-                      }`}
-                    >
-                      {/* Job Card Image */}
-                      <div className="relative h-32 bg-gray-100">
-                        {project.image_url ? (
-                          <img
-                            src={project.image_url}
-                            alt={project.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                            <Briefcase className="w-8 h-8 text-gray-300" />
+                          }`}
+                      >
+                        {/* Job Card Image */}
+                        <div className="relative h-32 bg-gray-100">
+                          {project.image_url ? (
+                            <img
+                              src={project.image_url}
+                              alt={project.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                              <Briefcase className="w-8 h-8 text-gray-300" />
+                            </div>
+                          )}
+                          {project.isProject && (
+                            <div className="absolute top-2 left-2 bg-black text-white text-xs font-bold px-2 py-1 rounded-full">
+                              Project
+                            </div>
+                          )}
+                          <div className="absolute bottom-2 right-2 bg-white/95 backdrop-blur text-black text-xs font-bold px-2 py-1 rounded-full shadow-sm">
+                            {project.budget_type === 'Hourly' ? '€/hr' : project.budget_type === 'Daily' ? '€/day' : 'Fixed'}
                           </div>
-                        )}
-                        {project.isProject && (
-                          <div className="absolute top-2 left-2 bg-black text-white text-xs font-bold px-2 py-1 rounded-full">
-                            Project
-                          </div>
-                        )}
-                        <div className="absolute bottom-2 right-2 bg-white/95 backdrop-blur text-black text-xs font-bold px-2 py-1 rounded-full shadow-sm">
-                          {project.budget_type === 'Hourly' ? '€/hr' : project.budget_type === 'Daily' ? '€/day' : 'Fixed'}
+                          {project.requires_subscription && (
+                            <div className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-xs font-bold px-2 py-1 rounded-full shadow-sm">
+                              Premium
+                            </div>
+                          )}
                         </div>
-                        {project.requires_subscription && (
-                          <div className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-xs font-bold px-2 py-1 rounded-full shadow-sm">
-                            Premium
-                          </div>
-                        )}
-                      </div>
 
-                      {/* Job Card Content */}
-                      <div className="p-3">
-                        <div className="flex items-start gap-2 mb-2">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-gray-50">
-                            <Briefcase className="w-4 h-4 text-gray-400" />
+                        {/* Job Card Content */}
+                        <div className="p-3">
+                          <div className="flex items-start gap-2 mb-2">
+                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-gray-50">
+                              <Briefcase className="w-4 h-4 text-gray-400" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-xs text-gray-900 truncate">{project.client_name}</div>
+                              <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                                <MapPin className="w-2 h-2" />
+                                <span className="truncate">{project.location || 'Remote'}</span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-bold text-xs text-gray-900 truncate">{project.client_name}</div>
-                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                              <MapPin className="w-2 h-2" />
-                              <span className="truncate">{project.location || 'Remote'}</span>
+
+                          <h3 className="font-bold text-gray-900 mb-1 text-xs line-clamp-2 leading-tight">{project.title}</h3>
+
+                          {/* View Count */}
+                          {project.view_count > 0 && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                              <Eye className="w-2 h-2" />
+                              <span>{project.view_count} view{project.view_count !== 1 ? 's' : ''}</span>
+                            </div>
+                          )}
+
+                          {/* Skills/Roles Tags */}
+                          {project.roles_needed && project.roles_needed.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {project.roles_needed.slice(0, 2).map((role) => (
+                                <span key={role} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full truncate max-w-[80px]">
+                                  {role}
+                                </span>
+                              ))}
+                              {project.roles_needed.length > 2 && (
+                                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
+                                  +{project.roles_needed.length - 2}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                            <div className="flex items-center gap-1">
+                              <div className="font-bold text-gray-900 text-xs">
+                                {project.budget_type === 'Hourly' ? `€${project.budget_min}/hr` : project.budget_type === 'Daily' ? `€${project.budget_min}/day` : `€${project.budget_min}`}
+                              </div>
+                              {project.budget_max && project.budget_max > project.budget_min && project.budget_type !== 'Hourly' && project.budget_type !== 'Daily' && (
+                                <div className="text-[10px] text-gray-500">- €{project.budget_max}</div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                              <Clock className="w-2 h-2" />
+                              {project.posted_at ? new Date(project.posted_at).toLocaleDateString() : 'Recently'}
                             </div>
                           </div>
                         </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-                        <h3 className="font-bold text-gray-900 mb-1 text-xs line-clamp-2 leading-tight">{project.title}</h3>
-
-                        {/* View Count */}
-                        {project.view_count > 0 && (
-                          <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                            <Eye className="w-2 h-2" />
-                            <span>{project.view_count} view{project.view_count !== 1 ? 's' : ''}</span>
-                          </div>
-                        )}
-
-                        {/* Skills/Roles Tags */}
-                        {project.roles_needed && project.roles_needed.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            {project.roles_needed.slice(0, 2).map((role) => (
-                              <span key={role} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full truncate max-w-[80px]">
-                                {role}
-                              </span>
-                            ))}
-                            {project.roles_needed.length > 2 && (
-                              <span className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full">
-                                +{project.roles_needed.length - 2}
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                          <div className="flex items-center gap-1">
-                            <div className="font-bold text-gray-900 text-xs">
-                              {project.budget_type === 'Hourly' ? `€${project.budget_min}/hr` : project.budget_type === 'Daily' ? `€${project.budget_min}/day` : `€${project.budget_min}`}
-                            </div>
-                            {project.budget_max && project.budget_max > project.budget_min && project.budget_type !== 'Hourly' && project.budget_type !== 'Daily' && (
-                              <div className="text-[10px] text-gray-500">- €{project.budget_max}</div>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1 text-[10px] text-gray-400">
-                            <Clock className="w-2 h-2" />
-                            {project.posted_at ? new Date(project.posted_at).toLocaleDateString() : 'Recently'}
-                          </div>
+              {/* Right Side - Details Panel */}
+              <div className="w-1/2 overflow-y-auto p-6 bg-gray-50">
+                {selectedProject ? (
+                  <div className="bg-white rounded-2xl shadow-sm p-6">
+                    {/* Header with Image */}
+                    <div className="relative h-48 bg-gray-100 rounded-xl mb-6 overflow-hidden">
+                      {selectedProject.image_url ? (
+                        <img
+                          src={selectedProject.image_url}
+                          alt={selectedProject.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                          <Briefcase className="w-16 h-16 text-gray-400" />
                         </div>
+                      )}
+                      {selectedProject.isProject && (
+                        <div className="absolute top-3 left-3 bg-black text-white text-sm font-bold px-3 py-1.5 rounded">
+                          Project
+                        </div>
+                      )}
+                      <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur text-black text-sm font-bold px-3 py-1.5 rounded shadow">
+                        {selectedProject.budget_type === 'Hourly' ? 'Hourly Rate' : selectedProject.budget_type === 'Daily' ? 'Daily Rate' : 'Fixed Price'}
                       </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Right Side - Details Panel */}
-            <div className="w-1/2 overflow-y-auto p-6 bg-gray-50">
-              {selectedProject ? (
-                <div className="bg-white rounded-2xl shadow-sm p-6">
-                  {/* Header with Image */}
-                  <div className="relative h-48 bg-gray-100 rounded-xl mb-6 overflow-hidden">
-                    {selectedProject.image_url ? (
-                      <img
-                        src={selectedProject.image_url}
-                        alt={selectedProject.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                        <Briefcase className="w-16 h-16 text-gray-400" />
-                      </div>
-                    )}
-                    {selectedProject.isProject && (
-                      <div className="absolute top-3 left-3 bg-black text-white text-sm font-bold px-3 py-1.5 rounded">
-                        Project
-                      </div>
-                    )}
-                    <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur text-black text-sm font-bold px-3 py-1.5 rounded shadow">
-                      {selectedProject.budget_type === 'Hourly' ? 'Hourly Rate' : selectedProject.budget_type === 'Daily' ? 'Daily Rate' : 'Fixed Price'}
-                    </div>
-                    {selectedProject.requires_subscription && (
-                      <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-sm font-bold px-3 py-1.5 rounded shadow">
-                        Premium
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Client Info */}
-                  <div className="flex items-start gap-4 mb-6">
-                    <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      <Briefcase className="w-6 h-6 text-gray-400" />
-                    </div>
-                    <div>
-                      <h1 className="text-2xl font-bold text-black mb-1">{selectedProject.title}</h1>
-                      <p className="text-gray-600 text-sm font-medium">{selectedProject.client_name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-xs text-gray-500">Verified Client</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Quick Stats */}
-                  <div className="grid grid-cols-3 gap-3 mb-6">
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <div className="text-xs text-gray-600 uppercase font-bold mb-1">Budget</div>
-                      <div className="text-lg font-bold text-black">
-                        {selectedProject.budget_type === 'Hourly' ? `€${selectedProject.budget_min}/hr` : selectedProject.budget_type === 'Daily' ? `€${selectedProject.budget_min}/day` : `€${selectedProject.budget_min}`}
-                      </div>
-                      {selectedProject.budget_max && selectedProject.budget_max > selectedProject.budget_min && selectedProject.budget_type !== 'Hourly' && selectedProject.budget_type !== 'Daily' && (
-                        <div className="text-xs text-gray-500">up to €{selectedProject.budget_max}</div>
+                      {selectedProject.requires_subscription && (
+                        <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-sm font-bold px-3 py-1.5 rounded shadow">
+                          Premium
+                        </div>
                       )}
                     </div>
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <div className="text-xs text-gray-600 uppercase font-bold mb-1">Location</div>
-                      <div className="text-sm font-bold text-black truncate">{selectedProject.location}</div>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <div className="text-xs text-gray-600 uppercase font-bold mb-1">Duration</div>
-                      <div className="text-sm font-bold text-black">{selectedProject.duration || 'Flexible'}</div>
-                    </div>
-                  </div>
 
-                  {/* Full Description */}
-                  <div className="mb-6">
-                    <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
-                      <span className="w-1 h-5 bg-black rounded"></span>
-                      Job Description
-                    </h2>
-                    <div className="text-gray-700 leading-relaxed text-sm whitespace-pre-line bg-gray-50 rounded-lg p-4">
-                      {selectedProject.description}
+                    {/* Client Info */}
+                    <div className="flex items-start gap-4 mb-6">
+                      <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        <Briefcase className="w-6 h-6 text-gray-400" />
+                      </div>
+                      <div>
+                        <h1 className="text-2xl font-bold text-black mb-1">{selectedProject.title}</h1>
+                        <p className="text-gray-600 text-sm font-medium">{selectedProject.client_name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                          <span className="text-xs text-gray-500">Verified Client</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Skills Required */}
-                  {selectedProject.skills_required && selectedProject.skills_required.length > 0 && (
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
+                        <div className="text-xs text-gray-600 uppercase font-bold mb-1">Budget</div>
+                        <div className="text-lg font-bold text-black">
+                          {selectedProject.budget_type === 'Hourly' ? `€${selectedProject.budget_min}/hr` : selectedProject.budget_type === 'Daily' ? `€${selectedProject.budget_min}/day` : `€${selectedProject.budget_min}`}
+                        </div>
+                        {selectedProject.budget_max && selectedProject.budget_max > selectedProject.budget_min && selectedProject.budget_type !== 'Hourly' && selectedProject.budget_type !== 'Daily' && (
+                          <div className="text-xs text-gray-500">up to €{selectedProject.budget_max}</div>
+                        )}
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
+                        <div className="text-xs text-gray-600 uppercase font-bold mb-1">Location</div>
+                        <div className="text-sm font-bold text-black truncate">{selectedProject.location}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3 text-center">
+                        <div className="text-xs text-gray-600 uppercase font-bold mb-1">Duration</div>
+                        <div className="text-sm font-bold text-black">{selectedProject.duration || 'Flexible'}</div>
+                      </div>
+                    </div>
+
+                    {/* Full Description */}
                     <div className="mb-6">
                       <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
                         <span className="w-1 h-5 bg-black rounded"></span>
-                        Skills Required
+                        Job Description
                       </h2>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedProject.skills_required.map((skill) => (
-                          <span key={skill} className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-full">
-                            {skill}
-                          </span>
-                        ))}
+                      <div className="text-gray-700 leading-relaxed text-sm whitespace-pre-line bg-gray-50 rounded-lg p-4">
+                        {selectedProject.description}
                       </div>
                     </div>
-                  )}
 
-                  {/* Apply Button */}
-                  <Button
-                    className={`w-full py-3 text-lg font-bold ${
-                      hasAlreadyApplied()
+                    {/* Skills Required */}
+                    {selectedProject.skills_required && selectedProject.skills_required.length > 0 && (
+                      <div className="mb-6">
+                        <h2 className="text-sm font-bold text-gray-900 uppercase mb-3 flex items-center gap-2">
+                          <span className="w-1 h-5 bg-black rounded"></span>
+                          Skills Required
+                        </h2>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedProject.skills_required.map((skill) => (
+                            <span key={skill} className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-full">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Apply Button */}
+                    <Button
+                      className={`w-full py-3 text-lg font-bold ${hasAlreadyApplied()
                         ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
                         : 'bg-black text-white hover:bg-gray-800'
-                    }`}
-                    onClick={handleApply}
-                    disabled={hasAlreadyApplied()}
-                  >
-                    {hasAlreadyApplied() ? 'Application Sent' : 'Apply Now'}
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-500">
-                  Select a job to view details
-                </div>
-              )}
+                        }`}
+                      onClick={handleApply}
+                      disabled={hasAlreadyApplied()}
+                    >
+                      {hasAlreadyApplied() ? 'Application Sent' : 'Apply Now'}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    Select a job to view details
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
         )}
 
         {activeTab === 'applications' && (
@@ -601,12 +616,11 @@ export default function TeamProjectsPage() {
                           <h3 className="font-bold text-gray-900">Application #{app.id.slice(0, 8)}</h3>
                           <p className="text-sm text-gray-600">Applied: {new Date(app.applied_at).toLocaleDateString()}</p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          app.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${app.status === 'accepted' ? 'bg-green-100 text-green-800' :
                           app.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                          app.status === 'reviewed' ? 'bg-blue-100 text-blue-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
+                            app.status === 'reviewed' ? 'bg-blue-100 text-blue-800' :
+                              'bg-yellow-100 text-yellow-800'
+                          }`}>
                           {app.status}
                         </span>
                       </div>
@@ -637,11 +651,10 @@ export default function TeamProjectsPage() {
                           <p className="text-sm text-gray-600">Sent: {new Date(inv.sent_at).toLocaleDateString()}</p>
                           {inv.message && <p className="text-sm text-gray-500 mt-1">{inv.message}</p>}
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          inv.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${inv.status === 'accepted' ? 'bg-green-100 text-green-800' :
                           inv.status === 'declined' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
                           {inv.status}
                         </span>
                       </div>
