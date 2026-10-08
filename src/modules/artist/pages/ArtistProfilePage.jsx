@@ -133,7 +133,7 @@ export default function ArtistProfile() {
     const fetchData = async () => {
       try {
         const artistData = await Artist.filter({ email: user.email });
-        if (artistData.length > 0) {
+        if (artistData && artistData.length > 0) {
           const a = artistData[0];
           setArtist(a);
           setFormData({
@@ -159,7 +159,7 @@ export default function ArtistProfile() {
           const clipsData = await PortfolioClip.filter({
             uploaded_by_type: 'artist', uploaded_by_id: a.id
           });
-          setPortfolioClips(clipsData);
+          setPortfolioClips(clipsData || []);
         } else {
           // Create artist record if it doesn't exist
           console.warn('No artist record found for email:', user.email, 'Creating one...');
@@ -252,7 +252,14 @@ export default function ArtistProfile() {
   };
 
   const handleSaveProfile = async () => {
-    if (!artist) return;
+    if (!artist) {
+      toastError('Error', 'Artist profile not found. Please refresh the page.');
+      return;
+    }
+    if (!formData.full_name) {
+      toastError('Validation Error', 'Name is required');
+      return;
+    }
     try {
       const updated = await Artist.update(artist.id, {
         full_name: formData.full_name, roles: formData.roles, based_in_city: formData.based_in_city,
@@ -278,12 +285,15 @@ export default function ArtistProfile() {
       setEditing(false);
     } catch (err) {
       console.error('Error saving profile:', err);
-      toastError('Save Failed', 'Failed to save profile');
+      toastError('Save Failed', 'Failed to save profile. Please try again.');
     }
   };
 
   const handleSaveBio = async () => {
-    if (!artist) return;
+    if (!artist) {
+      toastError('Error', 'Artist profile not found. Please refresh the page.');
+      return;
+    }
     try {
       const updated = await Artist.update(artist.id, { bio: formData.bio });
       setArtist(updated);
@@ -291,12 +301,15 @@ export default function ArtistProfile() {
       setShowBioModal(false);
     } catch (err) {
       console.error('Error saving bio:', err);
-      toastError('Save Failed', 'Failed to save bio');
+      toastError('Save Failed', 'Failed to save bio. Please try again.');
     }
   };
 
   const handleSavePreferences = async () => {
-    if (!artist) return;
+    if (!artist) {
+      toastError('Error', 'Artist profile not found. Please refresh the page.');
+      return;
+    }
     try {
       const updated = await Artist.update(artist.id, {
         email_notifications: emailNotifications,
