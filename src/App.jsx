@@ -10,6 +10,7 @@ import { MaintenanceGuard } from '@/app/router/guards/MaintenanceGuard'
 import { HelmetProvider } from 'react-helmet-async'
 import CookieBanner from '@/components/CookieBanner'
 import { ShopProvider } from '@/contexts/ShopContext'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth } = useAuth()
@@ -36,21 +37,23 @@ const AuthenticatedApp = () => {
 function App() {
 
   return (
-    <AuthProvider>
-      <ShopProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <ToastProvider>
-            <HelmetProvider>
-              <Router>
-                <NavigationTracker />
-                <AuthenticatedApp />
-              </Router>
-              <Toaster />
-            </HelmetProvider>
-          </ToastProvider>
-        </QueryClientProvider>
-      </ShopProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ShopProvider>
+          <QueryClientProvider client={queryClientInstance}>
+            <ToastProvider>
+              <HelmetProvider>
+                <Router>
+                  <NavigationTracker />
+                  <AuthenticatedApp />
+                </Router>
+                <Toaster />
+              </HelmetProvider>
+            </ToastProvider>
+          </QueryClientProvider>
+        </ShopProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   )
 }
 
