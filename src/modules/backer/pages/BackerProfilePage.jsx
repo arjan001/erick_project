@@ -55,9 +55,14 @@ export default function BackerProfile() {
   }, [isAuthenticated]);
 
   const fetchData = async () => {
+    if (!authUser?.email) {
+      toastError('Error', 'User not authenticated. Please sign in.');
+      setLoading(false);
+      return;
+    }
     try {
-      const backers = await Backer.filter({ contact_email: authUser?.email });
-      if (backers.length > 0) {
+      const backers = await Backer.filter({ contact_email: authUser.email });
+      if (backers && backers.length > 0) {
         const b = backers[0];
         setBacker(b);
         setFormData({
@@ -72,12 +77,21 @@ export default function BackerProfile() {
       }
     } catch (error) {
       console.error('Error fetching backer data:', error);
+      setBacker(null);
     } finally {
       setLoading(false);
     }
   };
 
   const handleSave = async () => {
+    if (!backer) {
+      toastError('Error', 'Backer profile not found. Please refresh the page.');
+      return;
+    }
+    if (!formData.organization_name) {
+      toastError('Validation Error', 'Organization name is required');
+      return;
+    }
     try {
       const updated = await Backer.update(backer.id, {
         organization_name: formData.organization_name,
@@ -96,12 +110,15 @@ export default function BackerProfile() {
       success('Profile Updated', 'Your profile has been updated successfully');
     } catch (error) {
       console.error('Error saving profile:', error);
-      toastError('Save Failed', `Failed to save profile: ${error.message || 'Unknown error'}`);
+      toastError('Save Failed', 'Failed to save profile. Please try again.');
     }
   };
 
   const handleSaveBio = async () => {
-    if (!backer) return;
+    if (!backer) {
+      toastError('Error', 'Backer profile not found. Please refresh the page.');
+      return;
+    }
     try {
       const updated = await Backer.update(backer.id, { bio: formData.bio });
       setBacker(updated);
@@ -109,12 +126,15 @@ export default function BackerProfile() {
       setShowBioModal(false);
     } catch (error) {
       console.error('Error saving bio:', error);
-      toastError('Save Failed', 'Failed to save bio');
+      toastError('Save Failed', 'Failed to save bio. Please try again.');
     }
   };
 
   const handleSavePreferences = async () => {
-    if (!backer) return;
+    if (!backer) {
+      toastError('Error', 'Backer profile not found. Please refresh the page.');
+      return;
+    }
     try {
       const updated = await Backer.update(backer.id, {
         email_notifications: emailNotifications,
@@ -125,13 +145,16 @@ export default function BackerProfile() {
       success('Preferences Updated', 'Your settings have been saved');
     } catch (error) {
       console.error('Error saving preferences:', error);
-      toastError('Save Failed', 'Failed to update preferences');
+      toastError('Save Failed', 'Failed to update preferences. Please try again.');
     }
   };
 
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
-    if (!file || !backer) return;
+    if (!file || !backer) {
+      toastError('Error', 'Please select a file and ensure backer profile exists.');
+      return;
+    }
 
     setUploadingLogo(true);
     try {
