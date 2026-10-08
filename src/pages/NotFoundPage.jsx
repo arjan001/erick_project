@@ -2,12 +2,20 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Home, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 export default function NotFoundPage() {
   const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
+      <SEOMetaTags
+        title="404 — Page Not Found | SmartGigs Kenya"
+        description="The page you're looking for doesn't exist or has been moved. Let's get you back on track."
+        keywords="404, page not found, smartgigs kenya"
+        ogImage="https://smartgigs.co.ke/og-404.jpg"
+        ogType="website"
+      />
       <div className="max-w-2xl w-full text-center">
         {/* 404 Text */}
         <div className="mb-6">
@@ -21,7 +29,7 @@ export default function NotFoundPage() {
           Page Not Found
         </h2>
         <p className="text-gray-600 mb-8 max-w-md mx-auto">
-          The page you're looking for doesn't exist or has been moved. 
+          The page you're looking for doesn't exist or has been moved.
           Let's get you back on track.
         </p>
 

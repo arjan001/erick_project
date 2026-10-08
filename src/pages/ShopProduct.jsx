@@ -84,7 +84,12 @@ export default function ProductPage() {
 
   if (loading) {
     return (
-      <ShopShell title="Shop — SmartGigs Kenya">
+      <ShopShell
+        title="Shop — SmartGigs Kenya"
+        description="Loading product details..."
+        keywords="shop, product, smartgigs kenya"
+        ogImage="https://smartgigs.co.ke/og-shop.jpg"
+      >
         <div className="flex justify-center bg-white py-32">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-black/10 border-t-[#4F46E5]" />
         </div>
@@ -94,7 +99,12 @@ export default function ProductPage() {
 
   if (!product) {
     return (
-      <ShopShell title="Product not found — SmartGigs Kenya Shop">
+      <ShopShell
+        title="Product not found — SmartGigs Kenya Shop"
+        description="We couldn't find that product."
+        keywords="product not found, smartgigs kenya"
+        ogImage="https://smartgigs.co.ke/og-shop.jpg"
+      >
         <div className="bg-white px-4 py-24 text-center">
           <p className="text-lg font-semibold text-black">We couldn't find that product.</p>
           <Link to="/Shop" className="mt-4 inline-block rounded-full bg-[#4F46E5] px-6 py-2.5 text-sm font-semibold text-white">
@@ -118,6 +128,8 @@ export default function ProductPage() {
     <ShopShell
       title={`${product.name} — SmartGigs Kenya Shop`}
       description={product.description}
+      keywords={`shop, ${product.category}, ${product.name}, smartgigs kenya`}
+      ogImage={product.image || 'https://smartgigs.co.ke/og-shop.jpg'}
     >
       {/* Breadcrumb */}
       <div className="bg-white px-4 py-3 lg:px-8">

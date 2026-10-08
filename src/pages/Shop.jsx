@@ -5,6 +5,7 @@ import ProductCard from '@/components/shop/ProductCard'
 import { shopCategories, buildSeedProducts } from '@/data/shopProducts'
 import { isAuctionProduct, listProducts } from '@/services/shopService'
 import { Search, Flame, ShoppingBag, Tag } from 'lucide-react'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 const shopTabs = [
   { id: 'all', label: 'All Items', icon: '🛍️' },
@@ -68,6 +69,9 @@ export default function ShopPage() {
     <ShopShell
       title="Shop — SmartGigs Kenya | Film Gear, Merch & Live Auctions"
       description="Shop branded merchandise, film equipment, collectibles and join live discount auctions on SmartGigs Kenya."
+      keywords="shop, merchandise, film gear, auctions, smartgigs kenya shop"
+      ogImage="https://smartgigs.co.ke/og-shop.jpg"
+      ogType="website"
     >
       {/* Hero */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#1a1a2e] to-[#16213e] px-4 py-12 lg:py-16">

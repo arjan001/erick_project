@@ -48,7 +48,12 @@ export default function CartPage() {
   const totals = calcTotals(cart, settings)
 
   return (
-    <ShopShell title="Your Cart — SmartGigs Kenya Shop" description="Review the items in your SmartGigs Kenya cart.">
+    <ShopShell
+      title="Your Cart — SmartGigs Kenya Shop"
+      description="Review the items in your SmartGigs Kenya cart."
+      keywords="cart, shopping cart, smartgigs kenya"
+      ogImage="https://smartgigs.co.ke/og-cart.jpg"
+    >
       <div className="bg-[#fff0e0] px-4 py-10 lg:px-8">
         <div className="mx-auto max-w-[1100px]">
           <h1 className="mb-6 text-2xl font-bold text-black md:text-3xl">Your Cart</h1>

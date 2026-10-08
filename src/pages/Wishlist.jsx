@@ -50,7 +50,12 @@ export default function WishlistPage() {
 
   if (loading) {
     return (
-      <ShopShell title="Wishlist — SmartGigs Kenya Shop" description="Your saved items.">
+      <ShopShell
+        title="Wishlist — SmartGigs Kenya Shop"
+        description="Your saved items."
+        keywords="wishlist, saved items, smartgigs kenya"
+        ogImage="https://smartgigs.co.ke/og-wishlist.jpg"
+      >
         <div className="bg-[#fff0e0] px-4 py-10 lg:px-8">
           <div className="mx-auto max-w-[1100px]">
             <div className="flex justify-center py-16">
@@ -63,7 +68,12 @@ export default function WishlistPage() {
   }
 
   return (
-    <ShopShell title="Wishlist — SmartGigs Kenya Shop" description="Your saved items.">
+    <ShopShell
+      title="Wishlist — SmartGigs Kenya Shop"
+      description="Your saved items."
+      keywords="wishlist, saved items, smartgigs kenya"
+      ogImage="https://smartgigs.co.ke/og-wishlist.jpg"
+    >
       <div className="bg-[#fff0e0] px-4 py-10 lg:px-8">
         <div className="mx-auto max-w-[1100px]">
           <h1 className="mb-6 text-2xl font-bold text-black md:text-3xl">My Wishlist</h1>

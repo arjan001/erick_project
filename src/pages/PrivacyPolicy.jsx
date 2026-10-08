@@ -2,10 +2,18 @@ import React from 'react'
 import { Shield, Eye, Lock, Database, Trash2, Mail } from 'lucide-react'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOMetaTags
+        title="Privacy Policy — SmartGigs Kenya"
+        description="Learn how SmartGigs Kenya collects, uses, and protects your personal information. Our privacy policy explains your rights and data security measures."
+        keywords="privacy policy, data protection, personal information, smartgigs kenya privacy"
+        ogImage="https://smartgigs.co.ke/og-privacy.jpg"
+        ogType="website"
+      />
       <Navbar />
 
       {/* Header */}

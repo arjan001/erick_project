@@ -6,10 +6,10 @@ import ChatWidget from '@/components/landing/backstage/ChatWidget'
 import SEOMetaTags from '@/components/SEOMetaTags'
 
 /** Shared page frame for the shop: SEO tags + navbar + footer. */
-export default function ShopShell({ title, description, children }) {
+export default function ShopShell({ title, description, keywords, ogImage, ogType = 'website', children }) {
   return (
     <div className="min-h-screen bg-[#F5F3EF]">
-      <SEOMetaTags title={title} description={description} ogType="website" />
+      <SEOMetaTags title={title} description={description} keywords={keywords} ogImage={ogImage} ogType={ogType} />
       <Navbar />
       {children}
       <Footer />

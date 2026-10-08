@@ -2,10 +2,18 @@ import React from 'react'
 import { FileText, AlertCircle, CheckCircle, XCircle, Scale } from 'lucide-react'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 export default function TermsConditions() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOMetaTags
+        title="Terms & Conditions — SmartGigs Kenya"
+        description="Read SmartGigs Kenya's Terms & Conditions. Learn about user accounts, acceptable use, intellectual property, and governing law."
+        keywords="terms and conditions, terms of service, user agreement, smartgigs kenya terms"
+        ogImage="https://smartgigs.co.ke/og-terms.jpg"
+        ogType="website"
+      />
       <Navbar />
 
       {/* Header */}

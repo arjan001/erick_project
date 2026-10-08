@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Mail, MapPin, Send } from 'lucide-react'
 import { base44 } from '@/api/base44Client'
 import EuropeanPresenceMap from '../components/home/EuropeanPresenceMap'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -36,7 +37,7 @@ Message:
 ${formData.message}
         `
       })
-      
+
       setSubmitted(true)
     } catch (error) {
       alert('Error sending message. Please try again.')
@@ -48,6 +49,13 @@ ${formData.message}
   if (submitted) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <SEOMetaTags
+          title="Message Sent — SmartGigs Kenya"
+          description="Your message has been sent successfully. SmartGigs Kenya will get back to you within 24 hours."
+          keywords="contact, message sent, smartgigs kenya"
+          ogImage="https://smartgigs.co.ke/og-contact.jpg"
+          ogType="website"
+        />
         <div className="max-w-lg w-full text-center">
           <div className="w-20 h-20 bg-amber-600/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <Mail className="w-10 h-10 text-amber-600" />
@@ -68,9 +76,16 @@ ${formData.message}
 
   return (
     <div className="min-h-screen bg-white py-12">
+      <SEOMetaTags
+        title="Contact Us — SmartGigs Kenya"
+        description="Get in touch with SmartGigs Kenya. Have questions? We're here to help. Send us a message and we'll respond within 24 hours."
+        keywords="contact us, smartgigs kenya contact, support, help"
+        ogImage="https://smartgigs.co.ke/og-contact.jpg"
+        ogType="website"
+      />
       {/* Global Network Map */}
       <EuropeanPresenceMap />
-      
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-black">Get in Touch</h1>
@@ -84,7 +99,7 @@ ${formData.message}
           <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-bold mb-6 text-black">Contact Information</h2>
-              
+
               <div className="space-y-6">
                 <div className="flex gap-4">
                   <Mail className="w-6 h-6 text-amber-600 flex-shrink-0" />
@@ -144,7 +159,7 @@ ${formData.message}
           <div className="lg:col-span-2">
             <div className="bg-gray-50 rounded-2xl border border-gray-200 p-8">
               <h2 className="text-2xl font-bold mb-6 text-black">Send us a message</h2>
-              
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>

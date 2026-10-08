@@ -162,7 +162,12 @@ export default function CheckoutPage() {
   }
 
   const shell = (children) => (
-    <ShopShell title="Checkout — SmartGigs Kenya Shop" description="Complete your SmartGigs Kenya order.">
+    <ShopShell
+      title="Checkout — SmartGigs Kenya Shop"
+      description="Complete your SmartGigs Kenya order."
+      keywords="checkout, payment, smartgigs kenya"
+      ogImage="https://smartgigs.co.ke/og-checkout.jpg"
+    >
       <div className="bg-[#fff0e0] px-4 py-10 lg:px-8">
         <div className="mx-auto max-w-[1100px]">
           <h1 className="mb-6 text-2xl font-bold text-black md:text-3xl">Checkout</h1>
