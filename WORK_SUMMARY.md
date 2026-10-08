@@ -1,7 +1,7 @@
 # SmartGigs Kenya - Work Summary
 
-**Last Updated:** October 8, 2026
-**Overall Completion:** ~95%
+**Last Updated:** October 9, 2026
+**Overall Completion:** ~97%
 
 ---
 
@@ -50,8 +50,8 @@
 - ✅ Website
 - ✅ Social media (LinkedIn, Instagram, Twitter, YouTube, TikTok)
 - ✅ Appearance (height, weight, ageRange, ethnicity, build, hairColor, eyeColor)
-- ✅ Skills (multi-select from categorized list)
-- ✅ Roles (multi-select from film roles)
+- ✅ Skills (multi-select from talent-specific categories: Acting, Voice, Modeling, Content Creation, Performance, Audition, Special Skills)
+- ✅ Roles (multi-select from talent-specific categories: On-Screen Acting, Voice & Audio, Performance, Content Creation, Commercial & Ads, Specialized Performance)
 - ✅ Credits (film & commercial with comma-separated input)
 - ✅ Education (add/remove functionality)
 - ✅ Representation (agency name, agent email)
@@ -160,6 +160,57 @@
 
 ---
 
+## ✅ ROLES & SKILLS SEPARATION - 100% COMPLETE
+
+### Talent-Specific Categories:
+- **Talent Roles:** Actor, Voice Over Artist, UGC Creator, Model, Dancer, Stunt Performer, Theater Actor, Commercial Actor, etc.
+- **Talent Skills:** Method Acting, Improvisation, Voice Over, Character Voices, Modeling, Script Writing, Video Editing, Public Speaking, etc.
+
+### Client-Specific Categories:
+- **Client Roles:** Director, Producer, Executive Producer, Cinematographer, Casting Director, Production Designer, etc.
+- **Client Skills:** Directing, Cinematography, Lighting Design, Sound Recording, Art Direction, Production Management, Location Management, etc.
+
+### Implementation:
+- ✅ Restructured `skillsAndRoles.json` with separate talent and client categories
+- ✅ ArtistProfilePage uses talent roles/skills
+- ✅ SignUp shows appropriate roles/skills based on user type (talent vs employer)
+- ✅ JobsPage uses talent roles/skills for job browsing
+- ✅ TeamMembersPage uses client roles/skills for team member skills
+
+---
+
+## ✅ SHOP MODULE - 85% COMPLETE
+
+|| Module | Status | Features |
+||--------|--------|----------|
+|| **Public Shop** | ✅ Complete | Product listing, categories, search, auction filter |
+|| **Product Cards** | ✅ Complete | Cart add, wishlist toggle, auction badges |
+|| **Wishlist** | ✅ Complete | Add/remove, move to cart, localStorage sync |
+|| **Cart** | ✅ Complete | Quantity update, remove, totals calculation |
+|| **Checkout** | ✅ Complete | Order creation, M-Pesa integration, customer form |
+|| **Shop Auctions (Admin)** | ✅ Complete | Full CRUD, bid management, scheduling |
+|| **Shop Products (Admin)** | ✅ Complete | Full CRUD, image upload |
+|| **Shop Settings (Admin)** | ✅ Complete | M-Pesa, card settings, shipping |
+
+### Shop Enhancements:
+- ✅ ProductCard connected to ShopContext for cart/wishlist actions
+- ✅ Wishlist heart icon fills red when item is wished
+- ✅ WishlistPage loads from localStorage with event listener for cross-component sync
+- ✅ Wishlist supports moving items to cart
+- ✅ Checkout connected to backend order creation
+- ✅ Orders persist to backend with order items
+- ✅ Cart clears after successful order completion
+- ✅ Route consistency fixed (Shop uses /shop/:id)
+- ✅ Shop.jsx useEffect cancellation bug fixed
+
+### Remaining Shop Tasks:
+- ⏳ Real M-Pesa payment integration (currently simulated)
+- ⏳ Card payment integration (placeholder only)
+- ⏳ Order status tracking and updates
+- ⏳ Email order confirmations
+
+---
+
 ## ✅ GLOBAL FEATURES - 100% COMPLETE
 
 | Feature | Status |
@@ -193,15 +244,15 @@
 ## ⏳ REMAINING TASKS
 
 ### HIGH PRIORITY
-1. **Shop Public Auction UI** - Display auctions to public, bidding interface
-2. **Shop Cart & Checkout** - Cart management, checkout flow
-3. **Shop Payments** - M-Pesa/card payment integration
+1. **Real M-Pesa Payment Integration** - Connect to actual Daraja API (currently simulated)
+2. **Card Payment Integration** - Mollie or Stripe integration (placeholder only)
 
 ### MEDIUM PRIORITY
-4. **Link Previews** - Generate thumbnails for external links
-5. **Artist Public Profile** - Verify all fields display correctly
-6. **Responsive Testing** - Test on actual mobile/tablet devices
-7. **Image/Video Storage** - Verify Supabase Storage bucket configuration
+3. **Link Previews** - Generate thumbnails for external links
+4. **Artist Public Profile** - Verify all fields display correctly
+5. **Responsive Testing** - Test on actual mobile/tablet devices
+6. **Image/Video Storage** - Verify Base44 file upload configuration
+7. **Order Status Tracking** - Order status updates, shipping tracking
 
 ### LOW PRIORITY
 8. **Complete Error Handling** - Add more detailed error states
@@ -220,15 +271,18 @@
 | **Backer** | 100% ✅ |
 | **Admin** | 100% ✅ |
 | **Landing Page** | 100% ✅ |
-| **Shop** | 60% (admin done, public UI pending) |
+| **Shop** | 85% (cart/checkout done, real payments pending) |
 
-**Overall Completion: ~95%**
+**Overall Completion: ~97%**
 
 ---
 
 ## 🚀 GIT COMMITS HISTORY
 
 Recent commits:
+- `f896021` - Connect checkout to backend order creation
+- `5a89e50` - Complete shop cart and wishlist functionality
+- `e298fcd` - Separate talent and client roles/skills
 - `69d34d6` - Remove SYSTEM_AUDIT.md file
 - `b3f60d4` - Enhance backer profile with error handling and validation
 - `925eaa6` - Enhance team profile with error handling and validation
