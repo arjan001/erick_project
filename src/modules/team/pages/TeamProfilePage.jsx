@@ -39,7 +39,8 @@ export default function TeamProfilePage() {
     team_name: '', contact_name: '', contact_email: '', contact_phone: '',
     city: '', country: '', website: '', linkedin: '', instagram: '', twitter: '', youtube: '',
     industry: '', company_size: '',
-    specialties: [], equipment_owned: [], languages_spoken: [], description: '', availability: 'available'
+    specialties: [], equipment_owned: [], languages_spoken: [], description: '', availability: 'available',
+    bio: '', email_notifications: true, task_notifications: true, profile_public: true
   });
 
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -65,7 +66,8 @@ export default function TeamProfilePage() {
             linkedin: t.linkedin || '', instagram: t.instagram || '', twitter: t.twitter || '', youtube: t.youtube || '',
             industry: t.industry || '', company_size: t.company_size || '', specialties: t.specialties || [],
             equipment_owned: t.equipment_owned || [], languages_spoken: t.languages_spoken || [],
-            description: t.description || '', availability: t.availability || 'available'
+            description: t.description || '', availability: t.availability || 'available',
+            bio: t.bio || '', email_notifications: t.email_notifications ?? true, task_notifications: t.task_notifications ?? true, profile_public: t.profile_public ?? true
           });
           setEmailNotifications(t.email_notifications ?? true);
           setTaskNotifications(t.task_notifications ?? true);

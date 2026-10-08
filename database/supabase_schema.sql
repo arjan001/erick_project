@@ -82,17 +82,34 @@ CREATE TABLE IF NOT EXISTS public.teams (
   team_name TEXT NOT NULL,
   slug TEXT UNIQUE,
   description TEXT,
+  bio TEXT,
   location TEXT,
   city TEXT,
   country TEXT DEFAULT 'Kenya',
   logo_url TEXT,
   cover_image TEXT,
   specialties TEXT[],
-  team_size INTEGER,
+  team_size TEXT,
+  industry TEXT,
+  company_size TEXT,
+  equipment_owned TEXT[],
+  languages_spoken TEXT[],
   portfolio_urls JSONB,
   social_media JSONB,
+  contact_name TEXT,
   contact_email TEXT,
   contact_phone TEXT,
+  website TEXT,
+  linkedin TEXT,
+  instagram TEXT,
+  twitter TEXT,
+  youtube TEXT,
+  availability TEXT DEFAULT 'available',
+  email_notifications BOOLEAN DEFAULT true,
+  task_notifications BOOLEAN DEFAULT true,
+  profile_public BOOLEAN DEFAULT true,
+  admin_notes TEXT,
+  team_members JSONB DEFAULT '[]',
   featured BOOLEAN DEFAULT false,
   verification_status TEXT DEFAULT 'pending',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -649,6 +666,7 @@ CREATE TABLE IF NOT EXISTS public.user_roles (
 CREATE TABLE IF NOT EXISTS public.support_tickets (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  user_email TEXT,
   subject TEXT NOT NULL,
   description TEXT,
   status TEXT DEFAULT 'open', -- open, in_progress, resolved, closed
@@ -759,6 +777,23 @@ CREATE TABLE IF NOT EXISTS public.payment_settings (
   stripe_public_key TEXT,
   stripe_secret_key TEXT,
   mollie_api_key TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Team Payments (for tracking team-specific payment transactions)
+CREATE TABLE IF NOT EXISTS public.team_payments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  team_id UUID REFERENCES public.teams(id) ON DELETE CASCADE,
+  project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
+  job_id UUID REFERENCES public.jobs(id) ON DELETE SET NULL,
+  amount NUMERIC NOT NULL,
+  currency TEXT DEFAULT 'KES',
+  payment_method TEXT, -- mpesa, card, bank_transfer
+  payment_status TEXT DEFAULT 'pending', -- pending, completed, failed, refunded
+  transaction_id TEXT,
+  description TEXT,
+  paid_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -940,6 +975,7 @@ CREATE TRIGGER trg_job_applications_updated_at BEFORE UPDATE ON public.job_appli
 CREATE TRIGGER trg_shop_products_updated_at BEFORE UPDATE ON public.shop_products FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_shop_orders_updated_at BEFORE UPDATE ON public.shop_orders FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_card_payments_updated_at BEFORE UPDATE ON public.card_payments FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER trg_team_payments_updated_at BEFORE UPDATE ON public.team_payments FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_partners_updated_at BEFORE UPDATE ON public.partners FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_categories_updated_at BEFORE UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_cms_pages_updated_at BEFORE UPDATE ON public.cms_pages FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
