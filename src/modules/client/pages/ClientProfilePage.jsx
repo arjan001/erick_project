@@ -107,9 +107,10 @@ export default function ClientProfilePage() {
         setLoadingProjects(true);
         try {
           const userProjects = await Project.filter({ project_owner_email: user.email });
-          setProjects(userProjects);
+          setProjects(userProjects || []);
         } catch (err) {
           console.error('Error fetching projects:', err);
+          setProjects([]);
         } finally {
           setLoadingProjects(false);
         }
@@ -125,9 +126,10 @@ export default function ClientProfilePage() {
         setLoadingTeam(true);
         try {
           const members = await TeamMember.filter({ client_id: owner.id });
-          setTeamMembers(members);
+          setTeamMembers(members || []);
         } catch (err) {
           console.error('Error fetching team members:', err);
+          setTeamMembers([]);
         } finally {
           setLoadingTeam(false);
         }
@@ -142,12 +144,16 @@ export default function ClientProfilePage() {
       if (owner?.id && activeTab === 'billing') {
         setLoadingBilling(true);
         try {
-          const billing = await BillingInfo.filter({ client_id: owner.id });
-          const invoiceData = await Invoice.filter({ client_id: owner.id });
-          setBillingInfo(billing);
-          setInvoices(invoiceData);
+          const [billing, invoiceData] = await Promise.all([
+            BillingInfo.filter({ client_id: owner.id }),
+            Invoice.filter({ client_id: owner.id })
+          ]);
+          setBillingInfo(billing || []);
+          setInvoices(invoiceData || []);
         } catch (err) {
           console.error('Error fetching billing info:', err);
+          setBillingInfo([]);
+          setInvoices([]);
         } finally {
           setLoadingBilling(false);
         }
@@ -162,12 +168,16 @@ export default function ClientProfilePage() {
       if (owner?.id && activeTab === 'security') {
         setLoadingSecurity(true);
         try {
-          const settings = await SecuritySettings.filter({ client_id: owner.id });
-          const sessions = await ActiveSession.filter({ client_id: owner.id });
+          const [settings, sessions] = await Promise.all([
+            SecuritySettings.filter({ client_id: owner.id }),
+            ActiveSession.filter({ client_id: owner.id })
+          ]);
           setSecuritySettings(settings[0] || null);
-          setActiveSessions(sessions);
+          setActiveSessions(sessions || []);
         } catch (err) {
           console.error('Error fetching security settings:', err);
+          setSecuritySettings(null);
+          setActiveSessions([]);
         } finally {
           setLoadingSecurity(false);
         }
@@ -177,13 +187,16 @@ export default function ClientProfilePage() {
   }, [owner, activeTab]);
 
   const handleSaveProfile = async () => {
-    if (!owner) return;
+    if (!owner) {
+      toastError('Error', 'Profile not found. Please refresh the page.');
+      return;
+    }
     setSaving(true);
     try {
-      const updated = await ProjectOwner.update(owner.id, { 
-        company: formData.company, 
-        phone: formData.phone, 
-        website: formData.website, 
+      const updated = await ProjectOwner.update(owner.id, {
+        company: formData.company,
+        phone: formData.phone,
+        website: formData.website,
         bio: formData.bio,
         linkedin: formData.linkedin,
         instagram: formData.instagram,
@@ -197,14 +210,17 @@ export default function ClientProfilePage() {
       setEditing(false);
     } catch (err) {
       console.error('Error saving profile:', err);
-      toastError('Save Failed', 'Failed to save profile');
+      toastError('Save Failed', 'Failed to save profile. Please try again.');
     } finally {
       setSaving(false);
     }
   };
 
   const handleSaveBio = async () => {
-    if (!owner) return;
+    if (!owner) {
+      toastError('Error', 'Profile not found. Please refresh the page.');
+      return;
+    }
     try {
       const updated = await ProjectOwner.update(owner.id, { bio: formData.bio });
       setOwner(updated);
@@ -212,12 +228,15 @@ export default function ClientProfilePage() {
       setShowBioModal(false);
     } catch (err) {
       console.error('Error saving bio:', err);
-      toastError('Save Failed', 'Failed to save bio');
+      toastError('Save Failed', 'Failed to save bio. Please try again.');
     }
   };
 
   const handleSavePreferences = async () => {
-    if (!owner) return;
+    if (!owner) {
+      toastError('Error', 'Profile not found. Please refresh the page.');
+      return;
+    }
     try {
       const updated = await ProjectOwner.update(owner.id, {
         email_notifications: emailNotifications,
@@ -366,9 +385,9 @@ export default function ClientProfilePage() {
       const { error } = await supabase.auth.updateUser({
         password: passwordForm.newPassword
       });
-      
+
       if (error) throw error;
-      
+
       // Update password last changed in security settings
       if (securitySettings) {
         await SecuritySettings.update(securitySettings.id, {
@@ -380,7 +399,7 @@ export default function ClientProfilePage() {
           password_last_changed: new Date().toISOString()
         });
       }
-      
+
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setShowPasswordModal(false);
       success('Password Changed', 'Your password has been updated successfully');
@@ -394,23 +413,23 @@ export default function ClientProfilePage() {
 
   const handleDeleteAccount = async () => {
     if (!confirm('Are you sure you want to delete your account? This action cannot be undone. Your account will be suspended for 90 days before permanent deletion.')) return;
-    
+
     setDeletingAccount(true);
     try {
       // Mark account for deletion (suspend it)
       const deletionDate = new Date();
       deletionDate.setDate(deletionDate.getDate() + 90);
-      
+
       await ProjectOwner.update(owner.id, {
         is_suspended: true,
         deletion_requested_at: new Date().toISOString(),
         scheduled_deletion_date: deletionDate.toISOString()
       });
-      
+
       // Log out the user
       await supabase.auth.signOut();
       localStorage.removeItem('ericrabar_user');
-      
+
       success('Account Deletion Requested', 'Your account has been suspended and will be permanently deleted in 90 days');
       window.location.href = '/SignIn';
     } catch (err) {
@@ -425,39 +444,39 @@ export default function ClientProfilePage() {
   useEffect(() => {
     const trackCurrentSession = async () => {
       if (!owner?.id) return;
-      
+
       try {
         // Get device info
         const userAgent = navigator.userAgent;
         let browser = 'Unknown';
         let deviceType = 'Desktop';
-        
+
         if (userAgent.includes('Chrome')) browser = 'Chrome';
         else if (userAgent.includes('Firefox')) browser = 'Firefox';
         else if (userAgent.includes('Safari')) browser = 'Safari';
         else if (userAgent.includes('Edge')) browser = 'Edge';
-        
+
         if (userAgent.includes('Mobile') || userAgent.includes('Android') || userAgent.includes('iPhone')) {
           deviceType = 'Mobile';
         } else if (userAgent.includes('Tablet') || userAgent.includes('iPad')) {
           deviceType = 'Tablet';
         }
-        
+
         // Get IP address (using a free API)
         const ipResponse = await fetch('https://api.ipify.org?format=json');
         const ipData = await ipResponse.json();
         const ipAddress = ipData.ip;
-        
+
         // Get location (using a free API)
         const locationResponse = await fetch(`https://ipapi.co/${ipAddress}/json/`);
         const locationData = await locationResponse.json();
-        
+
         // Check if session already exists
-        const existingSessions = await ActiveSession.filter({ 
+        const existingSessions = await ActiveSession.filter({
           client_id: owner.id,
-          ip_address: ipAddress 
+          ip_address: ipAddress
         });
-        
+
         const sessionData = {
           client_id: owner.id,
           session_token: user?.id || 'current',
@@ -470,7 +489,7 @@ export default function ClientProfilePage() {
           last_activity: new Date().toISOString(),
           expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
         };
-        
+
         if (existingSessions.length > 0) {
           // Update existing session
           await ActiveSession.update(existingSessions[0].id, {
@@ -484,9 +503,9 @@ export default function ClientProfilePage() {
         console.error('Error tracking session:', err);
       }
     };
-    
+
     trackCurrentSession();
-    
+
     // Update session activity every 5 minutes
     const interval = setInterval(trackCurrentSession, 5 * 60 * 1000);
     return () => clearInterval(interval);
@@ -495,11 +514,11 @@ export default function ClientProfilePage() {
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file || !owner) return;
-    
+
     // Show preview immediately
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
-    
+
     setUploadingLogo(true);
     try {
       const response = await base44.integrations.Core.UploadFile({ file });
@@ -589,7 +608,7 @@ export default function ClientProfilePage() {
                     <Button onClick={() => setShowBioModal(true)} variant="outline">
                       Edit Bio
                     </Button>
-                    <Button onClick={() => {/* Add share functionality */}} variant="outline" className="gap-2">
+                    <Button onClick={() => {/* Add share functionality */ }} variant="outline" className="gap-2">
                       <Share2 className="w-4 h-4" />
                       Share Profile
                     </Button>
@@ -728,12 +747,11 @@ export default function ClientProfilePage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h4 className="font-semibold text-gray-900 text-lg">{project.title}</h4>
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                              project.status === 'verified' ? 'bg-green-100 text-green-700' :
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${project.status === 'verified' ? 'bg-green-100 text-green-700' :
                               project.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                              project.status === 'completed' ? 'bg-gray-100 text-gray-700' :
-                              'bg-amber-100 text-amber-700'
-                            }`}>
+                                project.status === 'completed' ? 'bg-gray-100 text-gray-700' :
+                                  'bg-amber-100 text-amber-700'
+                              }`}>
                               {project.status || 'Draft'}
                             </span>
                           </div>
@@ -806,11 +824,10 @@ export default function ClientProfilePage() {
                           <div>
                             <div className="flex items-center gap-2 mb-1">
                               <h4 className="font-semibold text-gray-900">{member.full_name || member.email}</h4>
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                                member.status === 'active' ? 'bg-green-100 text-green-700' :
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${member.status === 'active' ? 'bg-green-100 text-green-700' :
                                 member.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                                'bg-gray-100 text-gray-700'
-                              }`}>
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
                                 {member.status}
                               </span>
                             </div>
@@ -907,12 +924,11 @@ export default function ClientProfilePage() {
                             </div>
                             <div className="flex items-center gap-4">
                               <span className="font-semibold text-gray-900">${invoice.amount}</span>
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                                invoice.status === 'paid' ? 'bg-green-100 text-green-700' :
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${invoice.status === 'paid' ? 'bg-green-100 text-green-700' :
                                 invoice.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                                invoice.status === 'overdue' ? 'bg-red-100 text-red-700' :
-                                'bg-gray-100 text-gray-700'
-                              }`}>
+                                  invoice.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                                    'bg-gray-100 text-gray-700'
+                                }`}>
                                 {invoice.status}
                               </span>
                             </div>
@@ -946,13 +962,13 @@ export default function ClientProfilePage() {
                       <div>
                         <p className="font-medium text-gray-900">Change Password</p>
                         <p className="text-sm text-gray-500">
-                          Last changed: {securitySettings?.password_last_changed 
+                          Last changed: {securitySettings?.password_last_changed
                             ? new Date(securitySettings.password_last_changed).toLocaleDateString()
                             : 'Never'}
                         </p>
                       </div>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="text-sm"
                         onClick={() => setShowPasswordModal(true)}
                       >
@@ -972,11 +988,10 @@ export default function ClientProfilePage() {
                       <Button
                         variant="outline"
                         onClick={handleToggle2FA}
-                        className={`text-sm ${
-                          securitySettings?.two_factor_enabled
-                            ? 'text-red-600 hover:text-red-700 hover:border-red-300'
-                            : ''
-                        }`}
+                        className={`text-sm ${securitySettings?.two_factor_enabled
+                          ? 'text-red-600 hover:text-red-700 hover:border-red-300'
+                          : ''
+                          }`}
                       >
                         {securitySettings?.two_factor_enabled ? 'Disable 2FA' : 'Enable 2FA'}
                       </Button>
@@ -1071,7 +1086,7 @@ export default function ClientProfilePage() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none"
               placeholder="Tell creators about your company..."
             />
-          <div className="flex justify-end gap-3 mt-4">
+            <div className="flex justify-end gap-3 mt-4">
               <Button variant="outline" onClick={() => setShowBioModal(false)}>Cancel</Button>
               <Button onClick={handleSaveBio} className="bg-black text-white hover:bg-gray-800">Save Bio</Button>
             </div>

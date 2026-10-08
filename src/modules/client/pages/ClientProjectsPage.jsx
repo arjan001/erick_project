@@ -13,6 +13,7 @@ export default function ClientProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingProjectId, setEditingProjectId] = useState(null);
   const [createForm, setCreateForm] = useState({
     title: '',
     description: '',
@@ -28,28 +29,37 @@ export default function ClientProjectsPage() {
   }, []);
 
   const fetchProjects = async () => {
+    if (!user?.email) {
+      error('Authentication Required', 'Please sign in to view your projects');
+      return;
+    }
     try {
       setLoading(true);
-      const rows = await Project.filter({ project_owner_email: user?.email }, '-created_at', 50);
+      const rows = await Project.filter({ project_owner_email: user.email }, '-created_at', 50);
       setProjects(rows || []);
     } catch (err) {
       console.error('Error fetching projects:', err);
-      error('Error', 'Failed to fetch projects');
+      error('Error', 'Failed to fetch projects. Please try again.');
+      setProjects([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreateProject = async () => {
+    if (!user?.email) {
+      error('Authentication Required', 'Please sign in to create a project');
+      return;
+    }
     if (!createForm.title || !createForm.description) {
       error('Validation Error', 'Title and description are required');
       return;
     }
     try {
-      await Project.create({
+      const newProject = await Project.create({
         ...createForm,
-        project_owner_email: user?.email,
-        project_owner_name: user?.full_name,
+        project_owner_email: user.email,
+        project_owner_name: user.full_name,
         status: 'draft',
         created_at: new Date().toISOString()
       });
@@ -67,7 +77,7 @@ export default function ClientProjectsPage() {
       fetchProjects();
     } catch (err) {
       console.error('Error creating project:', err);
-      error('Failed', 'Failed to create project');
+      error('Failed', 'Failed to create project. Please try again.');
     }
   };
 
@@ -79,7 +89,52 @@ export default function ClientProjectsPage() {
       success('Deleted', 'Project deleted successfully');
     } catch (err) {
       console.error('Error deleting project:', err);
-      error('Failed', 'Failed to delete project');
+      error('Failed', 'Failed to delete project. Please try again.');
+    }
+  };
+
+  const handleEditProject = (project) => {
+    setCreateForm({
+      title: project.title || '',
+      description: project.description || '',
+      project_type: project.project_type || 'film',
+      budget_min: project.budget_min || '',
+      budget_max: project.budget_max || '',
+      location_city: project.location_city || '',
+      location_country: project.location_country || 'Kenya'
+    });
+    setShowCreateModal(true);
+  };
+
+  const handleUpdateProject = async (projectId) => {
+    if (!user?.email) {
+      error('Authentication Required', 'Please sign in to update this project');
+      return;
+    }
+    if (!createForm.title || !createForm.description) {
+      error('Validation Error', 'Title and description are required');
+      return;
+    }
+    try {
+      await Project.update(projectId, {
+        ...createForm,
+        updated_at: new Date().toISOString()
+      });
+      success('Updated', 'Project updated successfully');
+      setShowCreateModal(false);
+      setCreateForm({
+        title: '',
+        description: '',
+        project_type: 'film',
+        budget_min: '',
+        budget_max: '',
+        location_city: '',
+        location_country: 'Kenya'
+      });
+      fetchProjects();
+    } catch (err) {
+      console.error('Error updating project:', err);
+      error('Failed', 'Failed to update project. Please try again.');
     }
   };
 
@@ -98,7 +153,19 @@ export default function ClientProjectsPage() {
             <p className="text-sm text-gray-500 mt-1">Manage your project listings</p>
           </div>
           <Button
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => {
+              setEditingProjectId(null);
+              setCreateForm({
+                title: '',
+                description: '',
+                project_type: 'film',
+                budget_min: '',
+                budget_max: '',
+                location_city: '',
+                location_country: 'Kenya'
+              });
+              setShowCreateModal(true);
+            }}
             className="bg-[#4F46E5] hover:bg-[#4338CA] text-white sm:w-auto w-full"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -139,11 +206,10 @@ export default function ClientProjectsPage() {
                     <h3 className="font-semibold text-gray-900">{project.title}</h3>
                     <p className="text-xs text-gray-500 mt-1 capitalize">{project.project_type?.replace(/_/g, ' ')}</p>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    project.status === 'verified' ? 'bg-green-100 text-green-700' :
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${project.status === 'verified' ? 'bg-green-100 text-green-700' :
                     project.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
+                      'bg-gray-100 text-gray-700'
+                    }`}>
                     {project.status || 'Draft'}
                   </span>
                 </div>
@@ -161,7 +227,12 @@ export default function ClientProjectsPage() {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleEditProject(project)}
+                  >
                     <Edit className="w-3 h-3 mr-1" />
                     Edit
                   </Button>
@@ -179,11 +250,13 @@ export default function ClientProjectsPage() {
           </div>
         )}
 
-        {/* Create Modal */}
+        {/* Create/Edit Modal */}
         {showCreateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-white rounded-xl w-full max-w-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Create New Project</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                {editingProjectId ? 'Edit Project' : 'Create New Project'}
+              </h2>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
@@ -235,16 +308,19 @@ export default function ClientProjectsPage() {
               <div className="flex gap-3 mt-6">
                 <Button
                   variant="outline"
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setEditingProjectId(null);
+                  }}
                   className="flex-1"
                 >
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleCreateProject}
+                  onClick={() => editingProjectId ? handleUpdateProject(editingProjectId) : handleCreateProject()}
                   className="flex-1 bg-[#4F46E5] hover:bg-[#4338CA]"
                 >
-                  Create
+                  {editingProjectId ? 'Update' : 'Create'}
                 </Button>
               </div>
             </div>

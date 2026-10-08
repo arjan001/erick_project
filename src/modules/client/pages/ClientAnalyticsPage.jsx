@@ -26,12 +26,15 @@ export default function ClientAnalytics() {
     setUser(JSON.parse(storedUser));
 
     const fetchStats = async () => {
+      if (!storedUser) return;
       try {
         const userEmail = JSON.parse(storedUser).email;
-        
-        const projects = await Project.filter({ project_owner_email: userEmail });
-        const jobs = await Job.filter({ client_email: userEmail });
-        
+
+        const [projects, jobs] = await Promise.all([
+          Project.filter({ project_owner_email: userEmail }),
+          Job.filter({ client_email: userEmail })
+        ]);
+
         const jobIds = jobs.map(j => j.id);
         const allApplications = await Promise.all(
           jobIds.map(jobId => Application.filter({ job_id: jobId }))
@@ -48,6 +51,14 @@ export default function ClientAnalytics() {
         });
       } catch (err) {
         console.error('Error fetching analytics:', err);
+        setStats({
+          totalProjects: 0,
+          activeProjects: 0,
+          totalJobs: 0,
+          openJobs: 0,
+          totalApplications: 0,
+          acceptedApplications: 0
+        });
       } finally {
         setLoading(false);
       }
