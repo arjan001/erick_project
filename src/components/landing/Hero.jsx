@@ -79,17 +79,17 @@ export default function Hero() {
           className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
         >
           <Link
-            to={createPageUrl('SignUp')}
+            to="/SignUp?role=client"
             className="group flex items-center gap-2 rounded-lg bg-[#C9A962] px-8 py-3.5 text-sm font-semibold text-black transition-colors hover:bg-[#D4B575]"
           >
-            Post a Project
+            Post a Gig
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
-            to={createPageUrl('SignUp')}
+            to="/SignUp?role=artist"
             className="flex items-center gap-2 rounded-lg border border-white/20 px-8 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
           >
-            Join as a Creator
+            Join as Talent
           </Link>
         </motion.div>
       </motion.div>
