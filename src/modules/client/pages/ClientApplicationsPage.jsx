@@ -777,18 +777,18 @@ export default function ClientApplications() {
                       </td>
                       <td className="px-6 py-4">
                         <div className={`px-3 py-1 rounded-full text-sm font-bold ${item.totalScore >= 75 ? 'bg-green-100 text-green-700' :
-                            item.totalScore >= 60 ? 'bg-blue-100 text-blue-700' :
-                              item.totalScore >= 40 ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-red-100 text-red-700'
+                          item.totalScore >= 60 ? 'bg-blue-100 text-blue-700' :
+                            item.totalScore >= 40 ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-red-100 text-red-700'
                           }`}>
                           {item.totalScore}%
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.application.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                            item.application.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                              item.application.status === 'shortlisted' ? 'bg-blue-100 text-blue-800' :
-                                'bg-yellow-100 text-yellow-800'
+                          item.application.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            item.application.status === 'shortlisted' ? 'bg-blue-100 text-blue-800' :
+                              'bg-yellow-100 text-yellow-800'
                           }`}>
                           {item.application.status}
                         </span>
@@ -979,8 +979,8 @@ export default function ClientApplications() {
                           )}
                         </div>
                         <div className={`px-3 py-1 rounded-full text-sm font-medium ${artistProfiles[selectedApplication.artist_email].availability_status === 'available' ? 'bg-green-100 text-green-700' :
-                            artistProfiles[selectedApplication.artist_email].availability_status === 'busy' ? 'bg-red-100 text-red-700' :
-                              'bg-yellow-100 text-yellow-700'
+                          artistProfiles[selectedApplication.artist_email].availability_status === 'busy' ? 'bg-red-100 text-red-700' :
+                            'bg-yellow-100 text-yellow-700'
                           }`}>
                           {artistProfiles[selectedApplication.artist_email].availability_status || 'Unknown'}
                         </div>
@@ -1183,6 +1183,10 @@ export default function ClientApplications() {
                                     className="w-full h-full"
                                     allowFullScreen
                                     title={clip.title}
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                      e.target.nextSibling.style.display = 'flex';
+                                    }}
                                   />
                                 ) : clip.video_embed_url.includes('vimeo.com') ? (
                                   <iframe
@@ -1190,6 +1194,10 @@ export default function ClientApplications() {
                                     className="w-full h-full"
                                     allowFullScreen
                                     title={clip.title}
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                      e.target.nextSibling.style.display = 'flex';
+                                    }}
                                   />
                                 ) : (
                                   <video
@@ -1197,11 +1205,25 @@ export default function ClientApplications() {
                                     controls
                                     className="w-full h-full object-cover"
                                     title={clip.title}
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                      e.target.nextSibling.style.display = 'flex';
+                                    }}
                                   />
                                 )}
+                                <div className="hidden absolute inset-0 items-center justify-center bg-gray-300">
+                                  <Play className="w-8 h-8 text-gray-500" />
+                                </div>
                               </>
                             ) : clip.thumbnail_url ? (
-                              <img src={clip.thumbnail_url} alt={clip.title} className="w-full h-full object-cover" />
+                              <img
+                                src={clip.thumbnail_url}
+                                alt={clip.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25"%3E%3Crect width="100%25" height="100%25" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%236b7280"%3ENo thumbnail%3C/text%3E%3C/svg%3E';
+                                }}
+                              />
                             ) : (
                               <Play className="w-8 h-8 text-gray-500" />
                             )}
@@ -1252,9 +1274,9 @@ export default function ClientApplications() {
                     <div>
                       <p className="text-gray-600">Status</p>
                       <p className={`font-medium ${selectedApplication.status === 'accepted' ? 'text-green-600' :
-                          selectedApplication.status === 'rejected' ? 'text-red-600' :
-                            selectedApplication.status === 'shortlisted' ? 'text-blue-600' :
-                              'text-yellow-600'
+                        selectedApplication.status === 'rejected' ? 'text-red-600' :
+                          selectedApplication.status === 'shortlisted' ? 'text-blue-600' :
+                            'text-yellow-600'
                         }`}>
                         {selectedApplication.status}
                       </p>
