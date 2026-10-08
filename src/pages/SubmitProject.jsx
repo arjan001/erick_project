@@ -15,6 +15,7 @@ import StepBudget from '../components/intake/StepBudget'
 import StepFinal from '../components/intake/StepFinal'
 import StepFundingDetails from '../components/intake/StepFundingDetails'
 import StepSuccess from '../components/intake/StepSuccess'
+import SEOMetaTags from '@/components/SEOMetaTags'
 
 const getStepsForProjectType = (projectType) => {
   const baseSteps = [
@@ -103,7 +104,7 @@ export default function SubmitProject() {
         _originalUrl: analyzedProject.url,
         _originalAnalysis: analyzedProject.analysis
       }))
-      
+
       // Set initial refs for change detection
       previousProjectTypeRef.current = analyzedProject.projectType || ''
       previousNotesRef.current = `${brief.project_overview?.goal || ''}\n\n${brief.additional_notes || ''}`
@@ -205,9 +206,9 @@ export default function SubmitProject() {
 
   const canProceed = () => {
     if (currentStep === 1) return projectData.project_type !== ''
-    
+
     const currentStepName = STEPS[currentStep - 1]?.name
-    
+
     switch (currentStepName) {
       case 'Funding Details':
         return projectData.funding_stage && (projectData.seeking_partners || []).length > 0
@@ -312,10 +313,10 @@ export default function SubmitProject() {
           image_url: projectImage
         })
       }
-      
+
       // Clear analyzed project data from localStorage after successful submission
       clearAnalyzedProjectFromStorage()
-      
+
       setSubmitted(true)
     } catch (error) {
       //
@@ -333,96 +334,103 @@ export default function SubmitProject() {
   const CurrentStepComponent = STEPS[currentStep - 1]?.component || StepProjectType
 
   return (
-    <div className="min-h-screen bg-white py-8 lg:py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8 lg:mb-12">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 text-black">Submit Your Project</h1>
-          <p className="text-lg text-gray-600">Let's find the perfect team for your production</p>
-          {isRegenerating && (
-            <div className="mt-4 flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-4 py-2 rounded-lg inline-flex">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Updating project brief based on your changes...</span>
-            </div>
-          )}
-        </div>
+    <>
+      <SEOMetaTags
+        title="Submit Your Project — SmartGigs Kenya"
+        description="Submit your creative project to SmartGigs Kenya and connect with the perfect team for your production."
+        keywords="submit project, post project, find team, smartgigs kenya"
+        ogImage="https://smartgigs.co.ke/og-submit.jpg"
+        ogType="website"
+      />
+      <div className="min-h-screen bg-white py-8 lg:py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="mb-8 lg:mb-12">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 text-black">Submit Your Project</h1>
+            <p className="text-lg text-gray-600">Let's find the perfect team for your production</p>
+            {isRegenerating && (
+              <div className="mt-4 flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-4 py-2 rounded-lg inline-flex">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Updating project brief based on your changes...</span>
+              </div>
+            )}
+          </div>
 
-        {/* Progress Bar */}
-        <div className="mb-8 lg:mb-12">
-          <div className="flex items-center justify-between mb-4">
-            {STEPS.map((step, index) => (
-              <React.Fragment key={step.id}>
-                <div className="flex flex-col items-center">
-                  <div
-                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                      step.id < currentStep
+          {/* Progress Bar */}
+          <div className="mb-8 lg:mb-12">
+            <div className="flex items-center justify-between mb-4">
+              {STEPS.map((step, index) => (
+                <React.Fragment key={step.id}>
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${step.id < currentStep
                         ? 'bg-amber-600 text-white'
                         : step.id === currentStep
-                        ? 'bg-amber-600 text-white ring-4 ring-amber-600/20'
-                        : 'bg-gray-200 text-gray-500'
-                    }`}
-                  >
-                    {step.id < currentStep ? <Check className="w-5 h-5" /> : step.id}
+                          ? 'bg-amber-600 text-white ring-4 ring-amber-600/20'
+                          : 'bg-gray-200 text-gray-500'
+                        }`}
+                    >
+                      {step.id < currentStep ? <Check className="w-5 h-5" /> : step.id}
+                    </div>
+                    <span className="hidden sm:block text-xs text-gray-600 mt-2 text-center max-w-[80px]">{step.name}</span>
                   </div>
-                  <span className="hidden sm:block text-xs text-gray-600 mt-2 text-center max-w-[80px]">{step.name}</span>
-                </div>
-                {index < STEPS.length - 1 && (
-                  <div className={`flex-1 h-1 mx-2 rounded-full transition-all ${
-                    step.id < currentStep ? 'bg-amber-600' : 'bg-gray-200'
-                  }`} />
-                )}
-              </React.Fragment>
-            ))}
+                  {index < STEPS.length - 1 && (
+                    <div className={`flex-1 h-1 mx-2 rounded-full transition-all ${step.id < currentStep ? 'bg-amber-600' : 'bg-gray-200'
+                      }`} />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+            <div className="text-center text-sm text-gray-600">
+              Step {currentStep} of {STEPS.length}
+            </div>
           </div>
-          <div className="text-center text-sm text-gray-600">
-            Step {currentStep} of {STEPS.length}
+
+          {/* Step Content */}
+          <div className="bg-gray-50 rounded-2xl p-6 sm:p-8 lg:p-10 mb-8 border border-gray-200 min-h-[400px]">
+            <CurrentStepComponent
+              data={projectData}
+              updateData={updateData}
+            />
           </div>
-        </div>
 
-        {/* Step Content */}
-        <div className="bg-gray-50 rounded-2xl p-6 sm:p-8 lg:p-10 mb-8 border border-gray-200 min-h-[400px]">
-          <CurrentStepComponent 
-            data={projectData} 
-            updateData={updateData}
-          />
-        </div>
-
-        {/* Navigation */}
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleBack}
-            disabled={currentStep === 1}
-            className="border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back
-          </Button>
-
-          {currentStep < STEPS.length ? (
+          {/* Navigation */}
+          <div className="flex flex-col sm:flex-row justify-between gap-4">
             <Button
+              variant="outline"
               size="lg"
-              onClick={handleNext}
-              disabled={!canProceed()}
-              className="bg-amber-600 hover:bg-amber-700 order-1 sm:order-2"
+              onClick={handleBack}
+              disabled={currentStep === 1}
+              className="border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
             >
-              Next
-              <ArrowRight className="w-5 h-5 ml-2" />
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back
             </Button>
-          ) : (
-            <Button
-              size="lg"
-              onClick={handleSubmit}
-              disabled={!canProceed() || isSubmitting}
-              className="bg-amber-600 hover:bg-amber-700 order-1 sm:order-2"
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Project'}
-              <Check className="w-5 h-5 ml-2" />
-            </Button>
-          )}
+
+            {currentStep < STEPS.length ? (
+              <Button
+                size="lg"
+                onClick={handleNext}
+                disabled={!canProceed()}
+                className="bg-amber-600 hover:bg-amber-700 order-1 sm:order-2"
+              >
+                Next
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                onClick={handleSubmit}
+                disabled={!canProceed() || isSubmitting}
+                className="bg-amber-600 hover:bg-amber-700 order-1 sm:order-2"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Project'}
+                <Check className="w-5 h-5 ml-2" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
