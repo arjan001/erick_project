@@ -44,7 +44,7 @@ export default function ProductPage() {
         setProduct(p)
         setRelated(all.filter((x) => String(x.id) !== String(id) && x.status !== 'inactive').slice(0, 4))
       })
-      .catch((err) => //)
+      .catch(() => { })
       .finally(() => !cancelled && setLoading(false))
     return () => {
       cancelled = true

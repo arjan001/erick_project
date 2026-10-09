@@ -1555,144 +1555,143 @@ export default function AISubmission() {
         ogType="website"
       />
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'sans-serif', color: '#111', background: '#fff' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'sans-serif', color: '#111', background: '#fff' }}>
 
-          {/* Header with back button */}
-          <div style={{ padding: '16px 24px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <button
-                onClick={() => navigate(-1)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, marginRight: 12, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <div>
-                <h1 style={{ fontSize: 20, fontWeight: 600, color: '#111', margin: 0 }}>AI Production Plan</h1>
-                <p style={{ fontSize: 13, color: '#6b7280', margin: 0 }}>Review and approve each section</p>
-              </div>
-            </div>
-            <div style={{ fontSize: 13, color: '#6b7280' }}>
-              Progress: {progressPct}%
+        {/* Header with back button */}
+        <div style={{ padding: '16px 24px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button
+              onClick={() => navigate(-1)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, marginRight: 12, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div>
+              <h1 style={{ fontSize: 20, fontWeight: 600, color: '#111', margin: 0 }}>AI Production Plan</h1>
+              <p style={{ fontSize: 13, color: '#6b7280', margin: 0 }}>Review and approve each section</p>
             </div>
           </div>
-
-          {/* Loading indicator overlay */}
-          {loading && (
-            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(255, 255, 255, 0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-              <div style={{ background: '#fff', borderRadius: 12, padding: 40, textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-                <div style={{ width: 40, height: 40, border: '4px solid #e5e7eb', borderTopColor: '#10b981', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}></div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: '#111' }}>Generating Production Plan...</div>
-                <div style={{ fontSize: 13, color: '#6b7280', marginTop: 8 }}>AI is analyzing your project requirements</div>
-              </div>
-            </div>
-          )}
-
-          {/* Error overlay */}
-          {error && (
-            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-              <div style={{ background: '#fff', borderRadius: 12, padding: 40, maxWidth: 400, textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
-                <div style={{ fontSize: 18, fontWeight: 600, color: '#111', marginBottom: 8 }}>AI Generation Failed</div>
-                <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 24 }}>{error}</div>
-                <button onClick={() => setError(null)} style={{ padding: '10px 20px', background: '#111', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600, marginRight: 8 }}>
-                  Try Again
-                </button>
-                <button onClick={() => { setError(null); setAIData(null); }} style={{ padding: '10px 20px', background: '#fff', color: '#111', border: '1px solid #e5e7eb', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
-                  Start Over
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ── BODY ── */}
-          <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-
-            {/* ── SIDEBAR ── */}
-            <aside style={{ width: 224, borderRight: '1px solid #e5e7eb', background: '#fff', display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
-              <div style={{ padding: '18px 18px 14px' }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: '#111', marginBottom: 3 }}>Production Plan</div>
-                <div style={{ fontSize: 12, color: '#9ca3af' }}>Review and approve each section</div>
-              </div>
-
-              <div style={{ padding: '0 10px' }}>
-                {STEPS.map((label, i) => {
-                  const isActive = i === currentStep
-                  const isDone = approved.has(i)
-                  const isPending = !isActive && !isDone
-
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentStep(i)}
-                      style={{
-                        width: '100%',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '11px 12px',
-                        borderRadius: 8,
-                        border: 'none',
-                        background: isActive ? '#111' : 'transparent',
-                        color: isActive ? '#fff' : '#374151',
-                        fontWeight: isActive ? 600 : 400,
-                        fontSize: 13,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        marginBottom: 2,
-                        transition: 'background-color 0.2s',
-                      }}
-                    >
-                      <span>{label}</span>
-                      {isDone && !isActive && (
-                        <span style={{ color: '#10b981' }}><CheckIcon size={15} /></span>
-                      )}
-                      {isPending && (
-                        <span style={{ color: '#f59e0b' }}><AlertCircleIcon /></span>
-                      )}
-                      {isActive && isDone && (
-                        <span style={{ color: '#34d399' }}><CheckIcon size={15} /></span>
-                      )}
-                      {isActive && !isDone && (
-                        <span style={{ color: '#f59e0b' }}><AlertCircleIcon /></span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* Progress */}
-              <div style={{ marginTop: 'auto', padding: '18px 18px 20px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.8, color: '#9ca3af', marginBottom: 8 }}>PROGRESS</div>
-                <div style={{ height: 6, background: '#e5e7eb', borderRadius: 8, marginBottom: 6, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', background: '#10b981', borderRadius: 8, transition: 'width 0.4s', width: `${progressPct}%` }} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, color: '#9ca3af' }}>{approved.size}/{STEPS.length}</span>
-                </div>
-                {approved.size === STEPS.length && (
-                  <button style={{ width: '100%', marginTop: 12, padding: '10px 10px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-                    Save &amp; Continue to Dashboard
-                  </button>
-                )}
-              </div>
-            </aside>
-
-            {/* ── MAIN CONTENT ── */}
-            <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              {/* Scrollable content */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: '28px 28px' }}>
-                {stepComponents[currentStep]}
-              </div>
-
-              {/* Sticky bottom action bar */}
-              <BottomBar step={currentStep} onApprove={handleApprove} />
-            </main>
+          <div style={{ fontSize: 13, color: '#6b7280' }}>
+            Progress: {progressPct}%
           </div>
         </div>
-      </>
-      )
+
+        {/* Loading indicator overlay */}
+        {loading && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(255, 255, 255, 0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+            <div style={{ background: '#fff', borderRadius: 12, padding: 40, textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+              <div style={{ width: 40, height: 40, border: '4px solid #e5e7eb', borderTopColor: '#10b981', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}></div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: '#111' }}>Generating Production Plan...</div>
+              <div style={{ fontSize: 13, color: '#6b7280', marginTop: 8 }}>AI is analyzing your project requirements</div>
+            </div>
+          </div>
+        )}
+
+        {/* Error overlay */}
+        {error && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+            <div style={{ background: '#fff', borderRadius: 12, padding: 40, maxWidth: 400, textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
+              <div style={{ fontSize: 18, fontWeight: 600, color: '#111', marginBottom: 8 }}>AI Generation Failed</div>
+              <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 24 }}>{error}</div>
+              <button onClick={() => setError(null)} style={{ padding: '10px 20px', background: '#111', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600, marginRight: 8 }}>
+                Try Again
+              </button>
+              <button onClick={() => { setError(null); setAIData(null); }} style={{ padding: '10px 20px', background: '#fff', color: '#111', border: '1px solid #e5e7eb', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>
+                Start Over
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── BODY ── */}
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+
+          {/* ── SIDEBAR ── */}
+          <aside style={{ width: 224, borderRight: '1px solid #e5e7eb', background: '#fff', display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto' }}>
+            <div style={{ padding: '18px 18px 14px' }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: '#111', marginBottom: 3 }}>Production Plan</div>
+              <div style={{ fontSize: 12, color: '#9ca3af' }}>Review and approve each section</div>
+            </div>
+
+            <div style={{ padding: '0 10px' }}>
+              {STEPS.map((label, i) => {
+                const isActive = i === currentStep
+                const isDone = approved.has(i)
+                const isPending = !isActive && !isDone
+
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentStep(i)}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '11px 12px',
+                      borderRadius: 8,
+                      border: 'none',
+                      background: isActive ? '#111' : 'transparent',
+                      color: isActive ? '#fff' : '#374151',
+                      fontWeight: isActive ? 600 : 400,
+                      fontSize: 13,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      marginBottom: 2,
+                      transition: 'background-color 0.2s',
+                    }}
+                  >
+                    <span>{label}</span>
+                    {isDone && !isActive && (
+                      <span style={{ color: '#10b981' }}><CheckIcon size={15} /></span>
+                    )}
+                    {isPending && (
+                      <span style={{ color: '#f59e0b' }}><AlertCircleIcon /></span>
+                    )}
+                    {isActive && isDone && (
+                      <span style={{ color: '#34d399' }}><CheckIcon size={15} /></span>
+                    )}
+                    {isActive && !isDone && (
+                      <span style={{ color: '#f59e0b' }}><AlertCircleIcon /></span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Progress */}
+            <div style={{ marginTop: 'auto', padding: '18px 18px 20px' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.8, color: '#9ca3af', marginBottom: 8 }}>PROGRESS</div>
+              <div style={{ height: 6, background: '#e5e7eb', borderRadius: 8, marginBottom: 6, overflow: 'hidden' }}>
+                <div style={{ height: '100%', background: '#10b981', borderRadius: 8, transition: 'width 0.4s', width: `${progressPct}%` }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 11, color: '#9ca3af' }}>{approved.size}/{STEPS.length}</span>
+              </div>
+              {approved.size === STEPS.length && (
+                <button style={{ width: '100%', marginTop: 12, padding: '10px 10px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                  Save &amp; Continue to Dashboard
+                </button>
+              )}
+            </div>
+          </aside>
+
+          {/* ── MAIN CONTENT ── */}
+          <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            {/* Scrollable content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '28px 28px' }}>
+              {stepComponents[currentStep]}
+            </div>
+
+            {/* Sticky bottom action bar */}
+            <BottomBar step={currentStep} onApprove={handleApprove} />
+          </main>
+        </div>
+      </div>
+    </>
+  )
 }
 
 

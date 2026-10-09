@@ -162,7 +162,7 @@ export default function ArtistProfile() {
           setPortfolioClips(clipsData || [])
         } else {
           // Create artist record if it doesn't exist
-          
+
           try {
             const newArtist = await Artist.create({
               email: user.email,
@@ -190,7 +190,7 @@ export default function ArtistProfile() {
             setProfilePublic(newArtist.profile_public ?? true)
             setPortfolioClips([])
           } catch (createErr) {
-            
+
           }
         }
 
@@ -209,7 +209,7 @@ export default function ArtistProfile() {
           }
         } catch (e) { }
       } catch (err) {
-        
+
       }
     }
     fetchData()
@@ -243,7 +243,7 @@ export default function ArtistProfile() {
       setPreviewUrl(null); // Clear preview after successful upload
       success('Photo Updated', 'Your profile photo has been updated')
     } catch (err) {
-      
+
       toastError('Upload Failed', `Failed to upload photo: ${err.message || 'Unknown error'}`)
       setPreviewUrl(null); // Clear preview on error
     } finally {
@@ -284,7 +284,7 @@ export default function ArtistProfile() {
       success('Profile Updated', 'Your profile has been saved')
       setEditing(false)
     } catch (err) {
-      
+
       toastError('Save Failed', 'Failed to save profile. Please try again.')
     }
   }
@@ -300,7 +300,7 @@ export default function ArtistProfile() {
       success('Bio Updated', 'Your bio has been updated')
       setShowBioModal(false)
     } catch (err) {
-      
+
       toastError('Save Failed', 'Failed to save bio. Please try again.')
     }
   }
@@ -320,7 +320,7 @@ export default function ArtistProfile() {
       setArtist(updated)
       success('Preferences Updated', 'Your settings have been saved')
     } catch (err) {
-      
+
       toastError('Save Failed', 'Failed to update preferences')
     }
   }
@@ -379,7 +379,7 @@ export default function ArtistProfile() {
       setGoogleDriveFolderId(folderId)
       success('Google Drive Connected', 'Your Google Drive folder has been successfully connected')
     } catch (err) {
-      
+
       toastError('Connection Failed', `Failed to connect Google Drive: ${err.message || 'Please try again.'}`)
     }
   }
@@ -391,17 +391,17 @@ export default function ArtistProfile() {
       await navigator.clipboard.writeText(url)
       success('Link Copied', 'Your public profile link has been copied to clipboard')
     } catch (err) {
-      
+
       toastError('Copy Failed', 'Failed to copy profile link')
     }
   }
 
   const handleAddPortfolioClip = async () => {
-    
-    
-    
-    
-    
+
+
+
+
+
 
     if (!artist) {
       toastError('Error', 'Artist profile not found. Please complete your profile first.')
@@ -426,9 +426,9 @@ export default function ArtistProfile() {
       }
 
       if (portfolioForm.video_source === 'upload' && selectedVideoFile) {
-        
+
         const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedVideoFile })
-        
+
         videoUrl = uploadResponse.file_url || uploadResponse.url
       } else if (portfolioForm.video_source !== 'upload' && portfolioForm.original_video_url) {
         videoUrl = portfolioForm.original_video_url
@@ -442,9 +442,9 @@ export default function ArtistProfile() {
       }
 
       if (selectedCoverImage) {
-        
+
         const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedCoverImage })
-        
+
         thumbnailUrl = uploadResponse.file_url || uploadResponse.url
       }
 
@@ -465,10 +465,10 @@ export default function ArtistProfile() {
         uploaded_by_id: artist.id
       }
 
-      
-      
-      
-      
+
+
+
+
 
       let newClip
       if (editingPortfolio) {
@@ -479,7 +479,7 @@ export default function ArtistProfile() {
         setPortfolioClips([...portfolioClips, newClip])
       }
 
-      
+
 
       setShowPortfolioModal(false)
       setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' })
@@ -489,7 +489,7 @@ export default function ArtistProfile() {
       localStorage.removeItem('ericrabar_portfolio_draft'); // Clear draft after successful save
       success(editingPortfolio ? 'Portfolio Updated' : 'Portfolio Added', editingPortfolio ? 'Your portfolio clip has been updated' : 'Your portfolio clip has been submitted for approval')
     } catch (err) {
-      
+
       toastError('Failed', `Failed to save portfolio clip: ${err.message || 'Unknown error'}`)
     } finally {
       setUploading(false)
@@ -503,7 +503,7 @@ export default function ArtistProfile() {
       await PortfolioClip.delete(clipId)
       setPortfolioClips(prev => prev.filter(clip => clip.id !== clipId))
     } catch (err) {
-      
+
       toastError('Delete Failed', 'Failed to delete portfolio clip')
     }
   }
@@ -993,10 +993,6 @@ export default function ArtistProfile() {
             <X className="w-6 h-6" />
           </button>
           <div className="w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
-            {//}
-            {//}
-            {//}
-            {//}
             {activeClip.video_embed_url ? (
               <div className="relative aspect-video rounded-lg overflow-hidden bg-black">
                 <iframe src={activeClip.video_embed_url} className="w-full h-full" frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title={activeClip.title || 'Portfolio Video'} />
@@ -1007,7 +1003,6 @@ export default function ArtistProfile() {
                 controls
                 autoPlay
                 className="w-full max-h-[80vh] rounded-lg bg-black"
-                onError={(e) => //}
               >
                 <source src={activeClip.video_url || activeClip.original_video_url} type="video/mp4" />
                 Your browser does not support the video tag.
@@ -1020,7 +1015,8 @@ export default function ArtistProfile() {
             {activeClip.title && <h3 className="text-white text-lg font-medium mt-4 text-center">{activeClip.title}</h3>}
           </div>
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   )
 }

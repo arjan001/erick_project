@@ -56,7 +56,7 @@ export default function AdminFileUploadSettingsPage() {
     setSettings({
       ...settings,
       allowed_image_types: [...settings.allowed_image_types, '']
-    ])
+    })
   }
 
   const updateImageType = (index, value) => {

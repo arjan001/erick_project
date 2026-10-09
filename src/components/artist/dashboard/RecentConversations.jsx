@@ -33,7 +33,7 @@ export default function RecentConversations({ userEmail }) {
           Message.filter({ recipient_email: userEmail }, '-created_at', 100),
         ])
         const grouped = {}
-        [...sent, ...received].forEach(m => {
+        sent.concat(received).forEach(m => {
           const existing = grouped[m.conversation_id]
           if (!existing || new Date(m.created_at) > new Date(existing.created_at)) grouped[m.conversation_id] = m
         })
@@ -47,7 +47,7 @@ export default function RecentConversations({ userEmail }) {
         }))
         setConversations(enriched)
       } catch (err) {
-        
+
         setConversations([])
       } finally {
         setLoading(false)

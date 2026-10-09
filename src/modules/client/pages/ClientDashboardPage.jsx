@@ -102,30 +102,23 @@ export default function ClientDashboard() {
 
   const handleAIComplete = async (aiData) => {
     //
-    
+
     // Process AI-generated data and create job directly
     setShowAIModal(false)
-    
+
     if (!projectOwner) {
       //
       toastError('Error', 'Failed to create job: No project owner')
       return
     }
-    
+
     if (!user) {
       //
       toastError('Error', 'Failed to create job: No user')
       return
     }
-    
+
     try {
-      //) || 0,
-        duration: '',
-        required_skills: [],
-        status: 'open',
-        created_date: new Date().toISOString()
-      })
-      
       const newJob = await Job.create({
         client_email: user.email,
         title: aiData?.overviewBrief?.title || 'AI Generated Job',
@@ -139,7 +132,7 @@ export default function ClientDashboard() {
         status: 'open',
         created_date: new Date().toISOString()
       })
-      
+
       //
       setJobs((prev) => [...prev, newJob])
       success('Job Created', 'AI-generated job created successfully')
@@ -279,15 +272,15 @@ export default function ClientDashboard() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No projects or jobs yet</h3>
                 <p className="text-gray-500 mb-6 max-w-md mx-auto text-sm">Start by posting your first project or job to connect with talented creators</p>
                 <div className="flex gap-3 justify-center">
-                  <Button 
-                    className="bg-black hover:bg-gray-800 text-white shadow-lg shadow-black/10" 
+                  <Button
+                    className="bg-black hover:bg-gray-800 text-white shadow-lg shadow-black/10"
                     onClick={() => openProjectModal()}
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Post Project
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="border-gray-900 hover:bg-gray-50"
                     onClick={() => setShowAIModal(true)}
                   >
