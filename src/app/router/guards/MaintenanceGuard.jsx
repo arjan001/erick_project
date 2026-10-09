@@ -24,7 +24,7 @@ export function MaintenanceGuard({ children }) {
         if (location.pathname?.startsWith('/code/')) {
           const pathParts = location.pathname?.split('/').filter(Boolean)
           const code = pathParts[1]; // Second path segment after 'code'
-          
+
           if (code) {
             const allowed = await canAccessSite(null, code)
             if (allowed) {
@@ -40,7 +40,7 @@ export function MaintenanceGuard({ children }) {
         if (location.pathname?.startsWith('/Admin')) {
           const hasAccessCode = sessionStorage.getItem('maintenance_access_code')
           const isAdmin = user?.role === 'admin'
-          
+
           if (isAdmin || hasAccessCode) {
             setLoading(false)
             return
@@ -54,19 +54,20 @@ export function MaintenanceGuard({ children }) {
         }
 
         const maintenance = await isMaintenanceMode()
-        
+
         if (maintenance) {
           // Check if user is admin (admins can bypass maintenance)
           const isAdmin = user?.role === 'admin'
           const hasAccessCode = sessionStorage.getItem('maintenance_access_code')
-          
+
           if (!isAdmin && !hasAccessCode) {
             navigate('/Maintenance')
             return
           }
         }
       } catch (error) {
-        
+        // If maintenance check fails, allow access (fail-safe)
+        console.warn('Maintenance check failed, allowing access:', error)
       } finally {
         setLoading(false)
       }

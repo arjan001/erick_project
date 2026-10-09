@@ -35,19 +35,19 @@ async function resolveAppRole(email) {
   try {
     const artists = await Artist.filter({ email })
     if (artists && artists.length > 0) return 'artist'
-  } catch { /* ignore */ }
+  } catch { /* ignore - return default */ }
   try {
     const teams = await Team.filter({ contact_email: email })
     if (teams && teams.length > 0) return 'team'
-  } catch { /* ignore */ }
+  } catch { /* ignore - return default */ }
   try {
     const owners = await ProjectOwner.filter({ email })
     if (owners && owners.length > 0) return 'client'
-  } catch { /* ignore */ }
+  } catch { /* ignore - return default */ }
   try {
     const backers = await Backer.filter({ contact_email: email })
     if (backers && backers.length > 0) return 'backer'
-  } catch { /* ignore */ }
+  } catch { /* ignore - return default */ }
   return 'artist'
 }
 
@@ -76,7 +76,7 @@ async function grantProSubscription(email) {
       started_at: new Date().toISOString(),
     })
   } catch (err) {
-    
+
   }
 }
 
@@ -144,7 +144,8 @@ async function ensureProfile(user) {
       await grantProSubscription(user.email)
     }
   } catch (err) {
-    
+    // If profile creation fails (e.g., Supabase not configured), log but don't block
+    console.warn('Profile creation failed:', err)
   }
 }
 
@@ -171,7 +172,7 @@ async function updatePresence(u) {
       if (artists[0]) await Artist.update(artists[0].id, { last_active: now })
     }
   } catch (err) {
-    
+
   }
 }
 
@@ -216,7 +217,7 @@ async function trackUserSession(user) {
       })
     }
   } catch (err) {
-    
+
   }
 }
 
@@ -280,7 +281,8 @@ export const AuthProvider = ({ children }) => {
           }
         }
       } catch (err) {
-        
+        // If Supabase is not configured, allow the app to load without auth
+        console.warn('Auth initialization failed, allowing guest access:', err)
       } finally {
         setIsLoadingAuth(false)
       }

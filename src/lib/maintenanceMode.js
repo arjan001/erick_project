@@ -15,10 +15,10 @@ let maintenanceCheckPromise = null
  */
 export async function fetchMaintenanceSettings() {
   try {
-    const settings = await SystemSetting.filter({ 
+    const settings = await SystemSetting.filter({
       setting_key: ['maintenance_mode', 'maintenance_message', 'maintenance_start_time', 'maintenance_end_time', 'maintenance_allowed_ips', 'maintenance_show_countdown', 'maintenance_contact_email', 'maintenance_template']
     }, 'setting_key', 100)
-    
+
     if (!settings || settings.length === 0) {
       return {
         enabled: false,
@@ -31,7 +31,7 @@ export async function fetchMaintenanceSettings() {
         template: 'default'
       }
     }
-    
+
     const settingsMap = {}
     settings.forEach(setting => {
       const value = setting.setting_value
@@ -47,7 +47,7 @@ export async function fetchMaintenanceSettings() {
         settingsMap[setting.setting_key] = value
       }
     })
-    
+
     return {
       enabled: settingsMap.maintenance_mode === true,
       message: settingsMap.maintenance_message || '<h2>Site Under Maintenance</h2><p>We are currently performing scheduled maintenance. Please check back soon.</p>',
@@ -59,7 +59,7 @@ export async function fetchMaintenanceSettings() {
       template: settingsMap.maintenance_template || 'default'
     }
   } catch (error) {
-    
+
     return {
       enabled: false,
       message: '<h2>Site Under Maintenance</h2><p>We are currently performing scheduled maintenance. Please check back soon.</p>',
@@ -81,15 +81,21 @@ export async function isMaintenanceMode() {
   if (maintenanceSettings) {
     return maintenanceSettings.enabled
   }
-  
+
   if (!maintenanceCheckPromise) {
     maintenanceCheckPromise = fetchMaintenanceSettings().then(settings => {
       maintenanceSettings = settings
       maintenanceCheckPromise = null
       return settings.enabled
+    }).catch(err => {
+      // If fetch fails (e.g., Supabase not configured), default to disabled
+      console.warn('Failed to fetch maintenance settings, defaulting to disabled:', err)
+      maintenanceSettings = { enabled: false }
+      maintenanceCheckPromise = null
+      return false
     })
   }
-  
+
   return maintenanceCheckPromise
 }
 
@@ -100,21 +106,21 @@ export async function isMaintenanceMode() {
  */
 export async function isAllowedDuringMaintenance(userIP = null) {
   const settings = await fetchMaintenanceSettings()
-  
+
   if (!settings.enabled) {
     return true
   }
-  
+
   // If no IP restriction, allow no one during maintenance
   if (!settings.allowedIPs || settings.allowedIPs.length === 0) {
     return false
   }
-  
+
   // Check if user IP is in allowed list
   if (userIP && settings.allowedIPs.includes(userIP)) {
     return true
   }
-  
+
   return false
 }
 
@@ -125,7 +131,7 @@ export async function isAllowedDuringMaintenance(userIP = null) {
  */
 export async function isValidAccessCode(code) {
   if (!code) return false
-  
+
   try {
     const { data, error } = await supabase
       .from('maintenance_access_codes')
@@ -133,26 +139,26 @@ export async function isValidAccessCode(code) {
       .eq('code', code)
       .eq('is_active', true)
       .single()
-    
+
     if (error || !data) return false
-    
+
     // Check if code has expired
     if (data.expires_at && new Date(data.expires_at) < new Date()) {
       return false
     }
-    
+
     // Update usage count
     await supabase
       .from('maintenance_access_codes')
-      .update({ 
+      .update({
         last_used_at: new Date().toISOString(),
         usage_count: (data.usage_count || 0) + 1
       })
       .eq('id', data.id)
-    
+
     return true
   } catch (err) {
-    
+
     return false
   }
 }
@@ -165,17 +171,17 @@ export async function isValidAccessCode(code) {
  */
 export async function canAccessSite(userIP = null, accessCode = null) {
   const settings = await fetchMaintenanceSettings()
-  
+
   if (!settings.enabled) {
     return true
   }
-  
+
   // Check access code first
   if (accessCode) {
     const validCode = await isValidAccessCode(accessCode)
     if (validCode) return true
   }
-  
+
   // Fall back to IP check
   return isAllowedDuringMaintenance(userIP)
 }
@@ -204,14 +210,14 @@ export async function getMaintenanceEndTime() {
  */
 export async function isMaintenanceScheduled() {
   const settings = await fetchMaintenanceSettings()
-  
+
   if (!settings.startTime) {
     return false
   }
-  
+
   const now = new Date()
   const startTime = new Date(settings.startTime)
-  
+
   return startTime > now
 }
 
