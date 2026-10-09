@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { createPageUrl } from '@/shared/utils/routing'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,7 @@ import { Mail, MapPin, Send } from 'lucide-react'
 import { sendContactEmail } from '@/shared/services/emailService'
 import EuropeanPresenceMap from '../components/home/EuropeanPresenceMap'
 import SEOMetaTags from '@/components/SEOMetaTags'
+import { features } from '@/lib/settings'
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -19,6 +20,21 @@ export default function Contact() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [siteName, setSiteName] = useState('SmartGigs Kenya')
+  const [contactEmail, setContactEmail] = useState('contact@smartgigskenya.com')
+
+  useEffect(() => {
+    // Load dynamic settings
+    Promise.all([
+      features.getSiteName(),
+      features.getContactEmail()
+    ]).then(([name, email]) => {
+      if (name) setSiteName(name)
+      if (email) setContactEmail(email)
+    }).catch(() => {
+      // Use defaults if settings fail to load
+    })
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -26,7 +42,7 @@ export default function Contact() {
 
     try {
       await sendContactEmail({
-        to: 'info@smartgigs.co.ke',
+        to: contactEmail,
         subject: `Contact Form: ${formData.subject}`,
         body: `
 Name: ${formData.name}
@@ -105,8 +121,8 @@ ${formData.message}
                   <Mail className="w-6 h-6 text-amber-600 flex-shrink-0" />
                   <div>
                     <p className="font-semibold mb-1 text-black">Email</p>
-                    <a href="mailto:hello@ericrabar.app" className="text-gray-600 hover:text-amber-600">
-                      hello@ericrabar.app
+                    <a href={`mailto:${contactEmail}`} className="text-gray-600 hover:text-amber-600">
+                      {contactEmail}
                     </a>
                   </div>
                 </div>
@@ -138,7 +154,7 @@ ${formData.message}
             <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
               <h3 className="font-semibold mb-4 text-black">Want to join our network?</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Apply as an artist or team to work on Eric Rabar projects
+                Apply as an artist or team to work on {siteName} projects
               </p>
               <div className="flex flex-col gap-2">
                 <Link to={createPageUrl('ApplyArtist')}>

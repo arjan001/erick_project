@@ -25,7 +25,7 @@ export async function fetchAllSettings() {
     try {
       const settingsData = await SystemSetting.filter({}, 'setting_key', 100)
       const settingsMap = {}
-      
+
       if (settingsData && settingsData.length > 0) {
         settingsData.forEach(setting => {
           const value = setting.setting_value
@@ -44,11 +44,11 @@ export async function fetchAllSettings() {
           }
         })
       }
-      
+
       settingsCache = settingsMap
       return settingsMap
     } catch (error) {
-      
+
       return {}
     } finally {
       cachePromise = null
@@ -95,25 +95,25 @@ export const features = {
   isRegistrationEnabled: () => isFeatureEnabled('enableRegistration'),
   isEmailVerificationRequired: () => isFeatureEnabled('requireEmailVerification'),
   isTwoFactorAuthEnabled: () => isFeatureEnabled('twoFactorAuth'),
-  
+
   // Notifications
   areEmailNotificationsEnabled: () => isFeatureEnabled('notificationEmail'),
   arePushNotificationsEnabled: () => isFeatureEnabled('notificationPush'),
-  
+
   // Layout & Display
   isMarqueeEnabled: () => isFeatureEnabled('enableMarquee'),
   areCategoriesEnabled: () => isFeatureEnabled('enableCategories'),
   isDarkModeEnabled: () => isFeatureEnabled('enableDarkMode'),
   isMobileAppEnabled: () => isFeatureEnabled('enableMobileApp'),
-  
+
   // Payments
   areSubscriptionsEnabled: () => isFeatureEnabled('enableSubscriptions'),
   isMarketplaceEnabled: () => isFeatureEnabled('enableMarketplace'),
   areReferralsEnabled: () => isFeatureEnabled('enableReferrals'),
-  
+
   // System
   isCacheEnabled: () => isFeatureEnabled('enableCache'),
-  
+
   // Get numeric settings
   getSessionTimeout: () => getSetting('sessionTimeout', 30),
   getPasswordMinLength: () => getSetting('passwordMinLength', 8),
@@ -123,15 +123,15 @@ export const features = {
   getReferralBonus: () => getSetting('referralBonus', 10),
   getApiRateLimit: () => getSetting('apiRateLimit', 1000),
   getCacheTimeout: () => getSetting('cacheTimeout', 3600),
-  
+
   // Get string settings
-  getSiteName: () => getSetting('siteName', 'Eric Rabar'),
-  getSiteUrl: () => getSetting('siteUrl', 'https://ericrabar.com'),
-  getContactEmail: () => getSetting('contactEmail', 'contact@ericrabar.com'),
-  getSupportEmail: () => getSetting('supportEmail', 'support@ericrabar.com'),
-  getDefaultCurrency: () => getSetting('defaultCurrency', 'EUR'),
+  getSiteName: () => getSetting('siteName', 'SmartGigs Kenya'),
+  getSiteUrl: () => getSetting('siteUrl', 'https://smartgigskenya.com'),
+  getContactEmail: () => getSetting('contactEmail', 'contact@smartgigskenya.com'),
+  getSupportEmail: () => getSetting('supportEmail', 'support@smartgigskenya.com'),
+  getDefaultCurrency: () => getSetting('defaultCurrency', 'KES'),
   getAllowedFileTypes: () => getSetting('allowedFileTypes', 'jpg,jpeg,png,mp4,pdf'),
   getFeaturedCategories: () => getSetting('featuredCategories', ''),
-  getPrimaryColor: () => getSetting('primaryColor', '#6366f1'),
-  getSecondaryColor: () => getSetting('secondaryColor', '#8b5cf6')
+  getPrimaryColor: () => getSetting('primaryColor', '#C9A962'),
+  getSecondaryColor: () => getSetting('secondaryColor', '#0A0A0A')
 }

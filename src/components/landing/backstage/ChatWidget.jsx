@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MessageCircle, X, Search, ChevronRight, Home, HelpCircle, Grid3x3, Mail, Phone, MapPin } from 'lucide-react'
 import { createPageUrl } from '@/shared/utils/routing'
+import { features } from '@/lib/settings'
 
 const HELP_ARTICLES = [
   { title: 'Self-Tape Audition Requests', desc: 'How to submit and manage self-tape requests.' },
@@ -16,7 +17,17 @@ export default function ChatWidget() {
   const [activeTab, setActiveTab] = useState('home')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedArticle, setSelectedArticle] = useState(null)
+  const [siteName, setSiteName] = useState('SmartGigs Kenya')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    // Load site name from settings
+    features.getSiteName().then(name => {
+      if (name) setSiteName(name)
+    }).catch(() => {
+      // Use default if settings fail to load
+    })
+  }, [])
 
   const handleTabClick = (tab) => {
     setActiveTab(tab)
@@ -56,7 +67,7 @@ export default function ChatWidget() {
     <div className="fixed bottom-6 right-6 z-[60] w-[360px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col" style={{ maxHeight: '70vh' }}>
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5">
-        <span className="text-sm font-bold uppercase tracking-tight text-black">Eric Rabar</span>
+        <span className="text-sm font-bold uppercase tracking-tight text-black">{siteName}</span>
         <button onClick={() => setOpen(false)} className="rounded-full p-1 hover:bg-gray-100">
           <X className="h-4 w-4 text-black" />
         </button>
