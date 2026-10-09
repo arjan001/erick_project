@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Sparkles, Upload } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 export default function EditableSection({ title, onGenerate }) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -19,9 +20,13 @@ export default function EditableSection({ title, onGenerate }) {
     const box = boxes.find(b => b.id === boxId)
     if (!box.prompt && box.images.length === 0) return
 
+    setBoxes(prevBoxes => prevBoxes.map(b =>
+      b.id === boxId ? { ...b, uploading: true, progress: 'Generating...' } : b
+    ))
+
     try {
       // TODO: Replace with Supabase Edge Function or OpenAI for image generation
-      // For now, return a placeholder
+      // For now, return a placeholder message
       setBoxes(prevBoxes => prevBoxes.map(b =>
         b.id === boxId ? { ...b, uploading: false, progress: 'Image generation requires AI service' } : b
       ))
@@ -31,35 +36,32 @@ export default function EditableSection({ title, onGenerate }) {
       ))
     }
   }
-        ))
-}
 
-setBoxes(prevBoxes => prevBoxes.map(b =>
-  b.id === boxId ? { ...b, images: generatedImages, uploading: false, progress: '' } : b
-))
+  const handleFileUpload = async (boxId, file) => {
+    setBoxes(boxes.map(b =>
+      b.id === boxId ? { ...b, uploading: true, progress: 'Uploading...' } : b
+    ))
+
+    try {
+      const fileName = `editable-section-${Date.now()}-${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('portfolio-clips')
+        .upload(fileName, file)
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('portfolio-clips')
+        .getPublicUrl(fileName)
+
+      setBoxes(boxes.map(b =>
+        b.id === boxId ? { ...b, images: [publicUrl], uploading: false, progress: '' } : b
+      ))
     } catch (error) {
-
-  setBoxes(prevBoxes => prevBoxes.map(b =>
-    b.id === boxId ? { ...b, uploading: false, progress: 'Error generating' } : b
-  ))
-}
-  }
-
-const handleFileUpload = async (boxId, file) => {
-  setBoxes(boxes.map(b =>
-    b.id === boxId ? { ...b, uploading: true, progress: 'Uploading...' } : b
-  ))
-
-  try {
-    const response = await base44.integrations.Core.UploadFile({ file })
-    setBoxes(boxes.map(b =>
-      b.id === boxId ? { ...b, images: [response.file_url], uploading: false, progress: '' } : b
-    ))
-  } catch (error) {
-
-    setBoxes(boxes.map(b =>
-      b.id === boxId ? { ...b, uploading: false, progress: 'Upload failed' } : b
-    ))
+      setBoxes(boxes.map(b =>
+        b.id === boxId ? { ...b, uploading: false, progress: 'Upload failed' } : b
+      ))
+    }
   }
 
   const handleUrlInput = (boxId, url) => {

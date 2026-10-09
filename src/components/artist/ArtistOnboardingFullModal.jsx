@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { base44 } from '@/api/base44Client'
 import { Artist } from '@/lib/supabaseEntities'
 import { FILM_ROLES_BY_CATEGORY, ALL_FILM_ROLES, SOFTWARE_CATEGORIES } from '@/lib/filmRoles'
 import { Button } from '@/components/ui/button'
@@ -52,7 +51,7 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
           })
         }
       } catch (err) {
-        
+
       } finally {
         setLoading(false)
       }
@@ -128,7 +127,7 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
       })
       setArtist(updated)
       success('Profile Complete', 'Your artist profile has been updated')
-      
+
       // Trigger confetti effect
       confetti({
         particleCount: 100,
@@ -136,10 +135,10 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
         origin: { y: 0.6 },
         colors: ['#000000', '#666666', '#999999', '#CCCCCC']
       })
-      
+
       setTimeout(() => onClose(), 1500)
     } catch (err) {
-      
+
       toastError('Save Failed', 'Failed to save profile')
     } finally {
       setSaving(false)
@@ -204,12 +203,12 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
                 <div>
                   <label className="block text-sm font-medium mb-1">Languages</label>
                   <div className="flex gap-2">
-                    <Input 
-                      value={languageInput} 
-                      onChange={e => setLanguageInput(e.target.value)} 
+                    <Input
+                      value={languageInput}
+                      onChange={e => setLanguageInput(e.target.value)}
                       onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
-                      placeholder="Add language" 
-                      className="flex-1" 
+                      placeholder="Add language"
+                      className="flex-1"
                     />
                     <Button onClick={addLanguage} variant="outline" size="icon"><Plus className="w-4 h-4" /></Button>
                   </div>
@@ -307,12 +306,12 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
               <div>
                 <label className="block text-sm font-medium mb-2">Or add custom skill</label>
                 <div className="flex gap-2">
-                  <Input 
-                    value={skillInput} 
-                    onChange={e => setSkillInput(e.target.value)} 
+                  <Input
+                    value={skillInput}
+                    onChange={e => setSkillInput(e.target.value)}
                     onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                    placeholder="Add custom skill" 
-                    className="flex-1" 
+                    placeholder="Add custom skill"
+                    className="flex-1"
                   />
                   <Button onClick={addSkill} variant="outline" size="icon"><Plus className="w-4 h-4" /></Button>
                 </div>

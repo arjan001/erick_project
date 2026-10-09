@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sparkles, Wand2 } from 'lucide-react'
-import { base44 } from '@/api/base44Client'
 
 export default function Home2() {
   const [referenceUrl, setReferenceUrl] = useState('')
@@ -15,15 +14,14 @@ export default function Home2() {
 
   const handleExtract = async () => {
     if (!referenceUrl) return
-    
+
     setExtracting(true)
     try {
-      const response = await base44.functions.invoke('extractWebsite', { url: referenceUrl })
-      if (response.data?.description) {
-        setDescription(response.data.description)
-      }
+      // TODO: Replace with Supabase Edge Function or OpenAI for website extraction
+      // For now, set a placeholder description
+      setDescription('Website extracted content would appear here')
     } catch (error) {
-      //
+      console.error('Extraction failed:', error)
     } finally {
       setExtracting(false)
     }
@@ -31,18 +29,14 @@ export default function Home2() {
 
   const handleGeneratePlan = async () => {
     if (!description) return
-    
+
     setGenerating(true)
     try {
-      // Generate production plan logic here
-      const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `Generate a detailed production plan for this project:\n\nType: ${projectType}\nDescription: ${description}\n\nProvide a structured production plan with timeline, departments needed, and key deliverables.`,
-      })
-      
-      //
-      alert('Production plan generated! Check console for details.')
+      // TODO: Replace with Supabase Edge Function or OpenAI for production plan generation
+      // For now, alert placeholder
+      alert('Production plan generation requires AI service')
     } catch (error) {
-      //
+      console.error('Generation failed:', error)
     } finally {
       setGenerating(false)
     }
@@ -55,7 +49,7 @@ export default function Home2() {
         <div className="w-10 h-10 bg-white rounded flex items-center justify-center">
           <span className="text-black font-black text-sm">S22</span>
         </div>
-        
+
         <nav className="flex flex-col items-center gap-6 text-white text-xs">
           <div className="flex flex-col items-center gap-1">
             <div className="w-6 h-6 flex items-center justify-center">🏠</div>
@@ -107,13 +101,13 @@ export default function Home2() {
             <div className="mb-8">
               <label className="block text-sm font-semibold mb-3">Reference Website (Optional)</label>
               <div className="flex gap-3">
-                <Input 
+                <Input
                   placeholder="www.example.com"
                   value={referenceUrl}
                   onChange={(e) => setReferenceUrl(e.target.value)}
                   className="flex-1 h-12 px-4 text-base"
                 />
-                <Button 
+                <Button
                   onClick={handleExtract}
                   disabled={!referenceUrl || extracting}
                   className="h-12 px-6 bg-emerald-400 hover:bg-emerald-500 text-white"
@@ -154,7 +148,7 @@ export default function Home2() {
                 </SelectContent>
               </Select>
 
-              <Button 
+              <Button
                 onClick={handleGeneratePlan}
                 disabled={!description || generating}
                 className="h-12 px-8 bg-gray-500 hover:bg-gray-600 text-white text-base"
