@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Upload, X, CheckCircle } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { base44 } from '@/api/base44Client'
+import { supabase } from '@/lib/supabase'
 
 export default function ArtistStepPortfolio({ data, updateData }) {
   const [isUploading, setIsUploading] = useState(false)
@@ -22,13 +22,22 @@ export default function ArtistStepPortfolio({ data, updateData }) {
 
     setIsUploading(true)
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file })
-      
+      const fileName = `${Date.now()}-${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('portfolio-videos')
+        .upload(fileName, file)
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('portfolio-videos')
+        .getPublicUrl(fileName)
+
       const clipData = {
         uploaded_by_type: 'artist',
         uploaded_by_id: 'temp',
-        original_video_url: file_url,
-        trimmed_video_url: file_url,
+        original_video_url: publicUrl,
+        trimmed_video_url: publicUrl,
         trim_start_time: 0,
         duration: 30,
         no_logos_agreement: agreements.noLogos,
@@ -56,7 +65,7 @@ export default function ArtistStepPortfolio({ data, updateData }) {
       {/* Agreements */}
       <div className="space-y-4 mb-8 p-6 bg-gray-100 rounded-xl border border-gray-200">
         <h3 className="font-semibold mb-3 text-black">Portfolio Requirements</h3>
-        
+
         <div className="flex items-start gap-3">
           <Checkbox
             id="noLogos"
@@ -114,11 +123,10 @@ export default function ArtistStepPortfolio({ data, updateData }) {
             disabled={!agreements.noLogos || !agreements.portfolioUsage || isUploading}
           />
           <Label htmlFor="portfolio-upload">
-            <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-              agreements.noLogos && agreements.portfolioUsage
+            <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${agreements.noLogos && agreements.portfolioUsage
                 ? 'border-gray-300 hover:border-amber-600 cursor-pointer'
                 : 'border-gray-300 opacity-50 cursor-not-allowed'
-            }`}>
+              }`}>
               <Upload className="w-12 h-12 mx-auto mb-4 text-gray-500" />
               <p className="font-medium mb-2 text-black">
                 {isUploading ? 'Uploading...' : 'Click to upload video'}

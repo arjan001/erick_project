@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { base44 } from '@/api/base44Client'
 
 const ACTOR_TAGS = [
   'Leading Role', 'Supporting Role', 'Character Actor', 'Voice Acting', 'Motion Capture',
@@ -24,168 +23,123 @@ export default function ArtistStepQuestions({ data, updateData }) {
   const [availableTags, setAvailableTags] = useState([])
 
   useEffect(() => {
-    // For actors and voice artists, show tag selection instead
     if (data.role === 'actor') {
       setAvailableTags(ACTOR_TAGS)
     } else if (data.role === 'voice_artist') {
       setAvailableTags(VOICE_ARTIST_TAGS)
     } else {
-      // For other roles, fetch AI questions
-      fetchQuestions()
+      // For other roles, use mock questions
+      setQuestions([
+        { id: 1, question: 'Describe your experience in this field.', answer: '' },
+        { id: 2, question: 'What is your creative approach?', answer: '' },
+        { id: 3, question: 'What technical skills do you bring?', answer: '' }
+      ])
     }
   }, [data.role])
 
   const fetchQuestions = async () => {
-    if (!data.role) return
-    
+    // TODO: Replace with Supabase Edge Function or OpenAI for AI question generation
     setLoading(true)
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Generate 3 professional questions for a ${data.role} applying to join a high-end production network. 
-        Questions should assess their experience, approach, and technical capabilities. 
-        Return as JSON array with format: [{"question": "..."}]`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            questions: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  question: { type: "string" }
-                }
-              }
-            }
-          }
-        }
-      })
-
-      const questionsData = result.questions.map((q, i) => ({
-        id: i + 1,
-        question: q.question,
-        answer: data.questionnaire_response?.[`q${i + 1}`] || ''
-      }))
-
-      setQuestions(questionsData)
-    } catch (error) {
-      
-      // Fallback questions
       setQuestions([
-        { id: 1, question: `What is your experience as a ${data.role}?`, answer: '' },
+        { id: 1, question: 'Describe your experience in this field.', answer: '' },
         { id: 2, question: 'What is your creative approach?', answer: '' },
-        { id: 3, question: 'What are your technical capabilities?', answer: '' }
+        { id: 3, question: 'What technical skills do you bring?', answer: '' }
       ])
+    } catch (error) {
     } finally {
       setLoading(false)
     }
   }
 
-  const handleAnswerChange = (questionId, value) => {
-    const updatedQuestions = questions.map(q => 
-      q.id === questionId ? { ...q, answer: value } : q
+  const toggleTag = (tag) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter(t => t !== tag))
+    } else {
+      setSelectedTags([...selectedTags, tag])
+    }
+  }
+
+  const handleAnswerChange = (questionId, answer) => {
+    const updatedQuestions = questions.map(q =>
+      q.id === questionId ? { ...q, answer } : q
     )
     setQuestions(updatedQuestions)
-    
-    const responses = {}
-    updatedQuestions.forEach(q => {
-      responses[`q${q.id}`] = q.answer
+    updateData('questionnaire_response', {
+      tags: selectedTags,
+      answers: updatedQuestions.reduce((acc, q) => {
+        acc[`q${q.id}`] = q.answer
+        return acc
+      }, {})
     })
-    updateData({ questionnaire_response: responses })
   }
 
-  const toggleTag = (tag) => {
-    let newTags
-    if (selectedTags.includes(tag)) {
-      newTags = selectedTags.filter(t => t !== tag)
-    } else if (selectedTags.length < 5) {
-      newTags = [...selectedTags, tag]
-    } else {
-      return; // Max 5 tags
-    }
-    
-    setSelectedTags(newTags)
-    updateData({ questionnaire_response: { tags: newTags } })
+  const handleTagsUpdate = () => {
+    updateData('questionnaire_response', {
+      tags: selectedTags,
+      answers: data.questionnaire_response?.answers || {}
+    })
   }
 
-  // Tag selection for actors and voice artists
-  if (data.role === 'actor' || data.role === 'voice_artist') {
+  if (loading) {
+    return <div className="text-center py-8 text-gray-500">Loading questions...</div>
+  }
+
+  // Show tag selection for actors and voice artists
+  if (availableTags.length > 0) {
     return (
       <div className="space-y-6">
-        <div>
-          <h3 className="text-2xl font-bold text-black mb-2">Select Your Specialties</h3>
-          <p className="text-gray-600">Choose up to 5 tags that best describe your expertise ({selectedTags.length}/5 selected)</p>
+        <h2 className="text-2xl font-bold mb-4">Select Your Specialties</h2>
+        <p className="text-gray-600 mb-6">Choose the tags that best describe your skills and experience.</p>
+
+        <div className="flex flex-wrap gap-2">
+          {availableTags.map(tag => (
+            <Badge
+              key={tag}
+              variant={selectedTags.includes(tag) ? 'default' : 'outline'}
+              className={`cursor-pointer px-3 py-1 ${selectedTags.includes(tag) ? 'bg-blue-600 hover:bg-blue-700' : 'hover:bg-gray-100'
+                }`}
+              onClick={() => toggleTag(tag)}
+            >
+              {tag}
+            </Badge>
+          ))}
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          {availableTags.map((tag) => {
-            const isSelected = selectedTags.includes(tag)
-            return (
-              <button
-                key={tag}
-                onClick={() => toggleTag(tag)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  isSelected
-                    ? 'bg-amber-600 text-white ring-2 ring-amber-600'
-                    : 'bg-white border border-gray-300 text-black hover:bg-gray-50'
-                } ${selectedTags.length >= 5 && !isSelected ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={selectedTags.length >= 5 && !isSelected}
-              >
-                {tag}
-              </button>
-            )
-          })}
-        </div>
-
-        {selectedTags.length > 0 && (
-          <div className="p-4 bg-gray-100 rounded-lg border border-gray-200">
-            <h4 className="text-sm font-semibold text-black mb-2">Selected Tags:</h4>
-            <div className="flex flex-wrap gap-2">
-              {selectedTags.map(tag => (
-                <Badge key={tag} className="bg-amber-600 text-white">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
+        <button
+          onClick={handleTagsUpdate}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Save Selection
+        </button>
       </div>
     )
   }
 
-  // Question-based approach for other roles
-  if (loading) {
+  // Show questions for other roles
+  if (questions) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Generating questions...</p>
-        </div>
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold mb-4">Application Questions</h2>
+        <p className="text-gray-600 mb-6">Please answer the following questions to complete your application.</p>
+
+        {questions.map(q => (
+          <div key={q.id} className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              {q.question}
+            </label>
+            <textarea
+              value={q.answer}
+              onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows={3}
+              placeholder="Your answer..."
+            />
+          </div>
+        ))}
       </div>
     )
   }
 
-  if (!questions) return null
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-2xl font-bold text-black mb-2">Tell us about yourself</h3>
-        <p className="text-gray-600">Answer these questions to help us understand your expertise</p>
-      </div>
-
-      {questions.map((q) => (
-        <div key={q.id} className="space-y-2">
-          <label className="text-sm font-medium text-black">
-            {q.id}. {q.question}
-          </label>
-          <textarea
-            value={q.answer}
-            onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-            placeholder="Your answer..."
-            className="w-full h-32 px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-600/20 resize-none"
-          />
-        </div>
-      ))}
-    </div>
-  )
+  return null
 }
