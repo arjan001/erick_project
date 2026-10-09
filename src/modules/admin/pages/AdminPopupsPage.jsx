@@ -7,11 +7,11 @@ import { Textarea } from '@/shared/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { Switch } from '@/shared/components/ui/switch'
 import { Plus, Edit2, Trash2, Upload, Play, X, ExternalLink } from 'lucide-react'
-import { base44 } from '@/api/base44Client'
 import { useToast } from '@/hooks/useToast'
 import DynamicPopupModal from '@/components/landing/backstage/DynamicPopupModal'
 
-const popupEntity = base44.entities.popups || {
+// Mock entity for popups - TODO: Create Supabase table for popups
+const popupEntity = {
   list: async () => [],
   filter: async () => [],
   get: async () => null,
@@ -60,7 +60,7 @@ export default function AdminPopupsPage() {
       const data = await popupEntity.filter({}, '-created_at', 100)
       setPopups(data || [])
     } catch (err) {
-      
+
     } finally {
       setLoading(false)
     }
@@ -76,7 +76,7 @@ export default function AdminPopupsPage() {
       const fileUrl = response.file_url || response.url
       setFormData({ ...formData, image_url: fileUrl })
     } catch (err) {
-      
+
       toastError('Upload Failed', 'Failed to upload image')
     } finally {
       setUploading(false)
@@ -93,7 +93,7 @@ export default function AdminPopupsPage() {
       const fileUrl = response.file_url || response.url
       setFormData({ ...formData, video_url: fileUrl, video_source: 'upload' })
     } catch (err) {
-      
+
       toastError('Upload Failed', 'Failed to upload video')
     } finally {
       setUploading(false)
@@ -121,7 +121,7 @@ export default function AdminPopupsPage() {
       resetForm()
       loadPopups()
     } catch (err) {
-      
+
       toastError('Save Failed', 'Failed to save popup')
     }
   }
@@ -134,7 +134,7 @@ export default function AdminPopupsPage() {
       success('Popup Deleted', 'Popup has been deleted')
       loadPopups()
     } catch (err) {
-      
+
       toastError('Delete Failed', 'Failed to delete popup')
     }
   }
@@ -239,9 +239,8 @@ export default function AdminPopupsPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
                         <h3 className="text-lg font-semibold text-gray-900">{popup.title}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          popup.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${popup.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                          }`}>
                           {popup.is_active ? 'Active' : 'Inactive'}
                         </span>
                         <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">

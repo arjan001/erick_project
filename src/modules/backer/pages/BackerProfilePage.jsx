@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Backer } from '@/lib/supabaseEntities'
-import { base44 } from '@/api/base44Client'
+import { supabase } from '@/lib/supabase'
 import { Edit2, Save, X, Upload, Globe, Linkedin, Instagram, Twitter, Youtube, Bell, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -158,16 +158,21 @@ export default function BackerProfile() {
 
     setUploadingLogo(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file })
-      const fileUrl = response.file_url || response.url || response.data?.url
-      if (!fileUrl) {
-        throw new Error('No file URL returned from upload service')
-      }
-      const updated = await Backer.update(backer.id, { logo_url: fileUrl })
+      const fileName = `backer-logo-${backer.id}-${Date.now()}-${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('backer-profiles')
+        .upload(fileName, file)
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('backer-profiles')
+        .getPublicUrl(fileName)
+
+      const updated = await Backer.update(backer.id, { logo_url: publicUrl })
       setBacker(updated)
       success('Logo Updated', 'Your logo has been uploaded successfully')
     } catch (error) {
-      //
       toastError('Upload Failed', `Failed to upload logo: ${error.message || 'Unknown error'}`)
     } finally {
       setUploadingLogo(false)

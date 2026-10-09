@@ -7,9 +7,9 @@ import { Textarea } from '@/shared/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { Switch } from '@/shared/components/ui/switch'
 import { Plus, Edit2, Trash2, Upload, X, Gavel, TrendingUp, Clock, CheckCircle, XCircle } from 'lucide-react'
-import { base44 } from '@/api/base44Client'
 import { useToast } from '@/hooks/useToast'
 import { ShopAuction, ShopProduct, AuctionBid } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 
 export default function AdminShopAuctionsPage() {
   const { success, error: toastError } = useToast()
@@ -49,7 +49,7 @@ export default function AdminShopAuctionsPage() {
       setAuctions(auctionsData || [])
       setProducts(productsData || [])
     } catch (err) {
-      
+
     } finally {
       setLoading(false)
     }
@@ -61,11 +61,19 @@ export default function AdminShopAuctionsPage() {
 
     setUploading(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file })
-      const fileUrl = response.file_url || response.url
-      setFormData({ ...formData, images: [...formData.images, fileUrl] })
+      const fileName = `auction-image-${Date.now()}-${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('shop-images')
+        .upload(fileName, file)
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('shop-images')
+        .getPublicUrl(fileName)
+
+      setFormData({ ...formData, images: [...formData.images, publicUrl] })
     } catch (err) {
-      
       toastError('Upload Failed', 'Failed to upload image')
     } finally {
       setUploading(false)
@@ -105,7 +113,7 @@ export default function AdminShopAuctionsPage() {
       resetForm()
       loadData()
     } catch (err) {
-      
+
       toastError('Save Failed', 'Failed to save auction')
     }
   }
@@ -118,7 +126,7 @@ export default function AdminShopAuctionsPage() {
       success('Auction Deleted', 'Auction has been deleted')
       loadData()
     } catch (err) {
-      
+
       toastError('Delete Failed', 'Failed to delete auction')
     }
   }
@@ -147,7 +155,7 @@ export default function AdminShopAuctionsPage() {
       const bids = await AuctionBid.filter({ auction_id: auctionId }, '-created_at', 50)
       alert(`Total bids: ${bids.length}\n\nBids:\n${bids.map(b => `$${b.bid_amount} - ${b.created_at}`).join('\n')}`)
     } catch (err) {
-      
+
       toastError('Error', 'Failed to load bids')
     }
   }
@@ -236,12 +244,11 @@ export default function AdminShopAuctionsPage() {
                         <div className="flex items-center gap-2">
                           <h3 className="text-lg font-semibold text-gray-900">{auction.title}</h3>
                           {getStatusIcon(auction.status)}
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${
-                            auction.status === 'active' ? 'bg-green-100 text-green-700' :
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${auction.status === 'active' ? 'bg-green-100 text-green-700' :
                             auction.status === 'ended' ? 'bg-blue-100 text-blue-700' :
-                            auction.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                            'bg-gray-100 text-gray-600'
-                          }`}>
+                              auction.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                'bg-gray-100 text-gray-600'
+                            }`}>
                             {auction.status}
                           </span>
                           {auction.is_featured && (

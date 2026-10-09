@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { ContentCategory } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, Star, Upload } from 'lucide-react'
 import { useToast } from '@/hooks/useToast.jsx'
-import { base44 } from '@/api/base44Client'
 
 export default function AdminCategoriesPage() {
   const { success, error: toastError } = useToast()
@@ -18,12 +18,12 @@ export default function AdminCategoriesPage() {
 
   const fetchData = async () => {
     try {
-      
+
       const all = await ContentCategory.list('display_order', 100)
-      
+
       setCategories(all || [])
     } catch (err) {
-      
+
       toastError('Load Failed', 'Failed to load categories')
     } finally {
       setLoading(false)
@@ -66,7 +66,7 @@ export default function AdminCategoriesPage() {
       setShowModal(false)
       fetchData()
     } catch (err) {
-      
+
       toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`)
     }
   }
@@ -106,17 +106,22 @@ export default function AdminCategoriesPage() {
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
-    
+
     setUploadingImage(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file })
-      const fileUrl = response.file_url || response.url || response.data?.url
-      if (!fileUrl) {
-        throw new Error('No file URL returned from upload service')
-      }
-      setForm({ ...form, image_url: fileUrl })
+      const fileName = `category-${Date.now()}-${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('category-images')
+        .upload(fileName, file)
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('category-images')
+        .getPublicUrl(fileName)
+
+      setForm({ ...form, image_url: publicUrl })
     } catch (err) {
-      
       toastError('Upload Failed', `Failed to upload image: ${err.message || 'Unknown error'}`)
     } finally {
       setUploadingImage(false)

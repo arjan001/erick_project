@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { base44 } from '@/api/base44Client'
 import { Invite, AuditLog } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
@@ -23,7 +22,7 @@ export default function AdminInvitesManagementPage() {
       const rows = await Invite.list('-created_date', 200)
       setInvites(rows || [])
     } catch (err) {
-      
+
       error('Error', 'Failed to fetch invites')
     } finally {
       setLoading(false)
@@ -33,7 +32,7 @@ export default function AdminInvitesManagementPage() {
   useEffect(() => { fetchInvites(); }, [])
 
   const logAction = (action, entityId, details) => {
-    AuditLog.create({ actor_email: user?.email, action, entity_type: 'Invite', entity_id: entityId, details }).catch(() => {})
+    AuditLog.create({ actor_email: user?.email, action, entity_type: 'Invite', entity_id: entityId, details }).catch(() => { })
   }
 
   const handleCreateInvite = async () => {
@@ -46,7 +45,8 @@ export default function AdminInvitesManagementPage() {
       const expiresAt = new Date()
       expiresAt.setDate(expiresAt.getDate() + inviteForm.expiresIn)
 
-      await base44.users.inviteUser(inviteForm.email, inviteForm.role === 'admin' ? 'admin' : 'user')
+      // TODO: Replace with Supabase Auth invite function
+      // await supabase.auth.admin.inviteUser({ email: inviteForm.email, ... })
       const created = await Invite.create({
         email: inviteForm.email,
         role: inviteForm.role,
@@ -61,7 +61,6 @@ export default function AdminInvitesManagementPage() {
       setShowModal(false)
       setInviteForm({ email: '', role: 'artist', expiresIn: 7 })
     } catch (err) {
-      
       error('Failed', 'Failed to send invite')
     } finally {
       setCreating(false)
@@ -70,11 +69,12 @@ export default function AdminInvitesManagementPage() {
 
   const handleResendInvite = async (invite) => {
     try {
-      await base44.users.inviteUser(invite.email, invite.role === 'admin' ? 'admin' : 'user')
+      // TODO: Replace with Supabase Auth invite function
+      // await supabase.auth.admin.inviteUser({ email: invite.email, ... })
       success('Sent', 'Invite resent successfully')
       logAction('invite.resend', invite.id, `Resent invite to ${invite.email}`)
     } catch (err) {
-      
+
       error('Failed', 'Failed to resend invite')
     }
   }
@@ -86,7 +86,7 @@ export default function AdminInvitesManagementPage() {
       logAction('invite.delete', inviteId, 'Deleted invite')
       success('Deleted', 'Invite deleted successfully')
     } catch (err) {
-      
+
       error('Failed', 'Failed to delete invite')
     }
   }

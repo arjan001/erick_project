@@ -6,9 +6,9 @@ import { Label } from '@/shared/components/ui/label'
 import { Textarea } from '@/shared/components/ui/textarea'
 import { Switch } from '@/shared/components/ui/switch'
 import { Plus, Edit2, Trash2, Upload, X } from 'lucide-react'
-import { base44 } from '@/api/base44Client'
 import { useToast } from '@/hooks/useToast'
 import { FeaturedBrand } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 
 export default function AdminFeaturedBrandsPage() {
   const { success, error: toastError } = useToast()
@@ -37,7 +37,7 @@ export default function AdminFeaturedBrandsPage() {
       const data = await FeaturedBrand.filter({}, 'order_index', 100)
       setBrands(data || [])
     } catch (err) {
-      
+
     } finally {
       setLoading(false)
     }
@@ -49,11 +49,19 @@ export default function AdminFeaturedBrandsPage() {
 
     setUploading(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file })
-      const fileUrl = response.file_url || response.url
-      setFormData({ ...formData, logo_url: fileUrl })
+      const fileName = `featured-brand-${Date.now()}-${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('featured-content')
+        .upload(fileName, file)
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('featured-content')
+        .getPublicUrl(fileName)
+
+      setFormData({ ...formData, logo_url: publicUrl })
     } catch (err) {
-      
       toastError('Upload Failed', 'Failed to upload logo')
     } finally {
       setUploading(false)
@@ -75,7 +83,7 @@ export default function AdminFeaturedBrandsPage() {
       resetForm()
       loadBrands()
     } catch (err) {
-      
+
       toastError('Save Failed', 'Failed to save brand')
     }
   }
@@ -88,7 +96,7 @@ export default function AdminFeaturedBrandsPage() {
       success('Brand Deleted', 'Featured brand has been deleted')
       loadBrands()
     } catch (err) {
-      
+
       toastError('Delete Failed', 'Failed to delete brand')
     }
   }
@@ -173,9 +181,8 @@ export default function AdminFeaturedBrandsPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h3 className="text-lg font-semibold text-gray-900">{brand.name}</h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            brand.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                          }`}>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${brand.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                            }`}>
                             {brand.is_active ? 'Active' : 'Inactive'}
                           </span>
                         </div>

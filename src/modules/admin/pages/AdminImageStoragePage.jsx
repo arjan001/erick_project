@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { base44 } from '@/api/base44Client'
+import { Artist, Team, Project, PortfolioClip, Backer } from '@/lib/supabaseEntities'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import { HardDrive, Download, Trash2, Search, AlertTriangle, CheckCircle, Clock, Image, FileText, Video } from 'lucide-react'
@@ -16,23 +16,23 @@ export default function AdminImageStoragePage() {
     const fetchStorageFiles = async () => {
       try {
         const [artists, teams, projects, clips, backers] = await Promise.all([
-          base44.entities.Artist.list('-created_date', 200),
-          base44.entities.Team.list('-created_date', 200),
-          base44.entities.Project.list('-created_date', 200),
-          base44.entities.PortfolioClip.list('-created_date', 200),
-          base44.entities.Backer.list('-created_date', 200),
+          Artist.list('-created_at', 200),
+          Team.list('-created_at', 200),
+          Project.list('-created_at', 200),
+          PortfolioClip.list('-created_at', 200),
+          Backer.list('-created_at', 200),
         ])
 
         const rows = []
-        artists.forEach(a => a.profile_photo_url && rows.push({ id: `artist-${a.id}`, name: `${a.full_name || 'artist'}_photo`, type: 'image', uploader: a.email, uploadedAt: a.created_date, url: a.profile_photo_url }))
-        teams.forEach(t => t.team_logo_url && rows.push({ id: `team-${t.id}`, name: `${t.team_name || 'team'}_logo`, type: 'image', uploader: t.contact_email, uploadedAt: t.created_date, url: t.team_logo_url }))
-        projects.forEach(p => p.image_url && rows.push({ id: `project-${p.id}`, name: `${p.project_owner_name || 'project'}_image`, type: 'image', uploader: p.project_owner_email, uploadedAt: p.created_date, url: p.image_url }))
-        backers.forEach(b => b.logo_url && rows.push({ id: `backer-${b.id}`, name: `${b.organization_name || 'backer'}_logo`, type: 'image', uploader: b.contact_email, uploadedAt: b.created_date, url: b.logo_url }))
+        artists.forEach(a => a.profile_photo_url && rows.push({ id: `artist-${a.id}`, name: `${a.full_name || 'artist'}_photo`, type: 'image', uploader: a.email, uploadedAt: a.created_at, url: a.profile_photo_url }))
+        teams.forEach(t => t.logo && rows.push({ id: `team-${t.id}`, name: `${t.team_name || 'team'}_logo`, type: 'image', uploader: t.contact_email, uploadedAt: t.created_at, url: t.logo }))
+        projects.forEach(p => p.image_url && rows.push({ id: `project-${p.id}`, name: `${p.project_owner_name || 'project'}_image`, type: 'image', uploader: p.project_owner_email, uploadedAt: p.created_at, url: p.image_url }))
+        backers.forEach(b => b.logo_url && rows.push({ id: `backer-${b.id}`, name: `${b.organization_name || 'backer'}_logo`, type: 'image', uploader: b.contact_email, uploadedAt: b.created_at, url: b.logo_url }))
         clips.forEach(c => (c.video_url || c.thumbnail_url) && rows.push({ id: `clip-${c.id}`, name: c.title || 'portfolio_clip', type: c.video_url ? 'video' : 'image', uploader: '', uploadedAt: c.created_date, url: c.video_url || c.thumbnail_url }))
 
         setFiles(rows)
       } catch (err) {
-        
+
         error('Error', 'Failed to fetch storage data')
       } finally {
         setLoading(false)
