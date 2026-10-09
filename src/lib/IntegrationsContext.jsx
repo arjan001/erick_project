@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { base44 } from '@/api/base44Client'
 
 const IntegrationsContext = createContext()
 
@@ -13,14 +12,11 @@ export const IntegrationsProvider = ({ children }) => {
 
   const fetchIntegrations = async () => {
     try {
-      // In production, this would fetch from the integrations_settings table
-      // For now, we'll use localStorage or environment variables
-      const savedSettings = localStorage.getItem('ericrabar_integrations')
+      const savedSettings = localStorage.getItem('smartgigs_integrations')
       if (savedSettings) {
         setIntegrations(JSON.parse(savedSettings))
       }
     } catch (err) {
-      
     } finally {
       setLoading(false)
     }
@@ -30,10 +26,8 @@ export const IntegrationsProvider = ({ children }) => {
     try {
       const updated = { ...integrations, [name]: settings }
       setIntegrations(updated)
-      localStorage.setItem('ericrabar_integrations', JSON.stringify(updated))
-      // In production, this would update the database
+      localStorage.setItem('smartgigs_integrations', JSON.stringify(updated))
     } catch (err) {
-      
     }
   }
 
