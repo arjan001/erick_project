@@ -24,7 +24,7 @@ const AuthenticatedApp = () => {
     )
   }
 
-  // Render the main app with new RouteRenderer wrapped in MaintenanceGuard
+  // Render the main app with RouteRenderer wrapped in MaintenanceGuard
   return (
     <MaintenanceGuard>
       <RouteRenderer />
