@@ -1,5 +1,9 @@
 # Supabase Database Setup Instructions
 
+## Status: ✅ All SQL Errors Fixed
+
+The schema file has been fully audited and fixed. All duplicate table definitions, missing triggers, and trigger order issues have been resolved.
+
 ## Order to Run SQL Files
 
 Run these files in your Supabase SQL Editor in this order:
@@ -12,7 +16,17 @@ This creates all the core tables for the SmartGigs Kenya platform:
 - Projects, Jobs, Applications
 - Messaging, Shop, Orders
 - Roles, Permissions, Audit Logs
+- Cart, Wishlist, Feature Flags
+- Popups, Voice Recordings, Featured Content
+- Shop Auctions, Auction Bids
 - And all other core tables
+
+**Fixed Issues:**
+- ✅ Removed duplicate `audit_logs` table
+- ✅ Removed duplicate `wishlist` table
+- ✅ Removed duplicate `trg_makamesco_transactions_updated_at` trigger
+- ✅ Moved all triggers to after their table definitions
+- ✅ Added missing triggers for popups, voice_recordings, featured_creatives, featured_brands, shop_auctions
 
 ### 2. Analytics Tables (OPTIONAL - for tracking)
 **File:** `database/migrations/add_analytics_tables.sql`
@@ -24,7 +38,7 @@ This adds analytics and tracking tables:
 - `analytics_events` - Custom events
 - `error_logs` - Error tracking
 
-**Note:** The main schema was updated to remove duplicate `user_sessions` table definition to avoid conflicts with this migration.
+**Note:** The main schema does NOT include `user_sessions` to avoid conflicts with this migration.
 
 ### 3. Storage Buckets (REQUIRED for file uploads)
 **File:** `database/legacy_sql/STORAGE_BUCKETS.sql`
@@ -43,7 +57,6 @@ Run these if you need specific features:
 
 - `database/migrations/add_makamesco_integration.sql` - M-Pesa payment integration
 - `database/migrations/create_payment_tables.sql` - Payment tables
-- `database/migrations/create_roles_permissions_schema.sql` - Roles and permissions (if not in main schema)
 - `database/migrations/seed_team_test_account.sql` - Test team account
 
 ## Quick Start
@@ -61,11 +74,7 @@ For full setup with analytics:
 
 ## Troubleshooting
 
-If you get an error about `user_sessions` table already existing:
-- The main schema file has been updated to remove the duplicate definition
-- Make sure you're using the latest version of `supabase_schema.sql`
-- Run the analytics migration after the main schema
-
-If you get errors about missing tables:
-- Make sure you're running the files in the correct order
+If you get any SQL errors:
+- Make sure you're using the latest version of `supabase_schema.sql` (commit af4c567)
 - Check that the previous file completed successfully before running the next one
+- All known duplicate and dependency issues have been fixed
