@@ -12,6 +12,17 @@ export async function generateProductionPlan(projectData) {
 }
 
 /**
+ * Regenerate a specific section of the production plan
+ * @param {Object} projectData - Project information
+ * @param {String} section - Section to regenerate
+ * @returns {Promise<Object>} AI-generated section data
+ */
+export async function regenerateSection(projectData, section) {
+  // TODO: Replace with actual AI service (Supabase Edge Functions or OpenAI)
+  return generateMockProductionPlan(projectData)
+}
+
+/**
  * Generate mock production plan
  */
 function generateMockProductionPlan(projectData) {
