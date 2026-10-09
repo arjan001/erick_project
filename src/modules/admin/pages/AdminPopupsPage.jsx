@@ -9,6 +9,7 @@ import { Switch } from '@/shared/components/ui/switch'
 import { Plus, Edit2, Trash2, Upload, Play, X, ExternalLink } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import DynamicPopupModal from '@/components/landing/backstage/DynamicPopupModal'
+import { supabase } from '@/lib/supabase'
 
 // Mock entity for popups - TODO: Create Supabase table for popups
 const popupEntity = {
@@ -72,11 +73,19 @@ export default function AdminPopupsPage() {
 
     setUploading(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file })
-      const fileUrl = response.file_url || response.url
-      setFormData({ ...formData, image_url: fileUrl })
-    } catch (err) {
+      const fileName = `popup-${Date.now()}-${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('cms-assets')
+        .upload(fileName, file)
 
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('cms-assets')
+        .getPublicUrl(fileName)
+
+      setFormData({ ...formData, image_url: publicUrl })
+    } catch (err) {
       toastError('Upload Failed', 'Failed to upload image')
     } finally {
       setUploading(false)

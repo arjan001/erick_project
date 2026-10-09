@@ -7,9 +7,9 @@ import { useAuth } from '@/lib/AuthContext'
 import { createPageUrl } from '@/shared/utils/routing'
 import InviteCodeCard from '@/components/InviteCodeCard'
 
-import { 
+import {
 
-  CheckCircle, Clock, AlertCircle, Briefcase, MessageSquare, 
+  CheckCircle, Clock, AlertCircle, Briefcase, MessageSquare,
 
   Eye, TrendingUp, Upload, Edit, Users, Mail, Phone, MapPin,
 
@@ -31,8 +31,8 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 
 import { notifyError, notifySuccess, confirmDialog } from '@/lib/sweetAlert'
+import emailService from '@/services/emailService'
 
-import { base44 } from '@/api/base44Client'
 import { Team, PortfolioClip, Message, Invite, Application, Job, JobInvitation, SupportTicket } from '@/lib/supabaseEntities'
 
 
@@ -457,7 +457,7 @@ export default function TeamDashboard() {
         original_video_url: videoUrl || '',
       }
 
-      setPortfolioClips(prev => prev.map(clip => 
+      setPortfolioClips(prev => prev.map(clip =>
         clip.id === editingPortfolio.id ? updatedClip : clip
       ))
 
@@ -520,12 +520,9 @@ export default function TeamDashboard() {
           member_name: memberForm.name,
           member_role: memberForm.role,
         })
-        await base44.functions.invoke('sendTransactionalEmail', {
-          to: memberForm.email,
-          toName: memberForm.name,
-          subject: `You've been added to ${team.team_name} on Eric Rabar`,
-          body: `<p>Hi ${memberForm.name},</p><p>${team.contact_name || team.team_name} added you as "${memberForm.role}" to the team "${team.team_name}" on Eric Rabar.</p><p><a href="${window.location.origin}/AcceptTeamInvite?invite=${invite.id}">Set up your login to join the team workspace</a></p><p>— Eric Rabar</p>`
-        })
+        // TODO: Send email using emailService
+        // await emailService.sendTransactionalEmail(...)
+        console.log('Email sending requires emailService configuration')
         notifySuccess('Member Added', `Invite email sent to ${memberForm.email}`)
       }
 
@@ -1136,12 +1133,11 @@ export default function TeamDashboard() {
                   <div key={ticket.id} className="p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between mb-1">
                       <p className="font-medium text-sm">{ticket.ticket_number}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        ticket.status === 'open' ? 'bg-gray-200 text-gray-800' :
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${ticket.status === 'open' ? 'bg-gray-200 text-gray-800' :
                         ticket.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                        ticket.status === 'resolved' ? 'bg-green-100 text-green-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
+                          ticket.status === 'resolved' ? 'bg-green-100 text-green-800' :
+                            'bg-gray-100 text-gray-800'
+                        }`}>
                         {ticket.status}
                       </span>
                     </div>

@@ -119,13 +119,17 @@ const handleSetPrimary = async (cardId) => {
       ...method,
       is_primary: method.id === cardId
     }))
-    await base44.entities.Artist.update(artist.id, { payment_methods: updatedMethods })
+    await Artist.update(artist.id, { payment_methods: updatedMethods })
     setPaymentMethods(updatedMethods)
     success('Primary Updated', 'Primary payment method updated')
   } catch (err) {
-
-    toastError('Update Failed', 'Failed to update primary method')
+    toastError('Update Failed', 'Failed to update primary payment method')
   }
+}
+  } catch (err) {
+
+  toastError('Update Failed', 'Failed to update primary method')
+}
 }
 
 if (loading) {

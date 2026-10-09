@@ -80,7 +80,7 @@ export default function CreatorDashboard() {
 
 const handleSaveProfile = async () => {
   try {
-    await base44.entities.Artist.update(artist.id, {
+    await Artist.update(artist.id, {
       full_name: artist.full_name,
       email: artist.email,
       phone: artist.phone,
