@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client'
+import { SeoSettings, PageSeoMetadata, SitemapGenerationLog } from '@/lib/supabaseEntities'
 
 /**
  * SEO Settings API
@@ -7,11 +7,9 @@ import { base44 } from '@/api/base44Client'
 // Get global SEO settings
 export const getSeoSettings = async () => {
   try {
-    const { data, error } = await base44.entities.seo_settings.list()
-    if (error) throw error
+    const data = await SeoSettings.list('-created_at', 1)
     return data?.[0] || null
   } catch (error) {
-    
     throw error
   }
 }
@@ -21,16 +19,13 @@ export const updateSeoSettings = async (settings) => {
   try {
     const existing = await getSeoSettings()
     if (existing) {
-      const { data, error } = await base44.entities.seo_settings.update(existing.id, settings)
-      if (error) throw error
+      const data = await SeoSettings.update(existing.id, settings)
       return data
     } else {
-      const { data, error } = await base44.entities.seo_settings.create(settings)
-      if (error) throw error
+      const data = await SeoSettings.create(settings)
       return data
     }
   } catch (error) {
-    
     throw error
   }
 }
@@ -42,11 +37,9 @@ export const updateSeoSettings = async (settings) => {
 // Get all page metadata
 export const getPageMetadata = async () => {
   try {
-    const { data, error } = await base44.entities.page_seo_metadata.list()
-    if (error) throw error
+    const data = await PageSeoMetadata.list()
     return data || []
   } catch (error) {
-    
     throw error
   }
 }
@@ -54,11 +47,9 @@ export const getPageMetadata = async () => {
 // Get single page metadata by slug
 export const getPageMetadataBySlug = async (slug) => {
   try {
-    const { data, error } = await base44.entities.page_seo_metadata.filter({ page_slug: slug })
-    if (error) throw error
+    const data = await PageSeoMetadata.filter({ page_slug: slug })
     return data?.[0] || null
   } catch (error) {
-    
     throw error
   }
 }
@@ -66,11 +57,9 @@ export const getPageMetadataBySlug = async (slug) => {
 // Update page metadata
 export const updatePageMetadata = async (id, metadata) => {
   try {
-    const { data, error } = await base44.entities.page_seo_metadata.update(id, metadata)
-    if (error) throw error
+    const data = await PageSeoMetadata.update(id, metadata)
     return data
   } catch (error) {
-    
     throw error
   }
 }
@@ -78,11 +67,9 @@ export const updatePageMetadata = async (id, metadata) => {
 // Create page metadata
 export const createPageMetadata = async (metadata) => {
   try {
-    const { data, error } = await base44.entities.page_seo_metadata.create(metadata)
-    if (error) throw error
+    const data = await PageSeoMetadata.create(metadata)
     return data
   } catch (error) {
-    
     throw error
   }
 }
@@ -90,11 +77,9 @@ export const createPageMetadata = async (metadata) => {
 // Delete page metadata
 export const deletePageMetadata = async (id) => {
   try {
-    const { data, error } = await base44.entities.page_seo_metadata.delete(id)
-    if (error) throw error
+    const data = await PageSeoMetadata.delete(id)
     return data
   } catch (error) {
-    
     throw error
   }
 }
@@ -108,19 +93,17 @@ export const generateSitemap = async () => {
   try {
     const seoSettings = await getSeoSettings()
     const pageMetadata = await getPageMetadata()
-    
+
     if (!seoSettings?.sitemap_enabled) {
       throw new Error('Sitemap generation is disabled')
     }
 
-    const baseUrl = seoSettings.canonical_url || 'https://ericrabar.com'
+    const baseUrl = seoSettings.canonical_url || 'https://smartgigs.co.ke'
     const defaultPriority = seoSettings.sitemap_priority || 0.8
     const defaultChangeFreq = seoSettings.sitemap_change_freq || 'weekly'
 
-    // Filter out no-index pages
     const indexedPages = pageMetadata.filter(page => !page.no_index)
 
-    // Build XML
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`
     xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`
 
@@ -140,12 +123,10 @@ export const generateSitemap = async () => {
 
     xml += `</urlset>`
 
-    // Log generation
     await logSitemapGeneration('success', indexedPages.length, xml.length)
 
     return xml
   } catch (error) {
-    
     await logSitemapGeneration('failed', 0, 0, error.message)
     throw error
   }
@@ -154,7 +135,7 @@ export const generateSitemap = async () => {
 // Log sitemap generation
 const logSitemapGeneration = async (status, urlCount, fileSize, errorMessage = null) => {
   try {
-    await base44.entities.sitemap_generation_log.create({
+    await SitemapGenerationLog.create({
       status,
       url_count: urlCount,
       file_size_bytes: fileSize,
@@ -163,22 +144,15 @@ const logSitemapGeneration = async (status, urlCount, fileSize, errorMessage = n
       completed_at: new Date().toISOString()
     })
   } catch (error) {
-    
   }
 }
 
 // Get sitemap generation logs
 export const getSitemapLogs = async (limit = 10) => {
   try {
-    const { data, error } = await base44.entities.sitemap_generation_log.list(
-      {},
-      '-created_at',
-      limit
-    )
-    if (error) throw error
+    const data = await SitemapGenerationLog.list('-created_at', limit)
     return data || []
   } catch (error) {
-    
     throw error
   }
 }
@@ -193,7 +167,6 @@ export const getRobotsTxt = async () => {
     const seoSettings = await getSeoSettings()
     return seoSettings?.robots_txt || 'User-agent: *\nAllow: /'
   } catch (error) {
-    
     throw error
   }
 }
@@ -212,20 +185,18 @@ export const generateSchemaForPage = async (slug) => {
       return null
     }
 
-    const baseUrl = seoSettings.canonical_url || 'https://ericrabar.com'
+    const baseUrl = seoSettings.canonical_url || 'https://smartgigs.co.ke'
     const pageUrl = pageMetadata?.canonical_url || `${baseUrl}${slug}`
 
-    // Organization schema
     const organizationSchema = {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: seoSettings.organization_name || 'Eric Rabar',
+      name: seoSettings.organization_name || 'SmartGigs Kenya',
       url: seoSettings.organization_url || baseUrl,
       logo: seoSettings.organization_logo || '',
       sameAs: seoSettings.same_as || []
     }
 
-    // WebPage schema
     const webPageSchema = {
       '@context': 'https://schema.org',
       '@type': pageMetadata?.schema_type || 'WebPage',
@@ -235,17 +206,14 @@ export const generateSchemaForPage = async (slug) => {
       inLanguage: seoSettings.og_locale || 'en_US'
     }
 
-    // Combine schemas
     const schema = [organizationSchema, webPageSchema]
 
-    // Add page-specific schema if exists
     if (pageMetadata?.schema_data && Object.keys(pageMetadata.schema_data).length > 0) {
       schema.push(pageMetadata.schema_data)
     }
 
     return JSON.stringify(schema)
   } catch (error) {
-    
     throw error
   }
 }

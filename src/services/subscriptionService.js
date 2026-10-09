@@ -1,20 +1,4 @@
-import { base44 } from '@/api/base44Client'
-
-const subscriptionEntity = base44.entities.subscriptions || {
-  list: async () => [],
-  filter: async () => [],
-  get: async () => null,
-  create: async () => null,
-  update: async () => null,
-}
-
-const packageEntity = base44.entities.subscription_packages || {
-  list: async () => [],
-  filter: async () => [],
-  get: async () => null,
-  create: async () => null,
-  update: async () => null,
-}
+import { Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 
 /**
  * Get user's active subscription
@@ -22,22 +6,20 @@ const packageEntity = base44.entities.subscription_packages || {
 export async function getUserSubscription(userId) {
   try {
     const now = new Date().toISOString()
-    const subscriptions = await subscriptionEntity.filter({
+    const subscriptions = await Subscription.filter({
       user_id: userId,
       status: 'active'
     }, '-created_at', 1)
-    
-    // Check if subscription is still valid
+
     if (subscriptions && subscriptions.length > 0) {
       const sub = subscriptions[0]
       if (sub.current_period_end && new Date(sub.current_period_end) > new Date()) {
         return sub
       }
     }
-    
+
     return null
   } catch (error) {
-    //
     return null
   }
 }
@@ -55,10 +37,9 @@ export async function hasActiveSubscription(userId) {
  */
 export async function getSubscriptionPackages() {
   try {
-    const packages = await packageEntity.filter({ active: true }, 'price_monthly', 100)
+    const packages = await SubscriptionPackage.filter({ active: true }, 'price_monthly', 100)
     return packages || []
   } catch (error) {
-    //
     return []
   }
 }
@@ -68,9 +49,8 @@ export async function getSubscriptionPackages() {
  */
 export async function getSubscriptionPackage(packageId) {
   try {
-    return await packageEntity.get(packageId)
+    return await SubscriptionPackage.get(packageId)
   } catch (error) {
-    //
     return null
   }
 }
@@ -82,18 +62,18 @@ export async function createSubscription({ userId, packageId, billingCycle }) {
   try {
     const pkg = await getSubscriptionPackage(packageId)
     if (!pkg) throw new Error('Package not found')
-    
+
     const price = billingCycle === 'yearly' ? pkg.price_yearly : pkg.price_monthly
     const now = new Date()
     const periodEnd = new Date()
-    
+
     if (billingCycle === 'yearly') {
       periodEnd.setFullYear(periodEnd.getFullYear() + 1)
     } else {
       periodEnd.setMonth(periodEnd.getMonth() + 1)
     }
-    
-    return await subscriptionEntity.create({
+
+    return await Subscription.create({
       user_id: userId,
       package_id: packageId,
       status: 'active',
@@ -103,7 +83,6 @@ export async function createSubscription({ userId, packageId, billingCycle }) {
       cancel_at_period_end: false,
     })
   } catch (error) {
-    //
     throw error
   }
 }
@@ -113,11 +92,10 @@ export async function createSubscription({ userId, packageId, billingCycle }) {
  */
 export async function cancelSubscription(subscriptionId) {
   try {
-    return await subscriptionEntity.update(subscriptionId, {
+    return await Subscription.update(subscriptionId, {
       cancel_at_period_end: true,
     })
   } catch (error) {
-    //
     throw error
   }
 }
