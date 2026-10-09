@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { base44 } from '@/api/base44Client'
-import { Team } from '@/lib/supabaseEntities'
+import { Team, TeamMember } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { User, Mail, Phone, MapPin, Briefcase, Edit2, Save, Upload, X, Shield } from 'lucide-react'
@@ -48,7 +48,7 @@ export default function TeamMemberProfilePage() {
         teamData = teams?.[0] || null
       }
       setTeam(teamData)
-      
+
       const memberId = searchParams.get('id')
       if (memberId) {
         fetchMember(memberId)
@@ -56,7 +56,6 @@ export default function TeamMemberProfilePage() {
         setLoading(false)
       }
     } catch (err) {
-      //
       toastError('Load Failed', 'Failed to load team data')
       setLoading(false)
     }
@@ -64,11 +63,10 @@ export default function TeamMemberProfilePage() {
 
   const fetchMember = async (memberId) => {
     try {
-      const memberData = await base44.entities.TeamMember.get(memberId)
+      const memberData = await TeamMember.get(memberId)
       setMember(memberData)
       setFormData(memberData)
     } catch (err) {
-      //
       toastError('Load Failed', 'Failed to load member profile. Please try again.')
     } finally {
       setLoading(false)
@@ -78,7 +76,7 @@ export default function TeamMemberProfilePage() {
   const handleSave = async () => {
     if (!member) return
     try {
-      await base44.entities.TeamMember.update(member.id, {
+      await TeamMember.update(member.id, {
         ...formData,
         updated_at: new Date().toISOString()
       })
@@ -86,7 +84,6 @@ export default function TeamMemberProfilePage() {
       success('Profile Updated', 'Member profile updated successfully')
       setEditing(false)
     } catch (err) {
-      //
       toastError('Save Failed', 'Failed to save profile')
     }
   }
@@ -97,14 +94,21 @@ export default function TeamMemberProfilePage() {
     setUploadingPhoto(true)
 
     try {
-      const response = await base44.integrations.Core.UploadFile({ file })
-      const fileUrl = response.file_url || response.url
-      
-      await base44.entities.TeamMember.update(member.id, { profile_photo: fileUrl })
-      setMember({ ...member, profile_photo: fileUrl })
+      const fileName = `team-member-${member.id}-${Date.now()}-${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('team-profiles')
+        .upload(fileName, file)
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('team-profiles')
+        .getPublicUrl(fileName)
+
+      await TeamMember.update(member.id, { profile_photo: publicUrl })
+      setMember({ ...member, profile_photo: publicUrl })
       success('Photo Updated', 'Profile photo updated successfully')
     } catch (err) {
-      //
       toastError('Upload Failed', 'Failed to upload photo')
     } finally {
       setUploadingPhoto(false)
@@ -130,134 +134,134 @@ export default function TeamMemberProfilePage() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Member Profile</h1>
-            <Button onClick={() => setEditing(!editing)} variant={editing ? 'outline' : 'default'}>
-              {editing ? <X className="w-4 h-4 mr-2" /> : <Edit2 className="w-4 h-4 mr-2" />}
-              {editing ? 'Cancel' : 'Edit Profile'}
-            </Button>
-          </div>
+        <h1 className="text-3xl font-bold text-gray-900">Member Profile</h1>
+        <Button onClick={() => setEditing(!editing)} variant={editing ? 'outline' : 'default'}>
+          {editing ? <X className="w-4 h-4 mr-2" /> : <Edit2 className="w-4 h-4 mr-2" />}
+          {editing ? 'Cancel' : 'Edit Profile'}
+        </Button>
+      </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
-            <div className="flex items-start gap-6 mb-6">
-              <div className="relative">
-                <div className="w-32 h-32 bg-gray-200 rounded-xl flex items-center justify-center overflow-hidden">
-                  {member.profile_photo ? (
-                    <img src={member.profile_photo} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-16 h-16 text-gray-400" />
-                  )}
-                </div>
-                {editing && (
-                  <label className="absolute bottom-2 right-2 w-8 h-8 bg-black rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-800">
-                    <Upload className="w-4 h-4 text-white" />
-                    <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-                  </label>
-                )}
+      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+        <div className="flex items-start gap-6 mb-6">
+          <div className="relative">
+            <div className="w-32 h-32 bg-gray-200 rounded-xl flex items-center justify-center overflow-hidden">
+              {member.profile_photo ? (
+                <img src={member.profile_photo} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-16 h-16 text-gray-400" />
+              )}
+            </div>
+            {editing && (
+              <label className="absolute bottom-2 right-2 w-8 h-8 bg-black rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-800">
+                <Upload className="w-4 h-4 text-white" />
+                <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+              </label>
+            )}
+          </div>
+          <div className="flex-1">
+            {editing ? (
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="text-2xl font-bold"
+              />
+            ) : (
+              <h2 className="text-2xl font-bold text-gray-900">{member.name}</h2>
+            )}
+            <div className="flex items-center gap-2 mt-2">
+              <Shield className="w-4 h-4 text-gray-500" />
+              <span className="text-sm text-gray-600 capitalize">{member.role}</span>
+            </div>
+          </div>
+        </div>
+
+        {editing ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
               </div>
-              <div className="flex-1">
-                {editing ? (
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="text-2xl font-bold"
-                  />
-                ) : (
-                  <h2 className="text-2xl font-bold text-gray-900">{member.name}</h2>
-                )}
-                <div className="flex items-center gap-2 mt-2">
-                  <Shield className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm text-gray-600 capitalize">{member.role}</span>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Phone</label>
+                <Input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
               </div>
             </div>
-
-            {editing ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>
-                    <Input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">Phone</label>
-                    <Input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Location</label>
-                  <Input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Skills (comma-separated)</label>
-                  <Input
-                    type="text"
-                    value={formData.skills}
-                    onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-                    placeholder="e.g. Video Editing, Motion Graphics, Sound Design"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Bio</label>
-                  <textarea
-                    value={formData.bio}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                  />
-                </div>
-                <Button onClick={handleSave} className="bg-black text-white hover:bg-gray-800">
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Changes
-                </Button>
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">Location</label>
+              <Input
+                type="text"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">Skills (comma-separated)</label>
+              <Input
+                type="text"
+                value={formData.skills}
+                onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+                placeholder="e.g. Video Editing, Motion Graphics, Sound Design"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">Bio</label>
+              <textarea
+                value={formData.bio}
+                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+              />
+            </div>
+            <Button onClick={handleSave} className="bg-black text-white hover:bg-gray-800">
+              <Save className="w-4 h-4 mr-2" />
+              Save Changes
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-gray-600">
+              <Mail className="w-4 h-4" />
+              <span>{member.email || 'Email not set'}</span>
+            </div>
+            {member.phone && (
+              <div className="flex items-center gap-2 text-gray-600">
+                <Phone className="w-4 h-4" />
+                <span>{member.phone}</span>
               </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Mail className="w-4 h-4" />
-                  <span>{member.email || 'Email not set'}</span>
+            )}
+            {member.location && (
+              <div className="flex items-center gap-2 text-gray-600">
+                <MapPin className="w-4 h-4" />
+                <span>{member.location}</span>
+              </div>
+            )}
+            {member.skills && (
+              <div className="flex items-start gap-2 text-gray-600">
+                <Briefcase className="w-4 h-4 mt-1" />
+                <div>
+                  <div className="font-medium">Skills</div>
+                  <div className="text-sm">{member.skills}</div>
                 </div>
-                {member.phone && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Phone className="w-4 h-4" />
-                    <span>{member.phone}</span>
-                  </div>
-                )}
-                {member.location && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="w-4 h-4" />
-                    <span>{member.location}</span>
-                  </div>
-                )}
-                {member.skills && (
-                  <div className="flex items-start gap-2 text-gray-600">
-                    <Briefcase className="w-4 h-4 mt-1" />
-                    <div>
-                      <div className="font-medium">Skills</div>
-                      <div className="text-sm">{member.skills}</div>
-                    </div>
-                  </div>
-                )}
-                {member.bio && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="font-medium text-gray-900 mb-2">Bio</div>
-                    <p className="text-gray-600">{member.bio}</p>
-                  </div>
-                )}
+              </div>
+            )}
+            {member.bio && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="font-medium text-gray-900 mb-2">Bio</div>
+                <p className="text-gray-600">{member.bio}</p>
               </div>
             )}
           </div>
+        )}
+      </div>
     </div>
   )
 }
