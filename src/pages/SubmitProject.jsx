@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { base44 } from '@/api/base44Client'
 import { Project } from '@/lib/supabaseEntities'
 import { loadAnalyzedProjectFromStorage, clearAnalyzedProjectFromStorage, regenerateProjectBrief, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService'
 import StepProjectType from '../components/intake/StepProjectType'
@@ -250,21 +249,13 @@ export default function SubmitProject() {
     try {
       let projectImage = null
 
-      // Generate and save project image once
-      if (projectData.project_type !== 'funding_coproduction') {
-        try {
-          const imageResponse = await base44.functions.invoke('generateProjectImage', {
-            projectType: projectData.project_type,
-            description: projectData.notes,
-            company: projectData.project_owner_company || projectData.project_owner_name
-          })
-          if (imageResponse.data?.image_url) {
-            projectImage = imageResponse.data.image_url
-          }
-        } catch (imgError) {
-          //
-        }
-      }
+      // TODO: Replace with Supabase Edge Function for image generation
+      // if (projectData.project_type !== 'funding_coproduction') {
+      //   try {
+      //     // Call Supabase Edge Function to generate project image
+      //   } catch (imgError) {
+      //   }
+      // }
 
       const fullRecord = {
         project_type: projectData.project_type,
