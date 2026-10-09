@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { base44 } from '@/api/base44Client'
 import { Artist } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Plus, X, Sparkles, ThumbsUp, Edit2, Check, Globe, Instagram, Linkedin, MapPin, Languages, Award, Briefcase, Users as UsersIcon } from 'lucide-react'
@@ -7,7 +6,7 @@ import SkillsExperienceTagInput from '@/components/SkillsExperienceTagInput'
 import worldLanguages from '@/data/languages.json'
 
 const SKILL_SUGGESTIONS = [
-  'After Effects', 'Adobe Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'Concept Art', 'Creative Direction', 
+  'After Effects', 'Adobe Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'Concept Art', 'Creative Direction',
   'Editing', 'Color Grading', 'Motion Graphics', 'VFX', '3D Animation', 'Maya', 'Cinema 4D', 'Blender',
   'Sound Design', 'Pro Tools', 'Cinematography', 'Lighting Design', 'Set Design', 'Art Direction',
   'Visual Effects', 'Compositing', 'Storyboarding', 'Photography', 'Directing', 'Production Management',
@@ -73,15 +72,15 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
   const [bio, setBio] = useState(artist?.bio || '')
   const [editingBio, setEditingBio] = useState(false)
   const [bioLoading, setBioLoading] = useState(false)
-  
+
   const [skills, setSkills] = useState(artist?.skills_experience?.map(s => s.skill) || [])
   const [editingSkills, setEditingSkills] = useState(false)
-  
+
   const [clients, setClients] = useState(artist?.past_clients || [])
   const [newClient, setNewClient] = useState('')
   const [showClientSuggestions, setShowClientSuggestions] = useState(false)
   const [editingClients, setEditingClients] = useState(false)
-  
+
   const [projectTypes, setProjectTypes] = useState(artist?.project_specialties || [])
   const [newProjectType, setNewProjectType] = useState('')
   const [showProjectSuggestions, setShowProjectSuggestions] = useState(false)
@@ -110,25 +109,11 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
       const skillsList = skills.join(', ')
       const clientsList = clients.join(', ')
       const specialties = projectTypes.join(', ')
-      
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Create a professional, compelling bio for a creative professional with the following:
-- Skills: ${skillsList || 'Not specified'}
-- Past clients: ${clientsList || 'Not specified'}
-- Specialties: ${specialties || 'Not specified'}
 
-Make it concise (2-3 sentences), engaging, and professional. It should highlight their expertise and unique value.`,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            bio: { type: 'string' }
-          }
-        }
-      })
-      
-      setBio(result.bio)
+      // TODO: Replace with Supabase Edge Function or OpenAI for AI bio generation
+      const mockBio = `A creative professional specializing in ${specialties || 'various creative disciplines'}. Expert in ${skillsList || 'multiple creative skills'}, with experience working with clients like ${clientsList || 'industry leaders'}. Passionate about delivering high-quality creative work that tells compelling stories.`
+      setBio(mockBio)
     } catch (err) {
-      
     } finally {
       setBioLoading(false)
     }
@@ -217,7 +202,7 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               </button>
             )}
           </div>
-          
+
           {editingBio ? (
             <div className="space-y-3">
               <textarea
@@ -228,18 +213,18 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               />
               <div className="flex gap-2">
                 <Button
-                    onClick={async () => {
-                      if (artist) {
-                        const updated = await Artist.update(artist.id, { bio })
-                        if (onUpdate) onUpdate(updated)
-                      }
-                      setEditingBio(false)
-                    }}
-                    className="flex-1 bg-black text-white hover:bg-gray-800"
-                  >
-                    <Check className="w-4 h-4 mr-1" />
-                    Save Bio
-                  </Button>
+                  onClick={async () => {
+                    if (artist) {
+                      const updated = await Artist.update(artist.id, { bio })
+                      if (onUpdate) onUpdate(updated)
+                    }
+                    setEditingBio(false)
+                  }}
+                  className="flex-1 bg-black text-white hover:bg-gray-800"
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  Save Bio
+                </Button>
                 <Button
                   onClick={generateBioWithAI}
                   disabled={bioLoading}
@@ -278,9 +263,9 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
 
           {editingSkills ? (
             <div className="space-y-4">
-              <SkillsExperienceTagInput 
-                selected={skills} 
-                onChange={setSkills} 
+              <SkillsExperienceTagInput
+                selected={skills}
+                onChange={setSkills}
                 placeholder="Search skills... (e.g. After Effects, Editing, VFX)"
               />
               <Button
@@ -410,9 +395,9 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 <Check className="w-4 h-4 mr-1" />
                 Done
               </Button>
-              </div>
-              ) : (
-              <div className="flex flex-wrap gap-3">
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-3">
               {clients.length > 0 ? clients.map((client) => (
                 <div key={client} className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-md" title={client}>
                   {client.slice(0, 2).toUpperCase()}
@@ -505,9 +490,9 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
                 <Check className="w-4 h-4 mr-1" />
                 Done
               </Button>
-              </div>
-              ) : (
-              <div className="flex flex-wrap gap-2">
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
               {projectTypes.length > 0 ? projectTypes.map((type) => (
                 <span key={type} className="px-3 py-1.5 bg-white border border-green-200 rounded-full text-sm text-gray-800 shadow-sm">
                   {type}
@@ -595,9 +580,9 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               }} className="w-full bg-orange-600 text-white hover:bg-orange-700">
                 <Check className="w-4 h-4 mr-1" /> Done
               </Button>
-              </div>
-              ) : (
-              <div className="flex flex-wrap gap-2">
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
               {languages.length > 0 ? languages.map((lang) => (
                 <span key={lang} className="px-3 py-1.5 bg-white border border-orange-200 rounded-full text-sm text-gray-800 shadow-sm">
                   {lang}
@@ -680,9 +665,9 @@ Make it concise (2-3 sentences), engaging, and professional. It should highlight
               }} className="w-full bg-teal-600 text-white hover:bg-teal-700">
                 <Check className="w-4 h-4 mr-1" /> Done
               </Button>
-              </div>
-              ) : (
-              <div className="flex flex-wrap gap-2">
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
               {countries.length > 0 ? countries.map((c) => (
                 <span key={c} className="px-3 py-1.5 bg-white border border-teal-200 rounded-full text-sm text-gray-800 shadow-sm">
                   {c}
