@@ -16,7 +16,7 @@ const GoogleIcon = () => (
 
 const AppleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5" fill="white">
-    <path d="M17.05 12.04c.03 3.12 2.74 4.16 2.77 4.18-.02.08-.43 1.49-1.43 2.94-.86 1.25-1.76 2.49-3.18 2.52-1.39.03-1.84-.82-3.43-.82-1.59 0-2.09.79-3.41.85-1.37.05-2.32 1.36-3.07 1.58-3.08-1.48-.09-2.36-1.36-3.28-2.61-1.79-2.58-3.16-7.29-1.32-10.47.91-1.58-2.58-2.11-3.33-1.03-.67-.78-1.26-2.03-1.1-3.33 1.17-.09 2.36-.6 3.08-1.48zM14.4 5.45c.73-.88 1.22-2.11 1.09-3.33c.67.78 1.26 2.03 1.1 3.23-1.48z" />
+    <path d="M18.71 19.07c-.86 2.36-1.83 3.2-3.65 3.2-1.9 0-3.63-1.15-4.2-3.32-.7-2.45-1.95-3.92-4.2-3.92-2.54 0-3.87 1.51-4.46 3.08C5.3 15.61 4.94 14.5 5 14.5c-1.18 0-2.31-.4-3.43-1.1-.7-.47-1.55-.26-2.37.15-.92-.11-1.23-.83-1.72-1.78-.57-1.08-1.29-1.28-2.25-.3-1.31.59-2.68 1.13-3.65 1.41-2.31 4.2-1.39 6.31-.69 1.54-1.84 2.31-3.65 2.31-1.81 0-3.37-.51-4.72-1.53-1.48-1.12-2.89-2.36-4.25-3.79V1.5a4.5 4.5 0 0 1 9 0zM17 2.13c.05 2.83-.94 4.96-2.66 4.96-2.66.19 0 .39-.08.51-.08-.65-.89-.65-1.78-1.24-2.66-1.59-1.54-.57-3.09-1.1-4.61-1.1-.63 0-1.28.02-1.9.06-.67.58-1.37 1.25-2.05 1.8-.86.68-1.76 1.34-2.66 1.99-.9.65-1.81 1.29-2.71 1.94-.9.65-1.81 1.29-2.71 1.94z" />
   </svg>
 )
 
@@ -41,8 +41,9 @@ const DEMO_BUTTONS = [
   { email: 'admin@smartgigskenya.com', label: 'Admin', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AD&backgroundColor=4f46e5' },
   { email: 'client@client.com', label: 'Client', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CL&backgroundColor=0a0b2e' },
   { email: 'artist@artist.com', label: 'Creator', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CR&backgroundColor=00a37e' },
-  { email: 'team@team.com', label: 'Team', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=TM&backgroundColor=6366f1' },
-  { email: 'backer@backer.com', label: 'Backer', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=BK&backgroundColor=f59e0b' },
+  // Temporarily hide team and backer demo buttons
+  // { email: 'team@team.com', label: 'Team', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=TM&backgroundColor=6366f1' },
+  // { email: 'backer@backer.com', label: 'Backer', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=BK&backgroundColor=f59e0b' },
 ]
 
 const talentBenefits = [
@@ -113,10 +114,24 @@ export default function SignIn() {
     setError('')
     setLoading(true)
     try {
-      login({ id: demoEmail, email: demoEmail, full_name: acc.name, role: acc.role })
+      // For demo purposes, bypass Supabase auth and set user directly
+      // This allows login without real Supabase credentials
+      const mockUser = {
+        id: demoEmail,
+        email: demoEmail,
+        full_name: acc.name,
+        role: acc.role,
+        app_metadata: { role: acc.role }
+      }
+
+      // Directly set auth state without Supabase for demo
+      localStorage.setItem('smartgigs_demo_user', JSON.stringify(mockUser))
+      localStorage.setItem('smartgigs_auth', 'true')
+
       if (acc.role === 'team') {
         localStorage.setItem('smartgigs_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: demoEmail, role: 'team_admin' }))
       }
+
       const redirectDest = sessionStorage.getItem('redirectAfterLogin')
       sessionStorage.removeItem('redirectAfterLogin')
       window.location.href = returnTo || redirectDest || ROLE_REDIRECTS[acc.role] || '/'

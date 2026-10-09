@@ -263,9 +263,24 @@ export const AuthProvider = ({ children }) => {
   }, [user?.email])
 
   useEffect(() => {
-    // Check for Supabase auth session
+    // Check for Supabase auth session or demo user
     (async () => {
       try {
+        // First check for demo user (for development/testing without Supabase)
+        const demoUserStr = localStorage.getItem('smartgigs_demo_user')
+        if (demoUserStr) {
+          const demoUser = JSON.parse(demoUserStr)
+          const u = buildUser(demoUser, demoUser.role)
+          setUser(u)
+          setIsAuthenticated(true)
+          if (u.is_system_user) {
+            setPermissions(['*'])
+          }
+          setIsLoadingAuth(false)
+          return
+        }
+
+        // Otherwise check Supabase auth session
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
           const appRole = await resolveAppRole(session.user.email)
@@ -375,7 +390,10 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false)
     // 2. Sign out from Supabase
     await supabase.auth.signOut()
-    // 3. Clear every piece of stored auth/session data
+    // 3. Clear demo user data
+    localStorage.removeItem('smartgigs_demo_user')
+    localStorage.removeItem('smartgigs_auth')
+    // 4. Clear every piece of stored auth/session data
     localStorage.removeItem('ericrabar_user')
     localStorage.removeItem('ericrabar_team')
     localStorage.removeItem('ericrabar_sidebar_expanded')
@@ -383,11 +401,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('smartgigs_sidebar_collapsed')
     sessionStorage.removeItem('ericrabar_just_logged_in')
     sessionStorage.removeItem('ericrabar_onboarding_seen')
-    // 4. Log logout event
+    // 5. Log logout event
     if (userEmail) {
       try { await auditLogger.auth.logout(userEmail); } catch { /* ignore */ }
     }
-    // 5. Redirect to landing page
+    // 6. Redirect to landing page
     if (shouldRedirect) {
       window.location.href = '/'
     }
