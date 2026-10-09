@@ -45,7 +45,7 @@ function ProjectModal({ project, onClose, onApprove, onReject, onSuspend, onPaus
           {project.suspension_reason && <div><span className="text-xs text-gray-400 uppercase">Suspension Reason</span><p className="text-red-600 mt-1">{project.suspension_reason}</p></div>}
           {project.admin_notes && <div><span className="text-xs text-gray-400 uppercase">Admin Notes</span><p className="text-gray-700 mt-1">{project.admin_notes}</p></div>}
         </div>
-        
+
         {/* Action Buttons */}
         <div className="flex gap-2 p-5 border-t border-gray-100">
           {project.status === 'submitted' && (
@@ -240,7 +240,9 @@ export default function ProjectAdminPage() {
   const [selected, setSelected] = useState(null)
 
   useEffect(() => {
-    adminApi.projects.list().then(setProjects).catch(
+    adminApi.projects.list().then(setProjects).catch(err => {
+      console.error('Failed to load projects:', err)
+    })
   }, [])
 
   const filtered = projects.filter(p => {

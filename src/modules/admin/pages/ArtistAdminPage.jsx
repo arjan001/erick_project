@@ -60,7 +60,9 @@ export default function ArtistAdminPage() {
   const [selected, setSelected] = useState(null)
 
   useEffect(() => {
-    adminApi.artists.list().then(setArtists).catch(
+    adminApi.artists.list().then(setArtists).catch(err => {
+      console.error('Failed to load artists:', err)
+    })
   }, [])
 
   const filtered = artists.filter(a => {

@@ -45,7 +45,7 @@ export default function AdminJobsPage() {
       const rows = await Job.list('-posted_at')
       setJobs(rows || [])
     } catch (err) {
-      
+
       error('Error', 'Failed to fetch jobs')
     } finally {
       setLoading(false)
@@ -60,9 +60,11 @@ export default function AdminJobsPage() {
       await Job.delete(jobId)
       setJobs(prev => prev.filter(j => j.id !== jobId))
       success('Deleted', 'Job deleted successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'job.delete', entity_type: 'Job', entity_id: jobId, details: 'Deleted job' }).catch(() => {})
+      AuditLog.create({ actor_email: user?.email, action: 'job.delete', entity_type: 'Job', entity_id: jobId, details: 'Deleted job' }).catch(err => {
+        console.error('Failed to create audit log:', err)
+      })
     } catch (err) {
-      
+
       error('Failed', 'Failed to delete job')
     }
   }
@@ -76,15 +78,17 @@ export default function AdminJobsPage() {
     } else {
       newStatus = 'open'
     }
-    
+
     try {
       await Job.update(jobId, { status: newStatus })
       setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: newStatus } : j))
       const message = currentStatus === 'pending_approval' ? 'Job approved and is now live' : 'Job status updated successfully'
       success('Updated', message)
-      AuditLog.create({ actor_email: user?.email, action: 'job.status_update', entity_type: 'Job', entity_id: jobId, details: `Changed status to ${newStatus}` }).catch(() => {})
+      AuditLog.create({ actor_email: user?.email, action: 'job.status_update', entity_type: 'Job', entity_id: jobId, details: `Changed status to ${newStatus}` }).catch(err => {
+        console.error('Failed to create audit log:', err)
+      })
     } catch (err) {
-      
+
       error('Failed', 'Failed to update job status')
     }
   }
@@ -120,9 +124,11 @@ export default function AdminJobsPage() {
         status: 'open'
       })
       success('Created', 'Job created successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'job.create', entity_type: 'Job', entity_id: newJob.id, details: 'Created job' }).catch(() => {})
+      AuditLog.create({ actor_email: user?.email, action: 'job.create', entity_type: 'Job', entity_id: newJob.id, details: 'Created job' }).catch(err => {
+        console.error('Failed to create audit log:', err)
+      })
     } catch (err) {
-      
+
       error('Failed', 'Failed to create job')
     }
   }
@@ -132,9 +138,11 @@ export default function AdminJobsPage() {
       await Job.update(jobId, { requires_subscription: !currentProRequired })
       setJobs(prev => prev.map(j => j.id === jobId ? { ...j, requires_subscription: !currentProRequired } : j))
       success('Updated', `Job ${!currentProRequired ? 'now requires' : 'no longer requires'} Pro subscription`)
-      AuditLog.create({ actor_email: user?.email, action: 'job.pro_requirement_update', entity_type: 'Job', entity_id: jobId, details: `Changed pro requirement to ${!currentProRequired}` }).catch(() => {})
+      AuditLog.create({ actor_email: user?.email, action: 'job.pro_requirement_update', entity_type: 'Job', entity_id: jobId, details: `Changed pro requirement to ${!currentProRequired}` }).catch(err => {
+        console.error('Failed to create audit log:', err)
+      })
     } catch (err) {
-      
+
       error('Failed', 'Failed to update pro requirement')
     }
   }
@@ -152,8 +160,8 @@ export default function AdminJobsPage() {
 
   const filteredJobs = jobs.filter(job => {
     const matchesSearch = job.title?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-                         job.client_name?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-                         job.job_type?.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+      job.client_name?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+      job.job_type?.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
     const matchesStatus = filterStatus === 'all' || job.status === filterStatus
     return matchesSearch && matchesStatus
   })
@@ -251,10 +259,10 @@ export default function AdminJobsPage() {
                   <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-2"><MapPin className="w-3 h-3" />{job.location || 'N/A'}</td>
                   <td className="px-4 py-3">{getStatusBadge(job.status)}</td>
                   <td className="px-4 py-3">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleToggleProRequired(job.id, job.requires_subscription)} 
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleToggleProRequired(job.id, job.requires_subscription)}
                       title={job.requires_subscription ? 'Remove Pro requirement' : 'Require Pro subscription'}
                       className="p-1"
                     >

@@ -51,7 +51,7 @@ export default function AdminUserManagementPage() {
 
       setUsers(enrichedUsers)
     } catch (err) {
-      
+
       error('Error', 'Failed to fetch users')
     } finally {
       setLoading(false)
@@ -73,7 +73,7 @@ export default function AdminUserManagementPage() {
       setInviteForm({ email: '', role: 'artist' })
       fetchUsers()
     } catch (err) {
-      
+
       error('Failed', 'Failed to send invitation')
     } finally {
       setInviting(false)
@@ -85,9 +85,11 @@ export default function AdminUserManagementPage() {
       // Placeholder for role change
       success('Updated', 'User role updated')
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u))
-      AuditLog.create({ actor_email: user?.email, action: 'user.role_update', entity_type: 'User', entity_id: userId, details: `Changed role to ${newRole}` }).catch(() => {})
+      AuditLog.create({ actor_email: user?.email, action: 'user.role_update', entity_type: 'User', entity_id: userId, details: `Changed role to ${newRole}` }).catch(err => {
+        console.error('Failed to create audit log:', err)
+      })
     } catch (err) {
-      
+
       error('Failed', 'Failed to update user role')
     }
   }
@@ -98,17 +100,19 @@ export default function AdminUserManagementPage() {
       // Placeholder for delete
       success('Deleted', 'User deleted successfully')
       setUsers(prev => prev.filter(u => u.id !== userId))
-      AuditLog.create({ actor_email: user?.email, action: 'user.delete', entity_type: 'User', entity_id: userId, details: 'Deleted user' }).catch(() => {})
+      AuditLog.create({ actor_email: user?.email, action: 'user.delete', entity_type: 'User', entity_id: userId, details: 'Deleted user' }).catch(err => {
+        console.error('Failed to create audit log:', err)
+      })
     } catch (err) {
-      
+
       error('Failed', 'Failed to delete user')
     }
   }
 
   const filteredUsers = users.filter(u => {
     const matchesSearch = u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         u.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         u.team_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      u.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.team_name?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesRole = filterRole === 'all' || u.role === filterRole
     return matchesSearch && matchesRole
   })

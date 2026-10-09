@@ -139,7 +139,9 @@ export default function TeamAdminPage() {
   const [selected, setSelected] = useState(null)
 
   useEffect(() => {
-    adminApi.teams.list().then(setTeams).catch(
+    adminApi.teams.list().then(setTeams).catch(err => {
+      console.error('Failed to load teams:', err)
+    })
   }, [])
 
   const filtered = teams.filter(t => {

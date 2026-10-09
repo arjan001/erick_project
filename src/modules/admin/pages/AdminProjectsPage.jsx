@@ -43,7 +43,7 @@ export default function AdminProjectsPage() {
       const rows = await Project.list('-created_date')
       setProjects(rows || [])
     } catch (err) {
-      
+
       error('Error', 'Failed to fetch projects')
     } finally {
       setLoading(false)
@@ -58,9 +58,11 @@ export default function AdminProjectsPage() {
       await Project.delete(projectId)
       setProjects(prev => prev.filter(p => p.id !== projectId))
       success('Deleted', 'Project deleted successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'project.delete', entity_type: 'Project', entity_id: projectId, details: 'Deleted project' }).catch(() => {})
+      AuditLog.create({ actor_email: user?.email, action: 'project.delete', entity_type: 'Project', entity_id: projectId, details: 'Deleted project' }).catch(err => {
+        console.error('Failed to create audit log:', err)
+      })
     } catch (err) {
-      
+
       error('Failed', 'Failed to delete project')
     }
   }
@@ -90,9 +92,11 @@ export default function AdminProjectsPage() {
         status: 'submitted'
       })
       success('Created', 'Project created successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'project.create', entity_type: 'Project', entity_id: newProject.id, details: 'Created project' }).catch(() => {})
+      AuditLog.create({ actor_email: user?.email, action: 'project.create', entity_type: 'Project', entity_id: newProject.id, details: 'Created project' }).catch(err => {
+        console.error('Failed to create audit log:', err)
+      })
     } catch (err) {
-      
+
       error('Failed', 'Failed to create project')
     }
   }
@@ -103,9 +107,11 @@ export default function AdminProjectsPage() {
       await Project.update(projectId, { status: newStatus })
       setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: newStatus } : p))
       success('Updated', 'Project status updated successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'project.status_update', entity_type: 'Project', entity_id: projectId, details: `Changed status to ${newStatus}` }).catch(() => {})
+      AuditLog.create({ actor_email: user?.email, action: 'project.status_update', entity_type: 'Project', entity_id: projectId, details: `Changed status to ${newStatus}` }).catch(err => {
+        console.error('Failed to create audit log:', err)
+      })
     } catch (err) {
-      
+
       error('Failed', 'Failed to update project status')
     }
   }
@@ -139,16 +145,18 @@ export default function AdminProjectsPage() {
       await Project.update(projectId, { is_featured: !currentFeatured })
       setProjects(prev => prev.map(p => p.id === projectId ? { ...p, is_featured: !currentFeatured } : p))
       success('Updated', !currentFeatured ? 'Project featured' : 'Project unfeatured')
-      AuditLog.create({ actor_email: user?.email, action: 'project.feature_toggle', entity_type: 'Project', entity_id: projectId, details: `Set featured to ${!currentFeatured}` }).catch(() => {})
+      AuditLog.create({ actor_email: user?.email, action: 'project.feature_toggle', entity_type: 'Project', entity_id: projectId, details: `Set featured to ${!currentFeatured}` }).catch(err => {
+        console.error('Failed to create audit log:', err)
+      })
     } catch (err) {
-      
+
       error('Failed', 'Failed to update featured status')
     }
   }
 
   const filteredProjects = projects.filter(project => {
     const searchLower = debouncedSearchQuery.toLowerCase()
-    const matchesSearch = !searchLower || 
+    const matchesSearch = !searchLower ||
       project.project_owner_name?.toLowerCase().includes(searchLower) ||
       project.project_owner_company?.toLowerCase().includes(searchLower) ||
       project.project_owner_email?.toLowerCase().includes(searchLower) ||
@@ -346,10 +354,10 @@ export default function AdminProjectsPage() {
                   <td className="px-6 py-4 text-sm text-gray-600">{project.created_at ? new Date(project.created_at).toLocaleDateString() : 'N/A'}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleToggleFeatured(project.id, project.is_featured)} 
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleFeatured(project.id, project.is_featured)}
                         title={project.is_featured ? "Unfeature" : "Feature"}
                         className={`p-2 rounded-lg ${project.is_featured ? 'text-yellow-600 hover:bg-yellow-50' : 'text-gray-400 hover:bg-gray-100'}`}
                       >

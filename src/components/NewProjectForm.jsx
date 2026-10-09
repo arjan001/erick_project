@@ -25,44 +25,41 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
   const previousProjectTypeRef = useRef(projectType)
   const previousDescriptionRef = useRef(description)
 
-  
+
 
   React.useEffect(() => {
     const newProjectType = projectTypeMap[selectedCategory] || 'commercial'
-    
+
     setProjectType(newProjectType)
   }, [selectedCategory])
 
   // Auto-regenerate analysis when project type changes (if URL exists)
   useEffect(() => {
-    
-    
+
+
     const timer = setTimeout(async () => {
       // Check if project type actually changed and we have a reference URL
       if (previousProjectTypeRef.current !== projectType && referenceUrl && referenceUrl.trim() !== '') {
-        
-        
+
+
         try {
           setRegenerating(true)
-          
+
           // Re-analyze the URL with the new project type
           const analysisResult = await analyzeWebsiteUrl(referenceUrl, projectType)
-          
-          
-          
+
+
+
           if (analysisResult.success && analysisResult.rawAnalysis) {
             setDescription(analysisResult.rawAnalysis)
           }
         } catch (err) {
-          
+
         } finally {
           setRegenerating(false)
         }
-      } else {
-        // !== ''
-        })
       }
-      
+
       // Update refs
       previousProjectTypeRef.current = projectType
     }, 500); // 0.5 second debounce
@@ -90,7 +87,7 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
 
   const handleExtract = async () => {
     if (!referenceUrl) return
-    
+
     setExtracting(true)
     setExtractProgress(0)
 
@@ -106,9 +103,9 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
     try {
       // Use the new urlAnalysisService
       const analysisResult = await analyzeWebsiteUrl(referenceUrl, projectType)
-      
+
       clearInterval(progressInterval)
-      
+
       if (analysisResult.success && analysisResult.rawAnalysis) {
         // Set description directly from raw analysis for speed
         setDescription(analysisResult.rawAnalysis)
@@ -117,11 +114,11 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
           setExtractProgress(null)
         }, 600)
       } else {
-        
+
         setExtractProgress(null)
       }
     } catch (error) {
-      
+
       setExtractProgress(null)
       clearInterval(progressInterval)
     } finally {
@@ -131,7 +128,7 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
 
   const handleSubmit = () => {
     if (!description) return
-    
+
     // Save analyzed data to localStorage for SubmitProject flow - pass URL as-is without validation
     saveAnalyzedProjectToStorage({
       url: referenceUrl,
@@ -140,7 +137,7 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
       projectType: selectedCategory,
       additionalNotes: description
     })
-    
+
     // Navigate to SubmitProject with the description
     const params = new URLSearchParams()
     params.set('description', description)
@@ -157,13 +154,13 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
       <div className="mb-4">
         <label className="block text-xs font-semibold mb-2 text-[#666]">Domain or Reference (Optional)</label>
         <div className="flex gap-2 mb-1">
-          <Input 
+          <Input
             placeholder="www.example.com or nike.com or apple.com"
             value={referenceUrl}
             onChange={(e) => setReferenceUrl(e.target.value)}
             className="flex-1 bg-white border-gray-300 text-sm"
           />
-          <Button 
+          <Button
             onClick={handleExtract}
             disabled={!referenceUrl || extracting}
             size="sm"
@@ -223,7 +220,7 @@ export default function NewProjectForm({ selectedCategory = 'commercial' }) {
 
       {/* Bottom Actions */}
       <div className="space-y-2">
-        <Button 
+        <Button
           onClick={handleSubmit}
           disabled={!description}
           className="w-full bg-gray-500 hover:bg-gray-600 text-white text-sm"
