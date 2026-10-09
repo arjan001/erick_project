@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { base44 } from '@/api/base44Client'
 import { Artist, PortfolioClip, Endorsement, Testimonial, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import CountrySelector from '@/components/CountrySelector'
@@ -233,17 +233,22 @@ export default function ArtistProfile() {
 
     setUploadingImage(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file })
-      const fileUrl = response.file_url || response.url || response.data?.url
-      if (!fileUrl) {
-        throw new Error('No file URL returned from upload service')
-      }
-      await Artist.update(artist.id, { profile_photo_url: fileUrl })
-      setArtist(prev => ({ ...prev, profile_photo_url: fileUrl }))
+      const fileName = `artist-profile-${artist.id}-${Date.now()}-${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('artist-profiles')
+        .upload(fileName, file)
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('artist-profiles')
+        .getPublicUrl(fileName)
+
+      await Artist.update(artist.id, { profile_photo_url: publicUrl })
+      setArtist(prev => ({ ...prev, profile_photo_url: publicUrl }))
       setPreviewUrl(null); // Clear preview after successful upload
       success('Photo Updated', 'Your profile photo has been updated')
     } catch (err) {
-
       toastError('Upload Failed', `Failed to upload photo: ${err.message || 'Unknown error'}`)
       setPreviewUrl(null); // Clear preview on error
     } finally {
@@ -426,10 +431,18 @@ export default function ArtistProfile() {
       }
 
       if (portfolioForm.video_source === 'upload' && selectedVideoFile) {
+        const videoFileName = `portfolio-video-${artist.id}-${Date.now()}-${selectedVideoFile.name}`
+        const { data: videoUploadData, error: videoError } = await supabase.storage
+          .from('portfolio-clips')
+          .upload(videoFileName, selectedVideoFile)
 
-        const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedVideoFile })
+        if (videoError) throw videoError
 
-        videoUrl = uploadResponse.file_url || uploadResponse.url
+        const { data: { publicUrl: videoPublicUrl } } = supabase.storage
+          .from('portfolio-clips')
+          .getPublicUrl(videoFileName)
+
+        videoUrl = videoPublicUrl
       } else if (portfolioForm.video_source !== 'upload' && portfolioForm.original_video_url) {
         videoUrl = portfolioForm.original_video_url
         // Generate embed URL based on source
@@ -442,10 +455,18 @@ export default function ArtistProfile() {
       }
 
       if (selectedCoverImage) {
+        const coverFileName = `portfolio-cover-${artist.id}-${Date.now()}-${selectedCoverImage.name}`
+        const { data: coverUploadData, error: coverError } = await supabase.storage
+          .from('portfolio-clips')
+          .upload(coverFileName, selectedCoverImage)
 
-        const uploadResponse = await base44.integrations.Core.UploadFile({ file: selectedCoverImage })
+        if (coverError) throw coverError
 
-        thumbnailUrl = uploadResponse.file_url || uploadResponse.url
+        const { data: { publicUrl: coverPublicUrl } } = supabase.storage
+          .from('portfolio-clips')
+          .getPublicUrl(coverFileName)
+
+        thumbnailUrl = coverPublicUrl
       }
 
       const clipData = {
