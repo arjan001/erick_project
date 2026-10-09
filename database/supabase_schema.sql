@@ -790,6 +790,29 @@ CREATE TABLE IF NOT EXISTS public.payment_settings (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Makamesco/Nexus Pay Transactions
+CREATE TABLE IF NOT EXISTS public.makamesco_transactions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  checkout_request_id TEXT UNIQUE NOT NULL,
+  merchant_request_id TEXT,
+  transaction_type TEXT DEFAULT 'stkpush', -- stkpush, b2c
+  phone_number TEXT NOT NULL,
+  amount NUMERIC NOT NULL,
+  account_reference TEXT,
+  transaction_desc TEXT,
+  status TEXT DEFAULT 'pending', -- pending, completed, failed, cancelled
+  mpesa_receipt_number TEXT,
+  result_code INTEGER,
+  result_desc TEXT,
+  sandbox_mode BOOLEAN DEFAULT false,
+  conversation_id TEXT, -- For B2C transactions
+  fee_amount NUMERIC,
+  total_deducted NUMERIC,
+  metadata JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Team Payments (for tracking team-specific payment transactions)
 CREATE TABLE IF NOT EXISTS public.team_payments (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -974,6 +997,15 @@ CREATE TRIGGER trg_creators_updated_at BEFORE UPDATE ON public.creators FOR EACH
 CREATE TRIGGER trg_teams_updated_at BEFORE UPDATE ON public.teams FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_clients_updated_at BEFORE UPDATE ON public.clients FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_backers_updated_at BEFORE UPDATE ON public.backers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- Makamesco transactions indexes
+CREATE INDEX IF NOT EXISTS idx_makamesco_checkout_request ON public.makamesco_transactions(checkout_request_id);
+CREATE INDEX IF NOT EXISTS idx_makamesco_phone_number ON public.makamesco_transactions(phone_number);
+CREATE INDEX IF NOT EXISTS idx_makamesco_status ON public.makamesco_transactions(status);
+CREATE INDEX IF NOT EXISTS idx_makamesco_created_at ON public.makamesco_transactions(created_at DESC);
+
+-- Makamesco transactions trigger
+CREATE TRIGGER trg_makamesco_transactions_updated_at BEFORE UPDATE ON public.makamesco_transactions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_project_backers_updated_at BEFORE UPDATE ON public.project_backers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_deals_updated_at BEFORE UPDATE ON public.deals FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_investment_tiers_updated_at BEFORE UPDATE ON public.investment_tiers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
