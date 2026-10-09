@@ -31,7 +31,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 
 import { notifyError, notifySuccess, confirmDialog } from '@/lib/sweetAlert'
-import emailService from '@/services/emailService'
+import emailService from '@/shared/services/emailService'
 
 import { Team, PortfolioClip, Message, Invite, Application, Job, JobInvitation, SupportTicket } from '@/lib/supabaseEntities'
 
