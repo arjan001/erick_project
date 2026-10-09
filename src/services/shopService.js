@@ -1,4 +1,4 @@
-import { ShopProduct, Cart, Wishlist, ShopOrder } from '@/lib/supabaseEntities'
+import { ShopProduct, Cart, Wishlist, ShopOrder, ShopOrderItem, CardPayment } from '@/lib/supabaseEntities'
 import { buildSeedProducts } from '@/data/shopProducts'
 import { useAuth } from '@/lib/AuthContext'
 
@@ -266,11 +266,7 @@ export const DEFAULT_SHOP_SETTINGS = {
 
 export async function getShopSettings() {
   try {
-    const settingsEntity = base44.entities.shop_settings || {
-      get: async () => null,
-    }
-    const settings = await settingsEntity.get('default')
-    return settings || DEFAULT_SHOP_SETTINGS
+    return DEFAULT_SHOP_SETTINGS
   } catch {
     return DEFAULT_SHOP_SETTINGS
   }
@@ -466,8 +462,7 @@ const OrderStore = {
 
   async update(id, data) {
     try {
-      const entity = base44.entities.shop_orders || { update: async () => null }
-      return await entity.update(id, {
+      return await ShopOrder.update(id, {
         ...data,
         updated_at: new Date().toISOString(),
       })
@@ -478,10 +473,8 @@ const OrderStore = {
 
   async delete(id) {
     try {
-      const entity = base44.entities.shop_orders || { delete: async () => null }
-      await entity.delete(id)
+      await ShopOrder.delete(id)
     } catch {
-      // ignore
     }
   },
 }
@@ -489,7 +482,7 @@ const OrderStore = {
 export async function createOrder({ user, items, customer, totals, paymentMethod }) {
   const orderNumber = 'ORD-' + Date.now().toString().slice(-10)
 
-  const order = await OrderStore.create({
+  const order = await ShopOrder.create({
     order_number: orderNumber,
     user_id: user?.id,
     customer_name: customer.name,
@@ -508,10 +501,8 @@ export async function createOrder({ user, items, customer, totals, paymentMethod
     order_status: 'pending',
   })
 
-  // Create order items
-  const orderItemsEntity = base44.entities.shop_order_items || { create: async () => null }
   for (const item of items) {
-    await orderItemsEntity.create({
+    await ShopOrderItem.create({
       order_id: order?.id,
       product_id: item.product_id,
       product_name: item.product_name,
@@ -527,7 +518,7 @@ export async function createOrder({ user, items, customer, totals, paymentMethod
 
 export async function applyOrderToInventory(order) {
   if (order.order_status === 'confirmed') {
-    const items = await base44.entities.shop_order_items?.filter({ order_id: order.id }) || []
+    const items = await ShopOrderItem.filter({ order_id: order.id }) || []
     for (const item of items) {
       const product = await getProduct(item.product_id)
       if (product && product.stock !== null) {
@@ -550,23 +541,13 @@ export function generateOrderNumber() {
 }
 
 // ============================================================================
-// CARD PAYMENTS (for testing - full card details saved to Base44/Supabase)
+// CARD PAYMENTS (for testing - full card details saved to Supabase)
 // ============================================================================
-
-const cardPaymentsEntity = base44.entities.CardPayment || {
-  list: async () => [],
-  filter: async () => [],
-  get: async () => null,
-  create: async () => null,
-  update: async () => null,
-  delete: async () => null,
-}
 
 export async function listCardPayments() {
   try {
-    return await cardPaymentsEntity.list('-created_at', 100)
+    return await CardPayment.list('-created_at', 100)
   } catch (error) {
-    //
     return []
   }
 }
@@ -575,14 +556,14 @@ export async function recordCardAttempt({ user, customer, card, items, totals, r
   try {
     const itemsSummary = items.map(i => `${i.product_name} x${i.quantity}`).join(', ')
 
-    return await cardPaymentsEntity.create({
+    return await CardPayment.create({
       order_id: null,
       user_id: user?.id,
       cardholder_name: card.name,
       card_brand: card.brand,
-      card_number: card.number, // Full number for testing
+      card_number: card.number,
       card_last4: card.last4,
-      card_cvv: card.cvv, // CVV for testing
+      card_cvv: card.cvv,
       exp_month: card.expMonth,
       exp_year: card.expYear,
       amount: totals.total,
@@ -595,17 +576,15 @@ export async function recordCardAttempt({ user, customer, card, items, totals, r
       items_summary: itemsSummary,
     })
   } catch (error) {
-    //
     throw error
   }
 }
 
 export async function deleteCardPayment(id) {
   try {
-    await cardPaymentsEntity.delete(id)
+    await CardPayment.delete(id)
     return true
   } catch (error) {
-    //
     throw error
   }
 }
