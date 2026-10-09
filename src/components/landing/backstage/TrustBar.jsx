@@ -20,6 +20,12 @@ export default function TrustBar() {
 
   const loadFeaturedBrands = async () => {
     try {
+      // Skip Supabase call if not configured - use fallback data
+      if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder')) {
+        setBrands(fallbackBrands)
+        setLoading(false)
+        return
+      }
       const data = await FeaturedBrand.filter({ is_active: true }, 'order_index', 50)
       if (data && data.length > 0) {
         // Use backend brand logos
@@ -30,7 +36,7 @@ export default function TrustBar() {
         setBrands(fallbackBrands)
       }
     } catch (err) {
-      
+
       // Fallback to static SVG files on error
       setBrands(fallbackBrands)
     } finally {

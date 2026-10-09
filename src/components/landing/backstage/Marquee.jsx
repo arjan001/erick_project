@@ -19,6 +19,11 @@ export default function Marquee() {
   useEffect(() => {
     let cancelled = false
     setIsLoading(true)
+    // Skip Supabase call if not configured - use default items
+    if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder')) {
+      setIsLoading(false)
+      return
+    }
     TickerEntry.list('-created_at', 20)
       .then((data) => {
         if (cancelled) return

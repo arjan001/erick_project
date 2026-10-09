@@ -108,7 +108,11 @@ export default function FeaturedGigs() {
   const [talentTypeFilter, setTalentTypeFilter] = useState('')
 
   useEffect(() => {
-    Gig.filter({ is_featured: true }, '-posted_at', 7)
+    // Skip Supabase call if not configured - use fallback data
+    if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder')) {
+      return
+    }
+    Job.filter({ is_featured: true }, '-posted_at', 7)
       .then((rows) => {
         if (rows && rows.length > 0) {
           setGigs(rows.map(j => ({

@@ -15,6 +15,12 @@ export default function CreativeTeamCarousel() {
 
   const loadFeaturedCreatives = async () => {
     try {
+      // Skip Supabase call if not configured - use fallback data
+      if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder')) {
+        setCreatives(talentProfiles)
+        setLoading(false)
+        return
+      }
       const data = await FeaturedCreative.filter({ is_active: true }, 'order_index', 50)
       if (data && data.length > 0) {
         // Transform backend data to match TalentCard format
@@ -33,7 +39,7 @@ export default function CreativeTeamCarousel() {
         setCreatives(talentProfiles)
       }
     } catch (err) {
-      
+
       // Fallback to dummy data on error
       setCreatives(talentProfiles)
     } finally {
