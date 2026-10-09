@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { base44 } from '@/api/base44Client'
 import { Project, Application, Job } from '@/lib/supabaseEntities'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
@@ -40,18 +39,18 @@ export default function JobBoard() {
 
   useEffect(() => {
     if (!user) return
-    
+
     const fetchProjects = async () => {
       try {
         // Fetch all projects from clients (not just verified)
         const allProjects = await Project.filter({})
-        
+
         // Fetch jobs as well to unify data
         const allJobs = await Job.filter({})
-        
+
         // Fetch applications to show engagement
         const applications = await Application.list()
-        
+
         // Convert jobs to project-like format for unified display
         const jobsAsProjects = allJobs.map(job => ({
           id: job.id,
@@ -78,13 +77,13 @@ export default function JobBoard() {
           is_premium: job.is_premium,
           requires_subscription: job.is_premium || false
         }))
-        
+
         // Combine projects and jobs
         const allItems = [...allProjects, ...jobsAsProjects]
-        
+
         // Enrich with application counts
         const enrichedItems = allItems.map(item => {
-          const itemApplications = applications.filter(app => 
+          const itemApplications = applications.filter(app =>
             app.project_id === item.id || app.job_id === item.job_id
           )
           return {
@@ -94,7 +93,7 @@ export default function JobBoard() {
             inDiscussion: itemApplications.filter(app => app.status === 'chat_started').length > 0
           }
         })
-        
+
         setProjects(enrichedItems)
         if (enrichedItems.length > 0) setSelectedProject(enrichedItems[0])
       } catch (err) {
@@ -114,21 +113,14 @@ export default function JobBoard() {
       const location = `${project.location_city || 'modern city'}, ${project.location_country || 'Europe'}`
       const clientType = project.project_owner_company ? 'corporate brand' : 'independent creator'
       const departments = project.departments_needed?.join(', ').replace(/_/g, ' ') || 'production'
-      
+
       const prompt = `Wide cinematic banner image for ${project.project_type?.replace(/_/g, ' ')} project by ${clientType}. Visual style: ${description}. Location atmosphere: ${location}. Focus on ${departments} aesthetic. Film production, creative, professional, vibrant colors, no text, no logos, cinematic composition`
-      
-      const imageResult = await base44.integrations.Core.GenerateImage({ prompt })
-      await Project.update(project.id, { image_url: imageResult.url })
-      
-      // Update local state
-      setProjects(prev => prev.map(p => 
-        p.id === project.id ? { ...p, image_url: imageResult.url } : p
-      ))
-      if (selectedProject?.id === project.id) {
-        setSelectedProject({ ...selectedProject, image_url: imageResult.url })
-      }
+
+      // TODO: Replace with Supabase Edge Function or OpenAI for image generation
+      // For now, skip image generation
+      console.log('Image generation requires AI service')
     } catch (err) {
-      //
+      console.error('Failed to generate image:', err)
     } finally {
       setGeneratingImageFor(null)
     }
@@ -136,16 +128,16 @@ export default function JobBoard() {
 
   const handleApply = async () => {
     if (!selectedProject || !user) return
-    
+
     // Check subscription limits before applying
     const limitCheck = await subscriptionService.checkLimit(user.email, 'job_application')
     if (!limitCheck.allowed) {
-      error('Limit Reached', limitCheck.expired 
+      error('Limit Reached', limitCheck.expired
         ? 'Your subscription has expired. Please renew to continue applying to jobs.'
         : 'You have reached your monthly job application limit. Upgrade to apply to more jobs.')
       return
     }
-    
+
     try {
       await Application.create({
         project_id: selectedProject.isJob ? null : selectedProject.id,
@@ -154,25 +146,25 @@ export default function JobBoard() {
         status: 'applied',
         applied_at: new Date().toISOString()
       })
-      
+
       // Update local state
-      setProjects(projects.map(p => 
-        p.id === selectedProject.id 
+      setProjects(projects.map(p =>
+        p.id === selectedProject.id
           ? { ...p, hasApplied: true, applicantCount: p.applicantCount + 1 }
           : p
       ))
       setSelectedProject({ ...selectedProject, hasApplied: true, applicantCount: selectedProject.applicantCount + 1 })
-      
+
       // Notify user about job application
       notificationService.notifyJobApplication(
-        user.email, 
+        user.email,
         selectedProject.title || selectedProject.project_type,
         selectedProject.project_owner_name || 'Client'
       )
-      
+
       // Track usage and notify if approaching limit
       await subscriptionService.trackUsage(user.email, 'job_application')
-      
+
       success('Application Sent', `You've applied to ${selectedProject.title || selectedProject.project_type}`)
       setShowDetailModal(false)
     } catch (err) {
@@ -218,15 +210,15 @@ export default function JobBoard() {
 
   const filteredProjects = projects.filter(project => {
     if (hiddenProjects.includes(project.id)) return false
-    
+
     const matchesSearch = project.project_type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.location_city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.departments_needed?.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))
-    
+      project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.location_city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.departments_needed?.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))
+
     if (!matchesSearch) return false
-    
+
     if (filterType !== 'all' && project.project_type !== filterType) return false
     if (filterRole !== 'all' && project.job_type !== filterRole) return false
     if (filterCategory !== 'all' && project.category !== filterCategory) return false
@@ -236,7 +228,7 @@ export default function JobBoard() {
       if (filterPayment === 'paid' && !project.budget) return false
       if (filterPayment === 'unpaid' && project.budget) return false
     }
-    
+
     return true
   })
 
@@ -389,11 +381,10 @@ export default function JobBoard() {
                 <button
                   key={project.id}
                   onClick={() => { setSelectedProject(project); setShowDetailModal(true); }}
-                  className={`w-full text-left bg-white rounded-xl border transition-all overflow-hidden shadow-sm hover:shadow-md ${
-                    selectedProject?.id === project.id
-                      ? 'border-black shadow-md ring-1 ring-black/5'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`w-full text-left bg-white rounded-xl border transition-all overflow-hidden shadow-sm hover:shadow-md ${selectedProject?.id === project.id
+                    ? 'border-black shadow-md ring-1 ring-black/5'
+                    : 'border-gray-200 hover:border-gray-300'
+                    }`}
                 >
                   <div className="flex gap-3 p-4">
                     {/* Left - Job Image (square) */}
@@ -459,9 +450,9 @@ export default function JobBoard() {
                         </div>
                         <div className="flex items-center gap-1 font-medium text-gray-900">
                           <span>
-                            {project.budget_type === 'Hourly' ? `€${project.budget_min}/hr` : 
-                             project.budget_type === 'Daily' ? `€${project.budget_min}/day` : 
-                             `€${project.budget_min}${project.budget_max && project.budget_max > project.budget_min ? ` - €${project.budget_max}` : ''}`}
+                            {project.budget_type === 'Hourly' ? `€${project.budget_min}/hr` :
+                              project.budget_type === 'Daily' ? `€${project.budget_min}/day` :
+                                `€${project.budget_min}${project.budget_max && project.budget_max > project.budget_min ? ` - €${project.budget_max}` : ''}`}
                           </span>
                         </div>
                       </div>
@@ -497,8 +488,8 @@ export default function JobBoard() {
             {/* Header with Image */}
             <div className="relative h-48 bg-gray-100 rounded-xl mb-6 overflow-hidden">
               {selectedProject.image_url ? (
-                <img 
-                  src={selectedProject.image_url} 
+                <img
+                  src={selectedProject.image_url}
                   alt={selectedProject.title || selectedProject.project_type}
                   className="w-full h-full object-cover"
                 />
@@ -600,11 +591,11 @@ export default function JobBoard() {
                 </h2>
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Calendar className="w-4 h-4" />
-                  {new Date(selectedProject.timeline_start).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+                  {new Date(selectedProject.timeline_start).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                   })}
                 </div>
               </div>
@@ -627,7 +618,7 @@ export default function JobBoard() {
                   Already Applied
                 </Button>
               )}
-              
+
               <p className="text-center text-xs text-gray-500 mt-3">
                 1 connect will be used to apply
               </p>

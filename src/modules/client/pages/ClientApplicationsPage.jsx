@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { base44 } from '@/api/base44Client'
-import { Job, Project, Application, Notification, Artist, Team } from '@/lib/supabaseEntities'
+import { Job, Project, Application, Notification, Artist, Team, Subscription, SubscriptionPackage, PortfolioClip } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FileText, User, Calendar, MapPin, Check, X, Crown, Star, Briefcase, Eye, Bookmark, BookmarkCheck, Play, Download, Globe, Linkedin, Instagram, Youtube, Twitter, Award, Languages, Globe2, Building2, Mail, Phone, Tag, Clock, DollarSign, GraduationCap, Search, Filter, MessageSquare, ChevronDown, ChevronUp, TrendingUp, Users, ExternalLink } from 'lucide-react'
@@ -92,9 +91,9 @@ export default function ClientApplications() {
           artistEmails.map(async (email) => {
             try {
               // Fetch subscription
-              const subs = await base44.entities.Subscription.filter({ user_email: email, status: 'active' })
+              const subs = await Subscription.filter({ user_email: email, status: 'active' })
               if (subs.length > 0) {
-                const pkg = await base44.entities.SubscriptionPackage.get(subs[0].package_id)
+                const pkg = await SubscriptionPackage.get(subs[0].package_id)
                 subscriptionsData[email] = { subscription: subs[0], package: pkg }
               }
 
@@ -104,7 +103,7 @@ export default function ClientApplications() {
                 profilesData[email] = artists[0]
 
                 // Fetch portfolio clips
-                const clips = await base44.entities.PortfolioClip.filter({
+                const clips = await PortfolioClip.filter({
                   uploaded_by_type: 'artist',
                   uploaded_by_id: artists[0].id,
                   status: 'approved'
@@ -112,7 +111,7 @@ export default function ClientApplications() {
                 portfoliosData[email] = clips
               }
             } catch (err) {
-              //
+              console.error('Failed to fetch artist data:', err)
             }
           })
         )
@@ -125,12 +124,12 @@ export default function ClientApplications() {
         await Promise.all(
           teamIds.map(async (teamId) => {
             try {
-              const teams = await base44.entities.Team.filter({ id: teamId })
+              const teams = await Team.filter({ id: teamId })
               if (teams.length > 0) {
                 teamProfilesData[teamId] = teams[0]
 
                 // Fetch team portfolio clips
-                const clips = await base44.entities.PortfolioClip.filter({
+                const clips = await PortfolioClip.filter({
                   uploaded_by_type: 'team',
                   uploaded_by_id: teamId,
                   status: 'approved'
@@ -138,7 +137,7 @@ export default function ClientApplications() {
                 teamPortfoliosData[teamId] = clips
               }
             } catch (err) {
-              //
+              console.error('Failed to fetch team data:', err)
             }
           })
         )

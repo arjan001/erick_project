@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { base44 } from '@/api/base44Client'
 import { supabase } from '@/lib/supabase'
 import { ProjectOwner, Project, TeamMember, BillingInfo, Invoice, SecuritySettings, ActiveSession } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
@@ -521,17 +520,22 @@ export default function ClientProfilePage() {
 
     setUploadingLogo(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file })
-      const fileUrl = response.file_url || response.url || response.data?.url
-      if (!fileUrl) {
-        throw new Error('No file URL returned from upload service')
-      }
-      const updated = await ProjectOwner.update(owner.id, { profile_photo_url: fileUrl })
+      const fileName = `client-profile-${owner.id}-${Date.now()}-${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('client-profiles')
+        .upload(fileName, file)
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('client-profiles')
+        .getPublicUrl(fileName)
+
+      const updated = await ProjectOwner.update(owner.id, { profile_photo_url: publicUrl })
       setOwner(updated)
       setPreviewUrl(null); // Clear preview after successful upload
       success('Photo Updated', 'Your profile photo has been updated')
     } catch (err) {
-      //
       toastError('Upload Failed', `Failed to upload photo: ${err.message || 'Unknown error'}`)
       setPreviewUrl(null); // Clear preview on error
     } finally {
