@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { base44 } from '@/api/base44Client'
+import { PortfolioClip } from '@/lib/supabaseEntities'
 
 export default function StepVisualDirection({ data, updateData }) {
   const [clips, setClips] = useState([])
@@ -12,13 +12,12 @@ export default function StepVisualDirection({ data, updateData }) {
 
   const loadClips = async () => {
     try {
-      const result = await base44.entities.PortfolioClip.filter({
+      const result = await PortfolioClip.filter({
         approved_for_visual_direction: true,
         status: 'approved'
       })
       setClips(result || [])
     } catch (error) {
-      
     } finally {
       setIsLoading(false)
     }
@@ -75,9 +74,8 @@ export default function StepVisualDirection({ data, updateData }) {
               key={clip.id}
               onClick={() => toggleClip(clip.id)}
               disabled={!selected && selectedCount >= 3}
-              className={`relative aspect-video rounded-lg overflow-hidden group ${
-                !selected && selectedCount >= 3 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
-              }`}
+              className={`relative aspect-video rounded-lg overflow-hidden group ${!selected && selectedCount >= 3 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+                }`}
               onMouseEnter={() => setHoveredId(clip.id)}
               onMouseLeave={() => setHoveredId(null)}
             >
@@ -85,17 +83,15 @@ export default function StepVisualDirection({ data, updateData }) {
               <img
                 src={clip.thumbnail_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=400'}
                 alt={clip.title || 'Visual reference'}
-                className={`w-full h-full object-cover transition-all duration-300 ${
-                  hoveredId === clip.id ? 'scale-110' : 'scale-100'
-                }`}
+                className={`w-full h-full object-cover transition-all duration-300 ${hoveredId === clip.id ? 'scale-110' : 'scale-100'
+                  }`}
                 loading="lazy"
                 decoding="async"
               />
 
               {/* Overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent ${
-                selected ? 'opacity-60' : 'opacity-40 group-hover:opacity-60'
-              } transition-opacity`} />
+              <div className={`absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent ${selected ? 'opacity-60' : 'opacity-40 group-hover:opacity-60'
+                } transition-opacity`} />
 
               {/* Selected indicator */}
               {selected && (
@@ -119,9 +115,8 @@ export default function StepVisualDirection({ data, updateData }) {
               )}
 
               {/* Border */}
-              <div className={`absolute inset-0 border-2 rounded-lg transition-all ${
-                selected ? 'border-amber-600' : 'border-transparent group-hover:border-zinc-600'
-              }`} />
+              <div className={`absolute inset-0 border-2 rounded-lg transition-all ${selected ? 'border-amber-600' : 'border-transparent group-hover:border-zinc-600'
+                }`} />
             </button>
           )
         })}
