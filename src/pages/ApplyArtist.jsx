@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { base44 } from '@/api/base44Client'
 import { Artist } from '@/lib/supabaseEntities'
 import ArtistStepRole from '../components/artist/ArtistStepRole'
 import ArtistStepQuestions from '../components/artist/ArtistStepQuestions'
@@ -68,13 +67,12 @@ export default function ApplyArtist() {
 
   const handleSaveDraft = async () => {
     try {
-      await base44.auth.updateMe({
-        artist_draft: artistData
-      })
+      // TODO: Implement draft saving with Supabase
+      // For now, just save to localStorage
+      localStorage.setItem('artist_draft', JSON.stringify(artistData))
       alert('Draft saved. You can come back and complete it anytime.')
     } catch (error) {
       alert('Error saving draft. Please try again.')
-      //
     }
   }
 
@@ -133,22 +131,20 @@ export default function ApplyArtist() {
               <React.Fragment key={step.id}>
                 <div className="flex flex-col items-center">
                   <div
-                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                      step.id < currentStep
-                        ? 'bg-black text-white'
-                        : step.id === currentStep
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${step.id < currentStep
+                      ? 'bg-black text-white'
+                      : step.id === currentStep
                         ? 'bg-black text-white ring-4 ring-black/20'
                         : 'bg-gray-200 text-gray-500'
-                    }`}
+                      }`}
                   >
                     {step.id < currentStep ? <Check className="w-5 h-5" /> : step.id}
                   </div>
                   <span className="hidden sm:block text-xs text-gray-500 mt-2">{step.name}</span>
                 </div>
                 {index < STEPS.length - 1 && (
-                  <div className={`flex-1 h-1 mx-2 rounded-full ${
-                    step.id < currentStep ? 'bg-black' : 'bg-gray-200'
-                  }`} />
+                  <div className={`flex-1 h-1 mx-2 rounded-full ${step.id < currentStep ? 'bg-black' : 'bg-gray-200'
+                    }`} />
                 )}
               </React.Fragment>
             ))}
