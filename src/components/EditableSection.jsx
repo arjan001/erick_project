@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Sparkles, Upload } from 'lucide-react'
-import { base44 } from '@/api/base44Client'
 
 export default function EditableSection({ title, onGenerate }) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -21,74 +20,57 @@ export default function EditableSection({ title, onGenerate }) {
     if (!box.prompt && box.images.length === 0) return
 
     try {
-      // Generate 5 images for the project
-      const generatedImages = []
-      const shots = [
-        'Wide back-of-room angle. Crowd as silhouettes. Stage barely lit.',
-        'Side angle near the DJ booth or mixing area. Hands resting. No action.',
-        'Close shot of a face in profile. Expression neutral.',
-        'High angle from a corner. Slow drift perspective.',
-        'Rear crowd perspective looking toward the stage or focal point.'
-      ]
-
-      for (let i = 0; i < 5; i++) {
-        setBoxes(prevBoxes => prevBoxes.map(b => 
-          b.id === boxId ? { ...b, uploading: true, progress: `Generating shot ${i + 1}/5...`, images: generatedImages } : b
-        ))
-
-        const shotPrompt = `${box.prompt}\n\nSpecific shot: ${shots[i]}\n\nCinematic style. Muted colors. Practical lights. Natural grain. In-production feel.`
-        
-        const response = await base44.integrations.Core.GenerateImage({
-          prompt: shotPrompt,
-          existing_image_urls: box.images.length > 0 ? [box.images[0]] : undefined
-        })
-
-        generatedImages.push(response.url)
-        
-        // Update progressively
-        setBoxes(prevBoxes => prevBoxes.map(b => 
-          b.id === boxId ? { ...b, images: [...generatedImages] } : b
-        ))
-      }
-
-      setBoxes(prevBoxes => prevBoxes.map(b => 
-        b.id === boxId ? { ...b, images: generatedImages, uploading: false, progress: '' } : b
+      // TODO: Replace with Supabase Edge Function or OpenAI for image generation
+      // For now, return a placeholder
+      setBoxes(prevBoxes => prevBoxes.map(b =>
+        b.id === boxId ? { ...b, uploading: false, progress: 'Image generation requires AI service' } : b
       ))
     } catch (error) {
-      
-      setBoxes(prevBoxes => prevBoxes.map(b => 
-        b.id === boxId ? { ...b, uploading: false, progress: 'Error generating' } : b
+      setBoxes(prevBoxes => prevBoxes.map(b =>
+        b.id === boxId ? { ...b, uploading: false, progress: 'Error generating images' } : b
       ))
     }
   }
+        ))
+}
 
-  const handleFileUpload = async (boxId, file) => {
-    setBoxes(boxes.map(b => 
-      b.id === boxId ? { ...b, uploading: true, progress: 'Uploading...' } : b
-    ))
-
-    try {
-      const response = await base44.integrations.Core.UploadFile({ file })
-      setBoxes(boxes.map(b => 
-        b.id === boxId ? { ...b, images: [response.file_url], uploading: false, progress: '' } : b
-      ))
+setBoxes(prevBoxes => prevBoxes.map(b =>
+  b.id === boxId ? { ...b, images: generatedImages, uploading: false, progress: '' } : b
+))
     } catch (error) {
-      
-      setBoxes(boxes.map(b => 
-        b.id === boxId ? { ...b, uploading: false, progress: 'Upload failed' } : b
-      ))
-    }
+
+  setBoxes(prevBoxes => prevBoxes.map(b =>
+    b.id === boxId ? { ...b, uploading: false, progress: 'Error generating' } : b
+  ))
+}
+  }
+
+const handleFileUpload = async (boxId, file) => {
+  setBoxes(boxes.map(b =>
+    b.id === boxId ? { ...b, uploading: true, progress: 'Uploading...' } : b
+  ))
+
+  try {
+    const response = await base44.integrations.Core.UploadFile({ file })
+    setBoxes(boxes.map(b =>
+      b.id === boxId ? { ...b, images: [response.file_url], uploading: false, progress: '' } : b
+    ))
+  } catch (error) {
+
+    setBoxes(boxes.map(b =>
+      b.id === boxId ? { ...b, uploading: false, progress: 'Upload failed' } : b
+    ))
   }
 
   const handleUrlInput = (boxId, url) => {
-    setBoxes(boxes.map(b => 
+    setBoxes(boxes.map(b =>
       b.id === boxId ? { ...b, images: [url] } : b
     ))
   }
 
   return (
     <div className="mb-8 border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
-      <button 
+      <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between text-left"
       >
@@ -106,7 +88,7 @@ export default function EditableSection({ title, onGenerate }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {boxes.map((box) => (
               <div key={box.id} className="bg-white rounded-lg p-4 border border-gray-200">
-                <div 
+                <div
                   className="aspect-video bg-gray-100 rounded-lg mb-3 overflow-hidden flex items-center justify-center relative group"
                   onMouseEnter={() => setHoveredBox(box.id)}
                   onMouseLeave={() => setHoveredBox(null)}
@@ -118,8 +100,8 @@ export default function EditableSection({ title, onGenerate }) {
                         <div className="text-xs text-gray-400">{box.images.length}/5 shots ready</div>
                       )}
                       <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                        <div
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${(box.images.length / 5) * 100}%` }}
                         />
                       </div>
@@ -129,10 +111,10 @@ export default function EditableSection({ title, onGenerate }) {
                       {hoveredBox === box.id && box.images.length > 1 ? (
                         <div className="grid grid-cols-5 gap-0.5 w-full h-full">
                           {box.images.map((img, idx) => (
-                            <img 
-                              key={idx} 
-                              src={img} 
-                              alt={`Shot ${idx + 1}`} 
+                            <img
+                              key={idx}
+                              src={img}
+                              alt={`Shot ${idx + 1}`}
                               className="w-full h-full object-cover"
                             />
                           ))}
@@ -155,7 +137,7 @@ export default function EditableSection({ title, onGenerate }) {
                   placeholder="Project Title"
                   value={box.title}
                   onChange={(e) => {
-                    setBoxes(boxes.map(b => 
+                    setBoxes(boxes.map(b =>
                       b.id === box.id ? { ...b, title: e.target.value } : b
                     ))
                   }}
@@ -166,7 +148,7 @@ export default function EditableSection({ title, onGenerate }) {
                   placeholder="Short description (1-2 sentences)"
                   value={box.description}
                   onChange={(e) => {
-                    setBoxes(boxes.map(b => 
+                    setBoxes(boxes.map(b =>
                       b.id === box.id ? { ...b, description: e.target.value } : b
                     ))
                   }}
@@ -181,7 +163,7 @@ export default function EditableSection({ title, onGenerate }) {
                     if (value.startsWith('http')) {
                       handleUrlInput(box.id, value)
                     }
-                    setBoxes(boxes.map(b => 
+                    setBoxes(boxes.map(b =>
                       b.id === box.id ? { ...b, prompt: value } : b
                     ))
                   }}
