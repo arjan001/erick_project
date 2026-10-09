@@ -125,7 +125,7 @@ export default function FindJobsPage() {
   const [showFilters, setShowFilters] = useState(false)
   const perPage = 5
 
-  // Fetch jobs from base44 database on mount, fall back to dummy data
+  // Fetch jobs from Supabase database on mount, fall back to dummy data
   useEffect(() => {
     let cancelled = false
     Job.list('-created_at', 50)

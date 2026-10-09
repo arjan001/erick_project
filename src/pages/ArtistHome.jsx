@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { base44 } from '@/api/base44Client'
+import { Artist, Job, Application } from '@/lib/supabaseEntities'
 import ArtistSidebar from '../components/ArtistSidebar'
 import { Button } from '@/components/ui/button'
 import { Briefcase, MessageSquare, Brain, ArrowRight, Clock, MapPin, CheckCircle, TrendingUp } from 'lucide-react'
@@ -26,9 +26,9 @@ export default function ArtistHome() {
     const fetchData = async () => {
       try {
         const [artistData, jobsData, applicationsData] = await Promise.all([
-          base44.entities.Artist.filter({ email: userData.email }),
-          base44.entities.Job.filter({ status: 'open' }),
-          base44.entities.Application.filter({ artist_email: userData.email })
+          Artist.filter({ email: userData.email }),
+          Job.filter({ status: 'open' }),
+          Application.filter({ artist_email: userData.email })
         ])
 
         if (artistData.length > 0) {
@@ -38,7 +38,7 @@ export default function ArtistHome() {
         setJobs(jobsData.slice(0, 5))
         setApplications(applicationsData)
       } catch (err) {
-        //
+        console.error('Failed to fetch data:', err)
       } finally {
         setLoading(false)
       }
