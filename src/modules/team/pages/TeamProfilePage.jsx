@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { base44 } from '@/api/base44Client'
 import { Team } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import CountrySelector from '@/components/CountrySelector'
@@ -149,13 +149,21 @@ export default function TeamProfilePage() {
     }
     setUploadingLogo(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file })
-      const fileUrl = response.file_url || response.url
-      const updated = await Team.update(team.id, { logo: fileUrl })
+      const fileName = `team-logo-${team.id}-${Date.now()}-${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('team-profiles')
+        .upload(fileName, file)
+
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('team-profiles')
+        .getPublicUrl(fileName)
+
+      const updated = await Team.update(team.id, { logo: publicUrl })
       setTeam(updated)
       success('Logo Updated', 'Team logo updated successfully')
     } catch (err) {
-      //
       toastError('Upload Failed', 'Failed to upload logo. Please try again.')
     } finally {
       setUploadingLogo(false)
