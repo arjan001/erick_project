@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { X, Sparkles, ChevronDown } from 'lucide-react'
-import { base44 } from '@/api/base44Client'
 import { Creator } from '@/lib/supabaseEntities'
 
 const TYPES = ['freelance', 'studio', 'agency', 'team', 'collective']
@@ -77,41 +76,30 @@ CRITICAL: Better to return 3 companies with REAL logos than 10 with fake ones.
 
 Return ONLY valid JSON array of companies.`
 
-      const response = await base44.functions.invoke('generateCreators', {
-        prompt,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            creators: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  type: { type: "string", enum: TYPES },
-                  categories: { type: "array", items: { type: "string" } },
-                  country: { type: "string" },
-                  city: { type: "string" },
-                  website: { type: "string" },
-                  awards_count: { type: "number" },
-                  logo_url: { type: "string" },
-                  profile_image_url: { type: "string" }
-                }
-              }
-            }
-          }
-        }
-      })
+      // TODO: Replace with Supabase Edge Function or OpenAI for AI generation
+      // Using mock data for now
+      const mockCreators = Array.from({ length: config.count }, (_, i) => ({
+        name: `Studio ${i + 1}`,
+        type: config.types[0] || 'studio',
+        categories: config.categories.length > 0 ? [config.categories[0]] : ['cinematography'],
+        country: config.countries[0] || 'Kenya',
+        city: 'Nairobi',
+        website: `https://studio${i + 1}.com`,
+        awards_count: Math.floor(Math.random() * 20),
+        logo_url: '',
+        profile_image_url: ''
+      }))
+
+      const response = { creators: mockCreators }
 
       // Filter out creators without valid logo URLs
       const validCreators = response.creators.filter(c => {
-        const hasLogo = c.logo_url && 
-                       c.logo_url.startsWith('http') && 
-                       c.logo_url.length > 20 &&
-                       !c.logo_url.includes('placeholder')
+        const hasLogo = c.logo_url &&
+          c.logo_url.startsWith('http') &&
+          c.logo_url.length > 20 &&
+          !c.logo_url.includes('placeholder')
         if (!hasLogo) {
-          
+
         }
         return hasLogo
       })
@@ -134,7 +122,7 @@ Return ONLY valid JSON array of companies.`
       }, 1000)
 
     } catch (error) {
-      
+
       setProgress('Error: ' + error.message)
     } finally {
       setTimeout(() => setGenerating(false), 2000)
@@ -142,14 +130,14 @@ Return ONLY valid JSON array of companies.`
   }
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-6"
       onClick={() => {
         setOpenDropdown(null)
         onClose()
       }}
     >
-      <div 
+      <div
         className="bg-white rounded-xl max-w-2xl w-full p-8 relative z-[101]"
         onClick={(e) => e.stopPropagation()}
       >
@@ -186,7 +174,7 @@ Return ONLY valid JSON array of companies.`
                             const newTypes = isSelected
                               ? config.types.filter(x => x !== t)
                               : [...config.types, t]
-                            setConfig({...config, types: newTypes})
+                            setConfig({ ...config, types: newTypes })
                           }}
                           className="w-4 h-4"
                         />
@@ -233,7 +221,7 @@ Return ONLY valid JSON array of companies.`
                             const newCats = isSelected
                               ? config.categories.filter(x => x !== c)
                               : [...config.categories, c]
-                            setConfig({...config, categories: newCats})
+                            setConfig({ ...config, categories: newCats })
                           }}
                           className="w-4 h-4"
                         />
@@ -280,7 +268,7 @@ Return ONLY valid JSON array of companies.`
                             const newCountries = isSelected
                               ? config.countries.filter(x => x !== c)
                               : [...config.countries, c]
-                            setConfig({...config, countries: newCountries})
+                            setConfig({ ...config, countries: newCountries })
                           }}
                           className="w-4 h-4"
                         />
@@ -304,12 +292,12 @@ Return ONLY valid JSON array of companies.`
 
           <div>
             <label className="text-sm font-medium mb-2 block">Number to Generate</label>
-            <Input 
+            <Input
               type="number"
               min="1"
               max="100"
               value={config.count}
-              onChange={(e) => setConfig({...config, count: parseInt(e.target.value) || 10})}
+              onChange={(e) => setConfig({ ...config, count: parseInt(e.target.value) || 10 })}
               className="text-lg"
             />
           </div>

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Sparkles, Loader, X, Paperclip, Upload, CheckCircle2 } from 'lucide-react'
 import filmIndustryRoles from '@/data/filmIndustryRoles.json'
 import { analyzeWebsiteUrl, saveAnalyzedProjectToStorage } from '@/lib/urlAnalysisService'
-import { base44 } from '@/api/base44Client'
+import { supabase } from '@/lib/supabase'
 import AISubmissionModal from './AISubmissionModal'
 
 // Flatten roles from JSON for display
@@ -85,11 +85,11 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
           setShowAIModal(true)
         }, 600)
       } else {
-        
+
         setExtractProgress(null)
       }
     } catch (error) {
-      
+
       setExtractProgress(null)
       clearInterval(progressInterval)
     } finally {
@@ -128,28 +128,35 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
       const fileExtension = '.' + file.name.split('.').pop().toLowerCase()
 
       if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension)) {
-        
+
         continue
       }
 
       if (file.size > 50 * 1024 * 1024) {
-        
+
         continue
       }
 
       try {
-        const uploadResult = await base44.integrations.Core.UploadFile({ file })
+        const fileName = `client-job-${Date.now()}-${file.name}`
+        const { data: uploadData, error } = await supabase.storage
+          .from('job-attachments')
+          .upload(fileName, file)
 
-        if (uploadResult.data?.file_url) {
-          uploadedFiles.push({
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            url: uploadResult.data.file_url
-          })
-        }
+        if (error) throw error
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('job-attachments')
+          .getPublicUrl(fileName)
+
+        uploadedFiles.push({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          url: publicUrl
+        })
       } catch (error) {
-        
+        console.error('Upload failed:', error)
       }
     }
 
@@ -166,12 +173,12 @@ export default function ClientJobModal({ open, editing, form, setForm, onClose, 
   }
 
   if (!open) return null
-  
+
   // Show AI Modal when active
   if (showAIModal) {
-    return <AISubmissionModal 
-      open={showAIModal} 
-      onClose={() => setShowAIModal(false)} 
+    return <AISubmissionModal
+      open={showAIModal}
+      onClose={() => setShowAIModal(false)}
       onSubmit={handleAIComplete}
       projectData={{
         url: projectUrl,
