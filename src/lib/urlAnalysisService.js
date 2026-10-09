@@ -1,8 +1,6 @@
 // URL Analysis Service
 // Analyzes URLs to extract project information and generate project briefs
-// Uses Base44 AI with web search capabilities
-
-import { base44 } from '@/api/base44Client'
+// TODO: Replace with actual AI service (Supabase Edge Functions or OpenAI)
 
 /**
  * Analyzes a website URL to extract business information and project context
@@ -12,330 +10,49 @@ import { base44 } from '@/api/base44Client'
  */
 export const analyzeWebsiteUrl = async (url, projectType = 'commercial') => {
   try {
-    // Normalize URL - handle plain domains like proton.me
     let normalizedUrl = url.trim()
     if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
       normalizedUrl = 'https://' + normalizedUrl
     }
 
-    
-
-    // Select prompt template based on project type
-    const prompt = getPromptForProjectType(projectType)
-
-    // Call Base44 AI with web search enabled
-    const response = await base44.integrations.Core.InvokeLLM({
-      prompt: prompt.replace('{{URL}}', normalizedUrl),
-      add_context_from_internet: true, // This enables the AI to visit and read the website
-      temperature: 0.7,
-      max_tokens: 500
-    })
-
-    
-
-    // Check multiple possible response structures
-    let analysis = null
-    if (response?.data?.content) {
-      analysis = response.data.content
-    } else if (response?.data?.text) {
-      analysis = response.data.text
-    } else if (response?.content) {
-      analysis = response.content
-    } else if (typeof response === 'string') {
-      analysis = response
-    } else if (response?.message) {
-      analysis = response.message
-    }
+    const analysis = generateMockAnalysis(normalizedUrl, projectType)
 
     if (!analysis) {
-      
-      throw new Error('Failed to analyze website - no content returned')
+      throw new Error('Failed to analyze website')
     }
-
-    // Remove markdown formatting
-    let cleanAnalysis = analysis
-      .replace(/#{1,6}\s/g, '') // Remove headers
-      .replace(/\*\*/g, '') // Remove bold
-      .replace(/\*/g, '') // Remove italic
-      .replace(/`/g, '') // Remove code
-      .replace(/\n\n+/g, '\n\n') // Fix multiple newlines
-      .trim()
-
-    // Parse the analysis to extract structured data
-    const parsedAnalysis = parseAnalysisResponse(cleanAnalysis)
 
     return {
       success: true,
       url: normalizedUrl,
-      rawAnalysis: cleanAnalysis,
-      ...parsedAnalysis
+      analysis: analysis,
+      rawAnalysis: JSON.stringify(analysis, null, 2)
     }
   } catch (error) {
-    
     return {
       success: false,
-      error: error.message || 'Failed to analyze website',
-      url: url
+      error: error.message || 'Failed to analyze website'
     }
   }
 }
 
 /**
- * Generates a comprehensive project brief from analyzed URL data
- * @param {Object} analysisData - The data from URL analysis
+ * Generates a project brief based on website analysis and attachments
+ * @param {Object} analysisData - The website analysis data
  * @param {string} projectType - The type of project
- * @param {string} additionalNotes - Any additional notes from the user
- * @param {Array} attachments - Array of uploaded file objects {name, type, url}
+ * @param {string} additionalNotes - Additional notes from the user
+ * @param {Array} attachments - File attachments
  * @returns {Promise<Object>} - Generated project brief
  */
 export const generateProjectBrief = async (analysisData, projectType, additionalNotes = '', attachments = []) => {
   try {
-    let attachmentAnalysis = ''
-    
-    // Analyze attachments if provided
-    if (attachments && attachments.length > 0) {
-      const imageAttachments = attachments.filter(att => 
-        att.type?.startsWith('image/') || 
-        att.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-      )
-      
-      const pdfAttachments = attachments.filter(att => 
-        att.type === 'application/pdf' || 
-        att.name?.match(/\.pdf$/i)
-      )
-      
-      const videoAttachments = attachments.filter(att => 
-        att.type?.startsWith('video/') || 
-        att.name?.match(/\.(mp4|mov|avi|hvec)$/i)
-      )
-      
-      const audioAttachments = attachments.filter(att => 
-        att.type?.startsWith('audio/') || 
-        att.name?.match(/\.(mp3|wav)$/i)
-      )
-      
-      if (imageAttachments.length > 0) {
-        attachmentAnalysis += '\n\nIMAGE ATTACHMENTS ANALYSIS:\n'
-        for (const img of imageAttachments) {
-          try {
-            const imgAnalysis = await base44.integrations.Core.InvokeLLM({
-              prompt: `Analyze this image for a ${projectType} project. Extract: visual style, color palette, mood, key elements, any text visible, and how it could inform the production.`,
-              file_urls: [img.url],
-              max_tokens: 300
-            })
-            if (imgAnalysis?.data?.content) {
-              attachmentAnalysis += `\n- ${img.name}: ${imgAnalysis.data.content}\n`
-            }
-          } catch (err) {
-            
-          }
-        }
-      }
-      
-      if (pdfAttachments.length > 0) {
-        attachmentAnalysis += '\n\nPDF ATTACHMENTS:\n'
-        for (const pdf of pdfAttachments) {
-          attachmentAnalysis += `- ${pdf.name} (PDF document attached for reference)\n`
-        }
-      }
-      
-      if (videoAttachments.length > 0) {
-        attachmentAnalysis += '\n\nVIDEO ATTACHMENTS:\n'
-        for (const vid of videoAttachments) {
-          attachmentAnalysis += `- ${vid.name} (Video reference attached)\n`
-        }
-      }
-      
-      if (audioAttachments.length > 0) {
-        attachmentAnalysis += '\n\nAUDIO ATTACHMENTS:\n'
-        for (const aud of audioAttachments) {
-          attachmentAnalysis += `- ${aud.name} (Audio reference attached)\n`
-        }
-      }
-    }
-
-    const prompt = `
-You are a professional film production consultant. Based on the following website analysis, attachments, and project type, create a comprehensive project brief.
-
-WEBSITE ANALYSIS:
-${analysisData.rawAnalysis}
-
-${attachmentAnalysis}
-
-PROJECT TYPE: ${projectType}
-ADDITIONAL NOTES: ${additionalNotes}
-
-Generate a detailed project brief with the following sections:
-
-1. PROJECT OVERVIEW
-   - Project title (creative and professional)
-   - Project goal (what the client wants to achieve)
-   - Target audience (who will see this content)
-
-2. CREATIVE DIRECTION
-   - Visual style (cinematic, documentary, commercial, etc.)
-   - Tone and mood (serious, playful, inspirational, etc.)
-   - Key visual elements (colors, imagery, branding)
-
-3. PRODUCTION REQUIREMENTS
-   - Suggested video length
-   - Shooting locations (based on business location or studio)
-   - Key scenes or segments needed
-   - Talent requirements (actors, presenters, voiceover)
-
-4. TECHNICAL SPECIFICATIONS
-   - Camera format suggestions
-   - Lighting requirements
-   - Audio needs
-   - Post-production requirements
-
-5. DELIVERABLES
-   - Final video formats
-   - Social media versions
-   - Additional assets (stills, graphics)
-
-6. TIMELINE
-   - Pre-production timeline
-   - Production timeline
-   - Post-production timeline
-
-7. BUDGET RANGE
-   - Estimated budget range (low, medium, high)
-   - Budget breakdown by phase
-
-8. KEY MESSAGES
-   - Main message to convey
-   - Supporting messages
-   - Call to action
-
-9. SUCCESS METRICS
-   - How success will be measured
-   - KPIs to track
-
-10. ADDITIONAL NOTES
-    - Any other relevant information
-
-Format the response as structured JSON with these exact keys:
-{
-  "project_title": "...",
-  "project_overview": { "goal": "...", "target_audience": "..." },
-  "creative_direction": { "visual_style": "...", "tone": "...", "key_elements": "..." },
-  "production_requirements": { "video_length": "...", "locations": "...", "key_scenes": "...", "talent": "..." },
-  "technical_specifications": { "camera": "...", "lighting": "...", "audio": "...", "post_production": "..." },
-  "deliverables": { "formats": "...", "social_versions": "...", "additional_assets": "..." },
-  "timeline": { "pre_production": "...", "production": "...", "post_production": "..." },
-  "budget": { "range": "...", "breakdown": "..." },
-  "key_messages": { "main_message": "...", "supporting_messages": "...", "call_to_action": "..." },
-  "success_metrics": "...",
-  "additional_notes": "...",
-  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
-}
-`
-
-    const response = await base44.integrations.Core.InvokeLLM({
-      prompt: prompt,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          project_title: { type: "string" },
-          project_overview: {
-            type: "object",
-            properties: {
-              goal: { type: "string" },
-              target_audience: { type: "string" }
-            }
-          },
-          creative_direction: {
-            type: "object",
-            properties: {
-              visual_style: { type: "string" },
-              tone: { type: "string" },
-              key_elements: { type: "string" }
-            }
-          },
-          production_requirements: {
-            type: "object",
-            properties: {
-              video_length: { type: "string" },
-              locations: { type: "string" },
-              key_scenes: { type: "string" },
-              talent: { type: "string" }
-            }
-          },
-          technical_specifications: {
-            type: "object",
-            properties: {
-              camera: { type: "string" },
-              lighting: { type: "string" },
-              audio: { type: "string" },
-              post_production: { type: "string" }
-            }
-          },
-          deliverables: {
-            type: "object",
-            properties: {
-              formats: { type: "string" },
-              social_versions: { type: "string" },
-              additional_assets: { type: "string" }
-            }
-          },
-          timeline: {
-            type: "object",
-            properties: {
-              pre_production: { type: "string" },
-              production: { type: "string" },
-              post_production: { type: "string" }
-            }
-          },
-          budget: {
-            type: "object",
-            properties: {
-              range: { type: "string" },
-              breakdown: { type: "string" }
-            }
-          },
-          key_messages: {
-            type: "object",
-            properties: {
-              main_message: { type: "string" },
-              supporting_messages: { type: "string" },
-              call_to_action: { type: "string" }
-            }
-          },
-          success_metrics: { type: "string" },
-          additional_notes: { type: "string" },
-          tags: {
-            type: "array",
-            items: { type: "string" }
-          }
-        },
-        required: ["project_title", "project_overview", "creative_direction", "production_requirements", "technical_specifications", "deliverables", "timeline", "budget", "key_messages", "success_metrics", "tags"]
-      },
-      temperature: 0.7,
-      max_tokens: 2000
-    })
-
-    if (!response?.data?.content) {
-      throw new Error('Failed to generate project brief')
-    }
-
-    let briefData
-    try {
-      briefData = typeof response.data.content === 'string' 
-        ? JSON.parse(response.data.content) 
-        : response.data.content
-    } catch (parseError) {
-      
-      throw new Error('Failed to parse generated brief')
-    }
+    const response = generateMockProjectBrief(projectType, additionalNotes)
 
     return {
       success: true,
-      brief: briefData,
+      brief: response,
       originalAnalysis: analysisData
     }
   } catch (error) {
-    
     return {
       success: false,
       error: error.message || 'Failed to generate project brief'
@@ -344,205 +61,17 @@ Format the response as structured JSON with these exact keys:
 }
 
 /**
- * Re-generates project brief with updated context (category or description changes)
- * @param {Object} currentBrief - The current brief data
- * @param {string} newProjectType - The new project type (if changed)
- * @param {string} newDescription - The new description (if changed)
- * @param {Object} originalAnalysis - The original URL analysis data
- * @returns {Promise<Object>} - Re-generated project brief
+ * Re-generates project brief with updated context
  */
 export const regenerateProjectBrief = async (currentBrief, newProjectType, newDescription, originalAnalysis) => {
   try {
-    const prompt = `
-You are a professional film production consultant. Re-generate and update the project brief based on the following changes.
-
-ORIGINAL WEBSITE ANALYSIS:
-${originalAnalysis.rawAnalysis}
-
-CURRENT PROJECT BRIEF:
-${JSON.stringify(currentBrief, null, 2)}
-
-UPDATED PROJECT TYPE: ${newProjectType}
-UPDATED DESCRIPTION/NOTES: ${newDescription}
-
-Please re-generate the project brief with the following changes:
-1. Update all sections to reflect the new project type (${newProjectType})
-2. Incorporate the new description/notes into the project overview and key messages
-3. Maintain consistency across all sections (creative direction, production requirements, technical specs, timeline, budget)
-4. Ensure the brief is tailored specifically to the ${newProjectType} project type
-5. Update tags to be relevant to the new project type
-
-Generate a detailed project brief with the following sections:
-
-1. PROJECT OVERVIEW
-   - Project title (creative and professional)
-   - Project goal (what the client wants to achieve)
-   - Target audience (who will see this content)
-
-2. CREATIVE DIRECTION
-   - Visual style (cinematic, documentary, commercial, etc.)
-   - Tone and mood (serious, playful, inspirational, etc.)
-   - Key visual elements (colors, imagery, branding)
-
-3. PRODUCTION REQUIREMENTS
-   - Suggested video length
-   - Shooting locations (based on business location or studio)
-   - Key scenes or segments needed
-   - Talent requirements (actors, presenters, voiceover)
-
-4. TECHNICAL SPECIFICATIONS
-   - Camera format suggestions
-   - Lighting requirements
-   - Audio needs
-   - Post-production requirements
-
-5. DELIVERABLES
-   - Final video formats
-   - Social media versions
-   - Additional assets (stills, graphics)
-
-6. TIMELINE
-   - Pre-production timeline
-   - Production timeline
-   - Post-production timeline
-
-7. BUDGET RANGE
-   - Estimated budget range (low, medium, high)
-   - Budget breakdown by phase
-
-8. KEY MESSAGES
-   - Main message to convey
-   - Supporting messages
-   - Call to action
-
-9. SUCCESS METRICS
-   - How success will be measured
-   - KPIs to track
-
-10. ADDITIONAL NOTES
-    - Any other relevant information
-
-Format the response as structured JSON with these exact keys:
-{
-  "project_title": "...",
-  "project_overview": { "goal": "...", "target_audience": "..." },
-  "creative_direction": { "visual_style": "...", "tone": "...", "key_elements": "..." },
-  "production_requirements": { "video_length": "...", "locations": "...", "key_scenes": "...", "talent": "..." },
-  "technical_specifications": { "camera": "...", "lighting": "...", "audio": "...", "post_production": "..." },
-  "deliverables": { "formats": "...", "social_versions": "...", "additional_assets": "..." },
-  "timeline": { "pre_production": "...", "production": "...", "post_production": "..." },
-  "budget": { "range": "...", "breakdown": "..." },
-  "key_messages": { "main_message": "...", "supporting_messages": "...", "call_to_action": "..." },
-  "success_metrics": "...",
-  "additional_notes": "...",
-  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
-}
-`
-
-    const response = await base44.integrations.Core.InvokeLLM({
-      prompt: prompt,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          project_title: { type: "string" },
-          project_overview: {
-            type: "object",
-            properties: {
-              goal: { type: "string" },
-              target_audience: { type: "string" }
-            }
-          },
-          creative_direction: {
-            type: "object",
-            properties: {
-              visual_style: { type: "string" },
-              tone: { type: "string" },
-              key_elements: { type: "string" }
-            }
-          },
-          production_requirements: {
-            type: "object",
-            properties: {
-              video_length: { type: "string" },
-              locations: { type: "string" },
-              key_scenes: { type: "string" },
-              talent: { type: "string" }
-            }
-          },
-          technical_specifications: {
-            type: "object",
-            properties: {
-              camera: { type: "string" },
-              lighting: { type: "string" },
-              audio: { type: "string" },
-              post_production: { type: "string" }
-            }
-          },
-          deliverables: {
-            type: "object",
-            properties: {
-              formats: { type: "string" },
-              social_versions: { type: "string" },
-              additional_assets: { type: "string" }
-            }
-          },
-          timeline: {
-            type: "object",
-            properties: {
-              pre_production: { type: "string" },
-              production: { type: "string" },
-              post_production: { type: "string" }
-            }
-          },
-          budget: {
-            type: "object",
-            properties: {
-              range: { type: "string" },
-              breakdown: { type: "string" }
-            }
-          },
-          key_messages: {
-            type: "object",
-            properties: {
-              main_message: { type: "string" },
-              supporting_messages: { type: "string" },
-              call_to_action: { type: "string" }
-            }
-          },
-          success_metrics: { type: "string" },
-          additional_notes: { type: "string" },
-          tags: {
-            type: "array",
-            items: { type: "string" }
-          }
-        },
-        required: ["project_title", "project_overview", "creative_direction", "production_requirements", "technical_specifications", "deliverables", "timeline", "budget", "key_messages", "success_metrics", "tags"]
-      },
-      temperature: 0.7,
-      max_tokens: 2000
-    })
-
-    if (!response?.data?.content) {
-      throw new Error('Failed to re-generate project brief')
-    }
-
-    let briefData
-    try {
-      briefData = typeof response.data.content === 'string' 
-        ? JSON.parse(response.data.content) 
-        : response.data.content
-    } catch (parseError) {
-      
-      throw new Error('Failed to parse re-generated brief')
-    }
-
+    const response = generateMockProjectBrief(newProjectType, newDescription)
     return {
       success: true,
-      brief: briefData,
+      brief: response,
       originalAnalysis: originalAnalysis
     }
   } catch (error) {
-    
     return {
       success: false,
       error: error.message || 'Failed to re-generate project brief'
@@ -552,7 +81,6 @@ Format the response as structured JSON with these exact keys:
 
 /**
  * Saves analyzed project data to localStorage
- * @param {Object} projectData - The analyzed project data to save
  */
 export const saveAnalyzedProjectToStorage = (projectData) => {
   try {
@@ -564,27 +92,22 @@ export const saveAnalyzedProjectToStorage = (projectData) => {
       additionalNotes: projectData.additionalNotes,
       timestamp: new Date().toISOString()
     }
-    localStorage.setItem('ericrabar_analyzed_project', JSON.stringify(dataToSave))
+    localStorage.setItem('smartgigs_analyzed_project', JSON.stringify(dataToSave))
     return { success: true }
   } catch (error) {
-    
     return { success: false, error: error.message }
   }
 }
 
 /**
  * Loads analyzed project data from localStorage
- * @returns {Object|null} - The saved project data or null if not found
  */
 export const loadAnalyzedProjectFromStorage = () => {
   try {
-    const savedData = localStorage.getItem('ericrabar_analyzed_project')
-    if (savedData) {
-      return JSON.parse(savedData)
-    }
-    return null
+    const data = localStorage.getItem('smartgigs_analyzed_project')
+    if (!data) return null
+    return JSON.parse(data)
   } catch (error) {
-    
     return null
   }
 }
@@ -594,85 +117,85 @@ export const loadAnalyzedProjectFromStorage = () => {
  */
 export const clearAnalyzedProjectFromStorage = () => {
   try {
-    localStorage.removeItem('ericrabar_analyzed_project')
+    localStorage.removeItem('smartgigs_analyzed_project')
     return { success: true }
   } catch (error) {
-    
     return { success: false, error: error.message }
   }
 }
 
-/**
- * Gets the appropriate prompt template based on project type
- * @param {string} projectType - The type of project
- * @returns {string} - The prompt template
- */
-const getPromptForProjectType = (projectType) => {
+// Helper functions
+
+function getPromptForProjectType(projectType) {
   const prompts = {
-    commercial: `Visit {{URL}} and write a concise 2-3 sentence film production brief for a commercial video. Include: what to showcase (key selling points), target audience, visual style, brand integration (colors/logo), distribution platform, and call-to-action.
-
-Example: "Create a high-impact commercial for [Brand] showcasing [key features]. Target [audience] with selling points like [features]. Use [visual style] featuring [specific visuals]. Integrate [brand elements] throughout, ending with CTA: '[action]'. Designed for [distribution platforms]."`,
-
-    music_video: `Visit {{URL}} and write a concise 2-3 sentence film production brief for a music video. Include: what to showcase (song themes/artist personality), target audience, visual style, artist brand integration, distribution platform, and key visual elements.
-
-Example: "Create a [visual style] music video for [Artist] showcasing [song themes]. Target [audience] with [key elements]. Use [visual approach] featuring [specific scenes]. Integrate [brand elements] throughout. Designed for [distribution platforms]."`,
-
-    short_film: `Visit {{URL}} and write a concise 2-3 sentence film production brief for a short film. Include: what to explore (themes/story concept), target audience, visual style, key narrative elements, distribution platform, and production approach.
-
-Example: "Create a [visual style] short film exploring [themes]. Target [audience] with [story approach]. Use [cinematic style] featuring [key scenes]. Designed for [distribution platforms]."`,
-
-    documentary: `Visit {{URL}} and write a concise 2-3 sentence film production brief for a documentary. Include: what to cover (subject/themes), target audience, documentary style, key narrative elements, distribution platform, and production approach.
-
-Example: "Create a [documentary style] documentary covering [subject]. Target [audience] with [storytelling approach]. Use [visual style] featuring [key elements]. Designed for [distribution platforms]."`,
-
-    branded_content: `Visit {{URL}} and write a concise 2-3 sentence film production brief for branded content. Include: what to showcase (brand story/values), target audience, visual style, brand integration (logo/colors/messaging), distribution platform, and content format.
-
-Example: "Create [visual style] branded content for [Brand] showcasing [brand story]. Target [audience] with [key messages]. Use [visual approach] featuring [specific content]. Integrate [brand elements] throughout. Designed for [distribution platforms]."`,
-
-    corporate_video: `Visit {{URL}} and write a concise 2-3 sentence film production brief for a corporate video. Include: what to communicate (company story/values), target audience, visual style, brand integration, distribution platform, and key scenes.
-
-Example: "Create a [visual style] corporate video for [Company] showcasing [company story]. Target [audience] with [key messages]. Use [visual approach] featuring [key scenes]. Integrate [brand elements] throughout. Designed for [distribution platforms]."`,
-
-    event_coverage: `Visit {{URL}} and write a concise 2-3 sentence film production brief for event coverage. Include: what to capture (key moments/atmosphere), target audience, visual style, key moments to highlight, distribution platform, and production approach.
-
-Example: "Create [visual style] event coverage for [Event] capturing [key moments]. Target [audience] with [coverage approach]. Use [visual style] featuring [specific content]. Designed for [distribution platforms]."`,
-
-    product_demo: `Visit {{URL}} and write a concise 2-3 sentence film production brief for a product demo. Include: what to showcase (features/benefits), target audience, visual style, product integration, distribution platform, and demo format.
-
-Example: "Create a [visual style] product demo for [Product] showcasing [key features]. Target [audience] with [selling points]. Use [visual approach] featuring [specific demonstrations]. Integrate [brand elements] throughout. Designed for [distribution platforms]."`,
-
-    social_media: `Visit {{URL}} and write a concise 2-3 sentence film production brief for social media content. Include: what to achieve (engagement/awareness), target audience and platform, visual style, content format, distribution platform, and engagement strategy.
-
-Example: "Create [visual style] social media content for [Brand/Creator] showcasing [content theme]. Target [audience] on [platform] with [engagement approach]. Use [visual style] featuring [key elements]. Designed for [distribution platforms]."`,
-
-    animation: `Visit {{URL}} and write a concise 2-3 sentence film production brief for an animation. Include: what to convey (story/brand message), target audience, animation style, key visual elements and characters, distribution platform, and production approach.
-
-Example: "Create a [animation style] animation for [Brand/Project] showcasing [story/message]. Target [audience] with [key elements]. Use [visual style] featuring [specific content]. Designed for [distribution platforms]."`
+    commercial: 'Analyze this website for a commercial video production project. Extract business information, brand identity, target audience, and key messaging.',
+    music_video: 'Analyze this website for a music video production. Extract artist information, music style, visual aesthetic, and target audience.',
+    documentary: 'Analyze this website for a documentary project. Extract subject matter, story elements, interview subjects, and thematic focus.',
+    corporate: 'Analyze this website for a corporate video project. Extract company information, corporate identity, key products/services, and business objectives.',
+    narrative: 'Analyze this website for a narrative film project. Extract story elements, genre, character information, and thematic focus.'
   }
-
   return prompts[projectType] || prompts.commercial
 }
 
-/**
- * Parses the raw analysis response to extract structured data
- * @param {string} analysis - The raw analysis text
- * @returns {Object} - Parsed analysis data
- */
-const parseAnalysisResponse = (analysis) => {
-  // This is a simple parser. In production, you might want more sophisticated parsing
-  // or ask the LLM to return structured JSON directly.
-  
-  const parsed = {
-    businessName: '',
-    description: analysis,
-    extractedData: {}
+function generateMockAnalysis(url, projectType) {
+  return {
+    businessName: 'SmartGigs Kenya',
+    industry: 'Creative Production',
+    website: url,
+    businessType: 'Production Company',
+    targetAudience: 'Film Industry Professionals',
+    keyOfferings: 'Video Production, Talent Casting, Crew Services',
+    brandIdentity: 'Professional, Creative, Kenya-focused',
+    primaryColors: '#C9A962, #0A0A0A',
+    tone: 'Professional and Creative'
   }
+}
 
-  // Try to extract business name (simple heuristic)
-  const nameMatch = analysis.match(/(?:business|company|brand|artist|organization)[\s:]+([^\n.]+)/i)
-  if (nameMatch) {
-    parsed.businessName = nameMatch[1].trim()
+function generateMockProjectBrief(projectType, notes) {
+  return {
+    project_title: `SmartGigs ${projectType} Production`,
+    project_overview: {
+      goal: 'Create a professional video production showcasing SmartGigs Kenya services',
+      target_audience: 'Kenya film industry professionals and creative talent'
+    },
+    creative_direction: {
+      visual_style: 'Cinematic and professional',
+      tone: 'Inspiring and trustworthy',
+      key_elements: 'Kenya landscapes, creative professionals, production quality'
+    },
+    production_requirements: {
+      video_length: '2-3 minutes',
+      locations: 'Nairobi studio and on-location shoots',
+      key_scenes: 'Talent showcase, crew operations, project highlights',
+      talent: 'Local actors and crew members'
+    },
+    technical_specifications: {
+      camera: '4K digital cinema cameras',
+      lighting: 'Professional LED lighting packages',
+      audio: 'Wireless microphone systems',
+      post_production: 'Color grading, sound mixing, editing'
+    },
+    deliverables: {
+      formats: '4K, 1080p, social media optimized',
+      social_versions: 'Instagram, TikTok, YouTube',
+      additional_assets: 'Behind-the-scenes footage, promotional images'
+    },
+    timeline: {
+      pre_production: '2 weeks',
+      production: '1 week',
+      post_production: '2 weeks'
+    },
+    budget: {
+      range: 'Medium',
+      breakdown: 'Pre-production: 20%, Production: 50%, Post-production: 30%'
+    },
+    key_messages: {
+      main_message: 'SmartGigs Kenya connects creative talent with opportunities',
+      supporting_messages: 'Professional production quality, local talent focus, industry expertise',
+      call_to_action: 'Join SmartGigs Kenya today'
+    },
+    success_metrics: 'Talent sign-ups, project completions, client satisfaction',
+    additional_notes: notes || '',
+    tags: ['video', 'production', 'kenya', 'creative', 'film', 'talent']
   }
-
-  return parsed
 }
