@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { base44 } from '@/api/base44Client'
+import { Team } from '@/lib/supabaseEntities'
 import TeamOnboardingDetailsStep from './TeamOnboardingDetailsStep'
 import TeamStepSpecialties from './TeamStepSpecialties'
 
@@ -10,8 +10,6 @@ const STEPS = [
   { id: 2, name: 'Specialties', component: TeamStepSpecialties },
 ]
 
-// Modern multi-step "complete your team profile" modal, shown right after the
-// team admin's first login when their Team record is still incomplete.
 export default function TeamOnboardingModal({ team, onClose, onComplete }) {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -45,10 +43,9 @@ export default function TeamOnboardingModal({ team, onClose, onComplete }) {
     setIsSubmitting(true)
     try {
       const { custom_specialties, ...rest } = data
-      await base44.entities.Team.update(team.id, rest)
+      await Team.update(team.id, rest)
       onComplete({ ...team, ...rest })
     } catch (err) {
-      
     } finally {
       setIsSubmitting(false)
     }
@@ -75,13 +72,12 @@ export default function TeamOnboardingModal({ team, onClose, onComplete }) {
               <React.Fragment key={step.id}>
                 <div className="flex flex-col items-center">
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
-                      step.id < currentStep
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all ${step.id < currentStep
                         ? 'bg-gray-900 text-white'
                         : step.id === currentStep
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-gray-200 text-gray-500'
-                    }`}
+                          ? 'bg-gray-900 text-white'
+                          : 'bg-gray-200 text-gray-500'
+                      }`}
                   >
                     {step.id < currentStep ? <Check className="w-4 h-4" /> : step.id}
                   </div>
