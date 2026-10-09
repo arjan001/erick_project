@@ -328,8 +328,8 @@ export default function SignIn() {
             <span className="text-xl font-extrabold uppercase tracking-tight text-black">SmartGigs Kenya</span>
           </Link>
 
-          {/* Mode toggle (I'm Talent / I'm Hiring) - Hidden for now, logic preserved */}
-          {/* <div className="mb-8 inline-flex items-center rounded-full bg-black/[0.06] p-1">
+          {/* Mode toggle (I'm Talent / I'm Hiring) */}
+          <div className="mb-8 inline-flex items-center rounded-full bg-black/[0.06] p-1">
             <button
               onClick={() => setUserType('talent')}
               className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${!isEmployer ? 'bg-black text-white' : 'text-black/70 hover:text-black'
@@ -344,7 +344,7 @@ export default function SignIn() {
             >
               I'm Hiring
             </button>
-          </div> */}
+          </div>
 
           {/* Messages */}
           {error && (
