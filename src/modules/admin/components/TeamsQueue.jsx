@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { base44 } from '@/api/base44Client'
+import { Team } from '@/lib/supabaseEntities'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,11 +13,11 @@ export default function TeamsQueue() {
 
   const { data: teams, isLoading } = useQuery({
     queryKey: ['admin-teams'],
-    queryFn: () => base44.entities.Team.list('-created_date'),
+    queryFn: () => Team.list('-created_at'),
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Team.update(id, data),
+    mutationFn: ({ id, data }) => Team.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-teams'] })
       setSelectedTeam(null)
@@ -27,8 +27,8 @@ export default function TeamsQueue() {
   const handleApprove = (team) => {
     updateMutation.mutate({
       id: team.id,
-      data: { 
-        status: 'approved', 
+      data: {
+        status: 'approved',
         admin_notes: adminNotes || team.admin_notes,
         approved_date: new Date().toISOString()
       }
@@ -60,9 +60,8 @@ export default function TeamsQueue() {
               <div
                 key={team.id}
                 onClick={() => setSelectedTeam(team)}
-                className={`p-4 bg-zinc-900 rounded-lg border cursor-pointer transition-all ${
-                  selectedTeam?.id === team.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
-                }`}
+                className={`p-4 bg-zinc-900 rounded-lg border cursor-pointer transition-all ${selectedTeam?.id === team.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
+                  }`}
               >
                 <div className="flex justify-between items-start mb-2">
                   <div>
@@ -86,9 +85,8 @@ export default function TeamsQueue() {
               <div
                 key={team.id}
                 onClick={() => setSelectedTeam(team)}
-                className={`p-4 bg-zinc-900 rounded-lg border cursor-pointer transition-all ${
-                  selectedTeam?.id === team.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
-                }`}
+                className={`p-4 bg-zinc-900 rounded-lg border cursor-pointer transition-all ${selectedTeam?.id === team.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
+                  }`}
               >
                 <h4 className="font-semibold font-mono">{team.team_code}</h4>
                 <p className="text-sm text-gray-400">{team.city}, {team.country}</p>
@@ -108,7 +106,7 @@ export default function TeamsQueue() {
               </div>
               <Badge className={
                 selectedTeam.status === 'approved' ? 'bg-green-600' :
-                selectedTeam.status === 'rejected' ? 'bg-red-600' : 'bg-amber-600'
+                  selectedTeam.status === 'rejected' ? 'bg-red-600' : 'bg-amber-600'
               }>
                 {selectedTeam.status}
               </Badge>

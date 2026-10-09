@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { base44 } from '@/api/base44Client'
+import { Artist } from '@/lib/supabaseEntities'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,11 +13,11 @@ export default function ArtistsQueue() {
 
   const { data: artists, isLoading } = useQuery({
     queryKey: ['admin-artists'],
-    queryFn: () => base44.entities.Artist.list('-created_date'),
+    queryFn: () => Artist.list('-created_at'),
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Artist.update(id, data),
+    mutationFn: ({ id, data }) => Artist.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-artists'] })
       setSelectedArtist(null)
@@ -27,8 +27,8 @@ export default function ArtistsQueue() {
   const handleApprove = (artist) => {
     updateMutation.mutate({
       id: artist.id,
-      data: { 
-        status: 'approved', 
+      data: {
+        status: 'approved',
         admin_notes: adminNotes || artist.admin_notes,
         approved_date: new Date().toISOString()
       }
@@ -62,9 +62,8 @@ export default function ArtistsQueue() {
               <div
                 key={artist.id}
                 onClick={() => setSelectedArtist(artist)}
-                className={`p-4 bg-zinc-900 rounded-lg border cursor-pointer transition-all ${
-                  selectedArtist?.id === artist.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
-                }`}
+                className={`p-4 bg-zinc-900 rounded-lg border cursor-pointer transition-all ${selectedArtist?.id === artist.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
+                  }`}
               >
                 <div className="flex justify-between items-start mb-2">
                   <div>
@@ -90,9 +89,8 @@ export default function ArtistsQueue() {
               <div
                 key={artist.id}
                 onClick={() => setSelectedArtist(artist)}
-                className={`p-4 bg-zinc-900 rounded-lg border cursor-pointer transition-all ${
-                  selectedArtist?.id === artist.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
-                }`}
+                className={`p-4 bg-zinc-900 rounded-lg border cursor-pointer transition-all ${selectedArtist?.id === artist.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
+                  }`}
               >
                 <h4 className="font-semibold">{artist.full_name}</h4>
                 <p className="text-sm text-gray-400 capitalize">{artist.role.replace('_', ' ')}</p>
@@ -113,7 +111,7 @@ export default function ArtistsQueue() {
               </div>
               <Badge className={
                 selectedArtist.status === 'approved' ? 'bg-green-600' :
-                selectedArtist.status === 'rejected' ? 'bg-red-600' : 'bg-amber-600'
+                  selectedArtist.status === 'rejected' ? 'bg-red-600' : 'bg-amber-600'
               }>
                 {selectedArtist.status}
               </Badge>
@@ -144,7 +142,7 @@ export default function ArtistsQueue() {
                   <p className="text-sm">{selectedArtist.languages_spoken.join(', ')}</p>
                 </div>
               )}
-              
+
               {/* Social Links */}
               <div className="flex gap-2 pt-2">
                 {selectedArtist.website && (

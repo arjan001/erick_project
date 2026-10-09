@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { base44 } from '@/api/base44Client'
+import { Project, Artist, Team, Assignment } from '@/lib/supabaseEntities'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,27 +14,27 @@ export default function AssignmentManager() {
 
   const { data: projects } = useQuery({
     queryKey: ['verified-projects'],
-    queryFn: () => base44.entities.Project.filter({ status: 'verified' }),
+    queryFn: () => Project.filter({ status: 'verified' }),
   })
 
   const { data: artists } = useQuery({
     queryKey: ['approved-artists'],
-    queryFn: () => base44.entities.Artist.filter({ status: 'approved' }),
+    queryFn: () => Artist.filter({ status: 'approved' }),
   })
 
   const { data: teams } = useQuery({
     queryKey: ['approved-teams'],
-    queryFn: () => base44.entities.Team.filter({ status: 'approved' }),
+    queryFn: () => Team.filter({ status: 'approved' }),
   })
 
   const { data: assignments } = useQuery({
     queryKey: ['assignments', selectedProject],
-    queryFn: () => selectedProject ? base44.entities.Assignment.filter({ project_id: selectedProject }) : [],
+    queryFn: () => selectedProject ? Assignment.filter({ project_id: selectedProject }) : [],
     enabled: !!selectedProject
   })
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Assignment.create(data),
+    mutationFn: (data) => Assignment.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] })
       setSelectedResource('')
@@ -42,7 +42,7 @@ export default function AssignmentManager() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Assignment.delete(id),
+    mutationFn: (id) => Assignment.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] })
     },
@@ -50,7 +50,7 @@ export default function AssignmentManager() {
 
   const handleAssign = () => {
     if (!selectedProject || !selectedResource) return
-    
+
     createMutation.mutate({
       project_id: selectedProject,
       assigned_type: selectedType,
@@ -66,7 +66,7 @@ export default function AssignmentManager() {
     <div className="space-y-6">
       <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
         <h2 className="text-2xl font-bold mb-6">Create Assignment</h2>
-        
+
         <div className="space-y-4">
           <div>
             <label className="text-sm text-gray-400 mb-2 block">Select Project</label>
@@ -115,7 +115,7 @@ export default function AssignmentManager() {
             </div>
           </div>
 
-          <Button 
+          <Button
             onClick={handleAssign}
             disabled={!selectedProject || !selectedResource || createMutation.isPending}
             className="w-full bg-amber-600 hover:bg-amber-700"
@@ -135,7 +135,7 @@ export default function AssignmentManager() {
           {assignments?.length > 0 ? (
             <div className="space-y-3">
               {assignments.map(assignment => {
-                const resource = assignment.assigned_type === 'artist' 
+                const resource = assignment.assigned_type === 'artist'
                   ? artists?.find(a => a.id === assignment.assigned_id)
                   : teams?.find(t => t.id === assignment.assigned_id)
 

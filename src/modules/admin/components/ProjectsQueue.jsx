@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { base44 } from '@/api/base44Client'
+import { Project } from '@/lib/supabaseEntities'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -21,11 +21,11 @@ export default function ProjectsQueue() {
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ['admin-projects'],
-    queryFn: () => base44.entities.Project.list('-created_date'),
+    queryFn: () => Project.list('-created_at'),
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Project.update(id, data),
+    mutationFn: ({ id, data }) => Project.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-projects'] })
       setSelectedProject(null)
@@ -52,9 +52,8 @@ export default function ProjectsQueue() {
             return (
               <div
                 key={project.id}
-                className={`p-4 sm:p-6 bg-zinc-900 rounded-xl border transition-all cursor-pointer ${
-                  selectedProject?.id === project.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
-                }`}
+                className={`p-4 sm:p-6 bg-zinc-900 rounded-xl border transition-all cursor-pointer ${selectedProject?.id === project.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
+                  }`}
                 onClick={() => setSelectedProject(project)}
               >
                 <div className="flex items-start justify-between mb-3">
@@ -84,7 +83,7 @@ export default function ProjectsQueue() {
           {selectedProject ? (
             <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
               <h2 className="text-2xl font-bold mb-6">Project Details</h2>
-              
+
               <div className="space-y-4 mb-6">
                 <div>
                   <label className="text-sm text-gray-400">Type</label>

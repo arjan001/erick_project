@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { base44 } from '@/api/base44Client'
+import { PortfolioClip } from '@/lib/supabaseEntities'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,11 +16,11 @@ export default function PortfolioQueue() {
 
   const { data: clips, isLoading } = useQuery({
     queryKey: ['admin-portfolio'],
-    queryFn: () => base44.entities.PortfolioClip.list('-created_date'),
+    queryFn: () => PortfolioClip.list('-created_at'),
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.PortfolioClip.update(id, data),
+    mutationFn: ({ id, data }) => PortfolioClip.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-portfolio'] })
       setSelectedClip(null)
@@ -63,9 +63,8 @@ export default function PortfolioQueue() {
               <div
                 key={clip.id}
                 onClick={() => setSelectedClip(clip)}
-                className={`relative aspect-video rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                  selectedClip?.id === clip.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
-                }`}
+                className={`relative aspect-video rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${selectedClip?.id === clip.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
+                  }`}
               >
                 <img
                   src={clip.thumbnail_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=400'}
@@ -86,9 +85,8 @@ export default function PortfolioQueue() {
               <div
                 key={clip.id}
                 onClick={() => setSelectedClip(clip)}
-                className={`relative aspect-video rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                  selectedClip?.id === clip.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
-                }`}
+                className={`relative aspect-video rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${selectedClip?.id === clip.id ? 'border-amber-600' : 'border-zinc-800 hover:border-zinc-700'
+                  }`}
               >
                 <img
                   src={clip.thumbnail_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=400'}
@@ -108,7 +106,7 @@ export default function PortfolioQueue() {
         {selectedClip ? (
           <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
             <h2 className="text-2xl font-bold mb-4">Clip Details</h2>
-            
+
             <div className="aspect-video bg-zinc-800 rounded-lg mb-6 overflow-hidden">
               <img
                 src={selectedClip.thumbnail_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=800'}
