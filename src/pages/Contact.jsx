@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Mail, MapPin, Send } from 'lucide-react'
-import { base44 } from '@/api/base44Client'
+import { sendContactEmail } from '@/shared/services/emailService'
 import EuropeanPresenceMap from '../components/home/EuropeanPresenceMap'
 import SEOMetaTags from '@/components/SEOMetaTags'
 
@@ -25,8 +25,8 @@ export default function Contact() {
     setIsSubmitting(true)
 
     try {
-      await base44.integrations.Core.SendEmail({
-        to: 'hello@ericrabar.app',
+      await sendContactEmail({
+        to: 'info@smartgigs.co.ke',
         subject: `Contact Form: ${formData.subject}`,
         body: `
 Name: ${formData.name}

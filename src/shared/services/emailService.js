@@ -298,6 +298,28 @@ class EmailService {
 
     return this.sendEmail({ to: userEmail, subject, html, text })
   }
+
+  // Contact form email
+  async sendContactEmail({ to, subject, body }) {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #C9A962;">New Contact Form Submission</h1>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <pre style="white-space: pre-wrap; word-wrap: break-word;">${body}</pre>
+        </div>
+      </div>
+    `
+    const text = body
+
+    return this.sendEmail({ to, subject, html, text })
+  }
 }
 
 export default new EmailService()
+
+// Named export for individual functions
+export const sendContactEmail = async (data) => {
+  const service = new EmailService()
+  return service.sendContactEmail(data)
+}
