@@ -1017,7 +1017,8 @@ CREATE TRIGGER trg_shop_products_updated_at BEFORE UPDATE ON public.shop_product
 CREATE TRIGGER trg_shop_orders_updated_at BEFORE UPDATE ON public.shop_orders FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_card_payments_updated_at BEFORE UPDATE ON public.card_payments FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_team_payments_updated_at BEFORE UPDATE ON public.team_payments FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE TRIGGER trg_user_sessions_updated_at BEFORE UPDATE ON public.user_sessions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+-- CREATE TRIGGER trg_user_sessions_updated_at BEFORE UPDATE ON public.user_sessions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+-- Note: user_sessions table is created in migrations/add_analytics_tables.sql
 CREATE TRIGGER trg_cart_updated_at BEFORE UPDATE ON public.cart FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_feature_flags_updated_at BEFORE UPDATE ON public.feature_flags FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_file_upload_settings_updated_at BEFORE UPDATE ON public.file_upload_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -1176,22 +1177,9 @@ CREATE POLICY "Users can delete own testimonials" ON public.testimonials FOR DEL
 -- IP ADDRESS & DEVICE TRACKING
 -- ============================================================
 
--- Track user IP addresses and device info for security and analytics
-CREATE TABLE IF NOT EXISTS public.user_sessions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-  session_token TEXT UNIQUE NOT NULL,
-  ip_address TEXT,
-  user_agent TEXT,
-  device_type TEXT, -- desktop, mobile, tablet
-  browser TEXT,
-  os TEXT,
-  location_country TEXT,
-  location_city TEXT,
-  last_activity TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  expires_at TIMESTAMP WITH TIME ZONE
-);
+-- Note: user_sessions, page_views, live_users, and analytics tables
+-- are created in migrations/add_analytics_tables.sql
+-- This avoids duplicate table definitions
 
 -- Track job/project views with IP address
 CREATE TABLE IF NOT EXISTS public.job_views (
