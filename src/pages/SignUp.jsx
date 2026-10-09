@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target, Check } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
-import { base44 } from '@/api/base44Client'
+import { supabase } from '@/lib/supabase'
 import { Artist, Team, Backer, ProjectOwner, Invite, Connection } from '@/lib/supabaseEntities'
 import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete'
 import { ALL_FILM_ROLES } from '@/lib/filmRoles'
@@ -122,10 +122,10 @@ export default function SignUp() {
 
   const handleGoogleSignUp = () => {
     setError('')
-    base44.auth.loginWithProvider('google', '/SignUp')
+    supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/SignUp` } })
   }
 
-  // Step 1: register the account with Base44 (sends an OTP to the user's email)
+  // Step 1: register the account with Supabase (sends an OTP to the user's email)
   const handleSignUp = async (e) => {
     e.preventDefault()
     setError('')
@@ -141,14 +141,19 @@ export default function SignUp() {
 
     setLoading(true)
     try {
-      await base44.auth.register({
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        referral_code: formData.inviteCode || null,
+        options: {
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+          }
+        }
       })
+      if (error) throw error
       setOtpSent(true)
     } catch (err) {
-      //
       setError(err.message || 'Registration failed. Please try again.')
     } finally {
       setLoading(false)
@@ -166,12 +171,14 @@ export default function SignUp() {
     setLoading(true)
     try {
       // Verify the email — this authenticates the user (token stored by the SDK)
-      await base44.auth.verifyOtp({
+      const { data, error } = await supabase.auth.verifyOtp({
         email: formData.email,
-        otpCode: otpCode,
+        token: otpCode,
+        type: 'signup'
       })
+      if (error) throw error
 
-      const me = await base44.auth.me()
+      const me = data.user
       const fullName = `${formData.firstName} ${formData.lastName}`.trim() || formData.email.split('@')[0]
       const appUser = {
         id: me.id,
@@ -182,7 +189,7 @@ export default function SignUp() {
         referred_by: formData.inviteCode || null,
       }
 
-      // Create the role-specific profile record in the Base44 database
+      // Create the role-specific profile record in the Supabase database
       const profileData = {
         email: formData.email,
         full_name: fullName,
@@ -263,7 +270,10 @@ export default function SignUp() {
   const handleResendOtp = async () => {
     setError('')
     try {
-      await base44.auth.resendOtp(formData.email)
+      await supabase.auth.resend({
+        type: 'signup',
+        email: formData.email
+      })
     } catch (err) {
       setError(err.message || 'Could not resend the code. Please try again.')
     }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom'
 import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
-import { base44 } from '@/api/base44Client'
+import { supabase } from '@/lib/supabase'
 import { Artist, Team, Backer, ProjectOwner, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 
 const GoogleIcon = () => (
@@ -99,12 +99,12 @@ export default function SignIn() {
 
   const handleGoogleLogin = () => {
     setError('')
-    base44.auth.loginWithProvider('google', '/')
+    supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })
   }
 
   const handleAppleLogin = () => {
     setError('')
-    base44.auth.loginWithProvider('apple', '/')
+    supabase.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: window.location.origin } })
   }
 
   const quickDemoLogin = async (demoEmail) => {
@@ -131,7 +131,7 @@ export default function SignIn() {
     setError('')
     setLoading(true)
     try {
-      // Demo accounts (localStorage only — no Base44 account needed)
+      // Demo accounts (localStorage only — no Supabase account needed)
       if (DEMO_ACCOUNTS[email] && password === email) {
         const acc = DEMO_ACCOUNTS[email]
         login({ id: email, email, full_name: acc.name, role: acc.role })
@@ -144,12 +144,15 @@ export default function SignIn() {
         return
       }
 
-      // Real Base44 email/password login
-      const { user } = await base44.auth.loginViaEmailPassword(email, password)
+      // Real Supabase email/password login
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
+
+      const user = data.user
 
       // Resolve the app role from the linked entity profile
       let userRole = 'artist'
-      let fullName = user.full_name || user.email?.split('@')[0] || 'User'
+      let fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
       try {
         const artists = await Artist.filter({ email: user.email })
         if (artists && artists.length > 0) {
@@ -164,7 +167,7 @@ export default function SignIn() {
             if (owners && owners.length > 0) {
               userRole = 'client'
               if (owners[0].is_suspended) {
-                base44.auth.logout()
+                await supabase.auth.signOut()
                 setError('This account has been suspended. Please contact support for assistance.')
                 setLoading(false)
                 return
@@ -176,10 +179,9 @@ export default function SignIn() {
           }
         }
       } catch (dbError) {
-        //
       }
 
-      if (user.role === 'admin') userRole = 'admin'
+      if (user.user_metadata?.role === 'admin') userRole = 'admin'
 
       login({ id: user.id, email: user.email, full_name: fullName, role: userRole })
       const redirectDest = sessionStorage.getItem('redirectAfterLogin')
@@ -202,7 +204,7 @@ export default function SignIn() {
     setError('')
     setLoading(true)
     try {
-      await base44.auth.resetPasswordRequest(email)
+      await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/SignIn?mode=reset` })
       setMessage('Password reset email sent! Check your inbox.')
       setTimeout(() => { setShowForgotPassword(false); setMessage(''); }, 6000)
     } catch (err) {
@@ -219,17 +221,8 @@ export default function SignIn() {
     if (newPassword !== confirmNewPassword) { setError('Passwords do not match'); return; }
     setLoading(true)
     try {
-      // Base44 delivers a reset token via the email link; parse it from the URL.
-      const urlParams = new URLSearchParams(window.location.search)
-      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
-      const resetToken = urlParams.get('token') || hashParams.get('token')
-      if (resetToken) {
-        await base44.auth.resetPassword({ resetToken, newPassword })
-      } else {
-        // No token — fall back to changing the password for the current session
-        const me = await base44.auth.me()
-        await base44.auth.changePassword({ userId: me.id, currentPassword: password, newPassword })
-      }
+      const { data, error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) throw error
       setMessage('Password updated successfully! You can now sign in.')
       setModeOverride(null)
     } catch (err) {
