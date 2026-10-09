@@ -15,7 +15,7 @@ export interface Session {
     role: keyof typeof UserRole;
     linked_entity_id?: string;
   };
-  source: 'base44' | 'demo';
+  source: 'supabase' | 'demo';
 }
 
 export interface LoginCredentials {

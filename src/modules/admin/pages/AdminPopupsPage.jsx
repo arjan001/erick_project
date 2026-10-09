@@ -98,11 +98,19 @@ export default function AdminPopupsPage() {
 
     setUploading(true)
     try {
-      const response = await base44.integrations.Core.UploadFile({ file })
-      const fileUrl = response.file_url || response.url
-      setFormData({ ...formData, video_url: fileUrl, video_source: 'upload' })
-    } catch (err) {
+      const fileName = `popup-video-${Date.now()}-${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('cms-assets')
+        .upload(fileName, file)
 
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('cms-assets')
+        .getPublicUrl(fileName)
+
+      setFormData({ ...formData, video_url: publicUrl, video_source: 'upload' })
+    } catch (err) {
       toastError('Upload Failed', 'Failed to upload video')
     } finally {
       setUploading(false)
