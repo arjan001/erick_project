@@ -35,7 +35,7 @@ export async function listProducts() {
     // Fallback to seed products if entity is empty
     return seedProducts
   } catch (error) {
-    //
+    console.warn('Failed to list products, using seed products:', error)
     return seedProducts
   }
 }

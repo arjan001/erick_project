@@ -24,7 +24,8 @@ export function ShopProvider({ children }) {
       const cartItems = await getCart()
       setCartState(cartItems)
     } catch (error) {
-      
+      console.warn('Failed to load cart:', error)
+      setCartState([])
     } finally {
       setLoading(false)
     }
@@ -36,7 +37,8 @@ export function ShopProvider({ children }) {
       const wishlistItems = await getWishlist()
       setWishlistState(wishlistItems)
     } catch (error) {
-      
+      console.warn('Failed to load wishlist:', error)
+      setWishlistState([])
     } finally {
       setLoading(false)
     }

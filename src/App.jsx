@@ -24,12 +24,12 @@ const AuthenticatedApp = () => {
     )
   }
 
-  // Render the main app with RouteRenderer wrapped in MaintenanceGuard
+  // Render the main app - temporarily disable MaintenanceGuard for development
   return (
-    <MaintenanceGuard>
+    <>
       <RouteRenderer />
       <CookieBanner />
-    </MaintenanceGuard>
+    </>
   )
 }
 
