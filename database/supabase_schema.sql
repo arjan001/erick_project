@@ -748,22 +748,6 @@ CREATE TABLE IF NOT EXISTS public.testimonials (
 );
 
 -- ============================================================
--- AUDIT LOGS
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS public.audit_logs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
-  action TEXT NOT NULL,
-  entity_type TEXT,
-  entity_id UUID,
-  changes JSONB,
-  ip_address TEXT,
-  user_agent TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- ============================================================
 -- PAYMENT SETTINGS
 -- ============================================================
 
@@ -1019,13 +1003,14 @@ CREATE TRIGGER trg_card_payments_updated_at BEFORE UPDATE ON public.card_payment
 CREATE TRIGGER trg_team_payments_updated_at BEFORE UPDATE ON public.team_payments FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 -- CREATE TRIGGER trg_user_sessions_updated_at BEFORE UPDATE ON public.user_sessions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 -- Note: user_sessions table is created in migrations/add_analytics_tables.sql
-CREATE TRIGGER trg_cart_updated_at BEFORE UPDATE ON public.cart FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE TRIGGER trg_feature_flags_updated_at BEFORE UPDATE ON public.feature_flags FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE TRIGGER trg_file_upload_settings_updated_at BEFORE UPDATE ON public.file_upload_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE TRIGGER trg_auth_providers_updated_at BEFORE UPDATE ON public.auth_providers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE TRIGGER trg_email_settings_updated_at BEFORE UPDATE ON public.email_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE TRIGGER trg_makamesco_transactions_updated_at BEFORE UPDATE ON public.makamesco_transactions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE TRIGGER trg_storage_buckets_config_updated_at BEFORE UPDATE ON public.storage_buckets_config FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+-- Note: trg_cart_updated_at trigger moved to after cart table definition (line 1207)
+-- Note: trg_feature_flags_updated_at trigger moved to after feature_flags table definition (line 1229)
+-- Note: trg_file_upload_settings_updated_at trigger moved to after file_upload_settings table definition
+-- Note: trg_auth_providers_updated_at trigger moved to after auth_providers table definition
+-- Note: trg_email_settings_updated_at trigger moved to after email_settings table definition
+-- Note: trg_makamesco_transactions_updated_at trigger is already defined at line 1008
+-- Note: trg_storage_buckets_config_updated_at trigger moved to after storage_buckets_config table definition
+-- CREATE TRIGGER trg_storage_buckets_config_updated_at BEFORE UPDATE ON public.storage_buckets_config FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_partners_updated_at BEFORE UPDATE ON public.partners FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_categories_updated_at BEFORE UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trg_cms_pages_updated_at BEFORE UPDATE ON public.cms_pages FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -1223,14 +1208,10 @@ CREATE TABLE IF NOT EXISTS public.cart (
   UNIQUE(user_id, product_id)
 );
 
--- Wishlist for users
-CREATE TABLE IF NOT EXISTS public.wishlist (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-  product_id UUID REFERENCES public.shop_products(id) ON DELETE CASCADE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(user_id, product_id)
-);
+-- Trigger for cart (moved here to be after table definition)
+CREATE TRIGGER trg_cart_updated_at BEFORE UPDATE ON public.cart FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- Note: wishlist table is defined earlier in the schema (line 502)
 
 -- ============================================================
 -- FEATURE FLAGS & SETTINGS
@@ -1247,6 +1228,9 @@ CREATE TABLE IF NOT EXISTS public.feature_flags (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Trigger for feature_flags (moved here to be after table definition)
+CREATE TRIGGER trg_feature_flags_updated_at BEFORE UPDATE ON public.feature_flags FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
 -- System settings for file upload validation
 CREATE TABLE IF NOT EXISTS public.file_upload_settings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -1259,6 +1243,9 @@ CREATE TABLE IF NOT EXISTS public.file_upload_settings (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Trigger for file_upload_settings (moved here to be after table definition)
+CREATE TRIGGER trg_file_upload_settings_updated_at BEFORE UPDATE ON public.file_upload_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
 -- Authentication provider settings (Supabase, Clerk, etc.)
 CREATE TABLE IF NOT EXISTS public.auth_providers (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -1269,6 +1256,9 @@ CREATE TABLE IF NOT EXISTS public.auth_providers (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Trigger for auth_providers (moved here to be after table definition)
+CREATE TRIGGER trg_auth_providers_updated_at BEFORE UPDATE ON public.auth_providers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Email settings configuration (SMTP, Resend, etc.)
 CREATE TABLE IF NOT EXISTS public.email_settings (
@@ -1282,6 +1272,9 @@ CREATE TABLE IF NOT EXISTS public.email_settings (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Trigger for email_settings (moved here to be after table definition)
+CREATE TRIGGER trg_email_settings_updated_at BEFORE UPDATE ON public.email_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- ============================================================
 -- RATE LIMITING & SECURITY
@@ -1325,6 +1318,9 @@ CREATE TABLE IF NOT EXISTS public.storage_buckets_config (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Trigger for storage_buckets_config (moved here to be after table definition)
+CREATE TRIGGER trg_storage_buckets_config_updated_at BEFORE UPDATE ON public.storage_buckets_config FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
 -- ============================================================
 -- DYNAMIC POPUPS / MODALS
 -- ============================================================
@@ -1359,6 +1355,9 @@ CREATE TABLE IF NOT EXISTS public.popups (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Trigger for popups
+CREATE TRIGGER trg_popups_updated_at BEFORE UPDATE ON public.popups FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
 -- Index for popups
 CREATE INDEX IF NOT EXISTS idx_popups_is_active ON public.popups(is_active) WHERE is_active = true;
 CREATE INDEX IF NOT EXISTS idx_popups_schedule ON public.popups(schedule_start, schedule_end) WHERE is_active = true;
@@ -1382,6 +1381,9 @@ CREATE TABLE IF NOT EXISTS public.voice_recordings (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Trigger for voice_recordings
+CREATE TRIGGER trg_voice_recordings_updated_at BEFORE UPDATE ON public.voice_recordings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Index for voice recordings
 CREATE INDEX IF NOT EXISTS idx_voice_recordings_user ON public.voice_recordings(user_id);
@@ -1431,6 +1433,9 @@ CREATE TABLE IF NOT EXISTS public.featured_creatives (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Trigger for featured_creatives
+CREATE TRIGGER trg_featured_creatives_updated_at BEFORE UPDATE ON public.featured_creatives FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
 -- Featured brands table for brands carousel
 CREATE TABLE IF NOT EXISTS public.featured_brands (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -1443,6 +1448,9 @@ CREATE TABLE IF NOT EXISTS public.featured_brands (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Trigger for featured_brands
+CREATE TRIGGER trg_featured_brands_updated_at BEFORE UPDATE ON public.featured_brands FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Index for featured tables
 CREATE INDEX IF NOT EXISTS idx_featured_creatives_active ON public.featured_creatives(is_active) WHERE is_active = true;
@@ -1489,6 +1497,9 @@ CREATE TABLE IF NOT EXISTS public.shop_auctions (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Trigger for shop_auctions
+CREATE TRIGGER trg_shop_auctions_updated_at BEFORE UPDATE ON public.shop_auctions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Auction bids
 CREATE TABLE IF NOT EXISTS public.auction_bids (
