@@ -24,13 +24,8 @@ const AuthenticatedApp = () => {
     )
   }
 
-  // Render the main app - temporarily disable MaintenanceGuard for development
-  return (
-    <>
-      <RouteRenderer />
-      <CookieBanner />
-    </>
-  )
+  // Render the main app with RouteRenderer
+  return <RouteRenderer />
 }
 
 
