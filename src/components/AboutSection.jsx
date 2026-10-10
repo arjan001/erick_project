@@ -1,20 +1,12 @@
 import React, { useState } from 'react'
 import { Artist } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
-import { Plus, X, Sparkles, ThumbsUp, Edit2, Check, Globe, Instagram, Linkedin, MapPin, Languages, Award, Briefcase, Users as UsersIcon } from 'lucide-react'
+import { Plus, X, Sparkles, ThumbsUp, Edit2, Check, Globe, Instagram, Linkedin, MapPin, Languages, Award, Briefcase, Users as UsersIcon, Facebook, Youtube, Twitter, Film, GraduationCap, Video, Mail } from 'lucide-react'
 import SkillsExperienceTagInput from '@/components/SkillsExperienceTagInput'
 import worldLanguages from '@/data/languages.json'
+import skillsAndRoles from '@/lib/skillsAndRoles.json'
 
-const SKILL_SUGGESTIONS = [
-  'After Effects', 'Adobe Premiere Pro', 'Final Cut Pro', 'DaVinci Resolve', 'Concept Art', 'Creative Direction',
-  'Editing', 'Color Grading', 'Motion Graphics', 'VFX', '3D Animation', 'Maya', 'Cinema 4D', 'Blender',
-  'Sound Design', 'Pro Tools', 'Cinematography', 'Lighting Design', 'Set Design', 'Art Direction',
-  'Visual Effects', 'Compositing', 'Storyboarding', 'Photography', 'Directing', 'Production Management',
-  'Scriptwriting', 'Animation', 'Character Animation', 'Visual Effects Supervisor', 'DP/Cinematography',
-  'Gaffer', 'Grip', 'Production Design', 'Costume Design', 'Makeup', 'Hair Styling', 'Steadicam',
-  'Drone Piloting', 'Underwater Cinematography', 'Rotoscoping', 'Tracking', 'Matte Painting',
-  'Green Screen', 'Chroma Keying', 'Color Correction', 'Grading', 'Audio Mixing', 'Music Composition'
-]
+const SKILL_SUGGESTIONS = Object.values(skillsAndRoles.talent_skills_by_category || {}).flat()
 
 const CLIENT_SUGGESTIONS = [
   'Nike', 'Apple', 'Google', 'Coca-Cola', 'BMW', 'Sony', 'Netflix', 'Amazon', 'Meta',
@@ -107,6 +99,23 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
   const [ageRange, setAgeRange] = useState(artist?.age_range || '')
   const [dateOfBirth, setDateOfBirth] = useState(artist?.date_of_birth || '')
   const [editingAppearance, setEditingAppearance] = useState(false)
+
+  // Contact & Social Media fields
+  const [website, setWebsite] = useState(artist?.website || '')
+  const [phone, setPhone] = useState(artist?.phone || '')
+  const [socialMedia, setSocialMedia] = useState(artist?.social_media || {})
+  const [editingContact, setEditingContact] = useState(false)
+
+  // Education fields
+  const [education, setEducation] = useState(artist?.education || [])
+  const [newEducation, setNewEducation] = useState({ year: '', institution: '', description: '' })
+  const [editingEducation, setEditingEducation] = useState(false)
+
+  // Credits & Experience fields
+  const [filmCredits, setFilmCredits] = useState(artist?.film_credits || [])
+  const [commercialCredits, setCommercialCredits] = useState(artist?.commercial_credits || [])
+  const [newCredit, setNewCredit] = useState({ year: '', project: '', role: '', name: '' })
+  const [editingCredits, setEditingCredits] = useState(false)
 
 
   const groupedEndorsements = endorsements.reduce((acc, e) => {
@@ -890,30 +899,318 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
               <Globe className="w-5 h-5 text-gray-700" />
               Contact
             </h3>
-            <p className="text-xs text-gray-500">Edit in Settings</p>
+            {!editingContact && (
+              <button
+                onClick={() => setEditingContact(true)}
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
+              >
+                <Edit2 className="w-3 h-3" />
+                Edit
+              </button>
+            )}
           </div>
-          <div className="space-y-3">
-            {artist?.email && <p className="text-sm text-gray-800"><strong>Email:</strong> <a href={`mailto:${artist.email}`} className="text-gray-600 hover:text-black transition-colors">{artist.email}</a></p>}
-            {artist?.phone && <p className="text-sm text-gray-800"><strong>Phone:</strong> {artist.phone}</p>}
-            {artist?.website && <a href={artist.website} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Globe className="w-4 h-4 inline mr-2" />{artist.website}</a>}
-          </div>
+
+          {editingContact ? (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Website</label>
+                <input
+                  type="url"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://yourwebsite.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+254 700 000 000"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Instagram</label>
+                <input
+                  type="url"
+                  value={socialMedia.instagram || ''}
+                  onChange={(e) => setSocialMedia({ ...socialMedia, instagram: e.target.value })}
+                  placeholder="https://instagram.com/username"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">LinkedIn</label>
+                <input
+                  type="url"
+                  value={socialMedia.linkedin || ''}
+                  onChange={(e) => setSocialMedia({ ...socialMedia, linkedin: e.target.value })}
+                  placeholder="https://linkedin.com/in/username"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Twitter/X</label>
+                <input
+                  type="url"
+                  value={socialMedia.twitter || ''}
+                  onChange={(e) => setSocialMedia({ ...socialMedia, twitter: e.target.value })}
+                  placeholder="https://twitter.com/username"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">YouTube</label>
+                <input
+                  type="url"
+                  value={socialMedia.youtube || ''}
+                  onChange={(e) => setSocialMedia({ ...socialMedia, youtube: e.target.value })}
+                  placeholder="https://youtube.com/channel/..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+                />
+              </div>
+              <Button
+                onClick={async () => {
+                  if (artist) {
+                    const updated = await Artist.update(artist.id, {
+                      website,
+                      phone,
+                      social_media: socialMedia
+                    })
+                    if (onUpdate) onUpdate(updated)
+                  }
+                  setEditingContact(false)
+                }}
+                className="w-full bg-gray-800 text-white hover:bg-gray-900"
+              >
+                <Check className="w-4 h-4 mr-1" />
+                Done
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {artist?.email && <p className="text-sm text-gray-800"><strong>Email:</strong> <a href={`mailto:${artist.email}`} className="text-gray-600 hover:text-black transition-colors">{artist.email}</a></p>}
+              {phone && <p className="text-sm text-gray-800"><strong>Phone:</strong> {phone}</p>}
+              {website && <a href={website} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Globe className="w-4 h-4 inline mr-2" />{website}</a>}
+              {socialMedia?.instagram && <a href={socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Instagram className="w-4 h-4 inline mr-2" />Instagram</a>}
+              {socialMedia?.linkedin && <a href={socialMedia.linkedin} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Linkedin className="w-4 h-4 inline mr-2" />LinkedIn</a>}
+              {socialMedia?.twitter && <a href={socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Twitter className="w-4 h-4 inline mr-2" />Twitter/X</a>}
+              {socialMedia?.youtube && <a href={socialMedia.youtube} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Youtube className="w-4 h-4 inline mr-2" />YouTube</a>}
+              {!phone && !website && !socialMedia?.instagram && !socialMedia?.linkedin && !socialMedia?.twitter && !socialMedia?.youtube && (
+                <p className="text-gray-600 text-sm">No contact details added yet. Click Edit to get started.</p>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Social Media */}
-        <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl p-6 border border-pink-200">
+        {/* Education Section */}
+        <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-6 border border-amber-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Instagram className="w-5 h-5 text-pink-700" />
-              Socials
+              <GraduationCap className="w-5 h-5 text-amber-700" />
+              Education & Training
             </h3>
-            <p className="text-xs text-gray-500">Edit in Settings</p>
+            {!editingEducation && (
+              <button
+                onClick={() => setEditingEducation(true)}
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
+              >
+                <Edit2 className="w-3 h-3" />
+                Edit
+              </button>
+            )}
           </div>
-          <div className="space-y-2">
-            {artist?.instagram && <a href={artist.instagram} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Instagram className="w-4 h-4 inline mr-2" />@{artist.instagram.split('/').pop()}</a>}
-            {artist?.linkedin && <a href={artist.linkedin} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Linkedin className="w-4 h-4 inline mr-2" />{artist.linkedin.split('/').pop()}</a>}
-            {artist?.vimeo && <a href={artist.vimeo} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block">🎬 Vimeo</a>}
-            {artist?.imdb && <a href={artist.imdb} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block">🎭 IMDb</a>}
+
+          {editingEducation ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                {education.map((edu, index) => (
+                  <div key={index} className="bg-white p-3 rounded-lg border border-amber-200">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="font-medium text-sm">{edu.year}</span>
+                      <button onClick={() => setEducation(education.filter((_, i) => i !== index))} className="text-red-500 hover:text-red-700">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <p className="text-sm font-medium">{edu.institution}</p>
+                    {edu.description && <p className="text-xs text-gray-600 mt-1">{edu.description}</p>}
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2 bg-white p-3 rounded-lg border border-amber-200">
+                <input
+                  type="text"
+                  value={newEducation.year}
+                  onChange={(e) => setNewEducation({ ...newEducation, year: e.target.value })}
+                  placeholder="Year (e.g., 2020)"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-2"
+                />
+                <input
+                  type="text"
+                  value={newEducation.institution}
+                  onChange={(e) => setNewEducation({ ...newEducation, institution: e.target.value })}
+                  placeholder="Institution (e.g., NYU Tisch)"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-2"
+                />
+                <input
+                  type="text"
+                  value={newEducation.description}
+                  onChange={(e) => setNewEducation({ ...newEducation, description: e.target.value })}
+                  placeholder="Description (e.g., Acting BA)"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                />
+                <Button
+                  onClick={() => {
+                    if (newEducation.year && newEducation.institution) {
+                      setEducation([...education, newEducation])
+                      setNewEducation({ year: '', institution: '', description: '' })
+                    }
+                  }}
+                  size="sm"
+                  className="w-full mt-2 bg-amber-600 text-white hover:bg-amber-700"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Education
+                </Button>
+              </div>
+              <Button
+                onClick={async () => {
+                  if (artist) {
+                    const updated = await Artist.update(artist.id, { education })
+                    if (onUpdate) onUpdate(updated)
+                  }
+                  setEditingEducation(false)
+                }}
+                className="w-full bg-amber-600 text-white hover:bg-amber-700"
+              >
+                <Check className="w-4 h-4 mr-1" />
+                Done
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {education.length > 0 ? education.map((edu, index) => (
+                <div key={index} className="text-sm">
+                  <span className="font-medium">{edu.year}:</span> {edu.institution}
+                  {edu.description && <span className="text-gray-600"> - {edu.description}</span>}
+                </div>
+              )) : (
+                <p className="text-gray-600 text-sm">No education added yet. Click Edit to get started.</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Credits & Experience Section */}
+        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl p-6 border border-indigo-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Film className="w-5 h-5 text-indigo-700" />
+              Credits & Experience
+            </h3>
+            {!editingCredits && (
+              <button
+                onClick={() => setEditingCredits(true)}
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
+              >
+                <Edit2 className="w-3 h-3" />
+                Edit
+              </button>
+            )}
           </div>
+
+          {editingCredits ? (
+            <div className="space-y-4">
+              <div className="mb-4">
+                <h4 className="font-medium text-sm mb-2">Film Credits</h4>
+                <div className="space-y-2">
+                  {filmCredits.map((credit, index) => (
+                    <div key={index} className="bg-white p-3 rounded-lg border border-indigo-200">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-medium text-sm">{credit.year}</span>
+                        <button onClick={() => setFilmCredits(filmCredits.filter((_, i) => i !== index))} className="text-red-500 hover:text-red-700">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-sm font-medium">{credit.project}</p>
+                      <p className="text-xs text-gray-600">{credit.role}</p>
+                      {credit.name && <p className="text-xs text-gray-500">{credit.name}</p>}
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-2 bg-white p-3 rounded-lg border border-indigo-200 mt-2">
+                  <input
+                    type="text"
+                    value={newCredit.year}
+                    onChange={(e) => setNewCredit({ ...newCredit, year: e.target.value })}
+                    placeholder="Year"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-2"
+                  />
+                  <input
+                    type="text"
+                    value={newCredit.project}
+                    onChange={(e) => setNewCredit({ ...newCredit, project: e.target.value })}
+                    placeholder="Project Title"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-2"
+                  />
+                  <input
+                    type="text"
+                    value={newCredit.role}
+                    onChange={(e) => setNewCredit({ ...newCredit, role: e.target.value })}
+                    placeholder="Role"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-2"
+                  />
+                  <input
+                    type="text"
+                    value={newCredit.name}
+                    onChange={(e) => setNewCredit({ ...newCredit, name: e.target.value })}
+                    placeholder="Name/Character (optional)"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  />
+                  <Button
+                    onClick={() => {
+                      if (newCredit.year && newCredit.project && newCredit.role) {
+                        setFilmCredits([...filmCredits, newCredit])
+                        setNewCredit({ year: '', project: '', role: '', name: '' })
+                      }
+                    }}
+                    size="sm"
+                    className="w-full mt-2 bg-indigo-600 text-white hover:bg-indigo-700"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Film Credit
+                  </Button>
+                </div>
+              </div>
+              <Button
+                onClick={async () => {
+                  if (artist) {
+                    const updated = await Artist.update(artist.id, { film_credits: filmCredits, commercial_credits: commercialCredits })
+                    if (onUpdate) onUpdate(updated)
+                  }
+                  setEditingCredits(false)
+                }}
+                className="w-full bg-indigo-600 text-white hover:bg-indigo-700"
+              >
+                <Check className="w-4 h-4 mr-1" />
+                Done
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filmCredits.length > 0 ? filmCredits.map((credit, index) => (
+                <div key={index} className="text-sm">
+                  <span className="font-medium">{credit.year}:</span> {credit.project} - {credit.role}
+                  {credit.name && <span className="text-gray-600"> ({credit.name})</span>}
+                </div>
+              )) : (
+                <p className="text-gray-600 text-sm">No credits added yet. Click Edit to get started.</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

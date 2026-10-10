@@ -99,12 +99,6 @@
       "Breathing Techniques", "Projection", "Diction", "Voice Characterization",
       "Accent Work", "Dialect Coaching", "Impressions", "Podcast Voice"
     ],
-    "Film Production": [
-      "Directing", "Producing", "Screenwriting", "Script Supervision",
-      "Cinematography", "Camera Operation", "Lighting Design", "Sound Recording",
-      "Video Editing", "Color Grading", "Sound Design", "Music Composition",
-      "Storyboarding", "Production Design", "Art Direction", "Set Design"
-    ],
     "UGC Content Creation": [
       "UGC Creator", "TikTok Content", "Instagram Reels", "YouTube Shorts",
       "Product Review Videos", "Testimonial Videos", "Lifestyle Content",
@@ -120,18 +114,13 @@
       "Gymnastics", "Athletics", "Running", "Cycling", "Skating",
       "Skiing", "Snowboarding", "Surfing", "Rock Climbing"
     ],
-    "Technical Skills": [
-      "Script Writing", "Video Editing", "Photography", "Camera Operation",
-      "Lighting Setup", "Sound Recording", "Audio Editing", "Motion Graphics",
-      "Graphic Design", "Animation", "Storyboarding", "Production Design",
-      "Costume Design", "Makeup Artistry", "Hair Styling", "Wardrobe Styling"
-    ],
-    "Audition Skills": [
+    "Acting for Camera": [
       "Self-Tape Audition", "In-Person Audition", "Cold Reading",
       "Monologue Preparation", "Slate Techniques", "Interview Skills",
       "Demo Reel Creation", "Portfolio Building", "Networking",
       "Self-Tape Setup", "Lighting for Self-Tapes", "Audio Recording",
-      "Online Audition Platforms", "Virtual Auditions"
+      "Online Audition Platforms", "Virtual Auditions", "Green Screen Acting",
+      "Teleprompter Reading", "Commercial Acting", "Film Acting"
     ],
     "Special Skills": [
       "Sign Language", "Stage Combat", "Stunt Driving", "Firearms Safety",
@@ -139,6 +128,16 @@
       "Horse Riding", "Animal Handling", "Childcare Experience", "First Aid / CPR",
       "Foreign Languages", "Dialects", "Accents", "Impressions",
       "Sports (Specific)", "Musical Instruments (Specific)", "Dance Styles (Specific)"
+    ],
+    "Performance Types": [
+      "Drama", "Comedy", "Action", "Thriller", "Horror", "Romance",
+      "Sci-Fi", "Fantasy", "Period Drama", "Contemporary", "Musical",
+      "Documentary", "Commercial", "Industrial", "Corporate", "Educational"
+    ],
+    "Content Formats": [
+      "Feature Film", "Short Film", "TV Series", "Web Series", "Commercial",
+      "Music Video", "Documentary", "Corporate Video", "Social Media Content",
+      "Podcast", "Audio Book", "E-Learning", "Voiceover", "Animation"
     ]
   },
   "client_skills_by_category": {
