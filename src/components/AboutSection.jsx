@@ -117,6 +117,15 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
   const [newCredit, setNewCredit] = useState({ year: '', project: '', role: '', name: '' })
   const [editingCredits, setEditingCredits] = useState(false)
 
+  // Performing Samples fields
+  const [performingSamples, setPerformingSamples] = useState(artist?.portfolio_urls || [])
+  const [newSample, setNewSample] = useState({ title: '', url: '', type: 'video' })
+  const [editingSamples, setEditingSamples] = useState(false)
+
+  // Self Recording fields
+  const [selfRecording, setSelfRecording] = useState(artist?.video_reel_url || '')
+  const [editingSelfRecording, setEditingSelfRecording] = useState(false)
+
 
   const groupedEndorsements = endorsements.reduce((acc, e) => {
     if (!acc[e.skill]) acc[e.skill] = []
@@ -1208,6 +1217,164 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
                 </div>
               )) : (
                 <p className="text-gray-600 text-sm">No credits added yet. Click Edit to get started.</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Performing Samples Section */}
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Video className="w-5 h-5 text-purple-700" />
+              Performing Samples
+            </h3>
+            {!editingSamples && (
+              <button
+                onClick={() => setEditingSamples(true)}
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
+              >
+                <Edit2 className="w-3 h-3" />
+                Edit
+              </button>
+            )}
+          </div>
+
+          {editingSamples ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                {performingSamples.map((sample, index) => (
+                  <div key={index} className="bg-white p-3 rounded-lg border border-purple-200">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="font-medium text-sm">{sample.title}</span>
+                      <button onClick={() => setPerformingSamples(performingSamples.filter((_, i) => i !== index))} className="text-red-500 hover:text-red-700">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <a href={sample.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">{sample.url}</a>
+                    <span className="text-xs text-gray-500 ml-2">({sample.type})</span>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2 bg-white p-3 rounded-lg border border-purple-200">
+                <input
+                  type="text"
+                  value={newSample.title}
+                  onChange={(e) => setNewSample({ ...newSample, title: e.target.value })}
+                  placeholder="Sample Title (e.g., Drama Reel)"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-2"
+                />
+                <input
+                  type="url"
+                  value={newSample.url}
+                  onChange={(e) => setNewSample({ ...newSample, url: e.target.value })}
+                  placeholder="Video/Reel URL"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-2"
+                />
+                <select
+                  value={newSample.type}
+                  onChange={(e) => setNewSample({ ...newSample, type: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                >
+                  <option value="video">Video</option>
+                  <option value="reel">Reel</option>
+                  <option value="audio">Audio</option>
+                  <option value="link">Link</option>
+                </select>
+                <Button
+                  onClick={() => {
+                    if (newSample.title && newSample.url) {
+                      setPerformingSamples([...performingSamples, newSample])
+                      setNewSample({ title: '', url: '', type: 'video' })
+                    }
+                  }}
+                  size="sm"
+                  className="w-full mt-2 bg-purple-600 text-white hover:bg-purple-700"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Sample
+                </Button>
+              </div>
+              <Button
+                onClick={async () => {
+                  if (artist) {
+                    const updated = await Artist.update(artist.id, { portfolio_urls: performingSamples })
+                    if (onUpdate) onUpdate(updated)
+                  }
+                  setEditingSamples(false)
+                }}
+                className="w-full bg-purple-600 text-white hover:bg-purple-700"
+              >
+                <Check className="w-4 h-4 mr-1" />
+                Done
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {performingSamples.length > 0 ? performingSamples.map((sample, index) => (
+                <div key={index} className="text-sm">
+                  <a href={sample.url} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">{sample.title}</a>
+                  <span className="text-gray-500 ml-2">({sample.type})</span>
+                </div>
+              )) : (
+                <p className="text-gray-600 text-sm">No performing samples added yet. Click Edit to get started.</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Self Recording Section */}
+        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-2xl p-6 border border-cyan-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Mail className="w-5 h-5 text-cyan-700" />
+              Self Recording / Demo Reel
+            </h3>
+            {!editingSelfRecording && (
+              <button
+                onClick={() => setEditingSelfRecording(true)}
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
+              >
+                <Edit2 className="w-3 h-3" />
+                Edit
+              </button>
+            )}
+          </div>
+
+          {editingSelfRecording ? (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Demo Reel / Self Tape URL</label>
+                <input
+                  type="url"
+                  value={selfRecording}
+                  onChange={(e) => setSelfRecording(e.target.value)}
+                  placeholder="https://youtube.com/watch?v=..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                />
+              </div>
+              <Button
+                onClick={async () => {
+                  if (artist) {
+                    const updated = await Artist.update(artist.id, { video_reel_url: selfRecording })
+                    if (onUpdate) onUpdate(updated)
+                  }
+                  setEditingSelfRecording(false)
+                }}
+                className="w-full bg-cyan-600 text-white hover:bg-cyan-700"
+              >
+                <Check className="w-4 h-4 mr-1" />
+                Done
+              </Button>
+            </div>
+          ) : (
+            <div>
+              {selfRecording ? (
+                <a href={selfRecording} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline block">
+                  {selfRecording}
+                </a>
+              ) : (
+                <p className="text-gray-600 text-sm">No demo reel added yet. Click Edit to get started.</p>
               )}
             </div>
           )}

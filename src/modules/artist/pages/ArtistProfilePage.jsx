@@ -11,7 +11,7 @@ import SkillsCategorySelector from '@/components/SkillsCategorySelector'
 import ArtistMediaGallery from '@/components/artist/ArtistMediaGallery'
 import skillsAndRoles from '@/lib/skillsAndRoles.json'
 import { ALL_FILM_ROLES } from '@/lib/filmRoles'
-import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2, ChevronDown, ChevronUp, Briefcase } from 'lucide-react'
+import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2, ChevronDown, ChevronUp, Briefcase, Film, GraduationCap } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { confirmDialog } from '@/lib/sweetAlert'
 import ShareProfileButton from '@/components/artist/ShareProfileButton'
@@ -44,11 +44,7 @@ export default function ArtistProfile() {
   const [endorsements, setEndorsements] = useState([])
   const [testimonials, setTestimonials] = useState([])
   const [applications, setApplications] = useState([])
-  const [activeTab, setActiveTab] = useState(() => {
-    // Load saved tab from localStorage
-    const savedTab = localStorage.getItem('smartgigs_active_tab')
-    return savedTab || 'profile'
-  })
+  const [activeTab, setActiveTab] = useState('profile')
   const [subscription, setSubscription] = useState(null)
   const [subPackage, setSubPackage] = useState(null)
   const [activeClip, setActiveClip] = useState(null)
@@ -594,6 +590,8 @@ export default function ArtistProfile() {
               <button onClick={() => setActiveTab('profile')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'profile' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Profile</button>
               <button onClick={() => setActiveTab('portfolio')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'portfolio' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Portfolio</button>
               <button onClick={() => setActiveTab('about')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'about' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>About</button>
+              <button onClick={() => setActiveTab('credits')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'credits' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Credits & Experience</button>
+              <button onClick={() => setActiveTab('education')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'education' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Education</button>
               <button onClick={() => setActiveTab('settings')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'settings' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Account Settings</button>
             </div>
           </div>
@@ -1149,6 +1147,30 @@ export default function ArtistProfile() {
 
           {activeTab === 'about' && (
             <AboutSection artist={artist} endorsements={endorsements} onUpdate={setArtist} />
+          )}
+
+          {activeTab === 'credits' && (
+            <div className="max-w-3xl space-y-6 w-full">
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"><Film className="w-5 h-5 text-gray-400" /> Credits & Experience</h3>
+                <p className="text-sm text-gray-600 mb-4">Manage your film and commercial credits here. This information is also editable from the About tab.</p>
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <p className="text-sm text-gray-500">Credits are managed in the About section. Click the About tab to edit your credits and experience.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'education' && (
+            <div className="max-w-3xl space-y-6 w-full">
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-gray-400" /> Education & Training</h3>
+                <p className="text-sm text-gray-600 mb-4">Manage your education and training history here. This information is also editable from the About tab.</p>
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <p className="text-sm text-gray-500">Education is managed in the About section. Click the About tab to edit your education and training.</p>
+                </div>
+              </div>
+            </div>
           )}
 
           {activeTab === 'settings' && (

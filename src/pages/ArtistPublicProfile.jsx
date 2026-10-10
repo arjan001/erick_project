@@ -343,42 +343,70 @@ export default function ArtistPublicProfile() {
           </div>
         )}
 
-        {/* Acting & Performing Video Samples */}
+        {/* Acting & Performing Video Samples - Large Left, 4 Small Right */}
         {portfolioClips.length > 0 && (
           <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
-            <h3 className="font-bold text-gray-900 mb-4">Acting & Performing Video Samples</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {portfolioClips.slice(0, 6).map((clip) => (
+            <h3 className="font-bold text-gray-900 mb-4">Details & Media</h3>
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Large image on left */}
+              <div className="lg:w-1/2 flex-shrink-0">
                 <button
-                  key={clip.id}
-                  onClick={() => (clip.original_video_url || clip.video_embed_url) && setActiveClip(clip)}
-                  className="group text-left"
+                  onClick={() => (portfolioClips[0]?.original_video_url || portfolioClips[0]?.video_embed_url) && setActiveClip(portfolioClips[0])}
+                  className="w-full group text-left"
                 >
-                  <div className="relative bg-gray-900 aspect-video rounded-lg overflow-hidden mb-2">
-                    {clip.thumbnail_url ? (
-                      <img src={clip.thumbnail_url} alt={clip.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <div className="relative bg-gray-900 aspect-video rounded-lg overflow-hidden">
+                    {portfolioClips[0]?.thumbnail_url ? (
+                      <img src={portfolioClips[0].thumbnail_url} alt={portfolioClips[0].title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                        <Sparkles className="w-8 h-8 text-white/50" />
+                        <Sparkles className="w-12 h-12 text-white/50" />
                       </div>
                     )}
-                    {(clip.original_video_url || clip.video_embed_url) && (
+                    {(portfolioClips[0]?.original_video_url || portfolioClips[0]?.video_embed_url) && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
-                        <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Play className="w-5 h-5 text-gray-900 ml-0.5" />
+                        <div className="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Play className="w-7 h-7 text-gray-900 ml-0.5" />
                         </div>
                       </div>
                     )}
                   </div>
-                  <p className="text-sm font-medium text-gray-900 truncate">{clip.title || 'Untitled'}</p>
+                  <p className="text-sm font-medium text-gray-900 mt-2 truncate">{portfolioClips[0]?.title || 'Play Intro Video'}</p>
                 </button>
-              ))}
+              </div>
+              {/* 4 smaller images on right */}
+              <div className="lg:w-1/2 grid grid-cols-2 gap-3">
+                {portfolioClips.slice(1, 5).map((clip) => (
+                  <button
+                    key={clip.id}
+                    onClick={() => (clip.original_video_url || clip.video_embed_url) && setActiveClip(clip)}
+                    className="group text-left"
+                  >
+                    <div className="relative bg-gray-900 aspect-video rounded-lg overflow-hidden">
+                      {clip.thumbnail_url ? (
+                        <img src={clip.thumbnail_url} alt={clip.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
+                          <Sparkles className="w-6 h-6 text-white/50" />
+                        </div>
+                      )}
+                      {(clip.original_video_url || clip.video_embed_url) && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
+                          <div className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Play className="w-4 h-4 text-gray-900 ml-0.5" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs font-medium text-gray-900 mt-1 truncate">{clip.title || 'Untitled'}</p>
+                  </button>
+                ))}
+                {portfolioClips.length > 5 && (
+                  <button className="text-sm text-blue-600 hover:underline col-span-2 mt-2">
+                    View More Media ({portfolioClips.length - 5} more)
+                  </button>
+                )}
+              </div>
             </div>
-            {portfolioClips.length > 6 && (
-              <button className="mt-4 text-sm text-blue-600 hover:underline">
-                View More Media
-              </button>
-            )}
           </div>
         )}
 
