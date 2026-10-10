@@ -28,7 +28,7 @@ export default function ClientSidebar() {
   const { logout } = useAuth()
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user')
+    const storedUser = localStorage.getItem('smartgigs_user')
     setUser(storedUser ? JSON.parse(storedUser) : null)
   }, [])
 

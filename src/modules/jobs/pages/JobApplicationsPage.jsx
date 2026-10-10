@@ -10,7 +10,7 @@ export default function JobApplications() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user')
+    const storedUser = localStorage.getItem('smartgigs_user')
     if (!storedUser) {
       navigate('/')
       return
@@ -24,7 +24,7 @@ export default function JobApplications() {
     const fetchApplications = async () => {
       try {
         const userApplications = await Application.filter({ artist_email: user.email })
-        
+
         const enrichedApplications = await Promise.all(
           userApplications.map(async (app) => {
             try {
@@ -33,21 +33,23 @@ export default function JobApplications() {
                 return { ...app, job }
               }
               const project = await Project.get(app.project_id)
-              return { ...app, job: project ? {
-                title: project.title || project.project_type?.replace(/_/g, ' ') + ' project',
-                location: [project.location_city, project.location_country].filter(Boolean).join(', '),
-                client_name: project.project_owner_name,
-                budget_min: 0,
-                budget_type: 'fixed',
-                roles_needed: []
-              } : null }
+              return {
+                ...app, job: project ? {
+                  title: project.title || project.project_type?.replace(/_/g, ' ') + ' project',
+                  location: [project.location_city, project.location_country].filter(Boolean).join(', '),
+                  client_name: project.project_owner_name,
+                  budget_min: 0,
+                  budget_type: 'fixed',
+                  roles_needed: []
+                } : null
+              }
             } catch (err) {
               //
               return { ...app, job: null }
             }
           })
         )
-        
+
         setApplications(enrichedApplications.filter(app => app.job))
       } catch (err) {
         //

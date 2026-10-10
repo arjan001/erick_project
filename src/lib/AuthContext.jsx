@@ -423,13 +423,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('smartgigs_demo_user')
     localStorage.removeItem('smartgigs_auth')
     // 4. Clear every piece of stored auth/session data
-    localStorage.removeItem('ericrabar_user')
-    localStorage.removeItem('ericrabar_team')
-    localStorage.removeItem('ericrabar_sidebar_expanded')
+    localStorage.removeItem('smartgigs_user')
+    localStorage.removeItem('smartgigs_team')
     localStorage.removeItem('smartgigs_sidebar_expanded')
     localStorage.removeItem('smartgigs_sidebar_collapsed')
-    sessionStorage.removeItem('ericrabar_just_logged_in')
-    sessionStorage.removeItem('ericrabar_onboarding_seen')
+    sessionStorage.removeItem('smartgigs_just_logged_in')
+    sessionStorage.removeItem('smartgigs_onboarding_seen')
     // 5. Log logout event
     if (userEmail) {
       try { await auditLogger.auth.logout(userEmail); } catch { /* ignore */ }
