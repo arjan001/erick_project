@@ -684,6 +684,37 @@ const artistRoutes = [
   }
 ]
 
+// Shared routes (artist and client)
+const sharedRoutes = [
+  {
+    path: '/Network',
+    component: () => import('@/modules/network/pages/NetworkPage'),
+    layout: DashboardLayout,
+    guard: [ArtistGuard, ClientGuard]
+  },
+]
+
+// Client routes (client role required)
+const clientRoutes = [
+  {
+    path: '/clientdashboard',
+    component: () => import('@/modules/client/pages/ClientDashboardPage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
+  },
+  {
+    path: '/ClientPostProject',
+    component: () => import('@/modules/client/pages/ClientPostProjectPage'),
+    layout: DashboardLayout,
+    guard: ClientGuard
+  {
+    path: '/ArtistSubscriptionCheckout',
+    component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
+    layout: DashboardLayout,
+    guard: ArtistGuard
+  }
+]
+
 // Client routes (client role required)
 const clientRoutes = [
   {
@@ -896,12 +927,6 @@ const backerRoutes = [
 
 // Protected routes (auth required, no specific role) — shared across artist/team/client/backer
 const protectedRoutes = [
-  {
-    path: '/Network',
-    component: () => import('@/modules/network/pages/NetworkPage'),
-    layout: DashboardLayout,
-    guard: AuthGuard
-  },
   {
     path: '/SupportTickets',
     component: () => import('@/modules/support/pages/SupportTicketsPage'),

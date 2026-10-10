@@ -4,7 +4,8 @@ import { Project, PortfolioClip } from '@/lib/supabaseEntities'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { X, Upload, Image as ImageIcon, MapPin, Calendar, DollarSign, ArrowLeft, Check, Film, Video, Tv, Music, FileText, FileText as FileTextIcon, Sparkles, Globe, Building, Trophy, Wand2, Box, Headphones, Code, Scissors, Video as VideoIcon, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import RichTextEditor from '@/components/admin/RichTextEditor'
+import { X, Upload, Image as ImageIcon, MapPin, Calendar, DollarSign, ArrowLeft, Check, Film, Video, Tv, Music, FileText, FileText as FileTextIcon, Sparkles, Globe, Building, Trophy, Wand2, Box, Headphones, Code, Scissors, Video as VideoIcon, ChevronLeft, ChevronRight, Loader2, Plus } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import filmIndustrySkills from '@/data/filmIndustrySkills.json'
 import filmIndustryRoles from '@/data/filmIndustryRoles.json'
@@ -127,7 +128,7 @@ export default function ClientPostProject() {
     location_city: '',
     is_remote: false,
     departments_needed: [],
-    roles_needed: [],
+    roles_needed: '',
     skills_needed: [],
     team_type: '',
     timeline_start: '',
@@ -332,15 +333,6 @@ export default function ClientPostProject() {
     }
   }
 
-  const toggleRole = (role) => {
-    const current = projectForm.roles_needed || []
-    if (current.includes(role)) {
-      updateForm('roles_needed', current.filter(r => r !== role))
-    } else {
-      updateForm('roles_needed', [...current, role])
-    }
-  }
-
   const toggleSkill = (skill) => {
     const current = projectForm.skills_needed || []
     if (current.includes(skill)) {
@@ -451,7 +443,7 @@ export default function ClientPostProject() {
       case 'Location':
         return projectForm.location_country !== ''
       case 'Roles Needed':
-        return (projectForm.roles_needed || []).length > 0
+        return projectForm.roles_needed !== ''
       case 'Skills Required':
         return (projectForm.skills_needed || []).length > 0
       case 'Team Type':
@@ -970,8 +962,8 @@ export default function ClientPostProject() {
               case 'Roles Needed':
                 return (
                   <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What roles do you need?</h2>
-                    <p className="text-gray-600 mb-8">Select the specific roles required for your project</p>
+                    <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What role do you need?</h2>
+                    <p className="text-gray-600 mb-8">Select the primary role or production type for your project</p>
 
                     <div className="mb-6">
                       <input
@@ -999,12 +991,12 @@ export default function ClientPostProject() {
                             <h3 className="text-sm font-semibold text-gray-900 mb-3 capitalize">{category.replace(/_/g, ' ')}</h3>
                             <div className="flex flex-wrap gap-2">
                               {filteredRoles.map((role) => {
-                                const isSelected = (projectForm.roles_needed || []).includes(role)
+                                const isSelected = projectForm.roles_needed === role
                                 return (
                                   <button
                                     key={role}
                                     type="button"
-                                    onClick={() => toggleRole(role)}
+                                    onClick={() => updateForm('roles_needed', role)}
                                     className={`px-3 py-2 rounded-full text-sm border transition-all ${isSelected
                                       ? 'border-gray-900 bg-gray-900 text-white'
                                       : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
@@ -1020,10 +1012,10 @@ export default function ClientPostProject() {
                       })}
                     </div>
 
-                    {(projectForm.roles_needed || []).length > 0 && (
+                    {projectForm.roles_needed && (
                       <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                         <p className="text-sm text-gray-600">
-                          <span className="font-semibold">Selected roles:</span> {(projectForm.roles_needed || []).length}
+                          <span className="font-semibold">Selected role:</span> {projectForm.roles_needed}
                         </p>
                       </div>
                     )}

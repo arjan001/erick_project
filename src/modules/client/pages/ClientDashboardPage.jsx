@@ -75,7 +75,11 @@ export default function ClientDashboard() {
           setShowTour(true)
         }
       } catch (err) {
-        //
+        console.error('Error fetching dashboard data:', err)
+        setProjects([])
+        setJobs([])
+        setApplications([])
+        setUnreadMessages(0)
       } finally {
         setLoading(false)
       }
@@ -91,7 +95,7 @@ export default function ClientDashboard() {
       setProjects((prev) => prev.filter((p) => p.id !== projectId))
       success('Deleted', 'Project deleted')
     } catch (err) {
-      //
+      console.error('Error deleting project:', err)
       toastError('Error', 'Failed to delete project')
     }
   }
@@ -103,7 +107,7 @@ export default function ClientDashboard() {
       setJobs((prev) => prev.filter((j) => j.id !== jobId))
       success('Deleted', 'Job deleted')
     } catch (err) {
-      //
+      console.error('Error deleting job:', err)
       toastError('Error', 'Failed to delete job')
     }
   }
@@ -115,13 +119,13 @@ export default function ClientDashboard() {
     setShowAIModal(false)
 
     if (!projectOwner) {
-      //
+      console.error('AI Complete: No project owner found')
       toastError('Error', 'Failed to create job: No project owner')
       return
     }
 
     if (!user) {
-      //
+      console.error('AI Complete: No user found')
       toastError('Error', 'Failed to create job: No user')
       return
     }
@@ -145,7 +149,7 @@ export default function ClientDashboard() {
       setJobs((prev) => [...prev, newJob])
       success('Job Created', 'AI-generated job created successfully')
     } catch (err) {
-      //
+      console.error('Error creating AI-generated job:', err)
       toastError('Creation Failed', 'Failed to create AI-generated job')
     }
   }

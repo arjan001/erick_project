@@ -3,6 +3,17 @@
 
 DO $$
 BEGIN
+    -- Create the update function if it doesn't exist
+    IF NOT EXISTS (SELECT FROM pg_proc WHERE proname = 'update_updated_at_column') THEN
+        CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_at = NOW();
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+    END IF;
+
     IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'connections') THEN
         CREATE TABLE public.connections (
             id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -26,6 +37,7 @@ BEGIN
         CREATE INDEX idx_connections_artist ON public.connections(connected_artist_id);
 
         -- Trigger for updated_at
+        DROP TRIGGER IF EXISTS trg_connections_updated_at ON public.connections;
         CREATE TRIGGER trg_connections_updated_at
             BEFORE UPDATE ON public.connections
             FOR EACH ROW
