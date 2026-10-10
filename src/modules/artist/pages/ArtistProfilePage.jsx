@@ -155,10 +155,6 @@ export default function ArtistProfile() {
             licensePassport: a.licensePassport || { driverLicense: false, passport: false },
             self_recording_equipment: a.self_recording_equipment || '',
             highlights: a.highlights || ''
-            socialMedia: a.socialMedia || { instagram: '', linkedin: '', twitter: '', youtube: '', tiktok: '' },
-            representation: a.representation || { agent: '', email: '' },
-            unionMembership: a.unionMembership || [],
-            licensePassport: a.licensePassport || { driverLicense: false, passport: false }
           })
           setEmailNotifications(a.email_notifications ?? true)
           setProjectAlerts(a.project_alerts ?? true)
