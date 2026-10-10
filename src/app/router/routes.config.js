@@ -692,21 +692,6 @@ const sharedRoutes = [
     layout: DashboardLayout,
     guard: [ArtistGuard, ClientGuard]
   },
-]
-
-// Client routes (client role required)
-const clientRoutes = [
-  {
-    path: '/clientdashboard',
-    component: () => import('@/modules/client/pages/ClientDashboardPage'),
-    layout: DashboardLayout,
-    guard: ClientGuard
-  },
-  {
-    path: '/ClientPostProject',
-    component: () => import('@/modules/client/pages/ClientPostProjectPage'),
-    layout: DashboardLayout,
-    guard: ClientGuard
   {
     path: '/ArtistSubscriptionCheckout',
     component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
