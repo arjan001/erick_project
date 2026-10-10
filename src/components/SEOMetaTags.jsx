@@ -12,10 +12,10 @@ const SEOMetaTags = ({
   canonicalUrl,
   schemaType = 'WebPage',
   schemaData = {},
-  authorName = 'edwin nyongesa',
-  authorEmail = 'arjanky@mail.com',
-  authorWebsite = 'oneplusafrica.com',
-  authorLinkedIn = 'https://ke.linkedin.com/in/edwin-nyongesa-770658230'
+  authorName = 'SmartGigs Kenya',
+  authorEmail = 'support@smartgigs.ke',
+  authorWebsite = 'https://smartgigs.co.ke',
+  authorLinkedIn = 'https://linkedin.com/company/smartgigs-kenya'
 }) => {
   const location = useLocation()
   const [seoData, setSeoData] = React.useState(null)
@@ -36,7 +36,7 @@ const SEOMetaTags = ({
         setPageData(pageMetadata)
         setSchemaJson(schema)
       } catch (error) {
-        
+
         // Silently fail - don't break the page
       }
     }
@@ -117,22 +117,28 @@ const SEOMetaTags = ({
         {JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'Organization',
-          name: 'OnePlus Africa Tech Solution',
+          name: 'SmartGigs Kenya',
           url: authorWebsite,
-          logo: 'https://smartgigskenya.com/logo.png',
+          logo: 'https://smartgigs.co.ke/logo.png',
+          description: 'The leading casting platform in Kenya connecting actors, crew, producers, and casting directors.',
+          address: {
+            '@type': 'PostalAddress',
+            addressCountry: 'KE',
+            addressRegion: 'Nairobi'
+          },
           contactPoint: {
             '@type': 'ContactPoint',
             email: authorEmail,
-            contactType: 'customer service'
+            contactType: 'customer service',
+            areaServed: 'KE',
+            availableLanguage: 'English'
           },
           sameAs: [
-            authorLinkedIn
-          ],
-          founder: {
-            '@type': 'Person',
-            name: authorName,
-            sameAs: authorLinkedIn
-          }
+            authorLinkedIn,
+            'https://twitter.com/smartgigske',
+            'https://facebook.com/smartgigskenya',
+            'https://instagram.com/smartgigskenya'
+          ]
         })}
       </script>
 

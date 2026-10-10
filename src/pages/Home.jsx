@@ -22,15 +22,20 @@ export default function Home() {
     <div className="min-h-screen bg-[#F5F3EF]">
       <SEOMetaTags
         title="SmartGigs Kenya — The Place to Get Hired for Theater, Film & TV"
-        description="SmartGigs Kenya is the place to get hired for theater, film, and TV. Find thousands of open casting calls, auditions, and gigs. Post a gig and find the perfect talent for your project."
-        keywords="smartgigs kenya, casting calls, acting gigs, auditions, theater gigs, film gigs, TV gigs, voiceover gigs, modeling gigs, hire talent"
+        description="SmartGigs Kenya is the leading casting platform in Kenya. Find thousands of open casting calls, auditions, and acting gigs. Post a gig and find the perfect talent for your film, TV, theater, or commercial project."
+        keywords="smartgigs kenya, casting calls kenya, acting jobs kenya, auditions kenya, theater gigs kenya, film jobs kenya, TV jobs kenya, voiceover jobs kenya, modeling gigs kenya, ugc creators kenya, lip sync jobs kenya, commercial casting kenya, background actors kenya, extras kenya, film production kenya, tv production kenya, theater production kenya, casting directors kenya, talent agencies kenya, where to get casting roles kenya, how to get acting jobs kenya, film auditions kenya, tv auditions kenya, commercial auditions kenya, modeling agencies kenya, voice actors kenya, actors for hire kenya, crew for hire kenya, producers kenya, casting managers kenya, creative talent kenya, performers kenya, entertainers kenya, kenya film industry, kenya tv industry, kenya theater industry, nairobi casting, mombasa acting, kisumu auditions, entertainment jobs kenya, media jobs kenya, production jobs kenya"
         ogImage="https://smartgigs.co.ke/og-home.jpg"
         ogType="website"
         schemaType="WebSite"
         schemaData={{
           name: 'SmartGigs Kenya',
           url: 'https://smartgigs.co.ke',
-          description: 'The place to get hired for theater, film, and TV.',
+          description: 'The leading casting platform in Kenya connecting actors, crew, producers, and casting directors.',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: 'https://smartgigs.co.ke/search?q={search_term_string}',
+            'query-input': 'required name=search_term_string'
+          }
         }}
       />
 

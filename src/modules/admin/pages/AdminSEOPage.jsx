@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui
 import { Switch } from '@/shared/components/ui/switch'
 import { Save, Globe, FileText, Image as ImageIcon, Map, Settings, Code, RefreshCw, Plus, Trash2, Edit, ChevronLeft, ChevronRight, Search, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import { getSeoSettings, updateSeoSettings, getPageMetadata, updatePageMetadata, createPageMetadata, deletePageMetadata, generateSitemap } from '../api/seo.api'
+import { generateSitemap as generateSitemapXml, downloadSitemap, downloadRobotsTxt } from '@/services/sitemapService'
 
 export default function AdminSEOPage() {
   const [loading, setLoading] = useState(true)
@@ -34,7 +35,7 @@ export default function AdminSEOPage() {
         getSeoSettings().catch(() => null),
         getPageMetadata().catch(() => [])
       ])
-      
+
       if (settings) {
         setSeoSettings({
           siteTitle: settings.site_title || '',
@@ -67,7 +68,7 @@ export default function AdminSEOPage() {
           facebookPixelId: settings.facebook_pixel_id || '',
         })
       }
-      
+
       if (pages && pages.length > 0) {
         setCmsPages(pages.map(p => ({
           id: p.id,
@@ -83,7 +84,7 @@ export default function AdminSEOPage() {
         })))
       }
     } catch (error) {
-      
+
     } finally {
       setLoading(false)
     }
@@ -126,7 +127,7 @@ export default function AdminSEOPage() {
           facebook_pixel_id: seoSettings.facebookPixelId,
         })
       }
-      
+
       // Save page metadata
       for (const page of cmsPages) {
         if (page.id) {
@@ -143,11 +144,11 @@ export default function AdminSEOPage() {
           })
         }
       }
-      
+
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch (error) {
-      
+
     } finally {
       setSaving(false)
     }
@@ -156,16 +157,18 @@ export default function AdminSEOPage() {
   const handleRegenerateSitemap = async () => {
     setSitemapRegenerating(true)
     try {
-      await generateSitemap()
+      const pages = await generateSitemap()
+      const sitemapXml = generateSitemapXml(pages)
+      downloadSitemap(sitemapXml)
     } catch (error) {
-      
+      console.error('Sitemap generation failed:', error)
     } finally {
       setSitemapRegenerating(false)
     }
   }
 
   // Pagination
-  const filteredPages = cmsPages.filter(page => 
+  const filteredPages = cmsPages.filter(page =>
     page.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     page.slug.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -203,7 +206,7 @@ export default function AdminSEOPage() {
         await deletePageMetadata(pageId)
         setCmsPages(cmsPages.filter(p => p.id !== pageId))
       } catch (error) {
-        
+
       }
     }
   }
@@ -240,7 +243,7 @@ export default function AdminSEOPage() {
       setShowAddPage(false)
       setEditingPage(null)
     } catch (error) {
-      
+
     }
   }
 
@@ -261,9 +264,9 @@ export default function AdminSEOPage() {
           <p className="text-gray-600">Comprehensive SEO settings, sitemap generation, and social media optimization</p>
         </div>
         <div className="flex gap-3">
-          <Button 
-            onClick={handleRegenerateSitemap} 
-            variant="outline" 
+          <Button
+            onClick={handleRegenerateSitemap}
+            variant="outline"
             className="border-gray-300 hover:bg-gray-50"
             disabled={sitemapRegenerating}
           >
@@ -274,8 +277,8 @@ export default function AdminSEOPage() {
             )}
             {sitemapRegenerating ? 'Regenerating...' : 'Regenerate Sitemap'}
           </Button>
-          <Button 
-            onClick={handleSave} 
+          <Button
+            onClick={handleSave}
             className="bg-black text-white hover:bg-gray-800"
             disabled={saving}
           >
@@ -288,7 +291,7 @@ export default function AdminSEOPage() {
           </Button>
         </div>
       </div>
-      
+
       {saveSuccess && (
         <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
           <CheckCircle className="w-5 h-5 text-green-600" />
@@ -371,7 +374,7 @@ export default function AdminSEOPage() {
                   <FileText className="w-5 h-5 text-gray-700" />
                   Page Metadata
                 </CardTitle>
-                <Button 
+                <Button
                   onClick={handleAddPage}
                   size="sm"
                   className="bg-black text-white hover:bg-gray-800"
@@ -394,7 +397,7 @@ export default function AdminSEOPage() {
                   />
                 </div>
               </div>
-              
+
               {/* Pages Table */}
               <div className="space-y-3">
                 {paginatedPages.map((page) => (
@@ -408,7 +411,7 @@ export default function AdminSEOPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Label className="text-xs flex items-center gap-2 cursor-pointer">
-                          <Switch 
+                          <Switch
                             checked={!page.noIndex}
                             onCheckedChange={(checked) => {
                               setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, noIndex: !checked } : p))
@@ -418,16 +421,16 @@ export default function AdminSEOPage() {
                             {page.noIndex ? 'No Index' : 'Indexed'}
                           </span>
                         </Label>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => handleEditPage(page)}
                           className="h-8 w-8 p-0 hover:bg-gray-100"
                         >
                           <Edit className="w-4 h-4 text-gray-600" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => handleDeletePage(page.id)}
                           className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
@@ -439,8 +442,8 @@ export default function AdminSEOPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label className="text-xs text-gray-500 mb-1 block">Meta Title ({page.metaTitle.length}/60)</Label>
-                        <Input 
-                          value={page.metaTitle} 
+                        <Input
+                          value={page.metaTitle}
                           className="text-sm border-gray-300"
                           maxLength={60}
                           onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, metaTitle: e.target.value } : p))}
@@ -448,8 +451,8 @@ export default function AdminSEOPage() {
                       </div>
                       <div>
                         <Label className="text-xs text-gray-500 mb-1 block">Canonical URL</Label>
-                        <Input 
-                          value={page.canonical} 
+                        <Input
+                          value={page.canonical}
                           className="text-sm border-gray-300"
                           onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, canonical: e.target.value } : p))}
                         />
@@ -457,8 +460,8 @@ export default function AdminSEOPage() {
                     </div>
                     <div className="mt-4">
                       <Label className="text-xs text-gray-500 mb-1 block">Meta Description ({page.metaDescription.length}/160)</Label>
-                      <Input 
-                        value={page.metaDescription} 
+                      <Input
+                        value={page.metaDescription}
                         className="text-sm border-gray-300"
                         maxLength={160}
                         onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, metaDescription: e.target.value } : p))}
@@ -467,8 +470,8 @@ export default function AdminSEOPage() {
                     <div className="grid grid-cols-3 gap-4 mt-4">
                       <div>
                         <Label className="text-xs text-gray-500 mb-1 block">OG Image</Label>
-                        <Input 
-                          value={page.ogImage} 
+                        <Input
+                          value={page.ogImage}
                           className="text-sm border-gray-300"
                           placeholder="https://ericrabar.com/og-home.jpg"
                           onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, ogImage: e.target.value } : p))}
@@ -476,7 +479,7 @@ export default function AdminSEOPage() {
                       </div>
                       <div>
                         <Label className="text-xs text-gray-500 mb-1 block">Priority</Label>
-                        <select 
+                        <select
                           value={page.priority}
                           onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, priority: parseFloat(e.target.value) } : p))}
                           className="w-full text-sm border border-gray-300 rounded px-3 py-2"
@@ -491,7 +494,7 @@ export default function AdminSEOPage() {
                       </div>
                       <div>
                         <Label className="text-xs text-gray-500 mb-1 block">Change Freq</Label>
-                        <select 
+                        <select
                           value={page.changeFreq}
                           onChange={(e) => setCmsPages(cmsPages.map(p => p.id === page.id ? { ...p, changeFreq: e.target.value } : p))}
                           className="w-full text-sm border border-gray-300 rounded px-3 py-2"
@@ -509,7 +512,7 @@ export default function AdminSEOPage() {
                   </div>
                 ))}
               </div>
-              
+
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-6 pt-6 border-t">
@@ -543,7 +546,7 @@ export default function AdminSEOPage() {
               )}
             </CardContent>
           </Card>
-          
+
           {/* Add/Edit Page Modal */}
           {showAddPage && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -716,7 +719,7 @@ export default function AdminSEOPage() {
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="flex items-center gap-3">
-                <Switch 
+                <Switch
                   checked={seoSettings.sitemapEnabled}
                   onCheckedChange={(checked) => setSeoSettings({ ...seoSettings, sitemapEnabled: checked })}
                 />
@@ -771,7 +774,7 @@ export default function AdminSEOPage() {
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="flex items-center gap-3">
-                <Switch 
+                <Switch
                   checked={seoSettings.enableSchema}
                   onCheckedChange={(checked) => setSeoSettings({ ...seoSettings, enableSchema: checked })}
                 />
@@ -823,7 +826,7 @@ export default function AdminSEOPage() {
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="flex items-center gap-3">
-                <Switch 
+                <Switch
                   checked={seoSettings.enableAnalytics}
                   onCheckedChange={(checked) => setSeoSettings({ ...seoSettings, enableAnalytics: checked })}
                 />
@@ -839,7 +842,7 @@ export default function AdminSEOPage() {
               </div>
               <div className="border-t pt-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <Switch 
+                  <Switch
                     checked={seoSettings.enableGTM}
                     onCheckedChange={(checked) => setSeoSettings({ ...seoSettings, enableGTM: checked })}
                   />
@@ -856,7 +859,7 @@ export default function AdminSEOPage() {
               </div>
               <div className="border-t pt-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <Switch 
+                  <Switch
                     checked={seoSettings.enableFacebookPixel}
                     onCheckedChange={(checked) => setSeoSettings({ ...seoSettings, enableFacebookPixel: checked })}
                   />
