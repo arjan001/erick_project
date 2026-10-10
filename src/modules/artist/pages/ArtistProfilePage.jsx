@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import CountrySelector from '@/components/CountrySelector'
 import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete'
 import SkillsCategorySelector from '@/components/SkillsCategorySelector'
+import ArtistMediaGallery from '@/components/artist/ArtistMediaGallery'
 import skillsAndRoles from '@/lib/skillsAndRoles.json'
 import { ALL_FILM_ROLES } from '@/lib/filmRoles'
 import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2, ChevronDown, ChevronUp } from 'lucide-react'
@@ -44,7 +45,7 @@ export default function ArtistProfile() {
   const [testimonials, setTestimonials] = useState([])
   const [activeTab, setActiveTab] = useState(() => {
     // Load saved tab from localStorage
-    const savedTab = localStorage.getItem('ericrabar_active_tab')
+    const savedTab = localStorage.getItem('smartgigs_active_tab')
     return savedTab || 'profile'
   })
   const [subscription, setSubscription] = useState(null)
@@ -119,7 +120,7 @@ export default function ArtistProfile() {
 
   // Save active tab to localStorage
   useEffect(() => {
-    localStorage.setItem('ericrabar_active_tab', activeTab)
+    localStorage.setItem('smartgigs_active_tab', activeTab)
   }, [activeTab])
 
   useEffect(() => {
@@ -1043,8 +1044,15 @@ export default function ArtistProfile() {
 
           {activeTab === 'portfolio' && (
             <div className="space-y-6">
+              {/* Photo & Video Gallery */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Photos & Videos</h2>
+                <ArtistMediaGallery artistId={artist?.id} isEditable={true} />
+              </div>
+
+              {/* Video Clips Portfolio */}
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-900">Portfolio</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Video Clips</h2>
                 <Button onClick={() => setShowPortfolioModal(true)} className="bg-black text-white hover:bg-gray-800">
                   <Plus className="w-4 h-4 mr-2" /> Add Work
                 </Button>
