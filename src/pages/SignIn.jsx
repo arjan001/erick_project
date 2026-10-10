@@ -586,7 +586,7 @@ export default function SignIn() {
                 <div className="flex justify-end">
                   <Link to="/ForgotPassword" className="text-xs text-black/50 hover:text-black">
                     Forgot password?
-                  </button>
+                  </Link>
                 </div>
                 <button type="submit" disabled={loading} className="w-full rounded-lg bg-[#8a85f4] py-2.5 text-sm font-semibold text-white hover:bg-[#7a75e8] disabled:opacity-50">
                   {loading ? 'Signing in...' : 'Submit'}
