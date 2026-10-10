@@ -100,22 +100,22 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
       {/* Panel — slides in from right */}
       <div className="fixed right-0 top-0 z-[101] flex h-full w-full max-w-4xl flex-col overflow-y-auto bg-white shadow-2xl md:max-w-5xl">
         {/* Header with close button */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white px-5 py-4 md:px-6">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-5 py-4 md:px-6">
           <div className="flex items-center gap-2">
             {job.featured && (
-              <span className="flex items-center gap-1 rounded-full bg-[#e11d48] px-3 py-1 text-xs font-bold text-white">
+              <span className="flex items-center gap-1 bg-[#e11d48] px-3 py-1 text-xs font-bold text-white">
                 <BadgeCheck className="h-3.5 w-3.5" /> Featured
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={handleShare} className="rounded-full p-2 hover:bg-gray-100" aria-label="Share">
+            <button onClick={handleShare} className="p-2 hover:bg-gray-100" aria-label="Share">
               <Share2 className="h-4 w-4 text-black/60" />
             </button>
-            <button className="rounded-full p-2 hover:bg-gray-100" aria-label="Save">
+            <button className="p-2 hover:bg-gray-100" aria-label="Save">
               <Heart className="h-4 w-4 text-black/60" />
             </button>
-            <button onClick={onClose} className="rounded-full p-2 hover:bg-gray-100" aria-label="Close">
+            <button onClick={onClose} className="p-2 hover:bg-gray-100" aria-label="Close">
               <X className="h-5 w-5 text-black" />
             </button>
           </div>
@@ -129,7 +129,7 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
               {!showVideo ? (
                 <div
                   onClick={() => setShowVideo(true)}
-                  className="relative aspect-video bg-gray-900 rounded-xl overflow-hidden cursor-pointer group"
+                  className="relative aspect-video bg-gray-900 overflow-hidden cursor-pointer group"
                 >
                   {embedUrl && isExternalVideo ? (
                     <img
@@ -143,16 +143,16 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
                     </div>
                   )}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 group-hover:bg-white transition-colors">
+                    <div className="flex h-16 w-16 items-center justify-center bg-white/90 group-hover:bg-white transition-colors">
                       <Play className="h-8 w-8 text-black ml-1" />
                     </div>
                   </div>
-                  <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-full bg-black/70 text-white text-xs font-medium">
+                  <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-black/70 text-white text-xs font-bold">
                     Watch Video
                   </div>
                 </div>
               ) : (
-                <div className="relative aspect-video bg-gray-900 rounded-xl overflow-hidden">
+                <div className="relative aspect-video bg-gray-900 overflow-hidden">
                   {isExternalVideo ? (
                     <iframe
                       src={embedUrl}
@@ -169,7 +169,7 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
                   )}
                   <button
                     onClick={() => setShowVideo(false)}
-                    className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white"
+                    className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 text-white"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -182,7 +182,7 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
           <h1 className="text-xl font-bold text-black md:text-2xl">{job.title}</h1>
 
           {/* Meta row */}
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-black/60">
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm font-bold text-black/60">
             <span className="flex items-center gap-1.5">
               <DollarSign className="h-4 w-4" /> {job.pay || 'Pay not specified'}
             </span>
@@ -198,7 +198,7 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
           {job.tags && job.tags.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
               {job.tags.map((t) => (
-                <span key={t} className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-black/70">
+                <span key={t} className="bg-gray-100 px-3 py-1 text-xs font-bold text-black/70">
                   {t}
                 </span>
               ))}
@@ -211,7 +211,7 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
           {/* Description */}
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wide text-black/50">Description</h3>
-            <p className="mt-2 text-sm leading-relaxed text-black/80">{job.description || job.body || 'No description available.'}</p>
+            <p className="mt-2 text-sm leading-relaxed font-bold text-black/80">{job.description || job.body || 'No description available.'}</p>
           </div>
 
           {/* Roles */}
@@ -257,7 +257,7 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
                     {expandedRoles.has(i) && (
                       <div className="border-t border-gray-200 bg-gray-50 p-4">
                         {r.description && (
-                          <p className="text-sm text-black/70 mb-3">{r.description}</p>
+                          <p className="text-sm font-bold text-black/70 mb-3">{r.description}</p>
                         )}
                         <div className="grid grid-cols-2 gap-3 text-xs">
                           {r.gender_requirement && (
@@ -300,9 +300,9 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
           )}
 
           {/* Company info with link to producer profile */}
-          <div className="mt-6 rounded-xl bg-gray-50 p-4">
+          <div className="mt-6 bg-gray-50 p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#4F46E5]/10">
+              <div className="flex h-10 w-10 items-center justify-center bg-[#4F46E5]/10">
                 <Building2 className="h-5 w-5 text-[#4F46E5]" />
               </div>
               <div className="flex-1">
@@ -313,11 +313,11 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
                   {job.project || job.company || 'Production Company'}
                   <ExternalLink className="h-3 w-3" />
                 </Link>
-                <p className="text-xs text-black/50">View producer profile</p>
+                <p className="text-xs font-bold text-black/50">View producer profile</p>
               </div>
               <button
                 onClick={handleContactPoster}
-                className="shrink-0 rounded-full bg-[#4F46E5] px-4 py-2 text-xs font-semibold text-white hover:bg-[#4338CA]"
+                className="shrink-0 bg-[#4F46E5] px-4 py-2 text-xs font-bold text-white hover:bg-[#4338CA]"
               >
                 Contact
               </button>
@@ -327,7 +327,7 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
 
         {/* Subscription required banner */}
         {requiresSubscription && (
-          <div className="mx-5 mb-4 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] p-4 md:mx-6">
+          <div className="mx-5 mb-4 bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] p-4 md:mx-6">
             <div className="flex items-start gap-3">
               <Crown className="mt-0.5 h-5 w-5 text-white" />
               <div className="flex-1">
@@ -337,14 +337,14 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
                 </p>
                 <button
                   onClick={() => navigate('/Pricing')}
-                  className="mt-3 rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#8B5CF6] hover:bg-gray-100"
+                  className="mt-3 bg-white px-4 py-2 text-xs font-bold text-[#8B5CF6] hover:bg-gray-100"
                 >
                   View Subscription Plans
                 </button>
               </div>
               <button
                 onClick={() => setRequiresSubscription(false)}
-                className="rounded-full p-1 hover:bg-white/20"
+                className="p-1 hover:bg-white/20"
               >
                 <X className="h-4 w-4 text-white" />
               </button>
@@ -353,13 +353,13 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
         )}
 
         {/* Footer CTA — sticky at bottom */}
-        <div className="sticky bottom-0 border-t border-gray-100 bg-white px-5 py-4 md:px-6">
+        <div className="sticky bottom-0 border-t border-gray-200 bg-white px-5 py-4 md:px-6">
           {job.is_production && job.roles && job.roles.length > 0 ? (
             <div className="space-y-3">
-              <p className="text-center text-xs text-black/50">Select a role above to apply, or apply to the production</p>
+              <p className="text-center text-xs font-bold text-black/50">Select a role above to apply, or apply to the production</p>
               <button
                 onClick={() => handleApply({ title: job.title })}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-[#4f46e5] py-3 text-sm font-semibold text-white hover:bg-[#4338CA]"
+                className="flex w-full items-center justify-center gap-2 bg-[#4f46e5] py-3 text-sm font-bold text-white hover:bg-[#4338CA]"
               >
                 <Briefcase className="h-4 w-4" />
                 Apply to This Production
@@ -368,7 +368,7 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
           ) : (
             <button
               onClick={() => handleApply({ title: job.title })}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-[#4f46e5] py-3 text-sm font-semibold text-white hover:bg-[#4338CA]"
+              className="flex w-full items-center justify-center gap-2 bg-[#4f46e5] py-3 text-sm font-bold text-white hover:bg-[#4338CA]"
             >
               <Briefcase className="h-4 w-4" />
               Apply Now
