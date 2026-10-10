@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Briefcase, Bell, FolderKanban, MessageCircle, Crown, TrendingUp, Users, Zap, ArrowRight } from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Briefcase, Bell, FolderKanban, MessageCircle, Crown, TrendingUp, Users, Zap, ArrowRight, Heart } from 'lucide-react'
 import ArtistOnboardingFullModal from '@/components/artist/ArtistOnboardingFullModal'
 import UpgradeConnectsBanner from '@/components/artist/UpgradeConnectsBanner'
 import StatCard from '@/components/artist/dashboard/StatCard'
@@ -11,17 +11,21 @@ import RecentConversations from '@/components/artist/dashboard/RecentConversatio
 import ProfileCompletionRing from '@/components/artist/dashboard/ProfileCompletionRing'
 import ConnectsTrackerCard from '@/components/artist/dashboard/ConnectsTrackerCard'
 import QuickNotesCard from '@/components/artist/QuickNotesCard'
-import { Job, Application, Message, Notification, Artist, Subscription } from '@/lib/supabaseEntities'
+import SavedJobsCard from '@/components/artist/dashboard/SavedJobsCard'
+import { Job, Application, Message, Notification, Artist, Subscription, SavedJob } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
+import { getSavedJobs, clearPendingApplication } from '@/services/savedJobsService'
 
 export default function ArtistDashboard() {
   const { user, isAuthenticated, isLoadingAuth } = useAuth()
+  const [searchParams] = useSearchParams()
   const [jobs, setJobs] = useState([])
   const [messages, setMessages] = useState([])
   const [applications, setApplications] = useState([])
   const [invitations, setInvitations] = useState([])
   const [artistProfile, setArtistProfile] = useState(null)
   const [subscription, setSubscription] = useState(null)
+  const [savedJobs, setSavedJobs] = useState([])
   const [showOnboarding, setShowOnboarding] = useState(false)
   const navigate = useNavigate()
 
@@ -36,17 +40,19 @@ export default function ArtistDashboard() {
 
     const fetchData = async () => {
       try {
-        const [jobsData, appsData, msgsData, subsData] = await Promise.all([
+        const [jobsData, appsData, msgsData, subsData, savedData] = await Promise.all([
           Job.filter({ status: 'open' }, '-created_at', 5),
           Application.filter({ artist_email: user.email }, '-created_at', 10),
           Message.filter({ recipient_email: user.email }, '-created_at', 5),
-          Subscription.filter({ user_email: user.email }, '-created_at', 1)
+          Subscription.filter({ user_email: user.email }, '-created_at', 1),
+          getSavedJobs()
         ])
 
         setJobs(jobsData || [])
         setApplications(appsData || [])
         setMessages(msgsData || [])
         setSubscription(subsData?.[0] || null)
+        setSavedJobs(savedData || [])
 
         const notifs = await Notification.filter({
           recipient_email: user.email,
@@ -63,13 +69,21 @@ export default function ArtistDashboard() {
         if (artist && isIncomplete && !alreadySeen) {
           setShowOnboarding(true)
         }
+
+        // Handle pending application from login redirect
+        const jobId = searchParams.get('jobId')
+        const roleId = searchParams.get('roleId')
+        if (jobId) {
+          clearPendingApplication()
+          console.log('Pending application:', { jobId, roleId })
+        }
       } catch (err) {
-        
+
       }
     }
 
     fetchData()
-  }, [user])
+  }, [user, searchParams])
 
   if (isLoadingAuth) return (
     <div className="h-full flex items-center justify-center">
@@ -87,6 +101,7 @@ export default function ArtistDashboard() {
     { label: 'Working On', value: activeProjects.length, icon: FolderKanban, accent: '#F4A261' },
     { label: 'Invitations', value: invitations.length, icon: Bell, accent: '#E9C46A' },
     { label: 'Messages', value: messages.length, icon: MessageCircle, accent: '#2A9D8F' },
+    { label: 'Saved', value: savedJobs.length, icon: Heart, accent: '#E9C46A' },
   ]
 
   return (
@@ -96,7 +111,7 @@ export default function ArtistDashboard() {
           <UpgradeConnectsBanner />
 
           {/* Stats row */}
-          <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+          <div className="mt-5 grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-5">
             {stats.map((stat, idx) => (
               <StatCard key={idx} {...stat} />
             ))}
@@ -189,7 +204,7 @@ export default function ArtistDashboard() {
             <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-3 gap-5">
               <RemindersCard invitations={invitations} />
               <RecentConversations userEmail={user.email} />
-              <QuickNotesCard />
+              <SavedJobsCard savedJobs={savedJobs} />
             </div>
           </div>
 
