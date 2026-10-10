@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, BadgeCheck, Building2, MapPin, Clock, Users, Briefcase, Calendar } from 'lucide-react'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
@@ -7,6 +7,8 @@ import Marquee from '@/components/landing/backstage/Marquee'
 import GigDetailSlideOut from '@/components/landing/backstage/GigDetailSlideOut'
 import { Job } from '@/lib/supabaseEntities'
 import { supabase } from '@/lib/supabase'
+import { saveJob, unsaveJob, isJobSaved, savePendingApplication } from '@/services/savedJobsService'
+import { useAuth } from '@/lib/AuthContext'
 
 const dummyJobs = [
   {
@@ -138,6 +140,8 @@ function FilterDropdown({ label, options, value, onChange }) {
 }
 
 export default function FindJobsPage() {
+  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState({ location: '', jobType: '', gender: '', age: '' })
   const [view, setView] = useState('roles') // 'productions' or 'roles'
@@ -265,12 +269,46 @@ export default function FindJobsPage() {
   const totalPages = Math.max(1, Math.ceil(viewFiltered.length / perPage))
   const pageJobs = viewFiltered.slice((page - 1) * perPage, page * perPage)
 
-  const toggleSave = (id) => {
-    setSavedJobs((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id); else next.add(id)
-      return next
-    })
+  const toggleSave = async (jobId, jobRoleId = null) => {
+    const isSaved = savedJobs.has(jobId + (jobRoleId ? `-${jobRoleId}` : ''))
+
+    if (isSaved) {
+      await unsaveJob(jobId, jobRoleId)
+      setSavedJobs((prev) => {
+        const next = new Set(prev)
+        next.delete(jobId + (jobRoleId ? `-${jobRoleId}` : ''))
+        return next
+      })
+    } else {
+      await saveJob(jobId, jobRoleId)
+      setSavedJobs((prev) => {
+        const next = new Set(prev)
+        next.add(jobId + (jobRoleId ? `-${jobRoleId}` : ''))
+        return next
+      })
+    }
+  }
+
+  const handleApply = (job, role = null) => {
+    // Save pending application data for redirect after login
+    savePendingApplication(
+      job.id,
+      role?.id || null,
+      job.title,
+      role?.title || ''
+    )
+
+    if (!isAuthenticated) {
+      // Redirect to login with job info in URL
+      const params = new URLSearchParams()
+      if (job.id) params.append('jobId', job.id)
+      if (role?.id) params.append('roleId', role.id)
+      params.append('redirect', 'apply')
+      navigate(`/SignIn?${params.toString()}`)
+    } else {
+      // Redirect to artist dashboard with application
+      navigate(`/artistdashboard?jobId=${job.id}${role?.id ? `&roleId=${role.id}` : ''}`)
+    }
   }
 
   const handleShare = (job) => {
@@ -487,7 +525,10 @@ export default function FindJobsPage() {
                           {r.gender && <span className="text-[10px] font-bold text-black/40">{r.gender}</span>}
                           {r.age && <span className="text-[10px] font-bold text-black/40">{r.age}</span>}
                         </div>
-                        <button className="mt-2 w-full bg-[#4f46e5] py-1.5 text-xs font-bold text-white hover:bg-[#4338CA]">
+                        <button
+                          onClick={() => handleApply(job, r)}
+                          className="mt-2 w-full bg-[#4f46e5] py-1.5 text-xs font-bold text-white hover:bg-[#4338CA]"
+                        >
                           Apply
                         </button>
                       </div>
@@ -508,12 +549,19 @@ export default function FindJobsPage() {
         </div>
 
         {/* Community card */}
-        <div className="mt-6 rounded-2xl bg-[#0a0b2e] p-6 text-center md:p-8">
-          <h3 className="text-lg font-bold text-white md:text-xl">Forget generic advice—</h3>
-          <p className="mt-2 text-sm text-white/70">Join thousands of creatives sharing real experiences, tips, and opportunities.</p>
-          <button className="mt-4 rounded-full bg-[#00D09C] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#00b870]">
-            Join the Conversation
-          </button>
+        <div className="mt-6 bg-[#0a0b2e] p-6 md:p-8">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-bold text-white md:text-xl">Forget generic advice—</h3>
+              <p className="mt-2 text-sm text-white/70">Get real answers from people in the industry.</p>
+            </div>
+            <div className="flex flex-col items-start justify-center">
+              <p className="text-sm text-white/70 mb-3">Ask questions, share your experience, and refine your craft.</p>
+              <button className="bg-[#00D09C] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#00b870]">
+                Join the Conversation
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Pagination */}

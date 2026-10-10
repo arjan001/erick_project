@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom'
-import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target } from 'lucide-react'
+import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target, Briefcase } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Artist, Team, Backer, ProjectOwner, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
+import { getPendingApplication, clearPendingApplication } from '@/services/savedJobsService'
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -72,6 +73,7 @@ export default function SignIn() {
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
   const [modeOverride, setModeOverride] = useState(null)
   const [returnTo, setReturnTo] = useState(location.state?.returnTo || null)
+  const [pendingApplication, setPendingApplication] = useState(null)
 
   useEffect(() => {
     if (searchParams.get('mode') === 'employer') setUserType('employer')
@@ -95,6 +97,29 @@ export default function SignIn() {
       setModeOverride('update_password')
     }
   }, [])
+
+  // Check for pending application from job apply redirect
+  useEffect(() => {
+    const jobId = searchParams.get('jobId')
+    const roleId = searchParams.get('roleId')
+    const redirect = searchParams.get('redirect')
+
+    if (redirect === 'apply' && jobId) {
+      // Get pending application data from localStorage
+      const pending = getPendingApplication()
+      if (pending) {
+        setPendingApplication(pending)
+      } else {
+        // Fallback to URL params
+        setPendingApplication({
+          jobId,
+          jobRoleId: roleId,
+          jobTitle: 'This Role',
+          roleTitle: roleId ? 'This Role' : '',
+        })
+      }
+    }
+  }, [searchParams])
 
   const effectiveMode = modeOverride || 'login'
 
@@ -199,6 +224,17 @@ export default function SignIn() {
       if (user.user_metadata?.role === 'admin') userRole = 'admin'
 
       login({ id: user.id, email: user.email, full_name: fullName, role: userRole })
+
+      // Handle pending application redirect
+      if (pendingApplication) {
+        clearPendingApplication()
+        const params = new URLSearchParams()
+        if (pendingApplication.jobId) params.append('jobId', pendingApplication.jobId)
+        if (pendingApplication.jobRoleId) params.append('roleId', pendingApplication.jobRoleId)
+        window.location.href = `/artistdashboard?${params.toString()}`
+        return
+      }
+
       const redirectDest = sessionStorage.getItem('redirectAfterLogin')
       sessionStorage.removeItem('redirectAfterLogin')
       window.location.href = returnTo || redirectDest || ROLE_REDIRECTS[userRole] || '/'
@@ -440,6 +476,11 @@ export default function SignIn() {
                     ? 'Find the perfect creative talent for your project.'
                     : 'Your career starts here'}
                 </h1>
+                {pendingApplication && (
+                  <p className="mt-2 text-sm text-black/60">
+                    Log in or join Backstage to apply to {pendingApplication.roleTitle || pendingApplication.jobTitle} in "{pendingApplication.jobTitle}" and other exciting opportunities!
+                  </p>
+                )}
               </div>
 
               {/* Google + Apple */}
