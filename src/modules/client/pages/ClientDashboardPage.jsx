@@ -10,6 +10,7 @@ import ClientProjectCard from '@/components/client/ClientProjectCard'
 import ClientJobRow from '@/components/client/ClientJobRow'
 import ClientPostProjectModal from '@/components/client/ClientPostProjectModal'
 import AISubmissionModal from '@/components/client/AISubmissionModal'
+import OnboardingTour from '@/components/onboarding/OnboardingTour'
 import { Plus, Briefcase, Send, MessageSquare, FolderKanban, X, MapPin, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import InviteCodeCard from '@/components/InviteCodeCard'
@@ -31,6 +32,7 @@ export default function ClientDashboard() {
   const [showProjectModal, setShowProjectModal] = useState(false)
   const [showAIModal, setShowAIModal] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
+  const [showTour, setShowTour] = useState(false)
 
   // Clear any stored AI context when dashboard loads
   useEffect(() => {
@@ -66,6 +68,12 @@ export default function ClientDashboard() {
 
         const messages = await Message.filter({ recipient_email: authUser.email }, '-created_at', 100)
         setUnreadMessages((messages || []).filter((m) => !m.is_read).length)
+
+        // Check if tour was dismissed
+        const tourDismissed = localStorage.getItem('onboarding_dismissed_client')
+        if (!tourDismissed) {
+          setShowTour(true)
+        }
       } catch (err) {
         //
       } finally {
@@ -347,6 +355,14 @@ export default function ClientDashboard() {
           title: ''
         }}
       />
+
+      {showTour && (
+        <OnboardingTour
+          userRole="client"
+          onClose={() => setShowTour(false)}
+          onComplete={() => setShowTour(false)}
+        />
+      )}
     </div>
   )
 }

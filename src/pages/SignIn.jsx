@@ -132,15 +132,19 @@ export default function SignIn() {
 
   const handleGoogleLogin = () => {
     setError('')
-    // Store current redirect intent
-    const redirectPath = pendingApplication ? '/artistdashboard' : returnTo || '/'
-    sessionStorage.setItem('oauth_redirect', redirectPath)
+    // Store role intent and redirect path
+    const role = userType === 'employer' ? 'client' : 'artist'
+    const redirectPath = pendingApplication ? '/artistdashboard' : null
+    sessionStorage.setItem('oauth_role_intent', role)
+    if (redirectPath) {
+      sessionStorage.setItem('oauth_redirect', redirectPath)
+    }
     supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/SignIn`,
         queryParams: {
-          redirect_to: redirectPath
+          redirect_to: redirectPath || ''
         }
       }
     })
@@ -148,14 +152,18 @@ export default function SignIn() {
 
   const handleAppleLogin = () => {
     setError('')
-    const redirectPath = pendingApplication ? '/artistdashboard' : returnTo || '/'
-    sessionStorage.setItem('oauth_redirect', redirectPath)
+    const role = userType === 'employer' ? 'client' : 'artist'
+    const redirectPath = pendingApplication ? '/artistdashboard' : null
+    sessionStorage.setItem('oauth_role_intent', role)
+    if (redirectPath) {
+      sessionStorage.setItem('oauth_redirect', redirectPath)
+    }
     supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: {
         redirectTo: `${window.location.origin}/SignIn`,
         queryParams: {
-          redirect_to: redirectPath
+          redirect_to: redirectPath || ''
         }
       }
     })

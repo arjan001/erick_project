@@ -20,7 +20,7 @@ const GoogleIcon = () => (
 
 const AppleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5" fill="white">
-    <path d="M17.05 12.04c.03 3.12 2.74 4.16 2.77 4.18-.02.08-.43 1.49-1.43 2.94-.86 1.25-1.76 2.49-3.18 2.52-1.39.03-1.84-.82-3.43-.82-1.59 0-2.09.79-3.41.85-1.37.05-2.32 1.36-3.07 1.58-3.08-1.48-.09-2.36-1.36-3.28-2.61-1.79-2.58-3.16-7.29-1.32-10.47.91-1.58-2.58-2.11-3.33-1.03-.67-.78-1.26-2.03-1.1-3.33 1.17-.09 2.36-.6 3.08-1.48zM14.4 5.45c.73-.88 1.22-2.11 1.09-3.33c.67.78 1.26 2.03 1.1 3.23-1.48z" />
+    <path d="M17.05 20.28c-.98.95-2.05.88-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74 1.18 0 2.21-.93 3.69-.93.95 0 2.58.4 3.36 1.56-2.91 1.51-2.45 5.45.48 6.88-.57 1.36-1.28 2.66-2.61 3.72zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
   </svg>
 )
 
@@ -122,7 +122,26 @@ export default function SignUp() {
 
   const handleGoogleSignUp = () => {
     setError('')
-    supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/SignUp` } })
+    const role = userType === 'employer' ? 'client' : 'artist'
+    sessionStorage.setItem('oauth_role_intent', role)
+    supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/SignUp`
+      }
+    })
+  }
+
+  const handleAppleSignUp = () => {
+    setError('')
+    const role = userType === 'employer' ? 'client' : 'artist'
+    sessionStorage.setItem('oauth_role_intent', role)
+    supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: {
+        redirectTo: `${window.location.origin}/SignUp`
+      }
+    })
   }
 
   // Step 1: register the account with Supabase (sends an OTP to the user's email)
@@ -441,6 +460,16 @@ export default function SignUp() {
               >
                 <GoogleIcon />
                 <span>Sign up with Google</span>
+              </button>
+
+              <button
+                type="button"
+                className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3 px-4 rounded-md flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
+                onClick={handleAppleSignUp}
+              >
+                <AppleIcon />
+                <span>Sign up with Apple</span>
               </button>
 
               <div className="relative">

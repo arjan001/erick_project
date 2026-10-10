@@ -83,9 +83,17 @@ async function grantProSubscription(email) {
 // Ensure an entity profile exists for new users
 async function ensureProfile(user) {
   if (!user?.email) return
-  const role = user.role || 'artist'
+  // Check for role intent from OAuth login
+  const roleIntent = typeof window !== 'undefined' ? sessionStorage.getItem('oauth_role_intent') : null
+  const role = roleIntent || user.role || 'artist'
   const full_name = user.full_name || user.email?.split('@')[0] || 'User'
   const referredBy = user.referred_by || null
+
+  // Clear role intent after use
+  if (roleIntent && typeof window !== 'undefined') {
+    sessionStorage.removeItem('oauth_role_intent')
+  }
+
   try {
     if (role === 'artist') {
       const existing = await Artist.filter({ email: user.email })
@@ -318,6 +326,18 @@ export const AuthProvider = ({ children }) => {
         if (oauthRedirect) {
           sessionStorage.removeItem('oauth_redirect')
           window.location.href = oauthRedirect
+        } else {
+          // Default redirect based on role
+          const roleRedirects = {
+            artist: '/artistdashboard',
+            team: '/teamdashboard',
+            client: '/clientdashboard',
+            project_owner: '/clientdashboard',
+            backer: '/backerdashboard',
+            admin: '/Admin',
+          }
+          const defaultRedirect = roleRedirects[appRole] || '/artistdashboard'
+          window.location.href = defaultRedirect
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null)
