@@ -238,22 +238,41 @@ export default function ArtistProfile() {
 
     setUploadingImage(true)
     try {
-      const fileName = `artist-profile-${artist.id}-${Date.now()}-${file.name}`
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('File size must be less than 5MB')
+      }
+
+      const fileName = `artist-profile-${artist.id}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+
+      console.log('Uploading file:', fileName, 'Size:', file.size)
+
       const { data: uploadData, error } = await supabase.storage
         .from('artist-profiles')
-        .upload(fileName, file)
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
 
-      if (error) throw error
+      if (error) {
+        console.error('Upload error:', error)
+        throw error
+      }
+
+      console.log('Upload successful:', uploadData)
 
       const { data: { publicUrl } } = supabase.storage
         .from('artist-profiles')
         .getPublicUrl(fileName)
+
+      console.log('Public URL:', publicUrl)
 
       await Artist.update(artist.id, { profile_photo_url: publicUrl })
       setArtist(prev => ({ ...prev, profile_photo_url: publicUrl }))
       setPreviewUrl(null); // Clear preview after successful upload
       success('Photo Updated', 'Your profile photo has been updated')
     } catch (err) {
+      console.error('Profile image upload error:', err)
       toastError('Upload Failed', `Failed to upload photo: ${err.message || 'Unknown error'}`)
       setPreviewUrl(null); // Clear preview on error
     } finally {
@@ -825,18 +844,141 @@ export default function ArtistProfile() {
                 </div>
               ) : (
                 <div className="space-y-6">
+                  {/* Contact Information */}
                   <div className="bg-gray-50 rounded-2xl p-6">
                     <h3 className="font-semibold text-gray-900 mb-4">Contact Information</h3>
                     <div className="space-y-3 text-sm">
                       <div className="flex items-center gap-2 text-gray-600">{user?.email}</div>
-                      {formData.role && <p className="text-gray-600">{formData.role}</p>}
-                      {formData.based_in_city && formData.based_in_country && <p className="text-gray-600">{formData.based_in_city}, {formData.based_in_country}</p>}
+                      {formData.profession && <p className="text-gray-600"><span className="font-medium">Profession:</span> {formData.profession}</p>}
+                      {formData.gender && <p className="text-gray-600"><span className="font-medium">Gender:</span> {formData.gender}</p>}
+                      {formData.based_in_city && formData.based_in_country && <p className="text-gray-600"><span className="font-medium">Location:</span> {formData.based_in_city}, {formData.based_in_country}</p>}
                     </div>
                   </div>
+
+                  {/* Bio */}
                   {formData.bio && (
                     <div className="bg-gray-50 rounded-2xl p-6">
                       <h3 className="font-semibold text-gray-900 mb-4">About</h3>
                       <p className="text-gray-600">{formData.bio}</p>
+                    </div>
+                  )}
+
+                  {/* Appearance */}
+                  {(formData.appearance.height || formData.appearance.weight || formData.appearance.ageRange || formData.appearance.ethnicity || formData.appearance.build || formData.appearance.hairColor || formData.appearance.eyeColor) && (
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="font-semibold text-gray-900 mb-4">Appearance</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        {formData.appearance.height && <div><span className="text-gray-500">Height:</span> <p className="font-medium text-gray-900">{formData.appearance.height}</p></div>}
+                        {formData.appearance.weight && <div><span className="text-gray-500">Weight:</span> <p className="font-medium text-gray-900">{formData.appearance.weight}</p></div>}
+                        {formData.appearance.ageRange && <div><span className="text-gray-500">Playing Age:</span> <p className="font-medium text-gray-900">{formData.appearance.ageRange}</p></div>}
+                        {formData.appearance.ethnicity && <div><span className="text-gray-500">Ethnicities:</span> <p className="font-medium text-gray-900">{formData.appearance.ethnicity}</p></div>}
+                        {formData.appearance.build && <div><span className="text-gray-500">Build:</span> <p className="font-medium text-gray-900">{formData.appearance.build}</p></div>}
+                        {formData.appearance.hairColor && <div><span className="text-gray-500">Hair:</span> <p className="font-medium text-gray-900">{formData.appearance.hairColor}</p></div>}
+                        {formData.appearance.eyeColor && <div><span className="text-gray-500">Eye Color:</span> <p className="font-medium text-gray-900">{formData.appearance.eyeColor}</p></div>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Skills */}
+                  {formData.skills && formData.skills.length > 0 && (
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="font-semibold text-gray-900 mb-4">Skills</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.skills.map((skill, idx) => (
+                          <span key={idx} className="px-3 py-1.5 bg-white border border-gray-200 rounded-md text-sm text-gray-700">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Credits */}
+                  {(formData.credits.film?.length > 0 || formData.credits.commercials?.length > 0) && (
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="font-semibold text-gray-900 mb-4">Credits & Experience</h3>
+                      {formData.credits.film?.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="font-semibold text-gray-900 mb-2 text-sm">Film</h4>
+                          <ul className="space-y-1 text-sm text-gray-700">
+                            {formData.credits.film.map((credit, idx) => (
+                              <li key={idx}>{credit}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {formData.credits.commercials?.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2 text-sm">Commercials & Industrials</h4>
+                          <ul className="space-y-1 text-sm text-gray-700">
+                            {formData.credits.commercials.map((credit, idx) => (
+                              <li key={idx}>{credit}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Education */}
+                  {formData.education && formData.education.length > 0 && (
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="font-semibold text-gray-900 mb-4">Education & Training</h3>
+                      <ul className="space-y-2 text-sm text-gray-700">
+                        {formData.education.map((edu, idx) => (
+                          <li key={idx}>{edu}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Representation */}
+                  {(formData.representation.agent || formData.representation.email) && (
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="font-semibold text-gray-900 mb-4">Representation</h3>
+                      {formData.representation.agent && <p className="text-sm text-gray-700"><span className="font-medium">Agency:</span> {formData.representation.agent}</p>}
+                      {formData.representation.email && <p className="text-sm text-gray-500">{formData.representation.email}</p>}
+                    </div>
+                  )}
+
+                  {/* Union Membership */}
+                  {formData.unionMembership && formData.unionMembership.length > 0 && (
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="font-semibold text-gray-900 mb-4">Union Membership</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.unionMembership.map((union, idx) => (
+                          <span key={idx} className="px-3 py-1 bg-white border border-gray-200 rounded-full text-sm text-gray-700">
+                            {union}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* License & Passport */}
+                  {(formData.licensePassport.driverLicense || formData.licensePassport.passport) && (
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="font-semibold text-gray-900 mb-4">License & Passport</h3>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        {formData.licensePassport.driverLicense && <span className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-gray-500" /> Driver's License</span>}
+                        {formData.licensePassport.passport && <span className="flex items-center gap-2"><Shield className="w-4 h-4 text-gray-500" /> Passport</span>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Self-Recording Equipment */}
+                  {formData.self_recording_equipment && (
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="font-semibold text-gray-900 mb-4">Self-Recording Equipment</h3>
+                      <p className="text-sm text-gray-700">{formData.self_recording_equipment}</p>
+                    </div>
+                  )}
+
+                  {/* Highlights */}
+                  {formData.highlights && (
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="font-semibold text-gray-900 mb-4">Highlights</h3>
+                      <p className="text-sm text-gray-700">{formData.highlights}</p>
                     </div>
                   )}
                 </div>
