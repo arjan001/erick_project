@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import CountrySelector from '@/components/CountrySelector'
 import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete'
+import SkillsCategorySelector from '@/components/SkillsCategorySelector'
 import skillsAndRoles from '@/lib/skillsAndRoles.json'
 import { ALL_FILM_ROLES } from '@/lib/filmRoles'
-import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2 } from 'lucide-react'
+import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2, ChevronDown, ChevronUp } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { confirmDialog } from '@/lib/sweetAlert'
 import ShareProfileButton from '@/components/artist/ShareProfileButton'
@@ -685,15 +686,13 @@ export default function ArtistProfile() {
                   <div className="border-t border-gray-200 pt-6">
                     <h4 className="text-md font-semibold text-gray-900 mb-4">Skills</h4>
                     <div className="space-y-4">
-                      <MultiSelectAutocomplete
-                        options={ALL_SKILLS}
+                      <SkillsCategorySelector
+                        skillsByCategory={skillsAndRoles.talent_skills_by_category}
                         selected={formData.skills}
                         onChange={(selected) => setFormData({ ...formData, skills: selected })}
-                        placeholder="Search and select your skills..."
-                        label="Select Your Skills"
-                        searchable={true}
+                        placeholder="Search for skills in acting, voiceover, film production, or UGC content creation..."
                       />
-                      <p className="text-xs text-gray-500">Choose from pre-defined film industry skills or type to search</p>
+                      <p className="text-xs text-gray-500">Select skills from categories: Acting Techniques, Voiceover, Film Production, UGC Content Creation, Physical Attributes, Technical Skills, Audition Skills, and Special Skills</p>
                     </div>
                   </div>
 

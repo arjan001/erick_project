@@ -5,8 +5,8 @@ import { createPageUrl } from '@/shared/utils/routing'
 import ShareProfileButton from '@/components/artist/ShareProfileButton'
 import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge'
 import {
-  MapPin, MessageCircle, Globe, Instagram, Linkedin, Star, ThumbsUp,
-  Play, BadgeCheck, Film, Quote, Sparkles
+  MapPin, MessageCircle, Globe, Instagram, Linkedin, Twitter, Youtube, Star, ThumbsUp,
+  Play, BadgeCheck, Film, Quote, Sparkles, Plus, X, ChevronDown, ChevronUp, CreditCard, Shield
 } from 'lucide-react'
 
 export default function ArtistPublicProfile() {
@@ -19,6 +19,11 @@ export default function ArtistPublicProfile() {
   const [subscription, setSubscription] = useState(null)
   const [subscriptionPackage, setSubscriptionPackage] = useState(null)
   const [activeClip, setActiveClip] = useState(null)
+  const [expandedSections, setExpandedSections] = useState({
+    skills: false,
+    credits: false,
+    education: false
+  })
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
@@ -68,6 +73,10 @@ export default function ArtistPublicProfile() {
     fetchData()
   }, [searchParams])
 
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -102,6 +111,15 @@ export default function ArtistPublicProfile() {
 
   const formatLabel = (val) => (val || 'other').charAt(0).toUpperCase() + (val || 'other').slice(1).replace(/_/g, ' ')
 
+  const appearance = viewedArtist.appearance || {}
+  const socialMedia = viewedArtist.socialMedia || {}
+  const representation = viewedArtist.representation || {}
+  const credits = viewedArtist.credits || { film: [], commercials: [] }
+  const education = viewedArtist.education || []
+  const unionMembership = viewedArtist.unionMembership || []
+  const licensePassport = viewedArtist.licensePassport || {}
+  const skills = viewedArtist.skills || []
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero cover */}
@@ -109,7 +127,7 @@ export default function ArtistPublicProfile() {
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 30%, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pb-20">
         {/* Profile header card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 -mt-20 relative z-10 p-6 sm:p-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5 -mt-16 sm:-mt-20 mb-4">
@@ -132,7 +150,7 @@ export default function ArtistPublicProfile() {
                 <BadgeCheck className="w-5 h-5 text-indigo-600" />
               </div>
               <p className="text-gray-600 font-medium mb-2">
-                {viewedArtist.role ? formatLabel(viewedArtist.role) : 'Creative Professional'}
+                {viewedArtist.profession || viewedArtist.role ? formatLabel(viewedArtist.profession || viewedArtist.role) : 'Creative Professional'}
               </p>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
                 {(viewedArtist.based_in_city || viewedArtist.based_in_country) && (
@@ -156,7 +174,7 @@ export default function ArtistPublicProfile() {
                   to={createPageUrl('Messages')}
                   className="px-5 py-2.5 bg-black text-white rounded-full text-sm font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2"
                 >
-                  <MessageCircle className="w-4 h-4" /> Message
+                  <MessageCircle className="w-4 h-4" /> Contact
                 </Link>
               ) : (
                 <Link
@@ -176,139 +194,307 @@ export default function ArtistPublicProfile() {
           )}
 
           {/* Socials */}
-          {(viewedArtist.website || viewedArtist.instagram || viewedArtist.linkedin) && (
+          {(viewedArtist.website || socialMedia.instagram || socialMedia.linkedin || socialMedia.twitter || socialMedia.youtube) && (
             <div className="flex items-center gap-3 mb-2">
               {viewedArtist.website && (
                 <a href={viewedArtist.website} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-900 transition-colors">
                   <Globe className="w-5 h-5" />
                 </a>
               )}
-              {viewedArtist.instagram && (
-                <a href={viewedArtist.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-900 transition-colors">
+              {socialMedia.instagram && (
+                <a href={socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-900 transition-colors">
                   <Instagram className="w-5 h-5" />
                 </a>
               )}
-              {viewedArtist.linkedin && (
-                <a href={viewedArtist.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-900 transition-colors">
+              {socialMedia.linkedin && (
+                <a href={socialMedia.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-900 transition-colors">
                   <Linkedin className="w-5 h-5" />
+                </a>
+              )}
+              {socialMedia.twitter && (
+                <a href={socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-900 transition-colors">
+                  <Twitter className="w-5 h-5" />
+                </a>
+              )}
+              {socialMedia.youtube && (
+                <a href={socialMedia.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-900 transition-colors">
+                  <Youtube className="w-5 h-5" />
                 </a>
               )}
             </div>
           )}
+        </div>
 
-          {/* Skills */}
-          {viewedArtist.skills_experience?.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {viewedArtist.skills_experience.map((s) => (
-                <span key={s.skill} className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-full text-xs font-medium text-gray-700 flex items-center gap-1.5">
-                  {s.skill}
-                  {groupedEndorsements[s.skill]?.length > 0 && (
-                    <span className="flex items-center gap-0.5 text-indigo-600">
-                      <ThumbsUp className="w-3 h-3" /> {groupedEndorsements[s.skill].length}
-                    </span>
-                  )}
-                </span>
-              ))}
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-3 mt-4">
+          <button className="px-4 py-2 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800 flex items-center gap-2">
+            <MessageCircle className="w-4 h-4" /> Contact
+          </button>
+          <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Add to a Role
+          </button>
+          <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 flex items-center gap-2">
+            Invite
+          </button>
+        </div>
+
+        {/* Appearance Section */}
+        {(appearance.height || appearance.weight || appearance.ageRange || appearance.ethnicity || appearance.build || appearance.hairColor || appearance.eyeColor) && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
+            <h3 className="font-bold text-gray-900 mb-4">Appearance</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              {appearance.height && (
+                <div>
+                  <span className="text-gray-500">Height</span>
+                  <p className="font-medium text-gray-900">{appearance.height}</p>
+                </div>
+              )}
+              {appearance.weight && (
+                <div>
+                  <span className="text-gray-500">Weight</span>
+                  <p className="font-medium text-gray-900">{appearance.weight}</p>
+                </div>
+              )}
+              {appearance.ageRange && (
+                <div>
+                  <span className="text-gray-500">Playing Age</span>
+                  <p className="font-medium text-gray-900">{appearance.ageRange}</p>
+                </div>
+              )}
+              {appearance.ethnicity && (
+                <div>
+                  <span className="text-gray-500">Ethnicities</span>
+                  <p className="font-medium text-gray-900">{appearance.ethnicity}</p>
+                </div>
+              )}
+              {appearance.build && (
+                <div>
+                  <span className="text-gray-500">Build</span>
+                  <p className="font-medium text-gray-900">{appearance.build}</p>
+                </div>
+              )}
+              {appearance.hairColor && (
+                <div>
+                  <span className="text-gray-500">Hair</span>
+                  <p className="font-medium text-gray-900">{appearance.hairColor}</p>
+                </div>
+              )}
+              {appearance.eyeColor && (
+                <div>
+                  <span className="text-gray-500">Eye Color</span>
+                  <p className="font-medium text-gray-900">{appearance.eyeColor}</p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Quick stats strip */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-6">
-          <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
-            <div className="text-2xl font-bold text-gray-900">{portfolioClips.length}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Projects</div>
+        {/* Websites/Social Media Section */}
+        {(viewedArtist.website || socialMedia.instagram || socialMedia.linkedin || socialMedia.twitter || socialMedia.youtube) && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
+            <h3 className="font-bold text-gray-900 mb-4">Websites / Social Media</h3>
+            <div className="space-y-2">
+              {viewedArtist.website && (
+                <a href={viewedArtist.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                  <Globe className="w-4 h-4" /> {viewedArtist.website}
+                </a>
+              )}
+              {socialMedia.instagram && (
+                <a href={socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                  <Instagram className="w-4 h-4" /> {socialMedia.instagram}
+                </a>
+              )}
+              {socialMedia.linkedin && (
+                <a href={socialMedia.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                  <Linkedin className="w-4 h-4" /> {socialMedia.linkedin}
+                </a>
+              )}
+              {socialMedia.twitter && (
+                <a href={socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                  <Twitter className="w-4 h-4" /> {socialMedia.twitter}
+                </a>
+              )}
+              {socialMedia.youtube && (
+                <a href={socialMedia.youtube} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                  <Youtube className="w-4 h-4" /> {socialMedia.youtube}
+                </a>
+              )}
+            </div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
-            <div className="text-2xl font-bold text-gray-900">{testimonials.length}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Testimonials</div>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
-            <div className="text-2xl font-bold text-gray-900">{endorsements.length}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Endorsements</div>
-          </div>
-        </div>
+        )}
 
-        {/* Work gallery */}
-        <div className="mt-10">
-          <h2 className="text-xl font-bold text-gray-900 mb-5 flex items-center gap-2">
-            <Film className="w-5 h-5 text-gray-700" /> Work
-          </h2>
-          {portfolioClips.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {portfolioClips.map((clip) => (
+        {/* Acting & Performing Video Samples */}
+        {portfolioClips.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
+            <h3 className="font-bold text-gray-900 mb-4">Acting & Performing Video Samples</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {portfolioClips.slice(0, 6).map((clip) => (
                 <button
                   key={clip.id}
                   onClick={() => (clip.original_video_url || clip.video_embed_url) && setActiveClip(clip)}
-                  className="group text-left bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
+                  className="group text-left"
                 >
-                  <div className="relative bg-gray-900 aspect-video overflow-hidden">
+                  <div className="relative bg-gray-900 aspect-video rounded-lg overflow-hidden mb-2">
                     {clip.thumbnail_url ? (
                       <img src={clip.thumbnail_url} alt={clip.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                        <Sparkles className="w-10 h-10 text-white/50" />
+                        <Sparkles className="w-8 h-8 text-white/50" />
                       </div>
                     )}
                     {(clip.original_video_url || clip.video_embed_url) && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
-                        <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Play className="w-6 h-6 text-gray-900 ml-0.5" />
+                        <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Play className="w-5 h-5 text-gray-900 ml-0.5" />
                         </div>
                       </div>
                     )}
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 text-sm mb-1 truncate">{clip.title || 'Untitled'}</h3>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <span>{formatLabel(clip.project_type)}</span>
-                      {clip.role && <><span>•</span><span>{clip.role}</span></>}
-                    </div>
-                  </div>
+                  <p className="text-sm font-medium text-gray-900 truncate">{clip.title || 'Untitled'}</p>
                 </button>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-16 bg-white rounded-xl border border-gray-100 text-gray-400">
-              No published work yet
-            </div>
-          )}
-        </div>
+            {portfolioClips.length > 6 && (
+              <button className="mt-4 text-sm text-blue-600 hover:underline">
+                View More Media
+              </button>
+            )}
+          </div>
+        )}
 
-        {/* Testimonials */}
-        <div className="mt-10">
-          <h2 className="text-xl font-bold text-gray-900 mb-5 flex items-center gap-2">
-            <Quote className="w-5 h-5 text-gray-700" /> Testimonials
-          </h2>
-          {testimonials.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {testimonials.map((t) => (
-                <div key={t.id} className="bg-white rounded-xl p-5 border border-gray-100">
-                  <div className="flex items-start gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 font-semibold text-gray-600 text-sm">
-                      {t.author_name?.[0]?.toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-900 text-sm">{t.author_name}</h4>
-                      {t.rating && (
-                        <div className="flex items-center gap-0.5 mt-0.5">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={`w-3 h-3 ${i < t.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 leading-relaxed">{t.content}</p>
-                </div>
+        {/* Representation */}
+        {(representation.agent || representation.email) && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
+            <h3 className="font-bold text-gray-900 mb-4">Representation</h3>
+            {representation.agent && <p className="text-sm text-gray-700">{representation.agent}</p>}
+            {representation.email && <p className="text-sm text-gray-500">{representation.email}</p>}
+          </div>
+        )}
+
+        {/* Union Membership */}
+        {unionMembership.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
+            <h3 className="font-bold text-gray-900 mb-4">Union Membership</h3>
+            <div className="flex flex-wrap gap-2">
+              {unionMembership.map((union, idx) => (
+                <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
+                  {union}
+                </span>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-12 bg-white rounded-xl border border-gray-100 text-gray-400 text-sm">
-              No testimonials yet
+          </div>
+        )}
+
+        {/* License & Passport */}
+        {(licensePassport.driverLicense || licensePassport.passport) && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
+            <h3 className="font-bold text-gray-900 mb-4">License & Passport</h3>
+            <div className="flex flex-wrap gap-4 text-sm">
+              {licensePassport.driverLicense && (
+                <span className="flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-gray-500" /> Driver's License
+                </span>
+              )}
+              {licensePassport.passport && (
+                <span className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-gray-500" /> Passport
+                </span>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Credits & Experience */}
+        {(credits.film?.length > 0 || credits.commercials?.length > 0) && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
+            <h3 className="font-bold text-gray-900 mb-4">Credits & Experience</h3>
+
+            {credits.film?.length > 0 && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-gray-900 mb-2">Film</h4>
+                <ul className="space-y-1 text-sm text-gray-700">
+                  {credits.film.map((credit, idx) => (
+                    <li key={idx}>{credit}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {credits.commercials?.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-2">Commercials & Industrials</h4>
+                <ul className="space-y-1 text-sm text-gray-700">
+                  {credits.commercials.map((credit, idx) => (
+                    <li key={idx}>{credit}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Skills */}
+        {skills.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
+            <button
+              onClick={() => toggleSection('skills')}
+              className="w-full flex items-center justify-between mb-4"
+            >
+              <h3 className="font-bold text-gray-900">Skills</h3>
+              {expandedSections.skills ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
+            </button>
+            {expandedSections.skills ? (
+              <div className="flex flex-wrap gap-2">
+                {skills.map((skill, idx) => (
+                  <span key={idx} className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {skills.slice(0, 5).map((skill, idx) => (
+                  <span key={idx} className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700">
+                    {skill}
+                  </span>
+                ))}
+                {skills.length > 5 && (
+                  <button onClick={() => toggleSection('skills')} className="text-sm text-blue-600 hover:underline">
+                    Show more
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Education & Training */}
+        {education.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
+            <h3 className="font-bold text-gray-900 mb-4">Education & Training</h3>
+            <ul className="space-y-2 text-sm text-gray-700">
+              {education.map((edu, idx) => (
+                <li key={idx}>{edu}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Self-Recording */}
+        {viewedArtist.self_recording_equipment && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
+            <h3 className="font-bold text-gray-900 mb-4">Self-Recording</h3>
+            <p className="text-sm text-gray-700">{viewedArtist.self_recording_equipment}</p>
+          </div>
+        )}
+
+        {/* Highlights */}
+        {viewedArtist.highlights && (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
+            <h3 className="font-bold text-gray-900 mb-4">Highlights</h3>
+            <p className="text-sm text-gray-700">{viewedArtist.highlights}</p>
+          </div>
+        )}
       </div>
 
       {/* Video lightbox */}

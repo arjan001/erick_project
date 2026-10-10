@@ -2,27 +2,33 @@
   "talent_roles_by_category": {
     "On-Screen Acting": [
       "Lead Actor", "Supporting Actor", "Extra / Background Actor", "Featured Extra",
-      "Day Player", "Double / Stunt Double", "Body Double", "Photo Double"
+      "Day Player", "Double / Stunt Double", "Body Double", "Photo Double",
+      "Co-Star", "Guest Star", "Recurring Role", "Series Regular"
     ],
     "Voice & Audio": [
       "Voice Over Artist", "Voice Actor", "Narrator", "Commercial Voice Over",
-      "Audio Book Narrator", "Character Voice", "Dubbing Artist", "ADR Artist"
+      "Audio Book Narrator", "Character Voice", "Dubbing Artist", "ADR Artist",
+      "Announcer", "Radio Host", "Podcast Host"
     ],
     "Performance": [
       "Actor", "Performer", "Model", "Dancer", "Choreographer", "Stunt Performer",
-      "Circus Performer", "Theater Actor", "Stage Actor"
+      "Circus Performer", "Theater Actor", "Stage Actor", "Improv Comedian",
+      "Stand-up Comedian", "Sketch Comedian", "Mime Artist"
     ],
     "Content Creation": [
       "UGC Creator", "Content Creator", "TikTok Creator", "Instagram Creator",
-      "YouTube Creator", "Social Media Influencer", "Brand Ambassador"
+      "YouTube Creator", "Social Media Influencer", "Brand Ambassador",
+      "Content Writer", "Video Editor", "Photographer"
     ],
     "Commercial & Ads": [
       "Commercial Actor", "TV Commercial Actor", "Radio Commercial Actor",
-      "Print Model", "Fashion Model", "Fitness Model", "Brand Representative"
+      "Print Model", "Fashion Model", "Fitness Model", "Brand Representative",
+      "Spokesperson", "Product Demonstrator"
     ],
     "Specialized Performance": [
       "Sign Language Actor", "Hand Model", "Foot Model", "Hair Model",
-      "Fitness Model", "Plus Size Model", "Pet Actor / Animal Wrangler"
+      "Fitness Model", "Plus Size Model", "Pet Actor / Animal Wrangler",
+      "Stunt Coordinator", "Motion Capture Performer"
     ]
   },
   "client_roles_by_category": {
@@ -77,38 +83,62 @@
     ]
   },
   "talent_skills_by_category": {
-    "Acting Skills": [
-      "Method Acting", "Improvisation", "Script Reading", "Memorization",
-      "Character Development", "Emotional Range", "Physical Acting", "Stage Combat",
-      "Movement", "Dance", "Singing", "Accents & Dialects", "Foreign Languages"
+    "Acting Techniques": [
+      "Method Acting", "Meisner Technique", "Stanislavski System", "Improvisation",
+      "Script Analysis", "Character Development", "Emotional Range", "Physical Acting",
+      "Stage Combat", "Fight Choreography", "Movement", "Dance",
+      "Singing", "Musical Theater", "Screen Acting", "Theater Acting",
+      "Comedy: Physical Comedy", "Comedy: Sketch Comedy", "Comedy: Improv Comedy",
+      "Drama Training", "Cold Reading", "Monologue Performance"
     ],
-    "Voice Skills": [
-      "Voice Over", "Narration", "Character Voices", "Commercial Voice",
-      "Audio Book Recording", "ADR / Dubbing", "Singing", "Voice Control",
-      "Breathing Techniques", "Projection", "Diction"
+    "Voiceover": [
+      "Voice Over", "Commercial Voice Over", "Narration", "Character Voices",
+      "Audio Book Narration", "E-Learning Narration", "Corporate Narration",
+      "Documentary Narration", "Animation Voice Over", "Video Game Voice Over",
+      "ADR / Dubbing", "Lip Sync", "Singing", "Voice Control",
+      "Breathing Techniques", "Projection", "Diction", "Voice Characterization",
+      "Accent Work", "Dialect Coaching", "Impressions", "Podcast Voice"
     ],
-    "Modeling Skills": [
-      "Pose", "Walk the Runway", "Photogenic", "Facial Expressions",
-      "Body Language", "Portfolio Posing", "Commercial Modeling", "Editorial Modeling"
+    "Film Production": [
+      "Directing", "Producing", "Screenwriting", "Script Supervision",
+      "Cinematography", "Camera Operation", "Lighting Design", "Sound Recording",
+      "Video Editing", "Color Grading", "Sound Design", "Music Composition",
+      "Storyboarding", "Production Design", "Art Direction", "Set Design"
     ],
-    "Content Creation": [
-      "Script Writing", "Video Editing", "Content Planning", "Social Media Strategy",
-      "Engagement Techniques", "Video Production", "Photography", "Camera Operation"
+    "UGC Content Creation": [
+      "UGC Creator", "TikTok Content", "Instagram Reels", "YouTube Shorts",
+      "Product Review Videos", "Testimonial Videos", "Lifestyle Content",
+      "Tutorial Content", "Behind the Scenes", "Day in the Life",
+      "Content Strategy", "Script Writing for Social Media", "Video Editing for Social",
+      "Trend Awareness", "Engagement Strategies", "Analytics and Performance",
+      "Brand Partnerships", "Sponsored Content", "Affiliate Marketing"
     ],
-    "Performance Skills": [
-      "Public Speaking", "Stage Presence", "Character Immersion",
-      "Improvisation", "Physical Fitness", "Stunts", "Choreography",
-      "Teamwork", "Direction Following"
+    "Physical Attributes": [
+      "Swimming", "Driving License", "Motorcycle License", "Passport",
+      "Multiple Languages", "Sports", "Musical Instruments", "Dancing Styles",
+      "Martial Arts", "Horse Riding", "Stage Combat", "Stunts",
+      "Gymnastics", "Athletics", "Running", "Cycling", "Skating",
+      "Skiing", "Snowboarding", "Surfing", "Rock Climbing"
+    ],
+    "Technical Skills": [
+      "Script Writing", "Video Editing", "Photography", "Camera Operation",
+      "Lighting Setup", "Sound Recording", "Audio Editing", "Motion Graphics",
+      "Graphic Design", "Animation", "Storyboarding", "Production Design",
+      "Costume Design", "Makeup Artistry", "Hair Styling", "Wardrobe Styling"
     ],
     "Audition Skills": [
-      "Self-Tape Audition", "Cold Reading", "Monologue Preparation",
-      "Slate Techniques", "Interview Skills", "Demo Reel Creation",
-      "Portfolio Building", "Networking"
+      "Self-Tape Audition", "In-Person Audition", "Cold Reading",
+      "Monologue Preparation", "Slate Techniques", "Interview Skills",
+      "Demo Reel Creation", "Portfolio Building", "Networking",
+      "Self-Tape Setup", "Lighting for Self-Tapes", "Audio Recording",
+      "Online Audition Platforms", "Virtual Auditions"
     ],
     "Special Skills": [
-      "Swimming", "Driving License", "Passport", "Multiple Languages",
-      "Sports", "Musical Instruments", "Dancing Styles", "Martial Arts",
-      "Horse Riding", "Stage Combat", "Sign Language"
+      "Sign Language", "Stage Combat", "Stunt Driving", "Firearms Safety",
+      "Water Safety", "Scuba Diving", "Skydiving", "Parachuting",
+      "Horse Riding", "Animal Handling", "Childcare Experience", "First Aid / CPR",
+      "Foreign Languages", "Dialects", "Accents", "Impressions",
+      "Sports (Specific)", "Musical Instruments (Specific)", "Dance Styles (Specific)"
     ]
   },
   "client_skills_by_category": {

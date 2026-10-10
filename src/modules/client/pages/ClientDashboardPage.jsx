@@ -191,11 +191,11 @@ export default function ClientDashboard() {
   }))
 
   return (
-    <div className="bg-white min-h-screen">
-      <main className="w-full max-w-7xl mx-auto">
-        <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+    <div className="bg-[#FAFAFA] min-h-screen">
+      <main className="w-full">
+        <div className="px-4 sm:px-5 md:px-7 lg:px-9 pt-7 pb-12">
           {/* Header Section */}
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-6">
             <div>
               <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Dashboard</p>
               <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
@@ -204,7 +204,7 @@ export default function ClientDashboard() {
             </div>
             <div className="flex gap-3">
               <Button
-                className="bg-black hover:bg-gray-800 text-white shadow-xl shadow-black/10 transition-all text-sm font-medium px-6 py-2.5"
+                className="bg-[#4F46E5] hover:bg-[#4338CA] text-white shadow-lg transition-all text-sm font-medium px-6 py-2.5 rounded-xl"
                 onClick={() => navigate('/ClientPostProject')}
               >
                 <Plus className="w-4 h-4 mr-2" />
@@ -212,7 +212,7 @@ export default function ClientDashboard() {
               </Button>
               <Button
                 variant="outline"
-                className="border-gray-900 hover:bg-gray-50 transition-all text-sm font-medium px-6 py-2.5"
+                className="border-[#4F46E5] text-[#4F46E5] hover:bg-[#4F46E5]/10 transition-all text-sm font-medium px-6 py-2.5 rounded-xl"
                 onClick={() => setShowAIModal(true)}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
@@ -221,67 +221,59 @@ export default function ClientDashboard() {
             </div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Stats Cards - matching artist dashboard style */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
             {stats.map((stat, idx) => {
               const Icon = stat.icon
-              const gradients = [
-                'from-gray-100 to-gray-200',
-                'from-zinc-100 to-zinc-200',
-                'from-slate-100 to-slate-200',
-                'from-neutral-100 to-neutral-200'
-              ]
+              const accents = ['#2A9D8F', '#F4A261', '#E9C46A', '#2A9D8F']
               return (
-                <div key={idx} className="group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gray-50 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`w-11 h-11 bg-gradient-to-br ${gradients[idx]} rounded-lg flex items-center justify-center`}>
-                        <Icon className="w-5 h-5 text-gray-700" />
-                      </div>
-                      <span className="text-3xl font-bold text-gray-900">{stat.value}</span>
+                <div key={idx} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${accents[idx]}20` }}>
+                      <Icon className="w-5 h-5" style={{ color: accents[idx] }} />
                     </div>
-                    <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                    <span className="text-2xl font-bold text-gray-900">{stat.value}</span>
                   </div>
+                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
                 </div>
               )
             })}
           </div>
 
           {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div className="mt-5 grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <h3 className="text-base font-semibold text-gray-900 mb-6">Project Activity</h3>
               <ClientActivityChart data={monthBuckets} />
             </div>
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <h3 className="text-base font-semibold text-gray-900 mb-6">Project Status</h3>
               <ClientStatusDonut data={statusData} />
             </div>
           </div>
 
           {/* Recent Applications */}
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div className="mt-5 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="text-base font-semibold text-gray-900 mb-6">Recent Applications</h3>
             <ClientRecentApplications applications={applications} projects={projects} jobs={jobs} />
           </div>
 
           {/* Projects & Jobs Section */}
-          <div>
+          <div className="mt-5">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Your Projects & Jobs</h2>
             </div>
 
             {projects.length === 0 && jobs.length === 0 ? (
-              <div className="bg-gray-50 rounded-xl p-16 text-center border border-dashed border-gray-300">
-                <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <div className="bg-gray-50 rounded-2xl p-16 text-center border border-dashed border-gray-300">
+                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
                   <FolderKanban className="w-8 h-8 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No projects or jobs yet</h3>
                 <p className="text-gray-500 mb-6 max-w-md mx-auto text-sm">Start by posting your first project or job to connect with talented creators</p>
                 <div className="flex gap-3 justify-center">
                   <Button
-                    className="bg-black hover:bg-gray-800 text-white shadow-lg shadow-black/10"
+                    className="bg-[#4F46E5] hover:bg-[#4338CA] text-white shadow-lg rounded-xl"
                     onClick={() => openProjectModal()}
                   >
                     <Plus className="w-4 h-4 mr-2" />
@@ -289,7 +281,7 @@ export default function ClientDashboard() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="border-gray-900 hover:bg-gray-50"
+                    className="border-[#4F46E5] text-[#4F46E5] hover:bg-[#4F46E5]/10 rounded-xl"
                     onClick={() => setShowAIModal(true)}
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
@@ -305,9 +297,9 @@ export default function ClientDashboard() {
                 ))}
                 {/* Job Cards */}
                 {jobs.map((job) => (
-                  <div key={job.id} className="group bg-white rounded-xl p-5 border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300">
+                  <div key={job.id} className="group bg-white rounded-2xl p-5 border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs font-semibold bg-gray-900 text-white px-2.5 py-1 rounded-md">Job</span>
+                      <span className="text-xs font-semibold bg-[#4F46E5] text-white px-2.5 py-1 rounded-md">Job</span>
                       <button
                         onClick={() => handleDeleteJob(job.id)}
                         className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -329,10 +321,11 @@ export default function ClientDashboard() {
               </div>
             )}
           </div>
-        </div>
 
-        <div className="px-4 sm:px-6 lg:px-8 pb-8">
-          <InviteCodeCard />
+          {/* Invite Code Card */}
+          <div className="mt-6">
+            <InviteCodeCard />
+          </div>
         </div>
       </main>
 
