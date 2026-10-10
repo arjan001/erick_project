@@ -111,20 +111,20 @@ function FilterDropdown({ label, options, value, onChange }) {
     <div className="relative min-w-[140px] flex-1 sm:flex-none">
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-black/70 hover:border-gray-300 sm:px-4"
+        className="flex w-full items-center justify-between border border-gray-300 bg-white px-3 py-2.5 text-sm font-bold text-black hover:border-gray-400 sm:px-4"
       >
         <span className="truncate">{value || label}</span>
-        <ChevronDown className="h-4 w-4 shrink-0 text-black/40" />
+        <ChevronDown className="h-4 w-4 shrink-0 text-black/60" />
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full z-20 mt-1 w-full min-w-[180px] rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+          <div className="absolute left-0 top-full z-20 mt-1 w-full min-w-[180px] border border-gray-300 bg-white py-1 shadow-lg">
             {options.map((opt) => (
               <button
                 key={opt}
                 onClick={() => { onChange(opt === options[0] ? '' : opt); setOpen(false); }}
-                className={`block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${value === opt ? 'font-bold text-[#4f46e5]' : 'text-black/70'}`}
+                className={`block w-full px-4 py-2 text-left text-sm font-bold hover:bg-gray-50 ${value === opt ? 'text-[#4f46e5]' : 'text-black'}`}
               >
                 {opt}
               </button>
@@ -140,6 +140,7 @@ export default function FindJobsPage() {
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState({ location: '', jobType: '', gender: '', age: '' })
   const [view, setView] = useState('roles') // 'productions' or 'roles'
+  const [sortBy, setSortBy] = useState('Most Popular')
   const [page, setPage] = useState(1)
   const [selectedJob, setSelectedJob] = useState(null)
   const [savedJobs, setSavedJobs] = useState(new Set())
@@ -234,18 +235,18 @@ export default function FindJobsPage() {
         <div className="mx-auto max-w-[1400px] px-4 py-3 lg:px-8">
           {/* Mobile: search + filter toggle */}
           <div className="flex items-center gap-2 lg:hidden">
-            <div className="flex flex-1 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5">
-              <Search className="h-4 w-4 shrink-0 text-black/40" />
+            <div className="flex flex-1 items-center gap-2 border border-gray-300 bg-white px-3 py-2.5">
+              <Search className="h-4 w-4 shrink-0 text-black/60" />
               <input
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 placeholder="Search jobs..."
-                className="w-full bg-transparent text-sm focus:outline-none"
+                className="w-full bg-transparent text-sm font-bold focus:outline-none"
               />
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex shrink-0 items-center justify-center rounded-lg bg-gray-100 px-3 py-2.5"
+              className="flex shrink-0 items-center justify-center border border-gray-300 bg-white px-3 py-2.5"
             >
               <SlidersHorizontal className="h-4 w-4 text-black/60" />
             </button>
@@ -258,10 +259,10 @@ export default function FindJobsPage() {
             <FilterDropdown label="Gender" options={filterOptions.gender} value={filters.gender} onChange={(v) => { setFilters({ ...filters, gender: v }) }} />
             <FilterDropdown label="Age" options={filterOptions.age} value={filters.age} onChange={(v) => { setFilters({ ...filters, age: v }) }} />
             <div className="flex-1" />
-            <button onClick={() => setPage(1)} className="flex items-center gap-2 rounded-lg bg-[#4f46e5] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]">
+            <button onClick={() => setPage(1)} className="flex items-center gap-2 bg-[#4f46e5] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#4338CA]">
               <Search className="h-4 w-4" /> Search
             </button>
-            <button onClick={handleSaveSearch} className="flex items-center gap-2 rounded-lg border border-[#00D09C] bg-white px-4 py-2.5 text-sm font-semibold text-[#00a37e] hover:bg-[#00D09C]/10">
+            <button onClick={handleSaveSearch} className="flex items-center gap-2 border border-[#00D09C] bg-white px-4 py-2.5 text-sm font-bold text-[#00a37e] hover:bg-[#00D09C]/10">
               <Heart className="h-4 w-4" /> Save Search
             </button>
           </div>
@@ -273,7 +274,7 @@ export default function FindJobsPage() {
               <FilterDropdown label="Job Type" options={filterOptions.jobType} value={filters.jobType} onChange={(v) => { setFilters({ ...filters, jobType: v }); setPage(1); }} />
               <FilterDropdown label="Gender" options={filterOptions.gender} value={filters.gender} onChange={(v) => { setFilters({ ...filters, gender: v }) }} />
               <FilterDropdown label="Age" options={filterOptions.age} value={filters.age} onChange={(v) => { setFilters({ ...filters, age: v }) }} />
-              <button onClick={handleSaveSearch} className="flex items-center gap-2 rounded-lg border border-[#00D09C] bg-white px-4 py-2.5 text-sm font-semibold text-[#00a37e]">
+              <button onClick={handleSaveSearch} className="flex items-center gap-2 border border-[#00D09C] bg-white px-4 py-2.5 text-sm font-bold text-[#00a37e]">
                 <Heart className="h-4 w-4" /> Save
               </button>
             </div>
@@ -286,33 +287,42 @@ export default function FindJobsPage() {
         {/* Header + toggle */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-base font-bold text-black md:text-lg">
-            Showing {viewFiltered.length} jobs near <span className="underline">{filters.location || 'All Locations'}</span>
+            Showing {filtered.length} jobs with {allJobs.filter(j => j.is_production).length} productions near <span className="underline">{filters.location || 'All Locations'}</span>
           </h1>
-          {/* Productions/Roles toggle */}
-          <div className="inline-flex items-center rounded-full bg-[#4f46e5]/10 p-1">
-            <button
-              onClick={() => setView('productions')}
-              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors sm:px-5 sm:text-sm ${view === 'productions' ? 'bg-[#4f46e5] text-white' : 'text-[#4f46e5]'}`}
-            >
-              Productions
-            </button>
-            <button
-              onClick={() => setView('roles')}
-              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors sm:px-5 sm:text-sm ${view === 'roles' ? 'bg-[#4f46e5] text-white' : 'text-[#4f46e5]'}`}
-            >
-              Roles
-            </button>
+          <div className="flex items-center gap-3">
+            {/* Productions/Roles toggle */}
+            <div className="inline-flex items-center border border-gray-300 bg-white">
+              <button
+                onClick={() => setView('productions')}
+                className={`px-4 py-1.5 text-xs font-bold transition-colors sm:px-5 sm:text-sm ${view === 'productions' ? 'bg-[#4f46e5] text-white' : 'text-black hover:bg-gray-50'}`}
+              >
+                Productions
+              </button>
+              <button
+                onClick={() => setView('roles')}
+                className={`px-4 py-1.5 text-xs font-bold transition-colors sm:px-5 sm:text-sm ${view === 'roles' ? 'bg-[#4f46e5] text-white' : 'text-black hover:bg-gray-50'}`}
+              >
+                Roles
+              </button>
+            </div>
+            {/* Sort By dropdown */}
+            <div className="relative">
+              <button className="flex items-center gap-2 border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-black sm:text-sm">
+                Sort by: {sortBy}
+                <ChevronDown className="h-3 w-3" />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Desktop search input */}
-        <div className="mt-4 hidden items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 lg:flex">
-          <Search className="h-4 w-4 text-black/40" />
+        <div className="mt-4 hidden items-center gap-2 border border-gray-300 bg-white px-4 py-2.5 lg:flex">
+          <Search className="h-4 w-4 text-black/60" />
           <input
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search jobs by title or keyword..."
-            className="w-full bg-transparent text-sm focus:outline-none"
+            className="w-full bg-transparent text-sm font-bold focus:outline-none"
           />
         </div>
 
