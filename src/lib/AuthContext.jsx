@@ -311,6 +311,14 @@ export const AuthProvider = ({ children }) => {
         setUser(u)
         setIsAuthenticated(true)
         await trackUserSession(u)
+        await ensureProfile(u)
+
+        // Handle OAuth redirect after sign in
+        const oauthRedirect = sessionStorage.getItem('oauth_redirect')
+        if (oauthRedirect) {
+          sessionStorage.removeItem('oauth_redirect')
+          window.location.href = oauthRedirect
+        }
       } else if (event === 'SIGNED_OUT') {
         setUser(null)
         setIsAuthenticated(false)

@@ -119,18 +119,46 @@ export default function SignIn() {
         })
       }
     }
-  }, [searchParams])
+
+    // Handle OAuth callback redirect
+    const oauthRedirect = sessionStorage.getItem('oauth_redirect')
+    if (oauthRedirect && isAuthenticated) {
+      sessionStorage.removeItem('oauth_redirect')
+      navigate(oauthRedirect)
+    }
+  }, [searchParams, isAuthenticated, navigate])
 
   const effectiveMode = modeOverride || 'login'
 
   const handleGoogleLogin = () => {
     setError('')
-    supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })
+    // Store current redirect intent
+    const redirectPath = pendingApplication ? '/artistdashboard' : returnTo || '/'
+    sessionStorage.setItem('oauth_redirect', redirectPath)
+    supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/SignIn`,
+        queryParams: {
+          redirect_to: redirectPath
+        }
+      }
+    })
   }
 
   const handleAppleLogin = () => {
     setError('')
-    supabase.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: window.location.origin } })
+    const redirectPath = pendingApplication ? '/artistdashboard' : returnTo || '/'
+    sessionStorage.setItem('oauth_redirect', redirectPath)
+    supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: {
+        redirectTo: `${window.location.origin}/SignIn`,
+        queryParams: {
+          redirect_to: redirectPath
+        }
+      }
+    })
   }
 
   const quickDemoLogin = async (demoEmail) => {
