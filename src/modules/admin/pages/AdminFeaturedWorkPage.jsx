@@ -31,7 +31,7 @@ export default function AdminFeaturedWorkPage() {
       setWorks(worksData || [])
       setArtists(artistsData || [])
     } catch (err) {
-      
+      console.error('Error fetching featured works data:', err)
       setWorks([])
       setArtists([])
     } finally {
@@ -46,7 +46,7 @@ export default function AdminFeaturedWorkPage() {
       const allArtists = await Artist.list('-created_at', 100)
       return allArtists.filter(artist => artistEmails.includes(artist.email))
     } catch (err) {
-      
+      console.error('Error fetching active subscription artists:', err)
       return []
     }
   }
@@ -64,7 +64,7 @@ export default function AdminFeaturedWorkPage() {
       })
       setArtistPortfolioClips(clips || [])
     } catch (err) {
-      
+      console.error('Error fetching artist portfolio clips:', err)
       setArtistPortfolioClips([])
     } finally {
       setLoadingClips(false)
@@ -157,7 +157,7 @@ export default function AdminFeaturedWorkPage() {
       setSelectedProjects([])
       fetchData()
     } catch (err) {
-      
+
       toastError('Save Failed', `Failed to save: ${err.message || 'Unknown error'}`)
     }
   }
@@ -209,8 +209,8 @@ export default function AdminFeaturedWorkPage() {
               )}
               <div className="absolute top-2 right-2 flex gap-1">
                 <span className={`px-2 py-1 rounded text-xs font-medium ${work.featured_type === 'paid' ? 'bg-green-500 text-white' :
-                    work.featured_type === 'subscription' ? 'bg-blue-500 text-white' :
-                      'bg-purple-500 text-white'
+                  work.featured_type === 'subscription' ? 'bg-blue-500 text-white' :
+                    'bg-purple-500 text-white'
                   }`}>
                   {work.featured_type}
                 </span>
@@ -322,8 +322,8 @@ export default function AdminFeaturedWorkPage() {
                                 }
                               }}
                               className={`cursor-pointer border-2 rounded-lg p-3 transition-all relative ${selectedProjects.some(p => p.id === clip.id)
-                                  ? 'border-black bg-gray-50'
-                                  : 'border-gray-200 hover:border-gray-300'
+                                ? 'border-black bg-gray-50'
+                                : 'border-gray-200 hover:border-gray-300'
                                 }`}
                             >
                               {selectedProjects.some(p => p.id === clip.id) && (

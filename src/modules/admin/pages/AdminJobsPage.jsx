@@ -45,8 +45,8 @@ export default function AdminJobsPage() {
       const rows = await Job.list('-posted_at')
       setJobs(rows || [])
     } catch (err) {
-
-      error('Error', 'Failed to fetch jobs')
+      console.error('Error fetching jobs:', err)
+      setJobs([])
     } finally {
       setLoading(false)
     }
@@ -64,7 +64,7 @@ export default function AdminJobsPage() {
         console.error('Failed to create audit log:', err)
       })
     } catch (err) {
-
+      console.error('Error deleting job:', err)
       error('Failed', 'Failed to delete job')
     }
   }
@@ -88,7 +88,7 @@ export default function AdminJobsPage() {
         console.error('Failed to create audit log:', err)
       })
     } catch (err) {
-
+      console.error('Error updating job status:', err)
       error('Failed', 'Failed to update job status')
     }
   }
@@ -128,7 +128,7 @@ export default function AdminJobsPage() {
         console.error('Failed to create audit log:', err)
       })
     } catch (err) {
-
+      console.error('Error creating job:', err)
       error('Failed', 'Failed to create job')
     }
   }
@@ -142,7 +142,7 @@ export default function AdminJobsPage() {
         console.error('Failed to create audit log:', err)
       })
     } catch (err) {
-
+      console.error('Error updating pro requirement:', err)
       error('Failed', 'Failed to update pro requirement')
     }
   }

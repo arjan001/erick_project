@@ -43,8 +43,8 @@ export default function AdminProjectsPage() {
       const rows = await Project.list('-created_date')
       setProjects(rows || [])
     } catch (err) {
-
-      error('Error', 'Failed to fetch projects')
+      console.error('Error fetching projects:', err)
+      setProjects([])
     } finally {
       setLoading(false)
     }
@@ -62,7 +62,7 @@ export default function AdminProjectsPage() {
         console.error('Failed to create audit log:', err)
       })
     } catch (err) {
-
+      console.error('Error deleting project:', err)
       error('Failed', 'Failed to delete project')
     }
   }
@@ -96,7 +96,7 @@ export default function AdminProjectsPage() {
         console.error('Failed to create audit log:', err)
       })
     } catch (err) {
-
+      console.error('Error creating project:', err)
       error('Failed', 'Failed to create project')
     }
   }
@@ -111,7 +111,7 @@ export default function AdminProjectsPage() {
         console.error('Failed to create audit log:', err)
       })
     } catch (err) {
-
+      console.error('Error updating project status:', err)
       error('Failed', 'Failed to update project status')
     }
   }
@@ -149,7 +149,7 @@ export default function AdminProjectsPage() {
         console.error('Failed to create audit log:', err)
       })
     } catch (err) {
-
+      console.error('Error toggling featured status:', err)
       error('Failed', 'Failed to update featured status')
     }
   }

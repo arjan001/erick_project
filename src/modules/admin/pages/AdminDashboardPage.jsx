@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { adminApi } from '../api/admin.api'
 import { Users, FolderKanban, Clock, CheckCircle, TrendingUp, TrendingDown, Activity, Briefcase, DollarSign, Star, MessageCircle, Building2 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
-import { Project, Job, Subscription, Artist, Client } from '@/lib/supabaseEntities'
+import { Project, Job, Subscription, Artist, Client, Team, Backer } from '@/lib/supabaseEntities'
 
 const COLORS = ['#1a1a1a', '#6b7280', '#d1d5db', '#374151']
 
@@ -36,7 +35,14 @@ export default function AdminDashboardPage() {
         setBackers(b || [])
         setSubscriptions(s || [])
       } catch (err) {
-
+        console.error('Error fetching dashboard data:', err)
+        setProjects([])
+        setJobs([])
+        setArtists([])
+        setTeams([])
+        setClients([])
+        setBackers([])
+        setSubscriptions([])
       } finally {
         setLoading(false)
       }
