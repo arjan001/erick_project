@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { X, MapPin, Clock, DollarSign, Share2, Heart, Building2, BadgeCheck, Briefcase, ChevronDown, ChevronUp, Crown, ExternalLink, Play, Youtube, Video } from 'lucide-react'
+import { X, MapPin, Clock, DollarSign, Share2, Heart, Building2, BadgeCheck, Briefcase, ChevronDown, ChevronUp, ChevronRight, Crown, ExternalLink, Play, Youtube, Video, Calendar, Users } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { canApplyForJobs, canContactJobPoster } from '@/services/subscriptionService'
 
-export default function GigDetailSlideOut({ job, onClose }) {
+export default function GigDetailSlideOut({ job, onClose, onApply }) {
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
-  const [expandedRoles, setExpandedRoles] = useState(false)
+  const [expandedRoles, setExpandedRoles] = useState(new Set())
   const [requiresSubscription, setRequiresSubscription] = useState(false)
   const [showVideo, setShowVideo] = useState(false)
 
@@ -57,8 +57,10 @@ export default function GigDetailSlideOut({ job, onClose }) {
       return
     }
 
-    // Handle application logic here
-    
+    // Call parent onApply with role info
+    if (onApply) {
+      onApply(job, role)
+    }
   }
 
   const handleContactPoster = async () => {
@@ -75,11 +77,17 @@ export default function GigDetailSlideOut({ job, onClose }) {
     }
 
     // Handle contact logic here
-    
+
   }
 
-  const toggleRoles = () => {
-    setExpandedRoles(!expandedRoles)
+  const toggleRole = (roleId) => {
+    const newExpanded = new Set(expandedRoles)
+    if (newExpanded.has(roleId)) {
+      newExpanded.delete(roleId)
+    } else {
+      newExpanded.add(roleId)
+    }
+    setExpandedRoles(newExpanded)
   }
 
   return (
@@ -209,43 +217,82 @@ export default function GigDetailSlideOut({ job, onClose }) {
           {/* Roles */}
           {job.roles && job.roles.length > 0 && (
             <div className="mt-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold uppercase tracking-wide text-black/50">
-                  Available Roles ({job.roles.length})
-                </h3>
-                {job.roles.length > 3 && (
-                  <button
-                    onClick={toggleRoles}
-                    className="flex items-center gap-1 text-xs font-semibold text-[#8B5CF6] hover:text-[#7C3AED]"
-                  >
-                    {expandedRoles ? (
-                      <>
-                        <ChevronUp className="h-4 w-4" />
-                        Show Less
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="h-4 w-4" />
-                        Show All
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
+              <h3 className="text-sm font-bold uppercase tracking-wide text-black/50">
+                Roles on this Project ({job.roles.length})
+              </h3>
               <div className="mt-3 space-y-3">
-                {(expandedRoles ? job.roles : job.roles.slice(0, 3)).map((r, i) => (
-                  <div key={i} className="flex items-center justify-between rounded-xl border border-gray-200 p-4 hover:border-[#8B5CF6]/30 transition-colors">
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-black">{r.title}</p>
-                      {r.pay && <p className="mt-0.5 text-xs text-black/50">{r.pay}</p>}
-                      {r.details && <p className="mt-0.5 text-xs text-black/40">{r.details}</p>}
+                {job.roles.map((r, i) => (
+                  <div key={i} className="rounded-xl border border-gray-200 overflow-hidden">
+                    {/* Role header - always visible */}
+                    <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-black">{r.title}</p>
+                        <div className="mt-1 flex flex-wrap gap-2 text-xs text-black/50">
+                          {r.compensation && <span>{r.compensation}</span>}
+                          {r.gender && <span>• {r.gender}</span>}
+                          {r.age && <span>• {r.age}</span>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => toggleRole(i)}
+                          className="rounded-full p-1.5 hover:bg-gray-100"
+                        >
+                          {expandedRoles.has(i) ? (
+                            <ChevronUp className="h-4 w-4 text-black/60" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-black/60" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleApply(r)}
+                          className="shrink-0 rounded-full bg-[#4f46e5] px-4 py-2 text-xs font-semibold text-white hover:bg-[#4338CA]"
+                        >
+                          Apply
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => handleApply(r)}
-                      className="ml-4 shrink-0 rounded-full bg-[#8B5CF6] px-5 py-2 text-xs font-semibold text-white hover:bg-[#7C3AED]"
-                    >
-                      Apply
-                    </button>
+
+                    {/* Expanded role details */}
+                    {expandedRoles.has(i) && (
+                      <div className="border-t border-gray-200 bg-gray-50 p-4">
+                        {r.description && (
+                          <p className="text-sm text-black/70 mb-3">{r.description}</p>
+                        )}
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                          {r.gender_requirement && (
+                            <div>
+                              <span className="font-medium text-black/50">Gender:</span>{' '}
+                              <span className="text-black">{r.gender_requirement}</span>
+                            </div>
+                          )}
+                          {r.age_min && r.age_max && (
+                            <div>
+                              <span className="font-medium text-black/50">Age:</span>{' '}
+                              <span className="text-black">{r.age_min}-{r.age_max}</span>
+                            </div>
+                          )}
+                          {r.ethnicity_requirement && (
+                            <div>
+                              <span className="font-medium text-black/50">Ethnicity:</span>{' '}
+                              <span className="text-black">{r.ethnicity_requirement}</span>
+                            </div>
+                          )}
+                          {r.union_requirement && (
+                            <div>
+                              <span className="font-medium text-black/50">Union:</span>{' '}
+                              <span className="text-black">{r.union_requirement}</span>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleApply(r)}
+                          className="mt-3 w-full rounded-full bg-[#4f46e5] py-2 text-xs font-semibold text-white hover:bg-[#4338CA]"
+                        >
+                          Apply to {r.title}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -307,13 +354,26 @@ export default function GigDetailSlideOut({ job, onClose }) {
 
         {/* Footer CTA — sticky at bottom */}
         <div className="sticky bottom-0 border-t border-gray-100 bg-white px-5 py-4 md:px-6">
-          <button
-            onClick={() => handleApply({ title: job.title })}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-[#8B5CF6] py-3 text-sm font-semibold text-white hover:bg-[#7C3AED]"
-          >
-            <Briefcase className="h-4 w-4" />
-            Apply to This Production
-          </button>
+          {job.is_production && job.roles && job.roles.length > 0 ? (
+            <div className="space-y-3">
+              <p className="text-center text-xs text-black/50">Select a role above to apply, or apply to the production</p>
+              <button
+                onClick={() => handleApply({ title: job.title })}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-[#4f46e5] py-3 text-sm font-semibold text-white hover:bg-[#4338CA]"
+              >
+                <Briefcase className="h-4 w-4" />
+                Apply to This Production
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => handleApply({ title: job.title })}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-[#4f46e5] py-3 text-sm font-semibold text-white hover:bg-[#4338CA]"
+            >
+              <Briefcase className="h-4 w-4" />
+              Apply Now
+            </button>
+          )}
         </div>
       </div>
     </>
