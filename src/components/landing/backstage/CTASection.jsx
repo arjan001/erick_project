@@ -1,10 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { motion } from 'framer-motion'
-import RoleToggle from './RoleToggle'
 
 export default function CTASection() {
-  const [role, setRole] = useState('talent')
-
   return (
     <section className="bg-[#F5F3EF] pb-20">
       <div className="mx-auto max-w-[1400px] px-4 lg:px-8">
@@ -15,11 +12,7 @@ export default function CTASection() {
           transition={{ duration: 0.6 }}
           className="overflow-hidden rounded-3xl bg-[#5353FF] px-6 py-16 text-center md:px-12"
         >
-          <div className="flex justify-center">
-            <RoleToggle active={role} onChange={setRole} dark />
-          </div>
-
-          <h2 className="mt-8 font-serif text-3xl font-bold text-white md:text-5xl">
+          <h2 className="font-serif text-3xl font-bold text-white md:text-5xl">
             Join SmartGigs Kenya today and kickstart your film career!
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base text-white/80">

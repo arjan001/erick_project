@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
-import RoleToggle from './RoleToggle'
 
 const stats = [
   { value: '65+', label: 'YEARS OF INDUSTRY TRUST' },
@@ -20,8 +18,6 @@ const rotatingRoles = [
 ]
 
 export default function Hero() {
-  const navigate = useNavigate()
-  const [role, setRole] = useState('talent')
   const [roleIdx, setRoleIdx] = useState(0)
   const { scrollY } = useScroll()
   const y = useTransform(scrollY, [0, 500], [0, 80])

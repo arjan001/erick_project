@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import RoleToggle from './RoleToggle'
 
 const cards = [
   { title: "Rufus Sewell on 'The Diplomat,' Delivering...", img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop' },
@@ -11,7 +10,6 @@ const cards = [
 ]
 
 export default function InspiringPerformers() {
-  const [role, setRole] = useState('talent')
   const [scrollIdx, setScrollIdx] = useState(0)
 
   const scroll = (dir) => {
@@ -24,10 +22,6 @@ export default function InspiringPerformers() {
   return (
     <section className="bg-[#F5F3EF] py-16 md:py-24">
       <div className="mx-auto max-w-[1400px] px-4 lg:px-8">
-        <div className="flex justify-center">
-          <RoleToggle active={role} onChange={setRole} />
-        </div>
-
         <div className="mt-8 text-center">
           <p className="text-sm font-medium text-black/70">Fuel your ambition. Sharpen your skills.</p>
           <h2 className="mt-2 font-serif text-3xl font-bold text-black md:text-5xl">
