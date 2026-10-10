@@ -18,6 +18,8 @@ export default function BrowseTalentPage() {
   const [filterLocation, setFilterLocation] = useState('all')
   const [savedArtistIds, setSavedArtistIds] = useState(new Set())
   const [showFilters, setShowFilters] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(12)
 
   useEffect(() => {
     fetchTalent()
@@ -27,7 +29,7 @@ export default function BrowseTalentPage() {
   const fetchTalent = async () => {
     try {
       setLoading(true)
-      const artists = await Artist.list('-created_at', 100)
+      const artists = await Artist.list('-created_at', 1000) // Fetch all, paginate in UI
       setTalent(artists || [])
     } catch (err) {
       console.error('Error fetching talent:', err)
@@ -116,6 +118,13 @@ export default function BrowseTalentPage() {
     return matchesSearch && matchesRole && matchesLocation
   })
 
+  // Pagination
+  const totalPages = Math.ceil(filteredTalent.length / itemsPerPage)
+  const paginatedTalent = filteredTalent.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
   const uniqueRoles = [...new Set(talent.map(a => a.role).filter(Boolean))]
   const uniqueLocations = [...new Set([
     ...talent.map(a => a.based_in_city).filter(Boolean),
@@ -199,7 +208,7 @@ export default function BrowseTalentPage() {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredTalent.map((artist) => (
+            {paginatedTalent.map((artist) => (
               <div key={artist.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
                 <div className="flex items-start gap-4 mb-3">
                   <div
@@ -273,6 +282,32 @@ export default function BrowseTalentPage() {
               </div>
             ))}
           </div>
+
+      {/* Pagination */}
+        {
+          totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )
         )}
       </div>
     </div>
