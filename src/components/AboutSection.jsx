@@ -96,6 +96,18 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
   const [showCountrySuggestions, setShowCountrySuggestions] = useState(false)
   const [editingCountries, setEditingCountries] = useState(false)
 
+  // Physical appearance fields
+  const [ethnicity, setEthnicity] = useState(artist?.ethnicity || '')
+  const [height, setHeight] = useState(artist?.height_cms || '')
+  const [weight, setWeight] = useState(artist?.weight_kg || '')
+  const [eyeColor, setEyeColor] = useState(artist?.eye_color || '')
+  const [hairColor, setHairColor] = useState(artist?.hair_color || '')
+  const [skinTone, setSkinTone] = useState(artist?.skin_tone || '')
+  const [build, setBuild] = useState(artist?.build || '')
+  const [ageRange, setAgeRange] = useState(artist?.age_range || '')
+  const [dateOfBirth, setDateOfBirth] = useState(artist?.date_of_birth || '')
+  const [editingAppearance, setEditingAppearance] = useState(false)
+
 
   const groupedEndorsements = endorsements.reduce((acc, e) => {
     if (!acc[e.skill]) acc[e.skill] = []
@@ -673,6 +685,200 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
                   {c}
                 </span>
               )) : <p className="text-gray-600 text-sm">No countries added yet</p>}
+            </div>
+          )}
+        </div>
+
+        {/* Physical Appearance */}
+        <div className="bg-gradient-to-br from-rose-50 to-rose-100 rounded-2xl p-6 border border-rose-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <UsersIcon className="w-5 h-5 text-rose-700" />
+              Physical Appearance
+            </h3>
+            {!editingAppearance && (
+              <button
+                onClick={() => setEditingAppearance(true)}
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
+              >
+                <Edit2 className="w-3 h-3" />
+                Edit
+              </button>
+            )}
+          </div>
+
+          {editingAppearance ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Ethnicity</label>
+                  <select
+                    value={ethnicity}
+                    onChange={(e) => setEthnicity(e.target.value)}
+                    className="w-full px-3 py-2 border border-rose-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  >
+                    <option value="">Select</option>
+                    <option value="African">African</option>
+                    <option value="Caucasian">Caucasian</option>
+                    <option value="Asian">Asian</option>
+                    <option value="Hispanic/Latino">Hispanic/Latino</option>
+                    <option value="Middle Eastern">Middle Eastern</option>
+                    <option value="Indian">Indian</option>
+                    <option value="Mixed">Mixed</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Height (cm)</label>
+                  <input
+                    type="number"
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                    placeholder="170"
+                    className="w-full px-3 py-2 border border-rose-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Weight (kg)</label>
+                  <input
+                    type="number"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    placeholder="70"
+                    className="w-full px-3 py-2 border border-rose-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Eye Color</label>
+                  <select
+                    value={eyeColor}
+                    onChange={(e) => setEyeColor(e.target.value)}
+                    className="w-full px-3 py-2 border border-rose-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  >
+                    <option value="">Select</option>
+                    <option value="Brown">Brown</option>
+                    <option value="Blue">Blue</option>
+                    <option value="Green">Green</option>
+                    <option value="Hazel">Hazel</option>
+                    <option value="Gray">Gray</option>
+                    <option value="Amber">Amber</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Hair Color</label>
+                  <select
+                    value={hairColor}
+                    onChange={(e) => setHairColor(e.target.value)}
+                    className="w-full px-3 py-2 border border-rose-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  >
+                    <option value="">Select</option>
+                    <option value="Black">Black</option>
+                    <option value="Brown">Brown</option>
+                    <option value="Blonde">Blonde</option>
+                    <option value="Red">Red</option>
+                    <option value="Gray">Gray</option>
+                    <option value="White">White</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Skin Tone</label>
+                  <select
+                    value={skinTone}
+                    onChange={(e) => setSkinTone(e.target.value)}
+                    className="w-full px-3 py-2 border border-rose-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  >
+                    <option value="">Select</option>
+                    <option value="Fair">Fair</option>
+                    <option value="Light">Light</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Olive">Olive</option>
+                    <option value="Dark">Dark</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Build</label>
+                  <select
+                    value={build}
+                    onChange={(e) => setBuild(e.target.value)}
+                    className="w-full px-3 py-2 border border-rose-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  >
+                    <option value="">Select</option>
+                    <option value="Slim">Slim</option>
+                    <option value="Athletic">Athletic</option>
+                    <option value="Average">Average</option>
+                    <option value="Muscular">Muscular</option>
+                    <option value="Heavy">Heavy</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Age Range</label>
+                  <select
+                    value={ageRange}
+                    onChange={(e) => setAgeRange(e.target.value)}
+                    className="w-full px-3 py-2 border border-rose-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  >
+                    <option value="">Select</option>
+                    <option value="18-25">18-25</option>
+                    <option value="25-35">25-35</option>
+                    <option value="35-45">35-45</option>
+                    <option value="45-55">45-55</option>
+                    <option value="55+">55+</option>
+                  </select>
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Date of Birth</label>
+                  <input
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    className="w-full px-3 py-2 border border-rose-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={async () => {
+                  if (artist) {
+                    const updated = await Artist.update(artist.id, {
+                      ethnicity,
+                      height_cms: height ? parseInt(height) : null,
+                      weight_kg: weight ? parseInt(weight) : null,
+                      eye_color: eyeColor,
+                      hair_color: hairColor,
+                      skin_tone: skinTone,
+                      build,
+                      age_range: ageRange,
+                      date_of_birth: dateOfBirth || null
+                    })
+                    if (onUpdate) onUpdate(updated)
+                  }
+                  setEditingAppearance(false)
+                }}
+                className="w-full bg-rose-600 text-white hover:bg-rose-700"
+              >
+                <Check className="w-4 h-4 mr-1" />
+                Done
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2 text-sm">
+              <div className="grid grid-cols-2 gap-2">
+                {ethnicity && <div><span className="text-gray-600">Ethnicity:</span> <span className="font-medium">{ethnicity}</span></div>}
+                {height && <div><span className="text-gray-600">Height:</span> <span className="font-medium">{height} cm</span></div>}
+                {weight && <div><span className="text-gray-600">Weight:</span> <span className="font-medium">{weight} kg</span></div>}
+                {eyeColor && <div><span className="text-gray-600">Eye Color:</span> <span className="font-medium">{eyeColor}</span></div>}
+                {hairColor && <div><span className="text-gray-600">Hair Color:</span> <span className="font-medium">{hairColor}</span></div>}
+                {skinTone && <div><span className="text-gray-600">Skin Tone:</span> <span className="font-medium">{skinTone}</span></div>}
+                {build && <div><span className="text-gray-600">Build:</span> <span className="font-medium">{build}</span></div>}
+                {ageRange && <div><span className="text-gray-600">Age Range:</span> <span className="font-medium">{ageRange}</span></div>}
+                {dateOfBirth && <div className="col-span-2"><span className="text-gray-600">Date of Birth:</span> <span className="font-medium">{dateOfBirth}</span></div>}
+              </div>
+              {!ethnicity && !height && !weight && !eyeColor && !hairColor && !skinTone && !build && !ageRange && !dateOfBirth && (
+                <p className="text-gray-600 text-sm">No appearance details added yet. Click Edit to get started.</p>
+              )}
             </div>
           )}
         </div>
