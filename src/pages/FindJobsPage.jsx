@@ -158,7 +158,17 @@ export default function FindJobsPage() {
 
     const fetchJobs = async () => {
       try {
-        // Fetch jobs and their roles
+        // For now, use dummy data until job_roles table is properly set up
+        // The SQL migration needs to be run first
+        console.log('Using dummy data - run SQL migration to enable real data')
+        if (!cancelled) {
+          setAllJobs(dummyJobs)
+          setLoading(false)
+        }
+        return
+
+        // This code will work after running the SQL migration:
+        /*
         const { data: jobs, error } = await supabase
           .from('jobs')
           .select(`
@@ -173,12 +183,10 @@ export default function FindJobsPage() {
         if (error) throw error
 
         if (cancelled || !jobs) {
-          // Fall back to dummy data if no jobs or error
           if (!cancelled) setAllJobs(dummyJobs)
           return
         }
 
-        // Map jobs to the expected format
         const mapped = jobs.map((j) => ({
           id: j.id,
           title: j.title || 'Untitled Job',
@@ -208,9 +216,9 @@ export default function FindJobsPage() {
         }))
 
         if (!cancelled) setAllJobs(mapped)
+        */
       } catch (err) {
         console.error('Error fetching jobs:', err)
-        // Fall back to dummy data on error
         if (!cancelled) setAllJobs(dummyJobs)
       } finally {
         if (!cancelled) setLoading(false)
