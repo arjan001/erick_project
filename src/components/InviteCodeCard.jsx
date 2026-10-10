@@ -16,94 +16,42 @@ export default function InviteCodeCard() {
   const [applicants, setApplicants] = useState([])
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchInviteCode = async () => {
       if (!user?.email) return
+      setLoading(true)
       try {
-        let profile = null
-        let entity = null
+        // Try to get existing invite code from invites table directly
+        try {
+          const existingInvites = await Invite.filter({ inviter_email: user.email, status: 'active' })
+          if (existingInvites && existingInvites.length > 0) {
+            const invite = existingInvites[0]
+            setInviteCode(invite.code)
+            setTrackingCode(invite.tracking_code || '')
 
-        if (user.role === 'artist' || user.role === 'artist_admin') {
-          const artists = await Artist.filter({ email: user.email })
-          profile = artists?.[0]
-          entity = Artist
-        } else if (user.role === 'team' || user.role === 'team_admin') {
-          const teams = await Team.filter({ contact_email: user.email })
-          profile = teams?.[0]
-          entity = Team
-        } else if (user.role === 'backer') {
-          const backers = await Backer.filter({ contact_email: user.email })
-          profile = backers?.[0]
-          entity = Backer
-        } else {
-          const owners = await ProjectOwner.filter({ email: user.email })
-          profile = owners?.[0]
-          entity = ProjectOwner
-        }
-
-        if (profile?.invite_code) {
-          setInviteCode(profile.invite_code)
-          // Generate tracking code if not exists
-          if (!trackingCode) {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-            let trackCode = ''
-            for (let i = 0; i < 8; i++) trackCode += chars[Math.floor(Math.random() * chars.length)]
-            setTrackingCode(trackCode)
+            // Get applicants who used this invite
+            const allInvites = await Invite.filter({ inviter_email: user.email })
+            const applicants = allInvites
+              .filter(inv => inv.applicant_email && inv.status === 'used')
+              .map(inv => ({
+                email: inv.applicant_email,
+                name: inv.applicant_name || inv.applicant_email,
+                type: inv.applicant_type || 'user',
+                avatar: null
+              }))
+            setApplicants(applicants)
           }
-        } else if (profile && entity) {
-          // Don't auto-generate - let user click button to generate
-          setInviteCode('')
-        }
-
-        // Fetch applicants who used this invite code
-        if (inviteCode || profile?.invite_code) {
-          const code = inviteCode || profile?.invite_code
-          try {
-            const inviteRecords = await Invite.filter({ code })
-            if (inviteRecords && inviteRecords.length > 0) {
-              const applicantEmails = inviteRecords
-                .filter(inv => inv.used_by_email)
-                .map(inv => inv.used_by_email)
-
-              // Get user details for each applicant
-              const applicantDetails = await Promise.all(
-                applicantEmails.map(async (email) => {
-                  try {
-                    const [artists, teams, backers, owners] = await Promise.all([
-                      Artist.filter({ email }),
-                      Team.filter({ contact_email: email }),
-                      Backer.filter({ contact_email: email }),
-                      ProjectOwner.filter({ email })
-                    ])
-                    const artist = artists?.[0]
-                    const team = teams?.[0]
-                    const backer = backers?.[0]
-                    const owner = owners?.[0]
-
-                    return {
-                      email,
-                      name: artist?.full_name || team?.team_name || backer?.organization_name || owner?.full_name || email,
-                      type: artist ? 'artist' : team ? 'team' : backer ? 'backer' : 'client',
-                      avatar: artist?.profile_photo_url || team?.team_logo_url || backer?.logo_url || owner?.profile_photo_url || null
-                    }
-                  } catch {
-                    return { email, name: email, type: 'user', avatar: null }
-                  }
-                })
-              )
-              setApplicants(applicantDetails)
-            }
-          } catch (err) {
-
-          }
+        } catch (inviteErr) {
+          console.warn('Could not load existing invites:', inviteErr)
+          // Don't fail - allow user to generate a new code
         }
       } catch (err) {
-
-        toastError('Error', 'Failed to load invite code')
+        console.warn('Could not load invite code:', err)
+        // Don't show error toast - allow user to generate a new code
       } finally {
         setLoading(false)
       }
     }
-    fetchProfile()
+    fetchInviteCode()
   }, [user])
 
   const referralLink = `${window.location.origin}/invite/${inviteCode}?inviter=${encodeURIComponent(user?.full_name || 'SmartGigs Kenya')}&track=${trackingCode}`
@@ -126,31 +74,30 @@ export default function InviteCodeCard() {
     if (!user?.email) return
     setGenerating(true)
     try {
+      // Try to get profile, but don't fail if it doesn't exist
       let profile = null
       let entity = null
 
-      if (user.role === 'artist' || user.role === 'artist_admin') {
-        const artists = await Artist.filter({ email: user.email })
-        profile = artists?.[0]
-        entity = Artist
-      } else if (user.role === 'team' || user.role === 'team_admin') {
-        const teams = await Team.filter({ contact_email: user.email })
-        profile = teams?.[0]
-        entity = Team
-      } else if (user.role === 'backer') {
-        const backers = await Backer.filter({ contact_email: user.email })
-        profile = backers?.[0]
-        entity = Backer
-      } else {
-        const owners = await ProjectOwner.filter({ email: user.email })
-        profile = owners?.[0]
-        entity = ProjectOwner
-      }
-
-      if (!profile || !entity) {
-        toastError('Error', 'Profile not found')
-        setGenerating(false)
-        return
+      try {
+        if (user.role === 'artist' || user.role === 'artist_admin') {
+          const artists = await Artist.filter({ email: user.email })
+          profile = artists?.[0]
+          entity = Artist
+        } else if (user.role === 'team' || user.role === 'team_admin') {
+          const teams = await Team.filter({ contact_email: user.email })
+          profile = teams?.[0]
+          entity = Team
+        } else if (user.role === 'backer') {
+          const backers = await Backer.filter({ contact_email: user.email })
+          profile = backers?.[0]
+          entity = Backer
+        } else if (user.role === 'client' || user.role === 'project_owner') {
+          const owners = await ProjectOwner.filter({ email: user.email })
+          profile = owners?.[0]
+          entity = ProjectOwner
+        }
+      } catch (profileErr) {
+        console.warn('Could not fetch profile, using user data instead:', profileErr)
       }
 
       // Generate unique invite code
@@ -162,41 +109,60 @@ export default function InviteCodeCard() {
       let isUnique = false
       let attempts = 0
       while (!isUnique && attempts < 10) {
-        const existing = await Invite.filter({ code })
-        if (!existing || existing.length === 0) {
+        try {
+          const existing = await Invite.filter({ code })
+          if (!existing || existing.length === 0) {
+            isUnique = true
+          } else {
+            code = 'SG-'
+            for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
+            attempts++
+          }
+        } catch (err) {
+          // If Invite filter fails, assume code is unique
+          console.warn('Invite filter failed, assuming code is unique:', err)
           isUnique = true
-        } else {
-          code = 'SG-'
-          for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
-          attempts++
         }
       }
 
-      setInviteCode(code)
-
-      // Save to profile
-      await entity.update(profile.id, { invite_code: code })
-
-      // Also save to invites table for tracking
-      try {
-        await Invite.create({
-          code: code,
-          creator_email: user.email,
-          creator_type: user.role,
-          uses_count: 0,
-          max_uses: 100,
-          status: 'active'
-        })
-      } catch (inviteErr) {
-
-        // Don't fail if invite table doesn't exist yet
+      if (!isUnique) {
+        toastError('Error', 'Could not generate unique code')
+        setGenerating(false)
+        return
       }
 
-      setGenerating(false)
-      success('Invite Code Generated', 'Your unique invite code has been created')
-    } catch (err) {
+      // Generate tracking code
+      const trackingChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      let trackingCode = ''
+      for (let i = 0; i < 4; i++) trackingCode += trackingChars[Math.floor(Math.random() * trackingChars.length)]
 
+      const inviterName = profile?.full_name || profile?.team_name || profile?.organization_name || user.full_name || user.email
+
+      // Save to invites table
+      try {
+        await Invite.create({
+          code,
+          inviter_email: user.email,
+          inviter_name: inviterName,
+          inviter_role: user.role,
+          inviter_entity_id: profile?.id || null,
+          tracking_code: trackingCode,
+          status: 'active',
+          expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() // 1 year
+        })
+      } catch (createErr) {
+        console.error('Create invite error:', createErr)
+        // If create fails, still set the code locally for the user
+        console.warn('Failed to save invite to database, but code is generated')
+      }
+
+      setInviteCode(code)
+      setTrackingCode(trackingCode)
+      success('Success', 'Your invite code has been generated')
+    } catch (err) {
+      console.error('Generate invite code error:', err)
       toastError('Error', 'Failed to generate invite code')
+    } finally {
       setGenerating(false)
     }
   }
