@@ -42,8 +42,46 @@ export const FILM_ROLES_BY_CATEGORY = {
   ],
 }
 
+// Talent-only roles (actors, voiceover, UGC, lip sync - no production crew)
+export const TALENT_ROLES_BY_CATEGORY = {
+  'Acting': [
+    'Lead Actor', 'Supporting Actor', 'Background Actor', 'Extra',
+    'Character Actor', 'Method Actor', 'Commercial Actor', 'Voice Actor',
+    'Stage Actor', 'Screen Actor', 'Theater Actor',
+  ],
+  'Voiceover': [
+    'Commercial Voice Over', 'Animation Voice Over', 'ADR / Dubbing',
+    'Audio Book Narrator', 'E-Learning Narrator', 'Corporate Narrator',
+    'Documentary Narrator', 'Video Game Voice', 'Podcast Host',
+  ],
+  'UGC Content Creation': [
+    'UGC Creator', 'TikTok Creator', 'Instagram Reels Creator',
+    'YouTube Shorts Creator', 'Product Reviewer', 'Testimonial Creator',
+    'Unboxing Creator', 'Lifestyle Content Creator', 'Vlogger',
+  ],
+  'Lip Sync': [
+    'Lip Sync Artist', 'Dubbing Artist', 'Voice Match Artist',
+    'Language Dubber', 'Singing Dubber',
+  ],
+  'Modeling': [
+    'Fashion Model', 'Commercial Model', 'Print Model',
+    'Runway Model', 'Fit Model', 'Parts Model',
+  ],
+  'Dance & Movement': [
+    'Dancer', 'Choreographer', 'Background Dancer',
+    'Stunt Performer', 'Body Double',
+  ],
+  'Special Skills': [
+    'Martial Arts', 'Stunts', 'Firearms Safety', 'Driving License',
+    'Swimming', 'Sports', 'Horse Riding', 'Gymnastics',
+  ],
+}
+
 // Flat list of all roles for quick lookup / autocomplete
 export const ALL_FILM_ROLES = Object.values(FILM_ROLES_BY_CATEGORY).flat()
+
+// Flat list of talent-only roles for artist registration
+export const TALENT_ROLES = Object.values(TALENT_ROLES_BY_CATEGORY).flat()
 
 // Equipment categories
 export const EQUIPMENT_CATEGORIES = {

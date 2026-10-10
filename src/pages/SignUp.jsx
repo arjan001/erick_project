@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Artist, Team, Backer, ProjectOwner, Invite, Connection } from '@/lib/supabaseEntities'
 import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete'
-import { ALL_FILM_ROLES } from '@/lib/filmRoles'
+import { ALL_FILM_ROLES, TALENT_ROLES } from '@/lib/filmRoles'
 import skillsAndRoles from '@/lib/skillsAndRoles.json'
 import Logo from '@/components/landing/backstage/Logo'
 
@@ -596,10 +596,10 @@ export default function SignUp() {
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">Select Your Roles <span className="text-gray-500">(multi-select)</span></label>
                     <MultiSelectAutocomplete
-                      options={ALL_FILM_ROLES}
+                      options={TALENT_ROLES}
                       selected={formData.selectedRoles}
                       onChange={(selected) => setFormData({ ...formData, selectedRoles: selected })}
-                      placeholder="Search and select your roles..."
+                      placeholder="Search and select your roles (Acting, Voiceover, UGC, Lip Sync, etc.)..."
                       searchable={true}
                     />
                   </div>
