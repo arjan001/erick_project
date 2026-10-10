@@ -216,12 +216,41 @@ export default function SignIn() {
         }
         const redirectDest = sessionStorage.getItem('redirectAfterLogin')
         sessionStorage.removeItem('redirectAfterLogin')
-        window.location.href = redirectDest || ROLE_REDIRECTS[acc.role] || '/'
+        navigate(redirectDest || ROLE_REDIRECTS[acc.role] || '/')
         return
       }
 
+      // Determine if input is email or username
+      let loginEmail = email
+      const isEmail = email.includes('@')
+
+      // If not an email, try to find the email by username
+      if (!isEmail) {
+        try {
+          // Check creators table
+          const artists = await Artist.filter({ username: email })
+          if (artists && artists.length > 0) {
+            loginEmail = artists[0].email
+          } else {
+            // Check clients table
+            const clients = await ProjectOwner.filter({ username: email })
+            if (clients && clients.length > 0) {
+              loginEmail = clients[0].email
+            } else {
+              // Check teams table
+              const teams = await Team.filter({ username: email })
+              if (teams && teams.length > 0) {
+                loginEmail = teams[0].contact_email
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Error looking up username:', err)
+        }
+      }
+
       // Real Supabase email/password login
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmail, password })
       if (error) throw error
 
       const user = data.user
@@ -267,13 +296,13 @@ export default function SignIn() {
         const params = new URLSearchParams()
         if (pendingApplication.jobId) params.append('jobId', pendingApplication.jobId)
         if (pendingApplication.jobRoleId) params.append('roleId', pendingApplication.jobRoleId)
-        window.location.href = `/artistdashboard?${params.toString()}`
+        navigate(`/artistdashboard?${params.toString()}`)
         return
       }
 
       const redirectDest = sessionStorage.getItem('redirectAfterLogin')
       sessionStorage.removeItem('redirectAfterLogin')
-      window.location.href = returnTo || redirectDest || ROLE_REDIRECTS[userRole] || '/'
+      navigate(returnTo || redirectDest || ROLE_REDIRECTS[userRole] || '/')
     } catch (err) {
       setError(err.message || 'Invalid email or password')
     } finally {
@@ -555,17 +584,17 @@ export default function SignIn() {
               <form onSubmit={handleLogin} className="space-y-4">
                 {isEmployer && (
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-black/70">Email Address</label>
+                    <label className="mb-1.5 block text-xs font-medium text-black/70">Email or Username</label>
                   </div>
                 )}
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/30" />
                   <input
-                    type="email"
+                    type="text"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    placeholder="Email"
+                    placeholder="Email or username"
                     className="w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-4 text-sm focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10"
                   />
                 </div>

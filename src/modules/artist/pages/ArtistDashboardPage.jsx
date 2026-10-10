@@ -66,7 +66,7 @@ export default function ArtistDashboard() {
         const artist = artists?.[0] || null
         setArtistProfile(artist)
 
-        const alreadySeen = sessionStorage.getItem('ericrabar_onboarding_seen')
+        const alreadySeen = sessionStorage.getItem('smartgigs_onboarding_seen')
         const isIncomplete = artist && (!artist.based_in_country || artist.onboarding_completed === false)
         if (artist && isIncomplete && !alreadySeen) {
           setShowOnboarding(true)
