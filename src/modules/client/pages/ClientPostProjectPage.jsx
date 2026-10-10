@@ -104,7 +104,8 @@ export default function ClientPostProject() {
   const { success, error: toastError } = useToast()
   const { user: authUser, isAuthenticated } = useAuth()
   const [loading, setLoading] = useState(false)
-  const [imagePreview, setImagePreview] = useState(null)
+  const [projectImages, setProjectImages] = useState([])
+  const [uploadingImages, setUploadingImages] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [STEPS, setSTEPS] = useState(getStepsForProjectType(''))
   const [visualClips, setVisualClips] = useState([])
@@ -417,15 +418,23 @@ export default function ClientPostProject() {
   }
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+
     try {
-      const preview = URL.createObjectURL(file)
-      setImagePreview(preview)
+      const previews = files.map(file => ({
+        file,
+        preview: URL.createObjectURL(file)
+      }))
+      setProjectImages([...projectImages, ...previews])
     } catch (err) {
-      //
-      toastError('Upload Failed', 'Failed to upload image')
+      console.error('Error handling image upload:', err)
+      toastError('Upload Failed', 'Failed to handle image selection')
     }
+  }
+
+  const handleRemoveImage = (index) => {
+    setProjectImages(projectImages.filter((_, i) => i !== index))
   }
 
   const canProceed = () => {
@@ -476,7 +485,30 @@ export default function ClientPostProject() {
     if (!authUser) return
 
     setLoading(true)
+    setUploadingImages(true)
     try {
+      // Upload project images to Supabase Storage
+      const imageUrls = []
+      for (const img of projectImages) {
+        if (img.file) {
+          const fileName = `project-${authUser.id}-${Date.now()}-${Math.random().toString(36).substring(7)}-${img.file.name}`
+          const { data: uploadData, error } = await supabase.storage
+            .from('job-images')
+            .upload(fileName, img.file)
+
+          if (error) throw error
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('job-images')
+            .getPublicUrl(fileName)
+
+          imageUrls.push(publicUrl)
+        } else if (typeof img === 'string') {
+          // Already a URL (from editing)
+          imageUrls.push(img)
+        }
+      }
+
       const projectData = {
         project_owner_email: authUser.email,
         project_owner_name: authUser.full_name,
@@ -508,7 +540,7 @@ export default function ClientPostProject() {
         open_to_backing: projectForm.open_to_backing,
         backing_types: projectForm.backing_types,
         backing_notes: projectForm.backing_notes,
-        image_url: imagePreview,
+        images: imageUrls,
         status: 'submitted'
       }
 
@@ -582,6 +614,7 @@ export default function ClientPostProject() {
       toastError(isEditing ? 'Update Failed' : 'Posting Failed', err.message || 'Failed to save project')
     } finally {
       setLoading(false)
+      setUploadingImages(false)
     }
   }
 
@@ -1322,93 +1355,109 @@ export default function ClientPostProject() {
                       <div>
                         <label className="block text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
                           <ImageIcon className="w-4 h-4" />
-                          Project Image (Optional)
+                          Project Images (Optional)
                         </label>
-                        <div className="relative">
-                          {imagePreview ? (
-                            <div className="relative h-40 rounded-xl overflow-hidden">
-                              <img src={imagePreview} alt="Project preview" className="w-full h-full object-cover" />
-                              <button
-                                type="button"
-                                onClick={() => { setImagePreview(null); }}
-                                className="absolute top-2 right-2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="border-2 border-dashed border-gray-300 rounded-xl h-40 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
-                              <Upload className="w-10 h-10 text-gray-400 mb-2" />
-                              <p className="text-sm text-gray-600">Click to upload project image</p>
-                              <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</p>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                className="hidden"
-                                id="image-upload"
-                              />
-                              <label htmlFor="image-upload" className="absolute inset-0 cursor-pointer" />
+                        <div className="space-y-4">
+                          {/* Image Gallery */}
+                          {projectImages.length > 0 && (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                              {projectImages.map((img, index) => (
+                                <div key={index} className="relative group">
+                                  <img
+                                    src={img.preview || img}
+                                    alt={`Project image ${index + 1}`}
+                                    className="w-full h-32 object-cover rounded-lg"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveImage(index)}
+                                    className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ))}
                             </div>
                           )}
+
+                          {/* Upload Button */}
+                          <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-gray-400 transition-colors">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={handleImageUpload}
+                              disabled={uploadingImages}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-600">
+                              {uploadingImages ? 'Uploading...' : 'Click to upload images'}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              You can select multiple images
+                            </p>
+                          </div>
                         </div>
                       </div>
+                    </div>
 
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-900 mb-2">Project Title</label>
-                        <Input
-                          type="text"
-                          value={projectForm.title}
-                          onChange={(e) => updateForm('title', e.target.value)}
-                          placeholder="Enter project title"
-                          required
-                          className="h-11"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-900 mb-2">Project Title</label>
+                      <Input
+                        type="text"
+                        value={projectForm.title}
+                        onChange={(e) => updateForm('title', e.target.value)}
+                        placeholder="Enter project title"
+                        required
+                        className="h-11"
+                      />
+                    </div>
 
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-900 mb-2">Project Description</label>
-                        <RichTextEditor
-                          value={projectForm.description}
-                          onChange={(html) => updateForm('description', html)}
-                          placeholder="Describe your project in detail..."
-                          height="200px"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-900 mb-2">Project Description</label>
+                      <RichTextEditor
+                        value={projectForm.description}
+                        onChange={(html) => updateForm('description', html)}
+                        placeholder="Describe your project in detail..."
+                        height="200px"
+                      />
+                    </div>
 
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-900 mb-2">Additional Requirements</label>
-                        <RichTextEditor
-                          value={projectForm.requirements}
-                          onChange={(html) => updateForm('requirements', html)}
-                          placeholder="Any specific requirements or preferences..."
-                          height="150px"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-900 mb-2">Additional Requirements</label>
+                      <RichTextEditor
+                        value={projectForm.requirements}
+                        onChange={(html) => updateForm('requirements', html)}
+                        placeholder="Any specific requirements or preferences..."
+                        height="150px"
+                      />
                     </div>
                   </div>
-                )
+    </div>
+        )
 
-              default:
-                return null
-            }
-          })()}
-        </div>
+        default:
+        return null
+}
+          }) ()}
+      </div >
 
-        {/* Navigation Buttons */}
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleBack}
-            disabled={currentStep === 1}
-            className="border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
-          >
-            <ChevronLeft className="w-5 h-5 mr-2" />
-            Back
-          </Button>
+      {/* Navigation Buttons */}
+      < div className="flex gap-3" >
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={handleBack}
+          disabled={currentStep === 1}
+          className="border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
+        >
+          <ChevronLeft className="w-5 h-5 mr-2" />
+          Back
+        </Button>
 
-          {currentStep < STEPS.length ? (
+        {
+          currentStep < STEPS.length ? (
             <Button
               size="lg"
               onClick={handleNext}
@@ -1426,9 +1475,10 @@ export default function ClientPostProject() {
             >
               {loading ? 'Submitting...' : 'Post Project'}
             </Button>
-          )}
-        </div>
-      </div>
-    </div>
+          )
+        }
+      </div >
+    </div >
+    </div >
   )
 }

@@ -287,7 +287,7 @@ export default function UnifiedSidebar({ role = 'creator', mobileSidebarOpen, se
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
           <button
-            onClick={() => setMobileSidebarOpen && setMobileSidebarOpen(false)}
+            onClick={() => setMobileSidebarOpen(false)}
             className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
           >
             <X className="w-4 h-4" />
