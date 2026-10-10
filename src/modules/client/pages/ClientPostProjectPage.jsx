@@ -1368,24 +1368,21 @@ export default function ClientPostProject() {
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-900 mb-2">Project Description</label>
-                        <textarea
+                        <RichTextEditor
                           value={projectForm.description}
-                          onChange={(e) => updateForm('description', e.target.value)}
+                          onChange={(html) => updateForm('description', html)}
                           placeholder="Describe your project in detail..."
-                          rows={4}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
-                          required
+                          height="200px"
                         />
                       </div>
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-900 mb-2">Additional Requirements</label>
-                        <textarea
+                        <RichTextEditor
                           value={projectForm.requirements}
-                          onChange={(e) => updateForm('requirements', e.target.value)}
+                          onChange={(html) => updateForm('requirements', html)}
                           placeholder="Any specific requirements or preferences..."
-                          rows={3}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+                          height="150px"
                         />
                       </div>
                     </div>
