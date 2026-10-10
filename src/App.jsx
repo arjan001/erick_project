@@ -29,7 +29,11 @@ const AuthenticatedApp = () => {
   }
 
   // Render the main app with RouteRenderer
-  return <RouteRenderer />
+  return (
+    <MaintenanceGuard>
+      <RouteRenderer />
+    </MaintenanceGuard>
+  )
 }
 
 

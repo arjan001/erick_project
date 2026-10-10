@@ -1,5 +1,5 @@
 -- Add SEO and CMS tables for SmartGigs Kenya
--- This migration creates tables for SEO management and CMS page metadata
+-- This migration adds SEO settings and enhances the existing cms_pages table
 
 -- Create seo_settings table if it doesn't exist
 CREATE TABLE IF NOT EXISTS public.seo_settings (
@@ -53,43 +53,93 @@ COMMENT ON COLUMN public.seo_settings.site_description IS 'Default site descript
 COMMENT ON COLUMN public.seo_settings.site_keywords IS 'Default site keywords (comma-separated)';
 COMMENT ON COLUMN public.seo_settings.og_image IS 'Default Open Graph image URL';
 
--- Create cms_pages table if it doesn't exist
-CREATE TABLE IF NOT EXISTS public.cms_pages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    page_title TEXT NOT NULL,
-    page_slug TEXT NOT NULL UNIQUE,
-    content TEXT,
-    -- SEO fields
-    meta_title TEXT,
-    meta_description TEXT,
-    meta_keywords TEXT,
-    canonical_url TEXT,
-    og_image TEXT,
-    og_type TEXT DEFAULT 'website',
-    no_index BOOLEAN DEFAULT false,
-    -- Sitemap settings
-    sitemap_priority DECIMAL DEFAULT 0.8,
-    sitemap_change_freq TEXT DEFAULT 'weekly',
-    -- Status
-    is_published BOOLEAN DEFAULT true,
-    published_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- Enhance existing cms_pages table with additional SEO fields
+-- Add columns if they don't exist
+DO $$
+BEGIN
+    -- Check and add meta_keywords if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'cms_pages'
+        AND column_name = 'meta_keywords'
+    ) THEN
+        ALTER TABLE public.cms_pages ADD COLUMN meta_keywords TEXT;
+    END IF;
 
--- Indexes
-CREATE INDEX IF NOT EXISTS idx_cms_pages_slug ON public.cms_pages(page_slug);
-CREATE INDEX IF NOT EXISTS idx_cms_pages_published ON public.cms_pages(is_published);
+    -- Check and add canonical_url if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'cms_pages'
+        AND column_name = 'canonical_url'
+    ) THEN
+        ALTER TABLE public.cms_pages ADD COLUMN canonical_url TEXT;
+    END IF;
 
--- Drop trigger if exists, then create it
-DROP TRIGGER IF EXISTS trg_cms_pages_updated_at ON public.cms_pages;
-CREATE TRIGGER trg_cms_pages_updated_at
-    BEFORE UPDATE ON public.cms_pages
-    FOR EACH ROW
-    EXECUTE FUNCTION public.handle_updated_at();
+    -- Check and add og_image if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'cms_pages'
+        AND column_name = 'og_image'
+    ) THEN
+        ALTER TABLE public.cms_pages ADD COLUMN og_image TEXT;
+    END IF;
 
-COMMENT ON TABLE public.cms_pages IS 'CMS-managed pages with SEO metadata';
-COMMENT ON COLUMN public.cms_pages.page_slug IS 'URL slug for the page (e.g., /about)';
+    -- Check and add og_type if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'cms_pages'
+        AND column_name = 'og_type'
+    ) THEN
+        ALTER TABLE public.cms_pages ADD COLUMN og_type TEXT DEFAULT 'website';
+    END IF;
+
+    -- Check and add no_index if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'cms_pages'
+        AND column_name = 'no_index'
+    ) THEN
+        ALTER TABLE public.cms_pages ADD COLUMN no_index BOOLEAN DEFAULT false;
+    END IF;
+
+    -- Check and add sitemap_priority if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'cms_pages'
+        AND column_name = 'sitemap_priority'
+    ) THEN
+        ALTER TABLE public.cms_pages ADD COLUMN sitemap_priority DECIMAL DEFAULT 0.8;
+    END IF;
+
+    -- Check and add sitemap_change_freq if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'cms_pages'
+        AND column_name = 'sitemap_change_freq'
+    ) THEN
+        ALTER TABLE public.cms_pages ADD COLUMN sitemap_change_freq TEXT DEFAULT 'weekly';
+    END IF;
+
+    -- Check and add is_published if it doesn't exist (published might exist)
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'cms_pages'
+        AND column_name = 'is_published'
+    ) THEN
+        ALTER TABLE public.cms_pages ADD COLUMN is_published BOOLEAN DEFAULT true;
+    END IF;
+
+    -- Check and add published_at if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'cms_pages'
+        AND column_name = 'published_at'
+    ) THEN
+        ALTER TABLE public.cms_pages ADD COLUMN published_at TIMESTAMP WITH TIME ZONE;
+    END IF;
+END $$;
+
+COMMENT ON COLUMN public.cms_pages.slug IS 'URL slug for the page (e.g., /about)';
 COMMENT ON COLUMN public.cms_pages.no_index IS 'Whether to exclude this page from search engines';
 
 -- Insert default SEO settings if they don't exist
@@ -136,7 +186,7 @@ CREATE POLICY "Authenticated users can read SEO settings"
     FOR SELECT
     USING (auth.role() = 'authenticated');
 
--- RLS Policies for cms_pages
+-- RLS Policies for cms_pages (update existing if needed)
 ALTER TABLE public.cms_pages ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Admins can manage CMS pages" ON public.cms_pages;
@@ -155,7 +205,7 @@ DROP POLICY IF EXISTS "Published pages are public" ON public.cms_pages;
 CREATE POLICY "Published pages are public"
     ON public.cms_pages
     FOR SELECT
-    USING (is_published = true);
+    USING (published = true OR is_published = true);
 
 DROP POLICY IF EXISTS "Authenticated users can read all CMS pages" ON public.cms_pages;
 CREATE POLICY "Authenticated users can read all CMS pages"

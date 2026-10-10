@@ -70,7 +70,7 @@ export const getPageMetadataBySlug = async (slug) => {
     const { data, error } = await supabase
       .from('cms_pages')
       .select('*')
-      .eq('page_slug', slug)
+      .eq('slug', slug)
       .single()
     if (error && error.code !== 'PGRST116') throw error
     return data || null
@@ -140,7 +140,7 @@ export const generateSitemap = async () => {
 
     // Generate sitemap data from page metadata
     const pages = pageMetadata.map(page => ({
-      url: page.page_slug,
+      url: page.slug,
       priority: page.sitemap_priority || 0.8,
       changefreq: page.sitemap_change_freq || 'weekly'
     }))

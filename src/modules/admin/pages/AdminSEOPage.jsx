@@ -72,8 +72,8 @@ export default function AdminSEOPage() {
       if (pages && pages.length > 0) {
         setCmsPages(pages.map(p => ({
           id: p.id,
-          title: p.page_title || '',
-          slug: p.page_slug || '',
+          title: p.title || '',
+          slug: p.slug || '',
           metaTitle: p.meta_title || '',
           metaDescription: p.meta_description || '',
           canonical: p.canonical_url || '',
@@ -132,8 +132,8 @@ export default function AdminSEOPage() {
       for (const page of cmsPages) {
         if (page.id) {
           await updatePageMetadata(page.id, {
-            page_title: page.title,
-            page_slug: page.slug,
+            title: page.title,
+            slug: page.slug,
             meta_title: page.metaTitle,
             meta_description: page.metaDescription,
             canonical_url: page.canonical,
@@ -215,8 +215,8 @@ export default function AdminSEOPage() {
     try {
       if (editingPage.id) {
         await updatePageMetadata(editingPage.id, {
-          page_title: editingPage.title,
-          page_slug: editingPage.slug,
+          title: editingPage.title,
+          slug: editingPage.slug,
           meta_title: editingPage.metaTitle,
           meta_description: editingPage.metaDescription,
           canonical_url: editingPage.canonical,
@@ -228,8 +228,8 @@ export default function AdminSEOPage() {
         setCmsPages(cmsPages.map(p => p.id === editingPage.id ? editingPage : p))
       } else {
         const newPage = await createPageMetadata({
-          page_title: editingPage.title,
-          page_slug: editingPage.slug,
+          title: editingPage.title,
+          slug: editingPage.slug,
           meta_title: editingPage.metaTitle,
           meta_description: editingPage.metaDescription,
           canonical_url: editingPage.canonical,
