@@ -73,10 +73,9 @@ CREATE POLICY "Admins can manage settings"
     FOR ALL
     USING (
         EXISTS (
-            SELECT 1 FROM auth.users
-            JOIN user_roles ON auth.users.id = user_roles.user_id
-            WHERE auth.users.id = auth.uid()
-            AND user_roles.role = 'admin'
+            SELECT 1 FROM public.users
+            WHERE id = auth.uid()
+            AND role = 'admin'
         )
     );
 
@@ -95,10 +94,9 @@ CREATE POLICY "Admins can manage access codes"
     FOR ALL
     USING (
         EXISTS (
-            SELECT 1 FROM auth.users
-            JOIN user_roles ON auth.users.id = user_roles.user_id
-            WHERE auth.users.id = auth.uid()
-            AND user_roles.role = 'admin'
+            SELECT 1 FROM public.users
+            WHERE id = auth.uid()
+            AND role = 'admin'
         )
     );
 
