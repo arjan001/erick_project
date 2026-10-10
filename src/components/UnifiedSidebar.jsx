@@ -113,6 +113,7 @@ const roleNavConfig = {
         label: 'Communication',
         items: [
           { path: '/ClientMessages', label: 'Messages', icon: Mail, showBadge: true },
+          { path: '/Network', label: 'Network', icon: Network, showConnectionBadge: true },
           { path: '/ClientNotifications', label: 'Notifications', icon: Bell, showNotificationBadge: true },
         ]
       },

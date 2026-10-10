@@ -67,7 +67,7 @@ export default function ClientProfilePage() {
   const [profilePublic, setProfilePublic] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user')
+    const storedUser = localStorage.getItem('smartgigs_user')
     if (!storedUser) {
       navigate('/')
       return

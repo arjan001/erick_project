@@ -27,7 +27,7 @@ export default function BrowseTalentPage() {
   const fetchTalent = async () => {
     try {
       setLoading(true)
-      const artists = await Artist.list('created_at', 100)
+      const artists = await Artist.list('-created_at', 100)
       setTalent(artists || [])
     } catch (err) {
       console.error('Error fetching talent:', err)
