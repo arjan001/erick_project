@@ -100,7 +100,7 @@ export default function BrowseTalentPage() {
   }
 
   const handleViewProfile = (artistId) => {
-    navigate(`/ArtistPublicProfile/${artistId}`)
+    navigate(`/ArtistPublicProfile?id=${artistId}`)
   }
 
   const filteredTalent = talent.filter(artist => {

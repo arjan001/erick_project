@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Artist, Connection } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Star, Search, Heart, MapPin, Mail, User, MessageCircle, ExternalLink } from 'lucide-react'
+import { Star, Search, Heart, MapPin, Mail, User, MessageCircle, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { useNavigate } from 'react-router-dom'
@@ -14,6 +14,8 @@ export default function SavedTalentPage() {
   const [savedTalent, setSavedTalent] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(12)
 
   useEffect(() => {
     fetchSavedTalent()
@@ -25,7 +27,7 @@ export default function SavedTalentPage() {
       setLoading(true)
       // Fetch connections where the current user has saved artists
       const connections = await Connection.filter({
-        user_email: user.email,
+        requester_email: user.email,
         connection_type: 'saved',
         status: 'active'
       })
@@ -41,8 +43,8 @@ export default function SavedTalentPage() {
         setSavedTalent([])
       }
     } catch (err) {
-      //
-      error('Error', 'Failed to fetch saved talent')
+      console.error('Error fetching saved talent:', err)
+      setSavedTalent([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -53,7 +55,7 @@ export default function SavedTalentPage() {
     try {
       // Find and delete the connection
       const connections = await Connection.filter({
-        user_email: user.email,
+        requester_email: user.email,
         connected_artist_id: artistId,
         connection_type: 'saved'
       })
@@ -64,7 +66,7 @@ export default function SavedTalentPage() {
         success('Removed', 'Talent removed from saved list')
       }
     } catch (err) {
-      //
+      console.error('Error removing saved talent:', err)
       error('Failed', 'Failed to remove saved talent')
     }
   }
@@ -74,12 +76,19 @@ export default function SavedTalentPage() {
   }
 
   const handleViewProfile = (artistId) => {
-    navigate(`/ArtistPublicProfile/${artistId}`)
+    navigate(`/ArtistPublicProfile?id=${artistId}`)
   }
 
   const filteredTalent = savedTalent.filter(a =>
     a.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     a.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  // Pagination
+  const totalPages = Math.ceil(filteredTalent.length / itemsPerPage)
+  const paginatedTalent = filteredTalent.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   )
 
   return (
@@ -117,7 +126,7 @@ export default function SavedTalentPage() {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredTalent.map((artist) => (
+            {paginatedTalent.map((artist) => (
               <div key={artist.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
                 <div className="flex items-start gap-4 mb-3">
                   <div
@@ -186,6 +195,31 @@ export default function SavedTalentPage() {
               </div>
             ))}
           </div>
+
+          {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-8">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <span className="text-sm text-gray-600">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
         )}
       </div>
     </div>
