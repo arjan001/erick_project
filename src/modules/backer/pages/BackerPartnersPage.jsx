@@ -29,7 +29,7 @@ export default function BackerPartnersPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     fetchData()

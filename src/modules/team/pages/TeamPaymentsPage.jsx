@@ -17,7 +17,7 @@ export default function TeamPaymentsPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     loadTeamData()

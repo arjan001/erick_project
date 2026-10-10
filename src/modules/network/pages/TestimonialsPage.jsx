@@ -24,7 +24,7 @@ export default function TestimonialsPage() {
   useEffect(() => {
     const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     setUser(JSON.parse(storedUser))

@@ -30,7 +30,7 @@ export default function BackerProjectUpdatesPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     fetchData()

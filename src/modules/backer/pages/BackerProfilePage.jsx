@@ -26,6 +26,7 @@ function ToggleRow({ title, description, checked, onChange, isLast }) {
 }
 
 export default function BackerProfile() {
+  const navigate = useNavigate()
   const { success, error: toastError } = useToast()
   const { user: authUser, isAuthenticated } = useAuth()
   const [backer, setBacker] = useState(null)
@@ -48,7 +49,7 @@ export default function BackerProfile() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     fetchData()

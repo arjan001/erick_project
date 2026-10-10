@@ -28,7 +28,7 @@ export default function TeamMessagesPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     loadTeamData()

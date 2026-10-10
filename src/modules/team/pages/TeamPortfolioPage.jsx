@@ -30,7 +30,7 @@ export default function TeamPortfolioPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     loadTeamData()

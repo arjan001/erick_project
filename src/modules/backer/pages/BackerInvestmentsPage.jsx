@@ -21,7 +21,7 @@ export default function BackerInvestmentsPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     fetchData()

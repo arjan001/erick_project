@@ -30,7 +30,7 @@ export default function TeamProjectsPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     loadTeamData()

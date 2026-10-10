@@ -72,7 +72,7 @@ export default function BackerInvestmentTiersPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     fetchData()

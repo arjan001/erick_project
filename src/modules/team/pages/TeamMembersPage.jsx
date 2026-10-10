@@ -33,7 +33,7 @@ export default function TeamMembersPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     loadTeamData()

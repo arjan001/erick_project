@@ -9,6 +9,7 @@ import notificationService from '@/shared/services/notificationService'
 import subscriptionService from '@/shared/services/subscriptionService'
 
 export default function JobBoard() {
+  const navigate = useNavigate()
   const [projects, setProjects] = useState([])
   const [selectedProject, setSelectedProject] = useState(null)
   const [user, setUser] = useState(null)
@@ -25,13 +26,12 @@ export default function JobBoard() {
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [wishlist, setWishlist] = useState([])
   const [hiddenProjects, setHiddenProjects] = useState([])
-  const navigate = useNavigate()
   const { success, error } = useToast()
 
   useEffect(() => {
     const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     setUser(JSON.parse(storedUser))

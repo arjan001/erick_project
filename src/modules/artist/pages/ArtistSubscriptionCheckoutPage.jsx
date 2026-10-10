@@ -273,7 +273,7 @@ export default function ArtistSubscriptionCheckoutPage() {
     if (!subscriptionsEnabled) return
 
     const storedUser = localStorage.getItem('ericrabar_user')
-    if (!storedUser) { window.location.href = '/signin'; return; }
+    if (!storedUser) { navigate('/signin'); return; }
     const userData = JSON.parse(storedUser)
     setUser(userData)
     

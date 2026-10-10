@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '@/lib/AuthContext'
 
@@ -38,6 +38,7 @@ import { Team, PortfolioClip, Message, Invite, Application, Job, JobInvitation, 
 
 
 export default function TeamDashboard() {
+  const navigate = useNavigate()
 
   const { user: authUser, isAuthenticated, isLoadingAuth } = useAuth()
 
@@ -124,7 +125,7 @@ export default function TeamDashboard() {
     if (!isLoadingAuth && isAuthenticated && authUser) {
       loadDashboardData(authUser)
     } else if (!isLoadingAuth && !isAuthenticated) {
-      window.location.href = '/'
+      navigate('/')
     }
 
   }, [isLoadingAuth, isAuthenticated, authUser])

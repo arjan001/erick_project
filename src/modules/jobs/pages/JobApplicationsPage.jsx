@@ -12,7 +12,7 @@ export default function JobApplications() {
   useEffect(() => {
     const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     setUser(JSON.parse(storedUser))

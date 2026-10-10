@@ -26,6 +26,7 @@ function ToggleRow({ title, description, checked, onChange, isLast }) {
 }
 
 export default function ClientProfilePage() {
+  const navigate = useNavigate()
   const { success, error: toastError } = useToast()
   const [user, setUser] = useState(null)
   const [owner, setOwner] = useState(null)
@@ -68,7 +69,7 @@ export default function ClientProfilePage() {
   useEffect(() => {
     const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     const parsedUser = JSON.parse(storedUser)
@@ -252,7 +253,7 @@ export default function ClientProfilePage() {
 
   // Project CRUD operations
   const handleEditProject = (project) => {
-    window.location.href = `/ClientPostProject?edit=${project.id}`
+    navigate(`/ClientPostProject?edit=${project.id}`)
   }
 
   const handleDeleteProject = async (projectId) => {
@@ -430,7 +431,7 @@ export default function ClientProfilePage() {
       localStorage.removeItem('ericrabar_user')
 
       success('Account Deletion Requested', 'Your account has been suspended and will be permanently deleted in 90 days')
-      window.location.href = '/SignIn'
+      navigate('/SignIn')
     } catch (err) {
       //
       toastError('Delete Failed', err.message || 'Failed to delete account')
@@ -726,7 +727,7 @@ export default function ClientProfilePage() {
                   <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2"><FolderOpen className="w-5 h-5 text-gray-400" /> My Projects</h3>
                   <p className="text-gray-500 text-sm mt-1">View and manage all your posted projects</p>
                 </div>
-                <Button onClick={() => window.location.href = '/ClientPostProject'} className="bg-black text-white hover:bg-gray-800">
+                <Button onClick={() => navigate('/ClientPostProject')} className="bg-black text-white hover:bg-gray-800">
                   <Plus className="w-4 h-4 mr-2" />
                   New Project
                 </Button>
@@ -739,7 +740,7 @@ export default function ClientProfilePage() {
                   <FolderOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">No projects yet</h3>
                   <p className="text-gray-500 mb-4">Start by posting your first project to connect with talented creators</p>
-                  <Button onClick={() => window.location.href = '/ClientPostProject'} className="bg-black text-white hover:bg-gray-800">
+                  <Button onClick={() => navigate('/ClientPostProject')} className="bg-black text-white hover:bg-gray-800">
                     Post Your First Project
                   </Button>
                 </div>

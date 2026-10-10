@@ -6,16 +6,16 @@ import { Button } from '@/components/ui/button'
 import { MapPin, Calendar, DollarSign, Clock, CheckCircle, X, MessageCircle, Briefcase, User } from 'lucide-react'
 
 export default function JobInvitations() {
+  const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [invitations, setInvitations] = useState([])
   const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
   const { success, error } = useToast()
 
   useEffect(() => {
     const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     setUser(JSON.parse(storedUser))

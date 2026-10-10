@@ -18,7 +18,7 @@ export default function BackerAnalyticsPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     fetchData()

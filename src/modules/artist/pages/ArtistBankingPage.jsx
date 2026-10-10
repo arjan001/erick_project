@@ -29,7 +29,7 @@ export default function ArtistBankingPage() {
   useEffect(() => {
     const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/signin'
+      navigate('/signin')
       return
     }
     setUser(JSON.parse(storedUser))

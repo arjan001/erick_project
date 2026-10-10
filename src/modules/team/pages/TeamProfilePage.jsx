@@ -27,6 +27,7 @@ function ToggleRow({ title, description, checked, onChange, isLast }) {
 }
 
 export default function TeamProfilePage() {
+  const navigate = useNavigate()
   const { success, error: toastError } = useToast()
   const [team, setTeam] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -50,7 +51,7 @@ export default function TeamProfilePage() {
   useEffect(() => {
     const storedUser = localStorage.getItem('ericrabar_user')
     if (!storedUser) {
-      window.location.href = '/'
+      navigate('/')
       return
     }
     const fetchTeam = async () => {
