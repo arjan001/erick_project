@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, BadgeCheck } from 'lucide-react'
+import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, BadgeCheck, Building2, MapPin, Clock, Users, Briefcase } from 'lucide-react'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
 import Marquee from '@/components/landing/backstage/Marquee'
@@ -9,76 +9,98 @@ import { Job } from '@/lib/supabaseEntities'
 
 const dummyJobs = [
   {
-    id: 1, title: 'Russian-Language Short Drama', pay: 'Pay not specified', location: 'Worldwide',
-    posted: 'Wednesday', featured: true,
-    description: 'Casting a Russian-language short drama exploring themes of family, migration, and identity. Seeking authentic Russian-speaking performers for lead and supporting roles. Shoot dates flexible, remote audition process available.',
-    tags: ['Short Film', 'Drama', 'Russian Speaking'],
-    roles: [{ title: 'American Voiceover Artist', pay: '$200/day' }],
+    id: 1,
+    title: "VO Artist Ones: Voiceover (TV Commercial)",
+    company: "HEALTH AND WELLNESS TECHNOLOGY",
+    compensation: "£800 (est. 2 hours of work)",
+    location: "Worldwide",
+    posted: "Thursday",
+    featured: true,
+    is_production: false,
+    gender: "Female",
+    age: "25-36",
+    description: "Casting a Russian-language short drama exploring themes of family, migration, and identity. Seeking authentic Russian-speaking performers for lead and supporting roles.",
+    tags: ["Voiceover", "TV Commercial"],
+    roles: []
   },
   {
-    id: 2, title: 'Corporate Doc-Style Interview', pay: 'Roles paying up to $500/day', location: 'New York, NY',
-    posted: 'Tuesday', featured: true,
-    description: 'Seeking professionals for a corporate documentary-style interview series. Looking for authentic, on-camera presence for a series of branded content pieces for a Fortune 500 technology company.',
-    tags: ['Corporate', 'Documentary', 'Branded Content'],
+    id: 2,
+    title: "The North American Pantheon - Season 2",
+    company: "Ambitious Media",
+    compensation: "Roles paying up to US$60",
+    location: "Los Angeles, CA",
+    posted: "14 hours ago",
+    featured: true,
+    is_production: true,
+    description: "TV Show, Scripted, Drama, Limited Series. Multiple roles available for this production.",
+    tags: ["TV Show", "Scripted", "Drama", "Limited Series"],
     roles: [
-      { title: 'Director', pay: '$500/day' },
-      { title: 'Gaffer', pay: '$350/day' },
-      { title: 'Hair & Makeup', pay: '$300/day' },
-    ],
+      { title: "Koreatown Crew", compensation: "$800/day", gender: "Korean American", age: "20s-30s" },
+      { title: "David", compensation: "$750/day", gender: "Caucasian", age: "20s-30s" },
+      { title: "Jasmine", compensation: "$700/day", gender: "African American", age: "20s-30s" },
+      { title: "The Oracle", compensation: "$900/day", gender: "Any Ethnicity", age: "50s+" },
+      { title: "Royal Guard", compensation: "$650/day", gender: "Any Ethnicity", age: "20s-30s" },
+      { title: "Prince", compensation: "$1,000/day", gender: "Any Ethnicity", age: "30s-40s" },
+      { title: "Princess", compensation: "$950/day", gender: "Any Ethnicity", age: "20s-30s" },
+      { title: "Hero", compensation: "$1,200/day", gender: "Any Ethnicity", age: "25-35" },
+      { title: "Villain", compensation: "$1,100/day", gender: "Any Ethnicity", age: "30s-45" },
+      { title: "Sidekick", compensation: "$600/day", gender: "Any Ethnicity", age: "18-25" },
+      { title: "Mentor", compensation: "$850/day", gender: "Any Ethnicity", age: "40s-60s" },
+      { title: "Advisor", compensation: "$700/day", gender: "Any Ethnicity", age: "35s-55" },
+      { title: "Guard", compensation: "$550/day", gender: "Any Ethnicity", age: "25-40" },
+      { title: "Spy", compensation: "$1,000/day", gender: "Any Ethnicity", age: "25-35" },
+      { title: "Diplomat", compensation: "$900/day", gender: "Any Ethnicity", age: "35-50" },
+      { title: "Leader", compensation: "$1,200/day", gender: "Any Ethnicity", age: "40s-60s" },
+    ]
   },
   {
-    id: 3, title: 'Netflix Original Series — Lead Role', pay: 'Competitive pay', location: 'Atlanta, GA',
-    posted: 'Monday', featured: true,
-    description: 'Major streaming platform casting the lead role for an upcoming original drama series. Seeking a Black female performer, ages 25-35, with strong dramatic training and on-camera experience. This is a series regular role.',
-    tags: ['TV Series', 'Drama', 'Lead Role', 'Netflix'],
-    roles: [{ title: 'Series Lead — Female, 25-35', pay: 'SAG Scale + Negotiation' }],
-  },
-  {
-    id: 4, title: 'National Commercial — Spokesperson', pay: 'Roles paying up to $2,500', location: 'Los Angeles, CA',
-    posted: 'Friday', featured: false,
-    description: 'Casting a national commercial campaign for a major consumer brand. Seeking a charismatic Black male spokesperson, ages 30-45, with natural on-camera presence. Non-union welcome.',
-    tags: ['Commercial', 'Spokesperson', 'National'],
-    roles: [{ title: 'Principal Spokesperson — Male, 30-45', pay: '$2,500 flat' }],
-  },
-  {
-    id: 5, title: 'Broadway Musical — Ensemble', pay: 'SAG-AFTRA scale', location: 'New York, NY',
-    posted: 'Thursday', featured: false,
-    description: 'Casting ensemble performers for an upcoming Broadway musical revival. Seeking strong singers and dancers of all ethnicities. Must be available for rehearsals starting next month. Equity and non-equity performers welcome.',
-    tags: ['Theater', 'Musical', 'Broadway', 'Ensemble'],
+    id: 3,
+    title: "Independent Feature Film - Supporting Cast",
+    company: "Indie Productions LLC",
+    compensation: "Deferred pay",
+    location: "Chicago, IL",
+    posted: "Sunday",
+    featured: false,
+    is_production: true,
+    description: "Indie feature film casting supporting roles for a coming-of-age drama set in Chicago.",
+    tags: ["Feature Film", "Indie", "Drama"],
     roles: [
-      { title: 'Ensemble Singer/Dancer', pay: 'Equity Scale' },
-      { title: 'Understudy — Lead', pay: 'Equity Scale' },
-    ],
+      { title: "Supporting — Male, 18-25", compensation: "Deferred" },
+      { title: "Supporting — Female, 18-25", compensation: "Deferred" },
+      { title: "Lead — Male, 20-30", compensation: "Deferred" },
+    ]
   },
   {
-    id: 6, title: 'UGC Creator — Tech Product Reviews', pay: '$500/day', location: 'Remote',
-    posted: 'Today', featured: true,
-    description: 'Seeking UGC creators to produce authentic tech product review content for social media campaigns. Looking for Black creators with an established social presence and engaging on-camera personality. Flexible schedule.',
-    tags: ['UGC', 'Content Creator', 'Tech', 'Remote'],
-    roles: [{ title: 'UGC Creator', pay: '$500/day' }],
+    id: 4,
+    title: "Broadway Musical — Ensemble",
+    company: "Broadway Productions",
+    compensation: "SAG-AFTRA scale",
+    location: "New York, NY",
+    posted: "Thursday",
+    featured: false,
+    is_production: false,
+    description: "Casting ensemble performers for an upcoming Broadway musical revival.",
+    tags: ["Theater", "Musical", "Broadway", "Ensemble"],
+    roles: []
   },
   {
-    id: 7, title: 'Independent Feature Film — Supporting Cast', pay: 'Deferred pay', location: 'Chicago, IL',
-    posted: 'Sunday', featured: false,
-    description: 'Indie feature film casting supporting roles for a coming-of-age drama set in Chicago. Seeking authentic local talent, ages 18-25, for several supporting roles. Shoot spans 3 weeks.',
-    tags: ['Feature Film', 'Indie', 'Drama'],
-    roles: [
-      { title: 'Supporting — Male, 18-25', pay: 'Deferred' },
-      { title: 'Supporting — Female, 18-25', pay: 'Deferred' },
-    ],
-  },
-  {
-    id: 8, title: 'Voiceover — Audiobook Narration', pay: '$300/finished hour', location: 'Remote',
-    posted: 'Saturday', featured: false,
-    description: 'Casting a voiceover artist for audiobook narration of a contemporary fiction title. Seeking a warm, engaging voice with clear articulation. Remote recording, must have home studio setup.',
-    tags: ['Voiceover', 'Audiobook', 'Remote'],
-    roles: [{ title: 'Narrator — Any Gender', pay: '$300/finished hour' }],
+    id: 5,
+    title: "UGC Creator — Tech Product Reviews",
+    company: "Content Creators Inc",
+    compensation: "$500/day",
+    location: "Remote",
+    posted: "Today",
+    featured: true,
+    is_production: false,
+    description: "Seeking UGC creators to produce authentic tech product review content for social media campaigns.",
+    tags: ["UGC", "Content Creator", "Tech", "Remote"],
+    roles: []
   },
 ]
 
 const filterOptions = {
   location: ['Any Location', 'New York, NY', 'Los Angeles, CA', 'Atlanta, GA', 'Chicago, IL', 'Remote', 'Worldwide'],
-  jobType: ['Any Type', 'Feature Film', 'TV Series', 'Commercial', 'Theater', 'Voiceover', 'UGC', 'Short Film'],
+  jobType: ['All Jobs', 'Feature Film', 'TV Series', 'Commercial', 'Theater', 'Voiceover', 'UGC', 'Short Film'],
   gender: ['Any Gender', 'Male', 'Female', 'Non-Binary'],
   age: ['Any Age', '18-25', '25-35', '30-45', '45-55', '55+'],
 }
@@ -117,13 +139,14 @@ function FilterDropdown({ label, options, value, onChange }) {
 export default function FindJobsPage() {
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState({ location: '', jobType: '', gender: '', age: '' })
-  const [view, setView] = useState('roles')
+  const [view, setView] = useState('roles') // 'productions' or 'roles'
   const [page, setPage] = useState(1)
   const [selectedJob, setSelectedJob] = useState(null)
   const [savedJobs, setSavedJobs] = useState(new Set())
   const [allJobs, setAllJobs] = useState(dummyJobs)
   const [showFilters, setShowFilters] = useState(false)
-  const perPage = 5
+  const [showClientModal, setShowClientModal] = useState(null)
+  const perPage = 12
 
   // Fetch jobs from Supabase database on mount, fall back to dummy data
   useEffect(() => {
@@ -134,14 +157,18 @@ export default function FindJobsPage() {
         const mapped = data.map((j) => ({
           id: j.id,
           title: j.title || j.name || 'Untitled Job',
-          pay: j.pay || j.salary || 'Pay not specified',
+          company: j.client_company_name || 'Company',
+          compensation: j.compensation_display || j.pay || j.salary || 'Pay not specified',
           location: j.location || 'Worldwide',
           posted: j.posted || 'Recently',
           featured: j.featured || false,
+          is_production: j.is_production || false,
+          gender: j.gender_requirement || '',
+          age: j.age_min && j.age_max ? `${j.age_min}-${j.age_max}` : '',
           description: j.description || '',
           tags: j.tags || [],
           roles: j.roles || [],
-          project: j.project || j.company || '',
+          application_count: j.application_count || 0,
         }))
         if (!cancelled) setAllJobs(mapped)
       })
@@ -154,12 +181,22 @@ export default function FindJobsPage() {
       if (search && !j.title.toLowerCase().includes(search.toLowerCase()) && !(j.tags || []).some(t => t.toLowerCase().includes(search.toLowerCase()))) return false
       if (filters.location && j.location !== filters.location) return false
       if (filters.jobType && !(j.tags || []).some(t => t.toLowerCase().includes(filters.jobType.toLowerCase()))) return false
+      if (filters.gender && j.gender !== filters.gender && j.gender !== '') return false
       return true
     })
   }, [search, filters, allJobs])
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage))
-  const pageJobs = filtered.slice((page - 1) * perPage, page * perPage)
+  // Filter by view type
+  const viewFiltered = useMemo(() => {
+    if (view === 'productions') {
+      return filtered.filter(j => j.is_production)
+    } else {
+      return filtered.filter(j => !j.is_production)
+    }
+  }, [filtered, view])
+
+  const totalPages = Math.max(1, Math.ceil(viewFiltered.length / perPage))
+  const pageJobs = viewFiltered.slice((page - 1) * perPage, page * perPage)
 
   const toggleSave = (id) => {
     setSavedJobs((prev) => {
@@ -179,8 +216,12 @@ export default function FindJobsPage() {
   }
 
   const handleSaveSearch = () => {
-    const searchState = JSON.stringify({ search, filters })
+    const searchState = JSON.stringify({ search, filters, view })
     localStorage.setItem('savedJobSearch', searchState)
+  }
+
+  const handleClientClick = (job) => {
+    setShowClientModal(job)
   }
 
   return (
@@ -214,8 +255,8 @@ export default function FindJobsPage() {
           <div className="hidden flex-wrap items-center gap-3 lg:flex">
             <FilterDropdown label="Job location" options={filterOptions.location} value={filters.location} onChange={(v) => { setFilters({ ...filters, location: v }); setPage(1); }} />
             <FilterDropdown label="Job Type" options={filterOptions.jobType} value={filters.jobType} onChange={(v) => { setFilters({ ...filters, jobType: v }); setPage(1); }} />
-            <FilterDropdown label="Gender" options={filterOptions.gender} value={filters.gender} onChange={(v) => setFilters({ ...filters, gender: v })} />
-            <FilterDropdown label="Age" options={filterOptions.age} value={filters.age} onChange={(v) => setFilters({ ...filters, age: v })} />
+            <FilterDropdown label="Gender" options={filterOptions.gender} value={filters.gender} onChange={(v) => { setFilters({ ...filters, gender: v }) }} />
+            <FilterDropdown label="Age" options={filterOptions.age} value={filters.age} onChange={(v) => { setFilters({ ...filters, age: v }) }} />
             <div className="flex-1" />
             <button onClick={() => setPage(1)} className="flex items-center gap-2 rounded-lg bg-[#4f46e5] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]">
               <Search className="h-4 w-4" /> Search
@@ -230,8 +271,8 @@ export default function FindJobsPage() {
             <div className="mt-3 flex flex-wrap gap-2 lg:hidden">
               <FilterDropdown label="Job location" options={filterOptions.location} value={filters.location} onChange={(v) => { setFilters({ ...filters, location: v }); setPage(1); }} />
               <FilterDropdown label="Job Type" options={filterOptions.jobType} value={filters.jobType} onChange={(v) => { setFilters({ ...filters, jobType: v }); setPage(1); }} />
-              <FilterDropdown label="Gender" options={filterOptions.gender} value={filters.gender} onChange={(v) => setFilters({ ...filters, gender: v })} />
-              <FilterDropdown label="Age" options={filterOptions.age} value={filters.age} onChange={(v) => setFilters({ ...filters, age: v })} />
+              <FilterDropdown label="Gender" options={filterOptions.gender} value={filters.gender} onChange={(v) => { setFilters({ ...filters, gender: v }) }} />
+              <FilterDropdown label="Age" options={filterOptions.age} value={filters.age} onChange={(v) => { setFilters({ ...filters, age: v }) }} />
               <button onClick={handleSaveSearch} className="flex items-center gap-2 rounded-lg border border-[#00D09C] bg-white px-4 py-2.5 text-sm font-semibold text-[#00a37e]">
                 <Heart className="h-4 w-4" /> Save
               </button>
@@ -245,7 +286,7 @@ export default function FindJobsPage() {
         {/* Header + toggle */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-base font-bold text-black md:text-lg">
-            Showing {filtered.length} jobs near <span className="underline">{filters.location || 'All Locations'}</span>
+            Showing {viewFiltered.length} jobs near <span className="underline">{filters.location || 'All Locations'}</span>
           </h1>
           {/* Productions/Roles toggle */}
           <div className="inline-flex items-center rounded-full bg-[#4f46e5]/10 p-1">
@@ -282,15 +323,22 @@ export default function FindJobsPage() {
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
                 {/* Left: main content */}
                 <div className="min-w-0 flex-1">
-                  {/* Top row: badge + icons */}
+                  {/* Top row: badge + company + icons */}
                   <div className="flex items-center justify-between">
-                    {job.featured ? (
-                      <span className="flex items-center gap-1 rounded-full bg-[#e11d48] px-3 py-1 text-xs font-bold text-white">
-                        <BadgeCheck className="h-3.5 w-3.5" /> Featured
-                      </span>
-                    ) : (
-                      <span />
-                    )}
+                    <div className="flex items-center gap-3">
+                      {job.featured && (
+                        <span className="flex items-center gap-1 rounded-full bg-[#e11d48] px-3 py-1 text-xs font-bold text-white">
+                          Featured
+                        </span>
+                      )}
+                      {/* Company name - clickable to show client profile */}
+                      <button
+                        onClick={() => handleClientClick(job)}
+                        className="text-sm font-bold text-black hover:text-[#4f46e5] hover:underline"
+                      >
+                        {job.company}
+                      </button>
+                    </div>
                     <div className="flex items-center gap-2">
                       <button onClick={() => handleShare(job)} className="rounded-full p-1.5 hover:bg-gray-100" aria-label="Share job">
                         <Share2 className="h-4 w-4 text-black/40" />
@@ -306,8 +354,20 @@ export default function FindJobsPage() {
 
                   {/* Meta */}
                   <p className="mt-1.5 text-sm text-black/50">
-                    {job.pay} • {job.location} • Posted: {job.posted}
+                    {job.compensation} • {job.location} • Posted: {job.posted}
                   </p>
+
+                  {/* Gender/Age requirements */}
+                  {(job.gender || job.age) && (
+                    <div className="mt-2 flex gap-2">
+                      {job.gender && (
+                        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-black/60">{job.gender}</span>
+                      )}
+                      {job.age && (
+                        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-black/60">{job.age}</span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Description */}
                   <p className="mt-3 text-sm leading-relaxed text-black/70">
@@ -322,27 +382,50 @@ export default function FindJobsPage() {
                     ))}
                   </div>
 
-                  {/* CTA */}
-                  <button
-                    onClick={() => setSelectedJob(job)}
-                    className="mt-4 rounded-full bg-[#4f46e5] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]"
-                  >
-                    View Details & Apply
-                  </button>
+                  {/* CTA - different for productions vs single roles */}
+                  {job.is_production ? (
+                    <button
+                      onClick={() => setSelectedJob(job)}
+                      className="mt-4 rounded-full bg-[#4f46e5] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]"
+                    >
+                      View All {job.roles.length} Roles
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setSelectedJob(job)}
+                      className="mt-4 rounded-full bg-[#4f46e5] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]"
+                    >
+                      View Details & Apply
+                    </button>
+                  )}
                 </div>
 
-                {/* Right sidebar: roles — hidden on mobile, shown on md+ */}
-                <div className="hidden w-56 shrink-0 space-y-3 border-l border-gray-100 pl-5 md:block">
-                  {job.roles.map((r, i) => (
-                    <div key={i} className="rounded-xl border border-gray-200 p-3">
-                      <p className="text-sm font-bold text-black">{r.title}</p>
-                      <p className="mt-0.5 text-xs text-black/50">{r.pay}</p>
-                      <button className="mt-2 w-full rounded-full bg-[#4f46e5] py-1.5 text-xs font-semibold text-white hover:bg-[#4338CA]">
-                        Apply
+                {/* Right sidebar: roles — for productions, show first 2 roles */}
+                {job.is_production && job.roles.length > 0 && (
+                  <div className="hidden w-56 shrink-0 space-y-3 border-l border-gray-100 pl-5 md:block">
+                    {job.roles.slice(0, 2).map((r, i) => (
+                      <div key={i} className="rounded-xl border border-gray-200 p-3">
+                        <p className="text-sm font-bold text-black">{r.title}</p>
+                        <p className="mt-0.5 text-xs text-black/50">{r.compensation}</p>
+                        <div className="mt-2 flex gap-1">
+                          {r.gender && <span className="text-[10px] text-black/40">{r.gender}</span>}
+                          {r.age && <span className="text-[10px] text-black/40">{r.age}</span>}
+                        </div>
+                        <button className="mt-2 w-full rounded-full bg-[#4f46e5] py-1.5 text-xs font-semibold text-white hover:bg-[#4338CA]">
+                          Apply
+                        </button>
+                      </div>
+                    ))}
+                    {job.roles.length > 2 && (
+                      <button
+                        onClick={() => setSelectedJob(job)}
+                        className="w-full text-center text-xs font-semibold text-[#4f46e5] hover:underline"
+                      >
+                        View all {job.roles.length} roles
                       </button>
-                    </div>
-                  ))}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -378,12 +461,12 @@ export default function FindJobsPage() {
 
         {/* Discover section */}
         <div className="mt-12 rounded-2xl bg-gray-900 p-6 md:p-8">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-white/80">Discover more of Eric Rabar</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-white/80">Discover more of SmartGigs Kenya</h3>
           <div className="mt-4 flex flex-wrap gap-2">
-            {['Netflix Auditions', 'Movie Auditions', 'Commercials', 'Voiceover Jobs', 'Theater Auditions', 'Modeling Jobs', 'UGC Gigs', 'Background Extra', 'Remote Jobs', 'Short Film Casting', 'Drama Casting', 'Reality TV'].map((tag) => (
-              <Link key={tag} to="/FindJobs" className="rounded-full bg-white/10 px-3 py-2 text-xs text-white/70 hover:bg-white/20 hover:text-white md:px-4 md:text-sm">
+            {['Acting Jobs', 'Voiceover Jobs', 'Theater Auditions', 'Commercial Casting', 'UGC Gigs', 'Background Extra', 'Remote Jobs', 'Short Film Casting', 'Drama Casting', 'Reality TV'].map((tag) => (
+              <button key={tag} className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20">
                 {tag}
-              </Link>
+              </button>
             ))}
           </div>
         </div>
@@ -391,8 +474,60 @@ export default function FindJobsPage() {
 
       <Footer />
 
-      {/* Slide-out detail panel */}
-      <GigDetailSlideOut job={selectedJob} onClose={() => setSelectedJob(null)} />
+      {/* Detail slide-out */}
+      {selectedJob && (
+        <GigDetailSlideOut
+          job={selectedJob}
+          onClose={() => setSelectedJob(null)}
+          onApply={() => {
+            // Handle apply logic
+          }}
+        />
+      )}
+
+      {/* Client profile modal */}
+      {showClientModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-black">Company Profile</h2>
+              <button onClick={() => setShowClientModal(null)} className="rounded-full p-2 hover:bg-gray-100">
+                <span className="sr-only">Close</span>
+                <ChevronDown className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Building2 className="h-8 w-8 text-gray-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-black">{showClientModal.company}</h3>
+                  <p className="text-sm text-black/50">Production Company</p>
+                </div>
+              </div>
+              <div className="border-t border-gray-200 pt-4">
+                <p className="text-sm text-black/70 mb-2">Contact Information</p>
+                <p className="text-sm font-medium text-black">View full profile to see contact details and past productions.</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowClientModal(null)}
+                  className="flex-1 rounded-full bg-[#4f46e5] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]"
+                >
+                  View Full Profile
+                </button>
+                <button
+                  onClick={() => setShowClientModal(null)}
+                  className="flex-1 rounded-full border border-gray-300 px-4 py-2.5 text-sm font-semibold text-black hover:bg-gray-50"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
