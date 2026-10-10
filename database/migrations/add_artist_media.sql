@@ -29,12 +29,22 @@ BEGIN
         CREATE INDEX idx_artist_media_status ON public.artist_media(status);
         CREATE INDEX idx_artist_media_order ON public.artist_media(artist_id, order_index);
 
-        -- Add foreign key constraint to artists table
-        ALTER TABLE public.artist_media
-        ADD CONSTRAINT fk_artist_media_artist
-        FOREIGN KEY (artist_id) REFERENCES public.creators(id) ON DELETE CASCADE;
+        -- Add foreign key constraint to creators table
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM information_schema.table_constraints
+                WHERE constraint_name = 'fk_artist_media_artist'
+                AND table_name = 'artist_media'
+            ) THEN
+                ALTER TABLE public.artist_media
+                ADD CONSTRAINT fk_artist_media_artist
+                FOREIGN KEY (artist_id) REFERENCES public.creators(id) ON DELETE CASCADE;
+            END IF;
+        END $$;
 
         -- Add trigger for updated_at
+        DROP TRIGGER IF EXISTS trg_artist_media_updated_at ON public.artist_media;
         CREATE TRIGGER trg_artist_media_updated_at
             BEFORE UPDATE ON public.artist_media
             FOR EACH ROW
