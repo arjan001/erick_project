@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { ProjectOwner, Project, TeamMember, BillingInfo, Invoice, SecuritySettings, ActiveSession } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import CountrySelector from '@/components/CountrySelector'
 import { formatSocialMediaUrl } from '@/lib/socialMediaUtils'
-import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2, FolderOpen, Users, CreditCard, Lock, Settings as SettingsIcon, Plus, Eye, MoreVertical, UserPlus, FileText, Monitor, MapPin, Share2 } from 'lucide-react'
+import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2, FolderOpen, Users, CreditCard, Lock, Settings as SettingsIcon, Plus, Eye, MoreVertical, UserPlus, FileText, Monitor, MapPin, Share2, Image as ImageIcon } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
@@ -34,6 +35,8 @@ export default function ClientProfilePage() {
   const [saving, setSaving] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [previewUrl, setPreviewUrl] = useState(null)
+  const [companyImages, setCompanyImages] = useState([])
+  const [uploadingImages, setUploadingImages] = useState(false)
   const [activeTab, setActiveTab] = useState('profile')
   const [editing, setEditing] = useState(false)
   const [showBioModal, setShowBioModal] = useState(false)
@@ -89,6 +92,7 @@ export default function ClientProfilePage() {
           setEmailNotifications(o.email_notifications ?? true)
           setProjectUpdates(o.project_updates ?? true)
           setProfilePublic(o.profile_public ?? true)
+          setCompanyImages(o.company_images || [])
         }
       } catch (err) {
         //
@@ -544,6 +548,61 @@ export default function ClientProfilePage() {
     }
   }
 
+  const handleCompanyImagesUpload = async (e) => {
+    const files = Array.from(e.target.files || [])
+    if (!files.length || !owner) return
+
+    setUploadingImages(true)
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const fileName = `company-images-${owner.id}-${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name}`
+        const { data, error } = await supabase.storage
+          .from('client-profiles')
+          .upload(fileName, file)
+
+        if (error) throw error
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('client-profiles')
+          .getPublicUrl(fileName)
+
+        return publicUrl
+      })
+
+      const uploadedUrls = await Promise.all(uploadPromises)
+      setCompanyImages([...companyImages, ...uploadedUrls])
+
+      // Save to database as JSON array
+      const existingImages = owner.company_images || []
+      const updatedImages = [...existingImages, ...uploadedUrls]
+      await ProjectOwner.update(owner.id, { company_images: updatedImages })
+      setOwner({ ...owner, company_images: updatedImages })
+
+      success('Images Uploaded', `${uploadedUrls.length} image(s) uploaded successfully`)
+    } catch (err) {
+      toastError('Upload Failed', `Failed to upload images: ${err.message || 'Unknown error'}`)
+    } finally {
+      setUploadingImages(false)
+    }
+  }
+
+  const handleRemoveCompanyImage = async (imageUrl) => {
+    if (!confirm('Remove this image?')) return
+
+    try {
+      const updatedImages = companyImages.filter(url => url !== imageUrl)
+      setCompanyImages(updatedImages)
+
+      // Update database
+      await ProjectOwner.update(owner.id, { company_images: updatedImages })
+      setOwner({ ...owner, company_images: updatedImages })
+
+      success('Image Removed', 'Image has been removed')
+    } catch (err) {
+      toastError('Remove Failed', 'Failed to remove image')
+    }
+  }
+
   if (loading || !user) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -619,6 +678,62 @@ export default function ClientProfilePage() {
                     </Button>
                   </div>
                 </div>
+              </div>
+
+              {/* Company Images Gallery */}
+              <div className="bg-gray-50 rounded-2xl p-6 sm:p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900">Company Images</h3>
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleCompanyImagesUpload}
+                      disabled={uploadingImages}
+                      className="hidden"
+                    />
+                    <Button size="sm" disabled={uploadingImages}>
+                      {uploadingImages ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Images
+                        </>
+                      )}
+                    </Button>
+                  </label>
+                </div>
+
+                {companyImages.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {companyImages.map((imageUrl, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={imageUrl}
+                          alt={`Company image ${index + 1}`}
+                          className="w-full h-32 sm:h-40 object-cover rounded-lg"
+                        />
+                        <button
+                          onClick={() => handleRemoveCompanyImage(imageUrl)}
+                          className="absolute top-2 right-2 w-6 h-6 bg-black/70 hover:bg-black text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <ImageIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p className="text-sm">No company images uploaded yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Add images to showcase your company</p>
+                  </div>
+                )}
               </div>
 
               {/* Profile Form */}
