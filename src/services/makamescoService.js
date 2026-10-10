@@ -8,12 +8,17 @@
  * - M-Pesa STK Push (C2B)
  * - Card & Airtel Money payments via PesaPal
  * - B2C disbursements
- * - Platform wallet & withdrawals
+ * Platform wallet & withdrawals
  * - Multi-currency support (East Africa)
  */
 
 const MAKAMESCO_BASE_URL = 'https://makamescopay.com'
 const API_VERSION = 'v1'
+
+// Get credentials from environment variables
+const MAKAMESCO_PUBLIC_KEY = import.meta.env.VITE_MAKAMESCO_PUBLIC_KEY || ''
+const MAKAMESCO_SECRET_KEY = import.meta.env.VITE_MAKAMESCO_SECRET_KEY || ''
+const MAKAMESCO_SETTLEMENT_ACCOUNT_ID = import.meta.env.VITE_MAKAMESCO_SETTLEMENT_ACCOUNT_ID || ''
 
 /**
  * Initiate an M-Pesa STK Push payment via Makamesco
@@ -29,7 +34,6 @@ const API_VERSION = 'v1'
  * @returns {Promise<Object>} Makamesco STK Push response
  */
 export async function initiateMakamescoSTKPush({
-  secretKey,
   phoneNumber,
   amount,
   accountReference,
@@ -37,8 +41,11 @@ export async function initiateMakamescoSTKPush({
   settlementAccountId = null,
   tenantCode = null
 }) {
+  // Use secret key from environment variable
+  const secretKey = MAKAMESCO_SECRET_KEY
+  if (!secretKey) throw new Error('Makamesco Secret Key not configured in environment variables')
+
   // Validate required fields
-  if (!secretKey) throw new Error('Makamesco Secret Key is required')
   if (!phoneNumber) throw new Error('Phone number is required')
   if (!amount || amount < 1) throw new Error('Amount must be at least KES 1')
   if (!accountReference) throw new Error('Account reference is required')
@@ -60,7 +67,7 @@ export async function initiateMakamescoSTKPush({
   }
 
   // Add optional parameters
-  if (settlementAccountId) payload.settlementAccountId = settlementAccountId
+  if (settlementAccountId) payload.settlementAccountId = settlementAccountId || MAKAMESCO_SETTLEMENT_ACCOUNT_ID
   if (tenantCode) payload.tenantCode = tenantCode
 
   try {
@@ -98,12 +105,12 @@ export async function initiateMakamescoSTKPush({
  * Check the status of a Makamesco STK Push transaction
  *
  * @param {Object} params
- * @param {string} params.secretKey - Makamesco Secret Key
  * @param {string} params.checkoutRequestId - From initiateMakamescoSTKPush response
  * @returns {Promise<Object>} Transaction status
  */
-export async function checkMakamescoStatus({ secretKey, checkoutRequestId }) {
-  if (!secretKey) throw new Error('Makamesco Secret Key is required')
+export async function checkMakamescoStatus({ checkoutRequestId }) {
+  const secretKey = MAKAMESCO_SECRET_KEY
+  if (!secretKey) throw new Error('Makamesco Secret Key not configured in environment variables')
   if (!checkoutRequestId) throw new Error('Checkout Request ID is required')
 
   try {
@@ -141,7 +148,6 @@ export async function checkMakamescoStatus({ secretKey, checkoutRequestId }) {
  * Send B2C disbursement via Makamesco
  *
  * @param {Object} params
- * @param {string} params.secretKey - Makamesco Secret Key
  * @param {string} params.phoneNumber - Recipient phone (format: 2547XXXXXXXXX)
  * @param {number} params.amount - Amount in KES (minimum 10)
  * @param {string} params.remarks - Description
@@ -150,14 +156,14 @@ export async function checkMakamescoStatus({ secretKey, checkoutRequestId }) {
  * @returns {Promise<Object>} B2C initiation response
  */
 export async function initiateMakamescoB2C({
-  secretKey,
   phoneNumber,
   amount,
   remarks,
   commandId = 'BusinessPayment',
   occasion = null
 }) {
-  if (!secretKey) throw new Error('Makamesco Secret Key is required')
+  const secretKey = MAKAMESCO_SECRET_KEY
+  if (!secretKey) throw new Error('Makamesco Secret Key not configured in environment variables')
   if (!phoneNumber) throw new Error('Phone number is required')
   if (!amount || amount < 10) throw new Error('Amount must be at least KES 10')
   if (!remarks) throw new Error('Remarks are required')
@@ -212,12 +218,12 @@ export async function initiateMakamescoB2C({
  * Check B2C disbursement status
  *
  * @param {Object} params
- * @param {string} params.secretKey - Makamesco Secret Key
  * @param {string} params.conversationId - From initiateMakamescoB2C response
  * @returns {Promise<Object>} B2C status
  */
-export async function checkMakamescoB2CStatus({ secretKey, conversationId }) {
-  if (!secretKey) throw new Error('Makamesco Secret Key is required')
+export async function checkMakamescoB2CStatus({ conversationId }) {
+  const secretKey = MAKAMESCO_SECRET_KEY
+  if (!secretKey) throw new Error('Makamesco Secret Key not configured in environment variables')
   if (!conversationId) throw new Error('Conversation ID is required')
 
   try {
@@ -259,14 +265,12 @@ export async function checkMakamescoB2CStatus({ secretKey, conversationId }) {
  * Used by admin settings page "Test Connection" button
  *
  * @param {Object} params
- * @param {string} params.secretKey - Makamesco Secret Key
  * @param {string} params.phoneNumber - Test phone number
  * @returns {Promise<Object>} { success, message }
  */
-export async function testMakamescoConnection({ secretKey, phoneNumber }) {
+export async function testMakamescoConnection({ phoneNumber }) {
   try {
     const result = await initiateMakamescoSTKPush({
-      secretKey,
       phoneNumber: phoneNumber || '254700000000', // Default test number
       amount: 1, // Minimum amount for testing
       accountReference: 'TEST_CONNECTION',
@@ -328,6 +332,21 @@ export function parseMakamescoCallback(callback) {
     mpesaReceipt: getItem('MpesaReceiptNumber'),
     transactionDate: getItem('TransactionDate'),
     phoneNumber: getItem('PhoneNumber')
+  }
+}
+
+/**
+ * Get Makamesco configuration from environment
+ * Used by admin settings to display current configuration
+ */
+export function getMakamescoConfig() {
+  return {
+    publicKey: MAKAMESCO_PUBLIC_KEY,
+    secretKey: MAKAMESCO_SECRET_KEY ? '***CONFIGURED***' : '',
+    settlementAccountId: MAKAMESCO_SETTLEMENT_ACCOUNT_ID,
+    baseUrl: MAKAMESCO_BASE_URL
+  }
+}
   }
 }
 
