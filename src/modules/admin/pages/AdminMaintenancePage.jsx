@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
+import RichTextEditor from '@/components/admin/RichTextEditor'
 import {
   Settings, Save, Clock, Shield, CheckCircle2, AlertTriangle, RefreshCw,
   Layout, Mail, Key, Plus, Trash2, Copy, Eye, X
@@ -51,7 +52,7 @@ export default function AdminMaintenancePage() {
     endTime: '',
     allowedIPs: '',
     showCountdown: true,
-    contactEmail: 'support@ericrabar.app',
+    contactEmail: 'support@smartgigs.ke',
     template: 'default'
   })
 
@@ -175,7 +176,7 @@ export default function AdminMaintenancePage() {
         .insert({
           code: newCode.trim(),
           is_active: true,
-          created_by: localStorage.getItem('ericrabar_user') ? JSON.parse(localStorage.getItem('ericrabar_user')).email : 'admin',
+          created_by: localStorage.getItem('smartgigs_user') ? JSON.parse(localStorage.getItem('smartgigs_user')).email : 'admin',
           expires_at: codeExpiry || null
         })
 
@@ -296,8 +297,8 @@ export default function AdminMaintenancePage() {
                         <button
                           onClick={() => applyTemplate(template.key)}
                           className={`flex-1 p-2 rounded border text-left transition-all text-xs ${settings.template === template.key
-                              ? 'border-black bg-gray-50'
-                              : 'border-gray-300 hover:border-gray-400'
+                            ? 'border-black bg-gray-50'
+                            : 'border-gray-300 hover:border-gray-400'
                             }`}
                         >
                           <div className="font-medium text-gray-900">{template.name}</div>
@@ -315,32 +316,30 @@ export default function AdminMaintenancePage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Custom Message (HTML allowed)</label>
-                  <textarea
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Custom Message</label>
+                  <RichTextEditor
                     value={settings.message}
-                    onChange={(e) => handleChange('message', e.target.value)}
-                    rows={10}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-black focus:border-transparent font-mono text-xs"
-                    placeholder="Enter your maintenance message in HTML format..."
+                    onChange={(html) => handleChange('message', html)}
+                    placeholder="Enter your maintenance message..."
+                    height="250px"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    You can use HTML tags for formatting
+                    Use the rich text editor to format your message
                   </p>
                 </div>
               </div>
             ) : (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Custom Message (HTML allowed)</label>
-                  <textarea
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Custom Message</label>
+                  <RichTextEditor
                     value={settings.message}
-                    onChange={(e) => handleChange('message', e.target.value)}
-                    rows={10}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-black focus:border-transparent font-mono text-xs"
-                    placeholder="Enter your maintenance message in HTML format..."
+                    onChange={(html) => handleChange('message', html)}
+                    placeholder="Enter your maintenance message..."
+                    height="250px"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    You can use HTML tags for formatting
+                    Use the rich text editor to format your message
                   </p>
                 </div>
               </div>

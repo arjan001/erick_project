@@ -12,7 +12,7 @@ export default function MaintenancePage() {
   const [endTime, setEndTime] = useState(null)
   const [timeRemaining, setTimeRemaining] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [contactEmail, setContactEmail] = useState('support@ericrabar.app')
+  const [contactEmail, setContactEmail] = useState('support@smartgigs.ke')
 
   useEffect(() => {
     loadMaintenanceInfo()
