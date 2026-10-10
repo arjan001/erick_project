@@ -56,30 +56,65 @@ export default function ArtistProfile() {
   const [previewUrl, setPreviewUrl] = useState(null)
   const [uploading, setUploading] = useState(false)
 
-  const [formData, setFormData] = useState({
-    full_name: '', roles: [], based_in_city: '', based_in_country: '', bio: '',
-    website: '', instagram: '', linkedin: '', twitter: '', youtube: '',
-    profession: '', gender: '',
-    appearance: {
-      height: '', weight: '', ageRange: '', ethnicity: '', build: '', hairColor: '', eyeColor: ''
-    },
-    skills: [],
-    credits: {
-      film: [], commercials: []
-    },
-    education: [],
-    socialMedia: {
-      instagram: '', linkedin: '', twitter: '', youtube: '', tiktok: ''
-    },
-    representation: {
-      agent: '', email: ''
-    },
-    unionMembership: [],
-    licensePassport: {
-      driverLicense: false, passport: false
-    },
-    self_recording_equipment: '',
-    highlights: ''
+  const [formData, setFormData] = useState(() => {
+    // Load draft from localStorage if exists
+    const savedDraft = localStorage.getItem('smartgigs_profile_draft')
+    if (savedDraft) {
+      try {
+        return JSON.parse(savedDraft)
+      } catch {
+        return {
+          full_name: '', roles: [], based_in_city: '', based_in_country: '', bio: '',
+          website: '', instagram: '', linkedin: '', twitter: '', youtube: '',
+          profession: '', gender: '',
+          appearance: {
+            height: '', weight: '', ageRange: '', ethnicity: '', build: '', hairColor: '', eyeColor: ''
+          },
+          skills: [],
+          credits: {
+            film: [], commercials: []
+          },
+          education: [],
+          socialMedia: {
+            instagram: '', linkedin: '', twitter: '', youtube: '', tiktok: ''
+          },
+          representation: {
+            agent: '', email: ''
+          },
+          unionMembership: [],
+          licensePassport: {
+            driverLicense: false, passport: false
+          },
+          self_recording_equipment: '',
+          highlights: ''
+        }
+      }
+    }
+    return {
+      full_name: '', roles: [], based_in_city: '', based_in_country: '', bio: '',
+      website: '', instagram: '', linkedin: '', twitter: '', youtube: '',
+      profession: '', gender: '',
+      appearance: {
+        height: '', weight: '', ageRange: '', ethnicity: '', build: '', hairColor: '', eyeColor: ''
+      },
+      skills: [],
+      credits: {
+        film: [], commercials: []
+      },
+      education: [],
+      socialMedia: {
+        instagram: '', linkedin: '', twitter: '', youtube: '', tiktok: ''
+      },
+      representation: {
+        agent: '', email: ''
+      },
+      unionMembership: [],
+      licensePassport: {
+        driverLicense: false, passport: false
+      },
+      self_recording_equipment: '',
+      highlights: ''
+    }
   })
 
   // Flatten all skills from categories for multi-select
@@ -114,6 +149,11 @@ export default function ArtistProfile() {
   useEffect(() => {
     localStorage.setItem('smartgigs_portfolio_draft', JSON.stringify(portfolioForm))
   }, [portfolioForm])
+
+  // Auto-save form data to localStorage to prevent data loss on reload
+  useEffect(() => {
+    localStorage.setItem('smartgigs_profile_draft', JSON.stringify(formData))
+  }, [formData])
 
   // Save active tab to localStorage
   useEffect(() => {
@@ -331,6 +371,8 @@ export default function ArtistProfile() {
 
       success('Profile Updated', 'Your profile has been saved')
       setEditing(false)
+      // Clear the draft after successful save
+      localStorage.removeItem('smartgigs_profile_draft')
     } catch (err) {
 
       toastError('Save Failed', 'Failed to save profile. Please try again.')

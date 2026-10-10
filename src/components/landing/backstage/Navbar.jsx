@@ -12,12 +12,22 @@ const NewBadge = ({ className = '' }) => (
 )
 
 export default function Navbar() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [joinOpen, setJoinOpen] = useState(false)
   const [cartItems, setCartItems] = useState([])
   const [wishlistItems, setWishlistItems] = useState([])
   const joinRef = useRef(null)
+
+  const getDashboardUrl = () => {
+    if (!user) return '/SignIn'
+    const role = user.role
+    if (role === 'artist' || role === 'artist_admin') return '/artistdashboard'
+    if (role === 'team' || role === 'team_admin') return '/teamdashboard'
+    if (role === 'client' || role === 'project_owner') return '/clientdashboard'
+    if (role === 'backer') return '/backerdashboard'
+    return '/SignIn'
+  }
 
   useEffect(() => {
     const handler = (e) => {
@@ -107,8 +117,8 @@ export default function Navbar() {
             </div>
           )}
 
-          <Link to={isAuthenticated ? "/SubmitProject" : "/SignIn"} className="rounded-full border-2 border-black bg-white px-6 py-3 text-sm font-bold text-black hover:bg-black/[0.03]">
-            Post a Gig
+          <Link to={isAuthenticated ? getDashboardUrl() : "/SubmitProject"} className="rounded-full border-2 border-black bg-white px-6 py-3 text-sm font-bold text-black hover:bg-black/[0.03]">
+            {isAuthenticated ? 'Dashboard' : 'Post a Gig'}
           </Link>
 
           {!isAuthenticated && (
@@ -162,6 +172,11 @@ export default function Navbar() {
                 <Link to="/SignUp?role=artist" className="rounded-full bg-[#10B981] px-5 py-2 text-center text-sm font-semibold text-white">Join as Talent</Link>
                 <Link to="/SignUp?role=client" className="rounded-full bg-[#10B981] px-5 py-2 text-center text-sm font-semibold text-white">Join as Producer</Link>
                 <Link to="/SignIn" className="text-center text-sm font-semibold text-black">Sign in</Link>
+              </div>
+            )}
+            {isAuthenticated && (
+              <div className="mt-2">
+                <Link to={getDashboardUrl()} className="rounded-full bg-black text-white px-5 py-2 text-center text-sm font-semibold w-full">Dashboard</Link>
               </div>
             )}
             {/* Cart and Wishlist on mobile */}
