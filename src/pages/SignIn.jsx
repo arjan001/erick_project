@@ -584,7 +584,7 @@ export default function SignIn() {
                   </button>
                 </div>
                 <div className="flex justify-end">
-                  <button type="button" onClick={() => { setShowForgotPassword(true); setError(''); }} className="text-xs text-black/50 hover:text-black">
+                  <Link to="/ForgotPassword" className="text-xs text-black/50 hover:text-black">
                     Forgot password?
                   </button>
                 </div>

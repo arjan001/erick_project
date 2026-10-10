@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { routes } from './routes.config'
+import AuthRedirectHandler from '@/components/AuthRedirectHandler'
 
 // Loading component for lazy-loaded routes
 const RouteLoader = () => (
@@ -33,7 +34,7 @@ export function RouteRenderer() {
     <Routes>
       {routes.map((route) => {
         const LazyComponent = lazy(route.component)
-        
+
         return (
           <Route
             key={route.path}
@@ -48,7 +49,7 @@ export function RouteRenderer() {
           />
         )
       })}
-      
+
       {/* Catch-all redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

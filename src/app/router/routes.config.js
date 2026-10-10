@@ -315,6 +315,18 @@ const authRoutes = [
     guard: GuestGuard
   },
   {
+    path: '/ForgotPassword',
+    component: () => import('@/pages/ForgotPassword'),
+    layout: AuthLayout,
+    guard: GuestGuard
+  },
+  {
+    path: '/ResetPassword',
+    component: () => import('@/pages/ResetPassword'),
+    layout: AuthLayout,
+    guard: GuestGuard
+  },
+  {
     path: '/AcceptTeamInvite',
     component: () => import('@/pages/AcceptTeamInvite'),
     layout: AuthLayout,
