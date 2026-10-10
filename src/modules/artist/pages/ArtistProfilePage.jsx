@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Artist, PortfolioClip, Endorsement, Testimonial, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
+import { Artist, PortfolioClip, Endorsement, Testimonial, Subscription, SubscriptionPackage, Application, Job } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,7 @@ import SkillsCategorySelector from '@/components/SkillsCategorySelector'
 import ArtistMediaGallery from '@/components/artist/ArtistMediaGallery'
 import skillsAndRoles from '@/lib/skillsAndRoles.json'
 import { ALL_FILM_ROLES } from '@/lib/filmRoles'
-import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2, ChevronDown, ChevronUp } from 'lucide-react'
+import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2, ChevronDown, ChevronUp, Briefcase } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { confirmDialog } from '@/lib/sweetAlert'
 import ShareProfileButton from '@/components/artist/ShareProfileButton'
@@ -43,6 +43,7 @@ export default function ArtistProfile() {
   const [portfolioClips, setPortfolioClips] = useState([])
   const [endorsements, setEndorsements] = useState([])
   const [testimonials, setTestimonials] = useState([])
+  const [applications, setApplications] = useState([])
   const [activeTab, setActiveTab] = useState(() => {
     // Load saved tab from localStorage
     const savedTab = localStorage.getItem('smartgigs_active_tab')
@@ -161,6 +162,25 @@ export default function ArtistProfile() {
           setProjectAlerts(a.project_alerts ?? true)
           setProfilePublic(a.profile_public ?? true)
           setGoogleDriveFolderId(a.google_drive_folder_id || '')
+
+          // Load applications
+          const applicationsData = await Application.filter({ applicant_email: user.email }, '-created_at', 10)
+          const jobIds = applicationsData.map(app => app.job_id).filter(Boolean)
+          if (jobIds.length > 0) {
+            const jobsData = await Promise.all(
+              jobIds.map(jobId => Job.get(jobId).catch(() => null))
+            )
+            const jobsMap = {}
+            jobsData.forEach(job => {
+              if (job) jobsMap[job.id] = job
+            })
+            setApplications(applicationsData.map(app => ({
+              ...app,
+              job: jobsMap[app.job_id] || null
+            })))
+          } else {
+            setApplications(applicationsData || [])
+          }
 
           const clipsData = await PortfolioClip.filter({
             uploaded_by_type: 'artist', uploaded_by_id: a.id
@@ -980,6 +1000,32 @@ export default function ArtistProfile() {
                     <div className="bg-gray-50 rounded-2xl p-6">
                       <h3 className="font-semibold text-gray-900 mb-4">Highlights</h3>
                       <p className="text-sm text-gray-700">{formData.highlights}</p>
+                    </div>
+                  )}
+
+                  {/* Applied Jobs */}
+                  {applications.length > 0 && (
+                    <div className="bg-gray-50 rounded-2xl p-6">
+                      <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Briefcase className="w-5 h-5 text-gray-500" />
+                        Applied Jobs ({applications.length})
+                      </h3>
+                      <div className="space-y-3">
+                        {applications.map((app) => (
+                          <div key={app.id} className="border border-gray-200 rounded-lg p-4 bg-white">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-900">{app.job?.title || 'Unknown Job'}</h4>
+                                <p className="text-sm text-gray-600 mt-1">{app.job?.description?.substring(0, 100) || 'No description'}...</p>
+                                <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                                  <span>Status: <span className={`font-medium ${app.status === 'accepted' ? 'text-green-600' : app.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'}`}>{app.status || 'Pending'}</span></span>
+                                  <span>Applied: {new Date(app.created_at).toLocaleDateString()}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
