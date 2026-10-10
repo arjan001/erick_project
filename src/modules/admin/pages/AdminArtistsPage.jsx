@@ -32,8 +32,8 @@ export default function AdminArtistsPage() {
       const all = await Artist.list('-created_at', 100)
       setArtists(all || [])
     } catch (err) {
-      
-      toastError('Load Failed', 'Failed to load artists')
+      console.error('Error fetching artists:', err)
+      setArtists([]) // Set empty array on error instead of showing error
     } finally {
       setLoading(false)
     }
@@ -43,11 +43,11 @@ export default function AdminArtistsPage() {
 
   const filteredArtists = artists.filter(artist => {
     const matchesSearch = artist.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         artist.email?.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || 
-                          (statusFilter === 'active' && !artist.is_suspended && !artist.is_disabled) ||
-                          (statusFilter === 'suspended' && artist.is_suspended) ||
-                          (statusFilter === 'disabled' && artist.is_disabled)
+      artist.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesStatus = statusFilter === 'all' ||
+      (statusFilter === 'active' && !artist.is_suspended && !artist.is_disabled) ||
+      (statusFilter === 'suspended' && artist.is_suspended) ||
+      (statusFilter === 'disabled' && artist.is_disabled)
     return matchesSearch && matchesStatus
   })
 
@@ -94,7 +94,7 @@ export default function AdminArtistsPage() {
       ])
       setViewingArtist(prev => ({ ...prev, applications: applications || [], jobs: jobs || [] }))
     } catch (err) {
-      
+
     }
   }
 
@@ -111,7 +111,7 @@ export default function AdminArtistsPage() {
       setShowModal(false)
       fetchData()
     } catch (err) {
-      
+
       toastError('Save Failed', `Failed to save artist: ${err.message || 'Unknown error'}`)
     }
   }

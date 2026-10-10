@@ -36,8 +36,8 @@ export default function AdminClientsPage() {
       const rows = await ProjectOwner.list('-created_at', 100)
       setClients(rows || [])
     } catch (err) {
-      
-      toastError('Error', 'Failed to fetch clients')
+      console.error('Error fetching clients:', err)
+      setClients([]) // Set empty array on error instead of showing error
     } finally {
       setLoading(false)
     }
@@ -51,9 +51,9 @@ export default function AdminClientsPage() {
       await ProjectOwner.delete(clientId)
       setClients(prev => prev.filter(c => c.id !== clientId))
       success('Deleted', 'Client deleted successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'client.delete', entity_type: 'ProjectOwner', entity_id: clientId, details: 'Deleted client' }).catch(() => {})
+      AuditLog.create({ actor_email: user?.email, action: 'client.delete', entity_type: 'ProjectOwner', entity_id: clientId, details: 'Deleted client' }).catch(() => { })
     } catch (err) {
-      
+
       toastError('Failed', 'Failed to delete client')
     }
   }
@@ -112,7 +112,7 @@ export default function AdminClientsPage() {
       setShowModal(false)
       fetchClients()
     } catch (err) {
-      
+
       toastError('Save Failed', `Failed to save client: ${err.message || 'Unknown error'}`)
     }
   }
@@ -125,13 +125,13 @@ export default function AdminClientsPage() {
 
   const filteredClients = clients.filter(client => {
     const matchesSearch = client.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         client.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         client.company?.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || 
-                          (statusFilter === 'active' && !client.is_suspended && !client.is_disabled) ||
-                          (statusFilter === 'suspended' && client.is_suspended) ||
-                          (statusFilter === 'disabled' && client.is_disabled) ||
-                          (statusFilter === 'pending' && client.status === 'pending')
+      client.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      client.company?.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesStatus = statusFilter === 'all' ||
+      (statusFilter === 'active' && !client.is_suspended && !client.is_disabled) ||
+      (statusFilter === 'suspended' && client.is_suspended) ||
+      (statusFilter === 'disabled' && client.is_disabled) ||
+      (statusFilter === 'pending' && client.status === 'pending')
     return matchesSearch && matchesStatus
   })
 

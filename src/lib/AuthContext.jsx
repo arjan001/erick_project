@@ -54,7 +54,7 @@ async function resolveAppRole(email) {
 // Generate a unique invite/referral code for each new user
 function generateInviteCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let code = 'ER-'
+  let code = 'SG-'
   for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
   return code
 }
@@ -321,11 +321,12 @@ export const AuthProvider = ({ children }) => {
         await trackUserSession(u)
         await ensureProfile(u)
 
-        // Handle OAuth redirect after sign in
+        // Handle OAuth redirect after sign in - store redirect path
         const oauthRedirect = sessionStorage.getItem('oauth_redirect')
         if (oauthRedirect) {
           sessionStorage.removeItem('oauth_redirect')
-          window.location.href = oauthRedirect
+          // Store for use by router
+          sessionStorage.setItem('auth_redirect', oauthRedirect)
         } else {
           // Default redirect based on role
           const roleRedirects = {
@@ -337,7 +338,7 @@ export const AuthProvider = ({ children }) => {
             admin: '/Admin',
           }
           const defaultRedirect = roleRedirects[appRole] || '/artistdashboard'
-          window.location.href = defaultRedirect
+          sessionStorage.setItem('auth_redirect', defaultRedirect)
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null)

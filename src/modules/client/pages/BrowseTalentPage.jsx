@@ -30,8 +30,8 @@ export default function BrowseTalentPage() {
       const artists = await Artist.list('created_at', 100)
       setTalent(artists || [])
     } catch (err) {
-      //
-      error('Error', 'Failed to fetch talent')
+      console.error('Error fetching talent:', err)
+      setTalent([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -40,15 +40,16 @@ export default function BrowseTalentPage() {
   const fetchSavedTalent = async () => {
     if (!user?.email) return
     try {
-      const connections = await Connection.filter({ 
-        user_email: user.email, 
+      const connections = await Connection.filter({
+        user_email: user.email,
         connection_type: 'saved',
         status: 'active'
       })
       const savedIds = new Set(connections.map(c => c.connected_artist_id).filter(Boolean))
       setSavedArtistIds(savedIds)
     } catch (err) {
-      //
+      console.error('Error fetching saved talent:', err)
+      setSavedArtistIds(new Set()) // Set empty set on error
     }
   }
 
@@ -60,8 +61,8 @@ export default function BrowseTalentPage() {
     try {
       if (savedArtistIds.has(artistId)) {
         // Unsave
-        const connections = await Connection.filter({ 
-          user_email: user.email, 
+        const connections = await Connection.filter({
+          user_email: user.email,
           connected_artist_id: artistId,
           connection_type: 'saved'
         })
@@ -101,17 +102,17 @@ export default function BrowseTalentPage() {
   }
 
   const filteredTalent = talent.filter(artist => {
-    const matchesSearch = 
+    const matchesSearch =
       artist.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       artist.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       artist.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (artist.skills_experience || []).some(s => s.skill?.toLowerCase().includes(searchQuery.toLowerCase()))
-    
+
     const matchesRole = filterRole === 'all' || artist.role === filterRole
-    const matchesLocation = filterLocation === 'all' || 
+    const matchesLocation = filterLocation === 'all' ||
       artist.based_in_city?.toLowerCase().includes(filterLocation.toLowerCase()) ||
       artist.based_in_country?.toLowerCase().includes(filterLocation.toLowerCase())
-    
+
     return matchesSearch && matchesRole && matchesLocation
   })
 
@@ -201,7 +202,7 @@ export default function BrowseTalentPage() {
             {filteredTalent.map((artist) => (
               <div key={artist.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
                 <div className="flex items-start gap-4 mb-3">
-                  <div 
+                  <div
                     className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center text-gray-500 font-semibold flex-shrink-0 cursor-pointer"
                     onClick={() => handleViewProfile(artist.id)}
                   >
@@ -212,7 +213,7 @@ export default function BrowseTalentPage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 
+                    <h3
                       className="font-semibold text-gray-900 truncate cursor-pointer hover:text-[#4F46E5]"
                       onClick={() => handleViewProfile(artist.id)}
                     >{artist.full_name}</h3>
@@ -251,17 +252,17 @@ export default function BrowseTalentPage() {
                 )}
 
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="flex-1"
                     onClick={() => handleViewProfile(artist.id)}
                   >
                     <ExternalLink className="w-3 h-3 mr-1" />
                     View Profile
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="flex-1 bg-[#4F46E5] hover:bg-[#4338CA]"
                     onClick={() => handleMessage(artist.email)}
                   >
