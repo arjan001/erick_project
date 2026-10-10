@@ -375,26 +375,6 @@ export default function SignUp() {
             </Link>
           </div>
 
-          {/* Toggle Talent/Employer */}
-          <div className="mb-8">
-            <div className="inline-flex bg-gray-100 rounded-full p-1">
-              <button
-                onClick={() => setUserType('talent')}
-                className={`px-6 py-2 rounded-full text-sm font-semibold transition-colors ${userType === 'talent' ? 'bg-black text-white' : 'text-gray-600 hover:text-black'
-                  }`}
-              >
-                Talent
-              </button>
-              <button
-                onClick={() => setUserType('employer')}
-                className={`px-6 py-2 rounded-full text-sm font-semibold transition-colors ${userType === 'employer' ? 'bg-black text-white' : 'text-gray-600 hover:text-black'
-                  }`}
-              >
-                Employer
-              </button>
-            </div>
-          </div>
-
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             {isEmployer ? 'Create employer account' : 'Create talent account'}
           </h1>
