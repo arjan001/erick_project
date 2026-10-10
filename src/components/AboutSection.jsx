@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Artist } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
-import { Plus, X, Sparkles, ThumbsUp, Edit2, Check, Globe, Instagram, Linkedin, MapPin, Languages, Award, Briefcase, Users as UsersIcon, Facebook, Youtube, Twitter, Film, GraduationCap, Video, Mail } from 'lucide-react'
+import { Plus, X, Sparkles, ThumbsUp, Edit2, Check, Globe, Instagram, Linkedin, MapPin, Languages, Award, Briefcase, Users as UsersIcon, Facebook, Youtube, Twitter, Film, GraduationCap, Video, Mail, AlertCircle } from 'lucide-react'
 import SkillsExperienceTagInput from '@/components/SkillsExperienceTagInput'
 import worldLanguages from '@/data/languages.json'
 import skillsAndRoles from '@/lib/skillsAndRoles.json'
@@ -126,6 +126,22 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
   const [selfRecording, setSelfRecording] = useState(artist?.video_reel_url || '')
   const [editingSelfRecording, setEditingSelfRecording] = useState(false)
 
+  // Helper function for safe saves with error handling
+  const safeSave = async (updateFn, sectionName) => {
+    if (!artist) {
+      alert(`Error: Artist profile not found. Please refresh the page.`)
+      return false
+    }
+    try {
+      const updated = await Artist.update(artist.id, updateFn)
+      if (onUpdate) onUpdate(updated)
+      return true
+    } catch (err) {
+      console.error(`Error saving ${sectionName}:`, err)
+      alert(`Failed to save ${sectionName}: ${err.message || 'Unknown error'}`)
+      return false
+    }
+  }
 
   const groupedEndorsements = endorsements.reduce((acc, e) => {
     if (!acc[e.skill]) acc[e.skill] = []
@@ -244,11 +260,8 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
               <div className="flex gap-2">
                 <Button
                   onClick={async () => {
-                    if (artist) {
-                      const updated = await Artist.update(artist.id, { bio })
-                      if (onUpdate) onUpdate(updated)
-                    }
-                    setEditingBio(false)
+                    const success = await safeSave({ bio }, 'bio')
+                    if (success) setEditingBio(false)
                   }}
                   className="flex-1 bg-black text-white hover:bg-gray-800"
                 >
@@ -300,12 +313,9 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
               />
               <Button
                 onClick={async () => {
-                  if (artist) {
-                    const skillsData = skills.map(s => ({ skill: s, years: 0 }))
-                    const updated = await Artist.update(artist.id, { skills_experience: skillsData })
-                    if (onUpdate) onUpdate(updated)
-                  }
-                  setEditingSkills(false)
+                  const skillsData = skills.map(s => ({ skill: s, years: 0 }))
+                  const success = await safeSave({ skills_experience: skillsData }, 'skills')
+                  if (success) setEditingSkills(false)
                 }}
                 className="w-full bg-blue-600 text-white hover:bg-blue-700"
               >
@@ -414,11 +424,8 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
 
               <Button
                 onClick={async () => {
-                  if (artist) {
-                    const updated = await Artist.update(artist.id, { past_clients: clients })
-                    if (onUpdate) onUpdate(updated)
-                  }
-                  setEditingClients(false)
+                  const success = await safeSave({ past_clients: clients }, 'clients')
+                  if (success) setEditingClients(false)
                 }}
                 className="w-full bg-purple-600 text-white hover:bg-purple-700"
               >
@@ -509,11 +516,8 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
 
               <Button
                 onClick={async () => {
-                  if (artist) {
-                    const updated = await Artist.update(artist.id, { project_specialties: projectTypes })
-                    if (onUpdate) onUpdate(updated)
-                  }
-                  setEditingProjects(false)
+                  const success = await safeSave({ project_specialties: projectTypes }, 'project types')
+                  if (success) setEditingProjects(false)
                 }}
                 className="w-full bg-green-600 text-white hover:bg-green-700"
               >
@@ -602,11 +606,8 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
               </div>
 
               <Button onClick={async () => {
-                if (artist) {
-                  const updated = await Artist.update(artist.id, { languages_spoken: languages })
-                  if (onUpdate) onUpdate(updated)
-                }
-                setEditingLanguages(false)
+                const success = await safeSave({ languages_spoken: languages }, 'languages')
+                if (success) setEditingLanguages(false)
               }} className="w-full bg-orange-600 text-white hover:bg-orange-700">
                 <Check className="w-4 h-4 mr-1" /> Done
               </Button>
@@ -687,11 +688,8 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
               </div>
 
               <Button onClick={async () => {
-                if (artist) {
-                  const updated = await Artist.update(artist.id, { countries_worked: countries })
-                  if (onUpdate) onUpdate(updated)
-                }
-                setEditingCountries(false)
+                const success = await safeSave({ countries_worked: countries }, 'countries')
+                if (success) setEditingCountries(false)
               }} className="w-full bg-teal-600 text-white hover:bg-teal-700">
                 <Check className="w-4 h-4 mr-1" /> Done
               </Button>

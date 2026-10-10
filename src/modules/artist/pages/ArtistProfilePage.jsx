@@ -338,16 +338,75 @@ export default function ArtistProfile() {
   }
 
   const handleSaveProfile = async () => {
-    if (!artist) {
-      toastError('Error', 'Artist profile not found. Please refresh the page.')
+    if (!user) {
+      toastError('Error', 'User not found. Please log in again.')
       return
     }
     if (!formData.full_name) {
       toastError('Validation Error', 'Name is required')
       return
     }
+
     try {
-      const updated = await Artist.update(artist.id, {
+      let artistId = artist?.id
+
+      // Check if artist profile exists, if not create it
+      if (!artist) {
+        try {
+          const artistData = await Artist.filter({ email: user.email })
+          if (artistData && artistData.length > 0) {
+            const a = artistData[0]
+            setArtist(a)
+            artistId = a.id
+          } else {
+            // Create new artist profile
+            const newArtist = await Artist.create({
+              email: user.email,
+              user_id: user.id,
+              full_name: formData.full_name,
+              roles: formData.roles,
+              based_in_city: formData.based_in_city,
+              based_in_country: formData.based_in_country,
+              bio: formData.bio,
+              website: formData.website,
+              instagram: formData.instagram,
+              linkedin: formData.linkedin,
+              twitter: formData.twitter,
+              youtube: formData.youtube,
+              profession: formData.profession,
+              gender: formData.gender,
+              appearance: formData.appearance,
+              skills: formData.skills,
+              credits: formData.credits,
+              education: formData.education,
+              socialMedia: formData.socialMedia,
+              representation: formData.representation,
+              unionMembership: formData.unionMembership,
+              licensePassport: formData.licensePassport,
+              self_recording_equipment: formData.self_recording_equipment,
+              highlights: formData.highlights,
+              email_notifications: emailNotifications,
+              project_alerts: projectAlerts,
+              profile_public: profilePublic,
+              google_drive_folder_id: googleDriveFolderId,
+            })
+            setArtist(newArtist)
+            artistId = newArtist.id
+          }
+        } catch (createError) {
+          console.error('Error creating artist profile:', createError)
+          toastError('Error', `Failed to create profile: ${createError.message || 'Unknown error'}`)
+          return
+        }
+      }
+
+      if (!artistId) {
+        toastError('Error', 'Unable to save profile. Please try again.')
+        return
+      }
+
+      // Update existing profile
+      const updated = await Artist.update(artistId, {
         full_name: formData.full_name, roles: formData.roles, based_in_city: formData.based_in_city,
         based_in_country: formData.based_in_country, bio: formData.bio,
         website: formData.website, instagram: formData.instagram, linkedin: formData.linkedin,
@@ -362,7 +421,11 @@ export default function ArtistProfile() {
         unionMembership: formData.unionMembership,
         licensePassport: formData.licensePassport,
         self_recording_equipment: formData.self_recording_equipment,
-        highlights: formData.highlights
+        highlights: formData.highlights,
+        email_notifications: emailNotifications,
+        project_alerts: projectAlerts,
+        profile_public: profilePublic,
+        google_drive_folder_id: googleDriveFolderId,
       })
       setArtist(updated)
 
@@ -374,8 +437,8 @@ export default function ArtistProfile() {
       // Clear the draft after successful save
       localStorage.removeItem('smartgigs_profile_draft')
     } catch (err) {
-
-      toastError('Save Failed', 'Failed to save profile. Please try again.')
+      console.error('Profile save error:', err)
+      toastError('Save Failed', `Failed to save profile: ${err.message || 'Unknown error'}`)
     }
   }
 
