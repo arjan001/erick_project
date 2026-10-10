@@ -27,7 +27,7 @@ export default function DashboardLayout({ children }) {
   const hasSidebar = isCreator || isTeam || isClient || isBacker
 
   const userRole = isTeam ? 'team' : isClient ? 'client' : isBacker ? 'backer' : 'creator'
-  const settingsPage = isTeam ? 'TeamProfile' : isClient ? 'ClientProfile' : isBacker ? 'BackerProfile' : 'CreatorProfile'
+  const settingsPage = isTeam ? 'TeamProfile' : isClient ? 'ClientProfile' : isBacker ? 'BackerProfile' : 'ArtistProfile'
 
   // Handle sidebar toggle from UnifiedTopbar
   useEffect(() => {
