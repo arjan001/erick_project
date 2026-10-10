@@ -30,7 +30,7 @@ export default function CTA() {
           something great?
         </h2>
         <p className="mx-auto mt-6 max-w-lg text-lg text-gray-400">
-          Join Eric Rabar today. Post a project, build your portfolio, or find your
+          Join SmartGigs Kenya today. Post a project, build your portfolio, or find your
           next crew.
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">

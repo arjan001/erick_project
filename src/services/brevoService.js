@@ -14,7 +14,7 @@ const getApiKey = () => {
  * Get Brevo sender name from environment variables or settings
  */
 const getSenderName = () => {
-  return import.meta.env.VITE_BREVO_SENDER_NAME || localStorage.getItem('brevo_sender_name') || 'Eric Rabar'
+  return import.meta.env.VITE_BREVO_SENDER_NAME || localStorage.getItem('brevo_sender_name') || 'SmartGigs Kenya'
 }
 
 /**
@@ -140,19 +140,19 @@ export const sendWelcomeEmail = async (email, name) => {
     <html>
       <head></head>
       <body>
-        <h2>Welcome to Eric Rabar!</h2>
+        <h2>Welcome to SmartGigs Kenya!</h2>
         <p>Hi ${name},</p>
         <p>Thank you for signing up. We're excited to have you on board!</p>
-        <p>Your account has been created successfully. You can now start exploring all the features Eric Rabar has to offer.</p>
+        <p>Your account has been created successfully. You can now start exploring all the features SmartGigs Kenya has to offer.</p>
         <p>If you have any questions, feel free to reach out to our support team.</p>
-        <p>Best regards,<br>The Eric Rabar Team</p>
+        <p>Best regards,<br>The SmartGigs Kenya Team</p>
       </body>
     </html>
   `
 
   return sendEmail({
     to: email,
-    subject: 'Welcome to Eric Rabar!',
+    subject: 'Welcome to SmartGigs Kenya!',
     htmlContent,
   })
 }
@@ -169,19 +169,19 @@ export const sendPasswordResetEmail = async (email, resetLink) => {
       <head></head>
       <body>
         <h2>Password Reset Request</h2>
-        <p>You requested a password reset for your Eric Rabar account.</p>
+        <p>You requested a password reset for your SmartGigs Kenya account.</p>
         <p>Click the link below to reset your password:</p>
         <p><a href="${resetLink}">Reset Password</a></p>
         <p>This link will expire in 1 hour.</p>
         <p>If you didn't request this, please ignore this email.</p>
-        <p>Best regards,<br>The Eric Rabar Team</p>
+        <p>Best regards,<br>The SmartGigs Kenya Team</p>
       </body>
     </html>
   `
 
   return sendEmail({
     to: email,
-    subject: 'Reset Your Eric Rabar Password',
+    subject: 'Reset Your SmartGigs Kenya Password',
     htmlContent,
   })
 }
@@ -198,19 +198,19 @@ export const sendEmailVerification = async (email, verificationLink) => {
       <head></head>
       <body>
         <h2>Verify Your Email Address</h2>
-        <p>Please verify your email address to complete your Eric Rabar account setup.</p>
+        <p>Please verify your email address to complete your SmartGigs Kenya account setup.</p>
         <p>Click the link below to verify:</p>
         <p><a href="${verificationLink}">Verify Email</a></p>
         <p>This link will expire in 24 hours.</p>
         <p>If you didn't create an account, please ignore this email.</p>
-        <p>Best regards,<br>The Eric Rabar Team</p>
+        <p>Best regards,<br>The SmartGigs Kenya Team</p>
       </body>
     </html>
   `
 
   return sendEmail({
     to: email,
-    subject: 'Verify Your Eric Rabar Email',
+    subject: 'Verify Your SmartGigs Kenya Email',
     htmlContent,
   })
 }

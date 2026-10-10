@@ -45,9 +45,9 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-white">
       <SEOMetaTags
-        title="Pricing — Eric Rabar"
-        description="Select a plan to get started with Eric Rabar."
-        keywords="pricing, plans, subscription, eric rabar"
+        title="Pricing — SmartGigs Kenya"
+        description="Select a plan to get started with SmartGigs Kenya."
+        keywords="pricing, plans, subscription, smartgigs kenya"
         ogType="website"
         schemaType="WebPage"
         schemaData={{ name: 'Pricing', description: 'Choose your plan' }}
@@ -55,7 +55,7 @@ export default function PricingPage() {
 
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-5 md:px-12">
-        <span className="text-lg font-extrabold uppercase tracking-tight text-black">Eric Rabar</span>
+        <span className="text-lg font-extrabold uppercase tracking-tight text-black">SmartGigs Kenya</span>
         <span className="hidden text-sm italic text-gray-500 sm:block">
           The most trusted name in casting since 1960.
         </span>
@@ -79,24 +79,21 @@ export default function PricingPage() {
           {steps.map((step, i) => (
             <div key={step} className="flex flex-1 flex-col items-center">
               <div
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
-                  i === 0 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'
-                }`}
+                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${i === 0 ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'
+                  }`}
               >
                 {i === 0 ? <Check className="h-4 w-4" /> : i + 1}
               </div>
               <span
-                className={`mt-2 text-xs font-medium ${
-                  i === 0 ? 'font-bold text-black' : 'text-gray-400'
-                }`}
+                className={`mt-2 text-xs font-medium ${i === 0 ? 'font-bold text-black' : 'text-gray-400'
+                  }`}
               >
                 {i + 1}. {step}
               </span>
               {i < steps.length - 1 && (
                 <div
-                  className={`absolute mt-3.5 h-0.5 ${
-                    i === 0 ? 'bg-gray-300' : 'bg-gray-200'
-                  }`}
+                  className={`absolute mt-3.5 h-0.5 ${i === 0 ? 'bg-gray-300' : 'bg-gray-200'
+                    }`}
                   style={{ width: '25%', marginLeft: '50%' }}
                 />
               )}

@@ -8,7 +8,7 @@ export function useTranslation() {
   useEffect(() => {
     const savedLang = localStorage.getItem('ericrabar_language') || 'en'
     setLang(savedLang)
-    
+
     // In production, fetch from Translation entity
     // For now, using inline translations
     setTranslations(getStaticTranslations(savedLang))
@@ -37,7 +37,7 @@ function getStaticTranslations(lang) {
       'hero.title': 'Production Excellence',
       'hero.subtitle': 'We assemble world-class teams for commercial, film, and creative productions across Europe',
       'hero.cta': 'Start a Production',
-      'footer.rights': 'Eric Rabar. All rights reserved.',
+      'footer.rights': 'SmartGigs Kenya. All rights reserved.',
     },
     nl: {
       'nav.home': 'Home',

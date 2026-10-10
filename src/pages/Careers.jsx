@@ -33,12 +33,12 @@ export default function Careers() {
   return (
     <div className="min-h-screen bg-white">
       <SEOMetaTags
-        title="Careers — Eric Rabar"
+        title="Careers — SmartGigs Kenya"
         description="Help us build the world's best career platform for entertainment industry professionals."
-        keywords="careers, jobs, eric rabar, entertainment jobs"
+        keywords="careers, jobs, smartgigs kenya, entertainment jobs"
         ogType="website"
         schemaType="WebPage"
-        schemaData={{ name: 'Careers at Eric Rabar', description: 'Join our team' }}
+        schemaData={{ name: 'Careers at SmartGigs Kenya', description: 'Join our team' }}
       />
       <Navbar />
 
@@ -67,7 +67,7 @@ export default function Careers() {
       <section className="px-4 py-16">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-lg leading-relaxed text-gray-700">
-            At Eric Rabar, we believe that talent is everywhere, but opportunity is not. Our
+            At SmartGigs Kenya, we believe that talent is everywhere, but opportunity is not. Our
             mission is to break down the barriers that keep great talent from finding great work.
             We are building the tools, the network, and the knowledge base to make the creative
             industry more open, more fair, and more accessible to everyone — regardless of where

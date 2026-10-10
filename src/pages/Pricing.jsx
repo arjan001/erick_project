@@ -54,7 +54,7 @@ export default function Pricing() {
         <div className="text-center mb-16">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4">Transparent Pricing</h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Eric Rabar operates on project-based pricing. Every production is unique, but here are typical ranges
+            SmartGigs Kenya operates on project-based pricing. Every production is unique, but here are typical ranges
           </p>
         </div>
 
@@ -63,11 +63,10 @@ export default function Pricing() {
           {PRICING_TIERS.map((tier, index) => (
             <div
               key={index}
-              className={`rounded-2xl p-8 ${
-                tier.highlighted
-                  ? 'bg-gradient-to-br from-amber-600/20 to-amber-900/20 border-2 border-amber-600 relative'
-                  : 'bg-zinc-900 border border-zinc-800'
-              }`}
+              className={`rounded-2xl p-8 ${tier.highlighted
+                ? 'bg-gradient-to-br from-amber-600/20 to-amber-900/20 border-2 border-amber-600 relative'
+                : 'bg-zinc-900 border border-zinc-800'
+                }`}
             >
               {tier.highlighted && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -76,11 +75,11 @@ export default function Pricing() {
                   </span>
                 </div>
               )}
-              
+
               <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
               <div className="text-3xl font-bold text-amber-600 mb-2">{tier.range}</div>
               <p className="text-gray-400 mb-6">{tier.description}</p>
-              
+
               <ul className="space-y-3 mb-8">
                 {tier.features.map((feature, i) => (
                   <li key={i} className="flex items-start gap-3">
@@ -96,11 +95,11 @@ export default function Pricing() {
         {/* What's Included */}
         <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-8 md:p-12 mb-12">
           <h2 className="text-3xl font-bold mb-8 text-center">What's Always Included</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               'Curated team matching',
-              'Eric Rabar project management',
+              'SmartGigs Kenya project management',
               'Quality assurance & oversight',
               'European network access',
               'Multi-language support',
@@ -140,7 +139,7 @@ export default function Pricing() {
         {/* How Pricing Works */}
         <div className="max-w-4xl mx-auto mb-20">
           <h2 className="text-3xl font-bold mb-8 text-center">How It Works</h2>
-          
+
           <div className="space-y-6">
             {[
               { title: 'Submit Your Project', desc: 'Tell us about your production needs through our intake form' },

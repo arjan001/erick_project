@@ -86,7 +86,7 @@ export default function ArtistStepPortfolio({ data, updateData }) {
             className="mt-1"
           />
           <Label htmlFor="portfolioUsage" className="text-sm cursor-pointer leading-relaxed">
-            I agree to <strong>Eric Rabar using these clips</strong> as visual direction examples for clients
+            I agree to <strong>SmartGigs Kenya using these clips</strong> as visual direction examples for clients
           </Label>
         </div>
       </div>
@@ -124,8 +124,8 @@ export default function ArtistStepPortfolio({ data, updateData }) {
           />
           <Label htmlFor="portfolio-upload">
             <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${agreements.noLogos && agreements.portfolioUsage
-                ? 'border-gray-300 hover:border-amber-600 cursor-pointer'
-                : 'border-gray-300 opacity-50 cursor-not-allowed'
+              ? 'border-gray-300 hover:border-amber-600 cursor-pointer'
+              : 'border-gray-300 opacity-50 cursor-not-allowed'
               }`}>
               <Upload className="w-12 h-12 mx-auto mb-4 text-gray-500" />
               <p className="font-medium mb-2 text-black">

@@ -25,7 +25,7 @@ export default function ApplicationSuccess({ type, name, message }) {
             <div>
               <h3 className="font-semibold mb-2">What happens next?</h3>
               <p className="text-sm text-gray-400 leading-relaxed">
-                The Eric Rabar team will review your application and portfolio within 3-5 business days. 
+                The SmartGigs Kenya team will review your application and portfolio within 3-5 business days.
                 We carefully curate our network to maintain the highest quality standards.
               </p>
             </div>
@@ -53,7 +53,7 @@ export default function ApplicationSuccess({ type, name, message }) {
                 3
               </div>
               <div>
-                <p className="text-sm text-gray-300">If approved, welcome to the Eric Rabar network</p>
+                <p className="text-sm text-gray-300">If approved, welcome to the SmartGigs Kenya network</p>
               </div>
             </div>
           </div>

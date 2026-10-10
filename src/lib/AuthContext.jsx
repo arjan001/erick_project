@@ -1,5 +1,4 @@
 import React, { createContext, useState, useContext, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Artist, Team, ProjectOwner, Backer, Subscription, SubscriptionPackage, UserSession } from '@/lib/supabaseEntities'
 import auditLogger from '@/lib/auditLogger'
@@ -258,7 +257,6 @@ function getOS(userAgent) {
 }
 
 export const AuthProvider = ({ children }) => {
-  const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [permissions, setPermissions] = useState([])
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -327,7 +325,7 @@ export const AuthProvider = ({ children }) => {
         const oauthRedirect = sessionStorage.getItem('oauth_redirect')
         if (oauthRedirect) {
           sessionStorage.removeItem('oauth_redirect')
-          navigate(oauthRedirect)
+          window.location.href = oauthRedirect
         } else {
           // Default redirect based on role
           const roleRedirects = {
@@ -339,7 +337,7 @@ export const AuthProvider = ({ children }) => {
             admin: '/Admin',
           }
           const defaultRedirect = roleRedirects[appRole] || '/artistdashboard'
-          navigate(defaultRedirect)
+          window.location.href = defaultRedirect
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null)

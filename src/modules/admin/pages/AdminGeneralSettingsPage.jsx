@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Settings, Save, Globe, Bell, Shield, Clock, Users, Database, ToggleLeft, ToggleRight, Layers, ArrowRight, Mail, Send, CheckCircle2, Trash2, RefreshCw } from 'lucide-react'
 
 const DEFAULT_SETTINGS = {
-  site_name: 'Eric Rabar',
+  site_name: 'SmartGigs Kenya',
   site_description: 'Premium video production network',
   site_url: 'https://ericrabar.com',
   contact_email: 'contact@ericrabar.com',
@@ -48,7 +48,7 @@ const DEFAULT_SETTINGS = {
   email_sender_address: '',
   email_sender_name: '',
   brevo_api_key: '',
-  brevo_sender_name: 'Eric Rabar',
+  brevo_sender_name: 'SmartGigs Kenya',
   brevo_sms_enabled: false,
   brevo_email_enabled: false,
 }
@@ -99,7 +99,7 @@ export default function AdminGeneralSettingsPage() {
           setSettings({ ...DEFAULT_SETTINGS, ...settingsMap })
         }
       } catch (err) {
-        
+
         error('Error', 'Failed to fetch settings')
       } finally {
         setLoading(false)
@@ -115,16 +115,16 @@ export default function AdminGeneralSettingsPage() {
       const settingsToSave = Object.entries(settings).map(([key, value]) => ({
         setting_key: key,
         setting_value: typeof value === 'object' ? JSON.stringify(value) : String(value),
-        setting_type: typeof value === 'boolean' ? 'boolean' : 
-                     typeof value === 'number' ? 'number' : 
-                     Array.isArray(value) ? 'array' : 'string',
+        setting_type: typeof value === 'boolean' ? 'boolean' :
+          typeof value === 'number' ? 'number' :
+            Array.isArray(value) ? 'array' : 'string',
         description: ''
       }))
 
       for (const setting of settingsToSave) {
         const existing = await SystemSetting.filter({ setting_key: setting.setting_key })
         if (existing && existing.length > 0) {
-          await SystemSetting.update(existing[0].id, { 
+          await SystemSetting.update(existing[0].id, {
             setting_value: setting.setting_value,
             setting_type: setting.setting_type
           })
@@ -134,7 +134,7 @@ export default function AdminGeneralSettingsPage() {
       }
       success('Saved', 'Settings saved successfully')
     } catch (err) {
-      
+
       error('Failed', 'Failed to save settings')
     } finally {
       setSaving(false)
@@ -149,10 +149,10 @@ export default function AdminGeneralSettingsPage() {
     try {
       // Clear localStorage
       localStorage.clear()
-      
+
       // Clear sessionStorage
       sessionStorage.clear()
-      
+
       // Clear all cookies
       document.cookie.split(';').forEach(c => {
         const eq = c.indexOf('=')
@@ -160,17 +160,17 @@ export default function AdminGeneralSettingsPage() {
         document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'
         document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + window.location.hostname
       })
-      
+
       // Clear Supabase session
       const { supabase } = await import('@/lib/supabase')
       await supabase.auth.signOut({ scope: 'local' })
-      
+
       // Clear service worker caches if available
       if ('caches' in window) {
         const cacheNames = await caches.keys()
         await Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)))
       }
-      
+
       // Clear IndexedDB if available
       if ('indexedDB' in window) {
         const databases = await indexedDB.databases()
@@ -182,15 +182,15 @@ export default function AdminGeneralSettingsPage() {
           })
         }))
       }
-      
+
       success('Cache Cleared', 'All browser and application cache has been cleared successfully')
-      
+
       // Reload page after short delay
       setTimeout(() => {
         window.location.reload()
       }, 1500)
     } catch (err) {
-      
+
       error('Failed', 'Failed to clear cache')
     } finally {
       setClearingCache(false)
@@ -381,11 +381,10 @@ export default function AdminGeneralSettingsPage() {
                 key={opt.value}
                 type="button"
                 onClick={() => handleChange('email_provider', opt.value)}
-                className={`text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between ${
-                  settings.email_provider === opt.value
-                    ? 'border-black bg-gray-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className={`text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between ${settings.email_provider === opt.value
+                  ? 'border-black bg-gray-50'
+                  : 'border-gray-200 hover:border-gray-300'
+                  }`}
               >
                 <div>
                   <div className="font-semibold text-gray-900 flex items-center gap-1.5">
@@ -482,8 +481,8 @@ export default function AdminGeneralSettingsPage() {
                 <div className="font-medium text-gray-900">Clear All Cache</div>
                 <div className="text-sm text-gray-500 mt-1">Clears localStorage, sessionStorage, cookies, service worker caches, and IndexedDB</div>
               </div>
-              <Button 
-                onClick={handleClearCache} 
+              <Button
+                onClick={handleClearCache}
                 disabled={clearingCache}
                 className="bg-red-600 text-white hover:bg-red-700 rounded-xl"
               >
@@ -522,8 +521,8 @@ export default function AdminGeneralSettingsPage() {
         </div>
 
         <div className="sticky bottom-4 flex justify-end gap-3">
-          <Button 
-            onClick={handleClearCache} 
+          <Button
+            onClick={handleClearCache}
             disabled={clearingCache}
             variant="outline"
             className="border-red-200 text-red-600 hover:bg-red-50 rounded-xl"

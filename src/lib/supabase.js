@@ -1,5 +1,5 @@
 /**
- * Supabase client — Eric Rabar
+ * Supabase client — SmartGigs Kenya
  * Credentials are read from VITE_ env vars (Vite exposes only VITE_* to the browser).
  */
 

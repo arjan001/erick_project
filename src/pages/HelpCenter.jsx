@@ -5,7 +5,7 @@ import SEOMetaTags from '@/components/SEOMetaTags'
 const cards = [
   {
     icon: Building2,
-    title: 'The Eric Rabar Platforms',
+    title: 'The SmartGigs Kenya Platforms',
     desc: 'Everything you need to know about the company, the service, and the platforms.',
     count: '58 articles',
   },
@@ -23,8 +23,8 @@ const cards = [
   },
   {
     icon: Smartphone,
-    title: 'The Eric Rabar iOS apps',
-    desc: 'How to use the Eric Rabar iOS app',
+    title: 'The SmartGigs Kenya iOS apps',
+    desc: 'How to use the SmartGigs Kenya iOS app',
     count: '24 articles',
   },
 ]
@@ -35,9 +35,9 @@ export default function HelpCenter() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#5b80f7] to-[#e8efff]">
       <SEOMetaTags
-        title="Help Center — Eric Rabar"
+        title="Help Center — SmartGigs Kenya"
         description="Search for answers and find help articles."
-        keywords="help center, support, eric rabar"
+        keywords="help center, support, smartgigs kenya"
         ogType="website"
         schemaType="WebPage"
         schemaData={{ name: 'Help Center', description: 'Find answers and support' }}
@@ -46,7 +46,7 @@ export default function HelpCenter() {
       {/* Header text */}
       <div className="px-4 pt-6">
         <p className="text-sm font-medium text-white/80">
-          Eric Rabar Help Center
+          SmartGigs Kenya Help Center
         </p>
       </div>
 
@@ -96,7 +96,7 @@ export default function HelpCenter() {
 
       {/* Footer text */}
       <div className="px-4 pb-10 text-center">
-        <p className="text-sm font-medium text-[#4a4a4a]">Eric Rabar Help Center</p>
+        <p className="text-sm font-medium text-[#4a4a4a]">SmartGigs Kenya Help Center</p>
       </div>
 
       {/* Floating chat widget */}

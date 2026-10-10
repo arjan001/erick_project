@@ -18,13 +18,13 @@ export default function StepSuccess({ projectData }) {
         {/* Main Message */}
         <h1 className="text-4xl sm:text-5xl font-bold mb-4">Project Submitted</h1>
         <p className="text-xl text-gray-400 mb-12 max-w-lg mx-auto">
-          Thank you, {projectData.project_owner_name}. Your project is now being reviewed by the Eric Rabar team.
+          Thank you, {projectData.project_owner_name}. Your project is now being reviewed by the SmartGigs Kenya team.
         </p>
 
         {/* What's Next */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 mb-8 text-left">
           <h2 className="text-2xl font-bold mb-6">What happens next?</h2>
-          
+
           <div className="space-y-6">
             <div className="flex gap-4">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white font-bold text-sm">
@@ -33,7 +33,7 @@ export default function StepSuccess({ projectData }) {
               <div>
                 <h3 className="font-semibold mb-1">Verification</h3>
                 <p className="text-sm text-gray-400">
-                  Our team will review your project within 24-48 hours to ensure it aligns with Eric Rabar standards.
+                  Our team will review your project within 24-48 hours to ensure it aligns with SmartGigs Kenya standards.
                 </p>
               </div>
             </div>

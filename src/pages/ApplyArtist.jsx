@@ -106,14 +106,14 @@ export default function ApplyArtist() {
   return (
     <div className="min-h-screen bg-white py-8 lg:py-12">
       <SEOMetaTags
-        title="Join as Creator | Eric Rabar Video Production Marketplace"
-        description="Create your professional profile and apply to premium video production projects on Eric Rabar. Connect with brands, agencies, and production companies seeking talented filmmakers, cinematographers, editors, directors, and creative professionals for commercials, music videos, documentaries, and branded content."
+        title="Join as Creator | SmartGigs Kenya Video Production Marketplace"
+        description="Create your professional profile and apply to premium video production projects on SmartGigs Kenya. Connect with brands, agencies, and production companies seeking talented filmmakers, cinematographers, editors, directors, and creative professionals for commercials, music videos, documentaries, and branded content."
         keywords="join as filmmaker, video creator profile, filmmaker jobs, cinematographer jobs, video editor jobs, director jobs, creative talent marketplace, film production careers, video production work, filmmaker portfolio, creative professionals, production crew jobs"
         ogImage="https://ericrabar.com/og-apply-artist.jpg"
         ogType="website"
         schemaType="ProfilePage"
         schemaData={{
-          name: "Eric Rabar Creator Application",
+          name: "SmartGigs Kenya Creator Application",
           description: "Join the premium video production marketplace as a creative professional",
           author: "oneplusafrica.com - OnePlusAfrica Tech Solution"
         }}

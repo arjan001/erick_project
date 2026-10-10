@@ -14,7 +14,7 @@ export default function InviteLanding() {
   const signupUrl = `/SignIn?ref=${code}&mode=signup`
 
   const handleShare = (platform) => {
-    const text = encodeURIComponent("You're invited to Eric Rabar — get free Pro Beta access!")
+    const text = encodeURIComponent("You're invited to SmartGigs Kenya — get free Pro Beta access!")
     const url = encodeURIComponent(inviteUrl)
     if (platform === 'linkedin') {
       window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank')

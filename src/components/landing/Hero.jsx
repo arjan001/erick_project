@@ -68,7 +68,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-8 max-w-xl text-lg font-light leading-relaxed text-gray-400 md:text-xl"
         >
-          Eric Rabar connects directors, cinematographers, editors, and production
+          SmartGigs Kenya connects directors, cinematographers, editors, and production
           teams with the people who need them. Curated. Verified. Ready to work.
         </motion.p>
 

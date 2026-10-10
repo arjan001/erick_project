@@ -65,7 +65,7 @@ export default function NewsAndVideos() {
               <div className="relative aspect-video overflow-hidden rounded-2xl bg-black">
                 <img src={v.thumb} alt="" className="h-full w-full object-cover opacity-80" />
                 <div className="absolute left-3 top-3 text-xs font-bold uppercase tracking-wide text-white/90">
-                  Eric Rabar
+                  SmartGigs Kenya
                 </div>
                 <div className="absolute bottom-3 right-3 rounded bg-black/70 px-1.5 py-0.5 text-xs font-medium text-white">
                   {v.duration}

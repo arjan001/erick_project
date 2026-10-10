@@ -109,8 +109,8 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             {/* Left Navigation */}
             <div className="flex items-center gap-8">
               {/* Logo */}
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="hover:opacity-70 transition-opacity"
               >
                 <span className={`text-2xl font-black tracking-tighter ${isHomePage ? 'text-white' : 'text-[#1a1a1a]'}`}>22.</span>
@@ -119,10 +119,10 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
               {/* Main Nav */}
               <nav className="hidden lg:flex items-center gap-6">
                 {!exploreOpen && (
-                    <>
-                      <Link to={createPageUrl('Projects')} className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}>
-                        Projects
-                      </Link>
+                  <>
+                    <Link to={createPageUrl('Projects')} className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}>
+                      Projects
+                    </Link>
                     <Link to={createPageUrl('SignUp')} className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}>
                       For Artists
                     </Link>
@@ -130,7 +130,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                       For Teams
                     </Link>
                     <div className="relative">
-                      <button 
+                      <button
                         onClick={() => setAcademyOpen(!academyOpen)}
                         className={`flex items-center gap-1 text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white' : 'text-[#1a1a1a] hover:text-gray-600'} transition-colors`}
                       >
@@ -178,9 +178,9 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                       Dashboard
                     </button>
                   </Link>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="text-sm font-medium text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent"
                     onClick={() => logout(true)}
                   >
@@ -199,14 +199,14 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             </div>
           </div>
         </div>
-        </header>
+      </header>
       )}
 
       {/* Mega Menu Overlay */}
       {exploreOpen && (
         <>
           {/* Backdrop Overlay */}
-          <div 
+          <div
             className="fixed inset-0 bg-black/30 z-[35]"
             onClick={() => setExploreOpen(false)}
           />
@@ -219,7 +219,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             <div className="flex h-full">
               {/* LEFT COLUMN - 30% width - Categories */}
               <div className="w-[30%] bg-[#EDEDED] p-8 overflow-y-auto rounded-bl-[25px]">
-                <button 
+                <button
                   onClick={() => setExploreOpen(false)}
                   className="absolute top-4 right-4 p-2 hover:bg-gray-300 rounded transition-colors z-50"
                 >
@@ -231,11 +231,10 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                     <div key={key}>
                       <button
                         onClick={() => setExpandedCategory(key)}
-                        className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between ${
-                          expandedCategory === key 
-                            ? 'bg-gray-300 text-[#1a1a1a]' 
-                            : 'text-[#999] hover:bg-gray-200 hover:text-[#666]'
-                        }`}
+                        className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between ${expandedCategory === key
+                          ? 'bg-gray-300 text-[#1a1a1a]'
+                          : 'text-[#999] hover:bg-gray-200 hover:text-[#666]'
+                          }`}
                       >
                         <div className="text-sm font-medium">{info.title}</div>
                         <ChevronDown className={`w-4 h-4 transition-transform ${expandedCategory === key ? 'rotate-180' : ''}`} />
@@ -264,8 +263,8 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
         {children}
       </main>
 
-        {/* Bottom Floating Navigation */}
-        {!shouldHideMenus && (<nav className="fixed bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-slideUp">
+      {/* Bottom Floating Navigation */}
+      {!shouldHideMenus && (<nav className="fixed bottom-6 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-slideUp">
         <div className="bg-[#3a3a3a] rounded-2xl shadow-2xl backdrop-blur-sm border border-white/10">
           <div className="flex items-center gap-0 px-2 md:px-3 py-2.5 overflow-x-auto scrollbar-hide">
             {currentPageName === 'Home' ? (
@@ -300,15 +299,14 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                     setPressTimer(null)
                   }
                 }}
-                className={`flex items-center justify-center px-2 md:px-3 py-2 rounded-lg transition-all mr-1 md:mr-2 flex-shrink-0 ${
-                  editMode ? 'bg-white text-black' : 'hover:bg-white/5 text-white'
-                }`}
+                className={`flex items-center justify-center px-2 md:px-3 py-2 rounded-lg transition-all mr-1 md:mr-2 flex-shrink-0 ${editMode ? 'bg-white text-black' : 'hover:bg-white/5 text-white'
+                  }`}
                 title={editMode ? 'Edit Mode Active' : 'Hold for 3 seconds to edit'}
               >
                 <span className="text-base md:text-lg font-black tracking-tighter">22.</span>
               </button>
             ) : (
-              <Link 
+              <Link
                 to="/"
                 className="flex items-center justify-center px-2 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-all mr-1 md:mr-2 flex-shrink-0"
               >
@@ -328,23 +326,22 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             )}
 
             {bottomNav.map((item) => {
-               const isActive = currentPageName === item.href
-               return (
-                 <Link
-                   key={item.name}
-                   to={createPageUrl(item.href)}
-                   className={`px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 relative ${
-                     item.highlight 
-                       ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]' 
-                       : isActive
-                         ? 'text-white bg-white/10'
-                         : 'text-gray-300 hover:text-white hover:bg-white/5'
-                   }`}
-                 >
-                   {item.name}
-                 </Link>
-               )
-             })}
+              const isActive = currentPageName === item.href
+              return (
+                <Link
+                  key={item.name}
+                  to={createPageUrl(item.href)}
+                  className={`px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 relative ${item.highlight
+                    ? 'bg-[#FFD700] text-black hover:bg-[#FFC700]'
+                    : isActive
+                      ? 'text-white bg-white/10'
+                      : 'text-gray-300 hover:text-white hover:bg-white/5'
+                    }`}
+                >
+                  {item.name}
+                </Link>
+              )
+            })}
 
             <Link
               to={createPageUrl('BackedProjects')}
@@ -358,12 +355,12 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
       </nav>
       )}
 
-        {/* Footer (Awwwards Style) */}
-        {!shouldHideMenus && (<footer className="bg-[#1a1a1a] text-white py-20">
+      {/* Footer (Awwwards Style) */}
+      {!shouldHideMenus && (<footer className="bg-[#1a1a1a] text-white py-20">
         <div className="max-w-[1800px] mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 mb-12">
             <div>
-              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">Eric Rabar</h3>
+              <h3 className="font-bold mb-4 text-sm uppercase tracking-wider">SmartGigs Kenya</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link to={createPageUrl('Home')} className="hover:text-white">Platform</Link></li>
                 <li><Link to={createPageUrl('Services')} className="hover:text-white">About</Link></li>
@@ -416,7 +413,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
 
           <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="text-sm text-gray-400">
-              © 2026 Eric Rabar. All rights reserved.
+              © 2026 SmartGigs Kenya. All rights reserved.
             </div>
             <div className="flex gap-8">
               <a href="#" className="hover:text-white transition-colors">
@@ -430,9 +427,9 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
               </a>
             </div>
           </div>
-          </div>
+        </div>
       </footer>
       )}
-        </div>
-        )
-        }
+    </div>
+  )
+}

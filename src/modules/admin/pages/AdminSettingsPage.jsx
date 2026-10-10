@@ -16,7 +16,7 @@ import { clearSettingsCache } from '@/lib/settings'
 export default function AdminSettingsPage() {
   const { success, error: toastError } = useToast()
   const [settings, setSettings] = useState({
-    siteName: 'Eric Rabar',
+    siteName: 'SmartGigs Kenya',
     siteUrl: 'https://ericrabar.com',
     contactEmail: 'contact@ericrabar.com',
     supportEmail: 'support@ericrabar.com',
@@ -83,7 +83,7 @@ export default function AdminSettingsPage() {
         }))
       }
     } catch (err) {
-      
+
     } finally {
       setLoading(false)
     }
@@ -115,7 +115,7 @@ export default function AdminSettingsPage() {
 
       success('Settings Saved', 'Your settings have been updated successfully')
     } catch (err) {
-      
+
       toastError('Save Failed', 'Failed to save settings')
     } finally {
       setSaving(false)
@@ -185,7 +185,7 @@ export default function AdminSettingsPage() {
               <h1 className="text-3xl font-bold text-gray-900">
                 Admin Settings
               </h1>
-              <p className="text-gray-600 mt-1">Configure all aspects of your Eric Rabar platform</p>
+              <p className="text-gray-600 mt-1">Configure all aspects of your SmartGigs Kenya platform</p>
             </div>
             <Button
               onClick={handleSave}

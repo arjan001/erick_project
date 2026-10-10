@@ -24,7 +24,7 @@ export default function MaintenancePage() {
       interval = setInterval(() => {
         const now = new Date()
         const remaining = endTime - now
-        
+
         if (remaining <= 0) {
           setTimeRemaining(null)
           clearInterval(interval)
@@ -35,7 +35,7 @@ export default function MaintenancePage() {
         }
       }, 1000)
     }
-    
+
     return () => clearInterval(interval)
   }, [endTime])
 
@@ -46,10 +46,10 @@ export default function MaintenancePage() {
         getMaintenanceEndTime(),
         getMaintenanceTemplate()
       ])
-      
+
       setMessage(msg)
       setEndTime(end)
-      
+
       // Extract contact email from message or use default
       const emailMatch = msg.match(/[\w.-]+@[\w.-]+\.\w+/)
       if (emailMatch) {
@@ -65,12 +65,12 @@ export default function MaintenancePage() {
 
   const formatTimeRemaining = (ms) => {
     if (!ms) return null
-    
+
     const seconds = Math.floor(ms / 1000)
     const minutes = Math.floor(seconds / 60)
     const hours = Math.floor(minutes / 60)
     const days = Math.floor(hours / 24)
-    
+
     if (days > 0) {
       return `${days}d ${hours % 24}h ${minutes % 60}m`
     } else if (hours > 0) {
@@ -99,7 +99,7 @@ export default function MaintenancePage() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-black rounded-2xl mb-4 shadow-lg">
               <span className="text-white text-3xl font-bold">22</span>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Eric Rabar</h1>
+            <h1 className="text-3xl font-bold text-gray-900">SmartGigs Kenya</h1>
             <p className="text-gray-500 mt-2">Professional Creative Platform</p>
           </div>
 
@@ -130,7 +130,7 @@ export default function MaintenancePage() {
             <p className="text-gray-600 mb-2">
               For urgent inquiries, please contact us at:
             </p>
-            <a 
+            <a
               href={`mailto:${contactEmail}`}
               className="text-black font-medium hover:underline"
             >
@@ -152,7 +152,7 @@ export default function MaintenancePage() {
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-gray-200 text-center">
             <p className="text-sm text-gray-500">
-              © 2026 Eric Rabar. All rights reserved.
+              © 2026 SmartGigs Kenya. All rights reserved.
             </p>
           </div>
         </div>

@@ -6,15 +6,15 @@
 import React, { useState, useEffect } from 'react'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
-import { 
+import {
   Settings, Save, Clock, Shield, CheckCircle2, AlertTriangle, RefreshCw,
   Layout, Mail, Key, Plus, Trash2, Copy, Eye, X
 } from 'lucide-react'
-import { 
-  fetchMaintenanceSettings, 
+import {
+  fetchMaintenanceSettings,
   clearMaintenanceCache,
   MAINTENANCE_TEMPLATES,
-  getAllTemplates 
+  getAllTemplates
 } from '@/lib/maintenanceMode'
 import { supabase } from '@/lib/supabase'
 
@@ -24,16 +24,14 @@ const ToggleRow = ({ label, description, checked, onChange }) => (
       <div className="font-medium text-gray-900 text-sm">{label}</div>
       {description && <div className="text-xs text-gray-500">{description}</div>}
     </div>
-    <button 
-      onClick={onChange} 
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-        checked ? 'bg-black' : 'bg-gray-300'
-      }`}
+    <button
+      onClick={onChange}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${checked ? 'bg-black' : 'bg-gray-300'
+        }`}
     >
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          checked ? 'translate-x-6' : 'translate-x-1'
-        }`}
+        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'
+          }`}
       />
     </button>
   </div>
@@ -45,7 +43,7 @@ export default function AdminMaintenancePage() {
   const [saving, setSaving] = useState(false)
   const [previewMode, setPreviewMode] = useState(false)
   const [templatePreview, setTemplatePreview] = useState(null)
-  
+
   const [settings, setSettings] = useState({
     enabled: false,
     message: '<h2>Site Under Maintenance</h2><p>We are currently performing scheduled maintenance. Please check back soon.</p>',
@@ -83,7 +81,7 @@ export default function AdminMaintenancePage() {
         template: data.template
       })
     } catch (err) {
-      
+
       error('Error', 'Failed to load maintenance settings')
     } finally {
       setLoading(false)
@@ -111,7 +109,7 @@ export default function AdminMaintenancePage() {
           .select('*')
           .eq('setting_key', key)
           .single()
-        
+
         if (existing) {
           await supabase
             .from('admin_settings')
@@ -127,7 +125,7 @@ export default function AdminMaintenancePage() {
       clearMaintenanceCache()
       success('Saved', 'Maintenance settings saved successfully')
     } catch (err) {
-      
+
       error('Failed', 'Failed to save maintenance settings')
     } finally {
       setSaving(false)
@@ -157,11 +155,11 @@ export default function AdminMaintenancePage() {
         .from('maintenance_access_codes')
         .select('*')
         .order('created_at', { ascending: false })
-      
+
       if (error) throw error
       setAccessCodes(data || [])
     } catch (err) {
-      
+
     }
   }
 
@@ -180,15 +178,15 @@ export default function AdminMaintenancePage() {
           created_by: localStorage.getItem('ericrabar_user') ? JSON.parse(localStorage.getItem('ericrabar_user')).email : 'admin',
           expires_at: codeExpiry || null
         })
-      
+
       if (error) throw error
-      
+
       success('Success', 'Access code created successfully')
       setNewCode('')
       setCodeExpiry('')
       loadAccessCodes()
     } catch (err) {
-      
+
       error('Error', 'Failed to create access code')
     }
   }
@@ -199,13 +197,13 @@ export default function AdminMaintenancePage() {
         .from('maintenance_access_codes')
         .delete()
         .eq('id', codeId)
-      
+
       if (error) throw error
-      
+
       success('Success', 'Access code deleted')
       loadAccessCodes()
     } catch (err) {
-      
+
       error('Error', 'Failed to delete access code')
     }
   }
@@ -216,13 +214,13 @@ export default function AdminMaintenancePage() {
         .from('maintenance_access_codes')
         .update({ is_active: !isActive })
         .eq('id', codeId)
-      
+
       if (error) throw error
-      
+
       success('Success', 'Access code updated')
       loadAccessCodes()
     } catch (err) {
-      
+
       error('Error', 'Failed to update access code')
     }
   }
@@ -261,11 +259,11 @@ export default function AdminMaintenancePage() {
                 </p>
               </div>
             </div>
-            <ToggleRow 
-              label={settings.enabled ? 'Disable' : 'Enable'} 
-              description="" 
-              checked={settings.enabled} 
-              onChange={() => handleToggle('enabled')} 
+            <ToggleRow
+              label={settings.enabled ? 'Disable' : 'Enable'}
+              description=""
+              checked={settings.enabled}
+              onChange={() => handleToggle('enabled')}
             />
           </div>
         </div>
@@ -297,11 +295,10 @@ export default function AdminMaintenancePage() {
                       <div key={template.key} className="flex gap-1">
                         <button
                           onClick={() => applyTemplate(template.key)}
-                          className={`flex-1 p-2 rounded border text-left transition-all text-xs ${
-                            settings.template === template.key
+                          className={`flex-1 p-2 rounded border text-left transition-all text-xs ${settings.template === template.key
                               ? 'border-black bg-gray-50'
                               : 'border-gray-300 hover:border-gray-400'
-                          }`}
+                            }`}
                         >
                           <div className="font-medium text-gray-900">{template.name}</div>
                         </button>
@@ -360,7 +357,7 @@ export default function AdminMaintenancePage() {
                     <div className="inline-flex items-center justify-center w-10 h-10 bg-black rounded-lg mb-2">
                       <span className="text-white text-lg font-bold">22</span>
                     </div>
-                    <h1 className="text-lg font-bold text-gray-900">Eric Rabar</h1>
+                    <h1 className="text-lg font-bold text-gray-900">SmartGigs Kenya</h1>
                   </div>
                   <div className="prose prose-gray max-w-none text-xs">
                     <div dangerouslySetInnerHTML={{ __html: settings.message }} />
@@ -384,7 +381,7 @@ export default function AdminMaintenancePage() {
                     <p className="text-gray-600 text-xs mb-1">
                       For urgent inquiries, please contact us at:
                     </p>
-                    <a 
+                    <a
                       href={`mailto:${settings.contactEmail}`}
                       className="text-black font-medium hover:underline text-xs"
                     >
@@ -444,11 +441,11 @@ export default function AdminMaintenancePage() {
               />
               <p className="text-xs text-gray-500 mt-1">Comma-separated list of IP addresses</p>
             </div>
-            <ToggleRow 
-              label="Show Countdown Timer" 
-              description="Display countdown to maintenance end time" 
-              checked={settings.showCountdown} 
-              onChange={() => handleToggle('showCountdown')} 
+            <ToggleRow
+              label="Show Countdown Timer"
+              description="Display countdown to maintenance end time"
+              checked={settings.showCountdown}
+              onChange={() => handleToggle('showCountdown')}
             />
           </div>
         </div>
@@ -480,7 +477,7 @@ export default function AdminMaintenancePage() {
           <p className="text-xs text-gray-600 mb-4">
             Generate access codes to bypass maintenance mode. Access the site using: /{`{code}`}
           </p>
-          
+
           {/* Create New Code */}
           <div className="flex gap-3 mb-4">
             <div className="flex-1">
@@ -520,9 +517,8 @@ export default function AdminMaintenancePage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-sm text-gray-900">/{code.code}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        code.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                      }`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${code.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                        }`}>
                         {code.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </div>
@@ -593,8 +589,8 @@ export default function AdminMaintenancePage() {
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="bg-gray-900 p-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">Template Preview: {templatePreview.name}</h2>
-              <button 
-                onClick={() => setTemplatePreview(null)} 
+              <button
+                onClick={() => setTemplatePreview(null)}
                 className="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -620,7 +616,7 @@ export default function AdminMaintenancePage() {
                   <p className="text-gray-400 mb-2">
                     For urgent inquiries, please contact us at:
                   </p>
-                  <a 
+                  <a
                     href={`mailto:${settings.contactEmail}`}
                     className="text-white font-medium hover:underline"
                   >
@@ -643,7 +639,7 @@ export default function AdminMaintenancePage() {
               </div>
             </div>
             <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
-              <Button 
+              <Button
                 onClick={() => applyTemplate(Object.keys(MAINTENANCE_TEMPLATES).find(key => MAINTENANCE_TEMPLATES[key].name === templatePreview.name))}
                 className="bg-black text-white hover:bg-gray-800"
               >

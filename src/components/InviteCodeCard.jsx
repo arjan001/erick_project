@@ -21,7 +21,7 @@ export default function InviteCodeCard() {
       try {
         let profile = null
         let entity = null
-        
+
         if (user.role === 'artist' || user.role === 'artist_admin') {
           const artists = await Artist.filter({ email: user.email })
           profile = artists?.[0]
@@ -63,7 +63,7 @@ export default function InviteCodeCard() {
               const applicantEmails = inviteRecords
                 .filter(inv => inv.used_by_email)
                 .map(inv => inv.used_by_email)
-              
+
               // Get user details for each applicant
               const applicantDetails = await Promise.all(
                 applicantEmails.map(async (email) => {
@@ -78,7 +78,7 @@ export default function InviteCodeCard() {
                     const team = teams?.[0]
                     const backer = backers?.[0]
                     const owner = owners?.[0]
-                    
+
                     return {
                       email,
                       name: artist?.full_name || team?.team_name || backer?.organization_name || owner?.full_name || email,
@@ -93,11 +93,11 @@ export default function InviteCodeCard() {
               setApplicants(applicantDetails)
             }
           } catch (err) {
-            
+
           }
         }
       } catch (err) {
-        
+
         toastError('Error', 'Failed to load invite code')
       } finally {
         setLoading(false)
@@ -106,7 +106,7 @@ export default function InviteCodeCard() {
     fetchProfile()
   }, [user])
 
-  const referralLink = `${window.location.origin}/invite/${inviteCode}?inviter=${encodeURIComponent(user?.full_name || 'Eric Rabar')}&track=${trackingCode}`
+  const referralLink = `${window.location.origin}/invite/${inviteCode}?inviter=${encodeURIComponent(user?.full_name || 'SmartGigs Kenya')}&track=${trackingCode}`
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(inviteCode)
@@ -128,7 +128,7 @@ export default function InviteCodeCard() {
     try {
       let profile = null
       let entity = null
-      
+
       if (user.role === 'artist' || user.role === 'artist_admin') {
         const artists = await Artist.filter({ email: user.email })
         profile = artists?.[0]
@@ -155,9 +155,9 @@ export default function InviteCodeCard() {
 
       // Generate unique invite code
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-      let code = 'ER-'
+      let code = 'SG-'
       for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
-      
+
       // Check if code already exists
       let isUnique = false
       let attempts = 0
@@ -166,17 +166,17 @@ export default function InviteCodeCard() {
         if (!existing || existing.length === 0) {
           isUnique = true
         } else {
-          code = 'ER-'
+          code = 'SG-'
           for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
           attempts++
         }
       }
 
       setInviteCode(code)
-      
+
       // Save to profile
       await entity.update(profile.id, { invite_code: code })
-      
+
       // Also save to invites table for tracking
       try {
         await Invite.create({
@@ -188,14 +188,14 @@ export default function InviteCodeCard() {
           status: 'active'
         })
       } catch (inviteErr) {
-        
+
         // Don't fail if invite table doesn't exist yet
       }
-      
+
       setGenerating(false)
       success('Invite Code Generated', 'Your unique invite code has been created')
     } catch (err) {
-      
+
       toastError('Error', 'Failed to generate invite code')
       setGenerating(false)
     }
@@ -211,7 +211,7 @@ export default function InviteCodeCard() {
             <Gift className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Invite an artist to join Eric Rabar Pro Beta</h3>
+            <h3 className="font-semibold text-gray-900">Invite an artist to join SmartGigs Kenya Pro Beta</h3>
             <p className="text-sm text-gray-500">Share your code and grow the network</p>
           </div>
         </div>
@@ -230,8 +230,8 @@ export default function InviteCodeCard() {
               </button>
             </div>
           ) : (
-            <button 
-              onClick={handleGenerateCode} 
+            <button
+              onClick={handleGenerateCode}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
               disabled={generating}
             >

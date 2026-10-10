@@ -1,5 +1,5 @@
 /**
- * Nexus Pay (MakamescoPay) API Service — Eric Rabar
+ * Nexus Pay (MakamescoPay) API Service — SmartGigs Kenya
  *
  * Third-party payment gateway for M-Pesa STK Push, card payments,
  * and B2C disbursements via https://makamescopay.com

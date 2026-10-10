@@ -53,7 +53,7 @@ export default function AdminSEOCMSPage() {
         })))
       }
     } catch (err) {
-      
+
       // On error, initialize with default pages
       setCmsPages([
         {
@@ -81,7 +81,7 @@ export default function AdminSEOCMSPage() {
       name: 'Auto-Generate Meta Titles',
       description: 'Automatically generate meta titles from page content',
       enabled: true,
-      pattern: '{page_name} - Eric Rabar'
+      pattern: '{page_name} - SmartGigs Kenya'
     },
     {
       id: 'rule2',
@@ -128,7 +128,7 @@ export default function AdminSEOCMSPage() {
   // Navbar & Footer Settings
   const [navFooterSettings, setNavFooterSettings] = useState({
     // Navbar Settings
-    navbarLogo: 'Eric Rabar',
+    navbarLogo: 'SmartGigs Kenya',
     navbarLogoUrl: '',
     showNavbarLogo: true,
     navbarLinks: [
@@ -145,7 +145,7 @@ export default function AdminSEOCMSPage() {
     navbarTextColor: '#ffffff',
 
     // Footer Settings
-    footerLogo: 'Eric Rabar',
+    footerLogo: 'SmartGigs Kenya',
     footerLogoUrl: '',
     showFooterLogo: true,
     footerDescription: 'Premium video production network connecting artists, teams, and clients worldwide.',
@@ -192,7 +192,7 @@ export default function AdminSEOCMSPage() {
     footerTextColor: '#ffffff',
     showNewsletter: true,
     newsletterPlaceholder: 'Enter your email',
-    copyrightText: '© 2026 Eric Rabar. All rights reserved.',
+    copyrightText: '© 2026 SmartGigs Kenya. All rights reserved.',
     showBackToTop: true
   })
 
@@ -216,7 +216,7 @@ export default function AdminSEOCMSPage() {
       await new Promise(resolve => setTimeout(resolve, 1000))
       success('Saved', 'SEO settings saved successfully')
     } catch (err) {
-      
+
       error('Failed', 'Failed to save SEO settings')
     } finally {
       setSaving(false)
@@ -259,7 +259,7 @@ export default function AdminSEOCMSPage() {
       setEditingPage(null)
       setPageForm({ title: '', slug: '', metaTitle: '', metaDescription: '', metaKeywords: '', ogImage: '', customHead: '', status: 'draft' })
     } catch (err) {
-      
+
       error('Failed', 'Failed to save page')
     } finally {
       setSaving(false)
@@ -272,7 +272,7 @@ export default function AdminSEOCMSPage() {
       setCmsPages(cmsPages.filter(p => p.id !== pageId))
       success('Deleted', 'Page deleted successfully')
     } catch (err) {
-      
+
       error('Failed', 'Failed to delete page')
     }
   }
