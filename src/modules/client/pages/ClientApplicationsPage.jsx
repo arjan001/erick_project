@@ -45,7 +45,7 @@ export default function ClientApplications() {
   const [showBestFit, setShowBestFit] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user')
+    const storedUser = localStorage.getItem('smartgigs_user')
     if (!storedUser) {
       navigate('/')
       return
@@ -58,7 +58,7 @@ export default function ClientApplications() {
 
         // Fetch jobs posted by this client
         const clientJobs = await Job.filter({ client_email: clientEmail })
-        setJobs(clientJobs)
+        setJobs(clientJobs || [])
 
         const jobApplicationsLists = await Promise.all(
           clientJobs.map(async (job) => {
@@ -69,7 +69,7 @@ export default function ClientApplications() {
 
         // Fetch projects posted by this client
         const clientProjects = await Project.filter({ project_owner_email: clientEmail })
-        setProjects(clientProjects)
+        setProjects(clientProjects || [])
 
         const projectApplicationsLists = await Promise.all(
           clientProjects.map(async (project) => {
@@ -148,7 +148,8 @@ export default function ClientApplications() {
         setTeamProfiles(teamProfilesData)
         setTeamPortfolios(teamPortfoliosData)
       } catch (err) {
-        //
+        console.error('Error fetching applications:', err)
+        setApplications([])
       } finally {
         setLoading(false)
       }

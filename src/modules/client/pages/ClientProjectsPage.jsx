@@ -30,7 +30,7 @@ export default function ClientProjectsPage() {
 
   const fetchProjects = async () => {
     if (!user?.email) {
-      error('Authentication Required', 'Please sign in to view your projects')
+      console.error('Authentication required for projects')
       return
     }
     try {
@@ -38,8 +38,7 @@ export default function ClientProjectsPage() {
       const rows = await Project.filter({ project_owner_email: user.email }, '-created_at', 50)
       setProjects(rows || [])
     } catch (err) {
-      //
-      error('Error', 'Failed to fetch projects. Please try again.')
+      console.error('Error fetching projects:', err)
       setProjects([])
     } finally {
       setLoading(false)
@@ -48,7 +47,7 @@ export default function ClientProjectsPage() {
 
   const handleCreateProject = async () => {
     if (!user?.email) {
-      error('Authentication Required', 'Please sign in to create a project')
+      console.error('Authentication required for creating project')
       return
     }
     if (!createForm.title || !createForm.description) {
@@ -76,7 +75,7 @@ export default function ClientProjectsPage() {
       })
       fetchProjects()
     } catch (err) {
-      //
+      console.error('Error creating project:', err)
       error('Failed', 'Failed to create project. Please try again.')
     }
   }
@@ -88,7 +87,7 @@ export default function ClientProjectsPage() {
       setProjects(prev => prev.filter(p => p.id !== projectId))
       success('Deleted', 'Project deleted successfully')
     } catch (err) {
-      //
+      console.error('Error deleting project:', err)
       error('Failed', 'Failed to delete project. Please try again.')
     }
   }
