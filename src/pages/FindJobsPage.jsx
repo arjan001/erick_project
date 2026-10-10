@@ -8,6 +8,97 @@ import GigDetailSlideOut from '@/components/landing/backstage/GigDetailSlideOut'
 import { Job } from '@/lib/supabaseEntities'
 import { supabase } from '@/lib/supabase'
 
+const dummyJobs = [
+  {
+    id: 1,
+    title: "VO Artist Ones: Voiceover (TV Commercial)",
+    company: "HEALTH AND WELLNESS TECHNOLOGY",
+    compensation: "£800 (est. 2 hours of work)",
+    location: "Worldwide",
+    posted: "Thursday",
+    featured: true,
+    is_production: false,
+    gender: "Female",
+    age: "25-36",
+    description: "Casting a Russian-language short drama exploring themes of family, migration, and identity. Seeking authentic Russian-speaking performers for lead and supporting roles.",
+    tags: ["Voiceover", "TV Commercial"],
+    roles: []
+  },
+  {
+    id: 2,
+    title: "The North American Pantheon - Season 2",
+    company: "Ambitious Media",
+    compensation: "Roles paying up to US$60",
+    location: "Los Angeles, CA",
+    posted: "14 hours ago",
+    featured: true,
+    is_production: true,
+    description: "TV Show, Scripted, Drama, Limited Series. Multiple roles available for this production.",
+    tags: ["TV Show", "Scripted", "Drama", "Limited Series"],
+    roles: [
+      { title: "Koreatown Crew", compensation: "$800/day", gender: "Korean American", age: "20s-30s" },
+      { title: "David", compensation: "$750/day", gender: "Caucasian", age: "20s-30s" },
+      { title: "Jasmine", compensation: "$700/day", gender: "African American", age: "20s-30s" },
+      { title: "The Oracle", compensation: "$900/day", gender: "Any Ethnicity", age: "50s+" },
+      { title: "Royal Guard", compensation: "$650/day", gender: "Any Ethnicity", age: "20s-30s" },
+      { title: "Prince", compensation: "$1,000/day", gender: "Any Ethnicity", age: "30s-40s" },
+      { title: "Princess", compensation: "$950/day", gender: "Any Ethnicity", age: "20s-30s" },
+      { title: "Hero", compensation: "$1,200/day", gender: "Any Ethnicity", age: "25-35" },
+      { title: "Villain", compensation: "$1,100/day", gender: "Any Ethnicity", age: "30s-45" },
+      { title: "Sidekick", compensation: "$600/day", gender: "Any Ethnicity", age: "18-25" },
+      { title: "Mentor", compensation: "$850/day", gender: "Any Ethnicity", age: "40s-60s" },
+      { title: "Advisor", compensation: "$700/day", gender: "Any Ethnicity", age: "35s-55" },
+      { title: "Guard", compensation: "$550/day", gender: "Any Ethnicity", age: "25-40" },
+      { title: "Spy", compensation: "$1,000/day", gender: "Any Ethnicity", age: "25-35" },
+      { title: "Diplomat", compensation: "$900/day", gender: "Any Ethnicity", age: "35-50" },
+      { title: "Leader", compensation: "$1,200/day", gender: "Any Ethnicity", age: "40s-60s" },
+    ]
+  },
+  {
+    id: 3,
+    title: "Independent Feature Film - Supporting Cast",
+    company: "Indie Productions LLC",
+    compensation: "Deferred pay",
+    location: "Chicago, IL",
+    posted: "Sunday",
+    featured: false,
+    is_production: true,
+    description: "Indie feature film casting supporting roles for a coming-of-age drama set in Chicago.",
+    tags: ["Feature Film", "Indie", "Drama"],
+    roles: [
+      { title: "Supporting — Male, 18-25", compensation: "Deferred" },
+      { title: "Supporting — Female, 18-25", compensation: "Deferred" },
+      { title: "Lead — Male, 20-30", compensation: "Deferred" },
+    ]
+  },
+  {
+    id: 4,
+    title: "Broadway Musical — Ensemble",
+    company: "Broadway Productions",
+    compensation: "SAG-AFTRA scale",
+    location: "New York, NY",
+    posted: "Thursday",
+    featured: false,
+    is_production: false,
+    description: "Casting ensemble performers for an upcoming Broadway musical revival.",
+    tags: ["Theater", "Musical", "Broadway", "Ensemble"],
+    roles: []
+  },
+  {
+    id: 5,
+    title: "UGC Creator — Tech Product Reviews",
+    company: "Content Creators Inc",
+    compensation: "$500/day",
+    location: "Remote",
+    posted: "Today",
+    featured: true,
+    is_production: false,
+    description: "Seeking UGC creators to produce authentic tech product review content for social media campaigns.",
+    tags: ["UGC", "Content Creator", "Tech", "Remote"],
+    roles: []
+  },
+]
+
 const filterOptions = {
   location: ['Any Location', 'New York, NY', 'Los Angeles, CA', 'Atlanta, GA', 'Chicago, IL', 'Remote', 'Worldwide'],
   jobType: ['All Jobs', 'Feature Film', 'TV Series', 'Commercial', 'Theater', 'Voiceover', 'UGC', 'Short Film'],
@@ -60,7 +151,7 @@ export default function FindJobsPage() {
   const [showClientModal, setShowClientModal] = useState(null)
   const perPage = 12
 
-  // Fetch jobs from Supabase database on mount
+  // Fetch jobs from Supabase database on mount, fall back to dummy data
   useEffect(() => {
     let cancelled = false
     setLoading(true)
@@ -81,7 +172,11 @@ export default function FindJobsPage() {
 
         if (error) throw error
 
-        if (cancelled || !jobs) return
+        if (cancelled || !jobs) {
+          // Fall back to dummy data if no jobs or error
+          if (!cancelled) setAllJobs(dummyJobs)
+          return
+        }
 
         // Map jobs to the expected format
         const mapped = jobs.map((j) => ({
@@ -115,6 +210,8 @@ export default function FindJobsPage() {
         if (!cancelled) setAllJobs(mapped)
       } catch (err) {
         console.error('Error fetching jobs:', err)
+        // Fall back to dummy data on error
+        if (!cancelled) setAllJobs(dummyJobs)
       } finally {
         if (!cancelled) setLoading(false)
       }
