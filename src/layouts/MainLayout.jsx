@@ -18,7 +18,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
   const [editMode, setEditMode] = useState(false)
   const [pressTimer, setPressTimer] = useState(null)
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem('ericrabar_user')
+    const storedUser = localStorage.getItem('smartgigs_user')
     return storedUser ? JSON.parse(storedUser) : null
   })
   const [showLoadingScreen, setShowLoadingScreen] = useState(false)
@@ -26,10 +26,10 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
   const isHomePage = currentPageName === 'Home'
 
   React.useEffect(() => {
-    const justLoggedIn = sessionStorage.getItem('ericrabar_just_logged_in')
+    const justLoggedIn = sessionStorage.getItem('smartgigs_just_logged_in')
     if (justLoggedIn === 'true') {
       setShowLoadingScreen(true)
-      sessionStorage.removeItem('ericrabar_just_logged_in')
+      sessionStorage.removeItem('smartgigs_just_logged_in')
       setTimeout(() => {
         setShowLoadingScreen(false)
       }, 5000)
@@ -38,7 +38,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
 
   React.useEffect(() => {
     const handleStorageChange = () => {
-      const storedUser = localStorage.getItem('ericrabar_user')
+      const storedUser = localStorage.getItem('smartgigs_user')
       setUser(storedUser ? JSON.parse(storedUser) : null)
     }
     window.addEventListener('storage', handleStorageChange)
@@ -166,11 +166,20 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
             {/* Right Actions */}
             <div className="flex items-center gap-3">
               {!user ? (
-                <Link to={createPageUrl('SignIn')}>
-                  <Button variant="ghost" size="sm" className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white hover:bg-transparent' : 'text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent'}`}>
-                    Sign In
-                  </Button>
-                </Link>
+                <>
+                  <Link to={createPageUrl('SignIn')}>
+                    <Button variant="ghost" size="sm" className={`text-sm font-medium ${isHomePage ? 'text-white/90 hover:text-white hover:bg-transparent' : 'text-[#1a1a1a] hover:text-gray-600 hover:bg-transparent'}`}>
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link to={createPageUrl('SignUp')}>
+                    <Button
+                      className={`px-4 py-2 ${isHomePage ? 'bg-[#C9A962] text-black hover:bg-[#D4B575]' : 'bg-black text-white hover:bg-gray-800'} font-bold text-sm rounded-md transition-colors`}
+                    >
+                      Join
+                    </Button>
+                  </Link>
+                </>
               ) : (
                 <>
                   <Link to={getDashboardUrl()}>
@@ -187,14 +196,6 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                     Logout
                   </Button>
                 </>
-              )}
-              {!user && (
-                <button
-                  onClick={() => setExploreOpen(true)}
-                  className={`px-4 py-2 ${isHomePage ? 'bg-[#C9A962] text-black hover:bg-[#D4B575]' : 'bg-black text-white hover:bg-gray-800'} font-bold text-sm rounded-md transition-colors`}
-                >
-                  Post a Project
-                </button>
               )}
             </div>
           </div>
