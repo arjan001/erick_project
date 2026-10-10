@@ -12,7 +12,7 @@ export default function ActivityFeedPage() {
   const [filter, setFilter] = useState('all'); // all, jobs, connections, endorsements, testimonials
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user')
+    const storedUser = localStorage.getItem('smartgigs_user')
     if (!storedUser) {
       navigate('/')
       return
@@ -26,7 +26,7 @@ export default function ActivityFeedPage() {
     const fetchActivities = async () => {
       try {
         const allActivities = []
-        
+
         // Fetch jobs posted by connections
         const jobs = await Job.filter({ status: 'open' })
         jobs.forEach(job => {
@@ -71,7 +71,7 @@ export default function ActivityFeedPage() {
               id: `endorsement-${endorsement.id}`,
               type: 'endorsement',
               title: isReceived ? 'Endorsement Received' : 'Endorsement Given',
-              message: isReceived 
+              message: isReceived
                 ? `${endorsement.endorser_name} endorsed you for ${endorsement.skill}`
                 : `You endorsed ${endorsement.endorsed_name} for ${endorsement.skill}`,
               actor: isReceived ? endorsement.endorser_email : endorsement.endorsed_email,
@@ -105,10 +105,10 @@ export default function ActivityFeedPage() {
         })
 
         // Sort by created_date descending
-        const sorted = allActivities.sort((a, b) => 
+        const sorted = allActivities.sort((a, b) =>
           new Date(b.created_date) - new Date(a.created_date)
         )
-        
+
         setActivities(sorted)
       } catch (err) {
         //
@@ -126,7 +126,7 @@ export default function ActivityFeedPage() {
     const fetchActivities = async () => {
       try {
         const allActivities = []
-        
+
         const jobs = await Job.filter({ status: 'open' })
         jobs.forEach(job => {
           allActivities.push({
@@ -168,7 +168,7 @@ export default function ActivityFeedPage() {
               id: `endorsement-${endorsement.id}`,
               type: 'endorsement',
               title: isReceived ? 'Endorsement Received' : 'Endorsement Given',
-              message: isReceived 
+              message: isReceived
                 ? `${endorsement.endorser_name} endorsed you for ${endorsement.skill}`
                 : `You endorsed ${endorsement.endorsed_name} for ${endorsement.skill}`,
               actor: isReceived ? endorsement.endorser_email : endorsement.endorsed_email,
@@ -200,10 +200,10 @@ export default function ActivityFeedPage() {
           }
         })
 
-        const sorted = allActivities.sort((a, b) => 
+        const sorted = allActivities.sort((a, b) =>
           new Date(b.created_date) - new Date(a.created_date)
         )
-        
+
         setActivities(sorted)
       } catch (err) {
         //
@@ -232,7 +232,7 @@ export default function ActivityFeedPage() {
     const date = new Date(dateString)
     const now = new Date()
     const seconds = Math.floor((now - date) / 1000)
-    
+
     if (seconds < 60) return 'Just now'
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
@@ -258,72 +258,72 @@ export default function ActivityFeedPage() {
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
             >
               <option value="all">All Activity</option>
-                  <option value="job">Jobs</option>
-                  <option value="connection">Connections</option>
-                  <option value="endorsement">Endorsements</option>
-                  <option value="testimonial">Testimonials</option>
-                </select>
-              </div>
-              <Button variant="outline" onClick={handleRefresh}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </Button>
-            </div>
+              <option value="job">Jobs</option>
+              <option value="connection">Connections</option>
+              <option value="endorsement">Endorsements</option>
+              <option value="testimonial">Testimonials</option>
+            </select>
           </div>
+          <Button variant="outline" onClick={handleRefresh}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+      </div>
 
-        <div className="space-y-4 max-w-3xl">
-          {filteredActivities.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <TrendingUp className="w-16 h-16 text-gray-300 mb-4" />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">No Activity Yet</h2>
-              <p className="text-gray-600 max-w-sm mx-auto">
-                {filter === 'all' 
-                  ? "Start connecting with people to see their activity here."
-                  : `No ${filter} activity to show.`
-                }
-              </p>
-            </div>
-          ) : (
-            <>
-              {filteredActivities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                        {activity.icon}
-                      </div>
+      <div className="space-y-4 max-w-3xl">
+        {filteredActivities.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <TrendingUp className="w-16 h-16 text-gray-300 mb-4" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">No Activity Yet</h2>
+            <p className="text-gray-600 max-w-sm mx-auto">
+              {filter === 'all'
+                ? "Start connecting with people to see their activity here."
+                : `No ${filter} activity to show.`
+              }
+            </p>
+          </div>
+        ) : (
+          <>
+            {filteredActivities.map((activity) => (
+              <div
+                key={activity.id}
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                      {activity.icon}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-900">{activity.title}</p>
-                          <p className="text-sm text-gray-600 mt-1">{activity.message}</p>
-                          <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {getTimeAgo(activity.created_date)}
-                          </p>
-                        </div>
-                        {activity.link && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate(activity.link)}
-                            className="ml-4"
-                          >
-                            View
-                          </Button>
-                        )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900">{activity.title}</p>
+                        <p className="text-sm text-gray-600 mt-1">{activity.message}</p>
+                        <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {getTimeAgo(activity.created_date)}
+                        </p>
                       </div>
+                      {activity.link && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(activity.link)}
+                          className="ml-4"
+                        >
+                          View
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
-              ))}
-            </>
-          )}
-        </div>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
     </>
   )
 }
