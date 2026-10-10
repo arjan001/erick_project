@@ -385,6 +385,18 @@ const adminRoutes = [
     guard: SettingsGuard
   },
   {
+    path: '/Admin/DatabaseBackup',
+    component: () => import('@/modules/admin/pages/AdminDatabaseBackupPage'),
+    layout: AdminLayout,
+    guard: SettingsGuard
+  },
+  {
+    path: '/Admin/Newsletter',
+    component: () => import('@/modules/admin/pages/AdminNewsletterPage'),
+    layout: AdminLayout,
+    guard: SettingsGuard
+  },
+  {
     path: '/Admin/Settings',
     component: () => import('@/modules/admin/pages/AdminSettingsPage'),
     layout: AdminLayout,

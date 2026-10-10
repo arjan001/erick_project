@@ -592,6 +592,29 @@ export default function AdminSettingsPage() {
                 </div>
               </SettingCard>
             </div>
+
+            {/* Cache Management */}
+            <SettingCard icon={RefreshCw} title="Cache Management" description="Clear system caches to refresh data">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div>
+                    <Label className="font-medium text-gray-900">Clear All Caches</Label>
+                    <p className="text-sm text-gray-500 mt-1">Clear settings, maintenance, and other cached data</p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      clearSettingsCache()
+                      success('Cache Cleared', 'All system caches have been cleared')
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Clear Cache
+                  </Button>
+                </div>
+              </div>
+            </SettingCard>
           </TabsContent>
         </Tabs>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Users, Shield, Settings, Search, HardDrive, Mail, Lock, Key, CreditCard, DollarSign, Activity, ChevronLeft, ChevronRight, LogOut, Briefcase, FolderKanban, Building, MessageSquare, Package, ShoppingCart, Store, Radio, LayoutGrid, BarChart3, Bell, X } from 'lucide-react'
+import { LayoutDashboard, Users, Shield, Settings, Search, HardDrive, Mail, Lock, Key, CreditCard, DollarSign, Activity, ChevronLeft, ChevronRight, LogOut, Briefcase, FolderKanban, Building, MessageSquare, Package, ShoppingCart, Store, Radio, LayoutGrid, BarChart3, Bell, X, Wrench, Database, Send } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { useSidebar } from '@/layouts/DashboardLayout'
 import { Message, Notification } from '@/lib/supabaseEntities'
@@ -106,6 +106,9 @@ export default function AdminSidebar() {
       section: 'System',
       items: [
         { path: '/Admin/GeneralSettings', label: 'General Settings', icon: Settings },
+        { path: '/Admin/Maintenance', label: 'Maintenance Mode', icon: Wrench },
+        { path: '/Admin/DatabaseBackup', label: 'Database Backup', icon: Database },
+        { path: '/Admin/Newsletter', label: 'Newsletter', icon: Send },
         { path: '/Admin/Analytics', label: 'Analytics Dashboard', icon: BarChart3 },
         { path: '/Admin/FinanceDashboard', label: 'Finance Dashboard', icon: DollarSign },
         { path: '/Admin/AuditLogs', label: 'Audit Logs', icon: Activity },
