@@ -1434,51 +1434,49 @@ export default function ClientPostProject() {
                       />
                     </div>
                   </div>
-    </div>
-        )
+                )
+              default:
+                return null
+            }
+          })()}
+        </div>
 
-        default:
-        return null
-}
-          }) ()}
+        {/* Navigation Buttons */}
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={handleBack}
+            disabled={currentStep === 1}
+            className="border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
+          >
+            <ChevronLeft className="w-5 h-5 mr-2" />
+            Back
+          </Button>
+
+          {
+            currentStep < STEPS.length ? (
+              <Button
+                size="lg"
+                onClick={handleNext}
+                disabled={!canProceed()}
+                className="bg-gray-900 hover:bg-gray-800 text-white order-1 sm:order-2"
+              >
+                Next
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                onClick={handleSubmit}
+                disabled={loading}
+                className="bg-gray-900 hover:bg-gray-800 text-white order-1 sm:order-2"
+              >
+                {loading ? 'Submitting...' : 'Post Project'}
+              </Button>
+            )
+          }
+        </div >
       </div >
-
-      {/* Navigation Buttons */}
-      < div className="flex gap-3" >
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={handleBack}
-          disabled={currentStep === 1}
-          className="border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
-        >
-          <ChevronLeft className="w-5 h-5 mr-2" />
-          Back
-        </Button>
-
-        {
-          currentStep < STEPS.length ? (
-            <Button
-              size="lg"
-              onClick={handleNext}
-              disabled={!canProceed()}
-              className="bg-gray-900 hover:bg-gray-800 text-white order-1 sm:order-2"
-            >
-              Next
-            </Button>
-          ) : (
-            <Button
-              size="lg"
-              onClick={handleSubmit}
-              disabled={loading}
-              className="bg-gray-900 hover:bg-gray-800 text-white order-1 sm:order-2"
-            >
-              {loading ? 'Submitting...' : 'Post Project'}
-            </Button>
-          )
-        }
-      </div >
-    </div >
     </div >
   )
 }
