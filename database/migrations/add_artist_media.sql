@@ -61,22 +61,22 @@ COMMENT ON COLUMN public.artist_media.status IS 'Approval status: pending, appro
 DROP POLICY IF EXISTS "Artists can view own media" ON public.artist_media;
 CREATE POLICY "Artists can view own media"
     ON public.artist_media FOR SELECT
-    USING (artist_id IN (SELECT id FROM public.creators WHERE email = auth.email()));
+    USING (artist_id IN (SELECT id FROM public.creators WHERE user_id = auth.uid()));
 
 DROP POLICY IF EXISTS "Artists can insert own media" ON public.artist_media;
 CREATE POLICY "Artists can insert own media"
     ON public.artist_media FOR INSERT
-    WITH CHECK (artist_id IN (SELECT id FROM public.creators WHERE email = auth.email()));
+    WITH CHECK (artist_id IN (SELECT id FROM public.creators WHERE user_id = auth.uid()));
 
 DROP POLICY IF EXISTS "Artists can update own media" ON public.artist_media;
 CREATE POLICY "Artists can update own media"
     ON public.artist_media FOR UPDATE
-    USING (artist_id IN (SELECT id FROM public.creators WHERE email = auth.email()));
+    USING (artist_id IN (SELECT id FROM public.creators WHERE user_id = auth.uid()));
 
 DROP POLICY IF EXISTS "Artists can delete own media" ON public.artist_media;
 CREATE POLICY "Artists can delete own media"
     ON public.artist_media FOR DELETE
-    USING (artist_id IN (SELECT id FROM public.creators WHERE email = auth.email()));
+    USING (artist_id IN (SELECT id FROM public.creators WHERE user_id = auth.uid()));
 
 DROP POLICY IF EXISTS "Public can view approved media" ON public.artist_media;
 CREATE POLICY "Public can view approved media"
