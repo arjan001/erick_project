@@ -38,8 +38,8 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
       for (const file of files) {
         const fileExt = file.name.split('.').pop()
         const isVideo = file.type.startsWith('video/')
-        const fileName = `${artistId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-        const filePath = `artist-media/${fileName}`
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+        const filePath = `${artistId}/${fileName}`
 
         // Upload to Supabase Storage
         const { error: uploadError } = await supabase.storage
@@ -209,9 +209,8 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
             <button
               key={item.id}
               onClick={() => setCurrentIndex(index)}
-              className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
-                index === currentIndex ? 'border-black' : 'border-transparent hover:border-gray-300'
-              }`}
+              className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${index === currentIndex ? 'border-black' : 'border-transparent hover:border-gray-300'
+                }`}
             >
               {item.media_type === 'video' ? (
                 <video src={item.media_url} className="w-full h-full object-cover" />

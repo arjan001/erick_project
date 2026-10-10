@@ -96,7 +96,7 @@ export default function ArtistProfile() {
 
   const [portfolioForm, setPortfolioForm] = useState(() => {
     // Load draft from localStorage if exists
-    const savedDraft = localStorage.getItem('ericrabar_portfolio_draft')
+    const savedDraft = localStorage.getItem('smartgigs_portfolio_draft')
     if (savedDraft) {
       try {
         return JSON.parse(savedDraft)
@@ -115,7 +115,7 @@ export default function ArtistProfile() {
 
   // Auto-save portfolio form draft to localStorage
   useEffect(() => {
-    localStorage.setItem('ericrabar_portfolio_draft', JSON.stringify(portfolioForm))
+    localStorage.setItem('smartgigs_portfolio_draft', JSON.stringify(portfolioForm))
   }, [portfolioForm])
 
   // Save active tab to localStorage
@@ -534,7 +534,7 @@ export default function ArtistProfile() {
       setSelectedCoverImage(null)
       setSelectedVideoFile(null)
       setEditingPortfolio(null)
-      localStorage.removeItem('ericrabar_portfolio_draft'); // Clear draft after successful save
+      localStorage.removeItem('smartgigs_portfolio_draft'); // Clear draft after successful save
       success(editingPortfolio ? 'Portfolio Updated' : 'Portfolio Added', editingPortfolio ? 'Your portfolio clip has been updated' : 'Your portfolio clip has been submitted for approval')
     } catch (err) {
 

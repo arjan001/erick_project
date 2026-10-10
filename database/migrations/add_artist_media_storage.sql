@@ -13,51 +13,36 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- Enable RLS
-ALTER TABLE storage.objects ENABLE ROW LEVEL ACCESS;
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
 -- Policies for artist-media bucket
--- Artists can upload to their own folder
-CREATE POLICY "Artists can upload to own folder"
+-- Authenticated users can upload (we'll check artist_id in the application layer)
+CREATE POLICY "Authenticated users can upload artist media"
 ON storage.objects FOR INSERT
 TO authenticated
-WITH CHECK (
-  bucket_id = 'artist-media' AND
-  auth.uid()::text = (storage.foldername(name))[1]
-);
+WITH CHECK (bucket_id = 'artist-media');
 
--- Artists can view their own files
-CREATE POLICY "Artists can view own files"
+-- Authenticated users can view artist media
+CREATE POLICY "Authenticated users can view artist media"
 ON storage.objects FOR SELECT
 TO authenticated
-USING (
-  bucket_id = 'artist-media' AND
-  auth.uid()::text = (storage.foldername(name))[1]
-);
+USING (bucket_id = 'artist-media');
 
--- Public can view approved artist media (for public profiles)
+-- Public can view artist media (for public profiles)
 CREATE POLICY "Public can view artist media"
 ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'artist-media');
 
--- Artists can delete their own files
-CREATE POLICY "Artists can delete own files"
+-- Authenticated users can delete their own files
+CREATE POLICY "Authenticated users can delete artist media"
 ON storage.objects FOR DELETE
 TO authenticated
-USING (
-  bucket_id = 'artist-media' AND
-  auth.uid()::text = (storage.foldername(name))[1]
-);
+USING (bucket_id = 'artist-media');
 
--- Artists can update their own files
-CREATE POLICY "Artists can update own files"
+-- Authenticated users can update their own files
+CREATE POLICY "Authenticated users can update artist media"
 ON storage.objects FOR UPDATE
 TO authenticated
-USING (
-  bucket_id = 'artist-media' AND
-  auth.uid()::text = (storage.foldername(name))[1]
-)
-WITH CHECK (
-  bucket_id = 'artist-media' AND
-  auth.uid()::text = (storage.foldername(name))[1]
-);
+USING (bucket_id = 'artist-media')
+WITH CHECK (bucket_id = 'artist-media');

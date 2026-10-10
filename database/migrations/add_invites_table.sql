@@ -28,11 +28,20 @@ CREATE INDEX IF NOT EXISTS idx_invites_inviter_email ON public.invites(inviter_e
 CREATE INDEX IF NOT EXISTS idx_invites_applicant_email ON public.invites(applicant_email);
 CREATE INDEX IF NOT EXISTS idx_invites_status ON public.invites(status);
 
--- Add trigger for updated_at
-CREATE TRIGGER trg_invites_updated_at
-    BEFORE UPDATE ON public.invites
-    FOR EACH ROW
-    EXECUTE FUNCTION public.handle_updated_at();
+-- Add trigger for updated_at (check if function exists first)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger
+        WHERE tgname = 'trg_invites_updated_at'
+        AND tgrelid = 'public.invites'::regclass
+    ) THEN
+        CREATE TRIGGER trg_invites_updated_at
+            BEFORE UPDATE ON public.invites
+            FOR EACH ROW
+            EXECUTE FUNCTION public.handle_updated_at();
+    END IF;
+END $$;
 
 -- Enable RLS
 ALTER TABLE public.invites ENABLE ROW LEVEL SECURITY;
