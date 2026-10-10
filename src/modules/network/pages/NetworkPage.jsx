@@ -4,9 +4,13 @@ import { Artist, Team, Backer, ProjectOwner, Connection, Notification, Subscript
 import { useAuth } from '@/lib/AuthContext'
 import { createPageUrl } from '@/shared/utils/routing'
 import { useToast } from '@/hooks/useToast'
-import { Search, MapPin, ChevronDown, Users, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock } from 'lucide-react'
+import { Search, MapPin, ChevronDown, Users, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock, User, Building, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import notificationService from '@/shared/services/notificationService'
+
+const ONLINE_THRESHOLD_MS = 90 * 1000 // consider online if active within last 90s
+
+const isOnline = (lastActive) => lastActive && (Date.now() - new Date(lastActive).getTime()) < ONLINE_THRESHOLD_MS
 
 // Maps the app's user.role values to the Connection entity's requester/recipient type enum
 const ROLE_TO_TYPE = {
@@ -25,6 +29,9 @@ const toDisplay = (person) => {
       image: person.profile_photo_url,
       email: person.email,
       skills: (person.skills_experience || []).map(s => s.skill).concat(person.secondary_roles || [], person.role ? [person.role] : []),
+      organizationType: 'Creator',
+      organizationName: '',
+      isOnline: isOnline(person.last_active),
     }
   }
   if (person.type === 'team') {
@@ -35,6 +42,9 @@ const toDisplay = (person) => {
       image: person.team_logo_url,
       email: person.contact_email,
       skills: person.specialties || [],
+      organizationType: 'Team',
+      organizationName: person.team_name,
+      isOnline: isOnline(person.last_active),
     }
   }
   if (person.type === 'client') {
@@ -45,6 +55,9 @@ const toDisplay = (person) => {
       image: person.profile_photo_url,
       email: person.email,
       skills: person.company ? [person.company] : [],
+      organizationType: person.organization_type || 'Client',
+      organizationName: person.organization_name || person.company || '',
+      isOnline: isOnline(person.last_active),
     }
   }
   return {
@@ -54,6 +67,9 @@ const toDisplay = (person) => {
     image: person.logo_url,
     email: person.contact_email,
     skills: person.interests || [],
+    organizationType: 'Backer',
+    organizationName: person.organization_name,
+    isOnline: isOnline(person.last_active),
   }
 }
 
@@ -139,7 +155,7 @@ export default function NetworkPage() {
         //
         //)
         //)
-        
+
         setConnections(myConnections)
         setPendingRequests(myConnections.filter(c => c.recipient_email === user.email && c.status === 'pending'))
 
@@ -354,25 +370,22 @@ export default function NetworkPage() {
         <div className="flex gap-6">
           <button
             onClick={() => setActiveTab('connections')}
-            className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
-              activeTab === 'connections' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+            className={`text-sm font-medium pb-2 border-b-2 transition-colors ${activeTab === 'connections' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
           >
             Connections ({myConnections.length})
           </button>
           <button
             onClick={() => setActiveTab('sent')}
-            className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
-              activeTab === 'sent' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+            className={`text-sm font-medium pb-2 border-b-2 transition-colors ${activeTab === 'sent' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
           >
             Sent Requests ({sentRequests.length})
           </button>
           <button
             onClick={() => setActiveTab('pending')}
-            className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
-              activeTab === 'pending' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+            className={`text-sm font-medium pb-2 border-b-2 transition-colors ${activeTab === 'pending' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
           >
             Pending Requests ({receivedRequests.length})
           </button>
@@ -451,13 +464,28 @@ export default function NetworkPage() {
               {myConnections.map((person) => (
                 <div key={`${person.type}-${person.id}`} className="p-4 hover:bg-gray-50">
                   <div className="flex items-start gap-3">
-                    <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden text-sm font-bold text-gray-600">
-                      {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
+                    <div className="relative flex-shrink-0">
+                      <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
+                        {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
+                      </div>
+                      {/* Online status indicator */}
+                      <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${person.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} title={person.isOnline ? 'Online' : 'Offline'} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
+                            {/* Organization type tag */}
+                            {person.organizationType && (
+                              <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${person.type === 'client' || person.type === 'backer'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'bg-purple-100 text-purple-700'
+                                }`}>
+                                {person.organizationType}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-600 line-clamp-1 mb-1">{person.role}</p>
                           {person.location && <div className="flex items-center gap-1 text-xs text-gray-500"><MapPin className="w-3 h-3" />{person.location}</div>}
                         </div>
@@ -499,11 +527,24 @@ export default function NetworkPage() {
                           {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
                         </div>
                         <TypeIcon className="w-3 h-3 absolute -bottom-1 -right-1 bg-black text-white rounded-full p-0.5" />
+                        {/* Online status indicator */}
+                        <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${person.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} title={person.isOnline ? 'Online' : 'Offline'} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
+                              {/* Organization type tag */}
+                              {person.organizationType && (
+                                <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${person.type === 'client' || person.type === 'backer'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-purple-100 text-purple-700'
+                                  }`}>
+                                  {person.organizationType}
+                                </span>
+                              )}
+                            </div>
                             <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
                             {mutuals.length > 0 && (
                               <div className="flex items-center gap-1.5 mt-1">

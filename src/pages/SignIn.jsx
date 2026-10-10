@@ -283,7 +283,7 @@ export default function SignIn() {
 
   const goToSignUp = () => {
     const role = userType === 'employer' ? 'client' : 'artist'
-    navigate(`/SignUp${role === 'client' ? '?role=client' : ''}`)
+    navigate(`/SignUp?role=${role}`)
   }
 
   const handleResetPassword = async (e) => {
@@ -418,14 +418,14 @@ export default function SignIn() {
           {/* Mode toggle (I'm Talent / I'm Hiring) */}
           <div className="mb-8 inline-flex items-center rounded-full bg-black/[0.06] p-1">
             <button
-              onClick={() => navigate('/SignUp?role=artist')}
+              onClick={() => setUserType('talent')}
               className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${!isEmployer ? 'bg-black text-white' : 'text-black/70 hover:text-black'
                 }`}
             >
               I'm Talent
             </button>
             <button
-              onClick={() => navigate('/SignUp?role=client')}
+              onClick={() => setUserType('employer')}
               className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${isEmployer ? 'bg-black text-white' : 'text-black/70 hover:text-black'
                 }`}
             >
@@ -605,11 +605,11 @@ export default function SignIn() {
               {/* Switch talent/employer link */}
               <p className="mt-6 text-center text-sm">
                 {isEmployer ? (
-                  <button onClick={() => setUserType('talent')} className="font-medium text-[#4B4ACF] hover:underline">
+                  <button onClick={() => navigate('/SignUp?role=artist')} className="font-medium text-[#4B4ACF] hover:underline">
                     I want to register as talent.
                   </button>
                 ) : (
-                  <button onClick={() => setUserType('employer')} className="font-medium text-[#4B4ACF] hover:underline">
+                  <button onClick={() => navigate('/SignUp?role=client')} className="font-medium text-[#4B4ACF] hover:underline">
                     I want to register as an employer.
                   </button>
                 )}
