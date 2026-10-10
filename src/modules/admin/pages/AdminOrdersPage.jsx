@@ -17,8 +17,8 @@ export default function AdminOrdersPage() {
         const allOrders = await ShopOrder.list('-created_at')
         setOrders(allOrders || [])
       } catch (err) {
-        
-        error('Error', 'Failed to fetch orders')
+        console.error('Error fetching orders:', err)
+        setOrders([]) // Set empty array on error
       } finally {
         setLoading(false)
       }
@@ -33,7 +33,7 @@ export default function AdminOrdersPage() {
       setOrders(orders.map(o => o.id === orderId ? { ...o, order_status: newStatus } : o))
       success('Updated', 'Order status updated successfully')
     } catch (err) {
-      
+      console.error('Error updating order status:', err)
       error('Failed', 'Failed to update order status')
     }
   }
@@ -44,7 +44,7 @@ export default function AdminOrdersPage() {
       setOrders(orders.filter(o => o.id !== orderId))
       success('Deleted', 'Order deleted successfully')
     } catch (err) {
-      
+      console.error('Error deleting order:', err)
       error('Failed', 'Failed to delete order')
     }
   }

@@ -45,8 +45,8 @@ export default function AdminProductsPage() {
         const allProducts = await ShopProduct.list('-created_at')
         setProducts(allProducts || [])
       } catch (err) {
-        
-        error('Error', 'Failed to fetch products')
+        console.error('Error fetching products:', err)
+        setProducts([]) // Set empty array on error
       } finally {
         setLoading(false)
       }
@@ -69,27 +69,29 @@ export default function AdminProductsPage() {
       setShowModal(false)
       setProductForm({ name: '', description: '', price: '', discount_price: '', category: '', stock: '', sku: '', images: [], status: 'active', featured: false, auction_enabled: false, auction_type: 'time', auction_duration_hours: 24, auction_end_time: '', auction_target_count: 1000, auction_participants: 0, currency: 'KES', fulfillment: 'physical' })
     } catch (err) {
-      
+      console.error('Error creating product:', err)
       error('Failed', 'Failed to create product')
     }
   }
 
   const handleUpdateProduct = async (productId, updates) => {
     try {
+      await ShopProduct.update(productId, updates)
       setProducts(products.map(p => p.id === productId ? { ...p, ...updates } : p))
       success('Success', 'Product updated successfully')
     } catch (err) {
-      
+      console.error('Error updating product:', err)
       error('Failed', 'Failed to update product')
     }
   }
 
   const handleDeleteProduct = async (productId) => {
     try {
+      await ShopProduct.delete(productId)
       setProducts(products.filter(p => p.id !== productId))
       success('Deleted', 'Product deleted successfully')
     } catch (err) {
-      
+      console.error('Error deleting product:', err)
       error('Failed', 'Failed to delete product')
     }
   }
