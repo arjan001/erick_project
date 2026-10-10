@@ -79,7 +79,9 @@ export default function ArtistProfile() {
     unionMembership: [],
     licensePassport: {
       driverLicense: false, passport: false
-    }
+    },
+    self_recording_equipment: '',
+    highlights: ''
   })
 
   // Flatten all skills from categories for multi-select
@@ -147,6 +149,12 @@ export default function ArtistProfile() {
             skills: a.skills || [],
             credits: a.credits || { film: [], commercials: [] },
             education: a.education || [],
+            socialMedia: a.socialMedia || { instagram: '', linkedin: '', twitter: '', youtube: '', tiktok: '' },
+            representation: a.representation || { agent: '', email: '' },
+            unionMembership: a.unionMembership || [],
+            licensePassport: a.licensePassport || { driverLicense: false, passport: false },
+            self_recording_equipment: a.self_recording_equipment || '',
+            highlights: a.highlights || ''
             socialMedia: a.socialMedia || { instagram: '', linkedin: '', twitter: '', youtube: '', tiktok: '' },
             representation: a.representation || { agent: '', email: '' },
             unionMembership: a.unionMembership || [],
@@ -280,7 +288,9 @@ export default function ArtistProfile() {
         socialMedia: formData.socialMedia,
         representation: formData.representation,
         unionMembership: formData.unionMembership,
-        licensePassport: formData.licensePassport
+        licensePassport: formData.licensePassport,
+        self_recording_equipment: formData.self_recording_equipment,
+        highlights: formData.highlights
       })
       setArtist(updated)
 
@@ -780,6 +790,36 @@ export default function ArtistProfile() {
                         <input type="checkbox" checked={formData.licensePassport.passport} onChange={(e) => setFormData({ ...formData, licensePassport: { ...formData.licensePassport, passport: e.target.checked } })} className="rounded" />
                         <span className="text-sm text-gray-700">Passport</span>
                       </label>
+                    </div>
+                  </div>
+
+                  {/* Self-Recording Equipment Section */}
+                  <div className="border-t border-gray-200 pt-6">
+                    <h4 className="text-md font-semibold text-gray-900 mb-4">Self-Recording Equipment</h4>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Equipment Details</label>
+                      <textarea
+                        value={formData.self_recording_equipment}
+                        onChange={(e) => setFormData({ ...formData, self_recording_equipment: e.target.value })}
+                        rows={3}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                        placeholder="e.g., Rode professional audio system with condenser microphone, 4K camera, professional lighting setup"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Highlights Section */}
+                  <div className="border-t border-gray-200 pt-6">
+                    <h4 className="text-md font-semibold text-gray-900 mb-4">Highlights</h4>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Special Highlights</label>
+                      <textarea
+                        value={formData.highlights}
+                        onChange={(e) => setFormData({ ...formData, highlights: e.target.value })}
+                        rows={2}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                        placeholder="e.g., Always up for a new adventure"
+                      />
                     </div>
                   </div>
 
