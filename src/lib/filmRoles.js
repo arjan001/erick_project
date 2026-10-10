@@ -83,6 +83,25 @@ export const ALL_FILM_ROLES = Object.values(FILM_ROLES_BY_CATEGORY).flat()
 // Flat list of talent-only roles for artist registration
 export const TALENT_ROLES = Object.values(TALENT_ROLES_BY_CATEGORY).flat()
 
+// Client/Employer roles for job posting
+export const CLIENT_ROLES_BY_CATEGORY = {
+  'Job Title': [
+    'Casting Director', 'Producer', 'Director', 'Production Manager',
+    'Creative Director', 'Executive Producer', 'Line Producer',
+  ],
+  'Production Type': [
+    'Feature Film', 'Short Film', 'Commercial', 'Music Video',
+    'Documentary', 'TV Series', 'Web Series', 'UGC Campaign',
+    'Corporate Video', 'Industrial', 'Photography Project',
+  ],
+  'Department': [
+    'Casting', 'Production', 'Post-Production', 'Marketing',
+    'Finance', 'Distribution', 'Agency',
+  ],
+}
+
+export const CLIENT_ROLES = Object.values(CLIENT_ROLES_BY_CATEGORY).flat()
+
 // Equipment categories
 export const EQUIPMENT_CATEGORIES = {
   'Cameras': [

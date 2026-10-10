@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Artist, Team, Backer, ProjectOwner, Invite, Connection } from '@/lib/supabaseEntities'
 import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete'
-import { ALL_FILM_ROLES, TALENT_ROLES } from '@/lib/filmRoles'
+import { ALL_FILM_ROLES, TALENT_ROLES, CLIENT_ROLES } from '@/lib/filmRoles'
 import skillsAndRoles from '@/lib/skillsAndRoles.json'
 import Logo from '@/components/landing/backstage/Logo'
 
@@ -56,6 +56,7 @@ export default function SignUp() {
       inviteCode: '',
       selectedRoles: [],
       selectedSkills: [],
+      companyName: '',
     }
   })
 
@@ -226,7 +227,7 @@ export default function SignUp() {
             specialties: [],
           })
         } else if (formData.role === 'client') {
-          await ProjectOwner.create({ ...profileData, company: fullName })
+          await ProjectOwner.create({ ...profileData, company: formData.companyName || fullName })
         } else if (formData.role === 'backer') {
           await Backer.create({
             ...profileData,
@@ -271,7 +272,7 @@ export default function SignUp() {
 
       // Persist the session locally and redirect
       await login(appUser)
-      sessionStorage.setItem('ericrabar_just_logged_in', 'true')
+      sessionStorage.setItem('smartgigs_just_logged_in', 'true')
 
       if (formData.inviteCode && inviteCodeValid) {
         setShowInviteModal(true)
@@ -558,7 +559,7 @@ export default function SignUp() {
                   type="text"
                   value={formData.inviteCode}
                   onChange={handleInviteCodeChange}
-                  placeholder="e.g., ER-ABC123"
+                  placeholder="e.g., SG-ABC123"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black uppercase"
                   disabled={loading}
                   maxLength={10}
@@ -591,6 +592,32 @@ export default function SignUp() {
                       onChange={(selected) => setFormData({ ...formData, selectedSkills: selected })}
                       placeholder="Search and select your skills..."
                       searchable={true}
+                    />
+                  </div>
+                </>
+              )}
+
+              {isEmployer && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Your Role/Title <span className="text-gray-500">(multi-select)</span></label>
+                    <MultiSelectAutocomplete
+                      options={CLIENT_ROLES}
+                      selected={formData.selectedRoles}
+                      onChange={(selected) => setFormData({ ...formData, selectedRoles: selected })}
+                      placeholder="Search and select your role (Casting Director, Producer, Director, etc.)..."
+                      searchable={true}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Company/Organization Name</label>
+                    <input
+                      type="text"
+                      value={formData.companyName || ''}
+                      onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                      placeholder="Enter your company or organization name"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      disabled={loading}
                     />
                   </div>
                 </>
