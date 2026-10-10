@@ -85,8 +85,9 @@ export default function UnifiedTopbar({ settingsPage = 'CreatorProfile' }) {
             <Bell className="w-5 h-5" />
           </Link>
           <button
-            onClick={() => navigate(settingsPage)}
+            onClick={() => navigate(`/${settingsPage}`)}
             className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+            title="Profile Settings"
           >
             <User className="w-5 h-5" />
           </button>

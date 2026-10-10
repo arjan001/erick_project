@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { 
+import {
   Search, Briefcase, FileText, Mail, User,
   Home as HomeIcon, Network, ChevronLeft, ChevronRight, LogOut, Wallet, Bell, Users, Ticket
 } from 'lucide-react'
@@ -19,7 +19,7 @@ const MENU_ITEMS = [
   { label: 'Notifications', icon: Bell, href: 'Notifications', showNotificationBadge: true },
   { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets' },
   { label: 'Finances', icon: Wallet, href: 'ArtistFinance' },
-  { label: 'My Profile & Settings', icon: User, href: 'ArtistProfile' }
+  { label: 'My Profile & Settings', icon: User, href: 'CreatorProfile' }
 ]
 
 export default function ArtistSidebar() {
@@ -57,9 +57,9 @@ export default function ArtistSidebar() {
     const fetchPendingConnections = async () => {
       try {
         const { Connection } = await import('@/lib/supabaseEntities')
-        const connections = await Connection.filter({ 
-          recipient_email: user.email, 
-          status: 'pending' 
+        const connections = await Connection.filter({
+          recipient_email: user.email,
+          status: 'pending'
         }, '-created_date', 50)
         setPendingConnections((connections || []).length)
       } catch {
@@ -105,7 +105,7 @@ export default function ArtistSidebar() {
           setArtistProfile(artists[0])
         }
       } catch (err) {
-        
+
       }
     }
     fetchArtistProfile()
@@ -123,9 +123,8 @@ export default function ArtistSidebar() {
 
   return (
     <aside
-      className={`h-full bg-[#0A0A0A] shadow-[2px_0_12px_rgba(0,0,0,0.3)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative ${
-        mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      } ${expanded ? 'w-64' : 'w-20'}`}
+      className={`h-full bg-[#0A0A0A] shadow-[2px_0_12px_rgba(0,0,0,0.3)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } ${expanded ? 'w-64' : 'w-20'}`}
     >
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-3 border-b border-[#1a1a1a]">
@@ -145,15 +144,14 @@ export default function ArtistSidebar() {
         {MENU_ITEMS.map((item) => {
           const Icon = item.icon
           const isActive = location.pathname.toLowerCase().includes(item.href.toLowerCase())
-          
+
           if (!expanded) {
             return (
               <div key={item.href} className="relative group">
                 <Link
                   to={createPageUrl(item.href)}
-                  className={`flex items-center justify-center w-full p-2 rounded-lg transition-all ${
-                    isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                  }`}
+                  className={`flex items-center justify-center w-full p-2 rounded-lg transition-all ${isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                    }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   {item.showBadge && unreadCount > 0 && (
@@ -180,14 +178,13 @@ export default function ArtistSidebar() {
               </div>
             )
           }
-          
+
           return (
             <Link
               key={item.href}
               to={createPageUrl(item.href)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
-              }`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                }`}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               <span className="text-sm whitespace-nowrap flex-1 text-left">{item.label}</span>
