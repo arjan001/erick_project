@@ -1,102 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, BadgeCheck, Building2, MapPin, Clock, Users, Briefcase } from 'lucide-react'
+import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, BadgeCheck, Building2, MapPin, Clock, Users, Briefcase, Calendar } from 'lucide-react'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
 import Marquee from '@/components/landing/backstage/Marquee'
 import GigDetailSlideOut from '@/components/landing/backstage/GigDetailSlideOut'
 import { Job } from '@/lib/supabaseEntities'
-
-const dummyJobs = [
-  {
-    id: 1,
-    title: "VO Artist Ones: Voiceover (TV Commercial)",
-    company: "HEALTH AND WELLNESS TECHNOLOGY",
-    compensation: "£800 (est. 2 hours of work)",
-    location: "Worldwide",
-    posted: "Thursday",
-    featured: true,
-    is_production: false,
-    gender: "Female",
-    age: "25-36",
-    description: "Casting a Russian-language short drama exploring themes of family, migration, and identity. Seeking authentic Russian-speaking performers for lead and supporting roles.",
-    tags: ["Voiceover", "TV Commercial"],
-    roles: []
-  },
-  {
-    id: 2,
-    title: "The North American Pantheon - Season 2",
-    company: "Ambitious Media",
-    compensation: "Roles paying up to US$60",
-    location: "Los Angeles, CA",
-    posted: "14 hours ago",
-    featured: true,
-    is_production: true,
-    description: "TV Show, Scripted, Drama, Limited Series. Multiple roles available for this production.",
-    tags: ["TV Show", "Scripted", "Drama", "Limited Series"],
-    roles: [
-      { title: "Koreatown Crew", compensation: "$800/day", gender: "Korean American", age: "20s-30s" },
-      { title: "David", compensation: "$750/day", gender: "Caucasian", age: "20s-30s" },
-      { title: "Jasmine", compensation: "$700/day", gender: "African American", age: "20s-30s" },
-      { title: "The Oracle", compensation: "$900/day", gender: "Any Ethnicity", age: "50s+" },
-      { title: "Royal Guard", compensation: "$650/day", gender: "Any Ethnicity", age: "20s-30s" },
-      { title: "Prince", compensation: "$1,000/day", gender: "Any Ethnicity", age: "30s-40s" },
-      { title: "Princess", compensation: "$950/day", gender: "Any Ethnicity", age: "20s-30s" },
-      { title: "Hero", compensation: "$1,200/day", gender: "Any Ethnicity", age: "25-35" },
-      { title: "Villain", compensation: "$1,100/day", gender: "Any Ethnicity", age: "30s-45" },
-      { title: "Sidekick", compensation: "$600/day", gender: "Any Ethnicity", age: "18-25" },
-      { title: "Mentor", compensation: "$850/day", gender: "Any Ethnicity", age: "40s-60s" },
-      { title: "Advisor", compensation: "$700/day", gender: "Any Ethnicity", age: "35s-55" },
-      { title: "Guard", compensation: "$550/day", gender: "Any Ethnicity", age: "25-40" },
-      { title: "Spy", compensation: "$1,000/day", gender: "Any Ethnicity", age: "25-35" },
-      { title: "Diplomat", compensation: "$900/day", gender: "Any Ethnicity", age: "35-50" },
-      { title: "Leader", compensation: "$1,200/day", gender: "Any Ethnicity", age: "40s-60s" },
-    ]
-  },
-  {
-    id: 3,
-    title: "Independent Feature Film - Supporting Cast",
-    company: "Indie Productions LLC",
-    compensation: "Deferred pay",
-    location: "Chicago, IL",
-    posted: "Sunday",
-    featured: false,
-    is_production: true,
-    description: "Indie feature film casting supporting roles for a coming-of-age drama set in Chicago.",
-    tags: ["Feature Film", "Indie", "Drama"],
-    roles: [
-      { title: "Supporting — Male, 18-25", compensation: "Deferred" },
-      { title: "Supporting — Female, 18-25", compensation: "Deferred" },
-      { title: "Lead — Male, 20-30", compensation: "Deferred" },
-    ]
-  },
-  {
-    id: 4,
-    title: "Broadway Musical — Ensemble",
-    company: "Broadway Productions",
-    compensation: "SAG-AFTRA scale",
-    location: "New York, NY",
-    posted: "Thursday",
-    featured: false,
-    is_production: false,
-    description: "Casting ensemble performers for an upcoming Broadway musical revival.",
-    tags: ["Theater", "Musical", "Broadway", "Ensemble"],
-    roles: []
-  },
-  {
-    id: 5,
-    title: "UGC Creator — Tech Product Reviews",
-    company: "Content Creators Inc",
-    compensation: "$500/day",
-    location: "Remote",
-    posted: "Today",
-    featured: true,
-    is_production: false,
-    description: "Seeking UGC creators to produce authentic tech product review content for social media campaigns.",
-    tags: ["UGC", "Content Creator", "Tech", "Remote"],
-    roles: []
-  },
-]
+import { supabase } from '@/lib/supabase'
 
 const filterOptions = {
   location: ['Any Location', 'New York, NY', 'Los Angeles, CA', 'Atlanta, GA', 'Chicago, IL', 'Remote', 'Worldwide'],
@@ -144,38 +54,89 @@ export default function FindJobsPage() {
   const [page, setPage] = useState(1)
   const [selectedJob, setSelectedJob] = useState(null)
   const [savedJobs, setSavedJobs] = useState(new Set())
-  const [allJobs, setAllJobs] = useState(dummyJobs)
+  const [allJobs, setAllJobs] = useState([])
+  const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
   const [showClientModal, setShowClientModal] = useState(null)
   const perPage = 12
 
-  // Fetch jobs from Supabase database on mount, fall back to dummy data
+  // Fetch jobs from Supabase database on mount
   useEffect(() => {
     let cancelled = false
-    Job.list('-created_at', 50)
-      .then((data) => {
-        if (cancelled || !data || data.length === 0) return
-        const mapped = data.map((j) => ({
+    setLoading(true)
+
+    const fetchJobs = async () => {
+      try {
+        // Fetch jobs and their roles
+        const { data: jobs, error } = await supabase
+          .from('jobs')
+          .select(`
+            *,
+            client:clients(company_name, logo_url),
+            roles:job_roles(*)
+          `)
+          .eq('status', 'open')
+          .order('created_at', { ascending: false })
+          .limit(100)
+
+        if (error) throw error
+
+        if (cancelled || !jobs) return
+
+        // Map jobs to the expected format
+        const mapped = jobs.map((j) => ({
           id: j.id,
-          title: j.title || j.name || 'Untitled Job',
-          company: j.client_company_name || 'Company',
-          compensation: j.compensation_display || j.pay || j.salary || 'Pay not specified',
+          title: j.title || 'Untitled Job',
+          company: j.client?.company_name || 'Production Company',
+          compensation: j.compensation_display || 'Pay not specified',
           location: j.location || 'Worldwide',
-          posted: j.posted || 'Recently',
+          posted: getTimeAgo(j.created_at),
           featured: j.featured || false,
           is_production: j.is_production || false,
           gender: j.gender_requirement || '',
           age: j.age_min && j.age_max ? `${j.age_min}-${j.age_max}` : '',
           description: j.description || '',
           tags: j.tags || [],
-          roles: j.roles || [],
+          roles: j.roles?.map(r => ({
+            id: r.id,
+            title: r.title,
+            compensation: r.compensation_display || 'Pay not specified',
+            gender: r.gender_requirement || 'Any',
+            age: r.age_min && r.age_max ? `${r.age_min}-${r.age_max}` : '',
+            ethnicity: r.ethnicity_requirement || 'Any',
+            union: r.union_requirement || 'Any',
+            description: r.description || '',
+            application_count: r.application_count || 0,
+          })) || [],
           application_count: j.application_count || 0,
+          client_logo_url: j.client?.logo_url || null,
         }))
+
         if (!cancelled) setAllJobs(mapped)
-      })
-      .catch(() => { })
+      } catch (err) {
+        console.error('Error fetching jobs:', err)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    fetchJobs()
     return () => { cancelled = true; }
   }, [])
+
+  // Helper function to format time ago
+  const getTimeAgo = (date) => {
+    if (!date) return 'Recently'
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000)
+    if (seconds < 60) return 'Just now'
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    if (days < 7) return `${days}d ago`
+    return new Date(date).toLocaleDateString()
+  }
 
   const filtered = useMemo(() => {
     return allJobs.filter((j) => {
@@ -329,7 +290,7 @@ export default function FindJobsPage() {
         {/* Job cards */}
         <div className="mt-5 space-y-4">
           {pageJobs.map((job) => (
-            <div key={job.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md md:p-5 lg:p-6">
+            <div key={job.id} className="border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md md:p-5 lg:p-6">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
                 {/* Left: main content */}
                 <div className="min-w-0 flex-1">
@@ -337,7 +298,7 @@ export default function FindJobsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {job.featured && (
-                        <span className="flex items-center gap-1 rounded-full bg-[#e11d48] px-3 py-1 text-xs font-bold text-white">
+                        <span className="flex items-center gap-1 bg-[#e11d48] px-3 py-1 text-xs font-bold text-white">
                           Featured
                         </span>
                       )}
@@ -350,10 +311,10 @@ export default function FindJobsPage() {
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button onClick={() => handleShare(job)} className="rounded-full p-1.5 hover:bg-gray-100" aria-label="Share job">
+                      <button onClick={() => handleShare(job)} className="p-1.5 hover:bg-gray-100" aria-label="Share job">
                         <Share2 className="h-4 w-4 text-black/40" />
                       </button>
-                      <button onClick={() => toggleSave(job.id)} className="rounded-full p-1.5 hover:bg-gray-100" aria-label="Save job">
+                      <button onClick={() => toggleSave(job.id)} className="p-1.5 hover:bg-gray-100" aria-label="Save job">
                         <Heart className={`h-4 w-4 ${savedJobs.has(job.id) ? 'fill-[#e11d48] text-[#e11d48]' : 'text-black/40'}`} />
                       </button>
                     </div>
@@ -363,7 +324,7 @@ export default function FindJobsPage() {
                   <h2 className="mt-3 text-lg font-bold text-black md:text-xl">{job.title}</h2>
 
                   {/* Meta */}
-                  <p className="mt-1.5 text-sm text-black/50">
+                  <p className="mt-1.5 text-sm font-bold text-black/70">
                     {job.compensation} • {job.location} • Posted: {job.posted}
                   </p>
 
@@ -371,10 +332,10 @@ export default function FindJobsPage() {
                   {(job.gender || job.age) && (
                     <div className="mt-2 flex gap-2">
                       {job.gender && (
-                        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-black/60">{job.gender}</span>
+                        <span className="px-3 py-1 text-xs font-bold text-black">{job.gender}</span>
                       )}
                       {job.age && (
-                        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-black/60">{job.age}</span>
+                        <span className="px-3 py-1 text-xs font-bold text-black">{job.age}</span>
                       )}
                     </div>
                   )}
@@ -382,13 +343,13 @@ export default function FindJobsPage() {
                   {/* Description */}
                   <p className="mt-3 text-sm leading-relaxed text-black/70">
                     {job.description.slice(0, 180)}{job.description.length > 180 ? '... ' : ' '}
-                    <button onClick={() => setSelectedJob(job)} className="font-semibold text-[#4f46e5] hover:underline">view more</button>
+                    <button onClick={() => setSelectedJob(job)} className="font-bold text-[#4f46e5] hover:underline">view more</button>
                   </p>
 
                   {/* Tags */}
                   <div className="mt-3 flex flex-wrap gap-2">
                     {job.tags.map((t) => (
-                      <span key={t} className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-black/60">{t}</span>
+                      <span key={t} className="px-3 py-1 text-xs font-bold text-black/60">{t}</span>
                     ))}
                   </div>
 
@@ -396,14 +357,14 @@ export default function FindJobsPage() {
                   {job.is_production ? (
                     <button
                       onClick={() => setSelectedJob(job)}
-                      className="mt-4 rounded-full bg-[#4f46e5] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]"
+                      className="mt-4 bg-[#4f46e5] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#4338CA]"
                     >
                       View All {job.roles.length} Roles
                     </button>
                   ) : (
                     <button
                       onClick={() => setSelectedJob(job)}
-                      className="mt-4 rounded-full bg-[#4f46e5] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#4338CA]"
+                      className="mt-4 bg-[#4f46e5] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#4338CA]"
                     >
                       View Details & Apply
                     </button>
@@ -414,14 +375,14 @@ export default function FindJobsPage() {
                 {job.is_production && job.roles.length > 0 && (
                   <div className="hidden w-56 shrink-0 space-y-3 border-l border-gray-100 pl-5 md:block">
                     {job.roles.slice(0, 2).map((r, i) => (
-                      <div key={i} className="rounded-xl border border-gray-200 p-3">
+                      <div key={i} className="border border-gray-200 p-3">
                         <p className="text-sm font-bold text-black">{r.title}</p>
-                        <p className="mt-0.5 text-xs text-black/50">{r.compensation}</p>
+                        <p className="mt-0.5 text-xs font-bold text-black/50">{r.compensation}</p>
                         <div className="mt-2 flex gap-1">
-                          {r.gender && <span className="text-[10px] text-black/40">{r.gender}</span>}
-                          {r.age && <span className="text-[10px] text-black/40">{r.age}</span>}
+                          {r.gender && <span className="text-[10px] font-bold text-black/40">{r.gender}</span>}
+                          {r.age && <span className="text-[10px] font-bold text-black/40">{r.age}</span>}
                         </div>
-                        <button className="mt-2 w-full rounded-full bg-[#4f46e5] py-1.5 text-xs font-semibold text-white hover:bg-[#4338CA]">
+                        <button className="mt-2 w-full bg-[#4f46e5] py-1.5 text-xs font-bold text-white hover:bg-[#4338CA]">
                           Apply
                         </button>
                       </div>
@@ -429,7 +390,7 @@ export default function FindJobsPage() {
                     {job.roles.length > 2 && (
                       <button
                         onClick={() => setSelectedJob(job)}
-                        className="w-full text-center text-xs font-semibold text-[#4f46e5] hover:underline"
+                        className="w-full text-center text-xs font-bold text-[#4f46e5] hover:underline"
                       >
                         View all {job.roles.length} roles
                       </button>

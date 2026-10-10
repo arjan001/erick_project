@@ -222,12 +222,12 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
               </h3>
               <div className="mt-3 space-y-3">
                 {job.roles.map((r, i) => (
-                  <div key={i} className="rounded-xl border border-gray-200 overflow-hidden">
+                  <div key={i} className="border border-gray-200 overflow-hidden">
                     {/* Role header - always visible */}
                     <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
                       <div className="flex-1">
                         <p className="text-sm font-bold text-black">{r.title}</p>
-                        <div className="mt-1 flex flex-wrap gap-2 text-xs text-black/50">
+                        <div className="mt-1 flex flex-wrap gap-2 text-xs font-bold text-black/50">
                           {r.compensation && <span>{r.compensation}</span>}
                           {r.gender && <span>• {r.gender}</span>}
                           {r.age && <span>• {r.age}</span>}
@@ -236,7 +236,7 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => toggleRole(i)}
-                          className="rounded-full p-1.5 hover:bg-gray-100"
+                          className="p-1.5 hover:bg-gray-100"
                         >
                           {expandedRoles.has(i) ? (
                             <ChevronUp className="h-4 w-4 text-black/60" />
@@ -246,7 +246,7 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
                         </button>
                         <button
                           onClick={() => handleApply(r)}
-                          className="shrink-0 rounded-full bg-[#4f46e5] px-4 py-2 text-xs font-semibold text-white hover:bg-[#4338CA]"
+                          className="shrink-0 bg-[#4f46e5] px-4 py-2 text-xs font-bold text-white hover:bg-[#4338CA]"
                         >
                           Apply
                         </button>
@@ -262,32 +262,32 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
                         <div className="grid grid-cols-2 gap-3 text-xs">
                           {r.gender_requirement && (
                             <div>
-                              <span className="font-medium text-black/50">Gender:</span>{' '}
-                              <span className="text-black">{r.gender_requirement}</span>
+                              <span className="font-bold text-black/50">Gender:</span>{' '}
+                              <span className="font-bold text-black">{r.gender_requirement}</span>
                             </div>
                           )}
                           {r.age_min && r.age_max && (
                             <div>
-                              <span className="font-medium text-black/50">Age:</span>{' '}
-                              <span className="text-black">{r.age_min}-{r.age_max}</span>
+                              <span className="font-bold text-black/50">Age:</span>{' '}
+                              <span className="font-bold text-black">{r.age_min}-{r.age_max}</span>
                             </div>
                           )}
                           {r.ethnicity_requirement && (
                             <div>
-                              <span className="font-medium text-black/50">Ethnicity:</span>{' '}
-                              <span className="text-black">{r.ethnicity_requirement}</span>
+                              <span className="font-bold text-black/50">Ethnicity:</span>{' '}
+                              <span className="font-bold text-black">{r.ethnicity_requirement}</span>
                             </div>
                           )}
                           {r.union_requirement && (
                             <div>
-                              <span className="font-medium text-black/50">Union:</span>{' '}
-                              <span className="text-black">{r.union_requirement}</span>
+                              <span className="font-bold text-black/50">Union:</span>{' '}
+                              <span className="font-bold text-black">{r.union_requirement}</span>
                             </div>
                           )}
                         </div>
                         <button
                           onClick={() => handleApply(r)}
-                          className="mt-3 w-full rounded-full bg-[#4f46e5] py-2 text-xs font-semibold text-white hover:bg-[#4338CA]"
+                          className="mt-3 w-full bg-[#4f46e5] py-2 text-xs font-bold text-white hover:bg-[#4338CA]"
                         >
                           Apply to {r.title}
                         </button>

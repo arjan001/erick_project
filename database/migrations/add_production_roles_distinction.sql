@@ -1,6 +1,32 @@
 -- Migration: Add Production vs Roles Distinction for Jobs
 -- This migration adds the ability to distinguish between single role jobs and production jobs with multiple roles
 
+-- Create job_roles table for production roles (only if it doesn't exist)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'job_roles' AND table_schema = 'public') THEN
+    CREATE TABLE public.job_roles (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      job_id UUID REFERENCES public.jobs(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      compensation_display TEXT,
+      gender_requirement TEXT DEFAULT 'Any',
+      age_min INTEGER,
+      age_max INTEGER,
+      ethnicity_requirement TEXT DEFAULT 'Any',
+      union_requirement TEXT DEFAULT 'Any',
+      description TEXT,
+      role_sequence INTEGER DEFAULT 0,
+      application_count INTEGER DEFAULT 0,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    CREATE INDEX idx_job_roles_job_id ON public.job_roles(job_id);
+    CREATE INDEX idx_job_roles_sequence ON public.job_roles(role_sequence);
+  END IF;
+END $$;
+
 -- Add is_production flag to jobs table
 DO $$
 BEGIN
@@ -141,18 +167,38 @@ CREATE INDEX IF NOT EXISTS idx_jobs_compensation_display ON public.jobs(compensa
 -- Add comment to explain is_production
 COMMENT ON COLUMN public.jobs.is_production IS 'If true, this job has multiple roles. If false, it is a single role posting.';
 
--- Add trigger to update application_count
-CREATE OR REPLACE FUNCTION public.update_job_application_count()
+-- Add trigger to update job_roles updated_at
+CREATE OR REPLACE FUNCTION public.update_job_roles_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_job_roles_updated_at
+  BEFORE UPDATE ON public.job_roles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_job_roles_updated_at();
+
+-- Add trigger to update application_count on job_roles
+CREATE OR REPLACE FUNCTION public.update_role_application_count()
 RETURNS TRIGGER AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
-    UPDATE public.jobs SET application_count = application_count + 1 WHERE id = NEW.job_id;
+    UPDATE public.job_roles SET application_count = application_count + 1 WHERE id = NEW.job_role_id;
   END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_update_job_application_count
-  AFTER INSERT ON public.job_applications
-  FOR EACH ROW
-  EXECUTE FUNCTION public.update_job_application_count();
+-- Add job_role_id to job_applications if not exists
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'job_applications' AND column_name = 'job_role_id'
+  ) THEN
+    ALTER TABLE public.job_applications ADD COLUMN job_role_id UUID REFERENCES public.job_roles(id) ON DELETE SET NULL;
+  END IF;
+END $$;
