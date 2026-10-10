@@ -7,7 +7,7 @@ const badgeConfig = {
   chat: { icon: MessageCircle, color: '#6366f1' },
 }
 
-export default function TalentCard({ profile, showActions = true, onOpenProfile }) {
+export default function TalentCard({ profile, showActions = true, onOpenProfile, showControls = true }) {
   const [imgIdx, setImgIdx] = useState(0)
   const [favorited, setFavorited] = useState(false)
 
@@ -31,12 +31,12 @@ export default function TalentCard({ profile, showActions = true, onOpenProfile 
         <img
           src={profile.images[imgIdx]}
           alt={profile.name}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="h-full w-full object-cover transition-transform duration-300"
           loading="lazy"
         />
 
         {/* Hover overlay arrows */}
-        {profile.images.length > 1 && (
+        {showControls && profile.images.length > 1 && (
           <>
             <button
               onClick={prev}
@@ -56,13 +56,15 @@ export default function TalentCard({ profile, showActions = true, onOpenProfile 
         )}
 
         {/* Zoom button */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onOpenProfile?.(profile); }}
-          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-[#4F46E5] text-white opacity-0 transition-opacity hover:bg-[#4338CA] group-hover:opacity-100"
-          aria-label="View profile"
-        >
-          <ZoomIn className="h-4 w-4" />
-        </button>
+        {showControls && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onOpenProfile?.(profile); }}
+            className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-[#4F46E5] text-white opacity-0 transition-opacity hover:bg-[#4338CA] group-hover:opacity-100"
+            aria-label="View profile"
+          >
+            <ZoomIn className="h-4 w-4" />
+          </button>
+        )}
 
         {/* Overlay text (e.g. "BOLD & BEYOND") */}
         {profile.overlayText && (
@@ -74,7 +76,7 @@ export default function TalentCard({ profile, showActions = true, onOpenProfile 
         )}
 
         {/* Pagination dots */}
-        {profile.images.length > 1 && (
+        {showControls && profile.images.length > 1 && (
           <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
             {profile.images.map((_, i) => (
               <button

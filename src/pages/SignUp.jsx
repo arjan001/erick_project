@@ -8,6 +8,7 @@ import MultiSelectAutocomplete from '@/components/MultiSelectAutocomplete'
 import { ALL_FILM_ROLES, TALENT_ROLES, CLIENT_ROLES } from '@/lib/filmRoles'
 import skillsAndRoles from '@/lib/skillsAndRoles.json'
 import Logo from '@/components/landing/backstage/Logo'
+import { listPartnerLogos } from '@/services/partnerLogoService'
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -43,6 +44,12 @@ export default function SignUp() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [userType, setUserType] = useState(searchParams.get('role') === 'client' ? 'employer' : 'talent')
+  const [partnerLogos, setPartnerLogos] = useState([])
+
+  useEffect(() => {
+    listPartnerLogos().then(setPartnerLogos).catch(() => setPartnerLogos([]))
+  }, [])
+
   const [formData, setFormData] = useState(() => {
     const roleParam = searchParams.get('role')
     return {
@@ -329,16 +336,6 @@ export default function SignUp() {
                 <p className="text-xs text-white/60">Senior Creative Producer at Jerry</p>
               </div>
             </div>
-            <div className="mt-12">
-              <p className="text-xs font-bold uppercase tracking-wider text-white/60">
-                Trusted by these leading brands
-              </p>
-              <div className="mt-4 flex flex-wrap gap-6">
-                {['NETFLIX', 'amazon studios', 'Disney', 'HBO', 'AMC'].map((l) => (
-                  <span key={l} className="text-lg font-bold text-white/50">{l}</span>
-                ))}
-              </div>
-            </div>
           </div>
         ) : (
           /* Talent: beige panel with value props */
@@ -362,6 +359,24 @@ export default function SignUp() {
                 )
               })}
             </div>
+
+            {partnerLogos.length > 0 && (
+              <div className="mt-12">
+                <p className="text-xs font-bold uppercase tracking-wider text-black/50">
+                  Trusted by top studios and brands
+                </p>
+                <div className="mt-4 flex flex-wrap gap-6 items-center">
+                  {partnerLogos.map((l) => (
+                    <img
+                      key={l.id}
+                      src={l.logo_url}
+                      alt={l.name}
+                      className="h-8 w-auto max-w-[120px] object-contain opacity-40 grayscale"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

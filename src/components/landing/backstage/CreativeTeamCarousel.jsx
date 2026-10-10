@@ -8,6 +8,7 @@ import { FeaturedCreative } from '@/lib/supabaseEntities'
 export default function CreativeTeamCarousel() {
   const [creatives, setCreatives] = useState([])
   const [loading, setLoading] = useState(true)
+  const [paused, setPaused] = useState(false)
 
   useEffect(() => {
     loadFeaturedCreatives()
@@ -71,8 +72,6 @@ export default function CreativeTeamCarousel() {
   const row2 = [...displayCreatives.slice(6, 12), ...displayCreatives.slice(6, 12)]
 
   function AutoScrollRow({ items, direction }) {
-    const [paused, setPaused] = useState(false)
-
     return (
       <div
         className="overflow-hidden"
@@ -88,7 +87,7 @@ export default function CreativeTeamCarousel() {
         >
           {items.map((profile, i) => (
             <div key={`${profile.id}-${i}`} className="w-[calc((100vw-6rem)/5)] max-w-[260px] min-w-[180px] shrink-0">
-              <TalentCard profile={profile} showActions={false} />
+              <TalentCard profile={profile} showActions={false} showControls={false} />
             </div>
           ))}
         </div>

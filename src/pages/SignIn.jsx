@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Artist, Team, Backer, ProjectOwner, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 import { getPendingApplication, clearPendingApplication } from '@/services/savedJobsService'
+import { listPartnerLogos } from '@/services/partnerLogoService'
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -53,8 +54,6 @@ const talentBenefits = [
   { icon: Target, text: 'Visibility in the #1 Visited Database for Talent.' },
 ]
 
-const trustedLogos = ['Disney', 'YouTube', 'Hulu', 'Netflix', 'HBO']
-
 export default function SignIn() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -74,6 +73,11 @@ export default function SignIn() {
   const [modeOverride, setModeOverride] = useState(null)
   const [returnTo, setReturnTo] = useState(location.state?.returnTo || null)
   const [pendingApplication, setPendingApplication] = useState(null)
+  const [partnerLogos, setPartnerLogos] = useState([])
+
+  useEffect(() => {
+    listPartnerLogos().then(setPartnerLogos).catch(() => setPartnerLogos([]))
+  }, [])
 
   useEffect(() => {
     if (searchParams.get('mode') === 'employer') setUserType('employer')
@@ -422,16 +426,23 @@ export default function SignIn() {
               })}
             </div>
 
-            <div className="mt-14">
-              <p className="text-xs font-bold uppercase tracking-wider text-black/50">
-                Trusted by top studios and brands
-              </p>
-              <div className="mt-4 flex flex-wrap gap-6">
-                {trustedLogos.map((l) => (
-                  <span key={l} className="text-lg font-bold text-black/30">{l}</span>
-                ))}
+            {partnerLogos.length > 0 && (
+              <div className="mt-14">
+                <p className="text-xs font-bold uppercase tracking-wider text-black/50">
+                  Trusted by top studios and brands
+                </p>
+                <div className="mt-4 flex flex-wrap gap-6 items-center">
+                  {partnerLogos.map((l) => (
+                    <img
+                      key={l.id}
+                      src={l.logo_url}
+                      alt={l.name}
+                      className="h-8 w-auto max-w-[120px] object-contain opacity-40 grayscale"
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

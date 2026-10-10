@@ -3,6 +3,7 @@ import { listPartnerLogos } from '@/services/partnerLogoService'
 
 export default function PartnersCarousel({ tone = 'light', fade = '#F5F3EF' }) {
   const [partners, setPartners] = useState([])
+  const [paused, setPaused] = useState(false)
 
   useEffect(() => {
     listPartnerLogos().then(setPartners).catch(() => setPartners([]))
@@ -16,7 +17,11 @@ export default function PartnersCarousel({ tone = 'light', fade = '#F5F3EF' }) {
   const allPartners = [...partners, ...partners, ...partners]
 
   return (
-    <div className="relative overflow-hidden">
+    <div
+      className="relative overflow-hidden"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
       {/* Edge fade gradients */}
       <div
         className="pointer-events-none absolute left-0 top-0 z-10 h-full w-32 bg-gradient-to-r"
@@ -27,7 +32,10 @@ export default function PartnersCarousel({ tone = 'light', fade = '#F5F3EF' }) {
         style={{ background: `linear-gradient(to left, ${fade}, transparent)` }}
       />
 
-      <div className="flex w-max animate-[scroll_30s_linear_infinite] items-center gap-12">
+      <div
+        className="flex w-max animate-[scroll_30s_linear_infinite] items-center gap-12"
+        style={{ animationPlayState: paused ? 'paused' : 'running' }}
+      >
         {allPartners.map((partner, i) => (
           <div
             key={`${partner.id}-${i}`}

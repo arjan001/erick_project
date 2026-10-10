@@ -20,7 +20,9 @@ export default function ResetPassword() {
   useEffect(() => {
     // Check if we have the access token from the reset link
     const accessToken = searchParams.get('access_token')
-    if (!accessToken) {
+    const hash = window.location.hash
+    const hashToken = hash.includes('access_token')
+    if (!accessToken && !hashToken) {
       toastError('Invalid Link', 'This password reset link is invalid or has expired')
       navigate('/ForgotPassword')
     }

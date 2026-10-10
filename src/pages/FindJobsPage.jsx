@@ -548,22 +548,6 @@ export default function FindJobsPage() {
           ))}
         </div>
 
-        {/* Community card */}
-        <div className="mt-6 bg-[#0a0b2e] p-6 md:p-8">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-bold text-white md:text-xl">Forget generic advice—</h3>
-              <p className="mt-2 text-sm text-white/70">Get real answers from people in the industry.</p>
-            </div>
-            <div className="flex flex-col items-start justify-center">
-              <p className="text-sm text-white/70 mb-3">Ask questions, share your experience, and refine your craft.</p>
-              <button className="bg-[#00D09C] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#00b870]">
-                Join the Conversation
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* Pagination */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
