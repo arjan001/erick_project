@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
-import { PartnerLogoStore, listPartnerLogos } from '@/services/partnerLogoService'
+import { listPartnerLogos } from '@/services/partnerLogoService'
 import { Edit, Eye, EyeOff, Handshake, Plus, Trash2 } from 'lucide-react'
 
 const emptyForm = { name: '', logo_url: '', website_url: '', sort_order: 1, is_active: true }
@@ -18,7 +18,7 @@ export default function AdminPartnersPage() {
     try {
       setPartners(await listPartnerLogos())
     } catch (err) {
-      
+
       error('Error', 'Failed to load partner logos')
     } finally {
       setLoading(false)
@@ -60,7 +60,7 @@ export default function AdminPartnersPage() {
       setEditing(null)
       await load()
     } catch (err) {
-      
+
       error('Failed', 'Could not save the partner')
     } finally {
       setSaving(false)
@@ -72,7 +72,7 @@ export default function AdminPartnersPage() {
       await PartnerLogoStore.update(p.id, { is_active: p.is_active === false })
       await load()
     } catch (err) {
-      
+
       error('Failed', 'Could not update the partner')
     }
   }
@@ -83,7 +83,7 @@ export default function AdminPartnersPage() {
       success('Deleted', `${p.name} removed`)
       await load()
     } catch (err) {
-      
+
       error('Failed', 'Could not delete the partner')
     }
   }
