@@ -56,6 +56,9 @@ export default function ArtistProfile() {
   const [uploadingImage, setUploadingImage] = useState(false)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [username, setUsername] = useState('')
+  const [usernameStatus, setUsernameStatus] = useState('idle')
+  const [usernameError, setUsernameError] = useState('')
 
   const [formData, setFormData] = useState(() => {
     // Load draft from localStorage if exists

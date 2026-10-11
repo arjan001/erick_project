@@ -196,7 +196,7 @@ export default function SavedTalentPage() {
             ))}
           </div>
 
-          {/* Pagination */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-8">
             <Button
@@ -219,7 +219,6 @@ export default function SavedTalentPage() {
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
-        )}
         )}
       </div>
     </div>

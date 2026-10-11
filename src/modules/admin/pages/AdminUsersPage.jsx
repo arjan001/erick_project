@@ -62,9 +62,9 @@ export default function AdminUsersPage() {
       ])
       setUsers(usersData || [])
       setRoles(rolesData || [])
-      
+
     } catch (error) {
-      
+
       setRoles([]); // Ensure roles is set to empty array on error
     } finally {
       setLoading(false)
@@ -79,7 +79,7 @@ export default function AdminUsersPage() {
       setNewUserForm({ email: '', password: '', first_name: '', last_name: '' })
       await fetchData()
     } catch (error) {
-      
+
       alert('Failed to create user: ' + error.message)
     } finally {
       setSaving(false)
@@ -94,7 +94,7 @@ export default function AdminUsersPage() {
       setEditingUser(null)
       await fetchData()
     } catch (error) {
-      
+
       alert('Failed to update user: ' + error.message)
     } finally {
       setSaving(false)
@@ -109,7 +109,7 @@ export default function AdminUsersPage() {
       setSelectedUser(null)
       await fetchData()
     } catch (error) {
-      
+
       alert('Failed to delete user: ' + error.message)
     } finally {
       setSaving(false)
@@ -124,7 +124,7 @@ export default function AdminUsersPage() {
       setSelectedUser(null)
       await fetchData()
     } catch (error) {
-      
+
       alert('Failed to suspend user: ' + error.message)
     } finally {
       setSaving(false)
@@ -133,13 +133,13 @@ export default function AdminUsersPage() {
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
     const userRoleKey = user?.user_roles?.[0]?.roles?.role_key || 'admin'
     const matchesRole = filterRole === 'all' || userRoleKey === filterRole
     const matchesStatus = filterStatus === 'all' ||
-                          (filterStatus === 'active' && user.is_active) ||
-                          (filterStatus === 'suspended' && !user.is_active)
+      (filterStatus === 'active' && user.is_active) ||
+      (filterStatus === 'suspended' && !user.is_active)
     return matchesSearch && matchesRole && matchesStatus
   })
 
@@ -529,7 +529,7 @@ export default function AdminUsersPage() {
           </DialogHeader>
           <div className="py-4">
             <p className="text-gray-600">
-              {selectedUser?.is_active 
+              {selectedUser?.is_active
                 ? <>Are you sure you want to suspend <strong>{selectedUser?.first_name} {selectedUser?.last_name}</strong>? They will not be able to access the system.</>
                 : <>Are you sure you want to activate <strong>{selectedUser?.first_name} {selectedUser?.last_name}</strong>? They will regain access to the system.</>
               }
@@ -584,7 +584,7 @@ export default function AdminUsersPage() {
                 setShowRoleDialog(false)
                 await fetchData()
               } catch (error) {
-                
+
                 alert('Failed to assign role: ' + error.message)
               } finally {
                 setSaving(false)
@@ -638,8 +638,3 @@ export default function AdminUsersPage() {
     </div>
   )
 }
-
-
-
-
-

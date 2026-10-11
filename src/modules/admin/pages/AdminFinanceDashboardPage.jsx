@@ -21,7 +21,7 @@ export default function AdminFinanceDashboardPage() {
         setOrders(orderRows || [])
         setActiveSubscriptions(subs?.length || 0)
       } catch (err) {
-        
+
       } finally {
         setLoading(false)
       }
@@ -76,8 +76,8 @@ export default function AdminFinanceDashboardPage() {
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = (order.user_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (order.user_email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (order.package_name || '').toLowerCase().includes(searchTerm.toLowerCase())
+      (order.user_email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (order.package_name || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === 'all' || order.status === filterStatus
     return matchesSearch && matchesStatus
   })
@@ -146,7 +146,7 @@ export default function AdminFinanceDashboardPage() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2"><Activity className="w-4 h-4" />Recent Transactions</h3>
         </div>
-        
+
         {/* Filters */}
         <div className="bg-gray-50 px-5 py-3 border-b border-gray-100">
           <div className="flex items-center gap-3 flex-wrap">
@@ -209,15 +209,15 @@ export default function AdminFinanceDashboardPage() {
           <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100">
             <span className="text-xs text-gray-500">{filteredOrders.length} total · page {page} of {totalPages}</span>
             <div className="flex gap-2">
-              <button 
-                onClick={() => setPage(p => Math.max(1, p - 1))} 
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
                 className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <button 
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))} 
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
                 className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50"
               >
