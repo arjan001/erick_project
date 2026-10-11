@@ -1,5 +1,38 @@
 # Admin Account Setup Guide
 
+## ⚠️ REQUIRED: Run These SQL Migrations FIRST
+
+Before creating the admin account, you MUST run these SQL migrations in Supabase SQL Editor to fix database errors:
+
+### 1. Fix Missing Tables (applications, saved_jobs)
+Run the SQL from: `database/migrations/fix_missing_tables.sql`
+
+This will:
+- Create the missing `saved_jobs` table
+- Create the missing `applications` table
+- Add proper RLS policies
+- Fix 404 errors for these tables
+
+### 2. Fix Analytics RLS Policies (401 errors)
+Run the SQL from: `database/migrations/add_analytics_rls_policies.sql`
+
+This will:
+- Allow authenticated and anonymous users to insert analytics data
+- Fix 401 Unauthorized errors for page_views, user_sessions, etc.
+- Allow public access to analytics tracking
+
+### 3. Fix Core Tables RLS Policies (400 errors)
+Run the SQL from: `database/migrations/fix_rls_policies_core_tables.sql`
+
+This will:
+- Fix 400 Bad Request errors for messages
+- Fix 400 Bad Request errors for jobs
+- Fix 400 Bad Request errors for projects
+- Fix 400 Bad Request errors for subscriptions
+- Enable proper RLS policies for core tables
+
+---
+
 ## Creating the Admin Account in Supabase
 
 ### Step 1: Create Admin User in Supabase Auth (Recommended Method)
@@ -41,29 +74,6 @@
 The SQL method failed with permission denied error. **DO NOT use the SQL method.** 
 
 Only use the Supabase UI method above (Steps 1-2) to create the admin account.
-
----
-
-## Run Required Database Migrations
-
-You also need to run these SQL migrations in Supabase SQL Editor to fix the 401/404 errors:
-
-### 1. Fix Missing Tables (applications, saved_jobs)
-Run the SQL from: `database/migrations/fix_missing_tables.sql`
-
-This will:
-- Create the missing `saved_jobs` table
-- Create the missing `applications` table
-- Add proper RLS policies
-- Fix 404 errors for these tables
-
-### 2. Fix Analytics RLS Policies (401 errors)
-Run the SQL from: `database/migrations/add_analytics_rls_policies.sql`
-
-This will:
-- Allow authenticated and anonymous users to insert analytics data
-- Fix 401 Unauthorized errors for page_views, user_sessions, etc.
-- Allow public access to analytics tracking
 
 ---
 
