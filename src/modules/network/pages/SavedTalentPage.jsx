@@ -195,6 +195,7 @@ export default function SavedTalentPage() {
               </div>
             ))}
           </div>
+        )}
 
         {/* Pagination */}
         {totalPages > 1 && (
