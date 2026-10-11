@@ -122,7 +122,11 @@ export default defineConfig({
     // Target modern browsers
     target: 'esnext',
     // Use esbuild for minification (faster, no crypto dependency)
-    minify: 'esbuild'
+    minify: 'esbuild',
+    // Polyfill crypto for Node 18
+    define: {
+      global: 'globalThis',
+    }
   },
   // Optimize dependencies pre-bundling
   optimizeDeps: {
