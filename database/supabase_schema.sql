@@ -1121,63 +1121,102 @@ ALTER TABLE public.endorsements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
 
 -- Basic RLS policies (adjust based on security requirements)
+DROP POLICY IF EXISTS "Users can view own profile" ON public.users;
 CREATE POLICY "Users can view own profile" ON public.users FOR SELECT USING (auth.uid() = id);
+DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
 CREATE POLICY "Users can update own profile" ON public.users FOR UPDATE USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Creators can view own profile" ON public.creators;
 CREATE POLICY "Creators can view own profile" ON public.creators FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Public can view creators" ON public.creators;
 CREATE POLICY "Public can view creators" ON public.creators FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Creators can update own profile" ON public.creators;
 CREATE POLICY "Creators can update own profile" ON public.creators FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Teams can view own profile" ON public.teams;
 CREATE POLICY "Teams can view own profile" ON public.teams FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Public can view teams" ON public.teams;
 CREATE POLICY "Public can view teams" ON public.teams FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Teams can update own profile" ON public.teams;
 CREATE POLICY "Teams can update own profile" ON public.teams FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Clients can view own profile" ON public.clients;
 CREATE POLICY "Clients can view own profile" ON public.clients FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Public can view clients" ON public.clients;
 CREATE POLICY "Public can view clients" ON public.clients FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Clients can update own profile" ON public.clients;
 CREATE POLICY "Clients can update own profile" ON public.clients FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Backers can view own profile" ON public.backers;
 CREATE POLICY "Backers can view own profile" ON public.backers FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Public can view backers" ON public.backers;
 CREATE POLICY "Public can view backers" ON public.backers FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Backers can update own profile" ON public.backers;
 CREATE POLICY "Backers can update own profile" ON public.backers FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Backers can view own investments" ON public.project_backers;
 CREATE POLICY "Backers can view own investments" ON public.project_backers FOR SELECT USING (backer_id IN (SELECT id FROM public.backers WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "Backers can manage own investments" ON public.project_backers;
 CREATE POLICY "Backers can manage own investments" ON public.project_backers FOR ALL USING (backer_id IN (SELECT id FROM public.backers WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Backers can view own deals" ON public.deals;
 CREATE POLICY "Backers can view own deals" ON public.deals FOR SELECT USING (backer_id IN (SELECT id FROM public.backers WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "Backers can manage own deals" ON public.deals;
 CREATE POLICY "Backers can manage own deals" ON public.deals FOR ALL USING (backer_id IN (SELECT id FROM public.backers WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Public can view investment tiers" ON public.investment_tiers;
 CREATE POLICY "Public can view investment tiers" ON public.investment_tiers FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admins can manage investment tiers" ON public.investment_tiers;
 CREATE POLICY "Admins can manage investment tiers" ON public.investment_tiers FOR ALL USING (auth.uid() IN (SELECT id FROM public.users WHERE role = 'admin'));
 
+DROP POLICY IF EXISTS "Backers can view own project updates" ON public.project_updates;
 CREATE POLICY "Backers can view own project updates" ON public.project_updates FOR SELECT USING (backer_id IN (SELECT id FROM public.backers WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "Backers can manage own project updates" ON public.project_updates;
 CREATE POLICY "Backers can manage own project updates" ON public.project_updates FOR ALL USING (backer_id IN (SELECT id FROM public.backers WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Public can view projects" ON public.projects;
 CREATE POLICY "Public can view projects" ON public.projects FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Clients can manage own projects" ON public.projects;
 CREATE POLICY "Clients can manage own projects" ON public.projects FOR ALL USING (auth.uid() IN (SELECT user_id FROM public.clients WHERE id = client_id));
 
+DROP POLICY IF EXISTS "Public can view jobs" ON public.jobs;
 CREATE POLICY "Public can view jobs" ON public.jobs FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Clients can manage own jobs" ON public.jobs;
 CREATE POLICY "Clients can manage own jobs" ON public.jobs FOR ALL USING (auth.uid() IN (SELECT user_id FROM public.clients WHERE id = client_id));
 
+DROP POLICY IF EXISTS "Users can view own applications" ON public.job_applications;
 CREATE POLICY "Users can view own applications" ON public.job_applications FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can create applications" ON public.job_applications;
 CREATE POLICY "Users can create applications" ON public.job_applications FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can update own applications" ON public.job_applications;
 CREATE POLICY "Users can update own applications" ON public.job_applications FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Public can view products" ON public.shop_products;
 CREATE POLICY "Public can view products" ON public.shop_products FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users can view own orders" ON public.shop_orders;
 CREATE POLICY "Users can view own orders" ON public.shop_orders FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can create orders" ON public.shop_orders;
 CREATE POLICY "Users can create orders" ON public.shop_orders FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can view own wishlist" ON public.wishlist;
 CREATE POLICY "Users can view own wishlist" ON public.wishlist FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can manage own wishlist" ON public.wishlist;
 CREATE POLICY "Users can manage own wishlist" ON public.wishlist FOR ALL USING (auth.uid() = user_id);
 
 -- Roles & Permissions RLS
+DROP POLICY IF EXISTS "Public can view roles" ON public.roles;
 CREATE POLICY "Public can view roles" ON public.roles FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admin can manage roles" ON public.roles;
 CREATE POLICY "Admin can manage roles" ON public.roles FOR ALL USING (
   EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
     SELECT id FROM public.roles WHERE role_key = 'admin'
   ))
 );
+DROP POLICY IF EXISTS "Public can view permissions" ON public.permissions;
 CREATE POLICY "Public can view permissions" ON public.permissions FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users can view own roles" ON public.user_roles;
 CREATE POLICY "Users can view own roles" ON public.user_roles FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Admin can manage user roles" ON public.user_roles;
 CREATE POLICY "Admin can manage user roles" ON public.user_roles FOR ALL USING (
   EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
     SELECT id FROM public.roles WHERE role_key = 'admin'
@@ -1185,9 +1224,13 @@ CREATE POLICY "Admin can manage user roles" ON public.user_roles FOR ALL USING (
 );
 
 -- Support Tickets RLS
+DROP POLICY IF EXISTS "Users can view own tickets" ON public.support_tickets;
 CREATE POLICY "Users can view own tickets" ON public.support_tickets FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can create tickets" ON public.support_tickets;
 CREATE POLICY "Users can create tickets" ON public.support_tickets FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can update own tickets" ON public.support_tickets;
 CREATE POLICY "Users can update own tickets" ON public.support_tickets FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Admin can view all tickets" ON public.support_tickets;
 CREATE POLICY "Admin can view all tickets" ON public.support_tickets FOR SELECT USING (
   EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
     SELECT id FROM public.roles WHERE role_key = 'admin'
@@ -1195,29 +1238,41 @@ CREATE POLICY "Admin can view all tickets" ON public.support_tickets FOR SELECT 
 );
 
 -- Notifications RLS
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
 CREATE POLICY "Users can view own notifications" ON public.notifications FOR SELECT USING (recipient_email = (SELECT email FROM public.users WHERE id = auth.uid()));
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
 CREATE POLICY "Users can update own notifications" ON public.notifications FOR UPDATE USING (recipient_email = (SELECT email FROM public.users WHERE id = auth.uid()));
 
 -- Job Invitations RLS
+DROP POLICY IF EXISTS "Users can view own invitations" ON public.job_invitations;
 CREATE POLICY "Users can view own invitations" ON public.job_invitations FOR SELECT USING (
   creator_id IN (SELECT id FROM public.creators WHERE user_id = auth.uid()) OR
   team_id IN (SELECT id FROM public.teams WHERE user_id = auth.uid())
 );
+DROP POLICY IF EXISTS "Users can respond to invitations" ON public.job_invitations;
 CREATE POLICY "Users can respond to invitations" ON public.job_invitations FOR UPDATE USING (
   creator_id IN (SELECT id FROM public.creators WHERE user_id = auth.uid()) OR
   team_id IN (SELECT id FROM public.teams WHERE user_id = auth.uid())
 );
 
 -- Endorsements RLS
+DROP POLICY IF EXISTS "Public can view endorsements" ON public.endorsements;
 CREATE POLICY "Public can view endorsements" ON public.endorsements FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users can create endorsements" ON public.endorsements;
 CREATE POLICY "Users can create endorsements" ON public.endorsements FOR INSERT WITH CHECK (auth.uid() = endorser_id);
+DROP POLICY IF EXISTS "Users can delete own endorsements" ON public.endorsements;
 CREATE POLICY "Users can delete own endorsements" ON public.endorsements FOR DELETE USING (auth.uid() = endorser_id);
 
 -- Testimonials RLS
+DROP POLICY IF EXISTS "Public can view published testimonials" ON public.testimonials;
 CREATE POLICY "Public can view published testimonials" ON public.testimonials FOR SELECT USING (published = true);
+DROP POLICY IF EXISTS "Users can view own testimonials" ON public.testimonials;
 CREATE POLICY "Users can view own testimonials" ON public.testimonials FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can create testimonials" ON public.testimonials;
 CREATE POLICY "Users can create testimonials" ON public.testimonials FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can update own testimonials" ON public.testimonials;
 CREATE POLICY "Users can update own testimonials" ON public.testimonials FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can delete own testimonials" ON public.testimonials;
 CREATE POLICY "Users can delete own testimonials" ON public.testimonials FOR DELETE USING (auth.uid() = user_id);
 
 -- ============================================================
@@ -1461,7 +1516,9 @@ CREATE INDEX IF NOT EXISTS idx_voice_recordings_creator ON public.voice_recordin
 CREATE INDEX IF NOT EXISTS idx_voice_recordings_public ON public.voice_recordings(is_public) WHERE is_public = true;
 
 -- Popups RLS
+DROP POLICY IF EXISTS "Public can view active popups" ON public.popups;
 CREATE POLICY "Public can view active popups" ON public.popups FOR SELECT USING (is_active = true);
+DROP POLICY IF EXISTS "Admin can manage popups" ON public.popups;
 CREATE POLICY "Admin can manage popups" ON public.popups FOR ALL USING (
   EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
     SELECT id FROM public.roles WHERE role_key = 'admin'
@@ -1469,11 +1526,17 @@ CREATE POLICY "Admin can manage popups" ON public.popups FOR ALL USING (
 );
 
 -- Voice Recordings RLS
+DROP POLICY IF EXISTS "Users can view own recordings" ON public.voice_recordings;
 CREATE POLICY "Users can view own recordings" ON public.voice_recordings FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can view public recordings" ON public.voice_recordings;
 CREATE POLICY "Users can view public recordings" ON public.voice_recordings FOR SELECT USING (is_public = true);
+DROP POLICY IF EXISTS "Users can create recordings" ON public.voice_recordings;
 CREATE POLICY "Users can create recordings" ON public.voice_recordings FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can update own recordings" ON public.voice_recordings;
 CREATE POLICY "Users can update own recordings" ON public.voice_recordings FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can delete own recordings" ON public.voice_recordings;
 CREATE POLICY "Users can delete own recordings" ON public.voice_recordings FOR DELETE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Admin can manage all recordings" ON public.voice_recordings;
 CREATE POLICY "Admin can manage all recordings" ON public.voice_recordings FOR ALL USING (
   EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
     SELECT id FROM public.roles WHERE role_key = 'admin'
@@ -1531,7 +1594,9 @@ CREATE INDEX IF NOT EXISTS idx_featured_brands_active ON public.featured_brands(
 CREATE INDEX IF NOT EXISTS idx_featured_brands_order ON public.featured_brands(order_index);
 
 -- Featured Creatives RLS
+DROP POLICY IF EXISTS "Public can view featured creatives" ON public.featured_creatives;
 CREATE POLICY "Public can view featured creatives" ON public.featured_creatives FOR SELECT USING (is_active = true);
+DROP POLICY IF EXISTS "Admin can manage featured creatives" ON public.featured_creatives;
 CREATE POLICY "Admin can manage featured creatives" ON public.featured_creatives FOR ALL USING (
   EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
     SELECT id FROM public.roles WHERE role_key = 'admin'
@@ -1539,7 +1604,9 @@ CREATE POLICY "Admin can manage featured creatives" ON public.featured_creatives
 );
 
 -- Featured Brands RLS
+DROP POLICY IF EXISTS "Public can view featured brands" ON public.featured_brands;
 CREATE POLICY "Public can view featured brands" ON public.featured_brands FOR SELECT USING (is_active = true);
+DROP POLICY IF EXISTS "Admin can manage featured brands" ON public.featured_brands;
 CREATE POLICY "Admin can manage featured brands" ON public.featured_brands FOR ALL USING (
   EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
     SELECT id FROM public.roles WHERE role_key = 'admin'
@@ -1592,10 +1659,15 @@ CREATE INDEX IF NOT EXISTS idx_auction_bids_auction ON public.auction_bids(aucti
 CREATE INDEX IF NOT EXISTS idx_auction_bids_bidder ON public.auction_bids(bidder_id);
 
 -- Auctions RLS
+DROP POLICY IF EXISTS "Public can view active auctions" ON public.shop_auctions;
 CREATE POLICY "Public can view active auctions" ON public.shop_auctions FOR SELECT USING (status IN ('upcoming', 'active', 'ended'));
+DROP POLICY IF EXISTS "Users can view own auctions" ON public.shop_auctions;
 CREATE POLICY "Users can view own auctions" ON public.shop_auctions FOR SELECT USING (seller_id = auth.uid());
+DROP POLICY IF EXISTS "Users can create auctions" ON public.shop_auctions;
 CREATE POLICY "Users can create auctions" ON public.shop_auctions FOR INSERT WITH CHECK (seller_id = auth.uid());
+DROP POLICY IF EXISTS "Sellers can update own auctions" ON public.shop_auctions;
 CREATE POLICY "Sellers can update own auctions" ON public.shop_auctions FOR UPDATE USING (seller_id = auth.uid());
+DROP POLICY IF EXISTS "Admin can manage all auctions" ON public.shop_auctions;
 CREATE POLICY "Admin can manage all auctions" ON public.shop_auctions FOR ALL USING (
   EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
     SELECT id FROM public.roles WHERE role_key = 'admin'
@@ -1603,9 +1675,13 @@ CREATE POLICY "Admin can manage all auctions" ON public.shop_auctions FOR ALL US
 );
 
 -- Auction Bids RLS
+DROP POLICY IF EXISTS "Public can view auction bids" ON public.auction_bids;
 CREATE POLICY "Public can view auction bids" ON public.auction_bids FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users can place bids" ON public.auction_bids;
 CREATE POLICY "Users can place bids" ON public.auction_bids FOR INSERT WITH CHECK (bidder_id = auth.uid());
+DROP POLICY IF EXISTS "Users can view own bids" ON public.auction_bids;
 CREATE POLICY "Users can view own bids" ON public.auction_bids FOR SELECT USING (bidder_id = auth.uid());
+DROP POLICY IF EXISTS "Admin can manage all bids" ON public.auction_bids;
 CREATE POLICY "Admin can manage all bids" ON public.auction_bids FOR ALL USING (
   EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role_id IN (
     SELECT id FROM public.roles WHERE role_key = 'admin'
