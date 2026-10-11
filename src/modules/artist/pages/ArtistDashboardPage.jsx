@@ -198,7 +198,7 @@ export default function ArtistDashboard() {
                     </div>
                   </div>
                   <button
-                    onClick={() => navigate('/Pricing')}
+                    onClick={() => navigate('/ArtistSubscription')}
                     className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-3 rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all flex items-center justify-center gap-2"
                   >
                     View Plans

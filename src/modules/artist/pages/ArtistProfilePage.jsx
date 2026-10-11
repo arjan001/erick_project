@@ -160,9 +160,6 @@ export default function ArtistProfile() {
   const [projectAlerts, setProjectAlerts] = useState(true)
   const [profilePublic, setProfilePublic] = useState(true)
   const [googleDriveFolderId, setGoogleDriveFolderId] = useState('')
-  const [username, setUsername] = useState('')
-  const [usernameStatus, setUsernameStatus] = useState('idle') // idle, checking, available, taken, invalid
-  const [usernameError, setUsernameError] = useState('')
 
   const [portfolioForm, setPortfolioForm] = useState(() => {
     // Load draft from localStorage if exists
