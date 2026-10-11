@@ -44,8 +44,8 @@ export default function ArtistDashboard() {
       try {
         const [jobsData, appsData, msgsData, subsData, savedData] = await Promise.all([
           Job.filter({ status: 'open' }, '-created_at', 5),
-          Application.filter({ artist_email: user.email }, '-created_at', 10),
-          Message.filter({ recipient_email: user.email }, '-created_at', 5),
+          Application.filter({ user_id: user.id }, '-created_at', 10),
+          Message.list('-created_at', 5),
           Subscription.filter({ user_email: user.email }, '-created_at', 1),
           getSavedJobs()
         ])
@@ -62,7 +62,7 @@ export default function ArtistDashboard() {
         }, '-created_date', 10)
         setInvitations(notifs || [])
 
-        const artists = await Artist.filter({ email: user.email }, '-created_date', 1)
+        const artists = await Artist.filter({ user_id: user.id }, '-created_date', 1)
         const artist = artists?.[0] || null
         setArtistProfile(artist)
 
