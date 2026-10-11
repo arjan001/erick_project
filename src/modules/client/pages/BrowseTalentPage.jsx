@@ -282,8 +282,9 @@ export default function BrowseTalentPage() {
               </div>
             ))}
           </div>
+        )}
 
-          {/* Pagination */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-8">
             <Button
