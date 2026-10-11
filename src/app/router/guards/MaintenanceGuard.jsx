@@ -20,6 +20,15 @@ export function MaintenanceGuard({ children }) {
   useEffect(() => {
     const checkMaintenance = async () => {
       try {
+        // Skip maintenance check for auth pages to allow login
+        if (location.pathname?.startsWith('/SignIn') ||
+          location.pathname?.startsWith('/SignUp') ||
+          location.pathname?.startsWith('/ForgotPassword') ||
+          location.pathname?.startsWith('/ResetPassword')) {
+          setLoading(false)
+          return
+        }
+
         // Check for access code in URL (e.g., /code/SECRET123)
         if (location.pathname?.startsWith('/code/')) {
           const pathParts = location.pathname?.split('/').filter(Boolean)
