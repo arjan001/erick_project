@@ -22,13 +22,13 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    // Bundle analyzer
-    visualizer({
+    // Bundle analyzer - disabled for production due to crypto dependency
+    ...(isProd ? [] : [visualizer({
       filename: './dist/stats.html',
       open: false,
       gzipSize: true,
       brotliSize: true
-    }),
+    })]),
     // Compression
     viteCompression({
       algorithm: 'gzip',
@@ -42,61 +42,61 @@ export default defineConfig({
       threshold: 10240,
       deleteOriginFile: false
     }),
-    // PWA support — only enabled for production builds
-    ...(isProd ? [VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
-      manifest: {
-        name: 'SmartGigs Kenya',
-        short_name: 'SmartGigs Kenya',
-        description: 'The place to get hired for theater, film, and TV.',
-        theme_color: '#0A0A0A',
-        background_color: '#0A0A0A',
-        display: 'standalone',
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/api\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'supabase-api-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'image-cache',
-              expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              }
-            }
-          }
-        ]
-      }
-    })] : [])
+    // PWA support — disabled due to Node 18 crypto compatibility issues
+    // ...(isProd ? [VitePWA({
+    //   registerType: 'autoUpdate',
+    //   includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+    //   manifest: {
+    //     name: 'SmartGigs Kenya',
+    //     short_name: 'SmartGigs Kenya',
+    //     description: 'The place to get hired for theater, film, and TV.',
+    //     theme_color: '#0A0A0A',
+    //     background_color: '#0A0A0A',
+    //     display: 'standalone',
+    //     icons: [
+    //       {
+    //         src: 'pwa-192x192.png',
+    //         sizes: '192x192',
+    //         type: 'image/png'
+    //       },
+    //       {
+    //         src: 'pwa-512x512.png',
+    //         sizes: '512x512',
+    //         type: 'image/png'
+    //       }
+    //     ]
+    //   },
+    //   workbox: {
+    //     globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+    //     runtimeCaching: [
+    //       {
+    //         urlPattern: /^https:\/\/api\.supabase\.co\/.*/i,
+    //         handler: 'NetworkFirst',
+    //         options: {
+    //           cacheName: 'supabase-api-cache',
+    //           expiration: {
+    //             maxEntries: 100,
+    //             maxAgeSeconds: 60 * 60 * 24 // 24 hours
+    //           },
+    //           cacheableResponse: {
+    //             statuses: [0, 200]
+    //           }
+    //         }
+    //       },
+    //       {
+    //         urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+    //         handler: 'CacheFirst',
+    //         options: {
+    //           cacheName: 'image-cache',
+    //           expiration: {
+    //             maxEntries: 200,
+    //             maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+    //           }
+    //         }
+    //       }
+    //     ]
+    //   }
+    // })] : [])
   ],
   build: {
     // Optimize chunk splitting
