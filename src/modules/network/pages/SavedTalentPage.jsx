@@ -220,6 +220,7 @@ export default function SavedTalentPage() {
             </Button>
           </div>
         )}
+        )}
       </div>
     </div>
   )
