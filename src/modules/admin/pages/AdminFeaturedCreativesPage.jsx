@@ -107,12 +107,7 @@ export default function AdminFeaturedCreativesPage() {
       setUploading(false)
     }
   }
-
-  toastError('Upload Failed', 'Failed to upload image')
-} finally {
-  setUploading(false)
 }
-  }
 
 const handleRemoveImage = (index) => {
   setFormData({
