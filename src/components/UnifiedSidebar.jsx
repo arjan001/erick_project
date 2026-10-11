@@ -41,6 +41,7 @@ const roleNavConfig = {
         label: 'Finance',
         items: [
           { path: '/ArtistFinance', label: 'Finances', icon: Wallet },
+          { path: '/ArtistSubscription', label: 'Subscription', icon: Crown },
         ]
       },
       {
