@@ -484,6 +484,17 @@ export default function ArtistProfile() {
 
   const handleSaveBio = async () => {
     if (!artist) {
+      // Try to fetch artist again if state is lost
+      try {
+        const artistData = await Artist.filter({ email: user.email })
+        if (artistData && artistData.length > 0) {
+          setArtist(artistData[0])
+          toastError('Retrying', 'Profile found, please try again')
+          return
+        }
+      } catch (err) {
+        console.error('Failed to fetch artist:', err)
+      }
       toastError('Error', 'Artist profile not found. Please refresh the page.')
       return
     }
@@ -493,13 +504,24 @@ export default function ArtistProfile() {
       success('Bio Updated', 'Your bio has been updated')
       setShowBioModal(false)
     } catch (err) {
-
+      console.error('Bio save error:', err)
       toastError('Save Failed', 'Failed to save bio. Please try again.')
     }
   }
 
   const handleSavePreferences = async () => {
     if (!artist) {
+      // Try to fetch artist again if state is lost
+      try {
+        const artistData = await Artist.filter({ email: user.email })
+        if (artistData && artistData.length > 0) {
+          setArtist(artistData[0])
+          toastError('Retrying', 'Profile found, please try again')
+          return
+        }
+      } catch (err) {
+        console.error('Failed to fetch artist:', err)
+      }
       toastError('Error', 'Artist profile not found. Please refresh the page.')
       return
     }
@@ -513,7 +535,7 @@ export default function ArtistProfile() {
       setArtist(updated)
       success('Preferences Updated', 'Your settings have been saved')
     } catch (err) {
-
+      console.error('Preferences save error:', err)
       toastError('Save Failed', 'Failed to update preferences')
     }
   }
@@ -561,6 +583,17 @@ export default function ArtistProfile() {
     }
 
     if (!artist) {
+      // Try to fetch artist again if state is lost
+      try {
+        const artistData = await Artist.filter({ email: user.email })
+        if (artistData && artistData.length > 0) {
+          setArtist(artistData[0])
+          toastError('Retrying', 'Profile found, please try again')
+          return
+        }
+      } catch (err) {
+        console.error('Failed to fetch artist:', err)
+      }
       toastError('Connection Failed', 'Artist profile not found. Please complete your profile first.')
       return
     }
@@ -572,7 +605,7 @@ export default function ArtistProfile() {
       setGoogleDriveFolderId(folderId)
       success('Google Drive Connected', 'Your Google Drive folder has been successfully connected')
     } catch (err) {
-
+      console.error('Google Drive connection error:', err)
       toastError('Connection Failed', `Failed to connect Google Drive: ${err.message || 'Please try again.'}`)
     }
   }
