@@ -7,6 +7,7 @@ import TopBanner from '@/components/home/TopBanner'
 import NewProjectForm from '@/components/NewProjectForm'
 import UnifiedSearch from '@/components/UnifiedSearch'
 import { useAuth } from '@/lib/AuthContext'
+import AuthNotification from '@/components/AuthNotification'
 
 export default function MainLayout({ children, currentPageName: currentPageNameProp }) {
   const location = useLocation()
@@ -90,6 +91,9 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
 
   return (
     <div className={`min-h-screen ${isHomePage ? 'bg-[#0A0A0A]' : 'bg-white'} text-[#212121] ${exploreOpen ? 'overflow-hidden' : ''}`}>
+      {/* Auth Notification */}
+      <AuthNotification />
+
       {/* Loading Screen */}
       {showLoadingScreen && (
         <div className="fixed inset-0 bg-white z-[100] flex items-center justify-center">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,21 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
+
+  // Film-related background images
+  const bgImages = [
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ80BIneprBn303gn_nFSMY4CASRK0N6vKrGbQpQm8frNwgOvOpJaoje1Q&s=10',
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS140ZRIPcOyHbT0V0I8DQMLPeHnWf03cBs8KX4Rio3F1uN0HpGvZjnUNU&s=10'
+  ]
+  const [currentBgIndex, setCurrentBgIndex] = useState(0)
+
+  // Rotate background images
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBgIndex((prev) => (prev + 1) % bgImages.length)
+    }, 8000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -39,52 +54,19 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* LEFT PANEL — Content */}
-      <div className="flex flex-1 items-center justify-center bg-[#F5F3EF] px-8 py-12 lg:px-16">
-        <div className="max-w-lg">
-          <Link to="/SignIn" className="inline-flex items-center text-black/60 hover:text-black mb-8">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Sign In
-          </Link>
-
-          <h1 className="text-3xl font-bold leading-tight text-black md:text-4xl mb-4">
-            Reset your password
-          </h1>
-          <p className="text-lg text-black/70 mb-12">
-            We'll send you a secure link to reset your password and get you back into your account.
+      {/* LEFT PANEL — Film Image Background */}
+      <div className="flex-1 relative bg-black overflow-hidden hidden lg:flex">
+        <img
+          src={bgImages[currentBgIndex]}
+          alt="Film production"
+          className="absolute inset-0 w-full h-full object-cover opacity-60 transition-opacity duration-1000"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/70" />
+        <div className="relative z-10 flex flex-col justify-center items-center h-full px-12 text-white">
+          <h1 className="text-4xl font-bold mb-4">SmartGigs Kenya</h1>
+          <p className="text-xl text-white/80 text-center max-w-md">
+            Connecting Kenya's film industry with top talent and opportunities
           </p>
-
-          <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-black/[0.06]">
-                <Shield className="h-5 w-5 text-black/70" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-black">Secure recovery</h3>
-                <p className="pt-1 text-sm text-black/70">Password reset links are sent securely and expire after 1 hour.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-black/[0.06]">
-                <Lock className="h-5 w-5 text-black/70" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-black">Keep your account safe</h3>
-                <p className="pt-1 text-sm text-black/70">Choose a strong password with letters, numbers, and symbols.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-black/[0.06]">
-                <KeyRound className="h-5 w-5 text-black/70" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-black">Quick access</h3>
-                <p className="pt-1 text-sm text-black/70">Once reset, you'll be able to log in immediately with your new password.</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 

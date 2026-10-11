@@ -72,6 +72,7 @@ export default function SignUp() {
     ? Object.values(skillsAndRoles.talent_skills_by_category || {}).flat()
     : Object.values(skillsAndRoles.client_skills_by_category || {}).flat()
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [inviteCodeValid, setInviteCodeValid] = useState(null)
   const [showInviteModal, setShowInviteModal] = useState(false)
@@ -135,7 +136,7 @@ export default function SignUp() {
     supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/SignUp`
+        redirectTo: `${window.location.origin}/SignIn`
       }
     })
   }
@@ -147,7 +148,7 @@ export default function SignUp() {
     supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: {
-        redirectTo: `${window.location.origin}/SignUp`
+        redirectTo: `${window.location.origin}/SignIn`
       }
     })
   }
@@ -180,8 +181,10 @@ export default function SignUp() {
       })
       if (error) throw error
       setOtpSent(true)
+      setMessage(`Verification code sent to ${formData.email}`)
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.')
+      setMessage('')
     } finally {
       setLoading(false)
     }
@@ -191,7 +194,8 @@ export default function SignUp() {
   const handleVerifyOtp = async (e) => {
     e.preventDefault()
     setError('')
-    if (!otpCode || otpCode.length < 4) {
+    const cleanOtpCode = (otpCode || '').replace(/\s/g, '')
+    if (!cleanOtpCode || cleanOtpCode.length < 4) {
       setError('Please enter the verification code sent to your email')
       return
     }
@@ -200,7 +204,7 @@ export default function SignUp() {
       // Verify the email — this authenticates the user (token stored by the SDK)
       const { data, error } = await supabase.auth.verifyOtp({
         email: formData.email,
-        token: otpCode,
+        token: cleanOtpCode,
         type: 'signup'
       })
       if (error) throw error
@@ -296,13 +300,18 @@ export default function SignUp() {
 
   const handleResendOtp = async () => {
     setError('')
+    setLoading(true)
     try {
-      await supabase.auth.resend({
+      const { error } = await supabase.auth.resend({
         type: 'signup',
         email: formData.email
       })
+      if (error) throw error
+      setMessage('New verification code sent successfully')
     } catch (err) {
       setError(err.message || 'Could not resend the code. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -316,8 +325,36 @@ export default function SignUp() {
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* LEFT PANEL */}
-      <div className={`flex flex-1 flex-col justify-center px-8 py-12 lg:px-16 ${isEmployer ? 'bg-black' : 'bg-[#F7F5F0]'}`}>
-        {isEmployer ? (
+      <div className={`flex flex-1 flex-col justify-center px-8 py-12 lg:px-16 ${isEmployer ? 'bg-black' : otpSent ? 'bg-[#0A0A0A]' : 'bg-[#F7F5F0]'}`}>
+        {otpSent ? (
+          /* Verification state - dark cinematic panel with image */
+          <div className="relative max-w-lg">
+            <div
+              className="absolute inset-0 bg-cover bg-center opacity-30"
+              style={{
+                backgroundImage: 'url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ80BIneprBn303gn_nFSMY4CASRK0N6vKrGbQpQm8frNwgOvOpJaoje1Q&s=10)'
+              }}
+            />
+            <div className="relative z-10">
+              <h2 className="text-3xl font-bold leading-tight text-white md:text-4xl mb-4">
+                Almost there!
+              </h2>
+              <p className="text-lg text-white/80 mb-6">
+                Just one more step to complete your {isEmployer ? 'employer' : 'talent'} account.
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-white/70">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <span className="text-sm">Email verification in progress</span>
+                </div>
+                <div className="flex items-center gap-3 text-white/70">
+                  <div className="w-2 h-2 rounded-full bg-gray-500"></div>
+                  <span className="text-sm">Account creation pending</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : isEmployer ? (
           /* Employer: black panel with testimonial */
           <div className="relative max-w-lg">
             <div className="mb-10">
@@ -408,43 +445,84 @@ export default function SignUp() {
           )}
 
           {otpSent ? (
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Verification code</label>
-                <input
-                  type="text"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.trim())}
-                  placeholder="Enter code"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            <>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Verify your email
+              </h1>
+              <p className="text-gray-600 mb-6">
+                We've sent a 6-digit code to <span className="font-medium text-gray-900">{formData.email}</span>
+              </p>
+
+              {message && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-green-700">{message}</p>
+                </div>
+              )}
+
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleVerifyOtp} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-3">Enter verification code</label>
+                  <div className="flex gap-2">
+                    {[0, 1, 2, 3, 4, 5].map((index) => (
+                      <input
+                        key={index}
+                        type="text"
+                        maxLength={1}
+                        value={otpCode?.[index] || ''}
+                        onChange={(e) => {
+                          const newCode = (otpCode || '').split('')
+                          newCode[index] = e.target.value
+                          setOtpCode(newCode.join(''))
+                          // Auto-focus next input
+                          if (e.target.value && index < 5) {
+                            e.target.nextElementSibling?.focus()
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Backspace' && !(otpCode?.[index]) && index > 0) {
+                            e.target.previousElementSibling?.focus()
+                          }
+                        }}
+                        className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                        disabled={loading}
+                        required
+                      />
+                    ))}
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3 rounded-lg"
                   disabled={loading}
-                  autoFocus
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3 rounded-lg"
-                disabled={loading}
-              >
-                {loading ? 'Verifying...' : 'Verify & continue'}
-              </button>
-              <button
-                type="button"
-                onClick={handleResendOtp}
-                className="w-full text-sm text-gray-600 hover:text-black"
-                disabled={loading}
-              >
-                Didn't get a code? Resend
-              </button>
-              <button
-                type="button"
-                onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); }}
-                className="w-full text-sm text-gray-500 hover:text-black"
-              >
-                Back to sign up
-              </button>
-            </form>
+                >
+                  {loading ? 'Verifying...' : 'Verify & Create Account'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  className="w-full text-sm text-gray-600 hover:text-black"
+                  disabled={loading}
+                >
+                  {loading ? 'Sending...' : "Didn't get a code? "}
+                  {!loading && <span className="underline">Resend</span>}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); setMessage(''); }}
+                  className="w-full text-sm text-gray-500 hover:text-black"
+                >
+                  <span className="underline">Back to sign up</span>
+                </button>
+              </form>
+            </>
           ) : (
             <form onSubmit={handleSignUp} className="space-y-4">
               {/* Social Sign Up */}

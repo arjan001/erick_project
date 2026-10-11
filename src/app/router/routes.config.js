@@ -327,6 +327,12 @@ const authRoutes = [
     guard: GuestGuard
   },
   {
+    path: '/erick',
+    component: () => import('@/pages/Erick'),
+    layout: AuthLayout,
+    guard: GuestGuard
+  },
+  {
     path: '/AcceptTeamInvite',
     component: () => import('@/pages/AcceptTeamInvite'),
     layout: AuthLayout,

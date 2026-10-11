@@ -261,6 +261,18 @@ export const AuthProvider = ({ children }) => {
   const [permissions, setPermissions] = useState([])
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoadingAuth, setIsLoadingAuth] = useState(true)
+  const [authNotification, setAuthNotification] = useState(null)
+
+  // Show notification
+  const showNotification = (message, type = 'info') => {
+    setAuthNotification({ message, type })
+    // Request browser notification permission
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      new Notification('SmartGigs Kenya', { body: message, icon: '/favicon.ico' })
+    }
+    // Auto-clear after 3 seconds
+    setTimeout(() => setAuthNotification(null), 3000)
+  }
 
   // Heartbeat: mark this user active periodically so others see live online status
   useEffect(() => {
@@ -368,6 +380,9 @@ export const AuthProvider = ({ children }) => {
     // Ensure profile exists
     await ensureProfile(u)
 
+    // Show login notification
+    showNotification(`Welcome back, ${u.full_name}!`, 'success')
+
     return u
   }
 
@@ -413,6 +428,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async (shouldRedirect = true) => {
     const userEmail = user?.email
+    const userName = user?.full_name || 'User'
     // 1. Clear all React state first
     setUser(null)
     setPermissions([])
@@ -433,7 +449,9 @@ export const AuthProvider = ({ children }) => {
     if (userEmail) {
       try { await auditLogger.auth.logout(userEmail); } catch { /* ignore */ }
     }
-    // 6. Redirect to landing page
+    // 6. Show logout notification
+    showNotification(`Goodbye, ${userName}!`, 'info')
+    // 7. Redirect to landing page
     if (shouldRedirect) {
       window.location.href = '/'
     }
@@ -442,7 +460,7 @@ export const AuthProvider = ({ children }) => {
   const navigateToLogin = () => { window.location.href = '/SignIn'; }
 
   return (
-    <AuthContext.Provider value={{ user, permissions, isAuthenticated, isLoadingAuth, login, signUp, logout, navigateToLogin, updateUser, hasPermission, hasAnyPermission, hasAllPermissions, hasModuleAccess }}>
+    <AuthContext.Provider value={{ user, permissions, isAuthenticated, isLoadingAuth, login, signUp, logout, navigateToLogin, updateUser, hasPermission, hasAnyPermission, hasAllPermissions, hasModuleAccess, authNotification, setAuthNotification }}>
       {children}
     </AuthContext.Provider>
   )
