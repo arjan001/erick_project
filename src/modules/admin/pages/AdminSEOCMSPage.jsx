@@ -41,8 +41,8 @@ export default function AdminSEOCMSPage() {
       if (pages && pages.length > 0) {
         setCmsPages(pages.map(p => ({
           id: p.id,
-          title: p.page_title || '',
-          slug: p.page_slug || '',
+          title: p.title || '',
+          slug: p.slug || '',
           metaTitle: p.meta_title || '',
           metaDescription: p.meta_description || '',
           metaKeywords: p.meta_keywords || '',
@@ -229,8 +229,8 @@ export default function AdminSEOCMSPage() {
       if (editingPage) {
         // Update existing page
         await updatePageMetadata(editingPage.id, {
-          page_title: pageForm.title,
-          page_slug: pageForm.slug,
+          title: pageForm.title,
+          slug: pageForm.slug,
           meta_title: pageForm.metaTitle,
           meta_description: pageForm.metaDescription,
           meta_keywords: pageForm.metaKeywords,
@@ -243,8 +243,8 @@ export default function AdminSEOCMSPage() {
       } else {
         // Create new page
         const newPage = await createPageMetadata({
-          page_title: pageForm.title,
-          page_slug: pageForm.slug,
+          title: pageForm.title,
+          slug: pageForm.slug,
           meta_title: pageForm.metaTitle,
           meta_description: pageForm.metaDescription,
           meta_keywords: pageForm.metaKeywords,
