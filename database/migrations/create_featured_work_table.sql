@@ -39,8 +39,9 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_featured_work_updated_at ON public.featured_work;
 CREATE TRIGGER update_featured_work_updated_at
-    BEFORE UPDATE ON featured_work
+    BEFORE UPDATE ON public.featured_work
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 

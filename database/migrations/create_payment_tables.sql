@@ -95,14 +95,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trg_payment_settings_updated ON payment_settings;
-CREATE TRIGGER trg_payment_settings_updated BEFORE UPDATE ON payment_settings
-    FOR EACH ROW EXECUTE FUNCTION update_payment_timestamp();
+DROP TRIGGER IF EXISTS trg_payment_settings_updated ON public.payment_settings;
+CREATE TRIGGER trg_payment_settings_updated BEFORE UPDATE ON public.payment_settings
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
-DROP TRIGGER IF EXISTS trg_mpesa_txn_updated ON mpesa_transactions;
-CREATE TRIGGER trg_mpesa_txn_updated BEFORE UPDATE ON mpesa_transactions
-    FOR EACH ROW EXECUTE FUNCTION update_payment_timestamp();
+DROP TRIGGER IF EXISTS trg_mpesa_txn_updated ON public.mpesa_transactions;
+CREATE TRIGGER trg_mpesa_txn_updated BEFORE UPDATE ON public.mpesa_transactions
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
-DROP TRIGGER IF EXISTS trg_mollie_payments_updated ON mollie_payments;
-CREATE TRIGGER trg_mollie_payments_updated BEFORE UPDATE ON mollie_payments
-    FOR EACH ROW EXECUTE FUNCTION update_payment_timestamp();
+DROP TRIGGER IF EXISTS trg_mollie_payments_updated ON public.mollie_payments;
+CREATE TRIGGER trg_mollie_payments_updated BEFORE UPDATE ON public.mollie_payments
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();

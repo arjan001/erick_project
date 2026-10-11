@@ -176,6 +176,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_job_roles_updated_at ON public.job_roles;
 CREATE TRIGGER trg_job_roles_updated_at
   BEFORE UPDATE ON public.job_roles
   FOR EACH ROW

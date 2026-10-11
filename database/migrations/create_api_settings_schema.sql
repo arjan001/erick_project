@@ -36,16 +36,10 @@ CREATE INDEX idx_api_keys_status ON api_keys(status);
 CREATE INDEX idx_api_keys_created_by ON api_keys(created_by);
 
 -- Trigger for updated_at (only if function exists)
-DO $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_api_keys_updated_at') THEN
-        DROP TRIGGER update_api_keys_updated_at ON api_keys;
-    END IF;
-END $$;
-
-CREATE TRIGGER update_api_keys_updated_at 
-    BEFORE UPDATE ON api_keys 
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+DROP TRIGGER IF EXISTS update_api_keys_updated_at ON public.api_keys;
+CREATE TRIGGER update_api_keys_updated_at
+    BEFORE UPDATE ON public.api_keys
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- ============================================
 -- RATE LIMITING SETTINGS TABLE
@@ -68,16 +62,10 @@ VALUES (true, 100, 1000, 10000, 20)
 ON CONFLICT DO NOTHING;
 
 -- Trigger for updated_at
-DO $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_rate_limiting_settings_updated_at') THEN
-        DROP TRIGGER update_rate_limiting_settings_updated_at ON rate_limiting_settings;
-    END IF;
-END $$;
-
-CREATE TRIGGER update_rate_limiting_settings_updated_at 
-    BEFORE UPDATE ON rate_limiting_settings 
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+DROP TRIGGER IF EXISTS update_rate_limiting_settings_updated_at ON public.rate_limiting_settings;
+CREATE TRIGGER update_rate_limiting_settings_updated_at
+    BEFORE UPDATE ON public.rate_limiting_settings
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- ============================================
 -- API CONFIGURATION SETTINGS TABLE
@@ -128,16 +116,10 @@ VALUES (
 ON CONFLICT DO NOTHING;
 
 -- Trigger for updated_at
-DO $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_api_configuration_updated_at') THEN
-        DROP TRIGGER update_api_configuration_updated_at ON api_configuration;
-    END IF;
-END $$;
-
-CREATE TRIGGER update_api_configuration_updated_at 
-    BEFORE UPDATE ON api_configuration 
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+DROP TRIGGER IF EXISTS update_api_configuration_updated_at ON public.api_configuration;
+CREATE TRIGGER update_api_configuration_updated_at
+    BEFORE UPDATE ON public.api_configuration
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- ============================================
 -- INTEGRATIONS SETTINGS TABLE
@@ -155,16 +137,10 @@ CREATE TABLE integrations_settings (
 CREATE INDEX idx_integrations_settings_name ON integrations_settings(integration_name);
 
 -- Trigger for updated_at
-DO $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_integrations_settings_updated_at') THEN
-        DROP TRIGGER update_integrations_settings_updated_at ON integrations_settings;
-    END IF;
-END $$;
-
-CREATE TRIGGER update_integrations_settings_updated_at 
-    BEFORE UPDATE ON integrations_settings 
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+DROP TRIGGER IF EXISTS update_integrations_settings_updated_at ON public.integrations_settings;
+CREATE TRIGGER update_integrations_settings_updated_at
+    BEFORE UPDATE ON public.integrations_settings
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Insert default Google Drive settings
 INSERT INTO integrations_settings (integration_name, settings, is_enabled)

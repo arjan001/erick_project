@@ -976,10 +976,19 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply to all tables with updated_at
+DROP TRIGGER IF EXISTS trg_users_updated_at ON public.users;
 CREATE TRIGGER trg_users_updated_at BEFORE UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_creators_updated_at ON public.creators;
 CREATE TRIGGER trg_creators_updated_at BEFORE UPDATE ON public.creators FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_teams_updated_at ON public.teams;
 CREATE TRIGGER trg_teams_updated_at BEFORE UPDATE ON public.teams FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_clients_updated_at ON public.clients;
 CREATE TRIGGER trg_clients_updated_at BEFORE UPDATE ON public.clients FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_backers_updated_at ON public.backers;
 CREATE TRIGGER trg_backers_updated_at BEFORE UPDATE ON public.backers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Makamesco transactions indexes
@@ -989,17 +998,39 @@ CREATE INDEX IF NOT EXISTS idx_makamesco_status ON public.makamesco_transactions
 CREATE INDEX IF NOT EXISTS idx_makamesco_created_at ON public.makamesco_transactions(created_at DESC);
 
 -- Makamesco transactions trigger
+DROP TRIGGER IF EXISTS trg_makamesco_transactions_updated_at ON public.makamesco_transactions;
 CREATE TRIGGER trg_makamesco_transactions_updated_at BEFORE UPDATE ON public.makamesco_transactions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_project_backers_updated_at ON public.project_backers;
 CREATE TRIGGER trg_project_backers_updated_at BEFORE UPDATE ON public.project_backers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_deals_updated_at ON public.deals;
 CREATE TRIGGER trg_deals_updated_at BEFORE UPDATE ON public.deals FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+DROP TRIGGER IF EXISTS trg_investment_tiers_updated_at ON public.investment_tiers;
 CREATE TRIGGER trg_investment_tiers_updated_at BEFORE UPDATE ON public.investment_tiers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_project_updates_updated_at ON public.project_updates;
 CREATE TRIGGER trg_project_updates_updated_at BEFORE UPDATE ON public.project_updates FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_projects_updated_at ON public.projects;
 CREATE TRIGGER trg_projects_updated_at BEFORE UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_jobs_updated_at ON public.jobs;
 CREATE TRIGGER trg_jobs_updated_at BEFORE UPDATE ON public.jobs FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_job_applications_updated_at ON public.job_applications;
 CREATE TRIGGER trg_job_applications_updated_at BEFORE UPDATE ON public.job_applications FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_shop_products_updated_at ON public.shop_products;
 CREATE TRIGGER trg_shop_products_updated_at BEFORE UPDATE ON public.shop_products FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_shop_orders_updated_at ON public.shop_orders;
 CREATE TRIGGER trg_shop_orders_updated_at BEFORE UPDATE ON public.shop_orders FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_card_payments_updated_at ON public.card_payments;
 CREATE TRIGGER trg_card_payments_updated_at BEFORE UPDATE ON public.card_payments FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_team_payments_updated_at ON public.team_payments;
 CREATE TRIGGER trg_team_payments_updated_at BEFORE UPDATE ON public.team_payments FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 -- CREATE TRIGGER trg_user_sessions_updated_at BEFORE UPDATE ON public.user_sessions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 -- Note: user_sessions table is created in migrations/add_analytics_tables.sql
@@ -1011,21 +1042,52 @@ CREATE TRIGGER trg_team_payments_updated_at BEFORE UPDATE ON public.team_payment
 -- Note: trg_makamesco_transactions_updated_at trigger is already defined at line 1008
 -- Note: trg_storage_buckets_config_updated_at trigger moved to after storage_buckets_config table definition
 -- CREATE TRIGGER trg_storage_buckets_config_updated_at BEFORE UPDATE ON public.storage_buckets_config FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+DROP TRIGGER IF EXISTS trg_partners_updated_at ON public.partners;
 CREATE TRIGGER trg_partners_updated_at BEFORE UPDATE ON public.partners FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_categories_updated_at ON public.categories;
 CREATE TRIGGER trg_categories_updated_at BEFORE UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_cms_pages_updated_at ON public.cms_pages;
 CREATE TRIGGER trg_cms_pages_updated_at BEFORE UPDATE ON public.cms_pages FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_articles_updated_at ON public.articles;
 CREATE TRIGGER trg_articles_updated_at BEFORE UPDATE ON public.articles FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_payment_settings_updated_at ON public.payment_settings;
 CREATE TRIGGER trg_payment_settings_updated_at BEFORE UPDATE ON public.payment_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_subscription_packages_updated_at ON public.subscription_packages;
 CREATE TRIGGER trg_subscription_packages_updated_at BEFORE UPDATE ON public.subscription_packages FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_subscriptions_updated_at ON public.subscriptions;
 CREATE TRIGGER trg_subscriptions_updated_at BEFORE UPDATE ON public.subscriptions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_success_stories_updated_at ON public.success_stories;
 CREATE TRIGGER trg_success_stories_updated_at BEFORE UPDATE ON public.success_stories FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_ticker_items_updated_at ON public.ticker_items;
 CREATE TRIGGER trg_ticker_items_updated_at BEFORE UPDATE ON public.ticker_items FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_roles_updated_at ON public.roles;
 CREATE TRIGGER trg_roles_updated_at BEFORE UPDATE ON public.roles FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_permissions_updated_at ON public.permissions;
 CREATE TRIGGER trg_permissions_updated_at BEFORE UPDATE ON public.permissions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_support_tickets_updated_at ON public.support_tickets;
 CREATE TRIGGER trg_support_tickets_updated_at BEFORE UPDATE ON public.support_tickets FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_notifications_updated_at ON public.notifications;
 CREATE TRIGGER trg_notifications_updated_at BEFORE UPDATE ON public.notifications FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_job_invitations_updated_at ON public.job_invitations;
 CREATE TRIGGER trg_job_invitations_updated_at BEFORE UPDATE ON public.job_invitations FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_endorsements_updated_at ON public.endorsements;
 CREATE TRIGGER trg_endorsements_updated_at BEFORE UPDATE ON public.endorsements FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS trg_testimonials_updated_at ON public.testimonials;
 CREATE TRIGGER trg_testimonials_updated_at BEFORE UPDATE ON public.testimonials FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- ============================================================
@@ -1209,6 +1271,7 @@ CREATE TABLE IF NOT EXISTS public.cart (
 );
 
 -- Trigger for cart (moved here to be after table definition)
+DROP TRIGGER IF EXISTS trg_cart_updated_at ON public.cart;
 CREATE TRIGGER trg_cart_updated_at BEFORE UPDATE ON public.cart FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Note: wishlist table is defined earlier in the schema (line 502)
@@ -1229,6 +1292,7 @@ CREATE TABLE IF NOT EXISTS public.feature_flags (
 );
 
 -- Trigger for feature_flags (moved here to be after table definition)
+DROP TRIGGER IF EXISTS trg_feature_flags_updated_at ON public.feature_flags;
 CREATE TRIGGER trg_feature_flags_updated_at BEFORE UPDATE ON public.feature_flags FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- System settings for file upload validation
@@ -1244,6 +1308,7 @@ CREATE TABLE IF NOT EXISTS public.file_upload_settings (
 );
 
 -- Trigger for file_upload_settings (moved here to be after table definition)
+DROP TRIGGER IF EXISTS trg_file_upload_settings_updated_at ON public.file_upload_settings;
 CREATE TRIGGER trg_file_upload_settings_updated_at BEFORE UPDATE ON public.file_upload_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Authentication provider settings (Supabase, Clerk, etc.)
@@ -1258,6 +1323,7 @@ CREATE TABLE IF NOT EXISTS public.auth_providers (
 );
 
 -- Trigger for auth_providers (moved here to be after table definition)
+DROP TRIGGER IF EXISTS trg_auth_providers_updated_at ON public.auth_providers;
 CREATE TRIGGER trg_auth_providers_updated_at BEFORE UPDATE ON public.auth_providers FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Email settings configuration (SMTP, Resend, etc.)
@@ -1274,6 +1340,7 @@ CREATE TABLE IF NOT EXISTS public.email_settings (
 );
 
 -- Trigger for email_settings (moved here to be after table definition)
+DROP TRIGGER IF EXISTS trg_email_settings_updated_at ON public.email_settings;
 CREATE TRIGGER trg_email_settings_updated_at BEFORE UPDATE ON public.email_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- ============================================================
@@ -1319,6 +1386,7 @@ CREATE TABLE IF NOT EXISTS public.storage_buckets_config (
 );
 
 -- Trigger for storage_buckets_config (moved here to be after table definition)
+DROP TRIGGER IF EXISTS trg_storage_buckets_config_updated_at ON public.storage_buckets_config;
 CREATE TRIGGER trg_storage_buckets_config_updated_at BEFORE UPDATE ON public.storage_buckets_config FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- ============================================================
@@ -1356,6 +1424,7 @@ CREATE TABLE IF NOT EXISTS public.popups (
 );
 
 -- Trigger for popups
+DROP TRIGGER IF EXISTS trg_popups_updated_at ON public.popups;
 CREATE TRIGGER trg_popups_updated_at BEFORE UPDATE ON public.popups FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Index for popups
@@ -1383,6 +1452,7 @@ CREATE TABLE IF NOT EXISTS public.voice_recordings (
 );
 
 -- Trigger for voice_recordings
+DROP TRIGGER IF EXISTS trg_voice_recordings_updated_at ON public.voice_recordings;
 CREATE TRIGGER trg_voice_recordings_updated_at BEFORE UPDATE ON public.voice_recordings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Index for voice recordings
@@ -1434,6 +1504,7 @@ CREATE TABLE IF NOT EXISTS public.featured_creatives (
 );
 
 -- Trigger for featured_creatives
+DROP TRIGGER IF EXISTS trg_featured_creatives_updated_at ON public.featured_creatives;
 CREATE TRIGGER trg_featured_creatives_updated_at BEFORE UPDATE ON public.featured_creatives FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Featured brands table for brands carousel
@@ -1450,6 +1521,7 @@ CREATE TABLE IF NOT EXISTS public.featured_brands (
 );
 
 -- Trigger for featured_brands
+DROP TRIGGER IF EXISTS trg_featured_brands_updated_at ON public.featured_brands;
 CREATE TRIGGER trg_featured_brands_updated_at BEFORE UPDATE ON public.featured_brands FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Index for featured tables
@@ -1499,6 +1571,7 @@ CREATE TABLE IF NOT EXISTS public.shop_auctions (
 );
 
 -- Trigger for shop_auctions
+DROP TRIGGER IF EXISTS trg_shop_auctions_updated_at ON public.shop_auctions;
 CREATE TRIGGER trg_shop_auctions_updated_at BEFORE UPDATE ON public.shop_auctions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Auction bids

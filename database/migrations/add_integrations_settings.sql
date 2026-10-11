@@ -12,9 +12,10 @@ CREATE TABLE IF NOT EXISTS integrations_settings (
 CREATE INDEX idx_integrations_settings_name ON integrations_settings(integration_name);
 
 -- Add trigger for updated_at
-CREATE TRIGGER update_integrations_settings_updated_at 
-    BEFORE UPDATE ON integrations_settings 
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+DROP TRIGGER IF EXISTS update_integrations_settings_updated_at ON public.integrations_settings;
+CREATE TRIGGER update_integrations_settings_updated_at
+    BEFORE UPDATE ON public.integrations_settings
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Insert default Google Drive settings
 INSERT INTO integrations_settings (integration_name, settings, is_enabled)

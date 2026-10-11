@@ -305,26 +305,26 @@ END;
 $$ language 'plpgsql';
 
 -- Apply triggers to all new tables
-DROP TRIGGER IF EXISTS update_deals_updated_at ON deals;
+DROP TRIGGER IF EXISTS update_deals_updated_at ON public.deals;
 CREATE TRIGGER update_deals_updated_at
-    BEFORE UPDATE ON deals
+    BEFORE UPDATE ON public.deals
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+    EXECUTE FUNCTION public.handle_updated_at();
 
-DROP TRIGGER IF EXISTS update_partners_updated_at ON partners;
+DROP TRIGGER IF EXISTS update_partners_updated_at ON public.partners;
 CREATE TRIGGER update_partners_updated_at
-    BEFORE UPDATE ON partners
+    BEFORE UPDATE ON public.partners
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+    EXECUTE FUNCTION public.handle_updated_at();
 
-DROP TRIGGER IF EXISTS update_investment_tiers_updated_at ON investment_tiers;
+DROP TRIGGER IF EXISTS update_investment_tiers_updated_at ON public.investment_tiers;
 CREATE TRIGGER update_investment_tiers_updated_at
-    BEFORE UPDATE ON investment_tiers
+    BEFORE UPDATE ON public.investment_tiers
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+    EXECUTE FUNCTION public.handle_updated_at();
 
-DROP TRIGGER IF EXISTS update_project_updates_updated_at ON project_updates;
+DROP TRIGGER IF EXISTS update_project_updates_updated_at ON public.project_updates;
 CREATE TRIGGER update_project_updates_updated_at
-    BEFORE UPDATE ON project_updates
+    BEFORE UPDATE ON public.project_updates
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+    EXECUTE FUNCTION public.handle_updated_at();

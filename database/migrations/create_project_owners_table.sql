@@ -34,18 +34,10 @@ CREATE INDEX IF NOT EXISTS idx_project_owners_email ON project_owners(email);
 CREATE INDEX IF NOT EXISTS idx_project_owners_created_at ON project_owners(created_at);
 
 -- Drop trigger if exists
-DROP TRIGGER IF EXISTS update_project_owners_updated_at ON project_owners;
+DROP TRIGGER IF EXISTS update_project_owners_updated_at ON public.project_owners;
 
 -- Add trigger to update updated_at on row update
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
 CREATE TRIGGER update_project_owners_updated_at
-    BEFORE UPDATE ON project_owners
+    BEFORE UPDATE ON public.project_owners
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+    EXECUTE FUNCTION public.handle_updated_at();

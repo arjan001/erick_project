@@ -39,6 +39,7 @@ CREATE INDEX IF NOT EXISTS idx_makamesco_status ON public.makamesco_transactions
 CREATE INDEX IF NOT EXISTS idx_makamesco_created_at ON public.makamesco_transactions(created_at DESC);
 
 -- Step 4: Create trigger for updated_at
+DROP TRIGGER IF EXISTS trg_makamesco_transactions_updated_at ON public.makamesco_transactions;
 CREATE TRIGGER trg_makamesco_transactions_updated_at
 BEFORE UPDATE ON public.makamesco_transactions
 FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();

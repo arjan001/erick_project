@@ -34,6 +34,7 @@ BEGIN
         CREATE INDEX idx_invites_status ON public.invites(status);
 
         -- Add trigger for updated_at
+        DROP TRIGGER IF EXISTS trg_invites_updated_at ON public.invites;
         CREATE TRIGGER trg_invites_updated_at
             BEFORE UPDATE ON public.invites
             FOR EACH ROW

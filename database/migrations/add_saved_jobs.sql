@@ -54,6 +54,7 @@ BEGIN
         END;
         $$ LANGUAGE plpgsql;
 
+        DROP TRIGGER IF EXISTS trg_saved_jobs_updated_at ON public.saved_jobs;
         CREATE TRIGGER trg_saved_jobs_updated_at
             BEFORE UPDATE ON public.saved_jobs
             FOR EACH ROW

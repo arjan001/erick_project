@@ -19,6 +19,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_card_payments_updated_at ON public.card_payments;
 CREATE TRIGGER trg_card_payments_updated_at
 BEFORE UPDATE ON public.card_payments
 FOR EACH ROW
