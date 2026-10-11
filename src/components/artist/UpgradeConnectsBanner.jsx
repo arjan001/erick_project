@@ -12,7 +12,7 @@ const MESSAGES = [
   { title: 'Unlock more opportunities', body: 'Upgrade for featured listing, priority support, and more monthly connects.' },
 ]
 
-const DISMISS_KEY = 'ericrabar_upgrade_banner_dismissed_at'
+const DISMISS_KEY = 'smartgigs_upgrade_banner_dismissed_at'
 const REAPPEAR_MS = 45 * 60 * 1000; // 45 minutes
 
 export default function UpgradeConnectsBanner() {
@@ -32,7 +32,7 @@ export default function UpgradeConnectsBanner() {
 
     // Fetch subscription
     if (user) {
-      Subscription.filter({ user_email: user.email }).then(subs => {
+      Subscription.filter({ user_id: user.id }).then(subs => {
         if (subs?.length > 0) {
           setSubscription(subs[0])
         }
@@ -87,7 +87,7 @@ export default function UpgradeConnectsBanner() {
           </div>
         </div>
         <Button
-          onClick={() => navigate(createPageUrl('ArtistSubscriptionCheckout'))}
+          onClick={() => navigate('/ArtistSubscription')}
           className="bg-black text-white hover:bg-gray-800 flex-shrink-0"
         >
           View Plans

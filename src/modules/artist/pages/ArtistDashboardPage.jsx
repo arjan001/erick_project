@@ -178,7 +178,7 @@ export default function ArtistDashboard() {
                   </div>
 
                   <button
-                    onClick={() => navigate('/Pricing')}
+                    onClick={() => navigate('/ArtistSubscription')}
                     className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold py-3 rounded-xl hover:from-yellow-500 hover:to-orange-600 transition-all flex items-center justify-center gap-2"
                   >
                     <Crown className="w-4 h-4" />
@@ -222,7 +222,7 @@ export default function ArtistDashboard() {
       {showOnboarding && artistProfile && (
         <ArtistOnboardingFullModal
           user={user}
-          onClose={() => { sessionStorage.setItem('ericrabar_onboarding_seen', 'true'); setShowOnboarding(false); }}
+          onClose={() => { sessionStorage.setItem('smartgigs_onboarding_seen', 'true'); setShowOnboarding(false); }}
         />
       )}
 
