@@ -22,13 +22,13 @@ CREATE POLICY "Users can insert creators" ON creators
 CREATE POLICY "Users can update own creators" ON creators
   FOR UPDATE
   TO authenticated
-  USING (email = auth.email())
-  WITH CHECK (email = auth.email());
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own creators" ON creators
   FOR DELETE
   TO authenticated
-  USING (email = auth.email());
+  USING (user_id = auth.uid());
 
 -- Teams table RLS
 ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
@@ -51,13 +51,13 @@ CREATE POLICY "Users can insert teams" ON teams
 CREATE POLICY "Users can update own teams" ON teams
   FOR UPDATE
   TO authenticated
-  USING (contact_email = auth.email())
-  WITH CHECK (contact_email = auth.email());
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own teams" ON teams
   FOR DELETE
   TO authenticated
-  USING (contact_email = auth.email());
+  USING (user_id = auth.uid());
 
 -- Clients table RLS
 ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
@@ -80,13 +80,13 @@ CREATE POLICY "Users can insert clients" ON clients
 CREATE POLICY "Users can update own clients" ON clients
   FOR UPDATE
   TO authenticated
-  USING (email = auth.email())
-  WITH CHECK (email = auth.email());
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own clients" ON clients
   FOR DELETE
   TO authenticated
-  USING (email = auth.email());
+  USING (user_id = auth.uid());
 
 -- Backers table RLS
 ALTER TABLE backers ENABLE ROW LEVEL SECURITY;
@@ -109,13 +109,13 @@ CREATE POLICY "Users can insert backers" ON backers
 CREATE POLICY "Users can update own backers" ON backers
   FOR UPDATE
   TO authenticated
-  USING (contact_email = auth.email())
-  WITH CHECK (contact_email = auth.email());
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own backers" ON backers
   FOR DELETE
   TO authenticated
-  USING (contact_email = auth.email());
+  USING (user_id = auth.uid());
 
 -- Connections table RLS
 ALTER TABLE connections ENABLE ROW LEVEL SECURITY;
