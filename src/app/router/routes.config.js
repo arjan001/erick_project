@@ -688,6 +688,7 @@ const artistRoutes = [
     layout: DashboardLayout,
     guard: ArtistGuard
   },
+  {
     path: '/ArtistSubscription',
     component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
     layout: DashboardLayout,
