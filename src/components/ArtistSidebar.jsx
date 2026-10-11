@@ -12,8 +12,8 @@ import { Notification, Artist } from '@/lib/supabaseEntities'
 const MENU_ITEMS = [
   { label: 'Dashboard', icon: HomeIcon, href: 'artistdashboard' },
   { label: 'Find Work', icon: Search, href: 'Jobs' },
-  // { label: 'Projects from Clients', icon: Briefcase, href: 'JobBoard' }, // Commented out - redundant with Jobs module
-  // { label: 'Applications', icon: FileText, href: 'JobApplications' }, // Hidden for now
+  { label: 'Applications', icon: FileText, href: 'JobApplications' },
+  { label: 'Projects from Clients', icon: Briefcase, href: 'JobBoard' },
   { label: 'Messages', icon: Mail, href: 'Messages', showBadge: true },
   { label: 'Network', icon: Network, href: 'Network', showConnectionBadge: true },
   { label: 'Notifications', icon: Bell, href: 'Notifications', showNotificationBadge: true },

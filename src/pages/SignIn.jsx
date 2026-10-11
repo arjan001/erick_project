@@ -308,20 +308,7 @@ export default function SignIn() {
 
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
-      {/* Demo credentials banner */}
-      <div className="fixed left-1/2 top-4 z-[60] flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/90 px-3 py-2 shadow-lg">
-        <span className="hidden text-xs text-white/60 sm:inline">Quick login:</span>
-        {DEMO_BUTTONS.map((d) => (
-          <button
-            key={d.email}
-            onClick={() => quickDemoLogin(d.email)}
-            className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/20"
-          >
-            <img src={d.avatar} alt="" className="h-5 w-5 rounded-full object-cover" />
-            {d.label}
-          </button>
-        ))}
-      </div>
+      {/* Demo credentials banner - HIDDEN */}
       {/* LEFT PANEL */}
       <div className={`flex flex-1 flex-col justify-center px-8 py-12 lg:px-16 ${isEmployer ? 'bg-black' : 'bg-[#F7F5F0]'}`}>
         {isEmployer ? (
@@ -511,25 +498,25 @@ export default function SignIn() {
                 )}
               </div>
 
-              {/* Google + Apple */}
+              {/* Google + Apple - DISABLED */}
               <div className="space-y-3">
                 <button
                   type="button"
-                  onClick={handleGoogleLogin}
-                  disabled={loading}
-                  className="flex w-full items-center justify-center gap-3 rounded-lg bg-black py-3 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
+                  disabled={true}
+                  className="flex w-full items-center justify-center gap-3 rounded-lg bg-gray-300 py-3 text-sm font-semibold text-gray-500 cursor-not-allowed"
+                  title="Google login temporarily disabled"
                 >
                   <GoogleIcon />
-                  Continue with Google
+                  Continue with Google (Disabled)
                 </button>
                 <button
                   type="button"
-                  onClick={handleAppleLogin}
-                  disabled={loading}
-                  className="flex w-full items-center justify-center gap-3 rounded-lg bg-black py-3 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
+                  disabled={true}
+                  className="flex w-full items-center justify-center gap-3 rounded-lg bg-gray-300 py-3 text-sm font-semibold text-gray-500 cursor-not-allowed"
+                  title="Apple login temporarily disabled"
                 >
                   <AppleIcon />
-                  Continue with Apple
+                  Continue with Apple (Disabled)
                 </button>
               </div>
 

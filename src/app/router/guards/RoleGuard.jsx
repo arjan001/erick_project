@@ -1,10 +1,11 @@
 import { useAuth } from '@/lib/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 
 export function RoleGuard({ roles, children }) {
   const { user, isAuthenticated, isLoadingAuth } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     if (!isLoadingAuth && !isAuthenticated) {
@@ -12,9 +13,13 @@ export function RoleGuard({ roles, children }) {
       return
     }
 
+    // Only redirect if user is authenticated but doesn't have the required role
+    // AND they're not already on their dashboard (to prevent redirect loops)
     if (!isLoadingAuth && user && !roles.includes(user.role)) {
       // admin can access everything — never redirect an admin
       if (user.role === 'admin') return
+
+      // Check if user is already on their correct dashboard
       const roleRedirects = {
         artist: '/artistdashboard',
         artist_admin: '/artistdashboard',
@@ -24,9 +29,14 @@ export function RoleGuard({ roles, children }) {
         project_owner: '/clientdashboard',
         backer: '/backerdashboard',
       }
-      navigate(roleRedirects[user.role] || '/')
+      const userDashboard = roleRedirects[user.role]
+
+      // Only redirect if not already on their dashboard
+      if (location.pathname !== userDashboard) {
+        navigate(userDashboard || '/')
+      }
     }
-  }, [isAuthenticated, isLoadingAuth, user, roles, navigate])
+  }, [isAuthenticated, isLoadingAuth, user, roles, navigate, location])
 
   if (isLoadingAuth) {
     return (

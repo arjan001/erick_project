@@ -76,13 +76,13 @@ const RecentProjectsGuard = createRoleGuard(['admin'])
 
 // Keep role-based guards for non-admin routes (using existing roles from database)
 const AdminGuard = createRoleGuard(['admin'])
-const ArtistAdminGuard = createRoleGuard(['admin', 'artist'])
-const TeamAdminGuard = createRoleGuard(['admin', 'team'])
+const ArtistAdminGuard = createRoleGuard(['admin', 'artist', 'artist_admin'])
+const TeamAdminGuard = createRoleGuard(['admin', 'team', 'team_admin'])
 const ProjectAdminGuard = createRoleGuard(['admin', 'client', 'project_owner'])
-const ArtistGuard = createRoleGuard(['artist', 'artist_admin'])
-const ClientGuard = createRoleGuard(['client', 'project_owner'])
-const TeamGuard = createRoleGuard(['team'])
-const BackerGuard = createRoleGuard(['backer'])
+const ArtistGuard = createRoleGuard(['admin', 'artist', 'artist_admin'])
+const ClientGuard = createRoleGuard(['admin', 'client', 'project_owner'])
+const TeamGuard = createRoleGuard(['admin', 'team', 'team_admin'])
+const BackerGuard = createRoleGuard(['admin', 'backer'])
 
 // Public pages (no auth required)
 const publicRoutes = [
@@ -629,6 +629,12 @@ const artistRoutes = [
     guard: ArtistGuard
   },
   {
+    path: '/CreatorProfile',
+    component: () => import('@/modules/artist/pages/ArtistProfilePage'),
+    layout: DashboardLayout,
+    guard: ArtistGuard
+  },
+  {
     path: '/Jobs',
     component: () => import('@/modules/jobs/pages/JobsPage'),
     layout: DashboardLayout,
@@ -703,6 +709,12 @@ const artistRoutes = [
   {
     path: '/ArtistSubscriptionCheckout',
     component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
+    layout: DashboardLayout,
+    guard: ArtistGuard
+  },
+  {
+    path: '/SupportTickets',
+    component: () => import('@/modules/support/pages/SupportTicketsPage'),
     layout: DashboardLayout,
     guard: ArtistGuard
   }
