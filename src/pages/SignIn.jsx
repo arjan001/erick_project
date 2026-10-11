@@ -137,20 +137,19 @@ export default function SignIn() {
 
   const handleGoogleLogin = () => {
     setError('')
-    // Store role intent and redirect path
+    // Store role intent for AuthContext to use
     const role = userType === 'employer' ? 'client' : 'artist'
-    const redirectPath = pendingApplication ? '/artistdashboard' : null
     sessionStorage.setItem('oauth_role_intent', role)
-    if (redirectPath) {
-      sessionStorage.setItem('oauth_redirect', redirectPath)
+
+    // Store redirect path if there's a pending application
+    if (pendingApplication) {
+      sessionStorage.setItem('oauth_redirect', '/artistdashboard')
     }
+
     supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/SignIn`,
-        queryParams: {
-          redirect_to: redirectPath || ''
-        }
       }
     })
   }
@@ -158,18 +157,16 @@ export default function SignIn() {
   const handleAppleLogin = () => {
     setError('')
     const role = userType === 'employer' ? 'client' : 'artist'
-    const redirectPath = pendingApplication ? '/artistdashboard' : null
     sessionStorage.setItem('oauth_role_intent', role)
-    if (redirectPath) {
-      sessionStorage.setItem('oauth_redirect', redirectPath)
+
+    if (pendingApplication) {
+      sessionStorage.setItem('oauth_redirect', '/artistdashboard')
     }
+
     supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: {
         redirectTo: `${window.location.origin}/SignIn`,
-        queryParams: {
-          redirect_to: redirectPath || ''
-        }
       }
     })
   }
@@ -241,60 +238,27 @@ export default function SignIn() {
         }
       }
 
-      // Real Supabase email/password login
+      // Real Supabase email/password login - let AuthContext handle role resolution and redirect
       const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmail, password })
       if (error) throw error
 
-      const user = data.user
-
-      // Resolve the app role from the linked entity profile
-      let userRole = 'artist'
-      let fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
-      try {
-        const artists = await Artist.filter({ email: user.email })
-        if (artists && artists.length > 0) {
-          userRole = 'artist'
-        } else {
-          const teams = await Team.filter({ contact_email: user.email })
-          if (teams && teams.length > 0) {
-            userRole = 'team'
-            if (teams[0].team_name) fullName = teams[0].team_name
-          } else {
-            const owners = await Client.filter({ email: user.email })
-            if (owners && owners.length > 0) {
-              userRole = 'client'
-              if (owners[0].is_suspended) {
-                await supabase.auth.signOut()
-                setError('This account has been suspended. Please contact support for assistance.')
-                setLoading(false)
-                return
-              }
-            } else {
-              const backers = await Backer.filter({ contact_email: user.email })
-              if (backers && backers.length > 0) userRole = 'backer'
-            }
-          }
-        }
-      } catch (dbError) {
-      }
-
-      if (user.user_metadata?.role === 'admin') userRole = 'admin'
-
-      login({ id: user.id, email: user.email, full_name: fullName, role: userRole })
-
-      // Handle pending application redirect
-      if (pendingApplication) {
-        clearPendingApplication()
-        const params = new URLSearchParams()
-        if (pendingApplication.jobId) params.append('jobId', pendingApplication.jobId)
-        if (pendingApplication.jobRoleId) params.append('roleId', pendingApplication.jobRoleId)
-        navigate(`/artistdashboard?${params.toString()}`)
-        return
-      }
-
+      // Store redirect destination for AuthContext to use
       const redirectDest = sessionStorage.getItem('redirectAfterLogin')
-      sessionStorage.removeItem('redirectAfterLogin')
-      navigate(returnTo || redirectDest || ROLE_REDIRECTS[userRole] || '/')
+      if (redirectDest) {
+        sessionStorage.setItem('auth_redirect', redirectDest)
+        sessionStorage.removeItem('redirectAfterLogin')
+      }
+
+      // AuthContext will handle the redirect based on the role
+      // Just wait a moment for auth state to update
+      setTimeout(() => {
+        // Navigate to the stored redirect or let AuthContext handle it
+        const finalRedirect = sessionStorage.getItem('auth_redirect')
+        if (finalRedirect) {
+          navigate(finalRedirect)
+          sessionStorage.removeItem('auth_redirect')
+        }
+      }, 500)
     } catch (err) {
       setError(err.message || 'Invalid email or password')
     } finally {

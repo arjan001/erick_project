@@ -19,6 +19,7 @@ const MENU_ITEMS = [
   { label: 'Notifications', icon: Bell, href: 'Notifications', showNotificationBadge: true },
   { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets' },
   { label: 'Finances', icon: Wallet, href: 'ArtistFinance' },
+  { label: 'Subscription', icon: Users, href: 'ArtistSubscription' },
   { label: 'My Profile & Settings', icon: User, href: 'CreatorProfile' }
 ]
 

@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
 
 export function AuthGuard({ children }) {
-  const { isAuthenticated, isLoadingAuth } = useAuth()
+  const { isAuthenticated, isLoadingAuth, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -12,6 +12,13 @@ export function AuthGuard({ children }) {
       // Store the intended destination for redirect after login
       sessionStorage.setItem('redirectAfterLogin', location.pathname)
       navigate('/SignIn')
+    } else if (!isLoadingAuth && isAuthenticated) {
+      // Check if there's a stored redirect from login
+      const authRedirect = sessionStorage.getItem('auth_redirect')
+      if (authRedirect && location.pathname === '/SignIn') {
+        sessionStorage.removeItem('auth_redirect')
+        navigate(authRedirect)
+      }
     }
   }, [isAuthenticated, isLoadingAuth, navigate, location])
 

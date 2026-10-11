@@ -333,11 +333,11 @@ export const AuthProvider = ({ children }) => {
         await trackUserSession(u)
         await ensureProfile(u)
 
-        // Handle OAuth redirect after sign in - store redirect path
+        // Handle OAuth redirect after sign in
         const oauthRedirect = sessionStorage.getItem('oauth_redirect')
         if (oauthRedirect) {
           sessionStorage.removeItem('oauth_redirect')
-          // Store for use by router
+          // Store for use by router - will be used by AuthGuard
           sessionStorage.setItem('auth_redirect', oauthRedirect)
         } else {
           // Default redirect based on role
