@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities'
+import { Artist, Team, Client, Backer } from '@/lib/supabaseEntities'
 
 /**
  * Username Service
@@ -61,9 +61,9 @@ export async function checkUsernameAvailability(username) {
 
     if (teamData) return false
 
-    // Check project_owners table
+    // Check clients table
     const { data: ownerData, error: ownerError } = await supabase
-      .from('project_owners')
+      .from('clients')
       .select('username')
       .eq('username', username)
       .limit(1)
@@ -103,8 +103,8 @@ export async function getUserByUsername(username) {
     const teams = await Team.filter({ username })
     if (teams?.[0]) return { type: 'team', data: teams[0] }
 
-    // Check project_owners table
-    const owners = await ProjectOwner.filter({ username })
+    // Check clients table
+    const owners = await Client.filter({ username })
     if (owners?.[0]) return { type: 'client', data: owners[0] }
 
     // Check backers table

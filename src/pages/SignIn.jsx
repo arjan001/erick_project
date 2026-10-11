@@ -3,7 +3,7 @@ import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-do
 import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target, Briefcase, AtSign } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { Artist, Team, Backer, ProjectOwner, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
+import { Artist, Team, Backer, Client, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 import { getPendingApplication, clearPendingApplication } from '@/services/savedJobsService'
 import { listPartnerLogos } from '@/services/partnerLogoService'
 import { resolveUsernameToEmail } from '@/services/usernameService'
@@ -260,7 +260,7 @@ export default function SignIn() {
             userRole = 'team'
             if (teams[0].team_name) fullName = teams[0].team_name
           } else {
-            const owners = await ProjectOwner.filter({ email: user.email })
+            const owners = await Client.filter({ email: user.email })
             if (owners && owners.length > 0) {
               userRole = 'client'
               if (owners[0].is_suspended) {

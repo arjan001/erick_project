@@ -4,7 +4,7 @@ import {
   LogOut,
   Home, Search, Briefcase, FileText, Mail, User,
   Network, Bell, Wallet, Users, Star, Settings, Menu, X, ChevronLeft, ChevronRight,
-  Shield, CreditCard, DollarSign, BarChart3, Clock
+  Shield, CreditCard, DollarSign, BarChart3, Clock, Crown
 } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { Notification, Artist, Connection } from '@/lib/supabaseEntities'
