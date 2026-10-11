@@ -19,7 +19,9 @@ fi
 echo "Building application..."
 npm run build
 
-# Restart the service (if using PM2)
-# pm2 restart smartgigs || pm2 start npm --name "smartgigs" -- start
+# Copy to smartgigs subdomain directory
+echo "Copying to smartgigs subdomain..."
+cp -r dist/* /var/www/smartgigs.oneplusafrica.com/
 
 echo "Deployment complete!"
+echo "Site is available at: http://smartgigs.oneplusafrica.com"
