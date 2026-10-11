@@ -15,8 +15,9 @@ if [ package.json -nt node_modules ]; then
     npm install
 fi
 
-# Build the application
+# Build the application with production environment
 echo "Building application..."
+export NODE_ENV=production
 npm run build
 
 # Copy to smartgigs subdomain directory
@@ -24,4 +25,4 @@ echo "Copying to smartgigs subdomain..."
 cp -r dist/* /var/www/smartgigs.oneplusafrica.com/
 
 echo "Deployment complete!"
-echo "Site is available at: http://smartgigs.oneplusafrica.com"
+echo "Site is available at: https://smartgigs.oneplusafrica.com"
