@@ -1,8 +1,37 @@
 // Team Invitation Service
 // Handles team member invitations, acceptance, and registration
 
-import { TeamInvitation, TeamMember } from '@/lib/supabaseEntities'
+import { TeamMember } from '@/lib/supabaseEntities'
 import { sendTeamInvitationEmail } from '@/shared/services/emailService'
+import { supabase } from '@/lib/supabase'
+
+// Temporary entity wrapper for team_invitations table
+const TeamInvitation = {
+  create: async (data) => {
+    const { data: result, error } = await supabase
+      .from('team_invitations')
+      .insert(data)
+      .select()
+      .single()
+    if (error) throw error
+    return result
+  },
+  filter: async (filters) => {
+    const { data, error } = await supabase
+      .from('team_invitations')
+      .select('*')
+      .match(filters)
+    if (error) throw error
+    return data
+  },
+  delete: async (id) => {
+    const { error } = await supabase
+      .from('team_invitations')
+      .delete()
+      .eq('id', id)
+    if (error) throw error
+  }
+}
 
 export const createTeamInvitation = async (teamId, email, role, inviterName, metadata = {}) => {
   try {
