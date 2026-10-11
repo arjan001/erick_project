@@ -27,23 +27,23 @@ I've configured your VPS to host 3 subdomains:
 DNS propagation typically takes **5-30 minutes**, but can take up to 24 hours in some cases.
 
 Once DNS propagates, your sites will be accessible at:
-- http://cars.oneplusafrica.com
-- http://iptv.oneplusafrica.com
-- http://smartgigs.oneplusafrica.com
+- https://cars.oneplusafrica.com (HTTP redirects to HTTPS)
+- https://iptv.oneplusafrica.com (HTTP redirects to HTTPS)
+- https://smartgigs.oneplusafrica.com (HTTP redirects to HTTPS)
 
-## Setup SSL Certificates (Optional but Recommended)
+## ✅ SSL Certificates Installed
 
-After DNS is working, run these commands on your VPS to enable HTTPS:
+All 3 subdomains now have SSL certificates and are accessible via HTTPS:
+- ✅ https://smartgigs.oneplusafrica.com
+- ✅ https://cars.oneplusafrica.com
+- ✅ https://iptv.oneplusafrica.com
 
-```bash
-# Install SSL for all 3 subdomains
-certbot --nginx -d cars.oneplusafrica.com
-certbot --nginx -d iptv.oneplusafrica.com
-certbot --nginx -d smartgigs.oneplusafrica.com
+HTTP requests are automatically redirected to HTTPS.
 
-# Or all at once
-certbot --nginx -d cars.oneplusafrica.com -d iptv.oneplusafrica.com -d smartgigs.oneplusafrica.com
-```
+### Certificate Details:
+- **Issuer:** Let's Encrypt
+- **Valid Until:** January 9, 2027
+- **Auto-Renewal:** Configured (certbot will automatically renew before expiration)
 
 ## Future SmartGigs Deployments
 
