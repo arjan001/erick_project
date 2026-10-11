@@ -702,7 +702,7 @@ const artistRoutes = [
   },
   {
     path: '/ArtistSubscription',
-    component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
+    component: () => import('@/modules/artist/pages/ArtistSubscriptionPage'),
     layout: DashboardLayout,
     guard: ArtistGuard
   },

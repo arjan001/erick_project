@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { MapPin, Clock, Euro, ChevronDown, Calendar, Building2, Users, Star, ExternalLink, Crown, Lock, Eye, EyeOff, AlertCircle, CheckCircle, XCircle, Hourglass, FileText, Mail, ArrowLeft, ArrowRight } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/lib/AuthContext'
 import skillsAndRoles from '@/lib/skillsAndRoles.json'
 import confetti from 'canvas-confetti'
 import { canApplyForJobs } from '@/services/subscriptionService'
@@ -44,15 +45,15 @@ export default function Jobs() {
   const [applicationStatusFilter, setApplicationStatusFilter] = useState('all')
   const navigate = useNavigate()
   const { success, error: toastError } = useToast()
+  const { user: authUser, isAuthenticated } = useAuth()
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user')
-    if (!storedUser) {
-      navigate('/signin')
+    if (!isAuthenticated) {
+      navigate('/SignIn')
       return
     }
-    setUser(JSON.parse(storedUser))
-  }, [navigate])
+    setUser(authUser)
+  }, [isAuthenticated, authUser, navigate])
 
   useEffect(() => {
     if (!user) return
