@@ -7,6 +7,7 @@ import { createPageUrl } from '@/shared/utils/routing'
 import { useToast } from '@/hooks/useToast.jsx'
 import notificationService from '@/shared/services/notificationService'
 import { features } from '@/lib/settings'
+import { useAuth } from '@/lib/AuthContext'
 
 // Simple confetti component
 function Confetti({ active }) {
@@ -116,8 +117,8 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
 
   const stageLabel = stage === 'processing' ? 'Processing payment...'
     : stage === 'validating' ? 'Validating with your bank...'
-    : stage === 'processed' ? 'Payment processed!'
-    : ''
+      : stage === 'processed' ? 'Payment processed!'
+        : ''
 
   return (
     <>
@@ -154,102 +155,101 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
             </div>
           </div>
 
-        {/* Processing overlay */}
-        {processing ? (
-          <div className="p-10 flex flex-col items-center justify-center text-center min-h-[280px]">
-            {stage === 'processed' ? (
-              <CheckCircle2 className="w-12 h-12 text-green-500 mb-4" />
-            ) : (
-              <Loader2 className="w-12 h-12 text-gray-800 animate-spin mb-4" />
-            )}
-            <p className="font-semibold text-gray-900">{stageLabel}</p>
-            <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5" /> Please don't close this window
-            </p>
-          </div>
-        ) : (
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-bold text-gray-900">Pay ${pkg.price}/{pkg.billing_cycle}</h3>
-            <div className="flex items-center gap-1 text-xs text-gray-500">
-              <Lock className="w-3 h-3" /> Secure
+          {/* Processing overlay */}
+          {processing ? (
+            <div className="p-10 flex flex-col items-center justify-center text-center min-h-[280px]">
+              {stage === 'processed' ? (
+                <CheckCircle2 className="w-12 h-12 text-green-500 mb-4" />
+              ) : (
+                <Loader2 className="w-12 h-12 text-gray-800 animate-spin mb-4" />
+              )}
+              <p className="font-semibold text-gray-900">{stageLabel}</p>
+              <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5" /> Please don't close this window
+              </p>
             </div>
-          </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-bold text-gray-900">Pay ${pkg.price}/{pkg.billing_cycle}</h3>
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <Lock className="w-3 h-3" /> Secure
+                </div>
+              </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Card Number</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={cardForm.cardNumber}
-                onChange={(e) => setCardForm({ ...cardForm, cardNumber: formatCardNumber(e.target.value) })}
-                placeholder="1234 5678 9012 3456"
-                maxLength={19}
-                required
-                className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
-              />
-              <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            </div>
-          </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1.5">Card Number</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={cardForm.cardNumber}
+                    onChange={(e) => setCardForm({ ...cardForm, cardNumber: formatCardNumber(e.target.value) })}
+                    placeholder="1234 5678 9012 3456"
+                    maxLength={19}
+                    required
+                    className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
+                  />
+                  <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Expiry Date</label>
-              <input
-                type="text"
-                value={cardForm.expiryDate}
-                onChange={(e) => setCardForm({ ...cardForm, expiryDate: formatExpiry(e.target.value) })}
-                placeholder="MM/YY"
-                maxLength={5}
-                required
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">CVV</label>
-              <input
-                type="password"
-                value={cardForm.cvv}
-                onChange={(e) => setCardForm({ ...cardForm, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) })}
-                placeholder="•••"
-                maxLength={4}
-                required
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Expiry Date</label>
+                  <input
+                    type="text"
+                    value={cardForm.expiryDate}
+                    onChange={(e) => setCardForm({ ...cardForm, expiryDate: formatExpiry(e.target.value) })}
+                    placeholder="MM/YY"
+                    maxLength={5}
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1.5">CVV</label>
+                  <input
+                    type="password"
+                    value={cardForm.cvv}
+                    onChange={(e) => setCardForm({ ...cardForm, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+                    placeholder="•••"
+                    maxLength={4}
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
+                  />
+                </div>
+              </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Cardholder Name</label>
-            <input
-              type="text"
-              value={cardForm.cardholderName}
-              onChange={(e) => setCardForm({ ...cardForm, cardholderName: e.target.value })}
-              placeholder="John Doe"
-              required
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
-            />
-          </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1.5">Cardholder Name</label>
+                <input
+                  type="text"
+                  value={cardForm.cardholderName}
+                  onChange={(e) => setCardForm({ ...cardForm, cardholderName: e.target.value })}
+                  placeholder="John Doe"
+                  required
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
+                />
+              </div>
 
-          <button
-            type="submit"
-            disabled={processing}
-            className="w-full py-3 bg-black text-white rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:opacity-60 transition-all"
-          >
-            Subscribe to {pkg.name} — ${pkg.price}
-          </button>
-          </form>
+              <button
+                type="submit"
+                disabled={processing}
+                className="w-full py-3 bg-black text-white rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:opacity-60 transition-all"
+              >
+                Subscribe to {pkg.name} — ${pkg.price}
+              </button>
+            </form>
           )}
+        </div>
       </div>
-    </div>
     </>
   )
 }
 
 export default function ArtistSubscriptionCheckoutPage() {
   const navigate = useNavigate()
-  const { success, error: toastError } = useToast()
-  const [user, setUser] = useState(null)
+  const { success, error: toastError, user, isAuthenticated } = useAuth()
   const [packages, setPackages] = useState([])
   const [selectedPackage, setSelectedPackage] = useState(null)
   const [currentSubscription, setCurrentSubscription] = useState(null)
@@ -270,19 +270,14 @@ export default function ArtistSubscriptionCheckoutPage() {
   }, [navigate])
 
   useEffect(() => {
-    if (!subscriptionsEnabled) return
+    if (!subscriptionsEnabled || !isAuthenticated || !user) return
 
-    const storedUser = localStorage.getItem('ericrabar_user')
-    if (!storedUser) { navigate('/signin'); return; }
-    const userData = JSON.parse(storedUser)
-    setUser(userData)
-    
     // Check if user was invited (has referred_by or invite_code in metadata)
-    const referredBy = userData.user_metadata?.referred_by || userData.user_metadata?.invite_code
+    const referredBy = user.user_metadata?.referred_by || user.user_metadata?.invite_code
     setIsInvited(!!referredBy)
-    
-    fetchData(userData)
-  }, [subscriptionsEnabled])
+
+    fetchData(user)
+  }, [subscriptionsEnabled, isAuthenticated, user])
 
   const fetchData = async (userData) => {
     try {
@@ -293,7 +288,7 @@ export default function ArtistSubscriptionCheckoutPage() {
       setPackages(pkgsData)
       if (subsData.length > 0) setCurrentSubscription(subsData[0])
     } catch (err) {
-      
+
     } finally {
       setLoading(false)
     }
@@ -388,7 +383,7 @@ export default function ArtistSubscriptionCheckoutPage() {
       success('Subscription Successful', `You are now on ${pkg.name}`)
       navigate(createPageUrl('ArtistDashboard'))
     } catch (err) {
-      
+
       toastError('Subscription Failed', 'Could not activate free plan. Please try again.')
     }
   }
@@ -437,7 +432,7 @@ export default function ArtistSubscriptionCheckoutPage() {
       if (artist) {
         // Check if this is a new subscription or upgrade (not re-granting for same plan)
         const isNewOrUpgrade = !currentSubscription || currentSubscription.package_id !== selectedPackage.id
-        
+
         if (isNewOrUpgrade) {
           const newBalance = (artist.connects_balance || 0) + selectedPackage.connects_included
           await Artist.update(artist.id, { connects_balance: newBalance })

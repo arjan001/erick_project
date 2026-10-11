@@ -9,6 +9,7 @@ import { ALL_FILM_ROLES, TALENT_ROLES, CLIENT_ROLES } from '@/lib/filmRoles'
 import skillsAndRoles from '@/lib/skillsAndRoles.json'
 import Logo from '@/components/landing/backstage/Logo'
 import { listPartnerLogos } from '@/services/partnerLogoService'
+import { useToast } from '@/hooks/useToast'
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -76,24 +77,9 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false)
   const [inviteCodeValid, setInviteCodeValid] = useState(null)
   const [showInviteModal, setShowInviteModal] = useState(false)
-  const [otpSent, setOtpSent] = useState(false)
-  const [otpCode, setOtpCode] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-
-  // Film-related background images
-  const bgImages = [
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ80BIneprBn303gn_nFSMY4CASRK0N6vKrGbQpQm8frNwgOvOpJaoje1Q&s=10',
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS140ZRIPcOyHbT0V0I8DQMLPeHnWf03cBs8KX4Rio3F1uN0HpGvZjnUNU&s=10'
-  ]
-  const [currentBgIndex, setCurrentBgIndex] = useState(0)
-
-  // Rotate background images
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBgIndex((prev) => (prev + 1) % bgImages.length)
-    }, 8000)
-    return () => clearInterval(interval)
-  }, [])
+  const [usernameStatus, setUsernameStatus] = useState('idle') // idle, checking, available, taken
+  const { success, error: toastError } = useToast()
 
   useEffect(() => {
     const roleParam = searchParams.get('role')
@@ -144,6 +130,56 @@ export default function SignUp() {
     }
   }
 
+  const checkUsernameAvailability = async (username) => {
+    if (!username || username.length < 3) {
+      setUsernameStatus('idle')
+      return
+    }
+
+    setUsernameStatus('checking')
+    try {
+      // Check in artists table
+      const artists = await Artist.filter({ username })
+      if (artists && artists.length > 0) {
+        setUsernameStatus('taken')
+        return
+      }
+
+      // Check in teams table
+      const teams = await Team.filter({ username })
+      if (teams && teams.length > 0) {
+        setUsernameStatus('taken')
+        return
+      }
+
+      // Check in clients table
+      const clients = await ProjectOwner.filter({ username })
+      if (clients && clients.length > 0) {
+        setUsernameStatus('taken')
+        return
+      }
+
+      setUsernameStatus('available')
+    } catch (err) {
+      setUsernameStatus('idle')
+    }
+  }
+
+  const handleUsernameChange = (e) => {
+    const username = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')
+    setFormData(prev => ({ ...prev, username }))
+
+    // Debounce availability check
+    if (username.length >= 3) {
+      const timeoutId = setTimeout(() => {
+        checkUsernameAvailability(username)
+      }, 500)
+      return () => clearTimeout(timeoutId)
+    } else {
+      setUsernameStatus('idle')
+    }
+  }
+
   const handleGoogleSignUp = () => {
     setError('')
     const role = userType === 'employer' ? 'client' : 'artist'
@@ -168,7 +204,7 @@ export default function SignUp() {
     })
   }
 
-  // Step 1: register the account with Supabase (sends an OTP to the user's email)
+  // Step 1: register the account with Supabase (no OTP - redirect to login)
   const handleSignUp = async (e) => {
     e.preventDefault()
     setError('')
@@ -191,12 +227,19 @@ export default function SignUp() {
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
-          }
+            role: formData.role,
+            username: formData.username
+          },
+          emailRedirectTo: `${window.location.origin}/SignIn`
         }
       })
       if (error) throw error
-      setOtpSent(true)
-      setMessage(`Verification code sent to ${formData.email}`)
+
+      // Redirect to login page after successful registration
+      setMessage('Registration successful! Please sign in to continue.')
+      setTimeout(() => {
+        navigate('/SignIn')
+      }, 1500)
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.')
       setMessage('')
@@ -205,130 +248,7 @@ export default function SignUp() {
     }
   }
 
-  // Step 2: verify the OTP code, then log in and create the profile entity
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault()
-    setError('')
-    const cleanOtpCode = (otpCode || '').replace(/\s/g, '')
-    if (!cleanOtpCode || cleanOtpCode.length < 4) {
-      setError('Please enter the verification code sent to your email')
-      return
-    }
-    setLoading(true)
-    try {
-      // Verify the email — this authenticates the user (token stored by the SDK)
-      const { data, error } = await supabase.auth.verifyOtp({
-        email: formData.email,
-        token: cleanOtpCode,
-        type: 'signup'
-      })
-      if (error) throw error
-
-      const me = data.user
-      const fullName = `${formData.firstName} ${formData.lastName}`.trim() || formData.email.split('@')[0]
-      const appUser = {
-        id: me.id,
-        email: me.email,
-        full_name: fullName,
-        username: formData.username || `${formData.firstName}${formData.lastName}`.toLowerCase(),
-        role: formData.role,
-        referred_by: formData.inviteCode || null,
-      }
-
-      // Create the role-specific profile record in the Supabase database
-      const profileData = {
-        email: formData.email,
-        full_name: fullName,
-        invite_code: formData.inviteCode || null,
-        referred_by: formData.inviteCode || null,
-      }
-      try {
-        if (formData.role === 'artist') {
-          await Artist.create({ ...profileData, username: formData.username, role: 'artist', secondary_roles: formData.selectedRoles, skills: formData.selectedSkills })
-        } else if (formData.role === 'team') {
-          await Team.create({
-            ...profileData,
-            contact_email: formData.email,
-            team_name: fullName,
-            specialties: [],
-          })
-        } else if (formData.role === 'client') {
-          await ProjectOwner.create({ ...profileData, company: formData.companyName || fullName })
-        } else if (formData.role === 'backer') {
-          await Backer.create({
-            ...profileData,
-            contact_email: formData.email,
-            organization_name: fullName,
-            interests: [],
-          })
-        }
-      } catch (profileErr) {
-        //
-        // Don't block the user — the auth account exists, profile can be retried
-      }
-
-      // Mark invite as used if valid and auto-connect users
-      if (formData.inviteCode && inviteCodeValid) {
-        try {
-          const invites = await Invite.filter({ code: formData.inviteCode })
-          const validInvite = invites?.[0]
-          if (validInvite) {
-            await Invite.update(validInvite.id, {
-              used_by_email: formData.email,
-              uses_count: (validInvite.uses_count || 0) + 1,
-            })
-            if (validInvite.creator_email) {
-              try {
-                await Connection.create({
-                  requester_email: validInvite.creator_email,
-                  requester_type: validInvite.creator_type || 'artist',
-                  recipient_email: formData.email,
-                  recipient_type: formData.role,
-                  status: 'accepted',
-                })
-              } catch (connErr) {
-                //
-              }
-            }
-          }
-        } catch (err) {
-          //
-        }
-      }
-
-      // Persist the session locally and redirect
-      await login(appUser)
-      sessionStorage.setItem('smartgigs_just_logged_in', 'true')
-
-      if (formData.inviteCode && inviteCodeValid) {
-        setShowInviteModal(true)
-        return
-      }
-      window.location.href = ROLE_REDIRECTS[formData.role] || '/'
-    } catch (err) {
-      //
-      setError(err.message || 'Invalid or expired verification code. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleResendOtp = async () => {
-    setError('')
-    setLoading(true)
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: formData.email
-      })
-      if (error) throw error
-      setMessage('New verification code sent successfully')
-    } catch (err) {
-      setError(err.message || 'Could not resend the code. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  // OTP verification removed - redirecting to login instead
 
   const handleInviteModalClose = () => {
     setShowInviteModal(false)
@@ -340,36 +260,8 @@ export default function SignUp() {
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* LEFT PANEL */}
-      <div className={`flex flex-1 flex-col justify-center px-8 py-12 lg:px-16 ${isEmployer ? 'bg-black' : otpSent ? 'bg-black' : 'bg-[#F7F5F0]'}`}>
-        {otpSent ? (
-          /* Verification state - dark cinematic panel with rotating image */
-          <div className="relative max-w-lg">
-            <img
-              src={bgImages[currentBgIndex]}
-              alt="Film production"
-              className="absolute inset-0 w-full h-full object-cover opacity-40 transition-opacity duration-1000"
-            />
-            <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/80" />
-            <div className="relative z-10">
-              <h2 className="text-3xl font-bold leading-tight text-white md:text-4xl mb-4">
-                Almost there!
-              </h2>
-              <p className="text-lg text-white/80 mb-6">
-                Just one more step to complete your {isEmployer ? 'employer' : 'talent'} account.
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-white/70">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="text-sm">Email verification in progress</span>
-                </div>
-                <div className="flex items-center gap-3 text-white/70">
-                  <div className="w-2 h-2 rounded-full bg-gray-500"></div>
-                  <span className="text-sm">Account creation pending</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : isEmployer ? (
+      <div className={`flex flex-1 flex-col justify-center px-8 py-12 lg:px-16 ${isEmployer ? 'bg-black' : 'bg-[#F7F5F0]'}`}>
+        {isEmployer ? (
           /* Employer: black panel with testimonial */
           <div className="relative max-w-lg">
             <div className="mb-10">
@@ -459,286 +351,217 @@ export default function SignUp() {
             </div>
           )}
 
-          {otpSent ? (
-            <>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Verify your email
-              </h1>
-              <p className="text-gray-600 mb-6">
-                We've sent a 6-digit code to <span className="font-medium text-gray-900">{formData.email}</span>
-              </p>
+          <form onSubmit={handleSignUp} className="space-y-4">
+            {/* Social Sign Up */}
+            <button
+              type="button"
+              className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-4 rounded-md flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+              onClick={handleGoogleSignUp}
+            >
+              <GoogleIcon />
+              <span>Sign up with Google</span>
+            </button>
 
-              {message && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex gap-3">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-green-700">{message}</p>
-                </div>
-              )}
+            <button
+              type="button"
+              className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3 px-4 rounded-md flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+              onClick={handleAppleSignUp}
+            >
+              <AppleIcon />
+              <span>Sign up with Apple</span>
+            </button>
 
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
-              )}
-
-              <form onSubmit={handleVerifyOtp} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-3">Enter verification code</label>
-                  <div className="flex gap-2">
-                    {[0, 1, 2, 3, 4, 5].map((index) => (
-                      <input
-                        key={index}
-                        type="text"
-                        maxLength={1}
-                        value={otpCode?.[index] || ''}
-                        onChange={(e) => {
-                          const newCode = (otpCode || '').split('')
-                          newCode[index] = e.target.value
-                          setOtpCode(newCode.join(''))
-                          // Auto-focus next input
-                          if (e.target.value && index < 5) {
-                            e.target.nextElementSibling?.focus()
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Backspace' && !(otpCode?.[index]) && index > 0) {
-                            e.target.previousElementSibling?.focus()
-                          }
-                        }}
-                        className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
-                        disabled={loading}
-                        required
-                      />
-                    ))}
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3 rounded-lg"
-                  disabled={loading}
-                >
-                  {loading ? 'Verifying...' : 'Verify & Create Account'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleResendOtp}
-                  className="w-full text-sm text-gray-600 hover:text-black"
-                  disabled={loading}
-                >
-                  {loading ? 'Sending...' : "Didn't get a code? "}
-                  {!loading && <span className="underline">Resend</span>}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); setMessage(''); }}
-                  className="w-full text-sm text-gray-500 hover:text-black"
-                >
-                  <span className="underline">Back to sign up</span>
-                </button>
-              </form>
-            </>
-          ) : (
-            <form onSubmit={handleSignUp} className="space-y-4">
-              {/* Social Sign Up */}
-              <button
-                type="button"
-                className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-4 rounded-md flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={loading}
-                onClick={handleGoogleSignUp}
-              >
-                <GoogleIcon />
-                <span>Sign up with Google</span>
-              </button>
-
-              <button
-                type="button"
-                className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3 px-4 rounded-md flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={loading}
-                onClick={handleAppleSignUp}
-              >
-                <AppleIcon />
-                <span>Sign up with Apple</span>
-              </button>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or continue with email</span>
-                </div>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">First Name</label>
-                  <input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    placeholder="John"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                    disabled={loading}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Last Name</label>
-                  <input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    placeholder="Doe"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                    disabled={loading}
-                    required
-                  />
-                </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with email</span>
               </div>
+            </div>
 
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="john@example.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                  disabled={loading}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Password</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder="Min 6 characters"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black pr-12"
-                    disabled={loading}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5 text-gray-400" /> : <Eye className="w-5 h-5 text-gray-400" />}
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Confirm Password</label>
-                <input
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  placeholder="Confirm password"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                  disabled={loading}
-                  required
-                />
-              </div>
-
-              {!isEmployer && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Username <span className="text-gray-500">(for profile sharing)</span></label>
-                  <input
-                    type="text"
-                    value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') })}
-                    placeholder="johndoe"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                    disabled={loading}
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Your profile will be accessible at smartgigskenya.com/username</p>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Invite Code (optional)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">First Name</label>
                 <input
                   type="text"
-                  value={formData.inviteCode}
-                  onChange={handleInviteCodeChange}
-                  placeholder="e.g., SG-ABC123"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black uppercase"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  placeholder="John"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                   disabled={loading}
-                  maxLength={10}
+                  required
                 />
-                {inviteCodeValid === true && (
-                  <p className="text-xs text-green-600 mt-1">✓ Valid invite code - you'll get a free Pro subscription!</p>
-                )}
-                {inviteCodeValid === false && (
-                  <p className="text-xs text-red-600 mt-1">✗ Invalid invite code</p>
-                )}
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Last Name</label>
+                <input
+                  type="text"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  placeholder="Doe"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                  disabled={loading}
+                  required
+                />
+              </div>
+            </div>
 
-              {!isEmployer && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">Select Your Roles <span className="text-gray-500">(multi-select)</span></label>
-                    <MultiSelectAutocomplete
-                      options={TALENT_ROLES}
-                      selected={formData.selectedRoles}
-                      onChange={(selected) => setFormData({ ...formData, selectedRoles: selected })}
-                      placeholder="Search and select your roles (Acting, Voiceover, UGC, Lip Sync, etc.)..."
-                      searchable={true}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">Select Your Skills <span className="text-gray-500">(multi-select)</span></label>
-                    <MultiSelectAutocomplete
-                      options={ALL_SKILLS}
-                      selected={formData.selectedSkills}
-                      onChange={(selected) => setFormData({ ...formData, selectedSkills: selected })}
-                      placeholder="Search and select your skills..."
-                      searchable={true}
-                    />
-                  </div>
-                </>
-              )}
-
-              {isEmployer && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">Your Role/Title <span className="text-gray-500">(multi-select)</span></label>
-                    <MultiSelectAutocomplete
-                      options={CLIENT_ROLES}
-                      selected={formData.selectedRoles}
-                      onChange={(selected) => setFormData({ ...formData, selectedRoles: selected })}
-                      placeholder="Search and select your role (Casting Director, Producer, Director, etc.)..."
-                      searchable={true}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">Company/Organization Name</label>
-                    <input
-                      type="text"
-                      value={formData.companyName || ''}
-                      onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                      placeholder="Enter your company or organization name"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                      disabled={loading}
-                    />
-                  </div>
-                </>
-              )}
-
-              <button
-                type="submit"
-                className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3 rounded-lg"
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="john@example.com"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                 disabled={loading}
-              >
-                {loading ? 'Creating account...' : 'Create account'}
-              </button>
-            </form>
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="Min 6 characters"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black pr-12"
+                  disabled={loading}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5 text-gray-400" /> : <Eye className="w-5 h-5 text-gray-400" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">Confirm Password</label>
+              <input
+                type="password"
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                placeholder="Confirm password"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                disabled={loading}
+                required
+              />
+            </div>
+
+            {!isEmployer && (
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Username <span className="text-gray-500">(for profile sharing)</span></label>
+                <input
+                  type="text"
+                  value={formData.username}
+                  onChange={handleUsernameChange}
+                  placeholder="johndoe"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                  disabled={loading}
+                  required
+                />
+                <div className="mt-1">
+                  {usernameStatus === 'checking' && (
+                    <p className="text-xs text-gray-500">Checking availability...</p>
+                  )}
+                  {usernameStatus === 'available' && (
+                    <p className="text-xs text-green-600">✓ Username available</p>
+                  )}
+                  {usernameStatus === 'taken' && (
+                    <p className="text-xs text-red-600">✗ Username already taken</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">Your profile will be accessible at smartgigskenya.com/username</p>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">Invite Code (optional)</label>
+              <input
+                type="text"
+                value={formData.inviteCode}
+                onChange={handleInviteCodeChange}
+                placeholder="e.g., SG-ABC123"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black uppercase"
+                disabled={loading}
+                maxLength={10}
+              />
+              {inviteCodeValid === true && (
+                <p className="text-xs text-green-600 mt-1">✓ Valid invite code - you'll get a free Pro subscription!</p>
+              )}
+              {inviteCodeValid === false && (
+                <p className="text-xs text-red-600 mt-1">✗ Invalid invite code</p>
+              )}
+            </div>
+
+            {!isEmployer && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Select Your Roles <span className="text-gray-500">(multi-select)</span></label>
+                  <MultiSelectAutocomplete
+                    options={TALENT_ROLES}
+                    selected={formData.selectedRoles}
+                    onChange={(selected) => setFormData({ ...formData, selectedRoles: selected })}
+                    placeholder="Search and select your roles (Acting, Voiceover, UGC, Lip Sync, etc.)..."
+                    searchable={true}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Select Your Skills <span className="text-gray-500">(multi-select)</span></label>
+                  <MultiSelectAutocomplete
+                    options={ALL_SKILLS}
+                    selected={formData.selectedSkills}
+                    onChange={(selected) => setFormData({ ...formData, selectedSkills: selected })}
+                    placeholder="Search and select your skills..."
+                    searchable={true}
+                  />
+                </div>
+              </>
+            )}
+
+            {isEmployer && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Your Role/Title <span className="text-gray-500">(multi-select)</span></label>
+                  <MultiSelectAutocomplete
+                    options={CLIENT_ROLES}
+                    selected={formData.selectedRoles}
+                    onChange={(selected) => setFormData({ ...formData, selectedRoles: selected })}
+                    placeholder="Search and select your role (Casting Director, Producer, Director, etc.)..."
+                    searchable={true}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Company/Organization Name</label>
+                  <input
+                    type="text"
+                    value={formData.companyName || ''}
+                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                    placeholder="Enter your company or organization name"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                    disabled={loading}
+                  />
+                </div>
+              </>
+            )}
+
+            <button
+              type="submit"
+              className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3 rounded-lg"
+              disabled={loading}
+            >
+              {loading ? 'Creating account...' : 'Create account'}
+            </button>
+          </form>
           )}
 
           <div className="mt-6 text-center">

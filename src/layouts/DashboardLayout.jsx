@@ -31,10 +31,10 @@ export default function DashboardLayout({ children }) {
 
   // Handle sidebar toggle from UnifiedTopbar
   useEffect(() => {
-    const handleToggle = () => setMobileSidebarOpen(!mobileSidebarOpen)
+    const handleToggle = () => setMobileSidebarOpen(prev => !prev)
     window.addEventListener('toggle-sidebar', handleToggle)
     return () => window.removeEventListener('toggle-sidebar', handleToggle)
-  }, [mobileSidebarOpen])
+  }, [])
 
   // Handle sidebar collapse from UnifiedSidebar
   useEffect(() => {
