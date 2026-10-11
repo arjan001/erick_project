@@ -33,6 +33,11 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
     const files = Array.from(e.target.files)
     if (!files.length) return
 
+    if (!artistId) {
+      toastError('Error', 'Artist profile not found. Please save your profile first.')
+      return
+    }
+
     setUploading(true)
     try {
       for (const file of files) {
@@ -41,19 +46,24 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
         const filePath = `${artistId}/${fileName}`
 
-        // Upload to Supabase Storage
+        console.log('Uploading to:', filePath)
+
+        // Upload to Supabase Storage - use artist-profiles bucket
         const { error: uploadError } = await supabase.storage
-          .from('artist-media')
+          .from('artist-profiles')
           .upload(filePath, file, {
             cacheControl: '3600',
             upsert: false
           })
 
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          console.error('Storage upload error:', uploadError)
+          throw uploadError
+        }
 
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
-          .from('artist-media')
+          .from('artist-profiles')
           .getPublicUrl(filePath)
 
         // Create thumbnail for videos
@@ -78,7 +88,7 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
       fetchMedia()
     } catch (err) {
       console.error('Upload error:', err)
-      toastError('Error', 'Failed to upload media')
+      toastError('Error', `Failed to upload media: ${err.message || 'Unknown error'}`)
     } finally {
       setUploading(false)
     }

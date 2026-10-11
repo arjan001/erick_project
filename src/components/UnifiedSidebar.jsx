@@ -220,9 +220,10 @@ export default function UnifiedSidebar({ role = 'creator', mobileSidebarOpen, se
         const connections = await Connection.filter({
           recipient_email: user.email,
           status: 'pending'
-        }, '-created_date', 50)
+        }, '-created_at', 50)
         setPendingConnections((connections || []).length)
-      } catch {
+      } catch (err) {
+        console.error('Error fetching connections:', err)
         setPendingConnections(0)
       }
     }
