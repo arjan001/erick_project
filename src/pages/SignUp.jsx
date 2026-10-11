@@ -80,6 +80,21 @@ export default function SignUp() {
   const [otpCode, setOtpCode] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
+  // Film-related background images
+  const bgImages = [
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ80BIneprBn303gn_nFSMY4CASRK0N6vKrGbQpQm8frNwgOvOpJaoje1Q&s=10',
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS140ZRIPcOyHbT0V0I8DQMLPeHnWf03cBs8KX4Rio3F1uN0HpGvZjnUNU&s=10'
+  ]
+  const [currentBgIndex, setCurrentBgIndex] = useState(0)
+
+  // Rotate background images
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBgIndex((prev) => (prev + 1) % bgImages.length)
+    }, 8000)
+    return () => clearInterval(interval)
+  }, [])
+
   useEffect(() => {
     const roleParam = searchParams.get('role')
     if (roleParam === 'client') {
@@ -325,16 +340,16 @@ export default function SignUp() {
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* LEFT PANEL */}
-      <div className={`flex flex-1 flex-col justify-center px-8 py-12 lg:px-16 ${isEmployer ? 'bg-black' : otpSent ? 'bg-[#0A0A0A]' : 'bg-[#F7F5F0]'}`}>
+      <div className={`flex flex-1 flex-col justify-center px-8 py-12 lg:px-16 ${isEmployer ? 'bg-black' : otpSent ? 'bg-black' : 'bg-[#F7F5F0]'}`}>
         {otpSent ? (
-          /* Verification state - dark cinematic panel with image */
+          /* Verification state - dark cinematic panel with rotating image */
           <div className="relative max-w-lg">
-            <div
-              className="absolute inset-0 bg-cover bg-center opacity-30"
-              style={{
-                backgroundImage: 'url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ80BIneprBn303gn_nFSMY4CASRK0N6vKrGbQpQm8frNwgOvOpJaoje1Q&s=10)'
-              }}
+            <img
+              src={bgImages[currentBgIndex]}
+              alt="Film production"
+              className="absolute inset-0 w-full h-full object-cover opacity-40 transition-opacity duration-1000"
             />
+            <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/80" />
             <div className="relative z-10">
               <h2 className="text-3xl font-bold leading-tight text-white md:text-4xl mb-4">
                 Almost there!
