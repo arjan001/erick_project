@@ -347,8 +347,6 @@ export function getMakamescoConfig() {
     baseUrl: MAKAMESCO_BASE_URL
   }
 }
-  }
-}
 
 /**
  * Get M-Pesa Result Code description
