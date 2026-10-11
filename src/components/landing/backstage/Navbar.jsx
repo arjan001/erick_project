@@ -86,6 +86,37 @@ export default function Navbar() {
 
         {/* Right: actions */}
         <div className="hidden items-center gap-3 lg:flex">
+          {/* Join with dropdown - only show when not authenticated */}
+          {!isAuthenticated && (
+            <div className="relative" ref={joinRef}>
+              <button
+                onClick={() => setJoinOpen(!joinOpen)}
+                className="flex items-center gap-2 rounded-full bg-[#10B981] px-6 py-3 text-sm font-bold text-white hover:bg-[#059669]"
+              >
+                Join
+              </button>
+              {joinOpen && (
+                <div className="absolute right-0 top-full mt-2 w-72 overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/5">
+                  <Link to="/SignUp?role=artist" onClick={() => setJoinOpen(false)} className="flex items-start gap-3 px-4 py-4 hover:bg-black/[0.03]">
+                    <Star className="mt-0.5 h-5 w-5 shrink-0 text-[#5842D3]" />
+                    <div>
+                      <p className="text-sm font-bold text-black">I'm Talent</p>
+                      <p className="text-xs text-black/50">Build your profile and start submitting today</p>
+                    </div>
+                  </Link>
+                  <div className="h-px bg-black/5" />
+                  <Link to="/SignUp?role=client" onClick={() => setJoinOpen(false)} className="flex items-start gap-3 px-4 py-4 hover:bg-black/[0.03]">
+                    <Handshake className="mt-0.5 h-5 w-5 shrink-0 text-[#5842D3]" />
+                    <div>
+                      <p className="text-sm font-bold text-black">I'm Hiring</p>
+                      <p className="text-xs text-black/50">Find top talent for your next project</p>
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+
           <Link to={isAuthenticated ? getDashboardUrl() : "/SignIn"} className="rounded-full border-2 border-black bg-white px-6 py-3 text-sm font-bold text-black hover:bg-black/[0.03]">
             {isAuthenticated ? 'Dashboard' : 'Post a Gig'}
           </Link>
@@ -137,8 +168,10 @@ export default function Navbar() {
             <Link to="/Shop" className="text-sm font-bold text-black">Shop</Link>
             <Link to="/About" className="text-sm font-bold text-black">About</Link>
             {!isAuthenticated && (
-              <div className="mt-2">
-                <Link to="/SignIn" className="rounded-full bg-black text-white px-5 py-2 text-center text-sm font-semibold w-full">Sign in</Link>
+              <div className="mt-2 flex flex-col gap-2">
+                <Link to="/SignUp?role=artist" className="rounded-full bg-[#10B981] px-5 py-2 text-center text-sm font-semibold text-white">Join as Talent</Link>
+                <Link to="/SignUp?role=client" className="rounded-full bg-[#10B981] px-5 py-2 text-center text-sm font-semibold text-white">Join as Producer</Link>
+                <Link to="/SignIn" className="text-center text-sm font-semibold text-black">Sign in</Link>
               </div>
             )}
             {isAuthenticated && (

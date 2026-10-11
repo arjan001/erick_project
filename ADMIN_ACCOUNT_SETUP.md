@@ -2,7 +2,7 @@
 
 ## Creating the Admin Account in Supabase
 
-### Step 1: Create Admin User in Supabase Auth
+### Step 1: Create Admin User in Supabase Auth (Recommended Method)
 
 1. Go to [Supabase Dashboard](https://kjikqldkdufxoaeenwsd.supabase.co)
 2. Navigate to **Authentication** → **Users**
@@ -26,46 +26,44 @@
    ```
 4. Click **"Save"**
 
-### Step 3: Alternative Method - SQL
+**That's it!** The admin account is now ready.
 
-If you prefer using SQL, run this in the Supabase SQL Editor:
-
-```sql
--- Update user metadata to set admin role
-UPDATE auth.users
-SET raw_user_meta_data = jsonb_set(
-  COALESCE(raw_user_meta_data, '{}'::jsonb),
-  '{role}',
-  '"admin"'
-)
-WHERE email = 'admin@smartgigskenya.com';
-
--- Or insert a new admin user directly
-INSERT INTO auth.users (
-  id,
-  email,
-  encrypted_password,
-  email_confirmed_at,
-  raw_user_meta_data,
-  created_at,
-  updated_at
-)
-VALUES (
-  gen_random_uuid(),
-  'admin@smartgigskenya.com',
-  crypt('your-password', gen_salt('bf')),
-  NOW(),
-  '{"role": "admin", "full_name": "SmartGigs Admin"}'::jsonb,
-  NOW(),
-  NOW()
-);
-```
-
-### Step 4: Test Admin Login
+### Step 3: Test Admin Login
 
 1. Go to: `https://smartgigs.oneplusafrica.com/erick`
 2. Enter the admin email and password
 3. Should redirect to `/admin` dashboard
+
+---
+
+## ⚠️ IMPORTANT: SQL Method Failed
+
+The SQL method failed with permission denied error. **DO NOT use the SQL method.** 
+
+Only use the Supabase UI method above (Steps 1-2) to create the admin account.
+
+---
+
+## Run Required Database Migrations
+
+You also need to run these SQL migrations in Supabase SQL Editor to fix the 401/404 errors:
+
+### 1. Fix Missing Tables (applications, saved_jobs)
+Run the SQL from: `database/migrations/fix_missing_tables.sql`
+
+This will:
+- Create the missing `saved_jobs` table
+- Create the missing `applications` table
+- Add proper RLS policies
+- Fix 404 errors for these tables
+
+### 2. Fix Analytics RLS Policies (401 errors)
+Run the SQL from: `database/migrations/add_analytics_rls_policies.sql`
+
+This will:
+- Allow authenticated and anonymous users to insert analytics data
+- Fix 401 Unauthorized errors for page_views, user_sessions, etc.
+- Allow public access to analytics tracking
 
 ---
 
@@ -85,13 +83,15 @@ If the user management page is not fully functional, please let me know and I'll
 
 ## Admin Registration
 
-Registration is currently disabled. Only the admin account created above can access the system. To create additional accounts:
+Registration is enabled. Users can:
+- Click "Join" button to sign up
+- Choose "I'm Talent" or "I'm Hiring"
+- Create their own accounts
 
-1. Use the **Admin User Management** page at `/Admin/UserManagement`
-2. Click **"Add User"** to create new accounts
-3. Assign appropriate roles (artist, client, team, backer)
-
-This ensures only the admin can add users to the system.
+The admin can then:
+- Manage users via `/Admin/UserManagement`
+- Assign appropriate roles (artist, client, team, backer)
+- Suspend problematic accounts
 
 ---
 
