@@ -507,7 +507,7 @@ export default function SignIn() {
                   title="Google login temporarily disabled"
                 >
                   <GoogleIcon />
-                  Continue with Google (Disabled)
+                  Continue with Google
                 </button>
                 <button
                   type="button"
@@ -516,7 +516,7 @@ export default function SignIn() {
                   title="Apple login temporarily disabled"
                 >
                   <AppleIcon />
-                  Continue with Apple (Disabled)
+                  Continue with Apple
                 </button>
               </div>
 

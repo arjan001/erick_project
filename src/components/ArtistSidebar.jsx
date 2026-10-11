@@ -20,7 +20,7 @@ const MENU_ITEMS = [
   { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets' },
   { label: 'Finances', icon: Wallet, href: 'ArtistFinance' },
   { label: 'Subscription', icon: Users, href: 'ArtistSubscription' },
-  { label: 'My Profile & Settings', icon: User, href: 'CreatorProfile' }
+  { label: 'My Profile & Settings', icon: User, href: 'ArtistProfile' }
 ]
 
 export default function ArtistSidebar() {
