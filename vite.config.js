@@ -121,14 +121,8 @@ export default defineConfig({
     cssMinify: true,
     // Target modern browsers
     target: 'esnext',
-    // Enhanced minification
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console logs in production
-        drop_debugger: true
-      }
-    }
+    // Use esbuild for minification (faster, no crypto dependency)
+    minify: 'esbuild'
   },
   // Optimize dependencies pre-bundling
   optimizeDeps: {
