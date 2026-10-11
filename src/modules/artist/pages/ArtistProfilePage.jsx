@@ -11,13 +11,14 @@ import SkillsCategorySelector from '@/components/SkillsCategorySelector'
 import ArtistMediaGallery from '@/components/artist/ArtistMediaGallery'
 import skillsAndRoles from '@/lib/skillsAndRoles.json'
 import { ALL_FILM_ROLES } from '@/lib/filmRoles'
-import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2, ChevronDown, ChevronUp, Briefcase, Film, GraduationCap } from 'lucide-react'
+import { MapPin, Edit2, X, Upload, Globe, Instagram, Linkedin, Twitter, Youtube, Bell, Shield, Play, Plus, Users, HardDrive, Link as LinkIcon, Crown, CreditCard, Calendar, CheckCircle, AlertCircle, Share2, ChevronDown, ChevronUp, Briefcase, Film, GraduationCap, AtSign } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { confirmDialog } from '@/lib/sweetAlert'
 import ShareProfileButton from '@/components/artist/ShareProfileButton'
 import PortfolioModal from '@/components/artist/PortfolioModal'
 import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge'
 import AboutSection from '@/components/AboutSection'
+import { validateUsername, checkUsernameAvailability } from '@/services/usernameService'
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
   return (
@@ -117,6 +118,40 @@ export default function ArtistProfile() {
     }
   })
 
+  // Debounced username availability check
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (!username) {
+        setUsernameStatus('idle')
+        setUsernameError('')
+        return
+      }
+
+      const validation = validateUsername(username)
+      if (!validation.valid) {
+        setUsernameStatus('invalid')
+        setUsernameError(validation.error)
+        return
+      }
+
+      // Don't check if it's the current username
+      if (artist?.username === username) {
+        setUsernameStatus('available')
+        setUsernameError('')
+        return
+      }
+
+      setUsernameStatus('checking')
+      setUsernameError('')
+
+      const isAvailable = await checkUsernameAvailability(username)
+      setUsernameStatus(isAvailable ? 'available' : 'taken')
+      setUsernameError(isAvailable ? '' : 'Username is already taken')
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [username, artist?.username])
+
   // Flatten all skills from categories for multi-select
   const ALL_SKILLS = Object.values(skillsAndRoles.talent_skills_by_category || {}).flat()
   const ALL_ROLES = Object.values(skillsAndRoles.talent_roles_by_category || {}).flat()
@@ -125,6 +160,9 @@ export default function ArtistProfile() {
   const [projectAlerts, setProjectAlerts] = useState(true)
   const [profilePublic, setProfilePublic] = useState(true)
   const [googleDriveFolderId, setGoogleDriveFolderId] = useState('')
+  const [username, setUsername] = useState('')
+  const [usernameStatus, setUsernameStatus] = useState('idle') // idle, checking, available, taken, invalid
+  const [usernameError, setUsernameError] = useState('')
 
   const [portfolioForm, setPortfolioForm] = useState(() => {
     // Load draft from localStorage if exists
@@ -177,6 +215,7 @@ export default function ArtistProfile() {
         if (artistData && artistData.length > 0) {
           const a = artistData[0]
           setArtist(a)
+          setUsername(a.username || '')
           setFormData({
             full_name: a.full_name || '', roles: a.roles || [], based_in_city: a.based_in_city || '',
             based_in_country: a.based_in_country || '', bio: a.bio || '',
@@ -426,6 +465,7 @@ export default function ArtistProfile() {
         project_alerts: projectAlerts,
         profile_public: profilePublic,
         google_drive_folder_id: googleDriveFolderId,
+        username: username,
       })
       setArtist(updated)
 
@@ -761,6 +801,35 @@ export default function ArtistProfile() {
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">Full Name</label>
                       <Input value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} placeholder="Your full name" className="rounded-lg" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2"><AtSign className="w-4 h-4 text-gray-400" />Username</label>
+                      <div className="relative">
+                        <Input
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          placeholder="Choose a unique username"
+                          className={`rounded-lg pr-20 ${usernameStatus === 'taken' ? 'border-red-500' : usernameStatus === 'available' ? 'border-green-500' : ''}`}
+                        />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs">
+                          {usernameStatus === 'checking' && (
+                            <span className="text-gray-500">Checking...</span>
+                          )}
+                          {usernameStatus === 'available' && (
+                            <span className="text-green-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" />Available</span>
+                          )}
+                          {usernameStatus === 'taken' && (
+                            <span className="text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />Taken</span>
+                          )}
+                          {usernameStatus === 'invalid' && (
+                            <span className="text-red-600 flex items-center gap-1"><AlertCircle className="w-3 h-3" />Invalid</span>
+                          )}
+                        </div>
+                      </div>
+                      {usernameError && (
+                        <p className="text-xs text-red-600 mt-1">{usernameError}</p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">3-20 characters, letters, numbers, and underscores only</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">Profession</label>
