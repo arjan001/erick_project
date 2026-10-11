@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { Artist } from '@/lib/supabaseEntities'
+import { Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities'
 
 /**
  * Username Service
@@ -35,27 +35,53 @@ export function validateUsername(username) {
 }
 
 /**
- * Check if username is available
+ * Check if username is available across all user tables
  * @param {string} username - Username to check
  * @returns {Promise<boolean>} - true if available, false if taken
  */
 export async function checkUsernameAvailability(username) {
   try {
-    const { data, error } = await supabase
+    // Check creators table
+    const { data: creatorData, error: creatorError } = await supabase
       .from('creators')
       .select('username')
       .eq('username', username)
       .limit(1)
       .single()
 
-    if (error && error.code !== 'PGRST116') {
-      // PGRST116 means no rows returned, which is what we want
-      console.error('Error checking username availability:', error)
-      return false
-    }
+    if (creatorData) return false
 
-    // If data exists, username is taken
-    return !data
+    // Check teams table
+    const { data: teamData, error: teamError } = await supabase
+      .from('teams')
+      .select('username')
+      .eq('username', username)
+      .limit(1)
+      .single()
+
+    if (teamData) return false
+
+    // Check project_owners table
+    const { data: ownerData, error: ownerError } = await supabase
+      .from('project_owners')
+      .select('username')
+      .eq('username', username)
+      .limit(1)
+      .single()
+
+    if (ownerData) return false
+
+    // Check backers table
+    const { data: backerData, error: backerError } = await supabase
+      .from('backers')
+      .select('username')
+      .eq('username', username)
+      .limit(1)
+      .single()
+
+    if (backerData) return false
+
+    return true
   } catch (error) {
     console.error('Error checking username availability:', error)
     return false
@@ -63,14 +89,29 @@ export async function checkUsernameAvailability(username) {
 }
 
 /**
- * Get user by username
+ * Get user by username (searches all user tables)
  * @param {string} username - Username to look up
- * @returns {Promise<object|null>} - User object or null
+ * @returns {Promise<object|null>} - User object with type and data or null
  */
 export async function getUserByUsername(username) {
   try {
+    // Check creators table
     const artists = await Artist.filter({ username })
-    return artists?.[0] || null
+    if (artists?.[0]) return { type: 'artist', data: artists[0] }
+
+    // Check teams table
+    const teams = await Team.filter({ username })
+    if (teams?.[0]) return { type: 'team', data: teams[0] }
+
+    // Check project_owners table
+    const owners = await ProjectOwner.filter({ username })
+    if (owners?.[0]) return { type: 'client', data: owners[0] }
+
+    // Check backers table
+    const backers = await Backer.filter({ username })
+    if (backers?.[0]) return { type: 'backer', data: backers[0] }
+
+    return null
   } catch (error) {
     console.error('Error getting user by username:', error)
     return null
@@ -84,8 +125,22 @@ export async function getUserByUsername(username) {
  */
 export async function resolveUsernameToEmail(username) {
   try {
-    const artist = await getUserByUsername(username)
-    return artist?.email || null
+    const user = await getUserByUsername(username)
+    if (!user) return null
+
+    // Return the appropriate email field based on user type
+    switch (user.type) {
+      case 'artist':
+        return user.data.email
+      case 'team':
+        return user.data.contact_email
+      case 'client':
+        return user.data.email
+      case 'backer':
+        return user.data.contact_email
+      default:
+        return null
+    }
   } catch (error) {
     console.error('Error resolving username to email:', error)
     return null

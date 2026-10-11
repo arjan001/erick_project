@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom'
-import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target, Briefcase } from 'lucide-react'
+import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target, Briefcase, AtSign } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Artist, Team, Backer, ProjectOwner, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 import { getPendingApplication, clearPendingApplication } from '@/services/savedJobsService'
 import { listPartnerLogos } from '@/services/partnerLogoService'
+import { resolveUsernameToEmail } from '@/services/usernameService'
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -230,26 +231,13 @@ export default function SignIn() {
 
       // If not an email, try to find the email by username
       if (!isEmail) {
-        try {
-          // Check creators table
-          const artists = await Artist.filter({ username: email })
-          if (artists && artists.length > 0) {
-            loginEmail = artists[0].email
-          } else {
-            // Check clients table
-            const clients = await ProjectOwner.filter({ username: email })
-            if (clients && clients.length > 0) {
-              loginEmail = clients[0].email
-            } else {
-              // Check teams table
-              const teams = await Team.filter({ username: email })
-              if (teams && teams.length > 0) {
-                loginEmail = teams[0].contact_email
-              }
-            }
-          }
-        } catch (err) {
-          console.error('Error looking up username:', err)
+        const resolvedEmail = await resolveUsernameToEmail(email)
+        if (resolvedEmail) {
+          loginEmail = resolvedEmail
+        } else {
+          setError('Username not found. Please check your username or use your email.')
+          setLoading(false)
+          return
         }
       }
 
@@ -599,7 +587,11 @@ export default function SignIn() {
                   </div>
                 )}
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/30" />
+                  {email.includes('@') ? (
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/30" />
+                  ) : (
+                    <AtSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/30" />
+                  )}
                   <input
                     type="text"
                     value={email}
