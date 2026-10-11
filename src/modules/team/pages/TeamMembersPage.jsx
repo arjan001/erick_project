@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Team, TeamMember, TeamInvitation } from '@/lib/supabaseEntities'
+import { Team, TeamMember } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Users, Plus, Mail, Search, MoreVertical, Crown, Shield, User, X, Upload, ChevronDown, ChevronUp } from 'lucide-react'
