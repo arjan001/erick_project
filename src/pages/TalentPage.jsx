@@ -29,6 +29,8 @@ export default function TalentPage() {
       // Fetch only artists from database
       const artists = await Artist.list('-created_at', 100)
 
+      console.log('Fetched artists:', artists.length)
+
       // Transform to talent card format
       const allProfiles = []
 

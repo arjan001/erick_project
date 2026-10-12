@@ -105,7 +105,7 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* Cart and Wishlist icons - only show when items exist */}
+          {/* Cart icon - only show when items exist */}
           {cart.length > 0 && (
             <Link to="/Cart" className="relative rounded-full p-2 hover:bg-black/[0.05]">
               <ShoppingBag className="h-5 w-5 text-black" />
@@ -115,14 +115,15 @@ export default function Navbar() {
             </Link>
           )}
 
-          {wishlist.length > 0 && (
+          {/* Wishlist icon - commented out due to errors */}
+          {/* {wishlist.length > 0 && (
             <Link to="/Wishlist" className="relative rounded-full p-2 hover:bg-black/[0.05]">
               <Heart className="h-5 w-5 text-black" />
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#EF4444] text-[10px] font-bold text-white">
                 {wishlist.length}
               </span>
             </Link>
-          )}
+          )} */}
 
           <button className="rounded-full p-1.5 hover:bg-black/[0.05]">
             <MoreVertical className="h-5 w-5 text-black" />

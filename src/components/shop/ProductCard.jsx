@@ -19,10 +19,13 @@ export default function ProductCard({ product }) {
   const sale = !auction && discountPercent(product) > 0
   const [wished, setWished] = useState(false)
 
+  // Commented out wishlist functionality due to errors
+  /*
   useEffect(() => {
     // Check if product is in wishlist
     isWished(product.id).then(setWished).catch(() => setWished(false))
   }, [product.id, isWished])
+  */
 
   const handleAddToCart = (e) => {
     e.preventDefault() // Prevent navigation to product page
@@ -32,8 +35,8 @@ export default function ProductCard({ product }) {
   }
 
   const handleToggleWishlist = async () => {
-    setWished(!wished) // Optimistic update
-    await toggleWish(product)
+    // Wishlist functionality disabled
+    console.log('Wishlist functionality disabled')
   }
 
   return (
@@ -85,13 +88,14 @@ export default function ProductCard({ product }) {
         </div>
       </Link>
 
-      <button
+      {/* Wishlist button - commented out due to errors */}
+      {/* <button
         onClick={handleToggleWishlist}
         aria-label="Add to wishlist"
         className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow hover:bg-white"
       >
         <Heart className={`h-4 w-4 ${wished ? 'fill-red-500 text-red-500' : 'text-black/60'}`} />
-      </button>
+      </button> */}
 
       <div className="mt-auto grid gap-2 p-3 pt-3">
         <button

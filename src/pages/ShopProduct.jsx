@@ -22,7 +22,7 @@ export default function ProductPage() {
   const navigate = useNavigate()
   const { hash } = useLocation()
   const { user, isAuthenticated } = useAuth()
-  const { add, toggleWish, isWished } = useShop()
+  const { addToCart, toggleWish, isWished } = useShop()
   const now = useNow()
 
   const [product, setProduct] = useState(null)
@@ -31,13 +31,22 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1)
   const [joined, setJoined] = useState(false)
   const [joining, setJoining] = useState(false)
-  const [wished, setWished] = useState(false)
   const [notification, setNotification] = useState(null)
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type })
     setTimeout(() => setNotification(null), 3000)
   }
+
+  // Commented out wishlist functionality due to errors
+  /*
+  const [wished, setWished] = useState(false)
+  useEffect(() => {
+    if (product) {
+      isWished(product.id).then(setWished).catch(() => setWished(false))
+    }
+  }, [product?.id, isWished])
+  */
 
   useEffect(() => {
     let cancelled = false
@@ -249,7 +258,7 @@ export default function ProductPage() {
                         <p className="text-xs text-amber-800">Claim it now at {formatKES(product.discount_price)}.</p>
                         <button
                           onClick={async () => {
-                            const ok = await add(product, 1, { unitPrice: product.discount_price, isAuctionClaim: true })
+                            const ok = await addToCart(product, 1, { unitPrice: product.discount_price, isAuctionClaim: true })
                             if (ok) navigate('/Cart')
                           }}
                           className="mt-3 w-full rounded-full bg-amber-500 px-6 py-3 text-sm font-bold text-white hover:bg-amber-600"
@@ -312,7 +321,7 @@ export default function ProductPage() {
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <button
                   disabled={outOfStock}
-                  onClick={() => add(product, quantity, { unitPrice })}
+                  onClick={() => addToCart(product, quantity, { unitPrice })}
                   className="flex flex-1 items-center justify-center gap-2 rounded-full border-2 border-[#4F46E5] px-6 py-3.5 text-sm font-semibold text-[#4F46E5] transition-colors hover:bg-[#4F46E5]/5 disabled:cursor-not-allowed disabled:border-black/20 disabled:text-black/30"
                 >
                   <ShoppingCart className="h-5 w-5" /> Add to Cart
@@ -320,14 +329,15 @@ export default function ProductPage() {
                 <button
                   disabled={outOfStock}
                   onClick={async () => {
-                    const ok = await add(product, quantity, { unitPrice })
-                    if (ok) navigate('/Checkout')
+                    await addToCart(product, quantity, { unitPrice })
+                    navigate('/Checkout')
                   }}
                   className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#4F46E5] px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#4338CA] disabled:cursor-not-allowed disabled:bg-black/20"
                 >
                   <ShoppingCart className="h-5 w-5" /> Proceed to Checkout — {formatKES(unitPrice * quantity)}
                 </button>
-                <button
+                {/* Wishlist button - commented out due to errors */}
+                {/* <button
                   onClick={async () => {
                     const isCurrentlyWished = await isWished(product.id)
                     setWished(!isCurrentlyWished)
@@ -337,7 +347,7 @@ export default function ProductPage() {
                   className="flex items-center justify-center rounded-full border border-black/10 px-4 py-3.5 hover:bg-black/[0.03]"
                 >
                   <Heart className={`h-5 w-5 ${wished ? 'fill-rose-500 text-rose-500' : 'text-black/60'}`} />
-                </button>
+                </button> */}
               </div>
 
               <div className="mt-6 flex flex-wrap gap-4 text-xs text-black/50">
