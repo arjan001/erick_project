@@ -23,24 +23,24 @@ BEGIN
 
   -- Create entity record based on role
   IF user_role = 'artist' THEN
-    INSERT INTO public.artists (email, full_name, role, status, created_at)
-    VALUES (user_email, user_full_name, 'director', 'pending', NOW())
+    INSERT INTO public.creators (email, full_name, display_name, created_at)
+    VALUES (user_email, user_full_name, user_full_name, NOW())
     ON CONFLICT (email) DO NOTHING;
 
   ELSIF user_role = 'team' THEN
-    INSERT INTO public.teams (team_name, team_code, contact_email, contact_name, city, country, status, created_at)
-    VALUES (user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, user_email, user_full_name, '', '', 'pending', NOW())
+    INSERT INTO public.teams (contact_email, contact_name, team_name, team_code, created_at)
+    VALUES (user_email, user_full_name, user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, NOW())
     ON CONFLICT (contact_email) DO NOTHING;
 
   ELSIF user_role = 'client' OR user_role = 'project_owner' THEN
-    INSERT INTO public.project_owners (email, full_name, created_at)
+    INSERT INTO public.clients (email, display_name, created_at)
     VALUES (user_email, user_full_name, NOW())
     ON CONFLICT (email) DO NOTHING;
 
   ELSIF user_role = 'backer' THEN
-    INSERT INTO public.backers (organization_name, contact_email, created_at)
-    VALUES (user_full_name, user_email, NOW())
-    ON CONFLICT (contact_email) DO NOTHING;
+    INSERT INTO public.backers (email, display_name, created_at)
+    VALUES (user_email, user_full_name, NOW())
+    ON CONFLICT (email) DO NOTHING;
   END IF;
 
   RETURN NEW;
@@ -78,24 +78,24 @@ BEGIN
 
     -- Create entity record based on role
     IF user_role = 'artist' THEN
-      INSERT INTO public.artists (email, full_name, role, status, created_at)
-      VALUES (auth_user.email, user_full_name, 'director', 'pending', NOW())
+      INSERT INTO public.creators (email, full_name, display_name, created_at)
+      VALUES (auth_user.email, user_full_name, user_full_name, NOW())
       ON CONFLICT (email) DO NOTHING;
 
     ELSIF user_role = 'team' THEN
-      INSERT INTO public.teams (team_name, team_code, contact_email, contact_name, city, country, status, created_at)
-      VALUES (user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, auth_user.email, user_full_name, '', '', 'pending', NOW())
+      INSERT INTO public.teams (contact_email, contact_name, team_name, team_code, created_at)
+      VALUES (auth_user.email, user_full_name, user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, NOW())
       ON CONFLICT (contact_email) DO NOTHING;
 
     ELSIF user_role = 'client' OR user_role = 'project_owner' THEN
-      INSERT INTO public.project_owners (email, full_name, created_at)
+      INSERT INTO public.clients (email, display_name, created_at)
       VALUES (auth_user.email, user_full_name, NOW())
       ON CONFLICT (email) DO NOTHING;
 
     ELSIF user_role = 'backer' THEN
-      INSERT INTO public.backers (organization_name, contact_email, created_at)
-      VALUES (user_full_name, auth_user.email, NOW())
-      ON CONFLICT (contact_email) DO NOTHING;
+      INSERT INTO public.backers (email, display_name, created_at)
+      VALUES (auth_user.email, user_full_name, NOW())
+      ON CONFLICT (email) DO NOTHING;
     END IF;
   END LOOP;
 END;
