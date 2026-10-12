@@ -11,7 +11,7 @@ const MENU_ITEMS = [
   { label: 'Post Project', icon: Plus, href: 'ClientPostProject' },
   { label: 'Applications', icon: FileText, href: 'ClientApplications' },
   { label: 'Messages', icon: Mail, href: 'ClientMessages', showBadge: true },
-  { label: 'Network', icon: Share2, href: 'Network', showConnectionBadge: true },
+  { label: 'Network', icon: Share2, href: '/Network', showConnectionBadge: true },
   { label: 'Notifications', icon: Bell, href: 'ClientNotifications', showNotificationBadge: true },
   { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets' },
   { label: 'Analytics', icon: BarChart3, href: 'ClientAnalytics' },
