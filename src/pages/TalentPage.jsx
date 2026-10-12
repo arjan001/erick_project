@@ -48,15 +48,15 @@ export default function TalentPage() {
       setDbProfiles(allProfiles)
     } catch (err) {
       console.error('Error loading profiles:', err)
-      // Fallback to static data
-      setDbProfiles(talentProfiles)
+      // No fallback to static data - only show database results
+      setDbProfiles([])
     } finally {
       setLoading(false)
     }
   }
 
-  // Use database profiles if available, otherwise fallback to static data
-  const profilesToDisplay = dbProfiles.length > 0 ? dbProfiles : talentProfiles
+  // Use database profiles only (no fallback to static data)
+  const profilesToDisplay = dbProfiles
 
   return (
     <div className="min-h-screen bg-[#1a1a23]">

@@ -4,11 +4,10 @@ import ShopShell from '@/components/shop/ShopShell'
 import { Heart, ShoppingBag, Trash2 } from 'lucide-react'
 import { formatKES } from '@/data/shopProducts'
 import { useShop } from '@/contexts/ShopContext'
-import { getWishlist, removeFromWishlist as removeFromWishlistService } from '@/services/shopService'
+import { removeFromWishlist as removeFromWishlistService } from '@/services/shopService'
 
 export default function WishlistPage() {
-  const { addToCart } = useShop()
-  const [wishlist, setWishlist] = useState([])
+  const { addToCart, wishlist } = useShop()
   const [loading, setLoading] = useState(true)
   const [notification, setNotification] = useState(null)
 
@@ -18,27 +17,8 @@ export default function WishlistPage() {
   }
 
   useEffect(() => {
-    // Load wishlist from localStorage on mount
-    const loadWishlist = () => {
-      setWishlist(getWishlist())
-      setLoading(false)
-    }
-
-    loadWishlist()
-
-    // Listen for wishlist updates from other components
-    const handleWishlistUpdate = () => {
-      setWishlist(getWishlist())
-    }
-
-    window.addEventListener('wishlist-updated', handleWishlistUpdate)
-    return () => window.removeEventListener('wishlist-updated', handleWishlistUpdate)
-  }, [])
-
-  const removeFromWishlist = (itemId) => {
-    removeFromWishlistService(itemId)
-    setWishlist(getWishlist())
-  }
+    setLoading(false)
+  }, [wishlist])
 
   const moveToCart = (item) => {
     // Create a product object from wishlist item
@@ -50,6 +30,11 @@ export default function WishlistPage() {
     }
     addToCart(product)
     showNotification(`${item.product_name} has been added to your cart.`)
+  }
+
+  const removeFromWishlist = async (itemId) => {
+    await removeFromWishlistService(itemId)
+    showNotification('Item removed from wishlist')
   }
 
   if (loading) {

@@ -15,7 +15,6 @@ import {
 } from '@/services/shopService'
 import { useShop } from '@/contexts/ShopContext'
 import { useAuth } from '@/lib/AuthContext'
-import { useToast } from '@/hooks/useToast'
 import { Flame, Check, ShoppingCart, ArrowLeft, Shield, Gavel, Trophy, Heart, Users } from 'lucide-react'
 
 export default function ProductPage() {
@@ -24,7 +23,6 @@ export default function ProductPage() {
   const { hash } = useLocation()
   const { user, isAuthenticated } = useAuth()
   const { add, toggleWish, isWished } = useShop()
-  const { success, info } = useToast()
   const now = useNow()
 
   const [product, setProduct] = useState(null)
@@ -33,6 +31,13 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1)
   const [joined, setJoined] = useState(false)
   const [joining, setJoining] = useState(false)
+  const [wished, setWished] = useState(false)
+  const [notification, setNotification] = useState(null)
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type })
+    setTimeout(() => setNotification(null), 3000)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -62,9 +67,15 @@ export default function ProductPage() {
     }
   }, [loading, product, hash])
 
+  useEffect(() => {
+    if (product) {
+      isWished(product.id).then(setWished).catch(() => setWished(false))
+    }
+  }, [product?.id, isWished])
+
   const handleJoin = useCallback(async () => {
     if (!isAuthenticated) {
-      info('Sign in required', 'Please sign in to join this auction.')
+      showNotification('Please sign in to join this auction', 'info')
       navigate('/SignIn')
       return
     }
@@ -73,14 +84,13 @@ export default function ProductPage() {
       const res = await joinAuction(product, user)
       setProduct(res.product)
       setJoined(true)
-      if (!res.already) success("You're in!", 'Good luck — the winner is drawn when the auction closes.')
+      if (!res.already) showNotification("You're in! Good luck — the winner is drawn when the auction closes.")
     } catch (err) {
-      //
-      info('Could not join', 'Something went wrong. Please try again.')
+      showNotification('Something went wrong. Please try again.', 'error')
     } finally {
       setJoining(false)
     }
-  }, [isAuthenticated, product, user, info, success, navigate])
+  }, [isAuthenticated, product, user, navigate])
 
   if (loading) {
     return (
@@ -120,7 +130,6 @@ export default function ProductPage() {
   const auctionClosed = auction && !aInfo.open
   const isWinner = auction && product.auction_winner_email && product.auction_winner_email === user?.email
   const outOfStock = Number(product.stock) <= 0
-  const wished = isWished(product.id)
   const sale = !auction && calcDiscount(product) > 0
   const unitPrice = buyNowPrice(product)
 
@@ -131,6 +140,12 @@ export default function ProductPage() {
       keywords={`shop, ${product.category}, ${product.name}, smartgigs kenya`}
       ogImage={product.image || 'https://smartgigs.co.ke/og-shop.jpg'}
     >
+      {notification && (
+        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+          }`}>
+          {notification.message}
+        </div>
+      )}
       {/* Breadcrumb */}
       <div className="bg-white px-4 py-3 lg:px-8">
         <div className="mx-auto flex max-w-[1400px] items-center gap-2 text-sm text-black/50">
@@ -310,10 +325,14 @@ export default function ProductPage() {
                   }}
                   className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#4F46E5] px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#4338CA] disabled:cursor-not-allowed disabled:bg-black/20"
                 >
-                  Buy Now — {formatKES(unitPrice * quantity)}
+                  <ShoppingCart className="h-5 w-5" /> Proceed to Checkout — {formatKES(unitPrice * quantity)}
                 </button>
                 <button
-                  onClick={() => toggleWish(product)}
+                  onClick={async () => {
+                    const isCurrentlyWished = await isWished(product.id)
+                    setWished(!isCurrentlyWished)
+                    await toggleWish(product)
+                  }}
                   aria-label={wished ? 'Remove from wishlist' : 'Add to wishlist'}
                   className="flex items-center justify-center rounded-full border border-black/10 px-4 py-3.5 hover:bg-black/[0.03]"
                 >
