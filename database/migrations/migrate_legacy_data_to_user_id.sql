@@ -40,7 +40,7 @@ BEGIN
           auth_user.raw_user_meta_data->>'role',
           'creator'
         ),
-        auth_user.email_confirmed_at IS NOT NULL,
+        false,
         auth_user.created_at,
         NOW()
       );
@@ -58,7 +58,7 @@ BEGIN
           auth_user.raw_user_meta_data->>'role',
           existing_user.role
         ),
-        is_verified = auth_user.email_confirmed_at IS NOT NULL,
+        is_verified = false,
         updated_at = NOW()
       WHERE id = auth_user.id;
     END IF;
@@ -207,7 +207,7 @@ BEGIN
       NEW.raw_user_meta_data->>'role',
       'creator'
     ),
-    NEW.email_confirmed_at IS NOT NULL,
+    false,
     NEW.created_at,
     NOW()
   )

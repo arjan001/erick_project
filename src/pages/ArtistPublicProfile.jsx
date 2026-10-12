@@ -4,6 +4,7 @@ import { Artist, PortfolioClip, Endorsement, Testimonial, Subscription, Subscrip
 import { createPageUrl } from '@/shared/utils/routing'
 import ShareProfileButton from '@/components/artist/ShareProfileButton'
 import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge'
+import { useAuth } from '@/lib/AuthContext'
 import {
   MapPin, MessageCircle, Globe, Instagram, Linkedin, Twitter, Youtube, Star, ThumbsUp,
   Play, BadgeCheck, Film, Quote, Sparkles, Plus, X, ChevronDown, ChevronUp, CreditCard, Shield, Briefcase
@@ -11,6 +12,7 @@ import {
 
 export default function ArtistPublicProfile() {
   const [searchParams] = useSearchParams()
+  const { user: authUser } = useAuth()
   const [viewer, setViewer] = useState(null)
   const [viewedArtist, setViewedArtist] = useState(null)
   const [portfolioClips, setPortfolioClips] = useState([])
@@ -30,9 +32,8 @@ export default function ArtistPublicProfile() {
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('smartgigs_user')
-    if (storedUser) setViewer(JSON.parse(storedUser))
-  }, [])
+    if (authUser) setViewer(authUser)
+  }, [authUser])
 
   useEffect(() => {
     const artistId = searchParams.get('id')

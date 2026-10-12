@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronDown, MoreVertical, Star, Handshake, ShoppingBag, Heart } from 'lucide-react'
+import { ChevronDown, Star, Handshake, ShoppingBag } from 'lucide-react'
 import Logo from './Logo'
 import { useAuth } from '@/lib/AuthContext'
 import { useShop } from '@/contexts/ShopContext'
@@ -95,12 +95,12 @@ export default function Navbar() {
             </div>
           )}
 
-          <Link to={isAuthenticated ? getDashboardUrl() : "/SignIn"} className="rounded-full border-2 border-black bg-white px-6 py-3 text-sm font-bold text-black hover:bg-black/[0.03]">
+          <Link to={isAuthenticated ? getDashboardUrl() : "/ClientPostProject"} className="rounded-full border-2 border-black bg-white px-6 py-3 text-sm font-bold text-black">
             {isAuthenticated ? 'Dashboard' : 'Post a Gig'}
           </Link>
 
           {!isAuthenticated && (
-            <Link to="/SignIn" className="text-sm font-bold text-black hover:underline">
+            <Link to="/SignIn" className="text-sm font-bold text-black">
               Sign in
             </Link>
           )}
@@ -114,20 +114,6 @@ export default function Navbar() {
               </span>
             )}
           </Link>
-
-          {/* Wishlist icon - always show */}
-          <Link to="/Wishlist" className="relative rounded-full p-2 hover:bg-black/[0.05]">
-            <Heart className="h-5 w-5 text-black" />
-            {wishlist.length > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#EF4444] text-[10px] font-bold text-white">
-                {wishlist.length}
-              </span>
-            )}
-          </Link>
-
-          <button className="rounded-full p-1.5 hover:bg-black/[0.05]">
-            <MoreVertical className="h-5 w-5 text-black" />
-          </button>
         </div>
 
         {/* Mobile toggle */}
@@ -158,15 +144,11 @@ export default function Navbar() {
                 <Link to={getDashboardUrl()} className="rounded-full bg-black text-white px-5 py-2 text-center text-sm font-semibold w-full">Dashboard</Link>
               </div>
             )}
-            {/* Cart and Wishlist on mobile */}
+            {/* Cart on mobile */}
             <div className="flex gap-3 mt-2">
               <Link to="/Cart" className="flex items-center gap-2 text-sm font-bold text-black">
                 <ShoppingBag className="h-4 w-4" />
                 Cart {cart.length > 0 && `(${cart.length})`}
-              </Link>
-              <Link to="/Wishlist" className="flex items-center gap-2 text-sm font-bold text-black">
-                <Heart className="h-4 w-4" />
-                Wishlist {wishlist.length > 0 && `(${wishlist.length})`}
               </Link>
             </div>
           </div>

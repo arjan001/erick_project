@@ -145,13 +145,13 @@ class SubscriptionService {
   // Track usage and notify when approaching limits
   async trackUsage(userEmail, actionType) {
     const limitCheck = await this.checkLimit(userEmail, actionType)
-    
+
     // Notify if approaching limit (less than 20% remaining)
     if (limitCheck.limit > 0 && !limitCheck.isUnlimited) {
       const percentageRemaining = (limitCheck.remaining / limitCheck.limit) * 100
       if (percentageRemaining <= 20 && percentageRemaining > 0) {
         const notificationService = (await import('@/shared/services/notificationService')).default
-        
+
         if (actionType === 'message') {
           notificationService.notifyMessageLimitReached(userEmail)
         } else if (actionType === 'job_application') {
@@ -250,6 +250,65 @@ class SubscriptionService {
       reason: 'no_subscription',
       message: 'You need an active subscription to contact job posters directly. Upgrade to start messaging.',
     }
+  }
+
+  // Check if user can message another user based on roles and subscription
+  // Rules:
+  // - Subscribed users can message clients
+  // - Clients can be added to network by anyone (connection requests)
+  // - Artists can message each other freely
+  async canMessageUser(senderEmail, recipientEmail, senderRole, recipientRole) {
+    // Artists can message each other freely
+    if (senderRole === 'artist' && recipientRole === 'artist') {
+      return { allowed: true, reason: 'artist_to_artist' }
+    }
+
+    // Subscribed users can message clients
+    if (recipientRole === 'client' || recipientRole === 'project_owner') {
+      const hasSub = await this.hasActiveSubscription(senderEmail)
+      if (hasSub) {
+        return { allowed: true, reason: 'subscribed_to_client' }
+      }
+      return {
+        allowed: false,
+        reason: 'no_subscription',
+        message: 'You need an active subscription to message clients. Upgrade to start messaging.',
+      }
+    }
+
+    // Teams can message clients (if subscribed)
+    if (senderRole === 'team' && (recipientRole === 'client' || recipientRole === 'project_owner')) {
+      const hasSub = await this.hasActiveSubscription(senderEmail)
+      if (hasSub) {
+        return { allowed: true, reason: 'subscribed_team_to_client' }
+      }
+      return {
+        allowed: false,
+        reason: 'no_subscription',
+        message: 'Your team needs an active subscription to message clients. Upgrade to start messaging.',
+      }
+    }
+
+    // Clients can message artists freely (they're the ones posting jobs)
+    if ((senderRole === 'client' || senderRole === 'project_owner') && recipientRole === 'artist') {
+      return { allowed: true, reason: 'client_to_artist' }
+    }
+
+    // Backers can message clients (if subscribed)
+    if (senderRole === 'backer' && (recipientRole === 'client' || recipientRole === 'project_owner')) {
+      const hasSub = await this.hasActiveSubscription(senderEmail)
+      if (hasSub) {
+        return { allowed: true, reason: 'subscribed_backer_to_client' }
+      }
+      return {
+        allowed: false,
+        reason: 'no_subscription',
+        message: 'You need an active subscription to message clients. Upgrade to start messaging.',
+      }
+    }
+
+    // Default: allow for other combinations (e.g., team to team, backer to artist)
+    return { allowed: true, reason: 'default_allowed' }
   }
 }
 

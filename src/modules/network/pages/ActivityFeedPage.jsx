@@ -3,22 +3,25 @@ import { useNavigate } from 'react-router-dom'
 import { Job, Connection, Endorsement, Testimonial } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Briefcase, Users, Award, ThumbsUp, MessageCircle, TrendingUp, Clock, Filter, RefreshCw } from 'lucide-react'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function ActivityFeedPage() {
   const navigate = useNavigate()
+  const { user: authUser, isAuthenticated, isLoadingAuth } = useAuth()
   const [user, setUser] = useState(null)
   const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all'); // all, jobs, connections, endorsements, testimonials
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('smartgigs_user')
-    if (!storedUser) {
-      navigate('/')
+    if (isLoadingAuth) return
+    if (!isAuthenticated) {
+      navigate('/SignIn')
       return
     }
-    setUser(JSON.parse(storedUser))
-  }, [])
+    if (!authUser) return
+    setUser(authUser)
+  }, [isLoadingAuth, isAuthenticated, authUser, navigate])
 
   useEffect(() => {
     if (!user) return

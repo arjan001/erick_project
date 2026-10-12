@@ -20,7 +20,7 @@ const MENU_ITEMS = [
 
 export default function ClientSidebar() {
   const location = useLocation()
-  const [user, setUser] = useState(null)
+  const { user: authUser } = useAuth()
   const [pendingConnections, setPendingConnections] = useState(0)
   const [unreadMessageCount, setUnreadMessageCount] = useState(0)
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0)
@@ -28,18 +28,13 @@ export default function ClientSidebar() {
   const { logout } = useAuth()
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('smartgigs_user')
-    setUser(storedUser ? JSON.parse(storedUser) : null)
-  }, [])
-
-  useEffect(() => {
-    if (!user?.email) return
+    if (!authUser?.email) return
     let unsubscribe
 
     const fetchUnreadMessages = async () => {
       try {
         // Messages table uses is_read, not read
-        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_at', 50)
+        const msgs = await Message.filter({ recipient_email: authUser.email, is_read: false }, '-created_at', 50)
         setUnreadMessageCount((msgs || []).length)
       } catch {
         setUnreadMessageCount(0)
@@ -48,7 +43,7 @@ export default function ClientSidebar() {
 
     const fetchUnreadNotifications = async () => {
       try {
-        const notifs = await Notification.filter({ recipient_email: user.email })
+        const notifs = await Notification.filter({ recipient_email: authUser.email })
         setUnreadNotificationCount((notifs || []).filter(n => !n.read).length)
       } catch {
         setUnreadNotificationCount(0)
@@ -58,34 +53,34 @@ export default function ClientSidebar() {
     fetchUnreadMessages()
     fetchUnreadNotifications()
 
-    (async () => {
-      unsubscribe = Message.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchUnreadMessages()
-      })
-    })()
+      (async () => {
+        unsubscribe = Message.subscribe((event) => {
+          if (event.data?.recipient_email === authUser.email) fetchUnreadMessages()
+        })
+      })()
 
-    (async () => {
-      const notifUnsubscribe = Notification.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchUnreadNotifications()
-      })
-      return () => {
-        unsubscribe && unsubscribe()
-        notifUnsubscribe && notifUnsubscribe()
-      }
-    })()
+      (async () => {
+        const notifUnsubscribe = Notification.subscribe((event) => {
+          if (event.data?.recipient_email === authUser.email) fetchUnreadNotifications()
+        })
+        return () => {
+          unsubscribe && unsubscribe()
+          notifUnsubscribe && notifUnsubscribe()
+        }
+      })()
 
     return () => unsubscribe && unsubscribe()
-  }, [user])
+  }, [authUser])
 
   useEffect(() => {
-    if (!user) return
+    if (!authUser) return
     let unsubscribe
     const fetchPendingConnections = async () => {
       try {
         const { Connection } = await import('@/lib/supabaseEntities')
-        const connections = await Connection.filter({ 
-          recipient_email: user.email, 
-          status: 'pending' 
+        const connections = await Connection.filter({
+          recipient_email: authUser.email,
+          status: 'pending'
         }, '-created_date', 50)
         setPendingConnections((connections || []).length)
       } catch {
@@ -94,15 +89,15 @@ export default function ClientSidebar() {
     }
     fetchPendingConnections()
 
-    (async () => {
-      const { Connection } = await import('@/lib/supabaseEntities')
-      unsubscribe = Connection.subscribe((event) => {
-        if (event.data?.recipient_email === user.email) fetchPendingConnections()
-      })
-    })()
+      (async () => {
+        const { Connection } = await import('@/lib/supabaseEntities')
+        unsubscribe = Connection.subscribe((event) => {
+          if (event.data?.recipient_email === authUser.email) fetchPendingConnections()
+        })
+      })()
 
     return () => unsubscribe && unsubscribe()
-  }, [user])
+  }, [authUser])
 
   const toggle = () => {
     if (window.innerWidth < 1024) {
@@ -116,9 +111,8 @@ export default function ClientSidebar() {
 
   return (
     <aside
-      className={`h-full bg-[#0A0A0A] shadow-[2px_0_12px_rgba(0,0,0,0.3)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative ${
-        mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      } ${expanded ? 'w-64' : 'w-20'}`}
+      className={`h-full bg-[#0A0A0A] shadow-[2px_0_12px_rgba(0,0,0,0.3)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } ${expanded ? 'w-64' : 'w-20'}`}
     >
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-3 border-b border-[#1a1a1a]">
@@ -138,15 +132,14 @@ export default function ClientSidebar() {
         {MENU_ITEMS.map((item) => {
           const Icon = item.icon
           const isActive = location.pathname.toLowerCase().includes(item.href.toLowerCase())
-          
+
           if (!expanded) {
             return (
               <div key={item.href} className="relative group">
                 <Link
                   to={createPageUrl(item.href)}
-                  className={`flex items-center justify-center w-full p-2 rounded-lg transition-all ${
-                    isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                  }`}
+                  className={`flex items-center justify-center w-full p-2 rounded-lg transition-all ${isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                    }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   {item.showBadge && unreadMessageCount > 0 && (
@@ -173,14 +166,13 @@ export default function ClientSidebar() {
               </div>
             )
           }
-          
+
           return (
             <Link
               key={item.href}
               to={createPageUrl(item.href)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
-              }`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                }`}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               <span className="text-sm whitespace-nowrap flex-1 text-left">{item.label}</span>

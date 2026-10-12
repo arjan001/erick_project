@@ -7,11 +7,13 @@ import { Input } from '@/components/ui/input'
 import { FileText, User, Calendar, MapPin, Check, X, Crown, Star, Briefcase, Eye, Bookmark, BookmarkCheck, Play, Download, Globe, Linkedin, Instagram, Youtube, Twitter, Award, Languages, Globe2, Building2, Mail, Phone, Tag, Clock, DollarSign, GraduationCap, Search, Filter, MessageSquare, ChevronDown, ChevronUp, TrendingUp, Users, ExternalLink } from 'lucide-react'
 import { createPageUrl } from '@/shared/utils/routing'
 import { useToast } from '@/hooks/useToast'
+import { useAuth } from '@/lib/AuthContext'
 import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge'
 import ApplicationRankingEngine from '@/lib/applicationRankingEngine'
 
 export default function ClientApplications() {
   const navigate = useNavigate()
+  const { user: authUser, isAuthenticated, isLoadingAuth } = useAuth()
   const { success, error: toastError } = useToast()
   const [user, setUser] = useState(null)
   const [applications, setApplications] = useState([])
@@ -46,17 +48,17 @@ export default function ClientApplications() {
   const [showBestFit, setShowBestFit] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('smartgigs_user')
-    if (!storedUser) {
-      navigate('/')
+    if (isLoadingAuth) return
+    if (!isAuthenticated) {
+      navigate('/SignIn')
       return
     }
-    const userData = JSON.parse(storedUser)
-    setUser(userData)
+    if (!authUser) return
+    setUser(authUser)
 
     const fetchApplications = async () => {
       try {
-        const userId = userData.id
+        const userId = authUser.id
 
         // Fetch client record to get client_id
         const { data: clientData, error: clientError } = await supabase
@@ -197,7 +199,7 @@ export default function ClientApplications() {
     }
 
     fetchApplications()
-  }, [])
+  }, [isLoadingAuth, isAuthenticated, authUser, navigate])
 
   // Rank applications using the ranking engine
   useEffect(() => {
@@ -604,7 +606,7 @@ export default function ClientApplications() {
     setCurrentPage(1)
   }, [selectedJob, selectedStatus, selectedType, minScore, searchQuery])
 
-  if (loading) {
+  if (isLoadingAuth || loading) {
     return (
       <div className="flex items-center justify-center p-12">
         <div className="text-gray-600">Loading applications...</div>

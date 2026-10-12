@@ -8,6 +8,7 @@ import CountrySelector from '@/components/CountrySelector'
 import { formatSocialMediaUrl } from '@/lib/socialMediaUtils'
 import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2, FolderOpen, Users, CreditCard, Lock, Settings as SettingsIcon, Plus, Eye, MoreVertical, UserPlus, FileText, Monitor, MapPin, Share2, Image as ImageIcon } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
+import { useAuth } from '@/lib/AuthContext'
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
   return (
@@ -28,6 +29,7 @@ function ToggleRow({ title, description, checked, onChange, isLast }) {
 
 export default function ClientProfilePage() {
   const navigate = useNavigate()
+  const { user: authUser, isAuthenticated, isLoadingAuth } = useAuth()
   const { success, error: toastError } = useToast()
   const [user, setUser] = useState(null)
   const [owner, setOwner] = useState(null)
@@ -70,17 +72,17 @@ export default function ClientProfilePage() {
   const [profilePublic, setProfilePublic] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('smartgigs_user')
-    if (!storedUser) {
-      navigate('/')
+    if (isLoadingAuth) return
+    if (!isAuthenticated) {
+      navigate('/SignIn')
       return
     }
-    const parsedUser = JSON.parse(storedUser)
-    setUser(parsedUser)
+    if (!authUser) return
+    setUser(authUser)
 
     const fetchData = async () => {
       try {
-        const owners = await ProjectOwner.filter({ email: parsedUser.email })
+        const owners = await ProjectOwner.filter({ email: authUser.email })
         if (owners.length > 0) {
           const o = owners[0]
           setOwner(o)
@@ -102,7 +104,7 @@ export default function ClientProfilePage() {
     }
 
     fetchData()
-  }, [])
+  }, [isLoadingAuth, isAuthenticated, authUser, navigate])
 
   // Load projects for the Projects tab
   useEffect(() => {

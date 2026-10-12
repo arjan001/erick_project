@@ -695,12 +695,6 @@ const artistRoutes = [
     guard: ArtistGuard
   },
   {
-    path: '/Network',
-    component: () => import('@/modules/network/pages/NetworkPage'),
-    layout: DashboardLayout,
-    guard: ArtistGuard
-  },
-  {
     path: '/ArtistSubscription',
     component: () => import('@/modules/artist/pages/ArtistSubscriptionPage'),
     layout: DashboardLayout,
@@ -726,7 +720,7 @@ const sharedRoutes = [
     path: '/Network',
     component: () => import('@/modules/network/pages/NetworkPage'),
     layout: DashboardLayout,
-    guard: [ArtistGuard, ClientGuard]
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin', 'client', 'project_owner'])
   },
   {
     path: '/ArtistSubscriptionCheckout',

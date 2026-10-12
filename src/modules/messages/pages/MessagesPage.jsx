@@ -38,7 +38,7 @@ const isOnline = (lastActive) => lastActive && (Date.now() - new Date(lastActive
 
 function getFileIcon(fileType) {
   if (!fileType) return <File className="w-5 h-5 text-gray-600" />
-  
+
   if (fileType.startsWith('image/')) {
     return <ImageIcon className="w-5 h-5 text-gray-600" />
   }
@@ -67,7 +67,7 @@ function formatFileSize(bytes) {
 
 function getMessageStatus(msg, currentUserEmail) {
   if (msg.sender_email !== currentUserEmail) return null; // Only show status for sent messages
-  
+
   if (msg.is_read) {
     return { icon: CheckCheck, color: 'text-blue-500', label: 'Read' }
   }
@@ -213,14 +213,14 @@ export default function MessagesPage() {
     const withEmail = searchParams.get('with')
     if (withEmail && user) {
       const conversationId = getConversationId(user.email, withEmail)
-      
+
       // First check if conversation already exists
       const existing = conversations.find(c => c.id === conversationId)
       if (existing) {
         setSelectedId(conversationId)
         return
       }
-      
+
       // If not, create new conversation and select it
       enrichParticipant(withEmail).then(info => {
         setConversations(prev => {
@@ -302,10 +302,10 @@ export default function MessagesPage() {
 
     const handleNewMessage = async (newMessage) => {
       //
-      
+
       // Apply the new message to state
       await applyIncomingMessage(newMessage)
-      
+
       // Play notification sound if message is from someone else
       if (newMessage.sender_email !== user.email) {
         playMessageTone()
@@ -314,14 +314,14 @@ export default function MessagesPage() {
 
     const handleMessageUpdate = async (updatedMessage) => {
       //
-      
+
       // Update message in state (e.g., read status, delivery status)
       setConversations(prev => {
         return prev.map(c => {
           if (c.id === updatedMessage.conversation_id) {
             return {
               ...c,
-              messages: c.messages.map(m => 
+              messages: c.messages.map(m =>
                 m.id === updatedMessage.id ? { ...m, ...updatedMessage } : m
               )
             }
@@ -367,18 +367,24 @@ export default function MessagesPage() {
 
   const handleSend = async () => {
     if ((!messageInput.trim() && !attachedFile) || !selectedConversation) return
-    
-    // Check subscription — must have active plan to contact job posters directly
-    const canContact = await subscriptionService.canContactJobPoster(user.email)
-    if (!canContact.allowed) {
-      error('Subscription Required', canContact.message)
+
+    // Get recipient's role from enriched conversation data
+    const recipientRole = selectedConversation.type === 'Client' ? 'client' :
+      selectedConversation.type === 'Artist' ? 'artist' :
+        selectedConversation.type === 'Team' ? 'team' :
+          selectedConversation.type === 'Backer' ? 'backer' : 'artist'
+
+    // Check if user can message this recipient based on roles and subscription
+    const canMessage = await subscriptionService.canMessageUser(user.email, selectedConversation.otherEmail, user.role, recipientRole)
+    if (!canMessage.allowed) {
+      error('Messaging Not Allowed', canMessage.message || 'You cannot message this user.')
       return
     }
 
     // Check subscription limits before sending
     const limitCheck = await subscriptionService.checkLimit(user.email, 'message')
     if (!limitCheck.allowed) {
-      error('Limit Reached', limitCheck.expired 
+      error('Limit Reached', limitCheck.expired
         ? 'Your subscription has expired. Please renew to continue sending messages.'
         : 'You have reached your monthly message limit. Upgrade to send more messages.')
       return
@@ -431,10 +437,10 @@ export default function MessagesPage() {
         : c))
       // Refetch from DB to guarantee the message is persisted and visible after reload
       await fetchConversations()
-      
+
       // Track usage and notify if approaching limit
       await subscriptionService.trackUsage(user.email, 'message')
-      
+
       // Notify recipient about new message
       try {
         await Notification.create({
@@ -460,7 +466,7 @@ export default function MessagesPage() {
   const handleFileAttach = async (e) => {
     const file = e.target.files?.[0]
     if (!file || !selectedConversation) return
-    
+
     // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       error('File too large', 'Maximum file size is 10MB')
@@ -556,8 +562,8 @@ export default function MessagesPage() {
   }
 
   const handleDeleteMessage = async (msg, deleteType = 'me') => {
-    const confirmText = deleteType === 'everyone' 
-      ? 'Delete for everyone? This will remove the message for all participants.' 
+    const confirmText = deleteType === 'everyone'
+      ? 'Delete for everyone? This will remove the message for all participants.'
       : 'Delete for you? This will only remove the message from your view.'
     const confirmed = await confirmDialog('Delete message?', confirmText, 'Yes, delete it')
     if (!confirmed) return
@@ -623,7 +629,7 @@ export default function MessagesPage() {
       const updatedStarredBy = isStarred
         ? currentStarredBy.filter(email => email !== user.email)
         : [...currentStarredBy, user.email]
-      
+
       await Message.update(msg.id, { starred_by: updatedStarredBy })
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
         ? { ...c, messages: c.messages.map(m => m.id === msg.id ? { ...m, starred_by: updatedStarredBy } : m) }
@@ -669,7 +675,19 @@ export default function MessagesPage() {
     }
   }
 
-  const startChat = (person) => {
+  const startChat = async (person) => {
+    // Check if user can message this person based on roles and subscription
+    const recipientRole = person.type === 'Client' ? 'client' :
+      person.type === 'Artist' ? 'artist' :
+        person.type === 'Team' ? 'team' :
+          person.type === 'Backer' ? 'backer' : 'artist'
+
+    const canMessage = await subscriptionService.canMessageUser(user.email, person.email, user.role, recipientRole)
+    if (!canMessage.allowed) {
+      error('Messaging Not Allowed', canMessage.message || 'You cannot message this user.')
+      return
+    }
+
     const id = getConversationId(user.email, person.email)
     const existing = conversations.find(c => c.id === id)
     if (existing) {
@@ -875,12 +893,11 @@ export default function MessagesPage() {
                         }}
                         className={`flex ${msg.sender_email === user.email ? 'justify-end' : 'justify-start'}`}
                       >
-                        <div 
-                          className={`max-w-[280px] sm:max-w-[320px] rounded-lg px-2.5 py-1.5 relative group ${
-                            msg.sender_email === user.email 
-                              ? 'bg-[#dcf8c6] text-gray-900' 
-                              : 'bg-white text-gray-900 shadow-sm'
-                          }`}
+                        <div
+                          className={`max-w-[280px] sm:max-w-[320px] rounded-lg px-2.5 py-1.5 relative group ${msg.sender_email === user.email
+                            ? 'bg-[#dcf8c6] text-gray-900'
+                            : 'bg-white text-gray-900 shadow-sm'
+                            }`}
                           onMouseEnter={() => setHoveredMessageId(msg.id)}
                           onMouseLeave={() => setHoveredMessageId(null)}
                         >
@@ -1055,14 +1072,14 @@ export default function MessagesPage() {
                       disabled={isRecording}
                       autoFocus
                     />
-                    <button 
-                      onClick={handleCancelEdit} 
+                    <button
+                      onClick={handleCancelEdit}
                       className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50"
                     >
                       <X className="w-4 h-4" />
                     </button>
-                    <button 
-                      onClick={handleSaveEdit} 
+                    <button
+                      onClick={handleSaveEdit}
                       disabled={!editText.trim()}
                       className="px-5 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >
@@ -1080,8 +1097,8 @@ export default function MessagesPage() {
                       className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
                       disabled={isRecording}
                     />
-                    <button 
-                      onClick={handleSend} 
+                    <button
+                      onClick={handleSend}
                       disabled={!messageInput.trim() && !attachedFile}
                       className="px-5 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >

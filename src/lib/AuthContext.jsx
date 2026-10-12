@@ -30,10 +30,10 @@ function buildUser(supabaseUser, appRole) {
 }
 
 // Resolve the app role (artist/team/client/backer) for a logged-in Supabase
-// user by checking which entity profile exists for their email.
+// user by checking which entity profile exists for their user_id.
 // PRIORITY: user metadata role > which profile exists > default to artist
-async function resolveAppRole(email, metadataRole = null) {
-  if (!email) return 'artist'
+async function resolveAppRole(userId, metadataRole = null) {
+  if (!userId) return 'artist'
 
   // First, check if role is in user metadata (from signup/OAuth)
   if (metadataRole && ['artist', 'team', 'client', 'backer'].includes(metadataRole)) {
@@ -41,20 +41,21 @@ async function resolveAppRole(email, metadataRole = null) {
   }
 
   // Fallback: check which profile exists (for existing users without metadata role)
+  // Use user_id to query entity tables
   try {
-    const artists = await Artist.filter({ email })
+    const artists = await Artist.filter({ user_id: userId })
     if (artists && artists.length > 0) return 'artist'
   } catch { /* ignore - return default */ }
   try {
-    const teams = await Team.filter({ contact_email: email })
+    const teams = await Team.filter({ user_id: userId })
     if (teams && teams.length > 0) return 'team'
   } catch { /* ignore - return default */ }
   try {
-    const owners = await ProjectOwner.filter({ email })
+    const owners = await ProjectOwner.filter({ user_id: userId })
     if (owners && owners.length > 0) return 'client'
   } catch { /* ignore - return default */ }
   try {
-    const backers = await Backer.filter({ contact_email: email })
+    const backers = await Backer.filter({ user_id: userId })
     if (backers && backers.length > 0) return 'backer'
   } catch { /* ignore - return default */ }
   return 'artist'
@@ -91,7 +92,7 @@ async function grantProSubscription(email) {
 
 // Ensure an entity profile exists for new users
 async function ensureProfile(user) {
-  if (!user?.email) return
+  if (!user?.id) return
   // Get role from user metadata first (primary source), fallback to session storage
   const roleIntent = typeof window !== 'undefined' ? sessionStorage.getItem('oauth_role_intent') : null
   const metadataRole = user.role || user.user_metadata?.role
@@ -106,9 +107,10 @@ async function ensureProfile(user) {
 
   try {
     if (role === 'artist') {
-      const existing = await Artist.filter({ email: user.email })
+      const existing = await Artist.filter({ user_id: user.id })
       if (!existing || existing.length === 0) {
         await Artist.create({
+          user_id: user.id,
           email: user.email,
           full_name,
           role: 'director',
@@ -119,9 +121,10 @@ async function ensureProfile(user) {
       }
     } else if (role === 'team') {
       if (user.team_id) return
-      const existing = await Team.filter({ contact_email: user.email })
+      const existing = await Team.filter({ user_id: user.id })
       if (!existing || existing.length === 0) {
         await Team.create({
+          user_id: user.id,
           team_name: user.team_name || user.user_metadata?.team_name || full_name,
           team_code: 'TM' + Date.now().toString().slice(-4),
           contact_email: user.email,
@@ -135,18 +138,20 @@ async function ensureProfile(user) {
         })
       }
     } else if (role === 'backer') {
-      const existing = await Backer.filter({ contact_email: user.email })
+      const existing = await Backer.filter({ user_id: user.id })
       if (!existing || existing.length === 0) {
         await Backer.create({
+          user_id: user.id,
           organization_name: full_name,
           contact_email: user.email,
           referred_by: referredBy,
         })
       }
     } else if (role === 'client' || role === 'project_owner') {
-      const existing = await ProjectOwner.filter({ email: user.email })
+      const existing = await ProjectOwner.filter({ user_id: user.id })
       if (!existing || existing.length === 0) {
         await ProjectOwner.create({
+          user_id: user.id,
           email: user.email,
           full_name,
           referred_by: referredBy,
@@ -165,24 +170,24 @@ async function ensureProfile(user) {
 
 // Update the current user's own profile record with a fresh timestamp so others can see them as online
 async function updatePresence(u) {
-  if (!u?.email) return
+  if (!u?.id) return
   const now = new Date().toISOString()
   try {
     if (u.role === 'team') {
       if (u.team_id) {
         await Team.update(u.team_id, { last_active: now })
       } else {
-        const teams = await Team.filter({ contact_email: u.email })
+        const teams = await Team.filter({ user_id: u.id })
         if (teams[0]) await Team.update(teams[0].id, { last_active: now })
       }
     } else if (u.role === 'client' || u.role === 'project_owner') {
-      const owners = await ProjectOwner.filter({ email: u.email })
+      const owners = await ProjectOwner.filter({ user_id: u.id })
       if (owners[0]) await ProjectOwner.update(owners[0].id, { last_active: now })
     } else if (u.role === 'backer') {
-      const backers = await Backer.filter({ contact_email: u.email })
+      const backers = await Backer.filter({ user_id: u.id })
       if (backers[0]) await Backer.update(backers[0].id, { last_active: now })
     } else {
-      const artists = await Artist.filter({ email: u.email })
+      const artists = await Artist.filter({ user_id: u.id })
       if (artists[0]) await Artist.update(artists[0].id, { last_active: now })
     }
   } catch (err) {
@@ -311,7 +316,7 @@ export const AuthProvider = ({ children }) => {
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
           const metadataRole = session.user.user_metadata?.role
-          const appRole = await resolveAppRole(session.user.email, metadataRole)
+          const appRole = await resolveAppRole(session.user.id, metadataRole)
           const u = buildUser(session.user, appRole)
           setUser(u)
           setIsAuthenticated(true)
@@ -335,7 +340,7 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         const metadataRole = session.user.user_metadata?.role
-        const appRole = await resolveAppRole(session.user.email, metadataRole)
+        const appRole = await resolveAppRole(session.user.id, metadataRole)
         const u = buildUser(session.user, appRole)
         setUser(u)
         setIsAuthenticated(true)
@@ -380,7 +385,7 @@ export const AuthProvider = ({ children }) => {
     if (error) throw error
 
     const metadataRole = data.user.user_metadata?.role
-    const appRole = await resolveAppRole(data.user.email, metadataRole)
+    const appRole = await resolveAppRole(data.user.id, metadataRole)
     const u = buildUser(data.user, appRole)
     setUser(u)
     setIsAuthenticated(true)

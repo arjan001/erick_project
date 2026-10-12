@@ -92,18 +92,18 @@ class AnalyticsService {
     if (!this.sessionId) await this.initialize()
 
     try {
-      // Use upsert to handle duplicate inserts gracefully
-      const { error: insertError } = await supabase.from('page_views').upsert({
+      // Use insert without conflict resolution - page_views has no unique constraint
+      const { error: insertError } = await supabase.from('page_views').insert({
         session_id: this.sessionId,
         user_id: this.userId,
         page_path: pagePath,
         page_title: pageTitle || document.title,
         referrer: document.referrer || null,
         viewed_at: new Date().toISOString()
-      }, { onConflict: 'session_id,page_path,viewed_at' })
+      })
 
-      // Ignore 409 conflicts (duplicate inserts) - analytics is non-critical
-      if (insertError && insertError.code !== '23505') {
+      // Silently ignore all analytics errors - don't block the app
+      if (insertError) {
         console.error('Analytics error:', insertError)
       }
 

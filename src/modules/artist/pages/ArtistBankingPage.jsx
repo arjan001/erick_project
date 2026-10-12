@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CreditCard, Lock, Plus, Trash2, Check, AlertCircle, Building2 } from 'lucide-react'
 import { createPageUrl } from '@/shared/utils/routing'
 import { useToast } from '@/hooks/useToast.jsx'
+import { useAuth } from '@/lib/AuthContext'
 
 export default function ArtistBankingPage() {
   const navigate = useNavigate()
+  const { user: authUser, isAuthenticated, isLoadingAuth } = useAuth()
   const { success, error: toastError } = useToast()
   const [user, setUser] = useState(null)
   const [artist, setArtist] = useState(null)
@@ -27,20 +29,19 @@ export default function ArtistBankingPage() {
   })
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('smartgigs_user')
-    if (!storedUser) {
-      navigate('/signin')
+    if (isLoadingAuth) return
+    if (!isAuthenticated) {
+      navigate('/SignIn')
       return
     }
-    setUser(JSON.parse(storedUser))
+    if (!authUser) return
+    setUser(authUser)
     fetchData()
-  }, [])
+  }, [isLoadingAuth, isAuthenticated, authUser, navigate])
 
   const fetchData = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('smartgigs_user'))
-
-      const artists = await Artist.filter({ email: storedUser.email })
+      const artists = await Artist.filter({ email: authUser.email })
       if (artists.length > 0) {
         setArtist(artists[0])
         setPaymentMethods(artists[0].payment_methods || [])

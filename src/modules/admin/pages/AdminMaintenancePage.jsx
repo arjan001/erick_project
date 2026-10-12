@@ -18,6 +18,7 @@ import {
   getAllTemplates
 } from '@/lib/maintenanceMode'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/lib/AuthContext'
 
 const ToggleRow = ({ label, description, checked, onChange }) => (
   <div className="flex items-center justify-between py-2">
@@ -40,6 +41,7 @@ const ToggleRow = ({ label, description, checked, onChange }) => (
 
 export default function AdminMaintenancePage() {
   const { success, error } = useToast()
+  const { user: authUser } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [previewMode, setPreviewMode] = useState(false)
@@ -176,7 +178,7 @@ export default function AdminMaintenancePage() {
         .insert({
           code: newCode.trim(),
           is_active: true,
-          created_by: localStorage.getItem('smartgigs_user') ? JSON.parse(localStorage.getItem('smartgigs_user')).email : 'admin',
+          created_by: authUser?.email || 'admin',
           expires_at: codeExpiry || null
         })
 
