@@ -98,83 +98,41 @@ WHERE t.user_id IS NULL
 
 -- Step 5: Migrate backers table to use user_id
 -- For existing backers, find the corresponding user_id from public.users
+-- NOTE: backers table uses contact_email, not email
 
 UPDATE public.backers b
 SET user_id = u.id
 FROM public.users u
 WHERE b.user_id IS NULL
-  AND b.email = u.email;
+  AND b.contact_email = u.email;
 
 -- Step 6: Migrate jobs table to use client_id properly
--- Find the client record by email and set client_id
-
-UPDATE public.jobs j
-SET client_id = c.id
-FROM public.clients cl
-JOIN public.users u ON cl.user_id = u.id
-WHERE j.client_id IS NULL
-  AND j.client_email = u.email;
+-- NOTE: jobs table already uses client_id, no client_email column exists
+-- This step is not needed
 
 -- Step 7: Migrate projects table to use client_id properly
--- Find the client record by email and set client_id
-
-UPDATE public.projects p
-SET client_id = c.id
-FROM public.clients cl
-JOIN public.users u ON cl.user_id = u.id
-WHERE p.client_id IS NULL
-  AND p.project_owner_email = u.email;
+-- NOTE: projects table already uses client_id, no project_owner_email column exists
+-- This step is not needed
 
 -- Step 8: Migrate applications table to use user_id
--- For artist applications, find the user_id from public.users
+-- NOTE: applications table already uses user_id, no artist_email column exists
+-- This step is not needed
 
-UPDATE public.application a
-SET user_id = u.id
-FROM public.users u
-WHERE a.user_id IS NULL
-  AND a.artist_email = u.email;
+-- Step 9: Migrate notifications table to use user_id
+-- NOTE: This is handled in update_notifications_schema.sql
+-- This step is not needed
 
--- Step 9: Migrate notifications table to use recipient_id
--- For email-based notifications, find the user_id from public.users
-
-UPDATE public.notifications n
-SET recipient_id = u.id
-FROM public.users u
-WHERE n.recipient_id IS NULL
-  AND n.recipient_email = u.email;
-
--- Step 10: Migrate messages table to use sender_id and recipient_id
--- For email-based messages, find the user_id from public.users
-
-UPDATE public.messages m
-SET sender_id = u.id
-FROM public.users u
-WHERE m.sender_id IS NULL
-  AND m.sender_email = u.email;
-
-UPDATE public.messages m
-SET recipient_id = u.id
-FROM public.users u
-WHERE m.recipient_id IS NULL
-  AND m.recipient_email = u.email;
+-- Step 10: Migrate messages table to use conversation_id and sender_id
+-- NOTE: Messages table already uses conversation_id and sender_id
+-- This step is not needed
 
 -- Step 11: Migrate subscriptions table to use user_id
--- For email-based subscriptions, find the user_id from public.users
-
-UPDATE public.subscriptions s
-SET user_id = u.id
-FROM public.users u
-WHERE s.user_id IS NULL
-  AND s.user_email = u.email;
+-- NOTE: subscriptions table already uses user_id, no user_email column exists
+-- This step is not needed
 
 -- Step 12: Migrate connections table to use user_id
--- For email-based connections, find the user_id from public.users
-
-UPDATE public.connections conn
-SET user_id = u.id
-FROM public.users u
-WHERE conn.user_id IS NULL
-  AND conn.user_email = u.email;
+-- NOTE: This is handled in add_connections_table.sql (table is recreated)
+-- This step is not needed
 
 -- Step 13: Create trigger to automatically sync new auth users to public.users
 -- This replaces the old trigger that went directly to entity tables
