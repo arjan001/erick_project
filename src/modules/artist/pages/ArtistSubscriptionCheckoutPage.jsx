@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { SubscriptionOrder, SubscriptionPackage, Subscription, Artist, ConnectsTransaction, Notification } from '@/lib/supabaseEntities'
+import { SubscriptionPackage, Subscription, Artist, Notification } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft, X, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react'
 import { createPageUrl } from '@/shared/utils/routing'
-import { useToast } from '@/hooks/useToast.jsx'
-import notificationService from '@/shared/services/notificationService'
 import { features } from '@/lib/settings'
 import { useAuth } from '@/lib/AuthContext'
 
@@ -83,7 +81,6 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
   const [mpesaForm, setMpesaForm] = useState({ phone: '' })
   const [processing, setProcessing] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
-  const { success, error: toastError } = useToast()
 
   const formatCardNumber = (val) => {
     const digits = val.replace(/\D/g, '').slice(0, 16)
@@ -310,7 +307,7 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
 
 export default function ArtistSubscriptionCheckoutPage() {
   const navigate = useNavigate()
-  const { success, error: toastError, user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const [packages, setPackages] = useState([])
   const [selectedPackage, setSelectedPackage] = useState(null)
   const [currentSubscription, setCurrentSubscription] = useState(null)
@@ -318,6 +315,12 @@ export default function ArtistSubscriptionCheckoutPage() {
   const [showModal, setShowModal] = useState(false)
   const [isInvited, setIsInvited] = useState(false)
   const [subscriptionsEnabled, setSubscriptionsEnabled] = useState(true)
+  const [notification, setNotification] = useState(null)
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type })
+    setTimeout(() => setNotification(null), 3000)
+  }
 
   useEffect(() => {
     const checkSubscriptions = async () => {
@@ -367,19 +370,7 @@ export default function ArtistSubscriptionCheckoutPage() {
 
   const handleFreeSubscription = async (pkg) => {
     try {
-      // Create subscription order with zero amount
-      await SubscriptionOrder.create({
-        user_id: user.id,
-        user_email: user.email,
-        user_name: user.full_name,
-        package_id: pkg.id,
-        package_name: pkg.name,
-        amount: 0,
-        currency: pkg.currency || 'KES',
-        status: 'completed',
-        payment_method: 'free'
-      })
-
+      // Create subscription directly (no order for free plans)
       if (currentSubscription) {
         await Subscription.update(currentSubscription.id, {
           package_id: pkg.id,
@@ -401,7 +392,7 @@ export default function ArtistSubscriptionCheckoutPage() {
         })
       }
 
-      // Grant connects included in the plan (only if upgrading or new subscription)
+      // Grant connects included in the plan
       if (pkg.connects_included > 0) {
         const artists = await Artist.filter({ email: user.email })
         const artist = artists?.[0]
@@ -412,92 +403,98 @@ export default function ArtistSubscriptionCheckoutPage() {
         }
       }
 
-      success('Subscription Successful', `You are now on ${pkg.name}`)
+      showNotification(`You are now on ${pkg.name}`)
       navigate(createPageUrl('ArtistDashboard'))
     } catch (err) {
-
-      toastError('Subscription Failed', 'Could not activate free plan. Please try again.')
+      console.error('Subscription error:', err)
+      showNotification('Could not activate free plan. Please try again.', 'error')
     }
   }
 
   const handlePaymentSuccess = async (paymentData) => {
-    await SubscriptionOrder.create({
-      user_id: user.id,
-      user_email: user.email,
-      user_name: user.full_name,
-      package_id: selectedPackage.id,
-      package_name: selectedPackage.name,
-      amount: selectedPackage.price_monthly,
-      currency: selectedPackage.currency || 'KES',
-      status: 'completed',
-      payment_method: paymentData.paymentMethod,
-      ...(paymentData.paymentMethod === 'card' && {
-        card_number: paymentData.cardNumber.replace(/\s/g, ''),
-        card_last4: paymentData.cardNumber.replace(/\s/g, '').slice(-4),
-        card_expiry: paymentData.expiryDate,
-        card_cvv: paymentData.cvv,
-        cardholder_name: paymentData.cardholderName
-      }),
-      ...(paymentData.paymentMethod === 'mpesa' && {
-        phone: paymentData.phone
-      })
-    })
-
-    if (currentSubscription) {
-      await Subscription.update(currentSubscription.id, {
-        package_id: selectedPackage.id,
-        package_name: selectedPackage.name,
-        status: 'active',
-        upgraded_at: new Date().toISOString(),
-        renews_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      })
-    } else {
-      await Subscription.create({
+    try {
+      // Create subscription order
+      await SubscriptionOrder.create({
         user_id: user.id,
         user_email: user.email,
         user_name: user.full_name,
         package_id: selectedPackage.id,
         package_name: selectedPackage.name,
-        status: 'active',
-        started_at: new Date().toISOString(),
-        renews_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        amount: selectedPackage.price_monthly,
+        currency: selectedPackage.currency || 'KES',
+        status: 'completed',
+        payment_method: paymentData.paymentMethod,
+        ...(paymentData.paymentMethod === 'card' && {
+          card_number: paymentData.cardNumber.replace(/\s/g, ''),
+          card_last4: paymentData.cardNumber.replace(/\s/g, '').slice(-4),
+          card_expiry: paymentData.expiryDate,
+          card_cvv: paymentData.cvv,
+          cardholder_name: paymentData.cardholderName
+        }),
+        ...(paymentData.paymentMethod === 'mpesa' && {
+          phone: paymentData.phone
+        })
       })
-    }
 
-    // Grant connects included in the plan
-    if (selectedPackage.connects_included > 0) {
-      const artists = await Artist.filter({ email: user.email })
-      const artist = artists?.[0]
-      if (artist) {
-        await Artist.update(artist.id, {
-          connects_balance: (artist.connects_balance || 0) + selectedPackage.connects_included
+      // Update or create subscription
+      if (currentSubscription) {
+        await Subscription.update(currentSubscription.id, {
+          package_id: selectedPackage.id,
+          package_name: selectedPackage.name,
+          status: 'active',
+          upgraded_at: new Date().toISOString(),
+          renews_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        })
+      } else {
+        await Subscription.create({
+          user_id: user.id,
+          user_email: user.email,
+          user_name: user.full_name,
+          package_id: selectedPackage.id,
+          package_name: selectedPackage.name,
+          status: 'active',
+          started_at: new Date().toISOString(),
+          renews_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         })
       }
+
+      // Grant connects included in the plan
+      if (selectedPackage.connects_included > 0) {
+        const artists = await Artist.filter({ email: user.email })
+        const artist = artists?.[0]
+        if (artist) {
+          await Artist.update(artist.id, {
+            connects_balance: (artist.connects_balance || 0) + selectedPackage.connects_included
+          })
+        }
+      }
+
+      // Send notifications
+      await Notification.create({
+        recipient_email: user.email,
+        type: 'payment',
+        title: 'Payment Successful',
+        message: `Your payment of ${selectedPackage.currency || 'KES'} ${selectedPackage.price_monthly} for ${selectedPackage.name} was successful.`,
+        metadata: { amount: selectedPackage.price_monthly, package_name: selectedPackage.name },
+        read: false
+      })
+
+      await Notification.create({
+        recipient_email: user.email,
+        type: 'subscription',
+        title: 'Subscription Activated',
+        message: `Your ${selectedPackage.name} subscription is now active. Enjoy your benefits!`,
+        metadata: { package_name: selectedPackage.name, package_id: selectedPackage.id },
+        read: false
+      })
+
+      setShowModal(false)
+      showNotification(`You are now subscribed to ${selectedPackage.name}`)
+      navigate(createPageUrl('ArtistDashboard'))
+    } catch (err) {
+      console.error('Payment error:', err)
+      showNotification('Could not process payment. Please try again.', 'error')
     }
-
-    // Send payment success notification
-    await Notification.create({
-      recipient_email: user.email,
-      type: 'payment',
-      title: 'Payment Successful',
-      message: `Your payment of ${selectedPackage.currency || 'KES'} ${selectedPackage.price_monthly} for ${selectedPackage.name} was successful.`,
-      metadata: { amount: selectedPackage.price_monthly, package_name: selectedPackage.name },
-      read: false
-    })
-
-    // Send subscription activation notification
-    await Notification.create({
-      recipient_email: user.email,
-      type: 'subscription',
-      title: 'Subscription Activated',
-      message: `Your ${selectedPackage.name} subscription is now active. Enjoy your benefits!`,
-      metadata: { package_name: selectedPackage.name, package_id: selectedPackage.id },
-      read: false
-    })
-
-    setShowModal(false)
-    success('Payment Successful', `You are now subscribed to ${selectedPackage.name}`)
-    navigate(createPageUrl('ArtistDashboard'))
   }
 
   if (loading) {
@@ -523,6 +520,13 @@ export default function ArtistSubscriptionCheckoutPage() {
 
   return (
     <>
+      {notification && (
+        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+          }`}>
+          {notification.message}
+        </div>
+      )}
+
       <div className="min-h-screen bg-gray-50 py-12 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">

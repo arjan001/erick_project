@@ -41,10 +41,10 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <ShopProvider>
-          <QueryClientProvider client={queryClientInstance}>
-            <ToastProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <ShopProvider>
+            <QueryClientProvider client={queryClientInstance}>
               <HelmetProvider>
                 <Router>
                   <NavigationTracker />
@@ -53,10 +53,10 @@ function App() {
                 </Router>
                 <Toaster />
               </HelmetProvider>
-            </ToastProvider>
-          </QueryClientProvider>
-        </ShopProvider>
-      </AuthProvider>
+            </QueryClientProvider>
+          </ShopProvider>
+        </AuthProvider>
+      </ToastProvider>
     </ErrorBoundary>
   )
 }

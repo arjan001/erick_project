@@ -5,13 +5,17 @@ import { Heart, ShoppingBag, Trash2 } from 'lucide-react'
 import { formatKES } from '@/data/shopProducts'
 import { useShop } from '@/contexts/ShopContext'
 import { getWishlist, removeFromWishlist as removeFromWishlistService } from '@/services/shopService'
-import { useToast } from '@/hooks/useToast'
 
 export default function WishlistPage() {
   const { addToCart } = useShop()
-  const { success } = useToast()
   const [wishlist, setWishlist] = useState([])
   const [loading, setLoading] = useState(true)
+  const [notification, setNotification] = useState(null)
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type })
+    setTimeout(() => setNotification(null), 3000)
+  }
 
   useEffect(() => {
     // Load wishlist from localStorage on mount
@@ -45,7 +49,7 @@ export default function WishlistPage() {
       price: item.price,
     }
     addToCart(product)
-    success('Added to cart', `${item.product_name} has been added to your cart.`)
+    showNotification(`${item.product_name} has been added to your cart.`)
   }
 
   if (loading) {

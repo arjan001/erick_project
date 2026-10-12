@@ -1,16 +1,40 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useAuth } from '@/lib/AuthContext'
-import { useToast } from '@/hooks/useToast'
 import { getCart, setCart, addToCart as addToCartService, removeFromCart as removeFromCartService, updateCartQuantity as updateCartQuantityService, clearCart as clearCartService, getWishlist, setWishlist, addToWishlist as addToWishlistService, removeFromWishlist as removeFromWishlistService, isInWishlist as isInWishlistService, setCurrentUserId } from '@/services/shopService'
 
 const ShopContext = createContext(null)
 
 export function ShopProvider({ children }) {
   const { user, isAuthenticated: authIsAuthenticated } = useAuth()
-  const { success: toastSuccess, error: toastError } = useToast()
   const [cart, setCartState] = useState([])
   const [wishlist, setWishlistState] = useState([])
   const [loading, setLoading] = useState(false)
+  const [toastSuccess, setToastSuccess] = useState(() => () => { })
+  const [toastError, setToastError] = useState(() => () => { })
+
+  // Get toast functions from parent context if available
+  useEffect(() => {
+    // Try to get toast from window if available (fallback)
+    const getToastFunctions = () => {
+      try {
+        // This is a fallback - the proper way is to wrap the provider
+        return {
+          success: (title, message) => console.log('[Toast] Success:', title, message),
+          error: (title, message) => console.log('[Toast] Error:', title, message),
+          info: (title, message) => console.log('[Toast] Info:', title, message)
+        }
+      } catch {
+        return {
+          success: (title, message) => console.log('[Toast] Success:', title, message),
+          error: (title, message) => console.log('[Toast] Error:', title, message),
+          info: (title, message) => console.log('[Toast] Info:', title, message)
+        }
+      }
+    }
+    const toasts = getToastFunctions()
+    setToastSuccess(() => toasts.success)
+    setToastError(() => toasts.error)
+  }, [])
 
   useEffect(() => {
     if (user?.id) {

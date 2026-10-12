@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Flame, Gavel, Heart, ShoppingCart } from 'lucide-react'
 import { formatKES } from '@/data/shopProducts'
@@ -17,15 +17,21 @@ export default function ProductCard({ product }) {
   const auction = isAuctionProduct(product)
   const outOfStock = Number(product.stock) <= 0
   const sale = !auction && discountPercent(product) > 0
-  const wished = isWished(product.id)
+  const [wished, setWished] = useState(false)
+
+  useEffect(() => {
+    // Check if product is in wishlist
+    isWished(product.id).then(setWished).catch(() => setWished(false))
+  }, [product.id, isWished])
 
   const handleAddToCart = () => {
     if (outOfStock) return
     addToCart(product)
   }
 
-  const handleToggleWishlist = () => {
-    toggleWish(product)
+  const handleToggleWishlist = async () => {
+    setWished(!wished) // Optimistic update
+    await toggleWish(product)
   }
 
   return (

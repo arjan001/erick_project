@@ -26,18 +26,13 @@ export default function TalentPage() {
   const loadDatabaseProfiles = async () => {
     try {
       setLoading(true)
-      // Fetch all user types from database
-      const [artists, teams, backers, clients] = await Promise.all([
-        Artist.list('-created_at', 100),
-        Team.list('-created_at', 100),
-        Backer.list('-created_at', 100),
-        ProjectOwner.list('-created_at', 100)
-      ])
+      // Fetch only artists from database
+      const artists = await Artist.list('-created_at', 100)
 
       // Transform to talent card format
       const allProfiles = []
 
-      // Add artists
+      // Add artists only
       artists.forEach(a => {
         allProfiles.push({
           id: a.id,
@@ -47,45 +42,6 @@ export default function TalentPage() {
           images: a.profile_image ? [a.profile_image] : [DEFAULT_AVATAR],
           badges: [],
           email: a.email
-        })
-      })
-
-      // Add teams
-      teams.forEach(t => {
-        allProfiles.push({
-          id: t.id,
-          name: t.name || 'Team',
-          location: t.location || 'Kenya',
-          profession: 'Team',
-          images: t.profile_image ? [t.profile_image] : [DEFAULT_AVATAR],
-          badges: [],
-          email: t.email
-        })
-      })
-
-      // Add backers
-      backers.forEach(b => {
-        allProfiles.push({
-          id: b.id,
-          name: b.full_name || b.name || 'Backer',
-          location: b.location || 'Kenya',
-          profession: 'Backer',
-          images: b.profile_image ? [b.profile_image] : [DEFAULT_AVATAR],
-          badges: [],
-          email: b.email
-        })
-      })
-
-      // Add clients
-      clients.forEach(c => {
-        allProfiles.push({
-          id: c.id,
-          name: c.full_name || c.name || 'Producer',
-          location: c.location || 'Kenya',
-          profession: 'Producer',
-          images: c.profile_image ? [c.profile_image] : [DEFAULT_AVATAR],
-          badges: [],
-          email: c.email
         })
       })
 

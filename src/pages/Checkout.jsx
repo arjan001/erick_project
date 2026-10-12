@@ -6,7 +6,6 @@ import { formatKES } from '@/data/shopProducts'
 import { CheckCircle2, Loader2, ShoppingBag, Smartphone, CreditCard } from 'lucide-react'
 import { getCart, clearCart, createOrder, getShopSettings, calcTotals, recordCardAttempt } from '@/services/shopService'
 import { useShop } from '@/contexts/ShopContext'
-import { useToast } from '@/hooks/useToast'
 
 const inputCls =
   'w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-black placeholder:text-black/35 focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20'
@@ -24,7 +23,6 @@ export default function CheckoutPage() {
   const { user, isAuthenticated } = useAuth()
   const { cart } = useShop()
   const { clear } = useShop()
-  const { success, error: toastError } = useToast()
   const [loading, setLoading] = useState(true)
   const [settings, setSettings] = useState({ enableMpesa: true, enableCard: true, shippingThreshold: 5000, shippingCost: 500 })
   const [customer, setCustomer] = useState({ name: '', email: '', phone: '', address: '', city: '', county: '', notes: '' })
@@ -34,6 +32,12 @@ export default function CheckoutPage() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [completed, setCompleted] = useState(null)
+  const [notification, setNotification] = useState(null)
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type })
+    setTimeout(() => setNotification(null), 3000)
+  }
 
   useEffect(() => {
     const loadData = async () => {
@@ -151,13 +155,13 @@ export default function CheckoutPage() {
         })
         setPhase('done')
         clear(); // Clear cart from context
-        success('Order placed!', `Your order ${order.order_number} has been created successfully.`)
+        showNotification(`Your order ${order.order_number} has been created successfully.`)
       }, 3000)
     } catch (err) {
       //
       setError(err?.message || 'Something went wrong. Please try again.')
       setPhase('idle')
-      toastError('Checkout failed', err?.message || 'Something went wrong')
+      showNotification(err?.message || 'Something went wrong', 'error')
     }
   }
 
@@ -170,6 +174,12 @@ export default function CheckoutPage() {
     >
       <div className="bg-[#fff0e0] px-4 py-10 lg:px-8">
         <div className="mx-auto max-w-[1100px]">
+          {notification && (
+            <div className={`mb-4 px-6 py-3 rounded-lg shadow-lg ${notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+              }`}>
+              {notification.message}
+            </div>
+          )}
           <h1 className="mb-6 text-2xl font-bold text-black md:text-3xl">Checkout</h1>
           {children}
         </div>
