@@ -10,6 +10,11 @@ KEY="$HOME/.ssh/smartgigs_key"
 echo "🚀 Deploying SmartGigs to $SERVER..."
 echo ""
 
+# Step 0: Stop httpd and ensure nginx can start
+echo "🔧 Stopping httpd and ensuring nginx is running..."
+ssh -i $KEY $USER@$SERVER "pkill -9 httpd && systemctl start nginx"
+echo ""
+
 # Step 1: Pull latest code
 echo "📥 Pulling latest code from GitHub..."
 ssh -i $KEY $USER@$SERVER "cd $DEPLOY_PATH && git pull"

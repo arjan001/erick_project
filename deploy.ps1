@@ -9,6 +9,12 @@ $KEY = "$env:USERPROFILE\.ssh\smartgigs_key"
 Write-Host "🚀 Deploying SmartGigs to $SERVER..." -ForegroundColor Green
 Write-Host ""
 
+# Step 0: Stop httpd and ensure nginx can start
+Write-Host "🔧 Stopping httpd and ensuring nginx is running..." -ForegroundColor Cyan
+$setupCommand = "pkill -9 httpd; systemctl start nginx"
+plink -batch -i $KEY $USER@$SERVER $setupCommand
+Write-Host ""
+
 # Step 1: Pull latest code
 Write-Host "📥 Pulling latest code from GitHub..." -ForegroundColor Cyan
 $pullCommand = "cd $DEPLOY_PATH; git pull"
