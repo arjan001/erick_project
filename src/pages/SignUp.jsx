@@ -96,10 +96,18 @@ export default function SignUp() {
   useEffect(() => {
     if (userType === 'employer') {
       setFormData(prev => ({ ...prev, role: 'client' }))
+      // Update URL parameter
+      const newParams = new URLSearchParams(searchParams)
+      newParams.set('role', 'client')
+      navigate(`?${newParams.toString()}`, { replace: true })
     } else if (userType === 'talent') {
       setFormData(prev => ({ ...prev, role: 'artist' }))
+      // Update URL parameter
+      const newParams = new URLSearchParams(searchParams)
+      newParams.set('role', 'artist')
+      navigate(`?${newParams.toString()}`, { replace: true })
     }
-  }, [userType])
+  }, [userType, searchParams, navigate])
 
   // Check for invite code in URL query params or from invite landing
   useEffect(() => {
@@ -360,8 +368,8 @@ export default function SignUp() {
                 type="button"
                 onClick={() => setUserType('talent')}
                 className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${!isEmployer
-                    ? 'bg-white text-black shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
                   }`}
               >
                 I'm Talent
@@ -370,8 +378,8 @@ export default function SignUp() {
                 type="button"
                 onClick={() => setUserType('employer')}
                 className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${isEmployer
-                    ? 'bg-white text-black shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
                   }`}
               >
                 I'm Hiring
@@ -391,8 +399,7 @@ export default function SignUp() {
             <button
               type="button"
               className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-4 rounded-md flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
-              onClick={handleGoogleSignUp}
+              disabled={true}
             >
               <GoogleIcon />
               <span>Sign up with Google</span>
@@ -401,8 +408,7 @@ export default function SignUp() {
             <button
               type="button"
               className="w-full bg-black text-white hover:bg-gray-800 font-medium py-3 px-4 rounded-md flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
-              onClick={handleAppleSignUp}
+              disabled={true}
             >
               <AppleIcon />
               <span>Sign up with Apple</span>

@@ -29,16 +29,25 @@ This will:
 - Fix 400 Bad Request errors from sorting by created_date
 - Add indexes for faster sorting
 
-### 4. Insert Shop Products
+### 4. Create seo_settings Table (NEW)
+Run the SQL from: `database/migrations/create_seo_settings_table.sql`
+
+This will:
+- Create the missing `seo_settings` table
+- Fix 404 error for SEO settings
+
+### 5. Insert Shop Products (UPDATED)
 Run the SQL from: `database/migrations/insert_shop_products.sql`
 
 This will:
 - Clear dummy shop data
-- Insert realistic film/production equipment products
-- Prices in KES (20-30 KES range)
-- Categories: Equipment, Accessories, Supplies
+- Insert 5 realistic film/production equipment products
+- Products include: Camera, Lens, Lighting, Tripod, Microphone
+- Some products are auction-only, others buy-direct
+- Prices in KES (15,000-30,000 range)
+- All products have valid image URLs
 
-### 5. Insert Subscription Packages
+### 6. Insert Subscription Packages
 Run the SQL from: `database/migrations/insert_subscription_packages.sql`
 
 This will:
@@ -109,15 +118,27 @@ If the user management page is not fully functional, please let me know and I'll
 
 ## Admin Registration
 
-Registration is enabled. Users can:
-- Click "Join" button to sign up
-- Choose "I'm Talent" or "I'm Hiring"
-- Create their own accounts
+### Current Status:
+- **Public registration is DISABLED** on the signup page
+- Google and Apple OAuth buttons are DISABLED on signup
+- Only email/password registration is currently available (if enabled via GuestGuard)
+- Users can sign up via the "Join" button in the navbar (if enabled)
 
-The admin can then:
-- Manage users via `/Admin/UserManagement`
-- Assign appropriate roles (artist, client, team, backer)
-- Suspend problematic accounts
+### Admin-Only Registration:
+Currently, new users must be created through:
+1. **Supabase Auth Dashboard** (Recommended)
+   - Go to Authentication → Users
+   - Click "Add user"
+   - Set role in user metadata after creation
+
+2. **Admin Panel** (if functional)
+   - Go to `/Admin/UserManagement`
+   - Click "Add User"
+   - Fill in user details and assign role
+
+### For Testing:
+- Test/demo credentials are preserved for testing purposes
+- These credentials are still available for testing the application
 
 ---
 
@@ -127,3 +148,4 @@ The admin can then:
 - Change it immediately after first login
 - Do not share admin credentials
 - Use the admin panel to manage other users instead of creating them directly in Supabase
+- Only the admin should have the ability to create new admin accounts

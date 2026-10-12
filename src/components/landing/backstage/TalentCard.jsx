@@ -95,23 +95,6 @@ export default function TalentCard({ profile, showActions = true, onOpenProfile,
       <div className="px-1 pt-3 pb-1">
         <h3 className="text-sm font-bold leading-tight text-black">{profile.name}</h3>
         <p className="mt-0.5 text-xs font-normal leading-tight text-black">{profile.location}</p>
-
-        {/* Badges */}
-        <div className="mt-2 flex items-center gap-1.5">
-          {profile.badges.map((b) => {
-            const cfg = badgeConfig[b]
-            if (!cfg) return null
-            const Icon = cfg.icon
-            return (
-              <span
-                key={b}
-                className="flex h-5 w-5 items-center justify-center rounded-full bg-[#6366f1]/10"
-              >
-                <Icon className="h-3 w-3" style={{ color: cfg.color }} />
-              </span>
-            )
-          })}
-        </div>
       </div>
 
       {/* Action buttons — hidden on landing carousel, shown on talent directory */}

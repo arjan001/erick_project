@@ -1,4 +1,4 @@
-// Curated talent profiles — all images feature Black creatives
+// Curated talent profiles — all images feature Black/African creatives
 // Images sourced from Unsplash (royalty-free)
 
 const img = (id) => `https://images.unsplash.com/photo-${id}?w=500&h=500&fit=crop`
@@ -44,158 +44,6 @@ export const talentProfiles = [
   },
   {
     id: 2,
-    name: 'Beatrice Fernando',
-    location: 'Boston, MA',
-    profession: 'Actor',
-    gender: 'Female',
-    images: [img('1573496359142-b8d87734a5a2'), img('1607746882042-944635dfe10e')],
-    badges: ['star', 'flame', 'chat'],
-    hasReel: true,
-    appearance: {
-      height: '5\'4"',
-      weight: '120 lbs',
-      ageRange: '20-30',
-      ethnicity: 'Asian',
-      build: 'Slim',
-      hairColor: 'Black',
-      eyeColor: 'Dark Brown'
-    },
-    skills: ['Acting', 'Dance', 'Modeling'],
-    credits: {
-      film: ['Feature Film C', 'Drama Series D'],
-      commercials: ['Commercial E', 'Brand F']
-    },
-    education: ['BA in Theater Arts - Boston College'],
-    socialMedia: {
-      instagram: '@beatricefernando',
-      tiktok: '@beatriceactor'
-    },
-    representation: {
-      agent: 'Fernando Talent Group',
-      email: 'beatrice@fernandogroup.com'
-    },
-    unionMembership: ['SAG-AFTRA', 'AEA'],
-    licensePassport: {
-      driverLicense: true,
-      passport: true
-    }
-  },
-  {
-    id: 3,
-    name: 'Phil Gwilliam',
-    location: 'Manchester, England, United Kingdom',
-    profession: 'Actor',
-    gender: 'Male',
-    images: [img('1542206395-9feb3edf68d8'), img('1521310266103-5e1eb3d31e44')],
-    badges: ['star', 'chat'],
-    hasReel: false,
-    appearance: {
-      height: '6\'0"',
-      weight: '175 lbs',
-      ageRange: '30-40',
-      ethnicity: 'Caucasian',
-      build: 'Average',
-      hairColor: 'Brown',
-      eyeColor: 'Blue'
-    },
-    skills: ['Acting', 'Voiceover', 'Directing'],
-    credits: {
-      film: ['British Film G', 'International H'],
-      commercials: ['UK Commercial I']
-    },
-    education: ['MA in Acting - RADA'],
-    socialMedia: {
-      instagram: '@philgwilliam',
-      twitter: '@philgwilliam'
-    },
-    representation: {
-      agent: 'Gwilliam Management',
-      email: 'phil@gwilliammgmt.com'
-    },
-    unionMembership: ['Equity'],
-    licensePassport: {
-      driverLicense: true,
-      passport: true
-    }
-  },
-  {
-    id: 4,
-    name: 'Molly Lang',
-    location: 'New York City, NY',
-    profession: 'Actor',
-    gender: 'Female',
-    images: [img('1531123897727-8f129e168855'), img('1521119989659-a83eee488004')],
-    badges: ['star'],
-    hasReel: false,
-    appearance: {
-      height: '5\'7"',
-      weight: '135 lbs',
-      ageRange: '25-35',
-      ethnicity: 'Caucasian',
-      build: 'Athletic',
-      hairColor: 'Blonde',
-      eyeColor: 'Green'
-    },
-    skills: ['Acting', 'Singing', 'Dance'],
-    credits: {
-      film: ['Indie Film J', 'Series K'],
-      commercials: ['Brand L', 'Commercial M']
-    },
-    education: ['BFA in Musical Theater - NYU'],
-    socialMedia: {
-      instagram: '@mollylangnyc',
-      youtube: 'Molly Lang Official'
-    },
-    representation: {
-      agent: 'Lang Entertainment',
-      email: 'molly@langent.com'
-    },
-    unionMembership: ['SAG-AFTRA', 'AGMA'],
-    licensePassport: {
-      driverLicense: true,
-      passport: true
-    }
-  },
-  {
-    id: 5,
-    name: 'Danny Irizarry',
-    location: 'Glendale, CA',
-    profession: 'Actor',
-    gender: 'Male',
-    images: [img('1556157382-97eda2d62296'), img('1599566150163-29194dcaad36')],
-    badges: ['star'],
-    hasReel: false,
-    appearance: {
-      height: '5\'10"',
-      weight: '165 lbs',
-      ageRange: '25-35',
-      ethnicity: 'Latino',
-      build: 'Athletic',
-      hairColor: 'Black',
-      eyeColor: 'Brown'
-    },
-    skills: ['Acting', 'Stunts', 'Martial Arts'],
-    credits: {
-      film: ['Action Film N', 'Thriller O'],
-      commercials: ['Sports Commercial P']
-    },
-    education: ['AA in Film - LA City College'],
-    socialMedia: {
-      instagram: '@dannyirizarry',
-      tiktok: '@danny.actor'
-    },
-    representation: {
-      agent: 'Irizarry Talent',
-      email: 'danny@irizarrytalent.com'
-    },
-    unionMembership: ['SAG-AFTRA'],
-    licensePassport: {
-      driverLicense: true,
-      passport: true
-    }
-  },
-  {
-    id: 6,
     name: 'Theresa Wilson',
     location: 'Tallahassee, FL',
     profession: 'Actor',
@@ -234,83 +82,7 @@ export const talentProfiles = [
     }
   },
   {
-    id: 7,
-    name: 'Richard Millen',
-    location: 'Brooklyn, NY',
-    profession: 'Actor',
-    gender: 'Male',
-    images: [img('1521310266103-5e1eb3d31e44'), img('1542206395-9feb3edf68d8')],
-    badges: ['star'],
-    hasReel: false,
-    appearance: {
-      height: '6\'1"',
-      weight: '180 lbs',
-      ageRange: '35-45',
-      ethnicity: 'Caucasian',
-      build: 'Average',
-      hairColor: 'Brown',
-      eyeColor: 'Hazel'
-    },
-    skills: ['Acting', 'Directing', 'Producing'],
-    credits: {
-      film: ['Indie T', 'Documentary U'],
-      commercials: ['Corporate V']
-    },
-    education: ['BS in Film - NYU'],
-    socialMedia: {
-      instagram: '@richardmillen',
-      twitter: '@richardmillen'
-    },
-    representation: {
-      agent: 'Millen Management',
-      email: 'richard@millenmgmt.com'
-    },
-    unionMembership: ['SAG-AFTRA', 'DGA'],
-    licensePassport: {
-      driverLicense: true,
-      passport: true
-    }
-  },
-  {
-    id: 8,
-    name: 'Amanda Ribnick',
-    location: 'New York, NY',
-    profession: 'Actor',
-    gender: 'Female',
-    images: [img('1573496359142-b8d87734a5a2'), img('1607746882042-944635dfe10e')],
-    badges: ['star', 'flame'],
-    hasReel: false,
-    appearance: {
-      height: '5\'6"',
-      weight: '128 lbs',
-      ageRange: '20-30',
-      ethnicity: 'Caucasian',
-      build: 'Slim',
-      hairColor: 'Red',
-      eyeColor: 'Blue'
-    },
-    skills: ['Acting', 'Singing', 'Comedy'],
-    credits: {
-      film: ['RomCom W', 'Comedy X'],
-      commercials: ['Brand Y', 'Product Z']
-    },
-    education: ['BFA in Comedy - Second City'],
-    socialMedia: {
-      instagram: '@amandaribnick',
-      tiktok: '@amanda.comedy'
-    },
-    representation: {
-      agent: 'Ribnick Comedy',
-      email: 'amanda@ribnickcomedy.com'
-    },
-    unionMembership: ['SAG-AFTRA'],
-    licensePassport: {
-      driverLicense: true,
-      passport: true
-    }
-  },
-  {
-    id: 9,
+    id: 3,
     name: 'Marcus Johnson',
     location: 'Atlanta, GA',
     profession: 'Actor',
@@ -348,7 +120,7 @@ export const talentProfiles = [
     }
   },
   {
-    id: 10,
+    id: 4,
     name: 'Niya Carter',
     location: 'Los Angeles, CA',
     profession: 'Actor',
@@ -386,36 +158,36 @@ export const talentProfiles = [
     }
   },
   {
-    id: 11,
-    name: 'Devon Hayes',
-    location: 'Chicago, IL',
+    id: 5,
+    name: 'Danny Irizarry',
+    location: 'Glendale, CA',
     profession: 'Actor',
     gender: 'Male',
-    images: [img('1542206395-9feb3edf68d8'), img('1521310266103-5e1eb3d31e44')],
+    images: [img('1556157382-97eda2d62296'), img('1599566150163-29194dcaad36')],
     badges: ['star'],
     hasReel: false,
     appearance: {
-      height: '5\'11"',
-      weight: '175 lbs',
-      ageRange: '30-40',
-      ethnicity: 'Caucasian',
+      height: '5\'10"',
+      weight: '165 lbs',
+      ageRange: '25-35',
+      ethnicity: 'African American',
       build: 'Athletic',
-      hairColor: 'Brown',
-      eyeColor: 'Green'
+      hairColor: 'Black',
+      eyeColor: 'Brown'
     },
-    skills: ['Acting', 'Voiceover', 'Improv'],
+    skills: ['Acting', 'Stunts', 'Martial Arts'],
     credits: {
-      film: ['Comedy HH', 'Drama II'],
-      commercials: ['Regional JJ']
+      film: ['Action Film N', 'Thriller O'],
+      commercials: ['Sports Commercial P']
     },
-    education: ['BFA in Acting - DePaul'],
+    education: ['AA in Film - LA City College'],
     socialMedia: {
-      instagram: '@devonhayes',
-      linkedin: 'linkedin.com/in/devonhayes'
+      instagram: '@dannyirizarry',
+      tiktok: '@danny.actor'
     },
     representation: {
-      agent: 'Hayes Midwest',
-      email: 'devon@hayesmidwest.com'
+      agent: 'Irizarry Talent',
+      email: 'danny@irizarrytalent.com'
     },
     unionMembership: ['SAG-AFTRA'],
     licensePassport: {
@@ -424,7 +196,7 @@ export const talentProfiles = [
     }
   },
   {
-    id: 12,
+    id: 6,
     name: 'Jasmine Reed',
     location: 'Houston, TX',
     profession: 'Actor',
@@ -463,7 +235,7 @@ export const talentProfiles = [
   },
   // Additional profiles for the Featured Creators two-row carousel
   {
-    id: 13,
+    id: 7,
     name: 'Esther Mukuhi Nungari',
     location: 'Nairobi, Nairobi Area, Kenya',
     profession: 'Actor',
@@ -501,7 +273,7 @@ export const talentProfiles = [
     }
   },
   {
-    id: 14,
+    id: 8,
     name: 'Jannell Tamara',
     location: 'Nairobi, Nairobi Area, Kenya',
     profession: 'Actor',
@@ -538,7 +310,7 @@ export const talentProfiles = [
     }
   },
   {
-    id: 15,
+    id: 9,
     name: 'Jaydon Mshindi',
     location: 'Nairobi, Nairobi Area, Kenya',
     profession: 'Actor',
@@ -576,7 +348,7 @@ export const talentProfiles = [
     }
   },
   {
-    id: 16,
+    id: 10,
     name: 'Azwack',
     location: 'Nairobi, Nairobi Area, Kenya',
     profession: 'Actor',
@@ -613,7 +385,7 @@ export const talentProfiles = [
     }
   },
   {
-    id: 17,
+    id: 11,
     name: 'Benard Mabiala',
     location: 'Nairobi, Nairobi Area, Kenya',
     profession: 'Actor',
@@ -650,7 +422,7 @@ export const talentProfiles = [
     }
   },
   {
-    id: 18,
+    id: 12,
     name: 'Nasieku',
     location: 'Nairobi, Nairobi Area, Kenya',
     profession: 'Actor',
