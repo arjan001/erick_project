@@ -44,12 +44,12 @@ class NotificationService {
     // Also save to database for persistence
     try {
       await Notification.create({
-        recipient_email: userId,
+        user_id: userId,
         type,
         title,
-        message,
-        link: actionUrl,
-        read: false,
+        content: message,
+        link_url: actionUrl,
+        is_read: false,
         created_at: notification.createdAt,
         metadata: JSON.stringify(metadata)
       })

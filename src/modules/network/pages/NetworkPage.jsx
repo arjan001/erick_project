@@ -27,7 +27,6 @@ const toDisplay = (person) => {
       role: [person.role, ...(person.secondary_roles || [])].filter(Boolean).join(', '),
       location: [person.based_in_city, person.based_in_country].filter(Boolean).join(', '),
       image: person.profile_photo_url,
-      email: person.email,
       skills: (person.skills_experience || []).map(s => s.skill).concat(person.secondary_roles || [], person.role ? [person.role] : []),
       organizationType: 'Creator',
       organizationName: '',
@@ -40,7 +39,6 @@ const toDisplay = (person) => {
       role: (person.specialties || []).join(', '),
       location: [person.city, person.country].filter(Boolean).join(', '),
       image: person.team_logo_url,
-      email: person.contact_email,
       skills: person.specialties || [],
       organizationType: 'Team',
       organizationName: person.team_name,
@@ -53,7 +51,6 @@ const toDisplay = (person) => {
       role: person.company || 'Project Owner',
       location: '',
       image: person.profile_photo_url,
-      email: person.email,
       skills: person.company ? [person.company] : [],
       organizationType: person.organization_type || 'Client',
       organizationName: person.organization_name || person.company || '',
@@ -65,7 +62,6 @@ const toDisplay = (person) => {
     role: (person.interests || []).join(', '),
     location: (person.locations || []).join(', '),
     image: person.logo_url,
-    email: person.contact_email,
     skills: person.interests || [],
     organizationType: 'Backer',
     organizationName: person.organization_name,
@@ -231,19 +227,17 @@ export default function NetworkPage() {
     try {
       await Connection.create({
         requester_id: user.id,
-        requester_type: myType,
-        recipient_id: selectedPerson.id,
-        recipient_type: selectedPerson.type,
+        receiver_id: selectedPerson.id,
         status: 'pending',
-        message: connectionMessage,
       })
       await Notification.create({
-        recipient_id: selectedPerson.id,
+        user_id: selectedPerson.id,
         type: 'connection_request',
         title: 'New Connection Request',
-        message: `${user.full_name} wants to connect with you`,
-        metadata: { sender_id: user.id, sender_name: user.full_name, connection_message: connectionMessage },
-        read: false
+        content: `${user.full_name} wants to connect with you`,
+        link_url: '/network',
+        is_read: false,
+        metadata: { sender_id: user.id, sender_name: user.full_name, connection_message: connectionMessage }
       })
       setShowConnectionModal(false)
       setConnectionMessage('')
@@ -264,12 +258,13 @@ export default function NetworkPage() {
       const connection = connections.find(c => c.id === connectionId)
       if (connection) {
         await Notification.create({
-          recipient_id: connection.requester_id,
+          user_id: connection.requester_id,
           type: 'connection_request',
           title: 'Connection Accepted',
-          message: `${user.full_name} accepted your connection request`,
-          metadata: { sender_id: user.id, sender_name: user.full_name },
-          read: false
+          content: `${user.full_name} accepted your connection request`,
+          link_url: '/network',
+          is_read: false,
+          metadata: { sender_id: user.id, sender_name: user.full_name }
         })
       }
     } catch (err) {
@@ -301,7 +296,7 @@ export default function NetworkPage() {
   }
 
   const handleMessage = (person) => {
-    // Navigate to MessagesPage with the recipient's id as a query parameter
+    // Navigate to MessagesPage with the recipient's user_id as a query parameter
     navigate(createPageUrl('Messages') + `?with=${encodeURIComponent(person.id)}`)
   }
 
@@ -513,7 +508,7 @@ export default function NetworkPage() {
               )}
               {suggestions.map((person) => {
                 const TypeIcon = typeIcon(person.type)
-                const mutuals = getMutualConnections(person.email)
+                const mutuals = getMutualConnections(person.id)
                 return (
                   <div key={`${person.type}-${person.id}`} className="p-4 hover:bg-gray-50">
                     <div className="flex items-start gap-3">
@@ -598,20 +593,19 @@ export default function NetworkPage() {
           ) : (
             <div className="space-y-3">
               {sentRequests.map((request) => {
-                const recipient = people.find(p => p.email === request.recipient_email)
+                const recipient = people.find(p => p.id === request.receiver_id)
                 const TypeIcon = typeIcon(recipient?.type)
                 return (
                   <div key={request.id} className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                     <div className="relative flex-shrink-0">
                       <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
-                        {recipient?.image ? <img src={recipient.image} alt={recipient.name} className="w-full h-full object-cover" /> : (recipient?.name?.[0] || request.recipient_email[0]).toUpperCase()}
+                        {recipient?.image ? <img src={recipient.image} alt={recipient.name} className="w-full h-full object-cover" /> : (recipient?.name?.[0] || '?').toUpperCase()}
                       </div>
                       <TypeIcon className="w-4 h-4 absolute -bottom-0.5 -right-0.5 bg-black text-white rounded-full p-0.5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-gray-900">{recipient?.name || request.recipient_email}</div>
+                      <div className="font-semibold text-gray-900">{recipient?.name || 'Unknown User'}</div>
                       <div className="text-sm text-gray-600 mb-1">{recipient?.role || 'User'}</div>
-                      {request.message && <div className="text-sm text-gray-500 italic line-clamp-2">"{request.message}"</div>}
                     </div>
                     <button onClick={() => handleCancelRequest(request.id)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm font-medium transition-colors flex-shrink-0">
                       Cancel
@@ -635,20 +629,19 @@ export default function NetworkPage() {
           ) : (
             <div className="space-y-3">
               {receivedRequests.map((request) => {
-                const requester = people.find(p => p.email === request.requester_email)
+                const requester = people.find(p => p.id === request.requester_id)
                 const TypeIcon = typeIcon(requester?.type)
                 return (
                   <div key={request.id} className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                     <div className="relative flex-shrink-0">
                       <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
-                        {requester?.image ? <img src={requester.image} alt={requester.name} className="w-full h-full object-cover" /> : (requester?.name?.[0] || request.requester_email[0]).toUpperCase()}
+                        {requester?.image ? <img src={requester.image} alt={requester.name} className="w-full h-full object-cover" /> : (requester?.name?.[0] || '?').toUpperCase()}
                       </div>
                       <TypeIcon className="w-4 h-4 absolute -bottom-0.5 -right-0.5 bg-black text-white rounded-full p-0.5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-gray-900">{requester?.name || request.requester_email}</div>
+                      <div className="font-semibold text-gray-900">{requester?.name || 'Unknown User'}</div>
                       <div className="text-sm text-gray-600 mb-1">{requester?.role || 'User'}</div>
-                      {request.message && <div className="text-sm text-gray-500 italic line-clamp-2">"{request.message}"</div>}
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                       <button onClick={() => handleAcceptConnection(request.id)} className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 text-sm font-medium transition-colors">

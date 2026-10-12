@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Message, Artist, Team, ProjectOwner, Backer, Notification } from '@/lib/supabaseEntities'
+import { Message, Conversation, Artist, Team, ProjectOwner, Backer, Notification } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { formatDistanceToNow } from 'date-fns'
@@ -11,6 +11,7 @@ import notificationService from '@/shared/services/notificationService'
 import subscriptionService from '@/shared/services/subscriptionService'
 import { uploadFile, deleteFile } from '@/lib/fileUploadService'
 import realtimeMessagingService from '@/services/realtimeMessagingService'
+import { supabase } from '@/lib/supabase'
 
 function playMessageTone() {
   try {

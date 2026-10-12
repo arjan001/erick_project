@@ -77,19 +77,14 @@ const SCHEMA = {
   clients: {
     id: 'uuid',
     user_id: 'uuid',
-    display_name: 'text',
     company_name: 'text',
-    // Contact fields
-    contact_email: 'text',
-    contact_phone: 'text',
-    contact_address: 'text',
-    contact_city: 'text',
-    contact_country: 'text',
-    // Other
-    metadata: 'jsonb',
+    industry: 'text',
+    company_size: 'text',
+    budget_range: 'text',
+    website_url: 'text',
     created_at: 'timestamp with time zone',
     updated_at: 'timestamp with time zone',
-    // NOTE: NO 'email' column - use public.users.email via user_id
+    // NOTE: NO 'email', 'full_name', 'referred_by' columns - use public.users.email via user_id
   },
 
   teams: {
@@ -191,43 +186,52 @@ const SCHEMA = {
     // NOTE: NO 'user_email' or 'user_name' columns - use public.users via user_id
   },
 
+  // Conversation table
+  conversations: {
+    id: 'uuid',
+    participant_1: 'uuid',
+    participant_2: 'uuid',
+    project_id: 'uuid',
+    job_id: 'uuid',
+    last_message_at: 'timestamp with time zone',
+    created_at: 'timestamp with time zone',
+    // NOTE: NO email columns - use participant_1, participant_2
+  },
+
   // Message table
   messages: {
     id: 'uuid',
+    conversation_id: 'uuid',
     sender_id: 'uuid',
-    recipient_id: 'uuid',
     content: 'text',
-    read: 'boolean',
-    // Other
-    metadata: 'jsonb',
+    is_read: 'boolean',
+    read_at: 'timestamp with time zone',
     created_at: 'timestamp with time zone',
-    // NOTE: NO 'sender_email' or 'recipient_email' columns - use user_id
+    // NOTE: NO 'sender_email' or 'recipient_email' columns - use sender_id and conversation_id
   },
 
   // Notification table
   notifications: {
     id: 'uuid',
-    recipient_id: 'uuid',
+    user_id: 'uuid',
     type: 'text',
     title: 'text',
-    message: 'text',
-    read: 'boolean',
-    metadata: 'jsonb',
+    content: 'text',
+    link_url: 'text',
+    is_read: 'boolean',
     created_at: 'timestamp with time zone',
-    // NOTE: NO 'recipient_email' column - use recipient_id
+    // NOTE: NO 'recipient_email' or 'recipient_id' columns - use user_id
   },
 
   // Connection table
   connections: {
     id: 'uuid',
-    user_id: 'uuid',
-    connected_artist_id: 'uuid',
-    connection_type: 'text',
+    requester_id: 'uuid',
+    receiver_id: 'uuid',
     status: 'text',
-    // Other
-    metadata: 'jsonb',
     created_at: 'timestamp with time zone',
-    // NOTE: NO 'user_email' column - use user_id
+    updated_at: 'timestamp with time zone',
+    // NOTE: NO 'requester_email', 'recipient_email', 'user_email' columns - use requester_id, receiver_id
   },
 
   // Artist media table (formerly portfolio_clips)
@@ -303,6 +307,160 @@ const SCHEMA = {
     // Other
     metadata: 'jsonb',
   },
+
+  // Partners table
+  partners: {
+    id: 'uuid',
+    name: 'text',
+    logo_url: 'text',
+    website: 'text',
+    description: 'text',
+    industry: 'text',
+    contact_email: 'text',
+    contact_phone: 'text',
+    address: 'text',
+    partnership_type: 'text',
+    status: 'text',
+    featured: 'boolean',
+    started_at: 'date',
+    created_at: 'timestamp with time zone',
+    updated_at: 'timestamp with time zone',
+  },
+
+  // Invites table
+  invites: {
+    id: 'uuid',
+    code: 'text',
+    inviter_email: 'text',
+    inviter_name: 'text',
+    inviter_role: 'text',
+    inviter_entity_id: 'uuid',
+    applicant_email: 'text',
+    applicant_name: 'text',
+    applicant_type: 'text',
+    tracking_code: 'text',
+    status: 'text',
+    used_at: 'timestamp with time zone',
+    expires_at: 'timestamp with time zone',
+    created_at: 'timestamp with time zone',
+    updated_at: 'timestamp with time zone',
+  },
+
+  // Artists table (from DATABASE_SCHEMA.sql)
+  artists: {
+    id: 'uuid',
+    user_id: 'uuid',
+    display_name: 'text',
+    stage_name: 'text',
+    skills: 'text[]',
+    years_experience: 'integer',
+    hourly_rate: 'numeric',
+    availability_status: 'text',
+    admin_approval_status: 'text',
+    rejection_reason: 'text',
+    social_media_url: 'text',
+    website_url: 'text',
+    created_at: 'timestamp with time zone',
+    updated_at: 'timestamp with time zone',
+  },
+
+  // Teams table (from DATABASE_SCHEMA.sql)
+  teams: {
+    id: 'uuid',
+    user_id: 'uuid',
+    team_name: 'text',
+    team_size: 'integer',
+    specialties: 'text[]',
+    hourly_rate: 'numeric',
+    availability_status: 'text',
+    admin_approval_status: 'text',
+    rejection_reason: 'text',
+    logo_url: 'text',
+    website_url: 'text',
+    social_media_url: 'text',
+    created_at: 'timestamp with time zone',
+    updated_at: 'timestamp with time zone',
+  },
+
+  // Backers table (from DATABASE_SCHEMA.sql)
+  backers: {
+    id: 'uuid',
+    user_id: 'uuid',
+    organization_name: 'text',
+    investment_focus: 'text[]',
+    total_invested: 'numeric',
+    investment_count: 'integer',
+    website_url: 'text',
+    social_media_url: 'text',
+    bio: 'text',
+    created_at: 'timestamp with time zone',
+    updated_at: 'timestamp with time zone',
+  },
+
+  // Jobs table (from DATABASE_SCHEMA.sql)
+  jobs: {
+    id: 'uuid',
+    project_id: 'uuid',
+    client_id: 'uuid',
+    title: 'text',
+    description: 'text',
+    job_type: 'text',
+    location: 'text',
+    budget: 'numeric',
+    status: 'text',
+    required_skills: 'text[]',
+    application_deadline: 'timestamp with time zone',
+    created_at: 'timestamp with time zone',
+    updated_at: 'timestamp with time zone',
+  },
+
+  // Applications table (from DATABASE_SCHEMA.sql)
+  applications: {
+    id: 'uuid',
+    job_id: 'uuid',
+    artist_id: 'uuid',
+    team_id: 'uuid',
+    cover_letter: 'text',
+    proposed_rate: 'numeric',
+    status: 'text',
+    applied_at: 'timestamp with time zone',
+    updated_at: 'timestamp with time zone',
+  },
+
+  // Portfolio clips table (from DATABASE_SCHEMA.sql)
+  portfolio_clips: {
+    id: 'uuid',
+    artist_id: 'uuid',
+    team_id: 'uuid',
+    title: 'text',
+    description: 'text',
+    video_url: 'text',
+    thumbnail_url: 'text',
+    project_name: 'text',
+    role: 'text',
+    duration_seconds: 'integer',
+    is_featured: 'boolean',
+    display_order: 'integer',
+    created_at: 'timestamp with time zone',
+    updated_at: 'timestamp with time zone',
+  },
+
+  // Projects table (from DATABASE_SCHEMA.sql)
+  projects: {
+    id: 'uuid',
+    client_id: 'uuid',
+    title: 'text',
+    description: 'text',
+    project_type: 'text',
+    status: 'text',
+    budget: 'numeric',
+    location: 'text',
+    start_date: 'date',
+    end_date: 'date',
+    images: 'text[]',
+    created_at: 'timestamp with time zone',
+    updated_at: 'timestamp with time zone',
+  },
 }
 
 /**
@@ -311,14 +469,14 @@ const SCHEMA = {
  */
 const DEPRECATED_COLUMNS = {
   creators: ['email'], // Should use user_id and get email from public.users
-  clients: ['email'], // Does not exist, use contact_email or public.users.email
+  clients: ['email', 'full_name', 'referred_by'], // Does not exist, use user_id -> users.email, users.full_name
   projects: ['project_owner_email'], // Does not exist, use client_id
   jobs: ['client_email'], // Does not exist, use client_id
-  applications: ['artist_email'], // Does not exist, use user_id
+  applications: ['artist_email'], // Does not exist, use artist_id -> users.email
   subscriptions: ['user_email', 'user_name'], // Does not exist, use user_id
-  messages: ['sender_email', 'recipient_email'], // Does not exist, use user_id
-  notifications: ['recipient_email'], // Does not exist, use recipient_id
-  connections: ['user_email'], // Does not exist, use user_id
+  messages: ['sender_email', 'recipient_email'], // Does not exist, use sender_id and conversation_id
+  notifications: ['recipient_email', 'recipient_id'], // Does not exist, use user_id
+  connections: ['requester_email', 'recipient_email', 'user_email', 'connected_artist_id'], // Does not exist, use requester_id, receiver_id
 }
 
 /**

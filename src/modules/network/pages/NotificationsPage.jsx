@@ -16,20 +16,20 @@ export default function NotificationsPage() {
   const [filter, setFilter] = useState('all'); // all, unread, action_required
 
   const fetchNotifications = async () => {
-    if (!authUser?.email) return
+    if (!authUser?.id) return
     try {
-      const allNotifications = await Notification.filter({ 
-        recipient_email: authUser.email 
+      const allNotifications = await Notification.filter({
+        recipient_id: authUser.id
       })
-      
+
       // Sort by created_at descending
-      const sorted = allNotifications.sort((a, b) => 
+      const sorted = allNotifications.sort((a, b) =>
         new Date(b.created_at) - new Date(a.created_at)
       )
-      
+
       setNotifications(sorted)
     } catch (err) {
-      //
+      console.error('Error fetching notifications:', err)
     } finally {
       setLoading(false)
     }
@@ -41,15 +41,14 @@ export default function NotificationsPage() {
 
   // Real-time notification subscription
   useEffect(() => {
-    if (!authUser?.email) return
+    if (!authUser?.id) return
 
     const handleNewNotification = (newNotification) => {
-      //
       setNotifications(prev => [newNotification, ...prev])
     }
 
     const unsubscribe = realtimeMessagingService.subscribeToNotifications(
-      authUser.email,
+      authUser.id,
       handleNewNotification
     )
 
@@ -59,7 +58,7 @@ export default function NotificationsPage() {
   const handleMarkAsRead = async (notificationId) => {
     try {
       await Notification.update(notificationId, { read: true })
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
       )
     } catch (err) {
@@ -109,7 +108,7 @@ export default function NotificationsPage() {
 
   const handleAction = async (notification) => {
     await handleMarkAsRead(notification.id)
-    
+
     if (notification.link) {
       navigate(notification.link)
     } else if (notification.action_data?.job_id) {
@@ -236,7 +235,7 @@ export default function NotificationsPage() {
               <tr>
                 <td colSpan="6" className="px-4 py-12 text-center text-sm text-gray-500">
                   <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  {filter === 'all' 
+                  {filter === 'all'
                     ? "No notifications yet"
                     : `No ${filter === 'unread' ? 'unread' : 'action required'} notifications.`
                   }

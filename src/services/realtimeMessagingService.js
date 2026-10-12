@@ -14,16 +14,16 @@ class RealtimeMessagingService {
 
   /**
    * Subscribe to messages for a specific user
-   * @param {string} userEmail - User's email to subscribe to messages for
+   * @param {string} userId - User's ID to subscribe to messages for
    * @param {Function} onMessageReceived - Callback when new message is received
    * @param {Function} onMessageUpdated - Callback when message is updated (read status, etc.)
    * @returns {Function} Unsubscribe function
    */
-  subscribeToMessages(userEmail, onMessageReceived, onMessageUpdated) {
-    const channelName = `messages:${userEmail}`
+  subscribeToMessages(userId, onMessageReceived, onMessageUpdated) {
+    const channelName = `messages:${userId}`
 
     // Clean up existing subscription if any
-    this.unsubscribeFromMessages(userEmail)
+    this.unsubscribeFromMessages(userId)
 
     const channel = supabase
       .channel(channelName)
@@ -33,7 +33,7 @@ class RealtimeMessagingService {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `recipient_email=eq.${userEmail}`,
+          filter: `recipient_id=eq.${userId}`,
         },
         (payload) => {
           if (onMessageReceived) {
@@ -47,7 +47,7 @@ class RealtimeMessagingService {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `sender_email=eq.${userEmail}`,
+          filter: `sender_id=eq.${userId}`,
         },
         (payload) => {
           if (onMessageReceived) {
@@ -61,7 +61,7 @@ class RealtimeMessagingService {
           event: 'UPDATE',
           schema: 'public',
           table: 'messages',
-          filter: `recipient_email=eq.${userEmail}`,
+          filter: `recipient_id=eq.${userId}`,
         },
         (payload) => {
           if (onMessageUpdated) {
@@ -77,23 +77,23 @@ class RealtimeMessagingService {
         }
       })
 
-    this.subscriptions.set(userEmail, channel)
-    this.listeners.set(userEmail, { onMessageReceived, onMessageUpdated })
+    this.subscriptions.set(userId, channel)
+    this.listeners.set(userId, { onMessageReceived, onMessageUpdated })
 
     // Return unsubscribe function
-    return () => this.unsubscribeFromMessages(userEmail)
+    return () => this.unsubscribeFromMessages(userId)
   }
 
   /**
    * Unsubscribe from messages for a specific user
-   * @param {string} userEmail - User's email to unsubscribe from
+   * @param {string} userId - User's ID to unsubscribe from
    */
-  unsubscribeFromMessages(userEmail) {
-    const channel = this.subscriptions.get(userEmail)
+  unsubscribeFromMessages(userId) {
+    const channel = this.subscriptions.get(userId)
     if (channel) {
       supabase.removeChannel(channel)
-      this.subscriptions.delete(userEmail)
-      this.listeners.delete(userEmail)
+      this.subscriptions.delete(userId)
+      this.listeners.delete(userId)
     }
   }
 
@@ -133,14 +133,14 @@ class RealtimeMessagingService {
 
   /**
    * Get conversation history between two users
-   * @param {string} userEmail1 - First user's email
-   * @param {string} userEmail2 - Second user's email
+   * @param {string} userId1 - First user's ID
+   * @param {string} userId2 - Second user's ID
    * @returns {Promise<Array>} Conversation messages
    */
-  async getConversation(userEmail1, userEmail2) {
+  async getConversation(userId1, userId2) {
     try {
       const messages = await Message.filter({
-        or: `and(sender_email.eq.${userEmail1},recipient_email.eq.${userEmail2}),and(sender_email.eq.${userEmail2},recipient_email.eq.${userEmail1})`
+        or: `and(sender_id.eq.${userId1},recipient_id.eq.${userId2}),and(sender_id.eq.${userId2},recipient_id.eq.${userId1})`
       }, 'created_at', 100)
       return messages || []
     } catch (error) {
@@ -150,13 +150,13 @@ class RealtimeMessagingService {
 
   /**
    * Get all messages for a user
-   * @param {string} userEmail - User's email
+   * @param {string} userId - User's ID
    * @returns {Promise<Array>} User's messages
    */
-  async getUserMessages(userEmail) {
+  async getUserMessages(userId) {
     try {
       const messages = await Message.filter({
-        or: `sender_email.eq.${userEmail},recipient_email.eq.${userEmail}`
+        or: `sender_id.eq.${userId},recipient_id.eq.${userId}`
       }, 'created_at', 100)
       return messages || []
     } catch (error) {
@@ -168,7 +168,7 @@ class RealtimeMessagingService {
    * Unsubscribe from all active subscriptions
    */
   unsubscribeAll() {
-    this.subscriptions.forEach((channel, userEmail) => {
+    this.subscriptions.forEach((channel) => {
       supabase.removeChannel(channel)
     })
     this.subscriptions.clear()
@@ -177,15 +177,15 @@ class RealtimeMessagingService {
 
   /**
    * Subscribe to notifications for a specific user
-   * @param {string} userEmail - User's email to subscribe to notifications for
+   * @param {string} userId - User's ID to subscribe to notifications for
    * @param {Function} onNotification - Callback when new notification is received
    * @returns {Function} Unsubscribe function
    */
-  subscribeToNotifications(userEmail, onNotification) {
-    const channelName = `notifications:${userEmail}`
+  subscribeToNotifications(userId, onNotification) {
+    const channelName = `notifications:${userId}`
 
     // Clean up existing subscription if any
-    this.unsubscribeFromNotifications(userEmail)
+    this.unsubscribeFromNotifications(userId)
 
     const channel = supabase
       .channel(channelName)
@@ -195,7 +195,7 @@ class RealtimeMessagingService {
           event: 'INSERT',
           schema: 'public',
           table: 'notifications',
-          filter: `recipient_email=eq.${userEmail}`,
+          filter: `recipient_id=eq.${userId}`,
         },
         (payload) => {
           if (onNotification) {
@@ -209,35 +209,35 @@ class RealtimeMessagingService {
         }
       })
 
-    this.subscriptions.set(`notifications:${userEmail}`, channel)
+    this.subscriptions.set(`notifications:${userId}`, channel)
 
     // Return unsubscribe function
-    return () => this.unsubscribeFromNotifications(userEmail)
+    return () => this.unsubscribeFromNotifications(userId)
   }
 
   /**
    * Unsubscribe from notifications for a specific user
-   * @param {string} userEmail - User's email to unsubscribe from
+   * @param {string} userId - User's ID to unsubscribe from
    */
-  unsubscribeFromNotifications(userEmail) {
-    const channel = this.subscriptions.get(`notifications:${userEmail}`)
+  unsubscribeFromNotifications(userId) {
+    const channel = this.subscriptions.get(`notifications:${userId}`)
     if (channel) {
       supabase.removeChannel(channel)
-      this.subscriptions.delete(`notifications:${userEmail}`)
+      this.subscriptions.delete(`notifications:${userId}`)
     }
   }
 
   /**
    * Subscribe to connection requests for a specific user
-   * @param {string} userEmail - User's email to subscribe to connection requests for
+   * @param {string} userId - User's ID to subscribe to connection requests for
    * @param {Function} onConnectionRequest - Callback when new connection request is received
    * @returns {Function} Unsubscribe function
    */
-  subscribeToConnections(userEmail, onConnectionRequest) {
-    const channelName = `connections:${userEmail}`
+  subscribeToConnections(userId, onConnectionRequest) {
+    const channelName = `connections:${userId}`
 
     // Clean up existing subscription if any
-    this.unsubscribeFromConnections(userEmail)
+    this.unsubscribeFromConnections(userId)
 
     const channel = supabase
       .channel(channelName)
@@ -247,7 +247,7 @@ class RealtimeMessagingService {
           event: 'INSERT',
           schema: 'public',
           table: 'connections',
-          filter: `recipient_email=eq.${userEmail}`,
+          filter: `recipient_id=eq.${userId}`,
         },
         (payload) => {
           if (onConnectionRequest) {
@@ -261,7 +261,7 @@ class RealtimeMessagingService {
           event: 'UPDATE',
           schema: 'public',
           table: 'connections',
-          filter: `recipient_email=eq.${userEmail}`,
+          filter: `recipient_id=eq.${userId}`,
         },
         (payload) => {
           if (onConnectionRequest) {
@@ -275,21 +275,21 @@ class RealtimeMessagingService {
         }
       })
 
-    this.subscriptions.set(`connections:${userEmail}`, channel)
+    this.subscriptions.set(`connections:${userId}`, channel)
 
     // Return unsubscribe function
-    return () => this.unsubscribeFromConnections(userEmail)
+    return () => this.unsubscribeFromConnections(userId)
   }
 
   /**
    * Unsubscribe from connection requests for a specific user
-   * @param {string} userEmail - User's email to unsubscribe from
+   * @param {string} userId - User's ID to unsubscribe from
    */
-  unsubscribeFromConnections(userEmail) {
-    const channel = this.subscriptions.get(`connections:${userEmail}`)
+  unsubscribeFromConnections(userId) {
+    const channel = this.subscriptions.get(`connections:${userId}`)
     if (channel) {
       supabase.removeChannel(channel)
-      this.subscriptions.delete(`connections:${userEmail}`)
+      this.subscriptions.delete(`connections:${userId}`)
     }
   }
 }

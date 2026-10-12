@@ -109,13 +109,13 @@ export default function ClientProfilePage() {
   // Load projects for the Projects tab
   useEffect(() => {
     const loadProjects = async () => {
-      if (user?.email && activeTab === 'projects') {
+      if (owner?.id && activeTab === 'projects') {
         setLoadingProjects(true)
         try {
-          const userProjects = await Project.filter({ project_owner_email: user.email })
+          const userProjects = await Project.filter({ client_id: owner.id })
           setProjects(userProjects || [])
         } catch (err) {
-          //
+          console.error('Error fetching projects:', err)
           setProjects([])
         } finally {
           setLoadingProjects(false)
@@ -123,7 +123,7 @@ export default function ClientProfilePage() {
       }
     }
     loadProjects()
-  }, [user, activeTab])
+  }, [owner, activeTab])
 
   // Load team members for the Team tab
   useEffect(() => {

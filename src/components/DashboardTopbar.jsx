@@ -21,51 +21,25 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   const [artistProfile, setArtistProfile] = useState(null)
 
   const fetchMessages = async () => {
-    if (!user?.email) return
+    if (!user?.id) return
     try {
-      // Messages table uses is_read, not read
-      const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_at', 10)
-      setMessages(msgs || [])
-      
-      // Get unique senders
-      const senderEmails = [...new Set(msgs.map(m => m.sender_email))]
-      const sendersData = await Promise.all(
-        senderEmails.map(async (email) => {
-          try {
-            const [artists, teams, owners, backers] = await Promise.all([
-              Artist.filter({ email }),
-              Team.filter({ contact_email: email }),
-              ProjectOwner.filter({ email }),
-              Backer.filter({ contact_email: email })
-            ])
-            const artist = artists?.[0]
-            const team = teams?.[0]
-            const owner = owners?.[0]
-            const backer = backers?.[0]
-            
-            return {
-              email,
-              name: artist?.full_name || team?.team_name || owner?.full_name || backer?.organization_name || email,
-              avatar: artist?.profile_photo_url || team?.team_logo_url || owner?.profile_photo_url || backer?.logo_url || null
-            }
-          } catch {
-            return { email, name: email, avatar: null }
-          }
-        })
-      )
-      setRecentSenders(sendersData.slice(0, 5))
+      // Messages table now uses conversation_id and sender_id
+      // For now, we'll skip message fetching until we refactor to use conversations
+      setMessages([])
+      setRecentSenders([])
     } catch (err) {
-      
+      setMessages([])
+      setRecentSenders([])
     }
   }
 
   const fetchNotifications = async () => {
-    if (!user?.email) return
+    if (!user?.id) return
     try {
-      const notifs = await Notification.filter({ recipient_email: user.email }, '-created_at', 10)
+      const notifs = await Notification.filter({ user_id: user.id }, '-created_at', 10)
       setNotifications(notifs || [])
     } catch (err) {
-      
+      setNotifications([])
     }
   }
 
@@ -74,34 +48,23 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
     fetchNotifications()
   }, [user])
 
-  // Real-time message subscription
+  // Real-time message subscription (disabled until conversation-based refactor)
   useEffect(() => {
-    if (!user?.email) return
-
-    const handleNewMessage = (newMessage) => {
-      
-      fetchMessages()
-    }
-
-    const unsubscribe = realtimeMessagingService.subscribeToMessages(
-      user.email,
-      handleNewMessage
-    )
-
-    return () => unsubscribe()
+    if (!user?.id) return
+    // TODO: Refactor to use conversation-based real-time messaging
+    return () => { }
   }, [user])
 
   // Real-time notification subscription
   useEffect(() => {
-    if (!user?.email) return
+    if (!user?.id) return
 
     const handleNewNotification = (newNotification) => {
-      
       setNotifications(prev => [newNotification, ...prev])
     }
 
     const unsubscribe = realtimeMessagingService.subscribeToNotifications(
-      user.email,
+      user.id,
       handleNewNotification
     )
 
@@ -110,7 +73,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
 
 
   useEffect(() => {
-    if (!user?.email) return
+    if (!user?.id) return
     const interval = setInterval(() => {
       fetchMessages()
       fetchNotifications()
@@ -119,39 +82,39 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
   }, [user])
 
   useEffect(() => {
-    if (!user?.email) return
+    if (!user?.id) return
     const fetchProfile = async () => {
       try {
         if (user.role === 'artist' || user.role === 'artist_admin') {
-          const artists = await Artist.filter({ email: user.email })
+          const artists = await Artist.filter({ user_id: user.id })
           if (artists?.[0]) {
             setArtistProfile(artists[0])
           }
         } else if (user.role === 'team' || user.role === 'team_admin') {
-          const teams = await Team.filter({ contact_email: user.email })
+          const teams = await Team.filter({ user_id: user.id })
           if (teams?.[0]) {
             setArtistProfile(teams[0])
           }
         } else if (user.role === 'backer') {
-          const backers = await Backer.filter({ contact_email: user.email })
+          const backers = await Backer.filter({ user_id: user.id })
           if (backers?.[0]) {
             setArtistProfile(backers[0])
           }
         } else if (user.role === 'client' || user.role === 'project_owner') {
-          const owners = await ProjectOwner.filter({ email: user.email })
+          const owners = await ProjectOwner.filter({ user_id: user.id })
           if (owners?.[0]) {
             setArtistProfile(owners[0])
           }
         }
       } catch (err) {
-        
+
       }
     }
     fetchProfile()
   }, [user])
 
   const unreadMessagesCount = messages.length
-  const unreadNotificationsCount = notifications.filter(n => !n.read).length
+  const unreadNotificationsCount = notifications.filter(n => !n.is_read).length
 
   const handleOpenMessages = () => {
     setMessagesOpen(!messagesOpen)
@@ -170,7 +133,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
       await Notification.update(notificationId, { read: true })
       setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, read: true } : n))
     } catch (err) {
-      
+
     }
   }
 
@@ -180,7 +143,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
       await Promise.all(unreadNotifications.map(n => Notification.update(n.id, { read: true })))
       setNotifications(prev => prev.map(n => ({ ...n, read: true })))
     } catch (err) {
-      
+
     }
   }
 
@@ -189,7 +152,7 @@ export default function DashboardTopbar({ title, settingsPage = 'Settings' }) {
       await Notification.delete(notificationId)
       setNotifications(prev => prev.filter(n => n.id !== notificationId))
     } catch (err) {
-      
+
     }
   }
 

@@ -113,6 +113,57 @@ export const Artist = buildEntity('creators')
 export const Backer = buildEntity('backers')
 export const ProjectOwner = buildEntity('clients')
 export const Client = buildEntity('clients')
+
+// Custom Conversation entity with special methods
+export const Conversation = {
+  ...buildEntity('conversations'),
+
+  // Get conversations for a user with messages
+  getForUser: async (userId, limit = 50) => {
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('*, messages(*)')
+      .or(`participant_1.eq.${userId},participant_2.eq.${userId}`)
+      .order('last_message_at', { ascending: false, nullsFirst: false })
+      .limit(limit)
+    if (error) throw error
+    return data
+  },
+
+  // Get or create conversation between two users
+  getOrCreate: async (participant1Id, participant2Id, jobId = null) => {
+    // Try to find existing conversation
+    let query = supabase
+      .from('conversations')
+      .select('*')
+      .or(`and(participant_1.eq.${participant1Id},participant_2.eq.${participant2Id}),and(participant_1.eq.${participant2Id},participant_2.eq.${participant1Id})`)
+
+    if (jobId) {
+      query = query.eq('job_id', jobId)
+    }
+
+    const { data: existing, error: findError } = await query.maybeSingle()
+
+    if (findError && findError.code !== 'PGRST116') throw findError
+
+    if (existing) return existing
+
+    // Create new conversation
+    const { data: newConv, error: createError } = await supabase
+      .from('conversations')
+      .insert({
+        participant_1: participant1Id,
+        participant_2: participant2Id,
+        job_id: jobId,
+      })
+      .select()
+      .single()
+
+    if (createError) throw createError
+    return newConv
+  },
+}
+
 export const Message = buildEntity('messages')
 export const Notification = buildEntity('notifications')
 export const Connection = buildEntity('connections')
