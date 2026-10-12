@@ -23,13 +23,13 @@ BEGIN
 
   -- Create entity record based on role
   IF user_role = 'artist' THEN
-    INSERT INTO public.artists (email, full_name, role, status, onboarding_completed, created_at)
-    VALUES (user_email, user_full_name, 'director', 'pending', false, NOW())
+    INSERT INTO public.artists (email, full_name, role, status, created_at)
+    VALUES (user_email, user_full_name, 'director', 'pending', NOW())
     ON CONFLICT (email) DO NOTHING;
 
   ELSIF user_role = 'team' THEN
-    INSERT INTO public.teams (team_name, team_code, contact_email, contact_name, city, country, status, onboarding_completed, created_at)
-    VALUES (user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, user_email, user_full_name, '', '', 'pending', false, NOW())
+    INSERT INTO public.teams (team_name, team_code, contact_email, contact_name, city, country, status, created_at)
+    VALUES (user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, user_email, user_full_name, '', '', 'pending', NOW())
     ON CONFLICT (contact_email) DO NOTHING;
 
   ELSIF user_role = 'client' OR user_role = 'project_owner' THEN
@@ -78,13 +78,13 @@ BEGIN
 
     -- Create entity record based on role
     IF user_role = 'artist' THEN
-      INSERT INTO public.artists (email, full_name, role, status, onboarding_completed, created_at)
-      VALUES (auth_user.email, user_full_name, 'director', 'pending', false, NOW())
+      INSERT INTO public.artists (email, full_name, role, status, created_at)
+      VALUES (auth_user.email, user_full_name, 'director', 'pending', NOW())
       ON CONFLICT (email) DO NOTHING;
 
     ELSIF user_role = 'team' THEN
-      INSERT INTO public.teams (team_name, team_code, contact_email, contact_name, city, country, status, onboarding_completed, created_at)
-      VALUES (user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, auth_user.email, user_full_name, '', '', 'pending', false, NOW())
+      INSERT INTO public.teams (team_name, team_code, contact_email, contact_name, city, country, status, created_at)
+      VALUES (user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, auth_user.email, user_full_name, '', '', 'pending', NOW())
       ON CONFLICT (contact_email) DO NOTHING;
 
     ELSIF user_role = 'client' OR user_role = 'project_owner' THEN
