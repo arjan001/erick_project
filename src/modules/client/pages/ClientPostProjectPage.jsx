@@ -659,10 +659,10 @@ export default function ClientPostProject() {
               case 'Project Type':
                 return (
                   <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-gray-900">What type of project?</h2>
-                    <p className="text-gray-500 mb-6">Select the format that best describes your production</p>
+                    <h2 className="text-3xl sm:text-4xl font-bold mb-2 text-gray-900">What type of project?</h2>
+                    <p className="text-gray-500 mb-8 text-lg">Select the format that best describes your production</p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {PROJECT_TYPES.map((type) => {
                         const Icon = type.icon
                         const isSelected = projectForm.project_type === type.value
@@ -671,14 +671,24 @@ export default function ClientPostProject() {
                             key={type.value}
                             type="button"
                             onClick={() => updateForm('project_type', type.value)}
-                            className={`p-4 rounded-lg border-2 transition-all text-left ${isSelected
-                              ? 'border-gray-900 bg-gray-50'
-                              : 'border-gray-200 hover:border-gray-300 bg-white'
+                            className={`group relative p-6 rounded-2xl border-2 transition-all text-left ${isSelected
+                              ? 'border-black bg-gradient-to-br from-gray-50 to-white shadow-lg shadow-black/10'
+                              : 'border-gray-200 hover:border-gray-300 hover:shadow-md bg-white'
                               }`}
                           >
-                            <Icon className={`w-6 h-6 mb-2 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
-                            <h3 className="text-base font-semibold mb-1 text-gray-900">{type.label}</h3>
-                            <p className="text-xs text-gray-500">{type.description}</p>
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all ${isSelected
+                              ? 'bg-black text-white'
+                              : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
+                              }`}>
+                              <Icon className="w-6 h-6" />
+                            </div>
+                            <h3 className="text-lg font-bold mb-2 text-gray-900">{type.label}</h3>
+                            <p className="text-sm text-gray-500 leading-relaxed">{type.description}</p>
+                            {isSelected && (
+                              <div className="absolute top-4 right-4 w-6 h-6 bg-black rounded-full flex items-center justify-center">
+                                <Check className="w-4 h-4 text-white" />
+                              </div>
+                            )}
                           </button>
                         )
                       })}
@@ -689,13 +699,13 @@ export default function ClientPostProject() {
               case 'Funding Details':
                 return (
                   <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-gray-900">Funding & Partnership Details</h2>
-                    <p className="text-gray-500 mb-10">Share information about what you're seeking</p>
+                    <h2 className="text-3xl sm:text-4xl font-bold mb-2 text-gray-900">Funding & Partnership Details</h2>
+                    <p className="text-gray-500 mb-10 text-lg">Share information about what you're seeking</p>
 
-                    <div className="space-y-8">
+                    <div className="space-y-10">
                       <div>
-                        <label className="text-base font-semibold mb-3 block">Current Production Stage</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label className="text-lg font-bold mb-4 block text-gray-900">Current Production Stage</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                           {FUNDING_STAGES.map((stage) => {
                             const isSelected = projectForm.funding_stage === stage.value
                             return (
@@ -703,14 +713,12 @@ export default function ClientPostProject() {
                                 key={stage.value}
                                 type="button"
                                 onClick={() => updateForm('funding_stage', stage.value)}
-                                className={`p-3 rounded-lg border-2 transition-all text-left ${isSelected
-                                  ? 'border-black bg-black/5'
-                                  : 'border-gray-300 hover:border-gray-400 bg-white'
+                                className={`p-4 rounded-xl border-2 transition-all text-left ${isSelected
+                                  ? 'border-black bg-black text-white'
+                                  : 'border-gray-300 hover:border-gray-400 bg-white text-gray-700'
                                   }`}
                               >
-                                <span className={`font-medium text-sm ${isSelected ? 'text-black' : 'text-gray-700'}`}>
-                                  {stage.label}
-                                </span>
+                                <span className="font-medium">{stage.label}</span>
                               </button>
                             )
                           })}
@@ -718,23 +726,26 @@ export default function ClientPostProject() {
                       </div>
 
                       <div>
-                        <label className="text-base font-semibold mb-3 block">What are you seeking?</label>
-                        <p className="text-sm text-gray-600 mb-4">Select all that apply</p>
-                        <div className="space-y-3">
+                        <label className="text-lg font-bold mb-4 block text-gray-900">What are you seeking?</label>
+                        <p className="text-gray-500 mb-6">Select all that apply</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {SEEKING_OPTIONS.map((option) => {
                             const isChecked = (projectForm.seeking_partners || []).includes(option.value)
                             return (
                               <label
                                 key={option.value}
-                                className="flex items-center gap-3 p-4 rounded-lg border border-gray-300 hover:bg-gray-50 cursor-pointer transition-colors"
+                                className={`flex items-center gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all ${isChecked
+                                  ? 'border-black bg-black/5'
+                                  : 'border-gray-300 hover:border-gray-400 bg-white'
+                                  }`}
                               >
                                 <input
                                   type="checkbox"
                                   checked={isChecked}
                                   onChange={() => toggleSeekingPartner(option.value)}
-                                  className="w-4 h-4"
+                                  className="w-5 h-5"
                                 />
-                                <span className="font-medium text-gray-800">{option.label}</span>
+                                <span className="font-semibold text-gray-900">{option.label}</span>
                               </label>
                             )
                           })}
@@ -742,17 +753,17 @@ export default function ClientPostProject() {
                       </div>
 
                       <div>
-                        <label className="text-base font-semibold mb-3 block">
+                        <label className="text-lg font-bold mb-4 block text-gray-900">
                           Rights & Collaboration Structure <span className="text-gray-500 font-normal">(Optional)</span>
                         </label>
-                        <p className="text-sm text-gray-600 mb-3">
+                        <p className="text-gray-500 mb-4">
                           Share any relevant details about rights, equity, collaboration terms, or partnership expectations
                         </p>
                         <textarea
                           value={projectForm.rights_collaboration_notes || ''}
                           onChange={(e) => updateForm('rights_collaboration_notes', e.target.value)}
                           placeholder="Example: Seeking 30% co-production investment in exchange for distribution rights in specific territories..."
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none min-h-[120px]"
+                          className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none min-h-[140px] text-base"
                         />
                       </div>
                     </div>
@@ -762,10 +773,10 @@ export default function ClientPostProject() {
               case 'Usage':
                 return (
                   <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Where will this be used?</h2>
-                    <p className="text-gray-600 mb-8">Select all that apply</p>
+                    <h2 className="text-3xl sm:text-4xl font-bold mb-2 text-gray-900">Where will this be used?</h2>
+                    <p className="text-gray-500 mb-8 text-lg">Select all that apply</p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {USAGE_OPTIONS.map((option) => {
                         const Icon = option.icon
                         const isSelected = (projectForm.usage || []).includes(option.value)
@@ -774,14 +785,24 @@ export default function ClientPostProject() {
                             key={option.value}
                             type="button"
                             onClick={() => toggleUsage(option.value)}
-                            className={`p-4 rounded-lg border-2 transition-all text-left ${isSelected
-                              ? 'border-gray-900 bg-gray-50'
-                              : 'border-gray-200 hover:border-gray-300 bg-white'
+                            className={`group relative p-6 rounded-2xl border-2 transition-all text-left ${isSelected
+                              ? 'border-black bg-gradient-to-br from-gray-50 to-white shadow-lg shadow-black/10'
+                              : 'border-gray-200 hover:border-gray-300 hover:shadow-md bg-white'
                               }`}
                           >
-                            <Icon className={`w-6 h-6 mb-2 ${isSelected ? 'text-gray-900' : 'text-gray-500'}`} />
-                            <h3 className="text-base font-semibold mb-1 text-gray-900">{option.label}</h3>
-                            <p className="text-xs text-gray-500">{option.description}</p>
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all ${isSelected
+                              ? 'bg-black text-white'
+                              : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
+                              }`}>
+                              <Icon className="w-6 h-6" />
+                            </div>
+                            <h3 className="text-lg font-bold mb-2 text-gray-900">{option.label}</h3>
+                            <p className="text-sm text-gray-500 leading-relaxed">{option.description}</p>
+                            {isSelected && (
+                              <div className="absolute top-4 right-4 w-6 h-6 bg-black rounded-full flex items-center justify-center">
+                                <Check className="w-4 h-4 text-white" />
+                              </div>
+                            )}
                           </button>
                         )
                       })}
@@ -792,12 +813,12 @@ export default function ClientPostProject() {
               case 'Location':
                 return (
                   <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">Where is production?</h2>
-                    <p className="text-gray-600 mb-8">Help us find teams in your area</p>
+                    <h2 className="text-3xl sm:text-4xl font-bold mb-2 text-gray-900">Where is production?</h2>
+                    <p className="text-gray-500 mb-8 text-lg">Help us find teams in your area</p>
 
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                       <div className="relative">
-                        <label className="text-base mb-3 block">Country</label>
+                        <label className="text-lg font-bold mb-4 block text-gray-900">Country</label>
                         <Input
                           value={projectForm.location_country}
                           onChange={(e) => {
