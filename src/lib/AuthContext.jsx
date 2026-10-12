@@ -112,7 +112,6 @@ async function ensureProfile(user) {
           full_name,
           role: 'director',
           status: 'pending',
-          invite_code: generateInviteCode(),
           referred_by: referredBy,
           onboarding_completed: false,
         })
@@ -130,7 +129,6 @@ async function ensureProfile(user) {
           city: '',
           country: '',
           status: 'pending',
-          invite_code: generateInviteCode(),
           referred_by: referredBy,
           onboarding_completed: false,
         })
@@ -141,7 +139,6 @@ async function ensureProfile(user) {
         await Backer.create({
           organization_name: full_name,
           contact_email: user.email,
-          invite_code: generateInviteCode(),
           referred_by: referredBy,
         })
       }
@@ -151,7 +148,6 @@ async function ensureProfile(user) {
         await ProjectOwner.create({
           email: user.email,
           full_name,
-          invite_code: generateInviteCode(),
           referred_by: referredBy,
         })
       }

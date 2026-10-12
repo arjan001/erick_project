@@ -84,11 +84,7 @@ export async function getSavedJobs() {
   try {
     const { data, error } = await supabase
       .from('saved_jobs')
-      .select(`
-        *,
-        job:jobs(*),
-        job_role:job_roles(*)
-      `)
+      .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
