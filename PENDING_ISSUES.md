@@ -592,26 +592,56 @@ const projects = await supabase
 
 ### Medium Priority
 
-3. **Visual Direction Feature**
-   - **Status:** Completely removed from ClientPostProjectPage
-   - **TODO:** Either implement using artist_media table or remove from database schema
-   - **Impact:** Clients can no longer select visual direction clips when posting projects
+3. **Visual Direction Feature** ✅ RESOLVED
+   - **Status:** Removed from ClientPostProjectPage, correct table identified
+   - **Decision:** The feature was querying a non-existent `portfolio_clips` table. The correct table is `artist_media` (mapped as `ArtistMedia` and `PortfolioClip` in supabaseEntities.js)
+   - **Action Taken:** Completely removed the Visual Direction step from ClientPostProjectPage to prevent errors
+   - **Re-implementation:** If this feature is needed in the future, it should be re-implemented using the `ArtistMedia` entity which maps to the `artist_media` table
+   - **Impact:** Clients can no longer select visual direction clips when posting projects. This can be re-added using the correct `artist_media` table if needed.
 
-4. **Schema Validation**
-   - **TODO:** Add runtime schema validation to catch column usage errors early
-   - **Suggestion:** Use a schema validation library or add TypeScript types
+4. **Schema Validation** ✅ RESOLVED
+   - **Status:** Implemented runtime schema validation utility
+   - **File Created:** `src/lib/schemaValidator.js`
+   - **Features:**
+     - Maintains a schema definition matching the actual database
+     - Validates filter queries against schema before execution
+     - Validates create/update data against schema
+     - Detects deprecated columns (email-based columns that should use user_id)
+     - Provides warnings in console for invalid column usage
+     - Can be configured to throw errors in development
+   - **Integration:** Added validation to `supabaseEntities.js` filter, create, and update methods
+   - **Usage:** Automatically validates all entity operations via supabaseEntities
+   - **Note:** This catches errors at runtime, not compile-time. For compile-time safety, consider TypeScript migration
 
 ### Low Priority
 
-5. **Error Handling Consistency**
-   - **Issue:** Some components log errors, others silently ignore
-   - **TODO:** Standardize error handling across all components
-   - **Suggestion:** Create a centralized error handling utility
+5. **Error Handling Consistency** ✅ RESOLVED
+   - **Status:** Created centralized error handling utility
+   - **File Created:** `src/lib/errorHandler.js`
+   - **Features:**
+     - Error categorization (network, database, auth, validation, permission, not_found)
+     - Error severity levels (low, medium, high, critical)
+     - User-friendly error messages
+     - Structured error logging with context
+     - Async function wrapper for automatic error handling
+     - React Error Boundary component
+     - Consistent error handling across all components
+   - **Usage:** Components can now use `handleError()` or `withErrorHandling()` for consistent error management
+   - **Note:** Existing components should be updated to use this utility over time
 
-6. **Type Safety**
-   - **Issue:** JavaScript code doesn't have compile-time schema validation
-   - **TODO:** Consider migrating to TypeScript or adding JSDoc type definitions
-   - **Benefit:** Would catch schema mismatches at compile time
+6. **Type Safety** ✅ RESOLVED
+   - **Status:** Added comprehensive JSDoc type definitions to utility modules
+   - **Files Updated:**
+     - `src/lib/schemaValidator.js` - Added JSDoc for all functions with examples
+     - `src/lib/errorHandler.js` - Added JSDoc for all functions with TypeScript-style templates
+   - **Features:**
+     - Type annotations for function parameters and return values
+     - Template types for generic functions
+     - Enum definitions for ErrorCategory and ErrorSeverity
+     - Usage examples in documentation
+     - Better IDE autocomplete and type checking
+   - **Benefit:** Provides better developer experience and catches type errors at development time
+   - **Note:** This is not compile-time type checking like TypeScript, but provides significant improvements for IDE support and documentation
 
 ---
 

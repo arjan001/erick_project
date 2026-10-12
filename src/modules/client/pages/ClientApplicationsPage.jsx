@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Job, Project, Application, Notification, Artist, Team, Subscription, SubscriptionPackage, PortfolioClip } from '@/lib/supabaseEntities'
+import { Job, Project, Application, Notification, Artist, Team, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FileText, User, Calendar, MapPin, Check, X, Crown, Star, Briefcase, Eye, Bookmark, BookmarkCheck, Play, Download, Globe, Linkedin, Instagram, Youtube, Twitter, Award, Languages, Globe2, Building2, Mail, Phone, Tag, Clock, DollarSign, GraduationCap, Search, Filter, MessageSquare, ChevronDown, ChevronUp, TrendingUp, Users, ExternalLink } from 'lucide-react'
@@ -50,61 +51,108 @@ export default function ClientApplications() {
       navigate('/')
       return
     }
-    setUser(JSON.parse(storedUser))
+    const userData = JSON.parse(storedUser)
+    setUser(userData)
 
     const fetchApplications = async () => {
       try {
-        const clientEmail = JSON.parse(storedUser).email
+        const userId = userData.id
 
-        // Fetch jobs posted by this client
-        const clientJobs = await Job.filter({ client_email: clientEmail })
+        // Fetch client record to get client_id
+        const { data: clientData, error: clientError } = await supabase
+          .from('clients')
+          .select('id')
+          .eq('user_id', userId)
+          .single()
+
+        if (clientError || !clientData) {
+          console.error('Error fetching client record:', clientError)
+          setApplications([])
+          setLoading(false)
+          return
+        }
+
+        const clientId = clientData.id
+
+        // Fetch jobs posted by this client using client_id
+        const { data: clientJobs, error: jobsError } = await supabase
+          .from('jobs')
+          .select('*')
+          .eq('client_id', clientId)
+
+        if (jobsError) {
+          console.error('Error fetching jobs:', jobsError)
+        }
         setJobs(clientJobs || [])
 
         const jobApplicationsLists = await Promise.all(
-          clientJobs.map(async (job) => {
-            const jobApplications = await Application.filter({ job_id: job.id })
-            return jobApplications.map(app => ({ ...app, job_title: job.title, job_type: job.job_type, job_location: job.location, job_required_skills: job.required_skills }))
+          (clientJobs || []).map(async (job) => {
+            const { data: jobApplications } = await supabase
+              .from('applications')
+              .select('*')
+              .eq('job_id', job.id)
+            return (jobApplications || []).map(app => ({ ...app, job_title: job.title, job_type: job.job_type, job_location: job.location, job_required_skills: job.required_skills }))
           })
         )
 
-        // Fetch projects posted by this client
-        const clientProjects = await Project.filter({ project_owner_email: clientEmail })
+        // Fetch projects posted by this client using client_id
+        const { data: clientProjects, error: projectsError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('client_id', clientId)
+
+        if (projectsError) {
+          console.error('Error fetching projects:', projectsError)
+        }
         setProjects(clientProjects || [])
 
         const projectApplicationsLists = await Promise.all(
-          clientProjects.map(async (project) => {
-            const projectApplications = await Application.filter({ project_id: project.id })
-            return projectApplications.map(app => ({ ...app, job_title: project.title || project.project_type?.replace(/_/g, ' ') + ' project', job_type: project.project_type, job_location: project.location_city, job_required_skills: project.departments_needed }))
+          (clientProjects || []).map(async (project) => {
+            const { data: projectApplications } = await supabase
+              .from('applications')
+              .select('*')
+              .eq('project_id', project.id)
+            return (projectApplications || []).map(app => ({ ...app, job_title: project.title || project.project_type?.replace(/_/g, ' ') + ' project', job_type: project.project_type, job_location: project.location_city, job_required_skills: project.departments_needed }))
           })
         )
 
         const flatApplications = [...jobApplicationsLists.flat(), ...projectApplicationsLists.flat()]
         setApplications(flatApplications)
 
-        // Fetch subscriptions, profiles, and portfolios for all artists who applied
-        const artistEmails = [...new Set(flatApplications.map(app => app.artist_email).filter(Boolean))]
+        // Fetch user_ids of artists who applied
+        const artistUserIds = [...new Set(flatApplications.map(app => app.user_id).filter(Boolean))]
         const subscriptionsData = {}
         const profilesData = {}
         const portfoliosData = {}
 
         await Promise.all(
-          artistEmails.map(async (email) => {
+          artistUserIds.map(async (userId) => {
             try {
-              // Fetch subscription - need to get user_id from public.users first
-              // For now, skip this as it requires a join with public.users
-              // TODO: Update to use user_id after fetching from public.users
-              if (subs.length > 0) {
-                const pkg = await SubscriptionPackage.get(subs[0].package_id)
-                subscriptionsData[email] = { subscription: subs[0], package: pkg }
+              // Fetch subscription by user_id
+              const { data: subs } = await supabase
+                .from('subscriptions')
+                .select('*')
+                .eq('user_id', userId)
+                .eq('status', 'active')
+
+              if (subs && subs.length > 0) {
+                const { data: pkg } = await supabase
+                  .from('subscription_packages')
+                  .select('*')
+                  .eq('id', subs[0].package_id)
+                  .single()
+                subscriptionsData[userId] = { subscription: subs[0], package: pkg }
               }
 
-              // Fetch artist profile
-              const artists = await Artist.filter({ email })
-              if (artists.length > 0) {
-                profilesData[email] = artists[0]
+              // Fetch artist profile by user_id
+              const { data: artists } = await supabase
+                .from('creators')
+                .select('*')
+                .eq('user_id', userId)
 
-                // Portfolio clips table does not exist - skip this
-                portfoliosData[email] = []
+              if (artists && artists.length > 0) {
+                profilesData[userId] = artists[0]
+                portfoliosData[userId] = []
               }
             } catch (err) {
               console.error('Failed to fetch artist data:', err)
@@ -120,17 +168,14 @@ export default function ClientApplications() {
         await Promise.all(
           teamIds.map(async (teamId) => {
             try {
-              const teams = await Team.filter({ id: teamId })
-              if (teams.length > 0) {
-                teamProfilesData[teamId] = teams[0]
+              const { data: teams } = await supabase
+                .from('teams')
+                .select('*')
+                .eq('id', teamId)
 
-                // Fetch team portfolio clips
-                const clips = await PortfolioClip.filter({
-                  uploaded_by_type: 'team',
-                  uploaded_by_id: teamId,
-                  status: 'approved'
-                })
-                teamPortfoliosData[teamId] = clips
+              if (teams && teams.length > 0) {
+                teamProfilesData[teamId] = teams[0]
+                teamPortfoliosData[teamId] = []
               }
             } catch (err) {
               console.error('Failed to fetch team data:', err)
@@ -164,10 +209,10 @@ export default function ClientApplications() {
       let type = 'unknown'
       let portfolio = []
 
-      if (app.artist_email && artistProfiles[app.artist_email]) {
-        profile = artistProfiles[app.artist_email]
+      if (app.user_id && artistProfiles[app.user_id]) {
+        profile = artistProfiles[app.user_id]
         type = 'artist'
-        portfolio = artistPortfolios[app.artist_email] || []
+        portfolio = artistPortfolios[app.user_id] || []
       } else if (app.team_id && teamProfiles[app.team_id]) {
         profile = teamProfiles[app.team_id]
         type = 'team'
@@ -203,10 +248,10 @@ export default function ClientApplications() {
         app.id === applicationId ? { ...app, status: 'accepted' } : app
       ))
 
-      // Send notification to applicant
-      if (application?.artist_email) {
+      // Send notification to applicant using user_id
+      if (application?.user_id) {
         await Notification.create({
-          recipient_email: application.artist_email,
+          recipient_id: application.user_id,
           type: 'job_status',
           title: 'Application Accepted',
           message: `Your application for "${application.job_title || application.project_title}" has been accepted!`,
@@ -230,10 +275,10 @@ export default function ClientApplications() {
         app.id === applicationId ? { ...app, status: 'rejected' } : app
       ))
 
-      // Send notification to applicant
-      if (application?.artist_email) {
+      // Send notification to applicant using user_id
+      if (application?.user_id) {
         await Notification.create({
-          recipient_email: application.artist_email,
+          recipient_id: application.user_id,
           type: 'job_status',
           title: 'Application Rejected',
           message: `Your application for "${application.job_title || application.project_title}" was not selected.`,
@@ -257,11 +302,11 @@ export default function ClientApplications() {
         app.id === applicationId ? { ...app, status: 'shortlisted' } : app
       ))
 
-      // Send notification to applicant
-      const recipientEmail = application?.artist_email || application?.team_email
-      if (recipientEmail) {
+      // Send notification to applicant using user_id
+      const recipientId = application?.user_id
+      if (recipientId) {
         await Notification.create({
-          recipient_email: recipientEmail,
+          recipient_id: recipientId,
           type: 'job_status',
           title: 'Application Shortlisted',
           message: `Your application for "${application.job_title}" has been shortlisted.`,
@@ -283,17 +328,28 @@ export default function ClientApplications() {
   }
 
   const handleContact = (application) => {
-    const recipientEmail = application.artist_email || application.team_email
-    if (recipientEmail) {
-      navigate('/Messages', { state: { recipientEmail } })
+    const recipientId = application.user_id
+    if (recipientId) {
+      navigate('/Messages', { state: { recipientId } })
     }
   }
 
   const handleGeneratePDF = async (application) => {
     setGeneratingPDF(true)
     try {
-      const artist = artistProfiles[application.artist_email]
-      const portfolio = artistPortfolios[application.artist_email] || []
+      const artist = artistProfiles[application.user_id]
+      const portfolio = artistPortfolios[application.user_id] || []
+
+      // Get user email from public.users
+      let userEmail = 'Unknown'
+      if (application.user_id) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('email')
+          .eq('id', application.user_id)
+          .single()
+        userEmail = userData?.email || 'Unknown'
+      }
 
       // Create a simple HTML content for PDF
       const pdfContent = `
@@ -320,7 +376,7 @@ export default function ClientApplications() {
           <body>
             <div class="header">
               <div class="name">${artist?.full_name || 'Unknown'}</div>
-              <div class="email">${application.artist_email}</div>
+              <div class="email">${userEmail}</div>
               <div style="margin-top: 10px; color: #666;">
                 Applied for: ${application.job_title}
               </div>
@@ -506,7 +562,6 @@ export default function ClientApplications() {
         return (
           profile?.full_name?.toLowerCase().includes(query) ||
           profile?.display_name?.toLowerCase().includes(query) ||
-          app.artist_email?.toLowerCase().includes(query) ||
           app.job_title?.toLowerCase().includes(query) ||
           profile?.roles?.some(r => r.toLowerCase().includes(query)) ||
           profile?.skills_experience?.some(s => s.skill.toLowerCase().includes(query))
@@ -757,11 +812,11 @@ export default function ClientApplications() {
                           </div>
                           <div className="min-w-0">
                             <p className="font-medium text-gray-900 truncate">{item.profile?.full_name || 'Unknown'}</p>
-                            <p className="text-sm text-gray-500 truncate">{item.application.artist_email || item.application.team_email}</p>
-                            {artistSubscriptions[item.application.artist_email] && (
+                            <p className="text-sm text-gray-500 truncate">{item.application.user_id || item.application.team_id}</p>
+                            {artistSubscriptions[item.application.user_id] && (
                               <SubscriptionBadge
-                                subscription={artistSubscriptions[item.application.artist_email].subscription}
-                                package={artistSubscriptions[item.application.artist_email].package}
+                                subscription={artistSubscriptions[item.application.user_id].subscription}
+                                package={artistSubscriptions[item.application.user_id].package}
                               />
                             )}
                           </div>
@@ -925,9 +980,9 @@ export default function ClientApplications() {
                 <p className="text-sm text-gray-600">Application for: {selectedApplication.job_title}</p>
               </div>
               <div className="flex items-center gap-2">
-                {artistProfiles[selectedApplication.artist_email] && (
+                {artistProfiles[selectedApplication.user_id] && (
                   <Button
-                    onClick={() => navigate(`/ArtistPublicProfile/${artistProfiles[selectedApplication.artist_email].id}`)}
+                    onClick={() => navigate(`/ArtistPublicProfile/${artistProfiles[selectedApplication.user_id].id}`)}
                     variant="outline"
                     className="flex items-center gap-2"
                   >
@@ -950,16 +1005,16 @@ export default function ClientApplications() {
               </div>
             </div>
 
-            {artistProfiles[selectedApplication.artist_email] && (
+            {artistProfiles[selectedApplication.user_id] && (
               <div className="p-6 space-y-8">
                 {/* Profile Header */}
                 <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6">
                   <div className="flex items-start gap-6">
                     <div className="w-24 h-24 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 ring-4 ring-white shadow-lg">
-                      {artistProfiles[selectedApplication.artist_email].profile_photo_url ? (
+                      {artistProfiles[selectedApplication.user_id].profile_photo_url ? (
                         <img
-                          src={artistProfiles[selectedApplication.artist_email].profile_photo_url}
-                          alt={artistProfiles[selectedApplication.artist_email].full_name}
+                          src={artistProfiles[selectedApplication.user_id].profile_photo_url}
+                          alt={artistProfiles[selectedApplication.user_id].full_name}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -970,39 +1025,39 @@ export default function ClientApplications() {
                       <div className="flex items-start justify-between">
                         <div>
                           <h3 className="text-2xl font-bold text-gray-900">
-                            {artistProfiles[selectedApplication.artist_email].full_name}
+                            {artistProfiles[selectedApplication.user_id].full_name}
                           </h3>
                           <p className="text-gray-600 mt-1">
-                            {artistProfiles[selectedApplication.artist_email].display_name || 'Creative Professional'}
+                            {artistProfiles[selectedApplication.user_id].display_name || 'Creative Professional'}
                           </p>
-                          {artistSubscriptions[selectedApplication.artist_email] && (
+                          {artistSubscriptions[selectedApplication.user_id] && (
                             <div className="mt-2">
                               <SubscriptionBadge
-                                subscription={artistSubscriptions[selectedApplication.artist_email].subscription}
-                                package={artistSubscriptions[selectedApplication.artist_email].package}
+                                subscription={artistSubscriptions[selectedApplication.user_id].subscription}
+                                package={artistSubscriptions[selectedApplication.user_id].package}
                               />
                             </div>
                           )}
                         </div>
-                        <div className={`px-3 py-1 rounded-full text-sm font-medium ${artistProfiles[selectedApplication.artist_email].availability_status === 'available' ? 'bg-green-100 text-green-700' :
-                          artistProfiles[selectedApplication.artist_email].availability_status === 'busy' ? 'bg-red-100 text-red-700' :
+                        <div className={`px-3 py-1 rounded-full text-sm font-medium ${artistProfiles[selectedApplication.user_id].availability_status === 'available' ? 'bg-green-100 text-green-700' :
+                          artistProfiles[selectedApplication.user_id].availability_status === 'busy' ? 'bg-red-100 text-red-700' :
                             'bg-yellow-100 text-yellow-700'
                           }`}>
-                          {artistProfiles[selectedApplication.artist_email].availability_status || 'Unknown'}
+                          {artistProfiles[selectedApplication.user_id].availability_status || 'Unknown'}
                         </div>
                       </div>
                       <div className="flex items-center gap-6 mt-4 text-sm">
                         <div className="flex items-center gap-2 text-gray-600">
                           <MapPin className="w-4 h-4" />
-                          <span>{[artistProfiles[selectedApplication.artist_email].based_in_city, artistProfiles[selectedApplication.artist_email].based_in_country].filter(Boolean).join(', ') || 'Location not specified'}</span>
+                          <span>{[artistProfiles[selectedApplication.user_id].based_in_city, artistProfiles[selectedApplication.user_id].based_in_country].filter(Boolean).join(', ') || 'Location not specified'}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <Briefcase className="w-4 h-4" />
-                          <span>{artistProfiles[selectedApplication.artist_email].years_of_experience || 0} years experience</span>
+                          <span>{artistProfiles[selectedApplication.user_id].years_of_experience || 0} years experience</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <DollarSign className="w-4 h-4" />
-                          <span>€{artistProfiles[selectedApplication.artist_email].hourly_rate || 0}/hr</span>
+                          <span>€{artistProfiles[selectedApplication.user_id].hourly_rate || 0}/hr</span>
                         </div>
                       </div>
                     </div>
@@ -1010,31 +1065,31 @@ export default function ClientApplications() {
                 </div>
 
                 {/* Bio & About */}
-                {artistProfiles[selectedApplication.artist_email].bio && (
+                {artistProfiles[selectedApplication.user_id].bio && (
                   <div>
                     <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <User className="w-5 h-5" />
                       About
                     </h4>
                     <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-gray-700 leading-relaxed">{artistProfiles[selectedApplication.artist_email].bio}</p>
+                      <p className="text-gray-700 leading-relaxed">{artistProfiles[selectedApplication.user_id].bio}</p>
                     </div>
                   </div>
                 )}
 
                 {/* Skills & Expertise */}
-                {(artistProfiles[selectedApplication.artist_email].roles?.length > 0 || artistProfiles[selectedApplication.artist_email].skills_experience?.length > 0) && (
+                {(artistProfiles[selectedApplication.user_id].roles?.length > 0 || artistProfiles[selectedApplication.user_id].skills_experience?.length > 0) && (
                   <div>
                     <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <Award className="w-5 h-5" />
                       Skills & Expertise
                     </h4>
                     <div className="space-y-3">
-                      {artistProfiles[selectedApplication.artist_email].roles?.length > 0 && (
+                      {artistProfiles[selectedApplication.user_id].roles?.length > 0 && (
                         <div>
                           <p className="text-sm font-medium text-gray-600 mb-2">Roles</p>
                           <div className="flex flex-wrap gap-2">
-                            {artistProfiles[selectedApplication.artist_email].roles.map((role) => (
+                            {artistProfiles[selectedApplication.user_id].roles.map((role) => (
                               <span key={role} className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
                                 {role.replace(/_/g, ' ')}
                               </span>
@@ -1042,11 +1097,11 @@ export default function ClientApplications() {
                           </div>
                         </div>
                       )}
-                      {artistProfiles[selectedApplication.artist_email].skills_experience?.length > 0 && (
+                      {artistProfiles[selectedApplication.user_id].skills_experience?.length > 0 && (
                         <div>
                           <p className="text-sm font-medium text-gray-600 mb-2">Skills</p>
                           <div className="flex flex-wrap gap-2">
-                            {artistProfiles[selectedApplication.artist_email].skills_experience.map((skill) => (
+                            {artistProfiles[selectedApplication.user_id].skills_experience.map((skill) => (
                               <span key={skill.skill} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
                                 {skill.skill}
                               </span>
@@ -1059,7 +1114,7 @@ export default function ClientApplications() {
                 )}
 
                 {/* Past Clients */}
-                {artistProfiles[selectedApplication.artist_email].past_clients?.length > 0 && (
+                {artistProfiles[selectedApplication.user_id].past_clients?.length > 0 && (
                   <div>
                     <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <Building2 className="w-5 h-5" />
@@ -1067,7 +1122,7 @@ export default function ClientApplications() {
                     </h4>
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="flex flex-wrap gap-2">
-                        {artistProfiles[selectedApplication.artist_email].past_clients.map((client) => (
+                        {artistProfiles[selectedApplication.user_id].past_clients.map((client) => (
                           <span key={client} className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm">
                             {client}
                           </span>
@@ -1078,14 +1133,14 @@ export default function ClientApplications() {
                 )}
 
                 {/* Project Specialties */}
-                {artistProfiles[selectedApplication.artist_email].project_specialties?.length > 0 && (
+                {artistProfiles[selectedApplication.user_id].project_specialties?.length > 0 && (
                   <div>
                     <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <Star className="w-5 h-5" />
                       Project Specialties
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {artistProfiles[selectedApplication.artist_email].project_specialties.map((specialty) => (
+                      {artistProfiles[selectedApplication.user_id].project_specialties.map((specialty) => (
                         <span key={specialty} className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm">
                           {specialty}
                         </span>
@@ -1096,14 +1151,14 @@ export default function ClientApplications() {
 
                 {/* Languages & Locations */}
                 <div className="grid grid-cols-2 gap-6">
-                  {artistProfiles[selectedApplication.artist_email].languages_spoken?.length > 0 && (
+                  {artistProfiles[selectedApplication.user_id].languages_spoken?.length > 0 && (
                     <div>
                       <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                         <Languages className="w-5 h-5" />
                         Languages
                       </h4>
                       <div className="flex flex-wrap gap-2">
-                        {artistProfiles[selectedApplication.artist_email].languages_spoken.map((lang) => (
+                        {artistProfiles[selectedApplication.user_id].languages_spoken.map((lang) => (
                           <span key={lang} className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm">
                             {lang}
                           </span>
@@ -1111,14 +1166,14 @@ export default function ClientApplications() {
                       </div>
                     </div>
                   )}
-                  {artistProfiles[selectedApplication.artist_email].countries_worked?.length > 0 && (
+                  {artistProfiles[selectedApplication.user_id].countries_worked?.length > 0 && (
                     <div>
                       <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                         <Globe2 className="w-5 h-5" />
                         Countries Worked
                       </h4>
                       <div className="flex flex-wrap gap-2">
-                        {artistProfiles[selectedApplication.artist_email].countries_worked.map((country) => (
+                        {artistProfiles[selectedApplication.user_id].countries_worked.map((country) => (
                           <span key={country} className="px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm">
                             {country}
                           </span>
@@ -1129,39 +1184,39 @@ export default function ClientApplications() {
                 </div>
 
                 {/* Social Media */}
-                {(artistProfiles[selectedApplication.artist_email].website || artistProfiles[selectedApplication.artist_email].linkedin || artistProfiles[selectedApplication.artist_email].instagram || artistProfiles[selectedApplication.artist_email].youtube || artistProfiles[selectedApplication.artist_email].twitter) && (
+                {(artistProfiles[selectedApplication.user_id].website || artistProfiles[selectedApplication.user_id].linkedin || artistProfiles[selectedApplication.user_id].instagram || artistProfiles[selectedApplication.user_id].youtube || artistProfiles[selectedApplication.user_id].twitter) && (
                   <div>
                     <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <Globe className="w-5 h-5" />
                       Online Presence
                     </h4>
                     <div className="flex flex-wrap gap-3">
-                      {artistProfiles[selectedApplication.artist_email].website && (
-                        <a href={artistProfiles[selectedApplication.artist_email].website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                      {artistProfiles[selectedApplication.user_id].website && (
+                        <a href={artistProfiles[selectedApplication.user_id].website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                           <Globe className="w-4 h-4" />
                           <span className="text-sm font-medium">Website</span>
                         </a>
                       )}
-                      {artistProfiles[selectedApplication.artist_email].linkedin && (
-                        <a href={artistProfiles[selectedApplication.artist_email].linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
+                      {artistProfiles[selectedApplication.user_id].linkedin && (
+                        <a href={artistProfiles[selectedApplication.user_id].linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
                           <Linkedin className="w-4 h-4" />
                           <span className="text-sm font-medium">LinkedIn</span>
                         </a>
                       )}
-                      {artistProfiles[selectedApplication.artist_email].instagram && (
-                        <a href={artistProfiles[selectedApplication.artist_email].instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-pink-100 text-pink-700 rounded-lg hover:bg-pink-200 transition-colors">
+                      {artistProfiles[selectedApplication.user_id].instagram && (
+                        <a href={artistProfiles[selectedApplication.user_id].instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-pink-100 text-pink-700 rounded-lg hover:bg-pink-200 transition-colors">
                           <Instagram className="w-4 h-4" />
                           <span className="text-sm font-medium">Instagram</span>
                         </a>
                       )}
-                      {artistProfiles[selectedApplication.artist_email].youtube && (
-                        <a href={artistProfiles[selectedApplication.artist_email].youtube} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
+                      {artistProfiles[selectedApplication.user_id].youtube && (
+                        <a href={artistProfiles[selectedApplication.user_id].youtube} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
                           <Youtube className="w-4 h-4" />
                           <span className="text-sm font-medium">YouTube</span>
                         </a>
                       )}
-                      {artistProfiles[selectedApplication.artist_email].twitter && (
-                        <a href={artistProfiles[selectedApplication.artist_email].twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-sky-100 text-sky-700 rounded-lg hover:bg-sky-200 transition-colors">
+                      {artistProfiles[selectedApplication.user_id].twitter && (
+                        <a href={artistProfiles[selectedApplication.user_id].twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-sky-100 text-sky-700 rounded-lg hover:bg-sky-200 transition-colors">
                           <Twitter className="w-4 h-4" />
                           <span className="text-sm font-medium">Twitter</span>
                         </a>
@@ -1171,14 +1226,14 @@ export default function ClientApplications() {
                 )}
 
                 {/* Portfolio Work */}
-                {artistPortfolios[selectedApplication.artist_email]?.length > 0 && (
+                {artistPortfolios[selectedApplication.user_id]?.length > 0 && (
                   <div>
                     <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <Play className="w-5 h-5" />
-                      Portfolio Work ({artistPortfolios[selectedApplication.artist_email].length})
+                      Portfolio Work ({artistPortfolios[selectedApplication.user_id].length})
                     </h4>
                     <div className="grid grid-cols-2 gap-4">
-                      {artistPortfolios[selectedApplication.artist_email].map((clip) => (
+                      {artistPortfolios[selectedApplication.user_id].map((clip) => (
                         <div key={clip.id} className="bg-gray-50 rounded-lg overflow-hidden">
                           <div className="aspect-video bg-gray-300 flex items-center justify-center relative">
                             {clip.video_embed_url ? (

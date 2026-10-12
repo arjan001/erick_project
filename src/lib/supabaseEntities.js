@@ -13,6 +13,7 @@
  *   delete(id)                     - Delete record
  */
 import { supabase } from '@/lib/supabase'
+import { validateQuery, validateSelect } from '@/lib/schemaValidator'
 
 /**
  * Build a Supabase entity wrapper with consistent API
@@ -30,6 +31,9 @@ function buildEntity(tableName) {
     },
 
     filter: async (filters = {}, sort = '-created_at', limit = 50) => {
+      // Validate filters against schema
+      validateQuery(tableName, filters, false)
+
       let query = supabase.from(tableName).select('*')
 
       Object.entries(filters).forEach(([key, value]) => {
@@ -56,6 +60,9 @@ function buildEntity(tableName) {
     },
 
     create: async (data) => {
+      // Validate data columns against schema
+      validateQuery(tableName, data, false)
+
       const { data: result, error } = await supabase
         .from(tableName)
         .insert(data)
@@ -66,6 +73,9 @@ function buildEntity(tableName) {
     },
 
     update: async (id, data) => {
+      // Validate data columns against schema
+      validateQuery(tableName, data, false)
+
       const { data: result, error } = await supabase
         .from(tableName)
         .update(data)
