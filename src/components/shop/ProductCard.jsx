@@ -24,7 +24,9 @@ export default function ProductCard({ product }) {
     isWished(product.id).then(setWished).catch(() => setWished(false))
   }, [product.id, isWished])
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e) => {
+    e.preventDefault() // Prevent navigation to product page
+    e.stopPropagation()
     if (outOfStock) return
     addToCart(product)
   }
