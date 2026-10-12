@@ -93,45 +93,54 @@ This document describes the schema migration from email-based columns to user_id
 
 ### Step 1: Run Migration Scripts in Order
 
-Run these SQL scripts in your Supabase SQL editor:
+Run these SQL scripts in your Supabase SQL editor in this exact order:
 
-1. **Add new columns to existing tables:**
+1. **Recreate connections table with correct schema:**
    ```sql
-   -- Run this first to add the new columns
-   -- database/migrations/migrate_to_user_id_connections.sql
-   -- database/migrations/migrate_to_user_id_notifications.sql
-   ```
-
-2. **Verify data migration:**
-   ```sql
-   -- Check if all connections have been migrated
-   SELECT COUNT(*) FROM connections WHERE requester_id IS NULL OR receiver_id IS NULL;
-   -- Should return 0 if migration was successful
-
-   -- Check if all notifications have been migrated
-   SELECT COUNT(*) FROM notifications WHERE user_id IS NULL;
-   -- Should return 0 if migration was successful
-   ```
-
-3. **Drop old columns (only after verifying migration):**
-   Uncomment the DROP COLUMN sections in the migration scripts and run them again.
-
-### Step 2: Update Table Schemas
-
-If you're starting fresh or want to recreate tables:
-
-1. **Drop old tables (if needed):**
-   ```sql
-   DROP TABLE IF EXISTS connections CASCADE;
-   DROP TABLE IF EXISTS notifications CASCADE;
-   ```
-
-2. **Create tables with new schema:**
-   ```sql
-   -- Run the updated migration files
    -- database/migrations/add_connections_table.sql
-   -- database/migrations/update_notifications_schema.sql
+   -- This drops the old table and recreates it with user_id, connected_artist_id columns
    ```
+
+2. **Update notifications table schema:**
+   ```sql
+   -- database/migrations/update_notifications_schema.sql
+   -- This drops RLS policies, adds user_id column, drops recipient_email, recreates policies
+   ```
+
+3. **Sync auth.users to public.users:**
+   ```sql
+   -- database/migrations/migrate_legacy_data_to_user_id.sql
+   -- This ensures all auth users have corresponding public.users records
+   ```
+
+**Note:** The `migrate_to_user_id_connections.sql` and `migrate_to_user_id_notifications.sql` files are now obsolete and will skip automatically if the tables already have the correct schema.
+
+### Step 2: Verify Migration
+
+After running the scripts, verify the changes:
+
+```sql
+-- Check connections table has correct schema
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'connections'
+ORDER BY ordinal_position;
+-- Should show: id, user_id, connected_artist_id, connection_type, status, metadata, created_at, updated_at
+
+-- Check notifications table has correct schema
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'notifications'
+ORDER BY ordinal_position;
+-- Should show: id, user_id, type, content, is_read, link_url, metadata, created_at, updated_at
+-- Should NOT show: recipient_email
+
+-- Check all auth users have public.users records
+SELECT COUNT(*) FROM auth.users au
+LEFT JOIN public.users u ON au.id = u.id
+WHERE u.id IS NULL;
+-- Should return 0 if migration was successful
+```
 
 ### Step 3: Test the Application
 

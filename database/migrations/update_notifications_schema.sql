@@ -2,6 +2,10 @@
 -- This migration ensures the notifications table has the correct structure
 -- MIGRATION NOTE: This table now uses user_id instead of recipient_email for foreign key relationships
 
+-- Drop existing RLS policies that depend on recipient_email
+DROP POLICY IF EXISTS "Users can view own notifications" ON notifications;
+DROP POLICY IF EXISTS "Users can update own notifications" ON notifications;
+
 -- Ensure columns exist (add if missing)
 DO $$
 BEGIN
@@ -26,7 +30,7 @@ BEGIN
     END IF;
 END $$;
 
--- Drop deprecated column if it exists
+-- Drop deprecated column if it exists (now safe since policies are dropped)
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'notifications' AND column_name = 'recipient_email') THEN
@@ -44,6 +48,17 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_type ON notifications(type);
 CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
 CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at DESC);
+
+-- Recreate RLS policies using user_id instead of recipient_email
+CREATE POLICY "Users can view own notifications"
+ON notifications
+FOR SELECT
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own notifications"
+ON notifications
+FOR UPDATE
+USING (auth.uid() = user_id);
 
 -- Add comments for documentation
 COMMENT ON COLUMN notifications.user_id IS 'User ID of the notification recipient';

@@ -41,7 +41,7 @@ BEGIN
           'creator'
         ),
         false,
-        auth_user.created_at,
+        NOW(),
         NOW()
       );
     ELSE
