@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
 import { ProjectOwner, Project, Job, Application, Message } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 import ClientOverviewCards from '@/components/client/ClientOverviewCards'
 import ClientActivityChart from '@/components/client/ClientActivityChart'
 import ClientStatusDonut from '@/components/client/ClientStatusDonut'
@@ -9,9 +10,8 @@ import ClientRecentApplications from '@/components/client/ClientRecentApplicatio
 import ClientProjectCard from '@/components/client/ClientProjectCard'
 import ClientJobRow from '@/components/client/ClientJobRow'
 import ClientPostProjectModal from '@/components/client/ClientPostProjectModal'
-import AISubmissionModal from '@/components/client/AISubmissionModal'
 import OnboardingTour from '@/components/onboarding/OnboardingTour'
-import { Plus, Briefcase, Send, MessageSquare, FolderKanban, X, MapPin, Sparkles } from 'lucide-react'
+import { Plus, Briefcase, Send, MessageSquare, FolderKanban, X, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import InviteCodeCard from '@/components/InviteCodeCard'
 import { useToast } from '@/hooks/useToast.jsx'
@@ -30,7 +30,6 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true)
 
   const [showProjectModal, setShowProjectModal] = useState(false)
-  const [showAIModal, setShowAIModal] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
   const [showTour, setShowTour] = useState(false)
 
@@ -48,14 +47,32 @@ export default function ClientDashboard() {
 
     const fetchData = async () => {
       try {
-        const owners = await ProjectOwner.filter({ email: authUser.email }, '-created_at', 1)
-        const owner = owners?.[0] || { email: authUser.email, full_name: authUser.full_name }
+        // Get client record by user_id
+        const { data: clientData, error: clientError } = await supabase
+          .from('clients')
+          .select('*')
+          .eq('user_id', authUser.id)
+          .maybeSingle()
+
+        if (clientError) {
+          console.error('Error fetching client data:', clientError)
+        }
+
+        const owner = clientData || { display_name: authUser.full_name || 'Client' }
         setProjectOwner(owner)
 
-        const projectsData = await Project.filter({ project_owner_email: authUser.email }, '-created_at', 20)
+        // Fetch projects by client_id
+        let projectsData = []
+        if (clientData) {
+          projectsData = await Project.filter({ client_id: clientData.id }, '-created_at', 20)
+        }
         setProjects(projectsData || [])
 
-        const jobsData = await Job.filter({ client_email: authUser.email }, '-created_at', 20)
+        // Fetch jobs by client_id
+        let jobsData = []
+        if (clientData) {
+          jobsData = await Job.filter({ client_id: clientData.id }, '-created_at', 20)
+        }
         setJobs(jobsData || [])
 
         const projectIds = new Set((projectsData || []).map((p) => p.id))
@@ -66,7 +83,8 @@ export default function ClientDashboard() {
         )
         setApplications(myApplications)
 
-        const messages = await Message.filter({ recipient_email: authUser.email }, '-created_at', 100)
+        // Fetch messages by user_id (from public.users)
+        const messages = await Message.filter({ recipient_id: authUser.id }, '-created_at', 100)
         setUnreadMessages((messages || []).filter((m) => !m.is_read).length)
 
         // Check if tour was dismissed
@@ -109,48 +127,6 @@ export default function ClientDashboard() {
     } catch (err) {
       console.error('Error deleting job:', err)
       toastError('Error', 'Failed to delete job')
-    }
-  }
-
-  const handleAIComplete = async (aiData) => {
-    //
-
-    // Process AI-generated data and create job directly
-    setShowAIModal(false)
-
-    if (!projectOwner) {
-      console.error('AI Complete: No project owner found')
-      toastError('Error', 'Failed to create job: No project owner')
-      return
-    }
-
-    if (!user) {
-      console.error('AI Complete: No user found')
-      toastError('Error', 'Failed to create job: No user')
-      return
-    }
-
-    try {
-      const newJob = await Job.create({
-        client_email: user.email,
-        title: aiData?.overviewBrief?.title || 'AI Generated Job',
-        description: aiData?.overviewBrief?.description || '',
-        job_type: 'director',
-        employment_type: '',
-        location: aiData?.locations?.[0]?.name || '',
-        budget: parseFloat(aiData?.budgetBreakdown?.[1]?.price?.replace(/[^\d]/g, '')) || 0,
-        duration: '',
-        required_skills: [],
-        status: 'open',
-        created_date: new Date().toISOString()
-      })
-
-      //
-      setJobs((prev) => [...prev, newJob])
-      success('Job Created', 'AI-generated job created successfully')
-    } catch (err) {
-      console.error('Error creating AI-generated job:', err)
-      toastError('Creation Failed', 'Failed to create AI-generated job')
     }
   }
 
@@ -214,14 +190,15 @@ export default function ClientDashboard() {
                 <Plus className="w-4 h-4 mr-2" />
                 Post Project
               </Button>
-              <Button
+              {/* AI button disabled */}
+              {/* <Button
                 variant="outline"
                 className="border-[#4F46E5] text-[#4F46E5] hover:bg-[#4F46E5]/10 transition-all text-sm font-medium px-6 py-2.5 rounded-xl"
                 onClick={() => setShowAIModal(true)}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Post with AI
-              </Button>
+              </Button> */}
             </div>
           </div>
 
@@ -283,14 +260,15 @@ export default function ClientDashboard() {
                     <Plus className="w-4 h-4 mr-2" />
                     Post Project
                   </Button>
-                  <Button
+                  {/* AI button disabled */}
+                  {/* <Button
                     variant="outline"
                     className="border-[#4F46E5] text-[#4F46E5] hover:bg-[#4F46E5]/10 rounded-xl"
                     onClick={() => setShowAIModal(true)}
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     Post with AI
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
             ) : (
@@ -340,19 +318,6 @@ export default function ClientDashboard() {
         editingProject={editingProject}
       />
 
-      <AISubmissionModal
-        open={showAIModal}
-        onClose={() => setShowAIModal(false)}
-        onSubmit={handleAIComplete}
-        projectData={{
-          url: '',
-          category: 'commercial',
-          description: '',
-          budget: '',
-          title: ''
-        }}
-      />
-
       {showTour && (
         <OnboardingTour
           userRole="client"
@@ -362,9 +327,4 @@ export default function ClientDashboard() {
       )}
     </div>
   )
-}
-
-function openProjectModal(project = null) {
-  setEditingProject(project)
-  setShowProjectModal(true)
 }

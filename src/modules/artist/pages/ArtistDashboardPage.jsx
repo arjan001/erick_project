@@ -46,7 +46,7 @@ export default function ArtistDashboard() {
           Job.filter({ status: 'open' }, '-created_at', 5),
           Application.filter({ user_id: user.id }, '-created_at', 10),
           Message.list('-created_at', 5),
-          Subscription.filter({ user_email: user.email }, '-created_at', 1),
+          Subscription.filter({ user_id: user.id }, '-created_at', 1),
           getSavedJobs()
         ])
 
@@ -57,7 +57,7 @@ export default function ArtistDashboard() {
         setSavedJobs(savedData || [])
 
         const notifs = await Notification.filter({
-          recipient_email: user.email,
+          recipient_id: user.id,
           type: 'job_invitation'
         }, '-created_date', 10)
         setInvitations(notifs || [])
@@ -86,7 +86,7 @@ export default function ArtistDashboard() {
           console.log('Pending application:', { jobId, roleId })
         }
       } catch (err) {
-
+        console.error('Error fetching dashboard data:', err)
       }
     }
 

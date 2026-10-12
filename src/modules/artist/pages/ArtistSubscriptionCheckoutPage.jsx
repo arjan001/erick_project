@@ -455,8 +455,6 @@ export default function ArtistSubscriptionCheckoutPage() {
       } else {
         await Subscription.create({
           user_id: user.id,
-          user_email: user.email,
-          user_name: user.full_name,
           package_id: pkg.id,
           package_name: pkg.name,
           status: 'active',
@@ -496,8 +494,6 @@ export default function ArtistSubscriptionCheckoutPage() {
       // M-Pesa payment successful - activate subscription
       await Subscription.create({
         user_id: user.id,
-        user_email: user.email,
-        user_name: user.full_name,
         package_id: selectedPackage.id,
         package_name: selectedPackage.name,
         status: 'active',

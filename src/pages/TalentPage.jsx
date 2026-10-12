@@ -7,7 +7,7 @@ import TalentCard from '@/components/landing/backstage/TalentCard'
 import CreatorProfileModal from '@/components/landing/backstage/CreatorProfileModal'
 import { talentProfiles, talentTabs, filterTags } from '@/components/landing/backstage/talentData'
 import { Search, SlidersHorizontal, ChevronDown, CheckSquare, HelpCircle, ZoomIn, Loader2 } from 'lucide-react'
-import { Artist, Team, Backer, ProjectOwner } from '@/lib/supabaseEntities'
+import { Creator } from '@/lib/supabaseEntities'
 
 const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?name=SmartGigs&background=6366f1&color=fff&size=256'
 
@@ -26,24 +26,24 @@ export default function TalentPage() {
   const loadDatabaseProfiles = async () => {
     try {
       setLoading(true)
-      // Fetch only artists from database
-      const artists = await Artist.list('-created_at', 100)
+      // Fetch only creators from database
+      const creators = await Creator.list('-created_at', 100)
 
-      console.log('Fetched artists:', artists.length)
+      console.log('Fetched creators:', creators.length)
 
       // Transform to talent card format
       const allProfiles = []
 
-      // Add artists only
-      artists.forEach(a => {
+      // Add creators only
+      creators.forEach(c => {
         allProfiles.push({
-          id: a.id,
-          name: a.full_name || a.name || 'Artist',
-          location: a.location || 'Kenya',
-          profession: a.profession || 'Actor',
-          images: a.profile_image ? [a.profile_image] : [DEFAULT_AVATAR],
+          id: c.id,
+          name: c.full_name || c.display_name || c.email?.split('@')[0] || 'Creator',
+          location: c.location || c.city || 'Kenya',
+          profession: c.profession || 'Actor',
+          images: c.profile_image ? [c.profile_image] : [DEFAULT_AVATAR],
           badges: [],
-          email: a.email
+          email: c.email
         })
       })
 

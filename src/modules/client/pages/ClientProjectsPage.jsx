@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Project } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Briefcase, Plus, Search, Filter, Calendar, MapPin, DollarSign, Eye, Trash2, Edit } from 'lucide-react'
@@ -29,13 +30,33 @@ export default function ClientProjectsPage() {
   }, [])
 
   const fetchProjects = async () => {
-    if (!user?.email) {
+    if (!user?.id) {
       console.error('Authentication required for projects')
       return
     }
     try {
       setLoading(true)
-      const rows = await Project.filter({ project_owner_email: user.email }, '-created_at', 50)
+      // First get the client record for this user
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (clientError) {
+        console.error('Error fetching client data:', clientError)
+        setProjects([])
+        return
+      }
+
+      if (!clientData) {
+        console.log('No client profile found for user')
+        setProjects([])
+        return
+      }
+
+      // Then fetch projects by client_id
+      const rows = await Project.filter({ client_id: clientData.id }, '-created_at', 50)
       setProjects(rows || [])
     } catch (err) {
       console.error('Error fetching projects:', err)
@@ -46,7 +67,7 @@ export default function ClientProjectsPage() {
   }
 
   const handleCreateProject = async () => {
-    if (!user?.email) {
+    if (!user?.id) {
       console.error('Authentication required for creating project')
       return
     }
@@ -55,10 +76,21 @@ export default function ClientProjectsPage() {
       return
     }
     try {
+      // Get client_id from clients table
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (clientError || !clientData) {
+        error('Error', 'Could not find your client profile')
+        return
+      }
+
       const newProject = await Project.create({
         ...createForm,
-        project_owner_email: user.email,
-        project_owner_name: user.full_name,
+        client_id: clientData.id,
         status: 'draft',
         created_at: new Date().toISOString()
       })
@@ -106,7 +138,7 @@ export default function ClientProjectsPage() {
   }
 
   const handleUpdateProject = async (projectId) => {
-    if (!user?.email) {
+    if (!user?.id) {
       error('Authentication Required', 'Please sign in to update this project')
       return
     }
@@ -132,7 +164,7 @@ export default function ClientProjectsPage() {
       })
       fetchProjects()
     } catch (err) {
-      //
+      console.error('Error updating project:', err)
       error('Failed', 'Failed to update project. Please try again.')
     }
   }

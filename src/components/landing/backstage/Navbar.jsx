@@ -105,25 +105,25 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* Cart icon - only show when items exist */}
-          {cart.length > 0 && (
-            <Link to="/Cart" className="relative rounded-full p-2 hover:bg-black/[0.05]">
-              <ShoppingBag className="h-5 w-5 text-black" />
+          {/* Cart icon - always show */}
+          <Link to="/Cart" className="relative rounded-full p-2 hover:bg-black/[0.05]">
+            <ShoppingBag className="h-5 w-5 text-black" />
+            {cart.length > 0 && (
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#4F46E5] text-[10px] font-bold text-white">
                 {cart.length}
               </span>
-            </Link>
-          )}
+            )}
+          </Link>
 
-          {/* Wishlist icon - commented out due to errors */}
-          {/* {wishlist.length > 0 && (
-            <Link to="/Wishlist" className="relative rounded-full p-2 hover:bg-black/[0.05]">
-              <Heart className="h-5 w-5 text-black" />
+          {/* Wishlist icon - always show */}
+          <Link to="/Wishlist" className="relative rounded-full p-2 hover:bg-black/[0.05]">
+            <Heart className="h-5 w-5 text-black" />
+            {wishlist.length > 0 && (
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#EF4444] text-[10px] font-bold text-white">
                 {wishlist.length}
               </span>
-            </Link>
-          )} */}
+            )}
+          </Link>
 
           <button className="rounded-full p-1.5 hover:bg-black/[0.05]">
             <MoreVertical className="h-5 w-5 text-black" />
@@ -160,18 +160,14 @@ export default function Navbar() {
             )}
             {/* Cart and Wishlist on mobile */}
             <div className="flex gap-3 mt-2">
-              {cart.length > 0 && (
-                <Link to="/Cart" className="flex items-center gap-2 text-sm font-bold text-black">
-                  <ShoppingBag className="h-4 w-4" />
-                  Cart ({cart.length})
-                </Link>
-              )}
-              {wishlist.length > 0 && (
-                <Link to="/Wishlist" className="flex items-center gap-2 text-sm font-bold text-black">
-                  <Heart className="h-4 w-4" />
-                  Wishlist ({wishlist.length})
-                </Link>
-              )}
+              <Link to="/Cart" className="flex items-center gap-2 text-sm font-bold text-black">
+                <ShoppingBag className="h-4 w-4" />
+                Cart {cart.length > 0 && `(${cart.length})`}
+              </Link>
+              <Link to="/Wishlist" className="flex items-center gap-2 text-sm font-bold text-black">
+                <Heart className="h-4 w-4" />
+                Wishlist {wishlist.length > 0 && `(${wishlist.length})`}
+              </Link>
             </div>
           </div>
         </div>

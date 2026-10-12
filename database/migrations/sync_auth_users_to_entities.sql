@@ -38,9 +38,9 @@ BEGIN
     END IF;
 
   ELSIF user_role = 'client' OR user_role = 'project_owner' THEN
-    SELECT * INTO existing_record FROM public.clients WHERE email = user_email LIMIT 1;
+    SELECT * INTO existing_record FROM public.clients WHERE contact_email = user_email LIMIT 1;
     IF NOT FOUND THEN
-      INSERT INTO public.clients (email, display_name, created_at)
+      INSERT INTO public.clients (contact_email, display_name, created_at)
       VALUES (user_email, user_full_name, NOW());
     END IF;
 
@@ -102,9 +102,9 @@ BEGIN
       END IF;
 
     ELSIF user_role = 'client' OR user_role = 'project_owner' THEN
-      SELECT * INTO existing_record FROM public.clients WHERE email = auth_user.email LIMIT 1;
+      SELECT * INTO existing_record FROM public.clients WHERE contact_email = auth_user.email LIMIT 1;
       IF NOT FOUND THEN
-        INSERT INTO public.clients (email, display_name, created_at)
+        INSERT INTO public.clients (contact_email, display_name, created_at)
         VALUES (auth_user.email, user_full_name, NOW());
       END IF;
 

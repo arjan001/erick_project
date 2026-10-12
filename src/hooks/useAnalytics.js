@@ -31,7 +31,7 @@ class AnalyticsService {
       await this.startSession()
       this.initialized = true
     } catch (error) {
-      
+
       // Don't block app if analytics fails
       this.initialized = true
     }
@@ -50,7 +50,7 @@ class AnalyticsService {
         const { ip } = await ipResponse.json()
         locationData = await locationService.getLocation(ip)
       } catch (error) {
-        
+
       }
 
       const sessionData = {
@@ -84,7 +84,7 @@ class AnalyticsService {
       }, { onConflict: 'session_id' })
 
     } catch (error) {
-      
+
     }
   }
 
@@ -92,14 +92,20 @@ class AnalyticsService {
     if (!this.sessionId) await this.initialize()
 
     try {
-      await supabase.from('page_views').insert({
+      // Use upsert to handle duplicate inserts gracefully
+      const { error: insertError } = await supabase.from('page_views').upsert({
         session_id: this.sessionId,
         user_id: this.userId,
         page_path: pagePath,
         page_title: pageTitle || document.title,
         referrer: document.referrer || null,
         viewed_at: new Date().toISOString()
-      })
+      }, { onConflict: 'session_id,page_path,viewed_at' })
+
+      // Ignore 409 conflicts (duplicate inserts) - analytics is non-critical
+      if (insertError && insertError.code !== '23505') {
+        console.error('Analytics error:', insertError)
+      }
 
       // Update live users current page
       await supabase.from('live_users')
@@ -115,7 +121,7 @@ class AnalyticsService {
         .eq('session_id', this.sessionId)
 
     } catch (error) {
-      
+      // Silently ignore analytics errors - don't block the app
     }
   }
 
@@ -133,7 +139,7 @@ class AnalyticsService {
         occurred_at: new Date().toISOString()
       })
     } catch (error) {
-      
+
     }
   }
 
@@ -154,7 +160,7 @@ class AnalyticsService {
         occurred_at: new Date().toISOString()
       })
     } catch (err) {
-      
+
     }
   }
 
@@ -187,7 +193,7 @@ class AnalyticsService {
         .eq('session_id', this.sessionId)
 
     } catch (error) {
-      
+
     }
   }
 
@@ -206,7 +212,7 @@ class AnalyticsService {
         .update({ last_activity: new Date().toISOString() })
         .eq('session_id', this.sessionId)
     } catch (error) {
-      
+
     }
   }
 }
@@ -224,18 +230,18 @@ export function useAnalytics() {
 
     // Initialize analytics in background - don't await
     analytics.initialize().catch(err => {
-      
+
     })
 
     // Track page view on mount - don't await
     analytics.trackPageView(window.location.pathname, document.title).catch(err => {
-      
+
     })
 
     // Update activity every 30 seconds
     const activityInterval = setInterval(() => {
       analytics.updateActivity().catch(err => {
-        
+
       })
     }, 30000)
 
@@ -247,7 +253,7 @@ export function useAnalytics() {
       originalPushState.apply(window.history, args)
       setTimeout(() => {
         analytics.trackPageView(window.location.pathname, document.title).catch(err => {
-          
+
         })
       }, 0)
     }
@@ -256,7 +262,7 @@ export function useAnalytics() {
       originalReplaceState.apply(window.history, args)
       setTimeout(() => {
         analytics.trackPageView(window.location.pathname, document.title).catch(err => {
-          
+
         })
       }, 0)
     }
@@ -264,7 +270,7 @@ export function useAnalytics() {
     // Handle page unload
     const handleUnload = () => {
       analytics.endSession().catch(err => {
-        
+
       })
     }
 
@@ -276,7 +282,7 @@ export function useAnalytics() {
       window.history.replaceState = originalReplaceState
       window.removeEventListener('beforeunload', handleUnload)
       analytics.endSession().catch(err => {
-        
+
       })
     }
   }, [])

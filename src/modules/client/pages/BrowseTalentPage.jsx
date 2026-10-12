@@ -40,10 +40,10 @@ export default function BrowseTalentPage() {
   }
 
   const fetchSavedTalent = async () => {
-    if (!user?.email) return
+    if (!user?.id) return
     try {
       const connections = await Connection.filter({
-        user_email: user.email,
+        user_id: user.id,
         connection_type: 'saved',
         status: 'active'
       })
@@ -56,7 +56,7 @@ export default function BrowseTalentPage() {
   }
 
   const handleSave = async (artistId) => {
-    if (!user?.email) {
+    if (!user?.id) {
       error('Authentication Required', 'Please sign in to save talent')
       return
     }
@@ -64,7 +64,7 @@ export default function BrowseTalentPage() {
       if (savedArtistIds.has(artistId)) {
         // Unsave
         const connections = await Connection.filter({
-          user_email: user.email,
+          user_id: user.id,
           connected_artist_id: artistId,
           connection_type: 'saved'
         })
@@ -80,7 +80,7 @@ export default function BrowseTalentPage() {
       } else {
         // Save
         await Connection.create({
-          user_email: user.email,
+          user_id: user.id,
           connected_artist_id: artistId,
           connection_type: 'saved',
           status: 'active',
@@ -90,7 +90,7 @@ export default function BrowseTalentPage() {
         success('Saved', 'Talent added to saved list')
       }
     } catch (err) {
-      //
+      console.error('Error saving talent:', err)
       error('Failed', 'Failed to save talent')
     }
   }

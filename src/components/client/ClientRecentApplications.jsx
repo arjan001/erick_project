@@ -7,10 +7,10 @@ export default function ClientRecentApplications({ applications, projects, jobs 
   // Group applications by project or job
   const applicationCounts = React.useMemo(() => {
     const counts = {}
-    
+
     applications.forEach(app => {
       let key, title, type
-      
+
       if (app.project_id) {
         const project = projects?.find(p => p.id === app.project_id)
         key = `project-${app.project_id}`
@@ -24,13 +24,13 @@ export default function ClientRecentApplications({ applications, projects, jobs 
       } else {
         return
       }
-      
+
       if (!counts[key]) {
         counts[key] = { title, type, count: 0, id: app.project_id || app.job_id }
       }
       counts[key].count++
     })
-    
+
     return Object.values(counts)
   }, [applications, projects, jobs])
 
@@ -38,7 +38,7 @@ export default function ClientRecentApplications({ applications, projects, jobs 
     <div>
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-base font-semibold text-gray-900">Applications Received</h3>
-        <Link to={createPageUrl('ClientApplications')} className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">
+        <Link to="/ClientApplications" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">
           View all
         </Link>
       </div>

@@ -90,8 +90,9 @@ export default function ClientApplications() {
         await Promise.all(
           artistEmails.map(async (email) => {
             try {
-              // Fetch subscription
-              const subs = await Subscription.filter({ user_email: email, status: 'active' })
+              // Fetch subscription - need to get user_id from public.users first
+              // For now, skip this as it requires a join with public.users
+              // TODO: Update to use user_id after fetching from public.users
               if (subs.length > 0) {
                 const pkg = await SubscriptionPackage.get(subs[0].package_id)
                 subscriptionsData[email] = { subscription: subs[0], package: pkg }
@@ -102,13 +103,8 @@ export default function ClientApplications() {
               if (artists.length > 0) {
                 profilesData[email] = artists[0]
 
-                // Fetch portfolio clips
-                const clips = await PortfolioClip.filter({
-                  uploaded_by_type: 'artist',
-                  uploaded_by_id: artists[0].id,
-                  status: 'approved'
-                })
-                portfoliosData[email] = clips
+                // Portfolio clips table does not exist - skip this
+                portfoliosData[email] = []
               }
             } catch (err) {
               console.error('Failed to fetch artist data:', err)

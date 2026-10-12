@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Project, PortfolioClip } from '@/lib/supabaseEntities'
+import { Project } from '@/lib/supabaseEntities'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -87,14 +87,13 @@ const getStepsForProjectType = (projectType) => {
   return [
     ...baseSteps,
     { id: 2, name: 'Usage' },
-    { id: 3, name: 'Visual Direction' },
-    { id: 4, name: 'Location' },
-    { id: 5, name: 'Roles Needed' },
-    { id: 6, name: 'Skills Required' },
-    { id: 7, name: 'Team Type' },
-    { id: 8, name: 'Timeline' },
-    { id: 9, name: 'Budget' },
-    { id: 10, name: 'Details' },
+    { id: 3, name: 'Location' },
+    { id: 4, name: 'Roles Needed' },
+    { id: 5, name: 'Skills Required' },
+    { id: 6, name: 'Team Type' },
+    { id: 7, name: 'Timeline' },
+    { id: 8, name: 'Budget' },
+    { id: 9, name: 'Details' },
   ]
 }
 
@@ -108,9 +107,7 @@ export default function ClientPostProject() {
   const [uploadingImages, setUploadingImages] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [STEPS, setSTEPS] = useState(getStepsForProjectType(''))
-  const [visualClips, setVisualClips] = useState([])
-  const [loadingClips, setLoadingClips] = useState(false)
-  const [hoveredClipId, setHoveredClipId] = useState(null)
+  const [imagePreview, setImagePreview] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
   const [locationSuggestions, setLocationSuggestions] = useState([])
@@ -243,10 +240,6 @@ export default function ClientPostProject() {
     }
   }, [location.state])
 
-  useEffect(() => {
-    loadVisualClips()
-  }, [])
-
   // Reset form when editing project changes
   useEffect(() => {
     if (editingProject) {
@@ -309,30 +302,6 @@ export default function ClientPostProject() {
       setImagePreview(null)
     }
   }, [editingProject])
-
-  const loadVisualClips = async () => {
-    setLoadingClips(true)
-    try {
-      const result = await PortfolioClip.filter({
-        approved_for_visual_direction: true,
-        status: 'approved'
-      })
-      setVisualClips(result || [])
-    } catch (error) {
-      console.error('Failed to load visual clips:', error)
-    } finally {
-      setLoadingClips(false)
-    }
-  }
-
-  const toggleVisualClip = (clipId) => {
-    const current = projectForm.visual_direction_clips || []
-    if (current.includes(clipId)) {
-      updateForm('visual_direction_clips', current.filter(id => id !== clipId))
-    } else if (current.length < 3) {
-      updateForm('visual_direction_clips', [...current, clipId])
-    }
-  }
 
   const toggleSkill = (skill) => {
     const current = projectForm.skills_needed || []
@@ -447,8 +416,6 @@ export default function ClientPostProject() {
         return projectForm.funding_stage !== '' && (projectForm.seeking_partners || []).length > 0
       case 'Usage':
         return (projectForm.usage || []).length > 0
-      case 'Visual Direction':
-        return true
       case 'Location':
         return projectForm.location_country !== ''
       case 'Roles Needed':
@@ -510,14 +477,10 @@ export default function ClientPostProject() {
       }
 
       const projectData = {
-        project_owner_email: authUser.email,
-        project_owner_name: authUser.full_name,
-        project_owner_company: projectForm.title,
         title: projectForm.title,
         description: projectForm.description,
         project_type: projectForm.project_type,
         usage: projectForm.usage,
-        visual_direction_clips: projectForm.visual_direction_clips,
         location_country: projectForm.location_country,
         location_city: projectForm.location_city,
         is_remote: projectForm.is_remote,
@@ -822,81 +785,6 @@ export default function ClientPostProject() {
                         )
                       })}
                     </div>
-                  </div>
-                )
-
-              case 'Visual Direction':
-                const selectedCount = (projectForm.visual_direction_clips || []).length
-                return (
-                  <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-gray-900">Visual Direction</h2>
-                    <p className="text-gray-500 mb-2">Select 1-3 examples that match your vision</p>
-                    <p className="text-sm text-gray-900 mb-8">{selectedCount}/3 selected</p>
-
-                    {loadingClips ? (
-                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                        {[1, 2, 3, 4, 5, 6].map(i => (
-                          <div key={i} className="aspect-video bg-gray-200 rounded-lg animate-pulse" />
-                        ))}
-                      </div>
-                    ) : visualClips.length === 0 ? (
-                      <div className="bg-gray-100 p-8 rounded-xl text-center">
-                        <Wand2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">No approved clips available yet. You can skip this step.</p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                        {visualClips.map((clip) => {
-                          const selected = (projectForm.visual_direction_clips || []).includes(clip.id)
-                          const selectionIndex = (projectForm.visual_direction_clips || []).indexOf(clip.id)
-
-                          return (
-                            <button
-                              key={clip.id}
-                              type="button"
-                              onClick={() => toggleVisualClip(clip.id)}
-                              disabled={!selected && selectedCount >= 3}
-                              className={`relative aspect-video rounded-lg overflow-hidden group ${!selected && selectedCount >= 3 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
-                                }`}
-                              onMouseEnter={() => setHoveredClipId(clip.id)}
-                              onMouseLeave={() => setHoveredClipId(null)}
-                            >
-                              <img
-                                src={clip.thumbnail_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=400'}
-                                alt={clip.title || 'Visual reference'}
-                                className={`w-full h-full object-cover transition-all duration-300 ${hoveredClipId === clip.id ? 'scale-110' : 'scale-100'
-                                  }`}
-                                loading="lazy"
-                              />
-
-                              <div className={`absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent ${selected ? 'opacity-60' : 'opacity-40 group-hover:opacity-60'
-                                } transition-opacity`} />
-
-                              {selected && (
-                                <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center">
-                                  <span className="text-white font-bold text-sm">{selectionIndex + 1}</span>
-                                </div>
-                              )}
-
-                              <div className="absolute bottom-0 left-0 right-0 p-3">
-                                <p className="text-xs text-white font-medium line-clamp-2">{clip.title || 'Reference clip'}</p>
-                              </div>
-
-                              {hoveredClipId === clip.id && !selected && (
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                    <div className="w-0 h-0 border-t-6 border-t-transparent border-l-10 border-l-white border-b-6 border-b-transparent ml-1"></div>
-                                  </div>
-                                </div>
-                              )}
-
-                              <div className={`absolute inset-0 border-2 rounded-lg transition-all ${selected ? 'border-gray-900' : 'border-transparent group-hover:border-gray-600'
-                                }`} />
-                            </button>
-                          )
-                        })}
-                      </div>
-                    )}
                   </div>
                 )
 
