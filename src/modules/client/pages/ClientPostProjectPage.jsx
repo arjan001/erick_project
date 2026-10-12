@@ -535,14 +535,14 @@ export default function ClientPostProject() {
             .from('clients')
             .insert({
               user_id: authUser.id,
-              email: authUser.email,
+              display_name: authUser.full_name || 'Individual',
               company_name: authUser.full_name || 'Individual'
             })
             .select('id')
             .single()
 
           if (createError) {
-            //
+            console.error('Error creating client profile:', createError)
             throw new Error('Could not create client profile. Please contact support.')
           }
 

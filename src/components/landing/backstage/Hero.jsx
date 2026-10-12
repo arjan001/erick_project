@@ -113,7 +113,7 @@ export default function Hero() {
             >
               <div
                 className="absolute inset-0 bg-cover bg-center bg-fixed"
-                style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1517457373958-b7bdd0783f68?w=800&h=1000&fit=crop)' }}
+                style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&h=1000&fit=crop&q=80)' }}
               />
               {/* Subtle overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />

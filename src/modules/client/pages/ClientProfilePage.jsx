@@ -82,7 +82,7 @@ export default function ClientProfilePage() {
 
     const fetchData = async () => {
       try {
-        const owners = await ProjectOwner.filter({ email: authUser.email })
+        const owners = await ProjectOwner.filter({ user_id: authUser.id })
         if (owners.length > 0) {
           const o = owners[0]
           setOwner(o)
@@ -97,7 +97,7 @@ export default function ClientProfilePage() {
           setCompanyImages(o.company_images || [])
         }
       } catch (err) {
-        //
+        console.error('Error fetching client profile:', err)
       } finally {
         setLoading(false)
       }
@@ -193,29 +193,49 @@ export default function ClientProfilePage() {
   }, [owner, activeTab])
 
   const handleSaveProfile = async () => {
-    if (!owner) {
-      toastError('Error', 'Profile not found. Please refresh the page.')
-      return
-    }
     setSaving(true)
     try {
-      const updated = await ProjectOwner.update(owner.id, {
-        company: formData.company,
-        phone: formData.phone,
-        website: formData.website,
-        bio: formData.bio,
-        linkedin: formData.linkedin,
-        instagram: formData.instagram,
-        twitter: formData.twitter,
-        youtube: formData.youtube,
-        city: formData.city,
-        country: formData.country
-      })
-      setOwner(updated)
-      success('Profile Updated', 'Your profile has been saved')
+      if (!owner) {
+        // Create new client profile if it doesn't exist
+        const newOwner = await ProjectOwner.create({
+          user_id: authUser.id,
+          email: authUser.email,
+          full_name: authUser.full_name,
+          company: formData.company,
+          phone: formData.phone,
+          website: formData.website,
+          bio: formData.bio,
+          linkedin: formData.linkedin,
+          instagram: formData.instagram,
+          twitter: formData.twitter,
+          youtube: formData.youtube,
+          city: formData.city,
+          country: formData.country,
+          email_notifications: emailNotifications,
+          project_updates: projectUpdates,
+          profile_public: profilePublic
+        })
+        setOwner(newOwner)
+        success('Profile Created', 'Your profile has been created')
+      } else {
+        const updated = await ProjectOwner.update(owner.id, {
+          company: formData.company,
+          phone: formData.phone,
+          website: formData.website,
+          bio: formData.bio,
+          linkedin: formData.linkedin,
+          instagram: formData.instagram,
+          twitter: formData.twitter,
+          youtube: formData.youtube,
+          city: formData.city,
+          country: formData.country
+        })
+        setOwner(updated)
+        success('Profile Updated', 'Your profile has been saved')
+      }
       setEditing(false)
     } catch (err) {
-      //
+      console.error('Error saving profile:', err)
       toastError('Save Failed', 'Failed to save profile. Please try again.')
     } finally {
       setSaving(false)

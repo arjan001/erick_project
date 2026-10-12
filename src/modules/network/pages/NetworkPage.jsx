@@ -102,12 +102,10 @@ export default function NetworkPage() {
 
     const fetchData = async () => {
       try {
-        // Fetch connections where I'm the requester OR the recipient (two queries
-        // because Supabase RLS may restrict list-all, and .or() isn't supported
-        // in the simple filter builder).
+        // Fetch connections where I'm the requester OR the recipient using user_id
         const [sentConns, receivedConns] = await Promise.all([
-          Connection.filter({ requester_email: user.email }),
-          Connection.filter({ recipient_email: user.email }),
+          Connection.filter({ requester_id: user.id }),
+          Connection.filter({ recipient_id: user.id }),
         ])
         const connectionsData = [...(sentConns || []), ...(receivedConns || [])]
         // Deduplicate by id (in case both queries return the same row)
@@ -130,42 +128,39 @@ export default function NetworkPage() {
           ...teams.map(t => ({ ...t, type: 'team' })),
           ...backers.map(b => ({ ...b, type: 'backer' })),
           ...clients.map(c => ({ ...c, type: 'client' })),
-        ].map(toDisplay).filter(p => p.email !== user.email)
+        ].map(toDisplay).filter(p => p.id !== user.id)
 
         setPeople(allPeople)
 
         // My own profile (used to score suggestions by skill/career niche overlap)
         if (myType === 'artist') {
-          const mine = await Artist.filter({ email: user.email })
+          const mine = await Artist.filter({ user_id: user.id })
           setMyProfile(mine?.[0] || null)
         } else if (myType === 'team') {
-          const mine = await Team.filter({ contact_email: user.email })
+          const mine = await Team.filter({ user_id: user.id })
           setMyProfile(mine?.[0] || null)
         } else if (myType === 'backer') {
-          const mine = await Backer.filter({ contact_email: user.email })
+          const mine = await Backer.filter({ user_id: user.id })
           setMyProfile(mine?.[0] || null)
         } else {
-          const mine = await ProjectOwner.filter({ email: user.email })
+          const mine = await ProjectOwner.filter({ user_id: user.id })
           setMyProfile(mine?.[0] || null)
         }
 
         const myConnections = connectionsData.filter(c =>
-          c.requester_email === user.email || c.recipient_email === user.email
+          c.requester_id === user.id || c.recipient_id === user.id
         )
-        //
-        //)
-        //)
 
         setConnections(myConnections)
-        setPendingRequests(myConnections.filter(c => c.recipient_email === user.email && c.status === 'pending'))
+        setPendingRequests(myConnections.filter(c => c.recipient_id === user.id && c.status === 'pending'))
 
         // For backers/clients: track which creators have an active paid subscription
         if (myType === 'backer' || myType === 'client') {
           try {
             const activeSubs = await Subscription.filter({ status: 'active' })
-            setSubscribedEmails(new Set(activeSubs.map(s => s.user_email)))
+            setSubscribedEmails(new Set(activeSubs.map(s => s.user_id)))
           } catch (subErr) {
-            //
+            console.error('Error fetching subscriptions:', subErr)
           }
         }
       } catch (err) {
@@ -180,74 +175,74 @@ export default function NetworkPage() {
 
   const getConnectionStatus = (person) => {
     const connection = connections.find(c =>
-      (c.requester_email === user.email && c.recipient_email === person.email) ||
-      (c.recipient_email === user.email && c.requester_email === person.email)
+      (c.requester_id === user.id && c.recipient_id === person.id) ||
+      (c.recipient_id === user.id && c.requester_id === person.id)
     )
     return connection ? connection.status : 'not_connected'
   }
 
-  const getMutualConnections = (personEmail) => {
+  const getMutualConnections = (personId) => {
     // Find all accepted connections for the current user
     const myAcceptedConnections = connections.filter(c =>
-      (c.requester_email === user.email || c.recipient_email === user.email) && c.status === 'accepted'
+      (c.requester_id === user.id || c.recipient_id === user.id) && c.status === 'accepted'
     )
 
     // Find all accepted connections for the other person
     const theirAcceptedConnections = connections.filter(c =>
-      (c.requester_email === personEmail || c.recipient_email === personEmail) && c.status === 'accepted'
+      (c.requester_id === personId || c.recipient_id === personId) && c.status === 'accepted'
     )
 
-    // Extract email addresses from both sets
-    const myConnectionsEmails = new Set()
+    // Extract user IDs from both sets
+    const myConnectionsIds = new Set()
     myAcceptedConnections.forEach(c => {
-      if (c.requester_email === user.email) myConnectionsEmails.add(c.recipient_email)
-      else myConnectionsEmails.add(c.requester_email)
+      if (c.requester_id === user.id) myConnectionsIds.add(c.recipient_id)
+      else myConnectionsIds.add(c.requester_id)
     })
 
-    const theirConnectionsEmails = new Set()
+    const theirConnectionsIds = new Set()
     theirAcceptedConnections.forEach(c => {
-      if (c.requester_email === personEmail) theirConnectionsEmails.add(c.recipient_email)
-      else theirConnectionsEmails.add(c.requester_email)
+      if (c.requester_id === personId) theirConnectionsIds.add(c.recipient_id)
+      else theirConnectionsIds.add(c.requester_id)
     })
 
     // Find mutual connections
-    const mutualEmails = [...myConnectionsEmails].filter(email => theirConnectionsEmails.has(email))
+    const mutualIds = [...myConnectionsIds].filter(id => theirConnectionsIds.has(id))
 
     // Get the actual person objects for mutual connections
-    const mutualPeople = people.filter(p => mutualEmails.includes(p.email))
+    const mutualPeople = people.filter(p => mutualIds.includes(p.id))
 
     return mutualPeople
   }
 
   const refreshConnections = async () => {
     const [sent, received] = await Promise.all([
-      Connection.filter({ requester_email: user.email }),
-      Connection.filter({ recipient_email: user.email }),
+      Connection.filter({ requester_id: user.id }),
+      Connection.filter({ recipient_id: user.id }),
     ])
     const all = [...(sent || []), ...(received || [])]
     const seen = new Set()
     const mine = all.filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; })
     setConnections(mine)
-    setPendingRequests(mine.filter(c => c.recipient_email === user.email && c.status === 'pending'))
+    setPendingRequests(mine.filter(c => c.recipient_id === user.id && c.status === 'pending'))
   }
 
   const handleConnect = async () => {
     if (!selectedPerson) return
     try {
       await Connection.create({
-        requester_email: user.email,
+        requester_id: user.id,
         requester_type: myType,
-        recipient_email: selectedPerson.email,
+        recipient_id: selectedPerson.id,
         recipient_type: selectedPerson.type,
         status: 'pending',
         message: connectionMessage,
       })
       await Notification.create({
-        recipient_email: selectedPerson.email,
+        recipient_id: selectedPerson.id,
         type: 'connection_request',
         title: 'New Connection Request',
         message: `${user.full_name} wants to connect with you`,
-        metadata: { sender_email: user.email, sender_name: user.full_name, connection_message: connectionMessage },
+        metadata: { sender_id: user.id, sender_name: user.full_name, connection_message: connectionMessage },
         read: false
       })
       setShowConnectionModal(false)
@@ -255,7 +250,7 @@ export default function NetworkPage() {
       success('Sent', `Connection request sent to ${selectedPerson.name}`)
       await refreshConnections()
     } catch (err) {
-      //
+      console.error('Error sending connection request:', err)
       error('Failed', 'Failed to send connection request')
     }
   }
@@ -269,16 +264,16 @@ export default function NetworkPage() {
       const connection = connections.find(c => c.id === connectionId)
       if (connection) {
         await Notification.create({
-          recipient_email: connection.requester_email,
+          recipient_id: connection.requester_id,
           type: 'connection_request',
           title: 'Connection Accepted',
           message: `${user.full_name} accepted your connection request`,
-          metadata: { sender_email: user.email, sender_name: user.full_name },
+          metadata: { sender_id: user.id, sender_name: user.full_name },
           read: false
         })
       }
     } catch (err) {
-      //
+      console.error('Error accepting connection:', err)
       error('Error', 'Failed to accept connection')
     }
   }
@@ -306,14 +301,14 @@ export default function NetworkPage() {
   }
 
   const handleMessage = (person) => {
-    // Navigate to MessagesPage with the recipient's email as a query parameter
-    navigate(createPageUrl('Messages') + `?with=${encodeURIComponent(person.email)}`)
+    // Navigate to MessagesPage with the recipient's id as a query parameter
+    navigate(createPageUrl('Messages') + `?with=${encodeURIComponent(person.id)}`)
   }
 
   const filterPerson = (person) => {
     if (selectedType !== 'all' && person.type !== selectedType) return false
     if ((myType === 'backer' || myType === 'client') && subscriptionFilter !== 'all' && person.type === 'artist') {
-      const isSubscribed = subscribedEmails.has(person.email)
+      const isSubscribed = subscribedEmails.has(person.id)
       if (subscriptionFilter === 'subscribed' && !isSubscribed) return false
       if (subscriptionFilter === 'free' && isSubscribed) return false
     }
@@ -327,8 +322,8 @@ export default function NetworkPage() {
 
   const myConnections = people.filter(p => getConnectionStatus(p) === 'accepted' && filterPerson(p))
   const notConnected = people.filter(p => getConnectionStatus(p) === 'not_connected' && filterPerson(p))
-  const sentRequests = connections.filter(c => c.requester_email === user.email && c.status === 'pending')
-  const receivedRequests = connections.filter(c => c.recipient_email === user.email && c.status === 'pending')
+  const sentRequests = connections.filter(c => c.requester_id === user.id && c.status === 'pending')
+  const receivedRequests = connections.filter(c => c.recipient_id === user.id && c.status === 'pending')
 
   // Score suggestions by skill/role overlap with my profile — "career/niche" matching
   const myskillSet = new Set([

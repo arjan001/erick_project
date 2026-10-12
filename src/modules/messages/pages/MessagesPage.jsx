@@ -78,33 +78,33 @@ function getMessageStatus(msg, currentUserEmail) {
 }
 
 // Look up a participant's profile across all user types and return display info + tags + presence
-async function enrichParticipant(email) {
+async function enrichParticipant(userId) {
   try {
-    const artists = await Artist.filter({ email })
+    const artists = await Artist.filter({ user_id: userId })
     if (artists.length > 0) {
       const a = artists[0]
       const tags = [a.role, ...(a.skills_experience || []).slice(0, 2).map(s => s.skill)].filter(Boolean).slice(0, 3)
       return { name: a.full_name, avatar: a.profile_photo_url, type: 'Artist', tags, lastActive: a.last_active }
     }
-    const teams = await Team.filter({ contact_email: email })
+    const teams = await Team.filter({ user_id: userId })
     if (teams.length > 0) {
       const t = teams[0]
       return { name: t.team_name, avatar: t.team_logo_url, type: 'Team', tags: (t.specialties || []).slice(0, 2), lastActive: t.last_active }
     }
-    const owners = await ProjectOwner.filter({ email })
+    const owners = await ProjectOwner.filter({ user_id: userId })
     if (owners.length > 0) {
       const o = owners[0]
       return { name: o.full_name, avatar: o.profile_photo_url, type: 'Client', tags: [], lastActive: o.last_active }
     }
-    const backers = await Backer.filter({ contact_email: email })
+    const backers = await Backer.filter({ user_id: userId })
     if (backers.length > 0) {
       const b = backers[0]
       return { name: b.organization_name, avatar: b.logo_url, type: 'Backer', tags: (b.interests || []).slice(0, 2), lastActive: b.last_active }
     }
   } catch (e) {
-    //
+    console.error('Error enriching participant:', e)
   }
-  return { name: email, avatar: null, type: null, tags: [], lastActive: null }
+  return { name: 'Unknown User', avatar: null, type: null, tags: [], lastActive: null }
 }
 
 const typeBadgeColor = {
