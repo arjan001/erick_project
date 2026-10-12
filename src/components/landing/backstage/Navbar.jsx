@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ChevronDown, MoreVertical, Star, Handshake, ShoppingBag, Heart } from 'lucide-react'
 import Logo from './Logo'
 import { useAuth } from '@/lib/AuthContext'
-import { getCart, getWishlist } from '@/services/shopService'
+import { useShop } from '@/contexts/ShopContext'
 
 const NewBadge = ({ className = '' }) => (
   <span className={`inline-flex items-center rounded-full bg-[#B2F5EA] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#0a3b32] ${className}`}>
@@ -13,10 +13,9 @@ const NewBadge = ({ className = '' }) => (
 
 export default function Navbar() {
   const { isAuthenticated, user } = useAuth()
+  const { cart, wishlist } = useShop()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [joinOpen, setJoinOpen] = useState(false)
-  const [cartItems, setCartItems] = useState([])
-  const [wishlistItems, setWishlistItems] = useState([])
   const joinRef = useRef(null)
 
   const getDashboardUrl = () => {
@@ -35,27 +34,6 @@ export default function Navbar() {
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [])
-
-  // Load cart and wishlist items
-  useEffect(() => {
-    const loadItems = () => {
-      setCartItems(getCart())
-      setWishlistItems(getWishlist())
-    }
-    loadItems()
-
-    // Listen for storage changes
-    const handleStorageChange = () => loadItems()
-    window.addEventListener('storage', handleStorageChange)
-    window.addEventListener('cart-updated', handleStorageChange)
-    window.addEventListener('wishlist-updated', handleStorageChange)
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-      window.removeEventListener('cart-updated', handleStorageChange)
-      window.removeEventListener('wishlist-updated', handleStorageChange)
-    }
   }, [])
 
   return (
@@ -128,20 +106,20 @@ export default function Navbar() {
           )}
 
           {/* Cart and Wishlist icons - only show when items exist */}
-          {cartItems.length > 0 && (
+          {cart.length > 0 && (
             <Link to="/Cart" className="relative rounded-full p-2 hover:bg-black/[0.05]">
               <ShoppingBag className="h-5 w-5 text-black" />
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#4F46E5] text-[10px] font-bold text-white">
-                {cartItems.length}
+                {cart.length}
               </span>
             </Link>
           )}
 
-          {wishlistItems.length > 0 && (
+          {wishlist.length > 0 && (
             <Link to="/Wishlist" className="relative rounded-full p-2 hover:bg-black/[0.05]">
               <Heart className="h-5 w-5 text-black" />
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#EF4444] text-[10px] font-bold text-white">
-                {wishlistItems.length}
+                {wishlist.length}
               </span>
             </Link>
           )}
@@ -181,16 +159,16 @@ export default function Navbar() {
             )}
             {/* Cart and Wishlist on mobile */}
             <div className="flex gap-3 mt-2">
-              {cartItems.length > 0 && (
+              {cart.length > 0 && (
                 <Link to="/Cart" className="flex items-center gap-2 text-sm font-bold text-black">
                   <ShoppingBag className="h-4 w-4" />
-                  Cart ({cartItems.length})
+                  Cart ({cart.length})
                 </Link>
               )}
-              {wishlistItems.length > 0 && (
+              {wishlist.length > 0 && (
                 <Link to="/Wishlist" className="flex items-center gap-2 text-sm font-bold text-black">
                   <Heart className="h-4 w-4" />
-                  Wishlist ({wishlistItems.length})
+                  Wishlist ({wishlist.length})
                 </Link>
               )}
             </div>

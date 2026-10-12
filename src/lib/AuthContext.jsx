@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Artist, Team, ProjectOwner, Backer, Subscription, SubscriptionPackage, UserSession } from '@/lib/supabaseEntities'
 import auditLogger from '@/lib/auditLogger'
+import { useToast } from '@/hooks/useToast'
 
 // Auth Provider Configuration
 // Primary: Supabase -> Clerk (optional, configured in admin)
@@ -267,8 +268,9 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoadingAuth, setIsLoadingAuth] = useState(true)
   const [authNotification, setAuthNotification] = useState(null)
+  const { success: toastSuccess, error: toastError, info: toastInfo } = useToast()
 
-  // Show notification
+  // Show notification (legacy - kept for backward compatibility)
   const showNotification = (message, type = 'info') => {
     setAuthNotification({ message, type })
     // Request browser notification permission
@@ -389,7 +391,7 @@ export const AuthProvider = ({ children }) => {
     await ensureProfile(u)
 
     // Show login notification
-    showNotification(`Welcome back, ${u.full_name}!`, 'success')
+    toastSuccess('Welcome Back', `Welcome back, ${u.full_name}!`)
 
     return u
   }
@@ -458,7 +460,7 @@ export const AuthProvider = ({ children }) => {
       try { await auditLogger.auth.logout(userEmail); } catch { /* ignore */ }
     }
     // 6. Show logout notification
-    showNotification(`Goodbye, ${userName}!`, 'info')
+    toastInfo('Logged Out', `Goodbye, ${userName}!`)
     // 7. Redirect to landing page
     if (shouldRedirect) {
       window.location.href = '/'

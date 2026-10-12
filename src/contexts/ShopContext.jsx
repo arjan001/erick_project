@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
 import { getCart, setCart, addToCart as addToCartService, removeFromCart as removeFromCartService, updateCartQuantity as updateCartQuantityService, clearCart as clearCartService, getWishlist, setWishlist, addToWishlist as addToWishlistService, removeFromWishlist as removeFromWishlistService, isInWishlist as isInWishlistService, setCurrentUserId } from '@/services/shopService'
 
 const ShopContext = createContext(null)
 
 export function ShopProvider({ children }) {
   const { user, isAuthenticated: authIsAuthenticated } = useAuth()
+  const { success: toastSuccess, error: toastError } = useToast()
   const [cart, setCartState] = useState([])
   const [wishlist, setWishlistState] = useState([])
   const [loading, setLoading] = useState(false)
@@ -47,6 +49,7 @@ export function ShopProvider({ children }) {
   const addToCart = async (product, quantity = 1, options = {}) => {
     const updated = await addToCartService(product, quantity, options)
     setCartState(updated)
+    toastSuccess('Added to Cart', `${product.name} has been added to your cart`)
     return true
   }
 
@@ -74,10 +77,12 @@ export function ShopProvider({ children }) {
       const itemToRemove = wishlistItems.find(w => w.product_id === product.id)
       if (itemToRemove) {
         updated = await removeFromWishlistService(itemToRemove.id)
+        toastSuccess('Removed from Wishlist', `${product.name} has been removed from your wishlist`)
       }
     } else {
       // Add to wishlist
       updated = await addToWishlistService(product)
+      toastSuccess('Added to Wishlist', `${product.name} has been added to your wishlist`)
     }
     setWishlistState(updated)
   }
