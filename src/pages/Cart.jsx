@@ -3,47 +3,25 @@ import { Link, useNavigate } from 'react-router-dom'
 import ShopShell from '@/components/shop/ShopShell'
 import { Minus, Plus, ShoppingBag, Trash2, Trophy } from 'lucide-react'
 import { formatKES } from '@/data/shopProducts'
-import { getCart, removeFromCart, updateCartQuantity, calcTotals, getShopSettings } from '@/services/shopService'
+import { calcTotals, getShopSettings } from '@/services/shopService'
 import { useAuth } from '@/lib/AuthContext'
+import { useShop } from '@/contexts/ShopContext'
 
 export default function CartPage() {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
-  const [cart, setCart] = useState([])
+  const { cart, removeFromCart, setQuantity, clear } = useShop()
   const [loading, setLoading] = useState(true)
   const [settings, setSettings] = useState({ enableMpesa: true, enableCard: true, shippingThreshold: 5000, shippingCost: 500 })
 
   useEffect(() => {
-    loadCart()
-
-    const handleStorageChange = () => loadCart()
-    window.addEventListener('cart-updated', handleStorageChange)
-    window.addEventListener('storage', handleStorageChange)
-
-    return () => {
-      window.removeEventListener('cart-updated', handleStorageChange)
-      window.removeEventListener('storage', handleStorageChange)
+    const loadSettings = async () => {
+      const shopSettings = await getShopSettings()
+      setSettings(shopSettings)
+      setLoading(false)
     }
+    loadSettings()
   }, [])
-
-  const loadCart = async () => {
-    const cartItems = getCart()
-    setCart(cartItems)
-    const shopSettings = await getShopSettings()
-    setSettings(shopSettings)
-    setLoading(false)
-  }
-
-  const setQuantity = (id, qty) => {
-    if (qty < 1) return
-    updateCartQuantity(id, qty)
-    setCart(getCart())
-  }
-
-  const remove = (id) => {
-    removeFromCart(id)
-    setCart(getCart())
-  }
 
   const totals = calcTotals(cart, settings)
 
@@ -92,7 +70,7 @@ export default function CartPage() {
                           <p className="mt-1 text-xs text-black/50">{formatKES(item.unit_price)} each</p>
                         </div>
                         <button
-                          onClick={() => remove(item.id)}
+                          onClick={() => removeFromCart(item.id)}
                           aria-label="Remove item"
                           className="rounded-full p-2 text-black/40 hover:bg-black/[0.05] hover:text-red-600"
                         >

@@ -2,20 +2,18 @@ import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Flame, Gavel, Heart, ShoppingCart } from 'lucide-react'
 import { formatKES } from '@/data/shopProducts'
-import { discountPercent, isAuctionProduct, addToCart, removeFromWishlist, addToWishlist, isInWishlist } from '@/services/shopService'
+import { discountPercent, isAuctionProduct } from '@/services/shopService'
 import { AuctionMeta } from './AuctionMeta'
 import { useShop } from '@/contexts/ShopContext'
 import { useAuth } from '@/lib/AuthContext'
-import { useToast } from '@/hooks/useToast'
 
 /** Price shown for a straight purchase: auction items sell at full price unless the buyer wins the draw. */
 export const buyNowPrice = (p) => (isAuctionProduct(p) ? p.price : p.discount_price || p.price)
 
 export default function ProductCard({ product }) {
   const navigate = useNavigate()
-  const { add, toggleWish, isWished } = useShop()
+  const { addToCart, toggleWish, isWished } = useShop()
   const { isAuthenticated } = useAuth()
-  const { success, info } = useToast()
   const auction = isAuctionProduct(product)
   const outOfStock = Number(product.stock) <= 0
   const sale = !auction && discountPercent(product) > 0
@@ -23,17 +21,11 @@ export default function ProductCard({ product }) {
 
   const handleAddToCart = () => {
     if (outOfStock) return
-    add(product)
-    success('Added to cart', `${product.name} has been added to your cart.`)
+    addToCart(product)
   }
 
   const handleToggleWishlist = () => {
     toggleWish(product)
-    if (wished) {
-      info('Removed from wishlist', `${product.name} has been removed from your wishlist.`)
-    } else {
-      success('Added to wishlist', `${product.name} has been added to your wishlist.`)
-    }
   }
 
   return (

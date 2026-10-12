@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
 import ChatWidget from '@/components/landing/backstage/ChatWidget'
@@ -6,13 +6,101 @@ import SEOMetaTags from '@/components/SEOMetaTags'
 import TalentCard from '@/components/landing/backstage/TalentCard'
 import CreatorProfileModal from '@/components/landing/backstage/CreatorProfileModal'
 import { talentProfiles, talentTabs, filterTags } from '@/components/landing/backstage/talentData'
-import { Search, SlidersHorizontal, ChevronDown, CheckSquare, HelpCircle, ZoomIn } from 'lucide-react'
+import { Search, SlidersHorizontal, ChevronDown, CheckSquare, HelpCircle, ZoomIn, Loader2 } from 'lucide-react'
+import { Artist, Team, Backer, ProjectOwner } from '@/lib/supabaseEntities'
+
+const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?name=SmartGigs&background=6366f1&color=fff&size=256'
 
 export default function TalentPage() {
   const [activeTab, setActiveTab] = useState('actors')
   const [activeTag, setActiveTag] = useState(null)
   const [autoplay, setAutoplay] = useState(false)
   const [selectedProfile, setSelectedProfile] = useState(null)
+  const [dbProfiles, setDbProfiles] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadDatabaseProfiles()
+  }, [])
+
+  const loadDatabaseProfiles = async () => {
+    try {
+      setLoading(true)
+      // Fetch all user types from database
+      const [artists, teams, backers, clients] = await Promise.all([
+        Artist.list('-created_at', 100),
+        Team.list('-created_at', 100),
+        Backer.list('-created_at', 100),
+        ProjectOwner.list('-created_at', 100)
+      ])
+
+      // Transform to talent card format
+      const allProfiles = []
+
+      // Add artists
+      artists.forEach(a => {
+        allProfiles.push({
+          id: a.id,
+          name: a.full_name || a.name || 'Artist',
+          location: a.location || 'Kenya',
+          profession: a.profession || 'Actor',
+          images: a.profile_image ? [a.profile_image] : [DEFAULT_AVATAR],
+          badges: [],
+          email: a.email
+        })
+      })
+
+      // Add teams
+      teams.forEach(t => {
+        allProfiles.push({
+          id: t.id,
+          name: t.name || 'Team',
+          location: t.location || 'Kenya',
+          profession: 'Team',
+          images: t.profile_image ? [t.profile_image] : [DEFAULT_AVATAR],
+          badges: [],
+          email: t.email
+        })
+      })
+
+      // Add backers
+      backers.forEach(b => {
+        allProfiles.push({
+          id: b.id,
+          name: b.full_name || b.name || 'Backer',
+          location: b.location || 'Kenya',
+          profession: 'Backer',
+          images: b.profile_image ? [b.profile_image] : [DEFAULT_AVATAR],
+          badges: [],
+          email: b.email
+        })
+      })
+
+      // Add clients
+      clients.forEach(c => {
+        allProfiles.push({
+          id: c.id,
+          name: c.full_name || c.name || 'Producer',
+          location: c.location || 'Kenya',
+          profession: 'Producer',
+          images: c.profile_image ? [c.profile_image] : [DEFAULT_AVATAR],
+          badges: [],
+          email: c.email
+        })
+      })
+
+      setDbProfiles(allProfiles)
+    } catch (err) {
+      console.error('Error loading profiles:', err)
+      // Fallback to static data
+      setDbProfiles(talentProfiles)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Use database profiles if available, otherwise fallback to static data
+  const profilesToDisplay = dbProfiles.length > 0 ? dbProfiles : talentProfiles
 
   return (
     <div className="min-h-screen bg-[#1a1a23]">
@@ -45,8 +133,8 @@ export default function TalentPage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${activeTab === tab.id
-                    ? 'bg-[#6366f1] text-white'
-                    : 'text-black/70 hover:bg-black/[0.04]'
+                  ? 'bg-[#6366f1] text-white'
+                  : 'text-black/70 hover:bg-black/[0.04]'
                   }`}
               >
                 <span className="text-base">{tab.icon}</span>
@@ -79,8 +167,8 @@ export default function TalentPage() {
                   key={tag}
                   onClick={() => setActiveTag(activeTag === tag ? null : tag)}
                   className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${activeTag === tag
-                      ? 'border-[#6366f1] bg-[#6366f1]/10 text-[#6366f1]'
-                      : 'border-black/10 bg-white text-black/70 hover:bg-black/[0.03]'
+                    ? 'border-[#6366f1] bg-[#6366f1]/10 text-[#6366f1]'
+                    : 'border-black/10 bg-white text-black/70 hover:bg-black/[0.03]'
                     }`}
                 >
                   {tag}
@@ -136,23 +224,31 @@ export default function TalentPage() {
               🔥 Top Actors and Performers
             </h2>
 
-            {/* Grid */}
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {talentProfiles.map((profile) => (
-                <TalentCard
-                  key={profile.id}
-                  profile={profile}
-                  onOpenProfile={setSelectedProfile}
-                />
-              ))}
-            </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+              </div>
+            ) : (
+              <>
+                {/* Grid */}
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {profilesToDisplay.map((profile) => (
+                    <TalentCard
+                      key={profile.id}
+                      profile={profile}
+                      onOpenProfile={setSelectedProfile}
+                    />
+                  ))}
+                </div>
 
-            {/* Load more */}
-            <div className="mt-8 flex justify-center">
-              <button className="rounded-full border border-black/15 bg-white px-8 py-3 text-sm font-semibold text-black transition-colors hover:bg-black/[0.03]">
-                Load More Talent
-              </button>
-            </div>
+                {/* Load more */}
+                <div className="mt-8 flex justify-center">
+                  <button className="rounded-full border border-black/15 bg-white px-8 py-3 text-sm font-semibold text-black transition-colors hover:bg-black/[0.03]">
+                    Load More Talent
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
