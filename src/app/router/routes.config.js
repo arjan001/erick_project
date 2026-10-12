@@ -620,97 +620,97 @@ const artistRoutes = [
     path: '/artistdashboard',
     component: () => import('@/modules/artist/pages/ArtistDashboardPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/ArtistProfile',
     component: () => import('@/modules/artist/pages/ArtistProfilePage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/CreatorProfile',
     component: () => import('@/modules/artist/pages/ArtistProfilePage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/Jobs',
     component: () => import('@/modules/jobs/pages/JobsPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/JobApplications',
     component: () => import('@/modules/jobs/pages/JobApplicationsPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/JobBoard',
     component: () => import('@/modules/jobs/pages/JobBoardPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/ArtistFinance',
     component: () => import('@/modules/artist/pages/ArtistFinancePage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/JobInvitations',
     component: () => import('@/modules/jobs/pages/JobInvitationsPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/Messages',
     component: () => import('@/modules/messages/pages/MessagesPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/Endorsements',
     component: () => import('@/modules/network/pages/EndorsementsPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/Testimonials',
     component: () => import('@/modules/network/pages/TestimonialsPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/Notifications',
     component: () => import('@/modules/network/pages/NotificationsPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/ActivityFeed',
     component: () => import('@/modules/network/pages/ActivityFeedPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/ArtistSubscription',
     component: () => import('@/modules/artist/pages/ArtistSubscriptionPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/ArtistSubscriptionCheckout',
     component: () => import('@/modules/artist/pages/ArtistSubscriptionCheckoutPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
     path: '/SupportTickets',
     component: () => import('@/modules/support/pages/SupportTicketsPage'),
     layout: DashboardLayout,
-    guard: ArtistGuard
+    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   }
 ]
 
@@ -736,67 +736,67 @@ const clientRoutes = [
     path: '/clientdashboard',
     component: () => import('@/modules/client/pages/ClientDashboardPage'),
     layout: DashboardLayout,
-    guard: ClientGuard
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
   },
   {
     path: '/ClientPostProject',
     component: () => import('@/modules/client/pages/ClientPostProjectPage'),
     layout: DashboardLayout,
-    guard: ClientGuard
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
   },
   {
     path: '/ClientApplications',
     component: () => import('@/modules/client/pages/ClientApplicationsPage'),
     layout: DashboardLayout,
-    guard: ClientGuard
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
   },
   {
     path: '/ClientMessages',
     component: () => import('@/modules/client/pages/ClientMessagesPage'),
     layout: DashboardLayout,
-    guard: ClientGuard
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
   },
   {
     path: '/ClientNotifications',
     component: () => import('@/modules/network/pages/NotificationsPage'),
     layout: DashboardLayout,
-    guard: ClientGuard
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
   },
   {
     path: '/ClientAnalytics',
     component: () => import('@/modules/client/pages/ClientAnalyticsPage'),
     layout: DashboardLayout,
-    guard: ClientGuard
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
   },
   {
     path: '/SupportTickets',
     component: () => import('@/modules/support/pages/SupportTicketsPage'),
     layout: DashboardLayout,
-    guard: ClientGuard
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
   },
   {
     path: '/ClientProfile',
     component: () => import('@/modules/client/pages/ClientProfilePage'),
     layout: DashboardLayout,
-    guard: ClientGuard
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
   },
   {
     path: '/BrowseTalent',
     component: () => import('@/modules/client/pages/BrowseTalentPage'),
     layout: DashboardLayout,
-    guard: ClientGuard
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
   },
   {
     path: '/SavedTalent',
     component: () => import('@/modules/network/pages/SavedTalentPage'),
     layout: DashboardLayout,
-    guard: ClientGuard
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
   },
   {
     path: '/ClientProjects',
     component: () => import('@/modules/client/pages/ClientProjectsPage'),
     layout: DashboardLayout,
-    guard: ClientGuard
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
   }
 ]
 
