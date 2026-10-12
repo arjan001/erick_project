@@ -8,6 +8,7 @@ DECLARE
   user_role TEXT;
   user_email TEXT;
   user_full_name TEXT;
+  existing_record RECORD;
 BEGIN
   -- Get user metadata
   user_email := NEW.email;
@@ -21,26 +22,34 @@ BEGIN
     'artist'
   );
 
-  -- Create entity record based on role
+  -- Create entity record based on role (check if exists first)
   IF user_role = 'artist' THEN
-    INSERT INTO public.creators (email, full_name, display_name, created_at)
-    VALUES (user_email, user_full_name, user_full_name, NOW())
-    ON CONFLICT (email) DO NOTHING;
+    SELECT * INTO existing_record FROM public.creators WHERE email = user_email LIMIT 1;
+    IF NOT FOUND THEN
+      INSERT INTO public.creators (email, full_name, display_name, created_at)
+      VALUES (user_email, user_full_name, user_full_name, NOW());
+    END IF;
 
   ELSIF user_role = 'team' THEN
-    INSERT INTO public.teams (contact_email, contact_name, team_name, team_code, created_at)
-    VALUES (user_email, user_full_name, user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, NOW())
-    ON CONFLICT (contact_email) DO NOTHING;
+    SELECT * INTO existing_record FROM public.teams WHERE contact_email = user_email LIMIT 1;
+    IF NOT FOUND THEN
+      INSERT INTO public.teams (contact_email, contact_name, team_name, team_code, created_at)
+      VALUES (user_email, user_full_name, user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, NOW());
+    END IF;
 
   ELSIF user_role = 'client' OR user_role = 'project_owner' THEN
-    INSERT INTO public.clients (email, display_name, created_at)
-    VALUES (user_email, user_full_name, NOW())
-    ON CONFLICT (email) DO NOTHING;
+    SELECT * INTO existing_record FROM public.clients WHERE email = user_email LIMIT 1;
+    IF NOT FOUND THEN
+      INSERT INTO public.clients (email, display_name, created_at)
+      VALUES (user_email, user_full_name, NOW());
+    END IF;
 
   ELSIF user_role = 'backer' THEN
-    INSERT INTO public.backers (email, display_name, created_at)
-    VALUES (user_email, user_full_name, NOW())
-    ON CONFLICT (email) DO NOTHING;
+    SELECT * INTO existing_record FROM public.backers WHERE email = user_email LIMIT 1;
+    IF NOT FOUND THEN
+      INSERT INTO public.backers (email, display_name, created_at)
+      VALUES (user_email, user_full_name, NOW());
+    END IF;
   END IF;
 
   RETURN NEW;
@@ -63,6 +72,7 @@ DECLARE
   auth_user RECORD;
   user_role TEXT;
   user_full_name TEXT;
+  existing_record RECORD;
 BEGIN
   -- Loop through all auth users
   FOR auth_user IN SELECT id, email, raw_user_meta_data FROM auth.users LOOP
@@ -76,26 +86,34 @@ BEGIN
       'artist'
     );
 
-    -- Create entity record based on role
+    -- Create entity record based on role (check if exists first)
     IF user_role = 'artist' THEN
-      INSERT INTO public.creators (email, full_name, display_name, created_at)
-      VALUES (auth_user.email, user_full_name, user_full_name, NOW())
-      ON CONFLICT (email) DO NOTHING;
+      SELECT * INTO existing_record FROM public.creators WHERE email = auth_user.email LIMIT 1;
+      IF NOT FOUND THEN
+        INSERT INTO public.creators (email, full_name, display_name, created_at)
+        VALUES (auth_user.email, user_full_name, user_full_name, NOW());
+      END IF;
 
     ELSIF user_role = 'team' THEN
-      INSERT INTO public.teams (contact_email, contact_name, team_name, team_code, created_at)
-      VALUES (auth_user.email, user_full_name, user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, NOW())
-      ON CONFLICT (contact_email) DO NOTHING;
+      SELECT * INTO existing_record FROM public.teams WHERE contact_email = auth_user.email LIMIT 1;
+      IF NOT FOUND THEN
+        INSERT INTO public.teams (contact_email, contact_name, team_name, team_code, created_at)
+        VALUES (auth_user.email, user_full_name, user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, NOW());
+      END IF;
 
     ELSIF user_role = 'client' OR user_role = 'project_owner' THEN
-      INSERT INTO public.clients (email, display_name, created_at)
-      VALUES (auth_user.email, user_full_name, NOW())
-      ON CONFLICT (email) DO NOTHING;
+      SELECT * INTO existing_record FROM public.clients WHERE email = auth_user.email LIMIT 1;
+      IF NOT FOUND THEN
+        INSERT INTO public.clients (email, display_name, created_at)
+        VALUES (auth_user.email, user_full_name, NOW());
+      END IF;
 
     ELSIF user_role = 'backer' THEN
-      INSERT INTO public.backers (email, display_name, created_at)
-      VALUES (auth_user.email, user_full_name, NOW())
-      ON CONFLICT (email) DO NOTHING;
+      SELECT * INTO existing_record FROM public.backers WHERE email = auth_user.email LIMIT 1;
+      IF NOT FOUND THEN
+        INSERT INTO public.backers (email, display_name, created_at)
+        VALUES (auth_user.email, user_full_name, NOW());
+      END IF;
     END IF;
   END LOOP;
 END;

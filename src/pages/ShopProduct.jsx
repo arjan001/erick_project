@@ -22,7 +22,7 @@ export default function ProductPage() {
   const navigate = useNavigate()
   const { hash } = useLocation()
   const { user, isAuthenticated } = useAuth()
-  const { addToCart, toggleWish, isWished } = useShop()
+  const { addToCart } = useShop()
   const now = useNow()
 
   const [product, setProduct] = useState(null)
@@ -37,16 +37,6 @@ export default function ProductPage() {
     setNotification({ message, type })
     setTimeout(() => setNotification(null), 3000)
   }
-
-  // Commented out wishlist functionality due to errors
-  /*
-  const [wished, setWished] = useState(false)
-  useEffect(() => {
-    if (product) {
-      isWished(product.id).then(setWished).catch(() => setWished(false))
-    }
-  }, [product?.id, isWished])
-  */
 
   useEffect(() => {
     let cancelled = false
@@ -338,15 +328,13 @@ export default function ProductPage() {
                 </button>
                 {/* Wishlist button - commented out due to errors */}
                 {/* <button
-                  onClick={async () => {
-                    const isCurrentlyWished = await isWished(product.id)
-                    setWished(!isCurrentlyWished)
-                    await toggleWish(product)
+                  onClick={() => {
+                    console.log('Wishlist functionality disabled')
                   }}
-                  aria-label={wished ? 'Remove from wishlist' : 'Add to wishlist'}
+                  aria-label="Add to wishlist"
                   className="flex items-center justify-center rounded-full border border-black/10 px-4 py-3.5 hover:bg-black/[0.03]"
                 >
-                  <Heart className={`h-5 w-5 ${wished ? 'fill-rose-500 text-rose-500' : 'text-black/60'}`} />
+                  <Heart className="h-5 w-5 text-black/60" />
                 </button> */}
               </div>
 
