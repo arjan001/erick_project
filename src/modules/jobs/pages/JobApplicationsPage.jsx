@@ -22,7 +22,7 @@ export default function JobApplications() {
 
     const fetchApplications = async () => {
       try {
-        const userApplications = await Application.filter({ artist_email: user.email })
+        const userApplications = await Application.filter({ user_id: user.id })
 
         const enrichedApplications = await Promise.all(
           userApplications.map(async (app) => {

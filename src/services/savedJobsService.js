@@ -92,8 +92,12 @@ export async function getSavedJobs() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
-    if (error) throw error
-    return data
+    if (error) {
+      // If table doesn't exist or other error, return empty array
+      console.warn('Error fetching saved jobs:', error.message)
+      return []
+    }
+    return data || []
   } catch (error) {
     console.error('Error fetching saved jobs:', error)
     return []

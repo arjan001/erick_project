@@ -171,7 +171,7 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
           ) : (
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-bold text-gray-900">Pay ${pkg.price}/{pkg.billing_cycle}</h3>
+                <h3 className="font-bold text-gray-900">Pay {pkg.currency || 'KES'} {pkg.price_monthly}/month</h3>
                 <div className="flex items-center gap-1 text-xs text-gray-500">
                   <Lock className="w-3 h-3" /> Secure
                 </div>
@@ -237,7 +237,7 @@ function CardPaymentModal({ pkg, onClose, onSuccess }) {
                 disabled={processing}
                 className="w-full py-3 bg-black text-white rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:opacity-60 transition-all"
               >
-                Subscribe to {pkg.name} — ${pkg.price}
+                Subscribe to {pkg.name} — {pkg.currency || 'KES'} {pkg.price_monthly}
               </button>
             </form>
           )}
@@ -461,8 +461,8 @@ export default function ArtistSubscriptionCheckoutPage() {
       recipient_email: user.email,
       type: 'payment',
       title: 'Payment Successful',
-      message: `Your payment of $${selectedPackage.price} for ${selectedPackage.name} was successful.`,
-      metadata: { amount: selectedPackage.price, package_name: selectedPackage.name },
+      message: `Your payment of ${selectedPackage.currency || 'KES'} ${selectedPackage.price_monthly} for ${selectedPackage.name} was successful.`,
+      metadata: { amount: selectedPackage.price_monthly, package_name: selectedPackage.name },
       read: false
     })
 
@@ -545,8 +545,8 @@ export default function ArtistSubscriptionCheckoutPage() {
                 </div>
                 <h3 className="text-lg font-bold text-gray-900">{pkg.name}</h3>
                 <div className="text-3xl font-black text-gray-900 my-2">
-                  ${pkg.price}
-                  <span className="text-sm font-normal text-gray-400">/{pkg.billing_cycle}</span>
+                  {pkg.currency || 'KES'} {pkg.price_monthly}
+                  <span className="text-sm font-normal text-gray-400">/month</span>
                 </div>
                 <p className="text-xs text-gray-500 mb-4">{pkg.description}</p>
 

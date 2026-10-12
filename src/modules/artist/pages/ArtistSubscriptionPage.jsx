@@ -90,7 +90,7 @@ export default function ArtistSubscriptionPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {packages.map((pkg) => {
-          const isPopular = pkg.tier === 'pro'
+          const isPopular = pkg.slug === 'pro'
           const isActive = subscription?.package_id === pkg.id
 
           return (
@@ -120,14 +120,19 @@ export default function ArtistSubscriptionPage() {
               <div className="text-center mb-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">{pkg.name}</h3>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold text-gray-900">${pkg.price}</span>
-                  <span className="text-gray-500">/{pkg.duration}</span>
+                  <span className="text-4xl font-bold text-gray-900">{pkg.currency || 'KES'} {pkg.price_monthly}</span>
+                  <span className="text-gray-500">/month</span>
                 </div>
+                {pkg.price_yearly && (
+                  <div className="flex items-baseline justify-center gap-1 mt-1">
+                    <span className="text-sm text-gray-500">or {pkg.currency || 'KES'} {pkg.price_yearly}/year</span>
+                  </div>
+                )}
                 <p className="text-sm text-gray-500 mt-2">{pkg.description}</p>
               </div>
 
               <ul className="space-y-3 mb-6">
-                {pkg.features && pkg.features.length > 0 ? (
+                {pkg.features && Array.isArray(pkg.features) ? (
                   pkg.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-2">
                       <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
