@@ -1,28 +1,28 @@
 #!/bin/bash
+# SmartGigs Deployment Script
+# Usage: ./deploy.sh (will prompt for password)
 
-# SmartGigs Kenya Deployment Script
-# Run this on the VPS after pushing changes to GitHub
+SERVER="162.0.231.193"
+USER="root"
+DEPLOY_PATH="/var/www/smartgigs.oneplusafrica.com"
 
-cd /var/www/smartgigs
+echo "🚀 Deploying SmartGigs to $SERVER..."
+echo ""
 
-# Pull latest changes
-echo "Pulling latest changes from GitHub..."
-git pull origin main
+# Step 1: Pull latest code
+echo "📥 Pulling latest code from GitHub..."
+ssh $USER@$SERVER "cd $DEPLOY_PATH && git pull"
+echo ""
 
-# Install dependencies if package.json changed
-if [ package.json -nt node_modules ]; then
-    echo "Installing dependencies..."
-    npm install
-fi
+# Step 2: Build the application
+echo "🔨 Building the application..."
+ssh $USER@$SERVER "cd $DEPLOY_PATH && npm run build"
+echo ""
 
-# Build the application with production environment
-echo "Building application..."
-export NODE_ENV=production
-npm run build
+# Step 3: Restart PM2
+echo "🔄 Restarting PM2 process..."
+ssh $USER@$SERVER "cd $DEPLOY_PATH && pm2 restart smartgigs"
+echo ""
 
-# Copy to smartgigs subdomain directory
-echo "Copying to smartgigs subdomain..."
-cp -r dist/* /var/www/smartgigs.oneplusafrica.com/
-
-echo "Deployment complete!"
-echo "Site is available at: https://smartgigs.oneplusafrica.com"
+echo "✅ Deployment complete!"
+echo "🌐 Visit: https://smartgigs.oneplusafrica.com"
