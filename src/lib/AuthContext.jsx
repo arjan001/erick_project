@@ -30,8 +30,16 @@ function buildUser(supabaseUser, appRole) {
 
 // Resolve the app role (artist/team/client/backer) for a logged-in Supabase
 // user by checking which entity profile exists for their email.
-async function resolveAppRole(email) {
+// PRIORITY: user metadata role > which profile exists > default to artist
+async function resolveAppRole(email, metadataRole = null) {
   if (!email) return 'artist'
+
+  // First, check if role is in user metadata (from signup/OAuth)
+  if (metadataRole && ['artist', 'team', 'client', 'backer'].includes(metadataRole)) {
+    return metadataRole
+  }
+
+  // Fallback: check which profile exists (for existing users without metadata role)
   try {
     const artists = await Artist.filter({ email })
     if (artists && artists.length > 0) return 'artist'
@@ -83,11 +91,12 @@ async function grantProSubscription(email) {
 // Ensure an entity profile exists for new users
 async function ensureProfile(user) {
   if (!user?.email) return
-  // Check for role intent from OAuth login
+  // Get role from user metadata first (primary source), fallback to session storage
   const roleIntent = typeof window !== 'undefined' ? sessionStorage.getItem('oauth_role_intent') : null
-  const role = roleIntent || user.role || 'artist'
-  const full_name = user.full_name || user.email?.split('@')[0] || 'User'
-  const referredBy = user.referred_by || null
+  const metadataRole = user.role || user.user_metadata?.role
+  const role = roleIntent || metadataRole || 'artist'
+  const full_name = user.full_name || user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User'
+  const referredBy = user.referred_by || user.user_metadata?.referred_by || null
 
   // Clear role intent after use
   if (roleIntent && typeof window !== 'undefined') {
@@ -113,11 +122,11 @@ async function ensureProfile(user) {
       const existing = await Team.filter({ contact_email: user.email })
       if (!existing || existing.length === 0) {
         await Team.create({
-          team_name: user.team_name || full_name,
+          team_name: user.team_name || user.user_metadata?.team_name || full_name,
           team_code: 'TM' + Date.now().toString().slice(-4),
           contact_email: user.email,
           contact_name: full_name,
-          phone: user.phone || '',
+          phone: user.phone || user.user_metadata?.phone || '',
           city: '',
           country: '',
           status: 'pending',
@@ -303,7 +312,8 @@ export const AuthProvider = ({ children }) => {
         // Otherwise check Supabase auth session
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
-          const appRole = await resolveAppRole(session.user.email)
+          const metadataRole = session.user.user_metadata?.role
+          const appRole = await resolveAppRole(session.user.email, metadataRole)
           const u = buildUser(session.user, appRole)
           setUser(u)
           setIsAuthenticated(true)
@@ -326,7 +336,8 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        const appRole = await resolveAppRole(session.user.email)
+        const metadataRole = session.user.user_metadata?.role
+        const appRole = await resolveAppRole(session.user.email, metadataRole)
         const u = buildUser(session.user, appRole)
         setUser(u)
         setIsAuthenticated(true)
@@ -370,7 +381,8 @@ export const AuthProvider = ({ children }) => {
 
     if (error) throw error
 
-    const appRole = await resolveAppRole(data.user.email)
+    const metadataRole = data.user.user_metadata?.role
+    const appRole = await resolveAppRole(data.user.email, metadataRole)
     const u = buildUser(data.user, appRole)
     setUser(u)
     setIsAuthenticated(true)

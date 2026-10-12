@@ -92,6 +92,15 @@ export default function SignUp() {
     }
   }, [searchParams])
 
+  // Update role when userType changes
+  useEffect(() => {
+    if (userType === 'employer') {
+      setFormData(prev => ({ ...prev, role: 'client' }))
+    } else if (userType === 'talent') {
+      setFormData(prev => ({ ...prev, role: 'artist' }))
+    }
+  }, [userType])
+
   // Check for invite code in URL query params or from invite landing
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -343,6 +352,32 @@ export default function SignUp() {
               ? 'Post gigs and find the perfect talent for your productions.'
               : 'Get discovered and land your next gig.'}
           </p>
+
+          {/* Role Toggle */}
+          <div className="mb-6">
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                type="button"
+                onClick={() => setUserType('talent')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${!isEmployer
+                    ? 'bg-white text-black shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                  }`}
+              >
+                I'm Talent
+              </button>
+              <button
+                type="button"
+                onClick={() => setUserType('employer')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${isEmployer
+                    ? 'bg-white text-black shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                  }`}
+              >
+                I'm Hiring
+              </button>
+            </div>
+          </div>
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
