@@ -2,51 +2,50 @@
 
 ## ⚠️ REQUIRED: Run These SQL Migrations FIRST
 
-Before creating the admin account, you MUST run these SQL migrations in Supabase SQL Editor to fix database errors:
+**IMPORTANT: Run these migrations in the exact order shown!**
 
-### 1. Fix Missing Tables (applications, saved_jobs)
+### 1. Disable All RLS Policies (REQUIRED FIRST)
+Run the SQL from: `database/migrations/disable_all_rls.sql`
+
+This will:
+- DISABLE all Row Level Security policies
+- Fix all 400/401/403 permission errors
+- Allow authenticated users to access all data
+- This is required before running any other migrations
+
+### 2. Fix Missing Tables (applications, saved_jobs)
 Run the SQL from: `database/migrations/fix_missing_tables.sql`
 
 This will:
 - Create the missing `saved_jobs` table
 - Create the missing `applications` table
-- Add proper RLS policies
 - Fix 404 errors for these tables
 
-### 2. Fix Analytics RLS Policies (401 errors)
-Run the SQL from: `database/migrations/add_analytics_rls_policies.sql`
-
-This will:
-- Allow authenticated and anonymous users to insert analytics data
-- Fix 401 Unauthorized errors for page_views, user_sessions, etc.
-- Allow public access to analytics tracking
-
-### 3. Fix Core Tables RLS Policies (400 errors)
-Run the SQL from: `database/migrations/fix_rls_policies_core_tables.sql`
-
-This will:
-- Fix 400 Bad Request errors for messages
-- Fix 400 Bad Request errors for jobs
-- Fix 400 Bad Request errors for projects
-- Fix 400 Bad Request errors for subscriptions
-- Enable proper RLS policies for core tables
-
-### 4. Fix User Tables RLS Policies (networking fetching)
-Run the SQL from: `database/migrations/fix_user_tables_rls.sql`
-
-This will:
-- Fix networking module not fetching all users
-- Enable RLS policies for creators, teams, clients, backers tables
-- Enable RLS policies for connections table
-- Allow authenticated users to view all users for networking
-
-### 5. Add created_date Columns (fix sorting)
+### 3. Add created_date Columns (fix sorting)
 Run the SQL from: `database/migrations/add_created_date_columns.sql`
 
 This will:
 - Add created_date columns to all tables that were missing them
 - Fix 400 Bad Request errors from sorting by created_date
-- Add indexes for faster sorting by date
+- Add indexes for faster sorting
+
+### 4. Insert Shop Products
+Run the SQL from: `database/migrations/insert_shop_products.sql`
+
+This will:
+- Clear dummy shop data
+- Insert realistic film/production equipment products
+- Prices in KES (20-30 KES range)
+- Categories: Equipment, Accessories, Supplies
+
+### 5. Insert Subscription Packages
+Run the SQL from: `database/migrations/insert_subscription_packages.sql`
+
+This will:
+- Clear existing subscription packages
+- Insert Basic package (20 KES/month)
+- Insert Pro package (30 KES/month)
+- Fix subscription data loading errors
 
 ---
 

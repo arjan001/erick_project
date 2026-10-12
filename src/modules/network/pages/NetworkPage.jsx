@@ -119,10 +119,10 @@ export default function NetworkPage() {
         })
 
         const [artists, teams, backers, clients] = await Promise.all([
-          Artist.list(),
-          Team.list(),
-          Backer.list(),
-          ProjectOwner.list(),
+          Artist.list().catch(err => { console.error('Error fetching artists:', err); return [] }),
+          Team.list().catch(err => { console.error('Error fetching teams:', err); return [] }),
+          Backer.list().catch(err => { console.error('Error fetching backers:', err); return [] }),
+          ProjectOwner.list().catch(err => { console.error('Error fetching clients:', err); return [] }),
         ])
 
         const allPeople = [
@@ -538,8 +538,8 @@ export default function NetworkPage() {
                               {/* Organization type tag */}
                               {person.organizationType && (
                                 <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${person.type === 'client' || person.type === 'backer'
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'bg-purple-100 text-purple-700'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-purple-100 text-purple-700'
                                   }`}>
                                   {person.organizationType}
                                 </span>

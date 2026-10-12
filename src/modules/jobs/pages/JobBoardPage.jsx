@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Project, Application, Job } from '@/lib/supabaseEntities'
 import { useToast } from '@/hooks/useToast'
+import { useAuth } from '@/lib/AuthContext'
 import { Button } from '@/components/ui/button'
 import { MapPin, Calendar, Users, MessageSquare, Search, Filter, CheckCircle, TrendingUp, X, Bookmark, BookmarkCheck, Eye, EyeOff, Lock, Clock, Building2, Star, Crown } from 'lucide-react'
 import ShareProjectButton from '@/components/projects/ShareProjectButton'
@@ -10,9 +11,9 @@ import subscriptionService from '@/shared/services/subscriptionService'
 
 export default function JobBoard() {
   const navigate = useNavigate()
+  const { user, isAuthenticated } = useAuth()
   const [projects, setProjects] = useState([])
   const [selectedProject, setSelectedProject] = useState(null)
-  const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState('all')
@@ -29,13 +30,11 @@ export default function JobBoard() {
   const { success, error } = useToast()
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('ericrabar_user')
-    if (!storedUser) {
-      navigate('/')
+    if (!isAuthenticated) {
+      navigate('/SignIn')
       return
     }
-    setUser(JSON.parse(storedUser))
-  }, [])
+  }, [isAuthenticated, navigate])
 
   useEffect(() => {
     if (!user) return

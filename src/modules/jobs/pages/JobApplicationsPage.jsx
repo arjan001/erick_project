@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Job, Project, Application } from '@/lib/supabaseEntities'
+import { useAuth } from '@/lib/AuthContext'
 import { MapPin, Clock } from 'lucide-react'
 
 export default function JobApplications() {
   const navigate = useNavigate()
-  const [user, setUser] = useState(null)
+  const { user, isAuthenticated } = useAuth()
   const [applications, setApplications] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('smartgigs_user')
-    if (!storedUser) {
-      navigate('/')
+    if (!isAuthenticated) {
+      navigate('/SignIn')
       return
     }
-    setUser(JSON.parse(storedUser))
-  }, [])
+  }, [isAuthenticated, navigate])
 
   useEffect(() => {
     if (!user) return

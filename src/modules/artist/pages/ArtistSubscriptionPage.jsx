@@ -27,8 +27,8 @@ export default function ArtistSubscriptionPage() {
     try {
       setLoading(true)
 
-      // Fetch current subscription
-      const subscriptionData = await Subscription.filter({ user_email: user.email })
+      // Fetch current subscription using user_id (not user_email)
+      const subscriptionData = await Subscription.filter({ user_id: user.id })
       setSubscription(subscriptionData[0] || null)
 
       // Fetch available packages
@@ -75,10 +75,10 @@ export default function ArtistSubscriptionPage() {
                 <h2 className="text-xl font-semibold text-gray-900">Active Subscription</h2>
               </div>
               <p className="text-gray-600">
-                You are currently on the <span className="font-semibold">{subscription.package_name || 'Pro'}</span> plan
+                You are currently on the <span className="font-semibold">Active</span> plan
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                Valid until: {new Date(subscription.end_date).toLocaleDateString()}
+                Billing cycle: {subscription.billing_cycle || 'Monthly'}
               </p>
             </div>
             <Button onClick={handleManageSubscription}>
@@ -96,11 +96,10 @@ export default function ArtistSubscriptionPage() {
           return (
             <div
               key={pkg.id}
-              className={`relative rounded-lg border-2 p-6 transition-all ${
-                isPopular
-                  ? 'border-purple-500 shadow-lg scale-105'
-                  : 'border-gray-200 hover:border-gray-300'
-              } ${isActive ? 'bg-green-50 border-green-500' : 'bg-white'}`}
+              className={`relative rounded-lg border-2 p-6 transition-all ${isPopular
+                ? 'border-purple-500 shadow-lg scale-105'
+                : 'border-gray-200 hover:border-gray-300'
+                } ${isActive ? 'bg-green-50 border-green-500' : 'bg-white'}`}
             >
               {isPopular && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -156,11 +155,10 @@ export default function ArtistSubscriptionPage() {
               <Button
                 onClick={() => handleSelectPackage(pkg)}
                 disabled={isActive}
-                className={`w-full ${
-                  isPopular
-                    ? 'bg-purple-600 hover:bg-purple-700'
-                    : 'bg-gray-900 hover:bg-gray-800'
-                }`}
+                className={`w-full ${isPopular
+                  ? 'bg-purple-600 hover:bg-purple-700'
+                  : 'bg-gray-900 hover:bg-gray-800'
+                  }`}
               >
                 {isActive ? 'Current Plan' : 'Subscribe Now'}
                 {!isActive && <ArrowRight className="w-4 h-4 ml-2" />}
