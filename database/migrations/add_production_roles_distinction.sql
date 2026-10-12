@@ -17,6 +17,7 @@ BEGIN
       union_requirement TEXT DEFAULT 'Any',
       description TEXT,
       role_sequence INTEGER DEFAULT 0,
+      cast_count INTEGER DEFAULT 1,
       application_count INTEGER DEFAULT 0,
       created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
       updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

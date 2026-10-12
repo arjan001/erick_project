@@ -558,11 +558,15 @@ export default function ClientProfilePage() {
         .from('client-profiles')
         .getPublicUrl(fileName)
 
-      const updated = await ProjectOwner.update(owner.id, { profile_photo_url: publicUrl })
+      // Update logo_url column
+      const updated = await ProjectOwner.update(owner.id, {
+        logo_url: publicUrl
+      })
       setOwner(updated)
       setPreviewUrl(null); // Clear preview after successful upload
       success('Photo Updated', 'Your profile photo has been updated')
     } catch (err) {
+      console.error('Error uploading logo:', err)
       toastError('Upload Failed', `Failed to upload photo: ${err.message || 'Unknown error'}`)
       setPreviewUrl(null); // Clear preview on error
     } finally {
@@ -668,8 +672,8 @@ export default function ClientProfilePage() {
                   <div className="w-32 h-32 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden">
                     {previewUrl ? (
                       <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                    ) : owner?.profile_photo_url ? (
-                      <img src={owner.profile_photo_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : owner?.logo_url ? (
+                      <img src={owner.logo_url} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
                       <Building2 className="w-16 h-16 text-gray-400" />
                     )}

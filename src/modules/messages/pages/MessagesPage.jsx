@@ -66,14 +66,11 @@ function formatFileSize(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
-function getMessageStatus(msg, currentUserEmail) {
-  if (msg.sender_email !== currentUserEmail) return null; // Only show status for sent messages
+function getMessageStatus(msg, currentUserId) {
+  if (msg.sender_id !== currentUserId) return null; // Only show status for sent messages
 
   if (msg.is_read) {
     return { icon: CheckCheck, color: 'text-blue-500', label: 'Read' }
-  }
-  if (msg.delivered_at) {
-    return { icon: CheckCheck, color: 'text-gray-400', label: 'Delivered' }
   }
   return { icon: Check, color: 'text-gray-400', label: 'Sent' }
 }
@@ -84,23 +81,23 @@ async function enrichParticipant(userId) {
     const artists = await Artist.filter({ user_id: userId })
     if (artists.length > 0) {
       const a = artists[0]
-      const tags = [a.role, ...(a.skills_experience || []).slice(0, 2).map(s => s.skill)].filter(Boolean).slice(0, 3)
-      return { name: a.full_name, avatar: a.profile_photo_url, type: 'Artist', tags, lastActive: a.last_active }
+      const tags = [a.display_name, ...(a.skills || []).slice(0, 2)].filter(Boolean).slice(0, 3)
+      return { name: a.display_name, avatar: null, type: 'Artist', tags, lastActive: null }
     }
     const teams = await Team.filter({ user_id: userId })
     if (teams.length > 0) {
       const t = teams[0]
-      return { name: t.team_name, avatar: t.team_logo_url, type: 'Team', tags: (t.specialties || []).slice(0, 2), lastActive: t.last_active }
+      return { name: t.team_name, avatar: t.logo_url, type: 'Team', tags: (t.specialties || []).slice(0, 2), lastActive: null }
     }
     const owners = await ProjectOwner.filter({ user_id: userId })
     if (owners.length > 0) {
       const o = owners[0]
-      return { name: o.full_name, avatar: o.profile_photo_url, type: 'Client', tags: [], lastActive: o.last_active }
+      return { name: o.full_name || o.company, avatar: o.profile_photo_url || o.logo_url, type: 'Client', tags: [], lastActive: null }
     }
     const backers = await Backer.filter({ user_id: userId })
     if (backers.length > 0) {
       const b = backers[0]
-      return { name: b.organization_name, avatar: b.logo_url, type: 'Backer', tags: (b.interests || []).slice(0, 2), lastActive: b.last_active }
+      return { name: b.organization_name, avatar: b.logo_url, type: 'Backer', tags: (b.investment_focus || []).slice(0, 2), lastActive: null }
     }
   } catch (e) {
     console.error('Error enriching participant:', e)
@@ -171,36 +168,42 @@ export default function MessagesPage() {
     return Object.entries(grouped).map(([id, msgs]) => {
       const sorted = msgs.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
       const last = sorted[sorted.length - 1]
-      const otherEmail = sorted.find(m => m.sender_email !== user.email)?.sender_email
-        || sorted.find(m => m.recipient_email !== user.email)?.recipient_email
+      const otherUserId = sorted.find(m => m.sender_id !== user.id)?.sender_id
+        || sorted.find(m => m.sender_id !== user.id)?.sender_id
       return {
         id,
-        otherEmail,
+        otherUserId,
         messages: sorted,
-        lastMessage: last?.text || last?.file_name || '',
+        lastMessage: last?.content || last?.file_name || '',
         lastMessageTime: last?.created_at,
-        isArchived: sorted.every(m => m.is_archived),
+        isArchived: false, // TODO: implement archiving if needed
       }
     }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime))
   }
 
   const fetchConversations = async () => {
     try {
-      const [sent, received] = await Promise.all([
-        Message.filter({ sender_email: user.email }, '-created_at', 500),
-        Message.filter({ recipient_email: user.email }, '-created_at', 500),
-      ])
-      const convs = buildConversations([...sent, ...received])
+      // Use conversation-based fetching
+      const convData = await Conversation.getForUser(user.id)
 
       // Enrich with participant display info (name, avatar, type, tags, presence)
-      const enriched = await Promise.all(convs.map(async (c) => {
-        const info = await enrichParticipant(c.otherEmail)
-        return { ...c, ...info }
+      const enriched = await Promise.all(convData.map(async (c) => {
+        const otherUserId = c.participant_1_id === user.id ? c.participant_2_id : c.participant_1_id
+        const info = await enrichParticipant(otherUserId)
+        return {
+          id: c.id,
+          otherUserId,
+          messages: c.messages || [],
+          lastMessage: c.messages?.[c.messages.length - 1]?.content || '',
+          lastMessageTime: c.last_message_at || c.created_at,
+          isArchived: false,
+          ...info,
+        }
       }))
 
       setConversations(enriched)
     } catch (err) {
-      //
+      console.error('Error fetching conversations:', err)
       setConversations([])
     } finally {
       setLoading(false)
@@ -211,41 +214,15 @@ export default function MessagesPage() {
 
   // Handle ?with= query parameter to automatically open chat with specific person
   useEffect(() => {
-    const withEmail = searchParams.get('with')
-    if (withEmail && user) {
-      const conversationId = getConversationId(user.email, withEmail)
-
-      // First check if conversation already exists
-      const existing = conversations.find(c => c.id === conversationId)
-      if (existing) {
-        setSelectedId(conversationId)
-        return
-      }
-
-      // If not, create new conversation and select it
-      enrichParticipant(withEmail).then(info => {
-        setConversations(prev => {
-          // Check again in case it was added while fetching
-          if (prev.some(c => c.id === conversationId)) {
-            setSelectedId(conversationId)
-            return prev
-          }
-          const newConv = {
-            id: conversationId,
-            otherEmail: withEmail,
-            name: info.name,
-            avatar: info.avatar,
-            type: info.type,
-            tags: info.tags,
-            lastActive: info.lastActive,
-            messages: [],
-            lastMessage: '',
-            lastMessageTime: new Date().toISOString(),
-            isArchived: false,
-          }
-          setSelectedId(conversationId)
-          return [newConv, ...prev]
-        })
+    const withUserId = searchParams.get('with')
+    if (withUserId && user) {
+      // Get or create conversation
+      Conversation.getOrCreate(user.id, withUserId).then(conv => {
+        setSelectedId(conv.id)
+        // Refresh conversations to include the new one
+        fetchConversations()
+      }).catch(err => {
+        console.error('Error getting conversation:', err)
       })
     }
   }, [searchParams, user])
@@ -266,7 +243,7 @@ export default function MessagesPage() {
       const updatedConv = {
         ...conv,
         messages: [...conv.messages, m],
-        lastMessage: m.text || m.file_name || '',
+        lastMessage: m.content || m.file_name || '',
         lastMessageTime: m.created_at,
         isArchived: false,
       }
@@ -276,20 +253,22 @@ export default function MessagesPage() {
 
     const exists = conversationsRef.current.some(c => c.id === m.conversation_id)
     if (!exists) {
-      const otherEmail = m.sender_email === user.email ? m.recipient_email : m.sender_email
-      const info = await enrichParticipant(otherEmail)
-      setConversations(prev => {
-        if (prev.some(c => c.id === m.conversation_id)) return prev; // race guard
-        return [{
-          id: m.conversation_id,
-          otherEmail,
-          messages: [m],
-          lastMessage: m.text || m.file_name || '',
-          lastMessageTime: m.created_at,
-          isArchived: false,
-          ...info,
-        }, ...prev]
-      })
+      const otherUserId = m.sender_id === user.id ? selectedConversation?.otherUserId : m.sender_id
+      if (otherUserId) {
+        const info = await enrichParticipant(otherUserId)
+        setConversations(prev => {
+          if (prev.some(c => c.id === m.conversation_id)) return prev; // race guard
+          return [{
+            id: m.conversation_id,
+            otherUserId,
+            messages: [m],
+            lastMessage: m.content || m.file_name || '',
+            lastMessageTime: m.created_at,
+            isArchived: false,
+            ...info,
+          }, ...prev]
+        })
+      }
     }
   }
 
@@ -302,20 +281,16 @@ export default function MessagesPage() {
     if (!user) return
 
     const handleNewMessage = async (newMessage) => {
-      //
-
       // Apply the new message to state
       await applyIncomingMessage(newMessage)
 
       // Play notification sound if message is from someone else
-      if (newMessage.sender_email !== user.email) {
+      if (newMessage.sender_id !== user.id) {
         playMessageTone()
       }
     }
 
     const handleMessageUpdate = async (updatedMessage) => {
-      //
-
       // Update message in state (e.g., read status, delivery status)
       setConversations(prev => {
         return prev.map(c => {
@@ -332,18 +307,28 @@ export default function MessagesPage() {
       })
     }
 
-    // Subscribe to real-time messages
-    const unsubscribe = realtimeMessagingService.subscribeToMessages(
-      user.email,
-      handleNewMessage,
-      handleMessageUpdate
-    )
+    // Subscribe to real-time messages for conversations
+    const channel = supabase
+      .channel('messages-channel')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=in.(${conversations.map(c => c.id).join(',')})`
+      }, handleNewMessage)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=in.(${conversations.map(c => c.id).join(',')})`
+      }, handleMessageUpdate)
+      .subscribe()
 
     // Cleanup on unmount
     return () => {
-      unsubscribe()
+      supabase.removeChannel(channel)
     }
-  }, [user])
+  }, [user, conversations])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -351,18 +336,18 @@ export default function MessagesPage() {
 
   const selectedConversation = conversations.find(c => c.id === selectedId)
 
-  const getUnreadCount = (conv) => conv.messages.filter(m => m.recipient_email === user.email && !m.is_read).length
+  const getUnreadCount = (conv) => conv.messages.filter(m => m.sender_id !== user.id && !m.is_read).length
 
   // Mark all unread messages in the opened conversation as read — mirrors WhatsApp: badge clears the moment you open the chat
   useEffect(() => {
     if (!selectedConversation) return
-    const unread = selectedConversation.messages.filter(m => m.recipient_email === user.email && !m.is_read)
+    const unread = selectedConversation.messages.filter(m => m.sender_id !== user.id && !m.is_read)
     if (unread.length === 0) return
     setConversations(prev => prev.map(c => c.id === selectedConversation.id
-      ? { ...c, messages: c.messages.map(m => (m.recipient_email === user.email && !m.is_read) ? { ...m, is_read: true, read_at: new Date().toISOString() } : m) }
+      ? { ...c, messages: c.messages.map(m => (m.sender_id !== user.id && !m.is_read) ? { ...m, is_read: true, read_at: new Date().toISOString() } : m) }
       : c))
     Promise.all(unread.map(m => Message.update(m.id, { is_read: true, read_at: new Date().toISOString() }))).catch(err => {
-      //
+      console.error('Error marking messages as read:', err)
     })
   }, [selectedId])
 
@@ -376,7 +361,7 @@ export default function MessagesPage() {
           selectedConversation.type === 'Backer' ? 'backer' : 'artist'
 
     // Check if user can message this recipient based on roles and subscription
-    const canMessage = await subscriptionService.canMessageUser(user.email, selectedConversation.otherEmail, user.role, recipientRole)
+    const canMessage = await subscriptionService.canMessageUser(user.email, selectedConversation.otherUserId, user.role, recipientRole)
     if (!canMessage.allowed) {
       error('Messaging Not Allowed', canMessage.message || 'You cannot message this user.')
       return
@@ -413,9 +398,8 @@ export default function MessagesPage() {
     const optimisticMsg = {
       id: tempId,
       conversation_id: selectedConversation.id,
-      sender_email: user.email,
-      recipient_email: selectedConversation.otherEmail,
-      text,
+      sender_id: user.id,
+      content: text,
       attachment: attachmentData,
       created_at: new Date().toISOString(),
     }
@@ -426,11 +410,9 @@ export default function MessagesPage() {
     try {
       const created = await Message.create({
         conversation_id: selectedConversation.id,
-        sender_email: user.email,
-        recipient_email: selectedConversation.otherEmail,
-        text,
+        sender_id: user.id,
+        content: text,
         attachment: attachmentData,
-        delivered_at: new Date().toISOString(),
       })
       // Replace temp message with the real saved one
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
@@ -445,18 +427,18 @@ export default function MessagesPage() {
       // Notify recipient about new message
       try {
         await Notification.create({
-          recipient_email: selectedConversation.otherEmail,
+          user_id: selectedConversation.otherUserId,
           type: 'message',
           title: 'New Message',
-          message: `${user.full_name || user.email} sent you a message.`,
-          metadata: { sender_name: user.full_name || user.email, conversation_id: selectedConversation.id },
-          read: false
+          content: `${user.full_name || user.email} sent you a message.`,
+          link_url: `/messages?with=${user.id}`,
+          is_read: false
         })
       } catch (notifErr) {
-        //
+        console.error('Error creating notification:', notifErr)
       }
     } catch (err) {
-      //
+      console.error('Error sending message:', err)
       error('Failed', 'Failed to send message')
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
         ? { ...c, messages: c.messages.filter(msg => msg.id !== tempId) }

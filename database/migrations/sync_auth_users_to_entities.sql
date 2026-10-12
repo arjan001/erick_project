@@ -1,17 +1,16 @@
 -- Sync Supabase Auth users to entity tables
 -- This ensures that when users sign up, they are automatically saved to the appropriate entity table
+-- Updated to use user_id foreign keys instead of email-based columns
 
 -- Function to handle new user signup and create entity record
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 DECLARE
   user_role TEXT;
-  user_email TEXT;
   user_full_name TEXT;
   existing_record RECORD;
 BEGIN
   -- Get user metadata
-  user_email := NEW.email;
   user_full_name := COALESCE(
     NEW.raw_user_meta_data->>'full_name',
     NEW.raw_user_meta_data->>'name',
@@ -22,33 +21,33 @@ BEGIN
     'artist'
   );
 
-  -- Create entity record based on role (check if exists first)
+  -- Create entity record based on role (check if exists first using user_id)
   IF user_role = 'artist' THEN
-    SELECT * INTO existing_record FROM public.creators WHERE email = user_email LIMIT 1;
+    SELECT * INTO existing_record FROM public.artists WHERE user_id = NEW.id LIMIT 1;
     IF NOT FOUND THEN
-      INSERT INTO public.creators (email, full_name, display_name, created_at)
-      VALUES (user_email, user_full_name, user_full_name, NOW());
+      INSERT INTO public.artists (user_id, display_name, created_at, updated_at)
+      VALUES (NEW.id, user_full_name, NOW(), NOW());
     END IF;
 
   ELSIF user_role = 'team' THEN
-    SELECT * INTO existing_record FROM public.teams WHERE contact_email = user_email LIMIT 1;
+    SELECT * INTO existing_record FROM public.teams WHERE user_id = NEW.id LIMIT 1;
     IF NOT FOUND THEN
-      INSERT INTO public.teams (contact_email, contact_name, team_name, team_code, created_at)
-      VALUES (user_email, user_full_name, user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, NOW());
+      INSERT INTO public.teams (user_id, team_name, team_code, created_at, updated_at)
+      VALUES (NEW.id, user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, NOW(), NOW());
     END IF;
 
   ELSIF user_role = 'client' OR user_role = 'project_owner' THEN
-    SELECT * INTO existing_record FROM public.clients WHERE contact_email = user_email LIMIT 1;
+    SELECT * INTO existing_record FROM public.clients WHERE user_id = NEW.id LIMIT 1;
     IF NOT FOUND THEN
-      INSERT INTO public.clients (contact_email, display_name, created_at)
-      VALUES (user_email, user_full_name, NOW());
+      INSERT INTO public.clients (user_id, company_name, created_at, updated_at)
+      VALUES (NEW.id, user_full_name, NOW(), NOW());
     END IF;
 
   ELSIF user_role = 'backer' THEN
-    SELECT * INTO existing_record FROM public.backers WHERE email = user_email LIMIT 1;
+    SELECT * INTO existing_record FROM public.backers WHERE user_id = NEW.id LIMIT 1;
     IF NOT FOUND THEN
-      INSERT INTO public.backers (email, display_name, created_at)
-      VALUES (user_email, user_full_name, NOW());
+      INSERT INTO public.backers (user_id, organization_name, created_at, updated_at)
+      VALUES (NEW.id, user_full_name, NOW(), NOW());
     END IF;
   END IF;
 
@@ -86,33 +85,33 @@ BEGIN
       'artist'
     );
 
-    -- Create entity record based on role (check if exists first)
+    -- Create entity record based on role (check if exists first using user_id)
     IF user_role = 'artist' THEN
-      SELECT * INTO existing_record FROM public.creators WHERE email = auth_user.email LIMIT 1;
+      SELECT * INTO existing_record FROM public.artists WHERE user_id = auth_user.id LIMIT 1;
       IF NOT FOUND THEN
-        INSERT INTO public.creators (email, full_name, display_name, created_at)
-        VALUES (auth_user.email, user_full_name, user_full_name, NOW());
+        INSERT INTO public.artists (user_id, display_name, created_at, updated_at)
+        VALUES (auth_user.id, user_full_name, NOW(), NOW());
       END IF;
 
     ELSIF user_role = 'team' THEN
-      SELECT * INTO existing_record FROM public.teams WHERE contact_email = auth_user.email LIMIT 1;
+      SELECT * INTO existing_record FROM public.teams WHERE user_id = auth_user.id LIMIT 1;
       IF NOT FOUND THEN
-        INSERT INTO public.teams (contact_email, contact_name, team_name, team_code, created_at)
-        VALUES (auth_user.email, user_full_name, user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, NOW());
+        INSERT INTO public.teams (user_id, team_name, team_code, created_at, updated_at)
+        VALUES (auth_user.id, user_full_name, 'TM' || EXTRACT(EPOCH FROM NOW())::TEXT, NOW(), NOW());
       END IF;
 
     ELSIF user_role = 'client' OR user_role = 'project_owner' THEN
-      SELECT * INTO existing_record FROM public.clients WHERE contact_email = auth_user.email LIMIT 1;
+      SELECT * INTO existing_record FROM public.clients WHERE user_id = auth_user.id LIMIT 1;
       IF NOT FOUND THEN
-        INSERT INTO public.clients (contact_email, display_name, created_at)
-        VALUES (auth_user.email, user_full_name, NOW());
+        INSERT INTO public.clients (user_id, company_name, created_at, updated_at)
+        VALUES (auth_user.id, user_full_name, NOW(), NOW());
       END IF;
 
     ELSIF user_role = 'backer' THEN
-      SELECT * INTO existing_record FROM public.backers WHERE email = auth_user.email LIMIT 1;
+      SELECT * INTO existing_record FROM public.backers WHERE user_id = auth_user.id LIMIT 1;
       IF NOT FOUND THEN
-        INSERT INTO public.backers (email, display_name, created_at)
-        VALUES (auth_user.email, user_full_name, NOW());
+        INSERT INTO public.backers (user_id, organization_name, created_at, updated_at)
+        VALUES (auth_user.id, user_full_name, NOW(), NOW());
       END IF;
     END IF;
   END LOOP;

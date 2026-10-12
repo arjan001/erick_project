@@ -222,7 +222,7 @@ BEGIN
       NEW.raw_user_meta_data->>'role',
       EXCLUDED.role
     ),
-    is_verified = NEW.email_confirmed_at IS NOT NULL,
+    is_verified = false,
     updated_at = NOW();
 
   -- Create entity record based on role (now using user_id)

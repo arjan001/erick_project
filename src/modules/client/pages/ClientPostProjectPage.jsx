@@ -126,7 +126,8 @@ export default function ClientPostProject() {
     location_city: '',
     is_remote: false,
     departments_needed: [],
-    roles_needed: '',
+    roles_needed: [], // Changed from string to array to support multiple roles
+    job_roles: [], // Array of objects: { title, cast_count, description, compensation_display }
     skills_needed: [],
     team_type: '',
     timeline_start: '',
@@ -419,7 +420,7 @@ export default function ClientPostProject() {
       case 'Location':
         return projectForm.location_country !== ''
       case 'Roles Needed':
-        return projectForm.roles_needed !== ''
+        return (projectForm.job_roles || []).length > 0
       case 'Skills Required':
         return (projectForm.skills_needed || []).length > 0
       case 'Team Type':
@@ -883,8 +884,8 @@ export default function ClientPostProject() {
               case 'Roles Needed':
                 return (
                   <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What role do you need?</h2>
-                    <p className="text-gray-600 mb-8">Select the primary role or production type for your project</p>
+                    <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-black">What roles do you need?</h2>
+                    <p className="text-gray-600 mb-8">Select all the roles needed for your project and specify how many people you need for each</p>
 
                     <div className="mb-6">
                       <input
@@ -912,19 +913,44 @@ export default function ClientPostProject() {
                             <h3 className="text-sm font-semibold text-gray-900 mb-3 capitalize">{category.replace(/_/g, ' ')}</h3>
                             <div className="flex flex-wrap gap-2">
                               {filteredRoles.map((role) => {
-                                const isSelected = projectForm.roles_needed === role
+                                const selectedRole = projectForm.job_roles.find(r => r.title === role)
+                                const isSelected = !!selectedRole
                                 return (
-                                  <button
-                                    key={role}
-                                    type="button"
-                                    onClick={() => updateForm('roles_needed', role)}
-                                    className={`px-3 py-2 rounded-full text-sm border transition-all ${isSelected
-                                      ? 'border-gray-900 bg-gray-900 text-white'
-                                      : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
-                                      }`}
-                                  >
-                                    {role}
-                                  </button>
+                                  <div key={role} className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (isSelected) {
+                                          updateForm('job_roles', projectForm.job_roles.filter(r => r.title !== role))
+                                        } else {
+                                          updateForm('job_roles', [...projectForm.job_roles, { title: role, cast_count: 1, description: '', compensation_display: '' }])
+                                        }
+                                      }}
+                                      className={`px-3 py-2 rounded-full text-sm border transition-all ${isSelected
+                                        ? 'border-gray-900 bg-gray-900 text-white'
+                                        : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                        }`}
+                                    >
+                                      {role}
+                                    </button>
+                                    {isSelected && (
+                                      <div className="flex items-center gap-1">
+                                        <input
+                                          type="number"
+                                          min="1"
+                                          value={selectedRole.cast_count}
+                                          onChange={(e) => {
+                                            const newRoles = projectForm.job_roles.map(r =>
+                                              r.title === role ? { ...r, cast_count: parseInt(e.target.value) || 1 } : r
+                                            )
+                                            updateForm('job_roles', newRoles)
+                                          }}
+                                          className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-center"
+                                        />
+                                        <span className="text-xs text-gray-500">people</span>
+                                      </div>
+                                    )}
+                                  </div>
                                 )
                               })}
                             </div>
@@ -933,11 +959,17 @@ export default function ClientPostProject() {
                       })}
                     </div>
 
-                    {projectForm.roles_needed && (
+                    {projectForm.job_roles.length > 0 && (
                       <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                        <p className="text-sm text-gray-600">
-                          <span className="font-semibold">Selected role:</span> {projectForm.roles_needed}
-                        </p>
+                        <p className="text-sm font-semibold text-gray-900 mb-2">Selected roles:</p>
+                        <div className="space-y-2">
+                          {projectForm.job_roles.map((role, idx) => (
+                            <div key={idx} className="flex items-center justify-between text-sm">
+                              <span className="text-gray-600">{role.title}</span>
+                              <span className="text-gray-900 font-medium">{role.cast_count} person{role.cast_count > 1 ? 's' : ''}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>

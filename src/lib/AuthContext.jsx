@@ -111,12 +111,10 @@ async function ensureProfile(user) {
       if (!existing || existing.length === 0) {
         await Artist.create({
           user_id: user.id,
-          email: user.email,
-          full_name,
-          role: 'director',
-          status: 'pending',
-          referred_by: referredBy,
-          onboarding_completed: false,
+          display_name: full_name,
+          years_experience: 0,
+          availability_status: 'available',
+          admin_approval_status: 'pending',
         })
       }
     } else if (role === 'team') {
@@ -126,15 +124,9 @@ async function ensureProfile(user) {
         await Team.create({
           user_id: user.id,
           team_name: user.team_name || user.user_metadata?.team_name || full_name,
-          team_code: 'TM' + Date.now().toString().slice(-4),
-          contact_email: user.email,
-          contact_name: full_name,
-          phone: user.phone || user.user_metadata?.phone || '',
-          city: '',
-          country: '',
-          status: 'pending',
-          referred_by: referredBy,
-          onboarding_completed: false,
+          team_size: 1,
+          availability_status: 'available',
+          admin_approval_status: 'pending',
         })
       }
     } else if (role === 'backer') {
@@ -143,8 +135,8 @@ async function ensureProfile(user) {
         await Backer.create({
           user_id: user.id,
           organization_name: full_name,
-          contact_email: user.email,
-          referred_by: referredBy,
+          total_invested: 0,
+          investment_count: 0,
         })
       }
     } else if (role === 'client' || role === 'project_owner') {
@@ -154,7 +146,6 @@ async function ensureProfile(user) {
           user_id: user.id,
           email: user.email,
           full_name,
-          referred_by: referredBy,
         })
       }
     }
