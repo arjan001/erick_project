@@ -548,20 +548,31 @@ export default function ClientProfilePage() {
     setUploadingLogo(true)
     try {
       const fileName = `client-profile-${owner.id}-${Date.now()}-${file.name}`
+      console.log('Uploading file to client-profiles bucket:', fileName)
+
       const { data: uploadData, error } = await supabase.storage
         .from('client-profiles')
         .upload(fileName, file)
 
-      if (error) throw error
+      if (error) {
+        console.error('Storage upload error:', error)
+        throw error
+      }
+
+      console.log('Upload successful:', uploadData)
 
       const { data: { publicUrl } } = supabase.storage
         .from('client-profiles')
         .getPublicUrl(fileName)
 
+      console.log('Public URL:', publicUrl)
+
       // Update logo_url column
       const updated = await ProjectOwner.update(owner.id, {
         logo_url: publicUrl
       })
+
+      console.log('Profile updated:', updated)
       setOwner(updated)
       setPreviewUrl(null); // Clear preview after successful upload
       success('Photo Updated', 'Your profile photo has been updated')
