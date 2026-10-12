@@ -98,19 +98,9 @@ export default function NetworkPage() {
 
     const fetchData = async () => {
       try {
-        // Fetch connections where I'm the requester OR the recipient using user_id
-        const [sentConns, receivedConns] = await Promise.all([
-          Connection.filter({ requester_id: user.id }),
-          Connection.filter({ recipient_id: user.id }),
-        ])
-        const connectionsData = [...(sentConns || []), ...(receivedConns || [])]
-        // Deduplicate by id (in case both queries return the same row)
-        const seenIds = new Set()
-        const uniqueConns = connectionsData.filter(c => {
-          if (seenIds.has(c.id)) return false
-          seenIds.add(c.id)
-          return true
-        })
+        // Fetch connections where I'm the user OR the connected artist using correct schema
+        const connectionsData = await Connection.filter({ user_id: user.id })
+          .catch(err => { console.error('Error fetching connections:', err); return [] })
 
         const [artists, teams, backers, clients] = await Promise.all([
           Artist.list().catch(err => { console.error('Error fetching artists:', err); return [] }),
@@ -143,12 +133,10 @@ export default function NetworkPage() {
           setMyProfile(mine?.[0] || null)
         }
 
-        const myConnections = connectionsData.filter(c =>
-          c.requester_id === user.id || c.recipient_id === user.id
-        )
+        const myConnections = connectionsData.filter(c => c.user_id === user.id)
 
         setConnections(myConnections)
-        setPendingRequests(myConnections.filter(c => c.recipient_id === user.id && c.status === 'pending'))
+        setPendingRequests(myConnections.filter(c => c.status === 'pending'))
 
         // For backers/clients: track which creators have an active paid subscription
         if (myType === 'backer' || myType === 'client') {
@@ -160,7 +148,7 @@ export default function NetworkPage() {
           }
         }
       } catch (err) {
-        //
+        console.error('Error in NetworkPage fetchData:', err)
       } finally {
         setLoading(false)
       }
@@ -171,8 +159,7 @@ export default function NetworkPage() {
 
   const getConnectionStatus = (person) => {
     const connection = connections.find(c =>
-      (c.requester_id === user.id && c.recipient_id === person.id) ||
-      (c.recipient_id === user.id && c.requester_id === person.id)
+      c.user_id === user.id && c.connected_artist_id === person.id
     )
     return connection ? connection.status : 'not_connected'
   }
@@ -180,26 +167,17 @@ export default function NetworkPage() {
   const getMutualConnections = (personId) => {
     // Find all accepted connections for the current user
     const myAcceptedConnections = connections.filter(c =>
-      (c.requester_id === user.id || c.recipient_id === user.id) && c.status === 'accepted'
+      c.user_id === user.id && c.status === 'accepted'
     )
 
     // Find all accepted connections for the other person
     const theirAcceptedConnections = connections.filter(c =>
-      (c.requester_id === personId || c.recipient_id === personId) && c.status === 'accepted'
+      c.connected_artist_id === personId && c.status === 'accepted'
     )
 
     // Extract user IDs from both sets
-    const myConnectionsIds = new Set()
-    myAcceptedConnections.forEach(c => {
-      if (c.requester_id === user.id) myConnectionsIds.add(c.recipient_id)
-      else myConnectionsIds.add(c.requester_id)
-    })
-
-    const theirConnectionsIds = new Set()
-    theirAcceptedConnections.forEach(c => {
-      if (c.requester_id === personId) theirConnectionsIds.add(c.recipient_id)
-      else theirConnectionsIds.add(c.requester_id)
-    })
+    const myConnectionsIds = new Set(myAcceptedConnections.map(c => c.connected_artist_id))
+    const theirConnectionsIds = new Set(theirAcceptedConnections.map(c => c.user_id))
 
     // Find mutual connections
     const mutualIds = [...myConnectionsIds].filter(id => theirConnectionsIds.has(id))
@@ -211,23 +189,19 @@ export default function NetworkPage() {
   }
 
   const refreshConnections = async () => {
-    const [sent, received] = await Promise.all([
-      Connection.filter({ requester_id: user.id }),
-      Connection.filter({ recipient_id: user.id }),
-    ])
-    const all = [...(sent || []), ...(received || [])]
-    const seen = new Set()
-    const mine = all.filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; })
-    setConnections(mine)
-    setPendingRequests(mine.filter(c => c.recipient_id === user.id && c.status === 'pending'))
+    const all = await Connection.filter({ user_id: user.id })
+      .catch(err => { console.error('Error fetching connections:', err); return [] })
+    setConnections(all)
+    setPendingRequests(all.filter(c => c.status === 'pending'))
   }
 
   const handleConnect = async () => {
     if (!selectedPerson) return
     try {
       await Connection.create({
-        requester_id: user.id,
-        receiver_id: selectedPerson.id,
+        user_id: user.id,
+        connected_artist_id: selectedPerson.id,
+        connection_type: 'network',
         status: 'pending',
       })
       await Notification.create({
@@ -258,7 +232,7 @@ export default function NetworkPage() {
       const connection = connections.find(c => c.id === connectionId)
       if (connection) {
         await Notification.create({
-          user_id: connection.requester_id,
+          user_id: connection.user_id,
           type: 'connection_request',
           title: 'Connection Accepted',
           content: `${user.full_name} accepted your connection request`,
