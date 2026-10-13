@@ -21,10 +21,10 @@ export default function AdminMessagesPage() {
       setLoading(true)
       const rows = await Message.list('-created_at', 500)
       const grouped = {}
-      (rows || []).forEach(m => {
-        if (!grouped[m.conversation_id]) grouped[m.conversation_id] = []
-        grouped[m.conversation_id].push(m)
-      })
+        (rows || []).forEach(m => {
+          if (!grouped[m.conversation_id]) grouped[m.conversation_id] = []
+          grouped[m.conversation_id].push(m)
+        })
       const convs = Object.entries(grouped).map(([id, msgs]) => {
         const sorted = msgs.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
         const last = sorted[sorted.length - 1]
@@ -33,7 +33,7 @@ export default function AdminMessagesPage() {
       }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime))
       setConversations(convs)
     } catch (err) {
-      
+
       error('Error', 'Failed to fetch messages')
     } finally {
       setLoading(false)
@@ -47,11 +47,11 @@ export default function AdminMessagesPage() {
     if (!user) return
 
     const handleNewMessage = (newMessage) => {
-      
-      
+
+
       // Check if conversation already exists
       const existingConv = conversations.find(c => c.id === newMessage.conversation_id)
-      
+
       if (existingConv) {
         // Update existing conversation
         setConversations(prev => prev.map(c => {
@@ -72,7 +72,7 @@ export default function AdminMessagesPage() {
           messages: [newMessage],
           lastMessage: newMessage.text || '',
           lastMessageTime: newMessage.created_at,
-          participant: newMessage.sender_email === user.email ? newMessage.recipient_email : newMessage.sender_email
+          participant: newMessage.sender_id === user.id ? newMessage.recipient_id : newMessage.sender_id
         }
         setConversations(prev => [newConv, ...prev])
       }
@@ -109,7 +109,7 @@ export default function AdminMessagesPage() {
       setNewMessage('')
       success('Sent', 'Message sent successfully')
     } catch (err) {
-      
+
       error('Failed', 'Failed to send message')
     } finally {
       setSending(false)
@@ -125,7 +125,7 @@ export default function AdminMessagesPage() {
       if (selectedId === conversationId) setSelectedId(null)
       success('Deleted', 'Conversation deleted successfully')
     } catch (err) {
-      
+
       error('Failed', 'Failed to delete conversation')
     }
   }

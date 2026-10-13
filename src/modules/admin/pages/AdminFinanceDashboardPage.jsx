@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { SubscriptionOrder, Subscription } from '@/lib/supabaseEntities'
+import { Subscription } from '@/lib/supabaseEntities'
 import { DollarSign, TrendingUp, Users, CreditCard, BarChart3, PieChart, Activity, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function AdminFinanceDashboardPage() {
@@ -14,11 +14,13 @@ export default function AdminFinanceDashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [orderRows, subs] = await Promise.all([
-          SubscriptionOrder.list('-created_at', 500),
-          Subscription.filter({ status: 'active' })
-        ])
-        setOrders(orderRows || [])
+        // SubscriptionOrder table not implemented yet - show empty orders
+        // const [orderRows, subs] = await Promise.all([
+        //   SubscriptionOrder.list('-created_at', 500),
+        //   Subscription.filter({ status: 'active' })
+        // ])
+        const subs = await Subscription.filter({ status: 'active' })
+        setOrders([])
         setActiveSubscriptions(subs?.length || 0)
       } catch (err) {
 

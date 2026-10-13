@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { createPageUrl } from '@/shared/utils/routing'
 import { useSidebar } from '@/layouts/DashboardLayout'
 import { useAuth } from '@/lib/AuthContext'
-import { 
+import {
   LayoutDashboard, Users, Briefcase, MessageSquare,
   CreditCard, Settings, LogOut, ChevronLeft, ChevronRight, Building2, Share2, Bell, Ticket
 } from 'lucide-react'
@@ -45,8 +45,8 @@ export default function TeamSidebar() {
 
     const fetchUnreadNotifications = async () => {
       try {
-        const notifs = await Notification.filter({ recipient_email: user.email })
-        setUnreadNotificationCount((notifs || []).filter(n => !n.read).length)
+        const notifs = await Notification.filter({ user_id: user.id })
+        setUnreadNotificationCount((notifs || []).filter(n => !n.is_read).length)
       } catch {
         setUnreadNotificationCount(0)
       }
@@ -92,9 +92,8 @@ export default function TeamSidebar() {
 
   return (
     <aside
-      className={`h-full bg-[#0A0A0A] shadow-[2px_0_12px_rgba(0,0,0,0.3)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative ${
-        mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      } ${expanded ? 'w-64' : 'w-20'}`}
+      className={`h-full bg-[#0A0A0A] shadow-[2px_0_12px_rgba(0,0,0,0.3)] flex flex-col transition-all duration-300 z-50 flex-shrink-0 fixed lg:relative ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } ${expanded ? 'w-64' : 'w-20'}`}
     >
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-3 border-b border-[#1a1a1a]">
@@ -122,15 +121,14 @@ export default function TeamSidebar() {
         {MENU_ITEMS.map((item) => {
           const Icon = item.icon
           const isActive = location.pathname.toLowerCase().includes(item.path.toLowerCase())
-          
+
           if (!expanded) {
             return (
               <div key={item.path} className="relative group">
                 <button
                   onClick={() => navigate(createPageUrl(item.path))}
-                  className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${
-                    isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                  }`}
+                  className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                    }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   {item.showBadge && unreadMessageCount > 0 && (
@@ -152,14 +150,13 @@ export default function TeamSidebar() {
               </div>
             )
           }
-          
+
           return (
             <button
               key={item.path}
               onClick={() => navigate(createPageUrl(item.path))}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
-                isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
-              }`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${isActive ? 'bg-[#C9A962]/10 text-[#C9A962] font-semibold' : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                }`}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               <span className="text-sm whitespace-nowrap flex-1 text-left">{item.label}</span>

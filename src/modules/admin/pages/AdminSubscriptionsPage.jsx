@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { SubscriptionPackage, SubscriptionOrder } from '@/lib/supabaseEntities'
+import { SubscriptionPackage } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Plus, Edit2, Trash2, Check, X, Crown, Star, Zap } from 'lucide-react'
 
@@ -26,14 +26,12 @@ export default function AdminSubscriptionsPage() {
 
   const fetchData = async () => {
     try {
-      const [pkgs, ords] = await Promise.all([
-        SubscriptionPackage.list('-display_order', 50),
-        SubscriptionOrder.list('-created_at', 100)
-      ])
+      const pkgs = await SubscriptionPackage.list('-display_order', 50)
       setPackages(pkgs || [])
-      setOrders(ords || [])
+      // SubscriptionOrder table not implemented yet
+      setOrders([])
     } catch (err) {
-      
+
     } finally {
       setLoading(false)
     }
@@ -112,17 +110,17 @@ export default function AdminSubscriptionsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Plan Name *</label>
-                  <input value={form.name} onChange={e => setForm({...form, name: e.target.value})}
+                  <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                     placeholder="e.g. Pro" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Price (USD) *</label>
-                  <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})}
+                  <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })}
                     placeholder="29.99" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Billing Cycle</label>
-                  <select value={form.billing_cycle} onChange={e => setForm({...form, billing_cycle: e.target.value})}
+                  <select value={form.billing_cycle} onChange={e => setForm({ ...form, billing_cycle: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                     <option value="monthly">Monthly</option>
                     <option value="yearly">Yearly</option>
@@ -130,34 +128,34 @@ export default function AdminSubscriptionsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Job Applications/month (-1 = unlimited)</label>
-                  <input type="number" value={form.job_applications_limit} onChange={e => setForm({...form, job_applications_limit: e.target.value})}
+                  <input type="number" value={form.job_applications_limit} onChange={e => setForm({ ...form, job_applications_limit: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Messages/month (-1 = unlimited)</label>
-                  <input type="number" value={form.message_limit} onChange={e => setForm({...form, message_limit: e.target.value})}
+                  <input type="number" value={form.message_limit} onChange={e => setForm({ ...form, message_limit: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Connects Included (like Fiverr/Upwork connects)</label>
-                  <input type="number" value={form.connects_included} onChange={e => setForm({...form, connects_included: e.target.value})}
+                  <input type="number" value={form.connects_included} onChange={e => setForm({ ...form, connects_included: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Display Order</label>
-                  <input type="number" value={form.display_order} onChange={e => setForm({...form, display_order: e.target.value})}
+                  <input type="number" value={form.display_order} onChange={e => setForm({ ...form, display_order: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium mb-1">Description</label>
-                  <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})}
+                  <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
                     rows={2} placeholder="Plan description..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none" />
                 </div>
                 <div className="col-span-2 flex gap-6">
                   {[['featured_listing', 'Featured Listing'], ['priority_support', 'Priority Support'], ['analytics_access', 'Analytics Access']].map(([key, label]) => (
                     <label key={key} className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="checkbox" checked={form[key]} onChange={e => setForm({...form, [key]: e.target.checked})} className="w-4 h-4" />
+                      <input type="checkbox" checked={form[key]} onChange={e => setForm({ ...form, [key]: e.target.checked })} className="w-4 h-4" />
                       {label}
                     </label>
                   ))}
@@ -241,11 +239,10 @@ export default function AdminSubscriptionsPage() {
                     {order.cardholder_name && <div className="text-xs text-gray-400">{order.cardholder_name}</div>}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.status === 'completed' ? 'bg-green-100 text-green-700' :
                       order.status === 'failed' ? 'bg-red-100 text-red-700' :
-                      'bg-yellow-100 text-yellow-700'
-                    }`}>{order.status}</span>
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>{order.status}</span>
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">
                     {order.created_at ? new Date(order.created_at).toLocaleDateString() : new Date(order.created_date).toLocaleDateString()}

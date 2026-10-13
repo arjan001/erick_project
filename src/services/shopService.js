@@ -1,4 +1,4 @@
-import { ShopProduct, Cart, Wishlist, ShopOrder, ShopOrderItem, CardPayment } from '@/lib/supabaseEntities'
+import { ShopProduct, Cart, ShopOrder, ShopOrderItem, CardPayment } from '@/lib/supabaseEntities'
 import { buildSeedProducts } from '@/data/shopProducts'
 import { useAuth } from '@/lib/AuthContext'
 
@@ -288,70 +288,6 @@ export async function getCart() {
 
 export async function setCart(items) {
   // Cart is persisted to database, this function is for local state sync only
-}
-
-export async function getWishlist() {
-  if (!currentUserId) return []
-  try {
-    const wishlistItems = await Wishlist.filter({ user_id: currentUserId })
-    return wishlistItems || []
-  } catch (error) {
-    //
-    return []
-  }
-}
-
-export async function setWishlist(items) {
-  // Wishlist is persisted to database, this function is for local state sync only
-}
-
-export async function addToWishlist(product) {
-  if (!currentUserId) return []
-
-  try {
-    // Check if already in wishlist
-    const existing = await Wishlist.filter({ user_id: currentUserId, product_id: product.id })
-    if (existing && existing.length > 0) {
-      return existing
-    }
-
-    // Add to wishlist
-    const wishlistItem = await Wishlist.create({
-      user_id: currentUserId,
-      product_id: product.id,
-      created_at: new Date().toISOString(),
-    })
-
-    window.dispatchEvent(new Event('wishlist-updated'))
-    return await getWishlist()
-  } catch (error) {
-    //
-    return await getWishlist()
-  }
-}
-
-export async function removeFromWishlist(itemId) {
-  if (!currentUserId) return []
-
-  try {
-    await Wishlist.delete(itemId)
-    window.dispatchEvent(new Event('wishlist-updated'))
-    return await getWishlist()
-  } catch (error) {
-    //
-    return await getWishlist()
-  }
-}
-
-export async function isInWishlist(productId) {
-  if (!currentUserId) return false
-  try {
-    const existing = await Wishlist.filter({ user_id: currentUserId, product_id: productId })
-    return existing && existing.length > 0
-  } catch (error) {
-    //
-    return false
-  }
 }
 
 export async function addToCart(product, quantity = 1) {

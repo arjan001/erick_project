@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { SubscriptionOrder, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
+import { Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 import { DollarSign, TrendingUp, Users, CreditCard, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 
 export default function AdminSubscriptionSalesPage() {
@@ -15,16 +15,16 @@ export default function AdminSubscriptionSalesPage() {
 
   const fetchData = async () => {
     try {
-      const [ordersData, subsData, pkgsData] = await Promise.all([
-        SubscriptionOrder.list('-created_at'),
+      const [subsData, pkgsData] = await Promise.all([
         Subscription.list(),
         SubscriptionPackage.list()
       ])
-      setOrders(ordersData)
+      // SubscriptionOrder table not implemented yet
+      setOrders([])
       setSubscriptions(subsData)
       setPackages(pkgsData)
     } catch (err) {
-      
+
     } finally {
       setLoading(false)
     }
@@ -195,11 +195,10 @@ export default function AdminSubscriptionSalesPage() {
                 <td className="px-4 py-3 text-sm text-gray-700">{getPackageName(order.package_id)}</td>
                 <td className="px-4 py-3 text-sm font-medium text-gray-900">${order.amount?.toFixed(2)}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.status === 'completed' ? 'bg-green-100 text-green-800' :
                     order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
+                      'bg-red-100 text-red-800'
+                    }`}>
                     {order.status}
                   </span>
                 </td>

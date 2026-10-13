@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Wallet, CreditCard, Building2, TrendingUp, ArrowDownRight, ArrowUpRight, Calendar, CheckCircle, AlertCircle, Crown, Edit, Save, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Subscription, SubscriptionOrder, ConnectsTransaction, Artist } from '@/lib/supabaseEntities'
+import { Subscription, ConnectsTransaction, Artist } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 
@@ -53,9 +53,10 @@ export default function ArtistFinancePage() {
       const subscriptions = await Subscription.filter({ user_id: user.id })
       setCurrentSubscription(subscriptions?.[0] || null)
 
-      // Load subscription orders
-      const orders = await SubscriptionOrder.filter({ user_id: user.id }, '-created_date', 10)
-      setSubscriptionOrders(orders || [])
+      // Load subscription orders - table not implemented yet
+      // const orders = await SubscriptionOrder.filter({ user_id: user.id }, '-created_date', 10)
+      // setSubscriptionOrders(orders || [])
+      setSubscriptionOrders([])
 
       // Load connects transactions
       const connectsTx = await ConnectsTransaction.filter({ user_id: user.id }, '-created_date', 20)
@@ -163,8 +164,8 @@ export default function ArtistFinancePage() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-3 sm:px-4 py-3 font-medium transition-colors whitespace-nowrap ${activeTab === tab.id
-                      ? 'text-black border-b-2 border-black -mb-0.5'
-                      : 'text-gray-500 hover:text-gray-900'
+                    ? 'text-black border-b-2 border-black -mb-0.5'
+                    : 'text-gray-500 hover:text-gray-900'
                     }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -184,9 +185,9 @@ export default function ArtistFinancePage() {
                   <div>
                     <h2 className="text-lg font-bold text-gray-900 mb-1">Current Subscription</h2>
                     <div className={`flex items-center gap-2 text-sm font-medium ${subscriptionStatus.color === 'green' ? 'text-green-600' :
-                        subscriptionStatus.color === 'yellow' ? 'text-yellow-600' :
-                          subscriptionStatus.color === 'red' ? 'text-red-600' :
-                            'text-gray-600'
+                      subscriptionStatus.color === 'yellow' ? 'text-yellow-600' :
+                        subscriptionStatus.color === 'red' ? 'text-red-600' :
+                          'text-gray-600'
                       }`}>
                       {subscriptionStatus.color === 'green' && <CheckCircle className="w-4 h-4" />}
                       {subscriptionStatus.color === 'yellow' && <AlertCircle className="w-4 h-4" />}
@@ -316,8 +317,8 @@ export default function ArtistFinancePage() {
                               key={page}
                               onClick={() => setSubscriptionPage(page)}
                               className={`w-8 h-8 text-sm rounded-lg ${subscriptionPage === page
-                                  ? 'bg-black text-white'
-                                  : 'border border-gray-300 hover:bg-gray-50'
+                                ? 'bg-black text-white'
+                                : 'border border-gray-300 hover:bg-gray-50'
                                 }`}
                             >
                               {page}
@@ -380,8 +381,8 @@ export default function ArtistFinancePage() {
                               </td>
                               <td className="py-3 px-4 text-right">
                                 <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${payment.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                    payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                      'bg-gray-100 text-gray-700'
+                                  payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-gray-100 text-gray-700'
                                   }`}>
                                   {payment.status === 'completed' && <CheckCircle className="w-3 h-3" />}
                                   {payment.status}
@@ -411,8 +412,8 @@ export default function ArtistFinancePage() {
                             key={page}
                             onClick={() => setPaymentsPage(page)}
                             className={`w-8 h-8 text-sm rounded-lg ${paymentsPage === page
-                                ? 'bg-black text-white'
-                                : 'border border-gray-300 hover:bg-gray-50'
+                              ? 'bg-black text-white'
+                              : 'border border-gray-300 hover:bg-gray-50'
                               }`}
                           >
                             {page}
@@ -613,8 +614,8 @@ export default function ArtistFinancePage() {
                             key={page}
                             onClick={() => setCurrentPage(page)}
                             className={`w-8 h-8 text-sm rounded-lg ${currentPage === page
-                                ? 'bg-black text-white'
-                                : 'border border-gray-300 hover:bg-gray-50'
+                              ? 'bg-black text-white'
+                              : 'border border-gray-300 hover:bg-gray-50'
                               }`}
                           >
                             {page}

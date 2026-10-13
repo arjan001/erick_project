@@ -32,7 +32,7 @@ export default function AdminSidebar() {
     const fetchUnreadNotifications = async () => {
       try {
         const notifs = await Notification.filter({ user_id: user.id })
-        setUnreadNotificationCount((notifs || []).filter(n => !n.read).length)
+        setUnreadNotificationCount((notifs || []).filter(n => !n.is_read).length)
       } catch {
         setUnreadNotificationCount(0)
       }
