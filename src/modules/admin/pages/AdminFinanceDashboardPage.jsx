@@ -76,7 +76,6 @@ export default function AdminFinanceDashboardPage() {
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = (order.user_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.user_email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (order.package_name || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === 'all' || order.status === filterStatus
     return matchesSearch && matchesStatus
@@ -191,8 +190,7 @@ export default function AdminFinanceDashboardPage() {
               {paginatedOrders.map(o => (
                 <tr key={o.id} className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors">
                   <td className="px-4 py-3 text-gray-700">
-                    <div className="font-medium text-sm">{o.user_name || o.user_email}</div>
-                    <div className="text-xs text-gray-400">{o.user_email}</div>
+                    <div className="font-medium text-sm">{o.user_name}</div>
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs hidden sm:table-cell">{o.package_name}</td>
                   <td className="px-4 py-3 font-medium text-gray-900 text-sm">{fmt(o.amount)}</td>
