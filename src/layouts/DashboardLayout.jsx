@@ -46,10 +46,10 @@ export default function DashboardLayout({ children }) {
   return (
     <SidebarContext.Provider value={{ sidebarExpanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen }}>
       <div className="min-h-screen bg-[#f5f6fa]">
-        {/* Mobile overlay */}
+        {/* Mobile overlay - higher z-index than sidebar */}
         {mobileSidebarOpen && (
           <div
-            className="fixed inset-0 z-50 bg-black/50 lg:hidden"
+            className="fixed inset-0 z-[60] bg-black/50 lg:hidden"
             onClick={() => setMobileSidebarOpen(false)}
           />
         )}
