@@ -42,9 +42,9 @@ export default function AdminFeaturedWorkPage() {
   const getActiveSubscriptionArtists = async () => {
     try {
       const activeSubscriptions = await Subscription.filter({ status: 'active' })
-      const artistEmails = activeSubscriptions.map(sub => sub.user_email)
+      const artistUserIds = activeSubscriptions.map(sub => sub.user_id)
       const allArtists = await Artist.list('-created_at', 100)
-      return allArtists.filter(artist => artistEmails.includes(artist.email))
+      return allArtists.filter(artist => artistUserIds.includes(artist.user_id))
     } catch (err) {
       console.error('Error fetching active subscription artists:', err)
       return []

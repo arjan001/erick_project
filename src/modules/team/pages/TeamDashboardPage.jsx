@@ -168,8 +168,10 @@ export default function TeamDashboard() {
         setTeamMembers(teamData.team_members || [])
 
         // Load real messages
-        const msgs = await Message.filter({ recipient_email: teamData.contact_email }, '-created_at', 5)
-        setMessages(msgs || [])
+        // TODO: Refactor to use conversation_id and sender_id instead of recipient_email
+        // Need to join with conversations table to find conversations where team is a participant
+        // For now, set to empty array until proper conversation-based messaging is implemented
+        setMessages([])
 
         // Load team applications
         const teamApps = await Application.filter({ team_id: teamData.id })
@@ -182,8 +184,10 @@ export default function TeamDashboard() {
         setApplications(enrichedApplications || [])
 
         // Load support tickets
-        const tickets = await SupportTicket.filter({ user_email: teamData.contact_email }, '-created_at', 10)
-        setSupportTickets(tickets || [])
+        // TODO: Refactor to use user_id instead of user_email
+        // Need to join with users table to get user_id from team's contact_email
+        // For now, set to empty array until proper refactoring
+        setSupportTickets([])
       } else {
         setApplications([])
         setSupportTickets([])

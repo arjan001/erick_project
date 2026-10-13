@@ -64,9 +64,9 @@ export default function ArtistAccountSettingsTab({ artist, userEmail, onUpdate }
 
   React.useEffect(() => {
     const fetchSub = async () => {
-      if (!userEmail) return
+      if (!artist?.user_id) return
       try {
-        const subs = await Subscription.filter({ user_email: userEmail, status: 'active' })
+        const subs = await Subscription.filter({ user_id: artist.user_id, status: 'active' })
         if (subs?.[0]) {
           setSubscription(subs[0])
           const { SubscriptionPackage } = await import('@/lib/supabaseEntities')
@@ -76,7 +76,7 @@ export default function ArtistAccountSettingsTab({ artist, userEmail, onUpdate }
       } catch (e) { /* no subscription */ }
     }
     fetchSub()
-  }, [userEmail])
+  }, [artist?.user_id])
 
   const handleSaveContact = async () => {
     if (!artist) return
@@ -85,7 +85,7 @@ export default function ArtistAccountSettingsTab({ artist, userEmail, onUpdate }
       onUpdate(updated)
       success('Saved', 'Your contact info has been updated')
     } catch (err) {
-      
+
       toastError('Save Failed', 'Failed to update profile')
     }
   }
@@ -104,7 +104,7 @@ export default function ArtistAccountSettingsTab({ artist, userEmail, onUpdate }
       onUpdate(updated)
       success('Saved', 'Your preferences have been updated')
     } catch (err) {
-      
+
       toastError('Save Failed', 'Failed to update preferences')
     }
   }

@@ -9,9 +9,9 @@ class SubscriptionService {
   }
 
   // Get user's current subscription
-  async getUserSubscription(userEmail) {
+  async getUserSubscription(userId) {
     try {
-      const subscriptions = await Subscription.filter({ user_email: userEmail, status: 'active' })
+      const subscriptions = await Subscription.filter({ user_id: userId, status: 'active' })
       return subscriptions.length > 0 ? subscriptions[0] : null
     } catch (err) {
       //
@@ -38,8 +38,8 @@ class SubscriptionService {
   }
 
   // Check if user can perform an action based on their plan limits
-  async checkLimit(userEmail, actionType) {
-    const subscription = await this.getUserSubscription(userEmail)
+  async checkLimit(userId, actionType) {
+    const subscription = await this.getUserSubscription(userId)
     if (!subscription) {
       // No subscription - allow basic actions but with restrictions
       return { allowed: true, remaining: 0, limit: 0, isFree: true }
@@ -61,9 +61,9 @@ class SubscriptionService {
 
     switch (actionType) {
       case 'message':
-        return await this.checkMessageLimit(userEmail, plan, renewsAt)
+        return await this.checkMessageLimit(userId, plan, renewsAt)
       case 'job_application':
-        return await this.checkJobApplicationLimit(userEmail, plan, renewsAt)
+        return await this.checkJobApplicationLimit(userId, plan, renewsAt)
       case 'connect':
         return { allowed: true, remaining: 0, limit: 0 }; // Connects are purchased separately
       default:
@@ -72,7 +72,7 @@ class SubscriptionService {
   }
 
   // Check message limit
-  async checkMessageLimit(userEmail, plan, renewsAt) {
+  async checkMessageLimit(userId, plan, renewsAt) {
     if (plan.message_limit === -1) {
       // Unlimited messages
       return { allowed: true, remaining: -1, limit: -1, isUnlimited: true }
@@ -85,7 +85,7 @@ class SubscriptionService {
     // Count messages sent this billing period
     const periodStart = renewsAt || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     const messages = await Message.filter({
-      sender_email: userEmail,
+      sender_id: userId,
       created_at: { $gte: periodStart.toISOString() }
     })
 
@@ -101,7 +101,7 @@ class SubscriptionService {
   }
 
   // Check job application limit
-  async checkJobApplicationLimit(userEmail, plan, renewsAt) {
+  async checkJobApplicationLimit(userId, plan, renewsAt) {
     if (plan.job_applications_limit === -1) {
       // Unlimited applications
       return { allowed: true, remaining: -1, limit: -1, isUnlimited: true }
@@ -114,7 +114,7 @@ class SubscriptionService {
     // Count applications this billing period
     const periodStart = renewsAt || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     const applications = await Application.filter({
-      artist_email: userEmail,
+      user_id: userId,
       applied_at: { $gte: periodStart.toISOString() }
     })
 
@@ -143,8 +143,8 @@ class SubscriptionService {
   }
 
   // Track usage and notify when approaching limits
-  async trackUsage(userEmail, actionType) {
-    const limitCheck = await this.checkLimit(userEmail, actionType)
+  async trackUsage(userId, actionType) {
+    const limitCheck = await this.checkLimit(userId, actionType)
 
     // Notify if approaching limit (less than 20% remaining)
     if (limitCheck.limit > 0 && !limitCheck.isUnlimited) {
@@ -153,9 +153,9 @@ class SubscriptionService {
         const notificationService = (await import('@/shared/services/notificationService')).default
 
         if (actionType === 'message') {
-          notificationService.notifyMessageLimitReached(userEmail)
+          notificationService.notifyMessageLimitReached(userId)
         } else if (actionType === 'job_application') {
-          notificationService.notifyJobLimitReached(userEmail)
+          notificationService.notifyJobLimitReached(userId)
         }
       }
     }
@@ -164,8 +164,8 @@ class SubscriptionService {
   }
 
   // Check if subscription is due for renewal soon (within 7 days)
-  async checkRenewalStatus(userEmail) {
-    const subscription = await this.getUserSubscription(userEmail)
+  async checkRenewalStatus(userId) {
+    const subscription = await this.getUserSubscription(userId)
     if (!subscription || !subscription.renews_at) {
       return { needsRenewal: false, daysRemaining: 0 }
     }
@@ -182,8 +182,8 @@ class SubscriptionService {
   }
 
   // Get user's current plan features
-  async getPlanFeatures(userEmail) {
-    const subscription = await this.getUserSubscription(userEmail)
+  async getPlanFeatures(userId) {
+    const subscription = await this.getUserSubscription(userId)
     if (!subscription) {
       return {
         connects_included: 0,
@@ -218,14 +218,14 @@ class SubscriptionService {
   }
 
   // Check if user has access to a feature
-  async hasFeatureAccess(userEmail, feature) {
-    const features = await this.getPlanFeatures(userEmail)
+  async hasFeatureAccess(userId, feature) {
+    const features = await this.getPlanFeatures(userId)
     return features[feature] === true
   }
 
   // Check if user has an active subscription (any paid plan)
-  async hasActiveSubscription(userEmail) {
-    const subscription = await this.getUserSubscription(userEmail)
+  async hasActiveSubscription(userId) {
+    const subscription = await this.getUserSubscription(userId)
     if (!subscription) return false
 
     // Check if subscription has expired
@@ -240,8 +240,8 @@ class SubscriptionService {
 
   // Check if user can contact a job poster directly
   // Only subscribed users can contact job posters directly
-  async canContactJobPoster(userEmail) {
-    const hasSub = await this.hasActiveSubscription(userEmail)
+  async canContactJobPoster(userId) {
+    const hasSub = await this.hasActiveSubscription(userId)
     if (hasSub) {
       return { allowed: true, reason: 'active_subscription' }
     }
@@ -257,7 +257,7 @@ class SubscriptionService {
   // - Subscribed users can message clients
   // - Clients can be added to network by anyone (connection requests)
   // - Artists can message each other freely
-  async canMessageUser(senderEmail, recipientEmail, senderRole, recipientRole) {
+  async canMessageUser(senderId, recipientId, senderRole, recipientRole) {
     // Artists can message each other freely
     if (senderRole === 'artist' && recipientRole === 'artist') {
       return { allowed: true, reason: 'artist_to_artist' }
@@ -265,7 +265,7 @@ class SubscriptionService {
 
     // Subscribed users can message clients
     if (recipientRole === 'client' || recipientRole === 'project_owner') {
-      const hasSub = await this.hasActiveSubscription(senderEmail)
+      const hasSub = await this.hasActiveSubscription(senderId)
       if (hasSub) {
         return { allowed: true, reason: 'subscribed_to_client' }
       }
@@ -278,7 +278,7 @@ class SubscriptionService {
 
     // Teams can message clients (if subscribed)
     if (senderRole === 'team' && (recipientRole === 'client' || recipientRole === 'project_owner')) {
-      const hasSub = await this.hasActiveSubscription(senderEmail)
+      const hasSub = await this.hasActiveSubscription(senderId)
       if (hasSub) {
         return { allowed: true, reason: 'subscribed_team_to_client' }
       }
@@ -296,7 +296,7 @@ class SubscriptionService {
 
     // Backers can message clients (if subscribed)
     if (senderRole === 'backer' && (recipientRole === 'client' || recipientRole === 'project_owner')) {
-      const hasSub = await this.hasActiveSubscription(senderEmail)
+      const hasSub = await this.hasActiveSubscription(senderId)
       if (hasSub) {
         return { allowed: true, reason: 'subscribed_backer_to_client' }
       }

@@ -20,8 +20,10 @@ export default function AdminSidebar() {
 
     const fetchUnreadMessages = async () => {
       try {
-        const msgs = await Message.filter({ recipient_email: user.email, is_read: false }, '-created_at', 50)
-        setUnreadMessageCount((msgs || []).length)
+        // TODO: Refactor to use conversation_id and sender_id instead of recipient_email
+        // Need to join with conversations table to find conversations where user is a participant
+        // For now, set to 0 until proper conversation-based messaging is implemented
+        setUnreadMessageCount(0)
       } catch {
         setUnreadMessageCount(0)
       }
@@ -29,7 +31,7 @@ export default function AdminSidebar() {
 
     const fetchUnreadNotifications = async () => {
       try {
-        const notifs = await Notification.filter({ recipient_email: user.email })
+        const notifs = await Notification.filter({ user_id: user.id })
         setUnreadNotificationCount((notifs || []).filter(n => !n.read).length)
       } catch {
         setUnreadNotificationCount(0)
@@ -40,14 +42,15 @@ export default function AdminSidebar() {
     fetchUnreadNotifications()
 
       (async () => {
-        unsubscribe = Message.subscribe((event) => {
-          if (event.data?.recipient_email === user.email) fetchUnreadMessages()
-        })
+        // TODO: Refactor to use conversation_id and sender_id instead of recipient_email
+        // unsubscribe = Message.subscribe((event) => {
+        //   if (event.data?.conversation_id includes user.id) fetchUnreadMessages()
+        // })
       })()
 
       (async () => {
         const notifUnsubscribe = Notification.subscribe((event) => {
-          if (event.data?.recipient_email === user.email) fetchUnreadNotifications()
+          if (event.data?.user_id === user.id) fetchUnreadNotifications()
         })
         return () => {
           unsubscribe && unsubscribe()

@@ -14,20 +14,26 @@ export default function RemindersCard({ invitations = [] }) {
   const [loading, setLoading] = useState(false)
 
   const fetchConnections = async () => {
-    if (!user?.email) return
+    if (!user?.id) return
     setLoading(true)
     try {
-      const [sentConns, receivedConns] = await Promise.all([
-        Connection.filter({ requester_email: user.email }),
-        Connection.filter({ recipient_email: user.email }),
-      ])
-      const allConnections = [...(sentConns || []), ...(receivedConns || [])]
-      
-      setConnections(allConnections.filter(c => c.status === 'accepted'))
-      setSentRequests(allConnections.filter(c => c.requester_email === user.email && c.status === 'pending'))
-      setPendingRequests(allConnections.filter(c => c.recipient_email === user.email && c.status === 'pending'))
+      // TODO: Refactor to use user_id and connected_artist_id from connections table
+      // Need to join with users table to get email addresses for display
+      // For now, this feature is disabled pending proper refactoring
+      // const [sentConns, receivedConns] = await Promise.all([
+      //   Connection.filter({ user_id: user.id }),
+      //   Connection.filter({ connected_artist_id: user.id }),
+      // ])
+      // const allConnections = [...(sentConns || []), ...(receivedConns || [])]
+      //
+      // setConnections(allConnections.filter(c => c.status === 'accepted'))
+      // setSentRequests(allConnections.filter(c => c.user_id === user.id && c.status === 'pending'))
+      // setPendingRequests(allConnections.filter(c => c.connected_artist_id === user.id && c.status === 'pending'))
+      setConnections([])
+      setSentRequests([])
+      setPendingRequests([])
     } catch (err) {
-      
+
     } finally {
       setLoading(false)
     }
@@ -44,7 +50,7 @@ export default function RemindersCard({ invitations = [] }) {
       await Connection.update(connectionId, { status: 'accepted' })
       await fetchConnections()
     } catch (err) {
-      
+
     }
   }
 
@@ -53,7 +59,7 @@ export default function RemindersCard({ invitations = [] }) {
       await Connection.update(connectionId, { status: 'declined' })
       await fetchConnections()
     } catch (err) {
-      
+
     }
   }
 
@@ -62,7 +68,7 @@ export default function RemindersCard({ invitations = [] }) {
       await Connection.delete(connectionId)
       await fetchConnections()
     } catch (err) {
-      
+
     }
   }
 
@@ -79,33 +85,29 @@ export default function RemindersCard({ invitations = [] }) {
       <div className="flex gap-2 mb-3 border-b border-gray-100">
         <button
           onClick={() => setActiveTab('invitations')}
-          className={`text-xs font-medium pb-2 border-b-2 transition-colors ${
-            activeTab === 'invitations' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
+          className={`text-xs font-medium pb-2 border-b-2 transition-colors ${activeTab === 'invitations' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
         >
           Invitations ({invitations.length})
         </button>
         <button
           onClick={() => setActiveTab('connections')}
-          className={`text-xs font-medium pb-2 border-b-2 transition-colors ${
-            activeTab === 'connections' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
+          className={`text-xs font-medium pb-2 border-b-2 transition-colors ${activeTab === 'connections' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
         >
           Connections ({connections.length})
         </button>
         <button
           onClick={() => setActiveTab('sent')}
-          className={`text-xs font-medium pb-2 border-b-2 transition-colors ${
-            activeTab === 'sent' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
+          className={`text-xs font-medium pb-2 border-b-2 transition-colors ${activeTab === 'sent' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
         >
           Sent ({sentRequests.length})
         </button>
         <button
           onClick={() => setActiveTab('pending')}
-          className={`text-xs font-medium pb-2 border-b-2 transition-colors ${
-            activeTab === 'pending' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
+          className={`text-xs font-medium pb-2 border-b-2 transition-colors ${activeTab === 'pending' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
         >
           Pending ({pendingRequests.length})
         </button>
@@ -154,19 +156,20 @@ export default function RemindersCard({ invitations = [] }) {
             </div>
           ) : (
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {connections.slice(0, 3).map((conn) => (
+              {/* TODO: Enable after refactoring to use user_id-based connections */}
+              {/* {connections.slice(0, 3).map((conn) => (
                 <div key={conn.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
                   <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                    {conn.requester_email === user?.email ? conn.recipient_email[0].toUpperCase() : conn.requester_email[0].toUpperCase()}
+                    {conn.user_id === user?.id ? conn.connected_artist_id[0].toUpperCase() : conn.user_id[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-gray-900 truncate">
-                      {conn.requester_email === user?.email ? conn.recipient_email : conn.requester_email}
+                      {conn.user_id === user?.id ? conn.connected_artist_id : conn.user_id}
                     </p>
                     <p className="text-[10px] text-gray-500">Connected</p>
                   </div>
                 </div>
-              ))}
+              ))} */}
               {connections.length > 3 && (
                 <Link
                   to={createPageUrl('Network')}
@@ -196,13 +199,14 @@ export default function RemindersCard({ invitations = [] }) {
             </div>
           ) : (
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {sentRequests.slice(0, 3).map((request) => (
+              {/* TODO: Enable after refactoring to use user_id-based connections */}
+              {/* {sentRequests.slice(0, 3).map((request) => (
                 <div key={request.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
                   <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                    {request.recipient_email[0].toUpperCase()}
+                    {request.connected_artist_id[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">{request.recipient_email}</p>
+                    <p className="text-xs font-medium text-gray-900 truncate">{request.connected_artist_id}</p>
                     <p className="text-[10px] text-gray-500">Pending</p>
                   </div>
                   <button
@@ -220,7 +224,7 @@ export default function RemindersCard({ invitations = [] }) {
                 >
                   View all {sentRequests.length} requests
                 </Link>
-              )}
+              )} */}
             </div>
           )}
         </>
@@ -242,13 +246,14 @@ export default function RemindersCard({ invitations = [] }) {
             </div>
           ) : (
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {pendingRequests.slice(0, 3).map((request) => (
+              {/* TODO: Enable after refactoring to use user_id-based connections */}
+              {/* {pendingRequests.slice(0, 3).map((request) => (
                 <div key={request.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
                   <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                    {request.requester_email[0].toUpperCase()}
+                    {request.user_id[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">{request.requester_email}</p>
+                    <p className="text-xs font-medium text-gray-900 truncate">{request.user_id}</p>
                     <p className="text-[10px] text-gray-500">Wants to connect</p>
                   </div>
                   <div className="flex gap-1">
@@ -274,7 +279,7 @@ export default function RemindersCard({ invitations = [] }) {
                 >
                   View all {pendingRequests.length} requests
                 </Link>
-              )}
+              )} */}
             </div>
           )}
         </>

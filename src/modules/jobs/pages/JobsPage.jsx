@@ -268,12 +268,12 @@ export default function Jobs() {
 
       // Send notification for job application submitted
       await Notification.create({
-        recipient_email: user.email,
+        user_id: user.id,
         type: 'job_application',
         title: 'Application Submitted',
-        message: `Your application for "${selectedJob.title}" has been submitted successfully.`,
+        content: `Your application for "${selectedJob.title}" has been submitted successfully.`,
         metadata: { job_title: selectedJob.title, job_id: selectedJob.id },
-        read: false
+        is_read: false
       })
 
       // Trigger confetti effect with normal colors

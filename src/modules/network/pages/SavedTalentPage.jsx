@@ -22,12 +22,12 @@ export default function SavedTalentPage() {
   }, [user])
 
   const fetchSavedTalent = async () => {
-    if (!user?.email) return
+    if (!user?.id) return
     try {
       setLoading(true)
       // Fetch connections where the current user has saved artists
       const connections = await Connection.filter({
-        requester_email: user.email,
+        user_id: user.id,
         connection_type: 'saved',
         status: 'active'
       })
@@ -51,11 +51,11 @@ export default function SavedTalentPage() {
   }
 
   const handleUnsave = async (artistId) => {
-    if (!user?.email) return
+    if (!user?.id) return
     try {
       // Find and delete the connection
       const connections = await Connection.filter({
-        requester_email: user.email,
+        user_id: user.id,
         connected_artist_id: artistId,
         connection_type: 'saved'
       })

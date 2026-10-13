@@ -74,7 +74,7 @@ export default function ArtistPublicProfile() {
         }
 
         try {
-          const subsData = await Subscription.filter({ user_email: artist.email, status: 'active' })
+          const subsData = await Subscription.filter({ user_id: artist.user_id, status: 'active' })
           if (subsData?.length > 0) {
             setSubscription(subsData[0])
             const pkgData = await SubscriptionPackage.get(subsData[0].package_id)

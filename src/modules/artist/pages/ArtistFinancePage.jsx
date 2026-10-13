@@ -12,11 +12,11 @@ export default function ArtistFinancePage() {
   const { success, error } = useToast()
   const [activeTab, setActiveTab] = useState('subscription')
   const [loading, setLoading] = useState(true)
-  
+
   // Subscription data
   const [currentSubscription, setCurrentSubscription] = useState(null)
   const [subscriptionOrders, setSubscriptionOrders] = useState([])
-  
+
   // Bank details
   const [bankDetails, setBankDetails] = useState({
     bankName: '',
@@ -27,16 +27,16 @@ export default function ArtistFinancePage() {
     swiftCode: ''
   })
   const [editingBank, setEditingBank] = useState(false)
-  
+
   // Transactions
   const [transactions, setTransactions] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(10)
-  
+
   // Pagination for other tabs
   const [subscriptionPage, setSubscriptionPage] = useState(1)
   const [paymentsPage, setPaymentsPage] = useState(1)
-  
+
   // Payments received
   const [payments, setPayments] = useState([])
 
@@ -48,19 +48,19 @@ export default function ArtistFinancePage() {
   const loadFinanceData = async () => {
     try {
       setLoading(true)
-      
+
       // Load subscription
-      const subscriptions = await Subscription.filter({ user_email: user.email })
+      const subscriptions = await Subscription.filter({ user_id: user.id })
       setCurrentSubscription(subscriptions?.[0] || null)
-      
+
       // Load subscription orders
-      const orders = await SubscriptionOrder.filter({ user_email: user.email }, '-created_date', 10)
+      const orders = await SubscriptionOrder.filter({ user_id: user.id }, '-created_date', 10)
       setSubscriptionOrders(orders || [])
-      
+
       // Load connects transactions
-      const connectsTx = await ConnectsTransaction.filter({ artist_email: user.email }, '-created_date', 20)
+      const connectsTx = await ConnectsTransaction.filter({ user_id: user.id }, '-created_date', 20)
       setTransactions(connectsTx || [])
-      
+
       // Load artist profile for bank details
       const artists = await Artist.filter({ email: user.email })
       const artist = artists?.[0]
@@ -74,9 +74,9 @@ export default function ArtistFinancePage() {
           swiftCode: artist.swift_code || ''
         })
       }
-      
+
     } catch (err) {
-      
+
     } finally {
       setLoading(false)
     }
@@ -86,7 +86,7 @@ export default function ArtistFinancePage() {
     try {
       const artists = await Artist.filter({ email: user.email })
       const artist = artists?.[0]
-      
+
       if (artist) {
         await Artist.update(artist.id, {
           bank_name: bankDetails.bankName,
@@ -97,35 +97,35 @@ export default function ArtistFinancePage() {
           swift_code: bankDetails.swiftCode
         })
       }
-      
+
       setEditingBank(false)
       success('Bank Details Saved', 'Your bank information has been updated successfully.')
     } catch (err) {
-      
+
       error('Failed', 'Could not save bank details. Please try again.')
     }
   }
 
   const getSubscriptionStatus = () => {
     if (!currentSubscription) return { status: 'No Subscription', color: 'gray' }
-    
+
     const now = new Date()
     const renewsAt = new Date(currentSubscription.renews_at)
-    
+
     if (currentSubscription.status !== 'active') {
       return { status: 'Inactive', color: 'red' }
     }
-    
+
     if (renewsAt < now) {
       return { status: 'Expired', color: 'red' }
     }
-    
+
     const daysUntilRenewal = Math.ceil((renewsAt - now) / (1000 * 60 * 60 * 24))
-    
+
     if (daysUntilRenewal <= 7) {
       return { status: 'Expiring Soon', color: 'yellow' }
     }
-    
+
     return { status: 'Active', color: 'green' }
   }
 
@@ -162,11 +162,10 @@ export default function ArtistFinancePage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-3 sm:px-4 py-3 font-medium transition-colors whitespace-nowrap ${
-                    activeTab === tab.id
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-3 font-medium transition-colors whitespace-nowrap ${activeTab === tab.id
                       ? 'text-black border-b-2 border-black -mb-0.5'
                       : 'text-gray-500 hover:text-gray-900'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span className="hidden sm:inline">{tab.label}</span>
@@ -184,12 +183,11 @@ export default function ArtistFinancePage() {
                 <div className="flex items-start justify-between mb-6">
                   <div>
                     <h2 className="text-lg font-bold text-gray-900 mb-1">Current Subscription</h2>
-                    <div className={`flex items-center gap-2 text-sm font-medium ${
-                      subscriptionStatus.color === 'green' ? 'text-green-600' :
-                      subscriptionStatus.color === 'yellow' ? 'text-yellow-600' :
-                      subscriptionStatus.color === 'red' ? 'text-red-600' :
-                      'text-gray-600'
-                    }`}>
+                    <div className={`flex items-center gap-2 text-sm font-medium ${subscriptionStatus.color === 'green' ? 'text-green-600' :
+                        subscriptionStatus.color === 'yellow' ? 'text-yellow-600' :
+                          subscriptionStatus.color === 'red' ? 'text-red-600' :
+                            'text-gray-600'
+                      }`}>
                       {subscriptionStatus.color === 'green' && <CheckCircle className="w-4 h-4" />}
                       {subscriptionStatus.color === 'yellow' && <AlertCircle className="w-4 h-4" />}
                       {subscriptionStatus.color === 'red' && <AlertCircle className="w-4 h-4" />}
@@ -220,7 +218,7 @@ export default function ArtistFinancePage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-col sm:flex-row gap-3 pt-4">
                       <Button
                         onClick={() => navigate(createPageUrl('ArtistSubscriptionCheckout'))}
@@ -288,9 +286,8 @@ export default function ArtistFinancePage() {
                                   €{order.amount}
                                 </td>
                                 <td className="py-3 px-4 text-right">
-                                  <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
-                                    order.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                                  }`}>
+                                  <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${order.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                    }`}>
                                     {order.status === 'completed' && <CheckCircle className="w-3 h-3" />}
                                     {order.status}
                                   </span>
@@ -318,11 +315,10 @@ export default function ArtistFinancePage() {
                             <button
                               key={page}
                               onClick={() => setSubscriptionPage(page)}
-                              className={`w-8 h-8 text-sm rounded-lg ${
-                                subscriptionPage === page
+                              className={`w-8 h-8 text-sm rounded-lg ${subscriptionPage === page
                                   ? 'bg-black text-white'
                                   : 'border border-gray-300 hover:bg-gray-50'
-                              }`}
+                                }`}
                             >
                               {page}
                             </button>
@@ -383,11 +379,10 @@ export default function ArtistFinancePage() {
                                 €{payment.amount}
                               </td>
                               <td className="py-3 px-4 text-right">
-                                <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
-                                  payment.status === 'completed' ? 'bg-green-100 text-green-700' : 
-                                  payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-gray-100 text-gray-700'
-                                }`}>
+                                <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${payment.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                    payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-gray-100 text-gray-700'
+                                  }`}>
                                   {payment.status === 'completed' && <CheckCircle className="w-3 h-3" />}
                                   {payment.status}
                                 </span>
@@ -415,11 +410,10 @@ export default function ArtistFinancePage() {
                           <button
                             key={page}
                             onClick={() => setPaymentsPage(page)}
-                            className={`w-8 h-8 text-sm rounded-lg ${
-                              paymentsPage === page
+                            className={`w-8 h-8 text-sm rounded-lg ${paymentsPage === page
                                 ? 'bg-black text-white'
                                 : 'border border-gray-300 hover:bg-gray-50'
-                            }`}
+                              }`}
                           >
                             {page}
                           </button>
@@ -462,7 +456,7 @@ export default function ArtistFinancePage() {
                   <input
                     type="text"
                     value={bankDetails.bankName}
-                    onChange={(e) => setBankDetails({...bankDetails, bankName: e.target.value})}
+                    onChange={(e) => setBankDetails({ ...bankDetails, bankName: e.target.value })}
                     disabled={!editingBank}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 disabled:bg-gray-50 disabled:text-gray-500"
                   />
@@ -472,7 +466,7 @@ export default function ArtistFinancePage() {
                   <input
                     type="text"
                     value={bankDetails.accountHolderName}
-                    onChange={(e) => setBankDetails({...bankDetails, accountHolderName: e.target.value})}
+                    onChange={(e) => setBankDetails({ ...bankDetails, accountHolderName: e.target.value })}
                     disabled={!editingBank}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 disabled:bg-gray-50 disabled:text-gray-500"
                   />
@@ -483,7 +477,7 @@ export default function ArtistFinancePage() {
                     <input
                       type="text"
                       value={bankDetails.accountNumber}
-                      onChange={(e) => setBankDetails({...bankDetails, accountNumber: e.target.value})}
+                      onChange={(e) => setBankDetails({ ...bankDetails, accountNumber: e.target.value })}
                       disabled={!editingBank}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 disabled:bg-gray-50 disabled:text-gray-500"
                     />
@@ -493,7 +487,7 @@ export default function ArtistFinancePage() {
                     <input
                       type="text"
                       value={bankDetails.routingNumber}
-                      onChange={(e) => setBankDetails({...bankDetails, routingNumber: e.target.value})}
+                      onChange={(e) => setBankDetails({ ...bankDetails, routingNumber: e.target.value })}
                       disabled={!editingBank}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 disabled:bg-gray-50 disabled:text-gray-500"
                     />
@@ -505,7 +499,7 @@ export default function ArtistFinancePage() {
                     <input
                       type="text"
                       value={bankDetails.iban}
-                      onChange={(e) => setBankDetails({...bankDetails, iban: e.target.value})}
+                      onChange={(e) => setBankDetails({ ...bankDetails, iban: e.target.value })}
                       disabled={!editingBank}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 disabled:bg-gray-50 disabled:text-gray-500"
                     />
@@ -515,7 +509,7 @@ export default function ArtistFinancePage() {
                     <input
                       type="text"
                       value={bankDetails.swiftCode}
-                      onChange={(e) => setBankDetails({...bankDetails, swiftCode: e.target.value})}
+                      onChange={(e) => setBankDetails({ ...bankDetails, swiftCode: e.target.value })}
                       disabled={!editingBank}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 disabled:bg-gray-50 disabled:text-gray-500"
                     />
@@ -574,9 +568,8 @@ export default function ArtistFinancePage() {
                                 {new Date(tx.created_at).toLocaleDateString()}
                               </td>
                               <td className="py-3 px-4">
-                                <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
-                                  tx.amount > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                }`}>
+                                <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${tx.amount > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                  }`}>
                                   {tx.amount > 0 ? (
                                     <ArrowDownRight className="w-3 h-3" />
                                   ) : (
@@ -588,9 +581,8 @@ export default function ArtistFinancePage() {
                               <td className="py-3 px-4 text-sm text-gray-900 capitalize hidden sm:table-cell">
                                 {tx.reason}
                               </td>
-                              <td className={`py-3 px-4 text-sm font-medium text-right ${
-                                tx.amount > 0 ? 'text-green-600' : 'text-red-600'
-                              }`}>
+                              <td className={`py-3 px-4 text-sm font-medium text-right ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'
+                                }`}>
                                 {tx.amount > 0 ? '+' : ''}{tx.amount} connects
                               </td>
                               <td className="py-3 px-4 text-sm text-gray-600 text-right hidden sm:table-cell">
@@ -620,11 +612,10 @@ export default function ArtistFinancePage() {
                           <button
                             key={page}
                             onClick={() => setCurrentPage(page)}
-                            className={`w-8 h-8 text-sm rounded-lg ${
-                              currentPage === page
+                            className={`w-8 h-8 text-sm rounded-lg ${currentPage === page
                                 ? 'bg-black text-white'
                                 : 'border border-gray-300 hover:bg-gray-50'
-                            }`}
+                              }`}
                           >
                             {page}
                           </button>

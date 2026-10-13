@@ -295,14 +295,14 @@ export default function ArtistProfile() {
           }
         }
 
-        const endorsementsData = await Endorsement.filter({ recipient_email: user.email })
+        const endorsementsData = await Endorsement.filter({ user_id: user.id })
         setEndorsements(endorsementsData)
 
-        const testimonialsData = await Testimonial.filter({ recipient_email: user.email })
+        const testimonialsData = await Testimonial.filter({ user_id: user.id })
         setTestimonials(testimonialsData)
 
         try {
-          const subs = await Subscription.filter({ user_email: user.email, status: 'active' })
+          const subs = await Subscription.filter({ user_id: user.id, status: 'active' })
           if (subs?.[0]) {
             setSubscription(subs[0])
             const pkgs = await SubscriptionPackage.filter({ id: subs[0].package_id })

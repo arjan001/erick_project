@@ -22,7 +22,7 @@ function TeamModal({ team, onClose, onApprove, onReject, onSuspend, onUnsuspend,
     let cancelled = false
     const loadSubscription = async () => {
       try {
-        const rows = await Subscription.filter({ user_email: team.contact_email }, '-created_date', 1)
+        const rows = await Subscription.filter({ user_id: team.user_id }, '-created_date', 1)
         if (!cancelled) setSubscription(rows?.[0] || null)
       } catch {
         if (!cancelled) setSubscription(null)

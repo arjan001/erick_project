@@ -28,24 +28,28 @@ export default function RecentConversations({ userEmail }) {
     if (!userEmail) return
     (async () => {
       try {
-        const [sent, received] = await Promise.all([
-          Message.filter({ sender_email: userEmail }, '-created_at', 100),
-          Message.filter({ recipient_email: userEmail }, '-created_at', 100),
-        ])
-        const grouped = {}
-        sent.concat(received).forEach(m => {
-          const existing = grouped[m.conversation_id]
-          if (!existing || new Date(m.created_at) > new Date(existing.created_at)) grouped[m.conversation_id] = m
-        })
-        const top = Object.values(grouped)
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, 3)
-        const enriched = await Promise.all(top.map(async m => {
-          const otherEmail = m.sender_email === userEmail ? m.recipient_email : m.sender_email
-          const info = await lookupName(otherEmail)
-          return { ...m, otherEmail, ...info }
-        }))
-        setConversations(enriched)
+        // TODO: Refactor to use conversation_id and sender_id instead of email-based filtering
+        // Need to join with conversations table to get participant_1 and participant_2
+        // For now, this feature is disabled pending proper refactoring
+        // const [sent, received] = await Promise.all([
+        //   Message.filter({ sender_id: userId }, '-created_at', 100),
+        //   // Use conversation table to find conversations where user is a participant
+        // ])
+        // const grouped = {}
+        // sent.concat(received).forEach(m => {
+        //   const existing = grouped[m.conversation_id]
+        //   if (!existing || new Date(m.created_at) > new Date(existing.created_at)) grouped[m.conversation_id] = m
+        // })
+        // const top = Object.values(grouped)
+        //   .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        //   .slice(0, 3)
+        // const enriched = await Promise.all(top.map(async m => {
+        //   const otherId = m.sender_id === userId ? (get other participant from conversation) : m.sender_id
+        //   const info = await lookupName(otherId)
+        //   return { ...m, otherId, ...info }
+        // }))
+        // setConversations(enriched)
+        setConversations([])
       } catch (err) {
 
         setConversations([])

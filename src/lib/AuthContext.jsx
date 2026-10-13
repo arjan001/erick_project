@@ -70,16 +70,16 @@ function generateInviteCode() {
 }
 
 // Grant free Pro subscription to users who were referred by an invite code
-async function grantProSubscription(email) {
-  if (!email) return
+async function grantProSubscription(userId) {
+  if (!userId) return
   try {
     const pkgs = await SubscriptionPackage.filter({ name: 'Pro' })
     if (!pkgs || pkgs.length === 0) return
     const proPkg = pkgs[0]
-    const existing = await Subscription.filter({ user_email: email, status: 'active' })
+    const existing = await Subscription.filter({ user_id: userId, status: 'active' })
     if (existing && existing.length > 0) return
     await Subscription.create({
-      user_email: email,
+      user_id: userId,
       package_id: proPkg.id,
       package_name: proPkg.name,
       status: 'active',
@@ -151,7 +151,7 @@ async function ensureProfile(user) {
     }
 
     if (referredBy) {
-      await grantProSubscription(user.email)
+      await grantProSubscription(user.id)
     }
   } catch (err) {
     // If profile creation fails (e.g., Supabase not configured), log but don't block
