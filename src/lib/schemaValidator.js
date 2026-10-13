@@ -298,6 +298,16 @@ const SCHEMA = {
     // NOTE: NO 'requester_email', 'recipient_email', 'requester_id', 'receiver_id' columns - use user_id, connected_artist_id
   },
 
+  // Cart table (shop functionality)
+  cart: {
+    id: 'uuid',
+    user_id: 'uuid',
+    product_id: 'uuid',
+    quantity: 'integer',
+    created_at: 'timestamp with time zone',
+    updated_at: 'timestamp with time zone',
+  },
+
   // Artist media table (formerly portfolio_clips)
   artist_media: {
     id: 'uuid',

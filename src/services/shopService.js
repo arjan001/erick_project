@@ -1,4 +1,4 @@
-import { ShopProduct, ShopOrder, ShopOrderItem, CardPayment } from '@/lib/supabaseEntities'
+import { ShopProduct, Cart, Wishlist, ShopOrder, ShopOrderItem, CardPayment } from '@/lib/supabaseEntities'
 import { buildSeedProducts } from '@/data/shopProducts'
 import { useAuth } from '@/lib/AuthContext'
 
@@ -279,9 +279,8 @@ export async function getShopSettings() {
 export async function getCart() {
   if (!currentUserId) return []
   try {
-    // Cart table not implemented - use localStorage
-    const localCart = localStorage.getItem(`cart_${currentUserId}`)
-    return localCart ? JSON.parse(localCart) : []
+    const cartItems = await Cart.filter({ user_id: currentUserId })
+    return cartItems || []
   } catch (error) {
     return []
   }
@@ -359,26 +358,27 @@ export async function addToCart(product, quantity = 1) {
   if (!currentUserId) return []
 
   try {
-    // Cart table not implemented - use localStorage
-    const localCart = localStorage.getItem(`cart_${currentUserId}`)
-    const cartItems = localCart ? JSON.parse(localCart) : []
-
-    const existing = cartItems.find(item => item.product_id === product.id)
-    if (existing) {
-      existing.quantity = Number(existing.quantity) + quantity
-    } else {
-      cartItems.push({
-        id: crypto.randomUUID(),
-        user_id: currentUserId,
-        product_id: product.id,
-        quantity,
-        created_at: new Date().toISOString(),
+    // Check if already in cart
+    const existing = await Cart.filter({ user_id: currentUserId, product_id: product.id })
+    if (existing && existing.length > 0) {
+      // Update quantity
+      const updated = await Cart.update(existing[0].id, {
+        quantity: Number(existing[0].quantity) + quantity,
       })
+      window.dispatchEvent(new Event('cart-updated'))
+      return await getCart()
     }
 
-    localStorage.setItem(`cart_${currentUserId}`, JSON.stringify(cartItems))
+    // Add to cart
+    await Cart.create({
+      user_id: currentUserId,
+      product_id: product.id,
+      quantity,
+      created_at: new Date().toISOString(),
+    })
+
     window.dispatchEvent(new Event('cart-updated'))
-    return cartItems
+    return await getCart()
   } catch (error) {
     return []
   }
@@ -388,15 +388,11 @@ export async function removeFromCart(itemId) {
   if (!currentUserId) return []
 
   try {
-    // Cart table not implemented - use localStorage
-    const localCart = localStorage.getItem(`cart_${currentUserId}`)
-    const cartItems = localCart ? JSON.parse(localCart) : []
-    const updated = cartItems.filter(item => item.id !== itemId)
-    localStorage.setItem(`cart_${currentUserId}`, JSON.stringify(updated))
+    await Cart.delete(itemId)
     window.dispatchEvent(new Event('cart-updated'))
-    return updated
+    return await getCart()
   } catch (error) {
-    return []
+    return await getCart()
   }
 }
 
@@ -404,18 +400,11 @@ export async function updateCartQuantity(itemId, quantity) {
   if (!currentUserId) return []
 
   try {
-    // Cart table not implemented - use localStorage
-    const localCart = localStorage.getItem(`cart_${currentUserId}`)
-    const cartItems = localCart ? JSON.parse(localCart) : []
-    const item = cartItems.find(item => item.id === itemId)
-    if (item) {
-      item.quantity = quantity
-    }
-    localStorage.setItem(`cart_${currentUserId}`, JSON.stringify(cartItems))
+    await Cart.update(itemId, { quantity })
     window.dispatchEvent(new Event('cart-updated'))
-    return cartItems
+    return await getCart()
   } catch (error) {
-    return []
+    return await getCart()
   }
 }
 
@@ -423,12 +412,14 @@ export async function clearCart() {
   if (!currentUserId) return []
 
   try {
-    // Cart table not implemented - use localStorage
-    localStorage.removeItem(`cart_${currentUserId}`)
+    const cartItems = await Cart.filter({ user_id: currentUserId })
+    for (const item of cartItems) {
+      await Cart.delete(item.id)
+    }
     window.dispatchEvent(new Event('cart-updated'))
     return []
   } catch (error) {
-    return []
+    return await getCart()
   }
 }
 
