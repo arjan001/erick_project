@@ -72,7 +72,8 @@ class AnalyticsService {
         last_activity: new Date().toISOString()
       }
 
-      await supabase.from('user_sessions').insert(sessionData)
+      // User sessions table not implemented - skip for now
+      // await supabase.from('user_sessions').insert(sessionData)
 
       // Update live users table
       await supabase.from('live_users').upsert({
@@ -115,10 +116,10 @@ class AnalyticsService {
         })
         .eq('session_id', this.sessionId)
 
-      // Update session last activity
-      await supabase.from('user_sessions')
-        .update({ last_activity: new Date().toISOString() })
-        .eq('session_id', this.sessionId)
+      // User sessions table not implemented - skip update
+      // await supabase.from('user_sessions')
+      //   .update({ last_activity: new Date().toISOString() })
+      //   .eq('session_id', this.sessionId)
 
     } catch (error) {
       // Silently ignore analytics errors - don't block the app
@@ -168,24 +169,25 @@ class AnalyticsService {
     if (!this.sessionId) return
 
     try {
-      const session = await supabase
-        .from('user_sessions')
-        .select('started_at')
-        .eq('session_id', this.sessionId)
-        .single()
+      // User sessions table not implemented - skip session tracking
+      // const session = await supabase
+      //   .from('user_sessions')
+      //   .select('started_at')
+      //   .eq('session_id', this.sessionId)
+      //   .single()
 
-      if (session.data) {
-        const duration = Math.floor(
-          (new Date().getTime() - new Date(session.data.started_at).getTime()) / 1000
-        )
+      // if (session.data) {
+      //   const duration = Math.floor(
+      //     (new Date().getTime() - new Date(session.data.started_at).getTime()) / 1000
+      //   )
 
-        await supabase.from('user_sessions')
-          .update({
-            ended_at: new Date().toISOString(),
-            duration_seconds: duration
-          })
-          .eq('session_id', this.sessionId)
-      }
+      //   await supabase.from('user_sessions')
+      //     .update({
+      //       ended_at: new Date().toISOString(),
+      //       duration_seconds: duration
+      //     })
+      //     .eq('session_id', this.sessionId)
+      // }
 
       // Remove from live users
       await supabase.from('live_users')
@@ -208,9 +210,10 @@ class AnalyticsService {
         })
         .eq('session_id', this.sessionId)
 
-      await supabase.from('user_sessions')
-        .update({ last_activity: new Date().toISOString() })
-        .eq('session_id', this.sessionId)
+      // User sessions table not implemented - skip update
+      // await supabase.from('user_sessions')
+      //   .update({ last_activity: new Date().toISOString() })
+      //   .eq('session_id', this.sessionId)
     } catch (error) {
 
     }

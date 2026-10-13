@@ -30,82 +30,82 @@ export default function ActivityFeedPage() {
       try {
         const allActivities = []
 
-        // Fetch jobs posted by connections
+        // Fetch jobs posted by connections - skip email-based filtering for now
         const jobs = await Job.filter({ status: 'open' })
         jobs.forEach(job => {
           allActivities.push({
             id: `job-${job.id}`,
             type: 'job',
             title: 'New Job Posted',
-            message: `${job.client_email} posted a new job: ${job.title}`,
-            actor: job.client_email,
-            actor_name: job.client_email.split('@')[0],
+            message: `A new job was posted: ${job.title}`,
+            actor: 'Client',
+            actor_name: 'Client',
             created_date: job.created_at,
             link: `/jobs/${job.id}`,
             icon: <Briefcase className="w-5 h-5 text-blue-600" />
           })
         })
 
-        // Fetch new connections
-        const connections = await Connection.filter({ status: 'accepted' })
-        connections.forEach(conn => {
-          if (conn.recipient_email === user.email || conn.requester_email === user.email) {
-            const otherEmail = conn.recipient_email === user.email ? conn.requester_email : conn.recipient_email
-            allActivities.push({
-              id: `connection-${conn.id}`,
-              type: 'connection',
-              title: 'New Connection',
-              message: `You connected with ${otherEmail}`,
-              actor: otherEmail,
-              actor_name: otherEmail.split('@')[0],
-              created_date: conn.updated_date || conn.created_at,
-              link: '/network',
-              icon: <Users className="w-5 h-5 text-green-600" />
-            })
-          }
-        })
+        // Skip connections for now - needs user_id-based implementation
+        // const connections = await Connection.filter({ status: 'accepted' })
+        // connections.forEach(conn => {
+        //   if (conn.recipient_email === user.email || conn.requester_email === user.email) {
+        //     const otherEmail = conn.recipient_email === user.email ? conn.requester_email : conn.recipient_email
+        //     allActivities.push({
+        //       id: `connection-${conn.id}`,
+        //       type: 'connection',
+        //       title: 'New Connection',
+        //       message: `You connected with ${otherEmail}`,
+        //       actor: otherEmail,
+        //       actor_name: otherEmail.split('@')[0],
+        //       created_date: conn.updated_date || conn.created_at,
+        //       link: '/network',
+        //       icon: <Users className="w-5 h-5 text-green-600" />
+        //     })
+        //   }
+        // })
 
-        // Fetch endorsements
-        const endorsements = await Endorsement.list()
-        endorsements.forEach(endorsement => {
-          if (endorsement.endorsed_email === user.email || endorsement.endorser_email === user.email) {
-            const isReceived = endorsement.endorsed_email === user.email
-            allActivities.push({
-              id: `endorsement-${endorsement.id}`,
-              type: 'endorsement',
-              title: isReceived ? 'Endorsement Received' : 'Endorsement Given',
-              message: isReceived
-                ? `${endorsement.endorser_name} endorsed you for ${endorsement.skill}`
-                : `You endorsed ${endorsement.endorsed_name} for ${endorsement.skill}`,
-              actor: isReceived ? endorsement.endorser_email : endorsement.endorsed_email,
-              actor_name: isReceived ? endorsement.endorser_name : endorsement.endorsed_name,
-              created_date: endorsement.created_at,
-              link: '/endorsements',
-              icon: <Award className="w-5 h-5 text-yellow-600" />
-            })
-          }
-        })
+        // Skip endorsements for now - needs user_id-based implementation
+        // const endorsements = await Endorsement.list()
+        // endorsements.forEach(endorsement => {
+        //   if (endorsement.endorsed_email === user.email || endorsement.endorser_email === user.email) {
+        //     const isReceived = endorsement.endorsed_email === user.email
+        //     allActivities.push({
+        //       id: `endorsement-${endorsement.id}`,
+        //       type: 'endorsement',
+        //       title: isReceived ? 'Endorsement Received' : 'Endorsement Given',
+        //       message: isReceived
+        //         ? `${endorsement.endorser_name} endorsed you for ${endorsement.skill}`
+        //         : `You endorsed ${endorsement.endorsed_name} for ${endorsement.skill}`,
+        //       actor: isReceived ? endorsement.endorser_email : endorsement.endorsed_email,
+        //       actor_name: isReceived ? endorsement.endorser_name : endorsement.endorsed_name,
+        //       created_date: endorsement.created_at,
+        //       link: '/endorsements',
+        //       icon: <Award className="w-5 h-5 text-yellow-600" />
+        //     })
+        //   }
+        // })
 
-        // Fetch testimonials
-        const testimonials = await Testimonial.list()
-        testimonials.forEach(testimonial => {
-          if (testimonial.recipient_email === user.email || testimonial.author_email === user.email) {
-            const isReceived = testimonial.recipient_email === user.email
-            allActivities.push({
-              id: `testimonial-${testimonial.id}`,
-              type: 'testimonial',
-              title: isReceived ? 'Testimonial Received' : 'Testimonial Written',
-              message: isReceived
-                ? `${testimonial.author_name} wrote a testimonial about working with you`
-                : `You wrote a testimonial for ${testimonial.recipient_name}`,
-              actor: isReceived ? testimonial.author_email : testimonial.recipient_email,
-              actor_name: isReceived ? testimonial.author_name : testimonial.recipient_name,
-              created_date: testimonial.created_at,
-              link: '/testimonials',
-              icon: <ThumbsUp className="w-5 h-5 text-purple-600" />
-            })
-          }
-        })
+        // Skip testimonials for now - needs user_id-based implementation
+        // const testimonials = await Testimonial.list()
+        // testimonials.forEach(testimonial => {
+        //   if (testimonial.recipient_email === user.email || testimonial.author_email === user.email) {
+        //     const isReceived = testimonial.recipient_email === user.email
+        //     allActivities.push({
+        //       id: `testimonial-${testimonial.id}`,
+        //       type: 'testimonial',
+        //       title: isReceived ? 'Testimonial Received' : 'Testimonial Written',
+        //       message: isReceived
+        //         ? `${testimonial.author_name} wrote a testimonial about working with you`
+        //         : `You wrote a testimonial for ${testimonial.recipient_name}`,
+        //       actor: isReceived ? testimonial.author_email : testimonial.recipient_email,
+        //       actor_name: isReceived ? testimonial.author_name : testimonial.recipient_name,
+        //       created_date: testimonial.created_at,
+        //       link: '/testimonials',
+        //       icon: <ThumbsUp className="w-5 h-5 text-purple-600" />
+        //     })
+        //   }
+        // })
 
         // Sort by created_date descending
         const sorted = allActivities.sort((a, b) =>
@@ -136,72 +136,16 @@ export default function ActivityFeedPage() {
             id: `job-${job.id}`,
             type: 'job',
             title: 'New Job Posted',
-            message: `${job.client_email} posted a new job: ${job.title}`,
-            actor: job.client_email,
-            actor_name: job.client_email.split('@')[0],
+            message: `A new job was posted: ${job.title}`,
+            actor: 'Client',
+            actor_name: 'Client',
             created_date: job.created_at,
             link: `/jobs/${job.id}`,
             icon: <Briefcase className="w-5 h-5 text-blue-600" />
           })
         })
 
-        const connections = await Connection.filter({ status: 'accepted' })
-        connections.forEach(conn => {
-          if (conn.recipient_email === user.email || conn.requester_email === user.email) {
-            const otherEmail = conn.recipient_email === user.email ? conn.requester_email : conn.recipient_email
-            allActivities.push({
-              id: `connection-${conn.id}`,
-              type: 'connection',
-              title: 'New Connection',
-              message: `You connected with ${otherEmail}`,
-              actor: otherEmail,
-              actor_name: otherEmail.split('@')[0],
-              created_date: conn.updated_date || conn.created_at,
-              link: '/network',
-              icon: <Users className="w-5 h-5 text-green-600" />
-            })
-          }
-        })
-
-        const endorsements = await Endorsement.list()
-        endorsements.forEach(endorsement => {
-          if (endorsement.endorsed_email === user.email || endorsement.endorser_email === user.email) {
-            const isReceived = endorsement.endorsed_email === user.email
-            allActivities.push({
-              id: `endorsement-${endorsement.id}`,
-              type: 'endorsement',
-              title: isReceived ? 'Endorsement Received' : 'Endorsement Given',
-              message: isReceived
-                ? `${endorsement.endorser_name} endorsed you for ${endorsement.skill}`
-                : `You endorsed ${endorsement.endorsed_name} for ${endorsement.skill}`,
-              actor: isReceived ? endorsement.endorser_email : endorsement.endorsed_email,
-              actor_name: isReceived ? endorsement.endorser_name : endorsement.endorsed_name,
-              created_date: endorsement.created_at,
-              link: '/endorsements',
-              icon: <Award className="w-5 h-5 text-yellow-600" />
-            })
-          }
-        })
-
-        const testimonials = await Testimonial.list()
-        testimonials.forEach(testimonial => {
-          if (testimonial.recipient_email === user.email || testimonial.author_email === user.email) {
-            const isReceived = testimonial.recipient_email === user.email
-            allActivities.push({
-              id: `testimonial-${testimonial.id}`,
-              type: 'testimonial',
-              title: isReceived ? 'Testimonial Received' : 'Testimonial Written',
-              message: isReceived
-                ? `${testimonial.author_name} wrote a testimonial about working with you`
-                : `You wrote a testimonial for ${testimonial.recipient_name}`,
-              actor: isReceived ? testimonial.author_email : testimonial.recipient_email,
-              actor_name: isReceived ? testimonial.author_name : testimonial.recipient_name,
-              created_date: testimonial.created_at,
-              link: '/testimonials',
-              icon: <ThumbsUp className="w-5 h-5 text-purple-600" />
-            })
-          }
-        })
+        // Skip other activities for now - needs user_id-based implementation
 
         const sorted = allActivities.sort((a, b) =>
           new Date(b.created_date) - new Date(a.created_date)

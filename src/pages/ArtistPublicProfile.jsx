@@ -48,9 +48,9 @@ export default function ArtistPublicProfile() {
 
         const [clipsData, endorsementsData, testimonialsData, applicationsData] = await Promise.all([
           PortfolioClip.filter({ uploaded_by_type: 'artist', uploaded_by_id: artistId, status: 'approved' }),
-          Endorsement.filter({ recipient_email: artist.email }),
-          Testimonial.filter({ recipient_email: artist.email }),
-          Application.filter({ applicant_email: artist.email }, '-created_at', 10),
+          Endorsement.filter({ user_id: artistId }),
+          Testimonial.filter({ user_id: artistId }),
+          Application.filter({ user_id: artistId }, '-created_at', 10),
         ])
         setPortfolioClips(clipsData || [])
         setEndorsements(endorsementsData || [])

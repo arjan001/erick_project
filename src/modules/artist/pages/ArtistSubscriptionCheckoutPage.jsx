@@ -516,21 +516,21 @@ export default function ArtistSubscriptionCheckoutPage() {
 
       // Send notifications
       await Notification.create({
-        recipient_email: user.email,
+        user_id: user.id,
         type: 'payment',
         title: 'Payment Successful',
-        message: `Your payment of ${selectedPackage.currency || 'KES'} ${selectedPackage.price_monthly} for ${selectedPackage.name} was successful.`,
+        content: `Your payment of ${selectedPackage.currency || 'KES'} ${selectedPackage.price_monthly} for ${selectedPackage.name} was successful.`,
         metadata: { amount: selectedPackage.price_monthly, package_name: selectedPackage.name },
-        read: false
+        is_read: false
       })
 
       await Notification.create({
-        recipient_email: user.email,
+        user_id: user.id,
         type: 'subscription',
         title: 'Subscription Activated',
-        message: `Your ${selectedPackage.name} subscription is now active. Enjoy your benefits!`,
+        content: `Your ${selectedPackage.name} subscription is now active. Enjoy your benefits!`,
         metadata: { package_name: selectedPackage.name, package_id: selectedPackage.id },
-        read: false
+        is_read: false
       })
 
       setShowModal(false)

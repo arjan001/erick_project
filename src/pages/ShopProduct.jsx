@@ -15,7 +15,7 @@ import {
 } from '@/services/shopService'
 import { useShop } from '@/contexts/ShopContext'
 import { useAuth } from '@/lib/AuthContext'
-import { Flame, Check, ShoppingCart, ArrowLeft, Shield, Gavel, Trophy, Heart, Users } from 'lucide-react'
+import { Flame, Check, ShoppingCart, ArrowLeft, Shield, Gavel, Trophy, Users } from 'lucide-react'
 
 export default function ProductPage() {
   const { id } = useParams()
@@ -65,12 +65,6 @@ export default function ProductPage() {
       document.getElementById('auction')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
   }, [loading, product, hash])
-
-  useEffect(() => {
-    if (product) {
-      isWished(product.id).then(setWished).catch(() => setWished(false))
-    }
-  }, [product?.id, isWished])
 
   const handleJoin = useCallback(async () => {
     if (!isAuthenticated) {

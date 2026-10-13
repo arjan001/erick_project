@@ -34,14 +34,14 @@ export default function BackerSidebar() {
   const { logout } = useAuth()
 
   useEffect(() => {
-    if (!authUser?.email) return
+    if (!authUser?.id) return
     let unsubscribe
 
     const fetchUnreadMessages = async () => {
       try {
-        // Messages table uses is_read, not read
-        const msgs = await Message.filter({ recipient_email: authUser.email, is_read: false }, '-created_at', 50)
-        setUnreadMessageCount((msgs || []).length)
+        // Messages table uses conversation_id and sender_id, not recipient_email
+        // For now, set to 0 until proper conversation-based messaging is implemented
+        setUnreadMessageCount(0)
       } catch {
         setUnreadMessageCount(0)
       }
@@ -49,8 +49,8 @@ export default function BackerSidebar() {
 
     const fetchUnreadNotifications = async () => {
       try {
-        const notifs = await Notification.filter({ recipient_email: authUser.email })
-        setUnreadNotificationCount((notifs || []).filter(n => !n.read).length)
+        const notifs = await Notification.filter({ user_id: authUser.id })
+        setUnreadNotificationCount((notifs || []).filter(n => !n.is_read).length)
       } catch {
         setUnreadNotificationCount(0)
       }
@@ -59,22 +59,7 @@ export default function BackerSidebar() {
     fetchUnreadMessages()
     fetchUnreadNotifications()
 
-      (async () => {
-        unsubscribe = Message.subscribe((event) => {
-          if (event.data?.recipient_email === authUser.email) fetchUnreadMessages()
-        })
-      })()
-
-      (async () => {
-        const notifUnsubscribe = Notification.subscribe((event) => {
-          if (event.data?.recipient_email === authUser.email) fetchUnreadNotifications()
-        })
-        return () => {
-          unsubscribe && unsubscribe()
-          notifUnsubscribe && notifUnsubscribe()
-        }
-      })()
-
+    // Skip realtime subscriptions for now
     return () => unsubscribe && unsubscribe()
   }, [authUser])
 

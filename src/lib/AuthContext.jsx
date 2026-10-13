@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Artist, Team, ProjectOwner, Backer, Subscription, SubscriptionPackage, UserSession } from '@/lib/supabaseEntities'
+import { Artist, Team, ProjectOwner, Backer, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 import auditLogger from '@/lib/auditLogger'
 import { useToast } from '@/hooks/useToast'
 
@@ -191,41 +191,42 @@ async function trackUserSession(user) {
   if (!user?.id) return
 
   try {
+    // User sessions table not implemented - skip for now
     // Get IP address from ipify API
-    const ipResponse = await fetch('https://api.ipify.org?format=json')
-    const { ip } = await ipResponse.json()
+    // const ipResponse = await fetch('https://api.ipify.org?format=json')
+    // const { ip } = await ipResponse.json()
 
     // Get device info from user agent
-    const userAgent = navigator.userAgent
-    const deviceType = getDeviceType(userAgent)
-    const browser = getBrowser(userAgent)
-    const os = getOS(userAgent)
+    // const userAgent = navigator.userAgent
+    // const deviceType = getDeviceType(userAgent)
+    // const browser = getBrowser(userAgent)
+    // const os = getOS(userAgent)
 
     // Create or update session
-    const sessionToken = generateSessionToken()
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    // const sessionToken = generateSessionToken()
+    // const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
     // Check if session already exists
-    const existingSessions = await UserSession.filter({ user_id: user.id, ip_address: ip })
-    if (existingSessions && existingSessions.length > 0) {
-      // Update existing session
-      await UserSession.update(existingSessions[0].id, {
-        last_activity: new Date().toISOString(),
-        expires_at: expiresAt.toISOString(),
-      })
-    } else {
-      // Create new session
-      await UserSession.create({
-        user_id: user.id,
-        session_token: sessionToken,
-        ip_address: ip,
-        user_agent: userAgent,
-        device_type: deviceType,
-        browser: browser,
-        os: os,
-        expires_at: expiresAt.toISOString(),
-      })
-    }
+    // const existingSessions = await UserSession.filter({ user_id: user.id, ip_address: ip })
+    // if (existingSessions && existingSessions.length > 0) {
+    //   // Update existing session
+    //   await UserSession.update(existingSessions[0].id, {
+    //     last_activity: new Date().toISOString(),
+    //     expires_at: expiresAt.toISOString(),
+    //   })
+    // } else {
+    //   // Create new session
+    //   await UserSession.create({
+    //     user_id: user.id,
+    //     session_token: sessionToken,
+    //     ip_address: ip,
+    //     user_agent: userAgent,
+    //     device_type: deviceType,
+    //     browser: browser,
+    //     os: os,
+    //     expires_at: expiresAt.toISOString(),
+    //   })
+    // }
   } catch (err) {
 
   }
@@ -409,6 +410,24 @@ export const AuthProvider = ({ children }) => {
       setUser(u)
       setIsAuthenticated(true)
       await trackUserSession(u)
+
+      // Ensure user is saved to public.users table
+      try {
+        const { User } = await import('@/lib/supabaseEntities')
+        const existingUser = await User.filter({ id: data.user.id })
+        if (!existingUser || existingUser.length === 0) {
+          await User.create({
+            id: data.user.id,
+            email: data.user.email,
+            full_name: metadata.full_name || metadata.name || data.user.email?.split('@')[0] || 'User',
+            role: appRole,
+            is_verified: false
+          })
+        }
+      } catch (err) {
+        console.error('Error saving user to public.users:', err)
+      }
+
       await ensureProfile(u)
     }
 

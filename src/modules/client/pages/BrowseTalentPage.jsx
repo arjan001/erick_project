@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Artist, Connection } from '@/lib/supabaseEntities'
+import { Artist, Connection, User } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, SlidersHorizontal, Heart, MapPin, Mail, User, MessageCircle, ExternalLink, Star, Filter, ChevronDown } from 'lucide-react'
+import { Search, SlidersHorizontal, Heart, MapPin, Mail, User as UserIcon, MessageCircle, ExternalLink, Star, Filter, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { useNavigate } from 'react-router-dom'
@@ -29,11 +29,29 @@ export default function BrowseTalentPage() {
   const fetchTalent = async () => {
     try {
       setLoading(true)
-      const artists = await Artist.list('-created_at', 1000) // Fetch all, paginate in UI
-      setTalent(artists || [])
+      // Fetch users with artist/creator roles
+      const users = await User.filter({ role: 'artist' })
+      if (users && users.length > 0) {
+        // Fetch artist profiles for these users
+        const artistProfiles = await Promise.all(
+          users.map(u => Artist.filter({ user_id: u.id }))
+        )
+        const flattened = artistProfiles.flat().filter(Boolean)
+        setTalent(flattened)
+      } else {
+        // Fallback to artists table
+        const artists = await Artist.list('-created_at', 1000)
+        setTalent(artists || [])
+      }
     } catch (err) {
       console.error('Error fetching talent:', err)
-      setTalent([]) // Set empty array on error
+      // Fallback to artists table
+      try {
+        const artists = await Artist.list('-created_at', 1000)
+        setTalent(artists || [])
+      } catch {
+        setTalent([])
+      }
     } finally {
       setLoading(false)
     }
@@ -203,7 +221,7 @@ export default function BrowseTalentPage() {
           </div>
         ) : filteredTalent.length === 0 ? (
           <div className="text-center py-12 bg-gray-50 rounded-xl">
-            <User className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <UserIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">No talent found matching your criteria</p>
           </div>
         ) : (

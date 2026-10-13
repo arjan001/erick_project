@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useAuth } from '@/lib/AuthContext'
-import { getCart, setCart, addToCart as addToCartService, removeFromCart as removeFromCartService, updateCartQuantity as updateCartQuantityService, clearCart as clearCartService, getWishlist, setWishlist, addToWishlist as addToWishlistService, removeFromWishlist as removeFromWishlistService, isInWishlist as isInWishlistService, setCurrentUserId } from '@/services/shopService'
+import { getCart, setCart, addToCart as addToCartService, removeFromCart as removeFromCartService, updateCartQuantity as updateCartQuantityService, clearCart as clearCartService, setCurrentUserId } from '@/services/shopService'
 
 const ShopContext = createContext(null)
 
 export function ShopProvider({ children }) {
   const { user, isAuthenticated: authIsAuthenticated } = useAuth()
   const [cart, setCartState] = useState([])
-  const [wishlist, setWishlistState] = useState([])
   const [loading, setLoading] = useState(false)
   const [toastSuccess, setToastSuccess] = useState(() => () => { })
   const [toastError, setToastError] = useState(() => () => { })
@@ -40,7 +39,6 @@ export function ShopProvider({ children }) {
     if (user?.id) {
       setCurrentUserId(user.id)
       loadCart()
-      loadWishlist()
     }
   }, [user?.id])
 
@@ -52,19 +50,6 @@ export function ShopProvider({ children }) {
     } catch (error) {
       console.warn('Failed to load cart:', error)
       setCartState([])
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const loadWishlist = async () => {
-    setLoading(true)
-    try {
-      const wishlistItems = await getWishlist()
-      setWishlistState(wishlistItems)
-    } catch (error) {
-      console.warn('Failed to load wishlist:', error)
-      setWishlistState([])
     } finally {
       setLoading(false)
     }
@@ -92,31 +77,8 @@ export function ShopProvider({ children }) {
     setCartState([])
   }
 
-  const toggleWish = async (product) => {
-    const isWished = await isInWishlistService(product.id)
-    let updated
-    if (isWished) {
-      // Remove from wishlist
-      const wishlistItems = await getWishlist()
-      const itemToRemove = wishlistItems.find(w => w.product_id === product.id)
-      if (itemToRemove) {
-        updated = await removeFromWishlistService(itemToRemove.id)
-        toastSuccess('Removed from Wishlist', `${product.name} has been removed from your wishlist`)
-      }
-    } else {
-      // Add to wishlist
-      updated = await addToWishlistService(product)
-      toastSuccess('Added to Wishlist', `${product.name} has been added to your wishlist`)
-    }
-    setWishlistState(updated)
-  }
-
-  const isWished = async (productId) => {
-    return await isInWishlistService(productId)
-  }
-
   return (
-    <ShopContext.Provider value={{ cart, wishlist, loading, isAuthenticated: authIsAuthenticated, addToCart, removeFromCart, setQuantity, clear, toggleWish, isWished }}>
+    <ShopContext.Provider value={{ cart, loading, isAuthenticated: authIsAuthenticated, addToCart, removeFromCart, setQuantity, clear }}>
       {children}
     </ShopContext.Provider>
   )

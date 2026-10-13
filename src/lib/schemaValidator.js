@@ -288,12 +288,14 @@ const SCHEMA = {
   // Connection table
   connections: {
     id: 'uuid',
-    requester_id: 'uuid',
-    receiver_id: 'uuid',
+    user_id: 'uuid',
+    connected_artist_id: 'uuid',
+    connection_type: 'text',
     status: 'text',
+    metadata: 'jsonb',
     created_at: 'timestamp with time zone',
     updated_at: 'timestamp with time zone',
-    // NOTE: NO 'requester_email', 'recipient_email', 'user_email' columns - use requester_id, receiver_id
+    // NOTE: NO 'requester_email', 'recipient_email', 'requester_id', 'receiver_id' columns - use user_id, connected_artist_id
   },
 
   // Artist media table (formerly portfolio_clips)
@@ -538,7 +540,7 @@ const DEPRECATED_COLUMNS = {
   subscriptions: ['user_email', 'user_name'], // Does not exist, use user_id
   messages: ['sender_email', 'recipient_email'], // Does not exist, use sender_id and conversation_id
   notifications: ['recipient_email', 'recipient_id'], // Does not exist, use user_id
-  connections: ['requester_email', 'recipient_email', 'user_email', 'connected_artist_id'], // Does not exist, use requester_id, receiver_id
+  connections: ['requester_email', 'recipient_email', 'requester_id', 'receiver_id'], // Does not exist, use user_id, connected_artist_id
 }
 
 /**

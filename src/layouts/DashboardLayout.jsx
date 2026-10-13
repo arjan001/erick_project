@@ -49,7 +49,7 @@ export default function DashboardLayout({ children }) {
         {/* Mobile overlay */}
         {mobileSidebarOpen && (
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-50 bg-black/50 lg:hidden"
             onClick={() => setMobileSidebarOpen(false)}
           />
         )}

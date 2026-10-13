@@ -28,14 +28,14 @@ export default function ClientSidebar() {
   const { logout } = useAuth()
 
   useEffect(() => {
-    if (!authUser?.email) return
+    if (!authUser?.id) return
     let unsubscribe
 
     const fetchUnreadMessages = async () => {
       try {
-        // Messages table uses is_read, not read
-        const msgs = await Message.filter({ recipient_email: authUser.email, is_read: false }, '-created_at', 50)
-        setUnreadMessageCount((msgs || []).length)
+        // Messages table uses conversation_id and sender_id
+        // For now, skip message fetching until conversation-based refactor
+        setUnreadMessageCount(0)
       } catch {
         setUnreadMessageCount(0)
       }
@@ -43,8 +43,8 @@ export default function ClientSidebar() {
 
     const fetchUnreadNotifications = async () => {
       try {
-        const notifs = await Notification.filter({ recipient_email: authUser.email })
-        setUnreadNotificationCount((notifs || []).filter(n => !n.read).length)
+        const notifs = await Notification.filter({ user_id: authUser.id })
+        setUnreadNotificationCount((notifs || []).filter(n => !n.is_read).length)
       } catch {
         setUnreadNotificationCount(0)
       }
@@ -53,33 +53,18 @@ export default function ClientSidebar() {
     fetchUnreadMessages()
     fetchUnreadNotifications()
 
-      (async () => {
-        unsubscribe = Message.subscribe((event) => {
-          if (event.data?.recipient_email === authUser.email) fetchUnreadMessages()
-        })
-      })()
-
-      (async () => {
-        const notifUnsubscribe = Notification.subscribe((event) => {
-          if (event.data?.recipient_email === authUser.email) fetchUnreadNotifications()
-        })
-        return () => {
-          unsubscribe && unsubscribe()
-          notifUnsubscribe && notifUnsubscribe()
-        }
-      })()
-
+    // Skip realtime subscriptions for now
     return () => unsubscribe && unsubscribe()
   }, [authUser])
 
   useEffect(() => {
-    if (!authUser) return
+    if (!authUser?.id) return
     let unsubscribe
     const fetchPendingConnections = async () => {
       try {
         const { Connection } = await import('@/lib/supabaseEntities')
         const connections = await Connection.filter({
-          recipient_email: authUser.email,
+          user_id: authUser.id,
           status: 'pending'
         }, '-created_date', 50)
         setPendingConnections((connections || []).length)
@@ -89,13 +74,7 @@ export default function ClientSidebar() {
     }
     fetchPendingConnections()
 
-      (async () => {
-        const { Connection } = await import('@/lib/supabaseEntities')
-        unsubscribe = Connection.subscribe((event) => {
-          if (event.data?.recipient_email === authUser.email) fetchPendingConnections()
-        })
-      })()
-
+    // Skip realtime subscription for now
     return () => unsubscribe && unsubscribe()
   }, [authUser])
 

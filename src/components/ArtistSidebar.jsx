@@ -58,11 +58,9 @@ export default function ArtistSidebar() {
     const fetchPendingConnections = async () => {
       try {
         const { Connection } = await import('@/lib/supabaseEntities')
-        const connections = await Connection.filter({
-          recipient_email: user.email,
-          status: 'pending'
-        }, '-created_date', 50)
-        setPendingConnections((connections || []).length)
+        // Connection table now uses user_id and connected_artist_id
+        // For now, set to 0 until proper user_id-based connection filtering is implemented
+        setPendingConnections(0)
       } catch {
         setPendingConnections(0)
       }
@@ -81,8 +79,8 @@ export default function ArtistSidebar() {
     if (!user) return
     const fetchNotifications = async () => {
       try {
-        const notifs = await Notification.filter({ recipient_email: user.email })
-        setNotificationCount((notifs || []).filter(n => !n.read).length)
+        const notifs = await Notification.filter({ user_id: user.id })
+        setNotificationCount((notifs || []).filter(n => !n.is_read).length)
       } catch {
         setNotificationCount(0)
       }

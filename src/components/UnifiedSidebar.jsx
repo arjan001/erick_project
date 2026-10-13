@@ -219,7 +219,7 @@ export default function UnifiedSidebar({ role = 'creator', mobileSidebarOpen, se
     const fetchPendingConnections = async () => {
       try {
         const connections = await Connection.filter({
-          recipient_email: user.email,
+          user_id: user.id,
           status: 'pending'
         }, '-created_at', 50)
         setPendingConnections((connections || []).length)
@@ -231,8 +231,8 @@ export default function UnifiedSidebar({ role = 'creator', mobileSidebarOpen, se
 
     const fetchNotifications = async () => {
       try {
-        const notifs = await Notification.filter({ recipient_email: user.email })
-        setNotificationCount((notifs || []).filter(n => !n.read).length)
+        const notifs = await Notification.filter({ user_id: user.id })
+        setNotificationCount((notifs || []).filter(n => !n.is_read).length)
       } catch {
         setNotificationCount(0)
       }
