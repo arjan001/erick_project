@@ -5,7 +5,16 @@ import { getCart, setCart, addToCart as addToCartService, removeFromCart as remo
 const ShopContext = createContext(null)
 
 export function ShopProvider({ children }) {
-  const { user, isAuthenticated: authIsAuthenticated } = useAuth()
+  // Defensive: try to get auth context, but don't crash if not available yet
+  let authContext
+  try {
+    authContext = useAuth()
+  } catch (err) {
+    // AuthProvider not ready yet - return null context until it's ready
+    authContext = { user: null, isAuthenticated: false }
+  }
+
+  const { user, isAuthenticated: authIsAuthenticated } = authContext
   const [cart, setCartState] = useState([])
   const [loading, setLoading] = useState(false)
   const [toastSuccess, setToastSuccess] = useState(() => () => { })

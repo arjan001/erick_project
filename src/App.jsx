@@ -43,18 +43,18 @@ function App() {
     <ErrorBoundary>
       <ToastProvider>
         <AuthProvider>
-          <ShopProvider>
-            <QueryClientProvider client={queryClientInstance}>
-              <HelmetProvider>
-                <Router>
-                  <NavigationTracker />
-                  <AuthRedirectHandler />
+          <QueryClientProvider client={queryClientInstance}>
+            <HelmetProvider>
+              <Router>
+                <NavigationTracker />
+                <AuthRedirectHandler />
+                <ShopProvider>
                   <AuthenticatedApp />
-                </Router>
-                <Toaster />
-              </HelmetProvider>
-            </QueryClientProvider>
-          </ShopProvider>
+                </ShopProvider>
+              </Router>
+              <Toaster />
+            </HelmetProvider>
+          </QueryClientProvider>
         </AuthProvider>
       </ToastProvider>
     </ErrorBoundary>
