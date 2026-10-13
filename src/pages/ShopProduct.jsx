@@ -18,7 +18,7 @@ import { useAuth } from '@/lib/AuthContext'
 import { Flame, Check, ShoppingCart, ArrowLeft, Shield, Gavel, Trophy, Users } from 'lucide-react'
 
 export default function ProductPage() {
-  const { id } = useParams()
+  const { slug } = useParams()
   const navigate = useNavigate()
   const { hash } = useLocation()
   const { user, isAuthenticated } = useAuth()
@@ -42,18 +42,18 @@ export default function ProductPage() {
     let cancelled = false
     setLoading(true)
     setQuantity(1)
-    Promise.all([getProduct(id), listProducts()])
+    Promise.all([getProduct(slug), listProducts()])
       .then(([p, all]) => {
         if (cancelled) return
         setProduct(p)
-        setRelated(all.filter((x) => String(x.id) !== String(id) && x.status !== 'inactive').slice(0, 4))
+        setRelated(all.filter((x) => String(x.id) !== String(p?.id) && x.status !== 'inactive').slice(0, 4))
       })
       .catch(() => { })
       .finally(() => !cancelled && setLoading(false))
     return () => {
       cancelled = true
     }
-  }, [id])
+  }, [slug])
 
   useEffect(() => {
     if (!product || !isAuthenticated || !isAuctionProduct(product)) return

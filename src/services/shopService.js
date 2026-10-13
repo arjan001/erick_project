@@ -41,23 +41,27 @@ export async function listProducts() {
 }
 
 /**
- * Get a single product by ID
+ * Get a single product by ID or slug
  */
-export async function getProduct(id) {
+export async function getProduct(idOrSlug) {
   try {
-    // Try entity first
-    const product = await ShopProduct.get(id)
+    // Try to get by ID first
+    const product = await ShopProduct.get(idOrSlug)
     if (product) return product
 
+    // Try to get by slug
+    const products = await ShopProduct.filter({ slug: idOrSlug })
+    if (products && products.length > 0) return products[0]
+
     // Fallback to seed products for development
-    const seedProduct = seedProducts.find(p => String(p.id) === String(id))
+    const seedProduct = seedProducts.find(p => String(p.id) === String(idOrSlug) || p.slug === idOrSlug)
     if (seedProduct) return seedProduct
 
     return null
   } catch (error) {
     //
     // Fallback to seed products on error
-    const seedProduct = seedProducts.find(p => String(p.id) === String(id))
+    const seedProduct = seedProducts.find(p => String(p.id) === String(idOrSlug) || p.slug === idOrSlug)
     return seedProduct || null
   }
 }
@@ -67,8 +71,11 @@ export async function getProduct(id) {
  */
 export async function createProduct(data) {
   try {
+    // Generate slug from name if not provided
+    const slug = data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
     return await ShopProduct.create({
       ...data,
+      slug,
       created_at: new Date().toISOString(),
       status: data.status || 'active',
     })

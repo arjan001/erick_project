@@ -244,7 +244,7 @@ const publicRoutes = [
     layout: null
   },
   {
-    path: '/shop/:id',
+    path: '/shop/:slug',
     component: () => import('@/pages/ShopProduct'),
     layout: null
   },
