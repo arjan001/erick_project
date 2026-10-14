@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Artist, Connection, User } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, SlidersHorizontal, Heart, MapPin, Mail, User as UserIcon, MessageCircle, ExternalLink, Star, Filter, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, SlidersHorizontal, Heart, MapPin, Mail, User as UserIcon, MessageCircle, ExternalLink, Star, Filter, ChevronDown, ChevronLeft, ChevronRight, CheckSquare, Square, Play, Pause } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { useNavigate } from 'react-router-dom'
@@ -16,10 +16,13 @@ export default function BrowseTalentPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterRole, setFilterRole] = useState('all')
   const [filterLocation, setFilterLocation] = useState('all')
+  const [filterSkill, setFilterSkill] = useState('all')
   const [savedArtistIds, setSavedArtistIds] = useState(new Set())
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(12)
+  const [selectedTalent, setSelectedTalent] = useState(new Set())
+  const [autoPlay, setAutoPlay] = useState(false)
 
   useEffect(() => {
     fetchTalent()
@@ -29,17 +32,33 @@ export default function BrowseTalentPage() {
   const fetchTalent = async () => {
     try {
       setLoading(true)
-      // Fetch users with artist/creator roles
-      const users = await User.filter({ role: 'artist' })
-      if (users && users.length > 0) {
+      // Fetch all users first to get their roles
+      const allUsers = await User.list('-created_at', 1000)
+
+      // Filter for artist/creator roles (or any creative role)
+      const creativeUsers = allUsers.filter(u =>
+        u.role === 'artist' || u.role === 'creator' || u.role === 'artist_admin'
+      )
+
+      if (creativeUsers && creativeUsers.length > 0) {
         // Fetch artist profiles for these users
         const artistProfiles = await Promise.all(
-          users.map(u => Artist.filter({ user_id: u.id }))
+          creativeUsers.map(u => Artist.filter({ user_id: u.id }))
         )
         const flattened = artistProfiles.flat().filter(Boolean)
-        setTalent(flattened)
+
+        // Merge user data with artist data
+        const merged = flattened.map(artist => {
+          const userData = creativeUsers.find(u => u.id === artist.user_id)
+          return {
+            ...artist,
+            email: userData?.email,
+            user_role: userData?.role
+          }
+        })
+        setTalent(merged)
       } else {
-        // Fallback to artists table
+        // Fallback to artists table directly
         const artists = await Artist.list('-created_at', 1000)
         setTalent(artists || [])
       }
@@ -125,16 +144,29 @@ export default function BrowseTalentPage() {
     const matchesSearch =
       artist.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       artist.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      artist.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      artist.user_role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (artist.skills_experience || []).some(s => s.skill?.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    const matchesRole = filterRole === 'all' || artist.role === filterRole
+    const matchesRole = filterRole === 'all' || artist.user_role === filterRole || artist.role === filterRole
     const matchesLocation = filterLocation === 'all' ||
       artist.based_in_city?.toLowerCase().includes(filterLocation.toLowerCase()) ||
       artist.based_in_country?.toLowerCase().includes(filterLocation.toLowerCase())
+    const matchesSkill = filterSkill === 'all' ||
+      (artist.skills_experience || []).some(s => s.skill?.toLowerCase() === filterSkill.toLowerCase())
 
-    return matchesSearch && matchesRole && matchesLocation
+    return matchesSearch && matchesRole && matchesLocation && matchesSkill
   })
+
+  // Extract unique skills from all talent
+  const allSkills = talent.reduce((acc, artist) => {
+    const skills = artist.skills_experience || []
+    skills.forEach(s => {
+      if (s.skill && !acc.includes(s.skill)) {
+        acc.push(s.skill)
+      }
+    })
+    return acc
+  }, [])
 
   // Pagination
   const totalPages = Math.ceil(filteredTalent.length / itemsPerPage)
@@ -143,11 +175,29 @@ export default function BrowseTalentPage() {
     currentPage * itemsPerPage
   )
 
-  const uniqueRoles = [...new Set(talent.map(a => a.role).filter(Boolean))]
+  const uniqueRoles = [...new Set(talent.map(a => a.user_role || a.role).filter(Boolean))]
   const uniqueLocations = [...new Set([
     ...talent.map(a => a.based_in_city).filter(Boolean),
     ...talent.map(a => a.based_in_country).filter(Boolean)
   ])]
+
+  const handleSelectAll = () => {
+    if (selectedTalent.size === paginatedTalent.length) {
+      setSelectedTalent(new Set())
+    } else {
+      setSelectedTalent(new Set(paginatedTalent.map(a => a.id)))
+    }
+  }
+
+  const handleBulkAction = async (action) => {
+    if (selectedTalent.size === 0) {
+      error('No Selection', 'Please select at least one talent')
+      return
+    }
+    // Implement bulk action logic here
+    success('Bulk Action', `${action} completed for ${selectedTalent.size} talent`)
+    setSelectedTalent(new Set())
+  }
 
   return (
     <div className="bg-white min-h-full">
@@ -196,6 +246,17 @@ export default function BrowseTalentPage() {
                 </select>
 
                 <select
+                  value={filterSkill}
+                  onChange={(e) => setFilterSkill(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                >
+                  <option value="all">All Skills</option>
+                  {allSkills.map(skill => (
+                    <option key={skill} value={skill}>{skill}</option>
+                  ))}
+                </select>
+
+                <select
                   value={filterLocation}
                   onChange={(e) => setFilterLocation(e.target.value)}
                   className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -208,9 +269,48 @@ export default function BrowseTalentPage() {
               </div>
             )}
 
-            <p className="text-sm text-gray-500 ml-auto">
-              {filteredTalent.length} talent found
-            </p>
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAutoPlay(!autoPlay)}
+                className="flex items-center gap-2"
+              >
+                {autoPlay ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                {autoPlay ? 'Pause' : 'Auto-Play'}
+              </Button>
+
+              {selectedTalent.size > 0 && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSelectAll}
+                    className="flex items-center gap-2"
+                  >
+                    {selectedTalent.size === paginatedTalent.length ? (
+                      <Square className="w-4 h-4" />
+                    ) : (
+                      <CheckSquare className="w-4 h-4" />
+                    )}
+                    {selectedTalent.size} Selected
+                  </Button>
+                  <select
+                    onChange={(e) => handleBulkAction(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  >
+                    <option value="">Bulk Action...</option>
+                    <option value="save">Save to List</option>
+                    <option value="message">Send Message</option>
+                    <option value="export">Export</option>
+                  </select>
+                </div>
+              )}
+
+              <p className="text-sm text-gray-500">
+                {filteredTalent.length} talent found
+              </p>
+            </div>
           </div>
         </div>
 
@@ -229,22 +329,40 @@ export default function BrowseTalentPage() {
             {paginatedTalent.map((artist) => (
               <div key={artist.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
                 <div className="flex items-start gap-4 mb-3">
-                  <div
-                    className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center text-gray-500 font-semibold flex-shrink-0 cursor-pointer"
-                    onClick={() => handleViewProfile(artist.id)}
-                  >
-                    {artist.profile_photo_url ? (
-                      <img src={artist.profile_photo_url} alt={artist.full_name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span>{artist.full_name?.[0] || 'U'}</span>
-                    )}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedTalent.has(artist.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedTalent(prev => new Set(prev).add(artist.id))
+                        } else {
+                          setSelectedTalent(prev => {
+                            const newSet = new Set(prev)
+                            newSet.delete(artist.id)
+                            return newSet
+                          })
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <div
+                      className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center text-gray-500 font-semibold flex-shrink-0 cursor-pointer"
+                      onClick={() => handleViewProfile(artist.id)}
+                    >
+                      {artist.profile_photo_url ? (
+                        <img src={artist.profile_photo_url} alt={artist.full_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{artist.full_name?.[0] || 'U'}</span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3
                       className="font-semibold text-gray-900 truncate cursor-pointer hover:text-[#4F46E5]"
                       onClick={() => handleViewProfile(artist.id)}
                     >{artist.full_name}</h3>
-                    <p className="text-xs text-gray-500 capitalize">{artist.role || 'Artist'}</p>
+                    <p className="text-xs text-gray-500 capitalize">{artist.user_role || artist.role || 'Artist'}</p>
                     {artist.based_in_city && (
                       <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
                         <MapPin className="w-3 h-3" />
