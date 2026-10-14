@@ -2,27 +2,38 @@ import React, { useState, useEffect } from 'react'
 import { Artist, Connection, User } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, SlidersHorizontal, Heart, MapPin, Mail, User as UserIcon, MessageCircle, ExternalLink, Star, Filter, ChevronDown, ChevronLeft, ChevronRight, CheckSquare, Square, Play, Pause } from 'lucide-react'
+import { Search, SlidersHorizontal, Heart, MapPin, Mail, User as UserIcon, MessageCircle, ExternalLink, Star, Filter, ChevronDown, ChevronLeft, ChevronRight, CheckSquare, Square, Play, Pause, X } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 export default function BrowseTalentPage() {
   const { user } = useAuth()
   const { success, error } = useToast()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [talent, setTalent] = useState([])
   const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterRole, setFilterRole] = useState('all')
-  const [filterLocation, setFilterLocation] = useState('all')
-  const [filterSkill, setFilterSkill] = useState('all')
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
+  const [filterRole, setFilterRole] = useState(searchParams.get('role') || 'all')
+  const [filterLocation, setFilterLocation] = useState(searchParams.get('location') || 'all')
+  const [filterSkill, setFilterSkill] = useState(searchParams.get('skill') || 'all')
   const [savedArtistIds, setSavedArtistIds] = useState(new Set())
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(12)
   const [selectedTalent, setSelectedTalent] = useState(new Set())
   const [autoPlay, setAutoPlay] = useState(false)
+
+  // Update URL when filters change
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (searchQuery) params.set('q', searchQuery)
+    if (filterRole !== 'all') params.set('role', filterRole)
+    if (filterLocation !== 'all') params.set('location', filterLocation)
+    if (filterSkill !== 'all') params.set('skill', filterSkill)
+    setSearchParams(params)
+  }, [searchQuery, filterRole, filterLocation, filterSkill, setSearchParams])
 
   useEffect(() => {
     fetchTalent()
@@ -56,18 +67,59 @@ export default function BrowseTalentPage() {
             user_role: userData?.role
           }
         })
-        setTalent(merged)
+
+        // Also include users without artist profiles (using user data only)
+        const usersWithoutProfiles = creativeUsers.filter(u =>
+          !flattened.some(artist => artist.user_id === u.id)
+        ).map(u => ({
+          id: u.id,
+          full_name: u.full_name,
+          email: u.email,
+          user_role: u.role,
+          role: u.role,
+          profile_photo_url: u.avatar_url,
+          based_in_city: null,
+          based_in_country: 'Kenya',
+          skills_experience: []
+        }))
+
+        setTalent([...merged, ...usersWithoutProfiles])
       } else {
-        // Fallback to artists table directly
-        const artists = await Artist.list('-created_at', 1000)
-        setTalent(artists || [])
+        // Fallback: return users table data if no creative users found
+        const creativeUsersFromDB = allUsers.filter(u =>
+          u.role === 'artist' || u.role === 'creator' || u.role === 'artist_admin'
+        )
+        setTalent(creativeUsersFromDB.map(u => ({
+          id: u.id,
+          full_name: u.full_name,
+          email: u.email,
+          user_role: u.role,
+          role: u.role,
+          profile_photo_url: u.avatar_url,
+          based_in_city: null,
+          based_in_country: 'Kenya',
+          skills_experience: []
+        })))
       }
     } catch (err) {
       console.error('Error fetching talent:', err)
-      // Fallback to artists table
+      // Fallback to users table directly
       try {
-        const artists = await Artist.list('-created_at', 1000)
-        setTalent(artists || [])
+        const allUsers = await User.list('-created_at', 1000)
+        const creativeUsers = allUsers.filter(u =>
+          u.role === 'artist' || u.role === 'creator' || u.role === 'artist_admin'
+        )
+        setTalent(creativeUsers.map(u => ({
+          id: u.id,
+          full_name: u.full_name,
+          email: u.email,
+          user_role: u.role,
+          role: u.role,
+          profile_photo_url: u.avatar_url,
+          based_in_city: null,
+          based_in_country: 'Kenya',
+          skills_experience: []
+        })))
       } catch {
         setTalent([])
       }
@@ -220,6 +272,55 @@ export default function BrowseTalentPage() {
               className="pl-10"
             />
           </div>
+
+          {/* Active Filter Tags */}
+          {(searchQuery || filterRole !== 'all' || filterLocation !== 'all' || filterSkill !== 'all') && (
+            <div className="flex flex-wrap items-center gap-2">
+              {searchQuery && (
+                <div className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm">
+                  <span>Search: {searchQuery}</span>
+                  <button onClick={() => setSearchQuery('')} className="text-gray-500 hover:text-gray-700">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              {filterRole !== 'all' && (
+                <div className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm">
+                  <span>Role: {filterRole}</span>
+                  <button onClick={() => setFilterRole('all')} className="text-gray-500 hover:text-gray-700">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              {filterLocation !== 'all' && (
+                <div className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm">
+                  <span>Location: {filterLocation}</span>
+                  <button onClick={() => setFilterLocation('all')} className="text-gray-500 hover:text-gray-700">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              {filterSkill !== 'all' && (
+                <div className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm">
+                  <span>Skill: {filterSkill}</span>
+                  <button onClick={() => setFilterSkill('all')} className="text-gray-500 hover:text-gray-700">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              <button
+                onClick={() => {
+                  setSearchQuery('')
+                  setFilterRole('all')
+                  setFilterLocation('all')
+                  setFilterSkill('all')
+                }}
+                className="text-sm text-gray-500 hover:text-gray-700 underline"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center gap-3">
             <Button
