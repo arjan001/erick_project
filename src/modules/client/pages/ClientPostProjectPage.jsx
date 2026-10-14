@@ -955,20 +955,61 @@ export default function ClientPostProject() {
                                       {role}
                                     </button>
                                     {isSelected && (
-                                      <div className="flex items-center gap-1">
-                                        <input
-                                          type="number"
-                                          min="1"
-                                          value={selectedRole.cast_count}
-                                          onChange={(e) => {
+                                      <div className="flex items-center gap-2 mt-2 w-full">
+                                        <div className="flex items-center gap-1">
+                                          <input
+                                            type="number"
+                                            min="1"
+                                            value={selectedRole.cast_count}
+                                            onChange={(e) => {
+                                              const newRoles = projectForm.job_roles.map(r =>
+                                                r.title === role ? { ...r, cast_count: parseInt(e.target.value) || 1 } : r
+                                              )
+                                              updateForm('job_roles', newRoles)
+                                            }}
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-center"
+                                          />
+                                          <span className="text-xs text-gray-500">people</span>
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
                                             const newRoles = projectForm.job_roles.map(r =>
-                                              r.title === role ? { ...r, cast_count: parseInt(e.target.value) || 1 } : r
+                                              r.title === role ? { ...r, showDetails: !r.showDetails } : r
                                             )
                                             updateForm('job_roles', newRoles)
                                           }}
-                                          className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-center"
+                                          className="text-xs text-blue-600 hover:text-blue-800 underline"
+                                        >
+                                          {selectedRole.showDetails ? 'Hide details' : 'Add details'}
+                                        </button>
+                                      </div>
+                                    )}
+                                    {isSelected && selectedRole.showDetails && (
+                                      <div className="mt-3 w-full space-y-2">
+                                        <textarea
+                                          value={selectedRole.description || ''}
+                                          onChange={(e) => {
+                                            const newRoles = projectForm.job_roles.map(r =>
+                                              r.title === role ? { ...r, description: e.target.value } : r
+                                            )
+                                            updateForm('job_roles', newRoles)
+                                          }}
+                                          placeholder="Describe this role's responsibilities..."
+                                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm min-h-[60px]"
                                         />
-                                        <span className="text-xs text-gray-500">people</span>
+                                        <input
+                                          type="text"
+                                          value={selectedRole.compensation_display || ''}
+                                          onChange={(e) => {
+                                            const newRoles = projectForm.job_roles.map(r =>
+                                              r.title === role ? { ...r, compensation_display: e.target.value } : r
+                                            )
+                                            updateForm('job_roles', newRoles)
+                                          }}
+                                          placeholder="Compensation (e.g., KES 5,000/day)"
+                                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                                        />
                                       </div>
                                     )}
                                   </div>
