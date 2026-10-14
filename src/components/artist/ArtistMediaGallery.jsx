@@ -115,9 +115,6 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
     }
   }
 
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [currentFile, setCurrentFile] = useState('')
-
   const handleDelete = async (mediaId) => {
     if (!confirm('Are you sure you want to delete this media?')) return
 
