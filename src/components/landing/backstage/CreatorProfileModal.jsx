@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, MapPin, Star, ExternalLink, Mail, Phone, Calendar, FileText, Award, GraduationCap, Shield, Users, Globe, Instagram, Linkedin, Twitter, Youtube, CheckCircle, XCircle, Heart, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { X, MapPin, Star, ExternalLink, Mail, Phone, Calendar, FileText, Award, GraduationCap, Shield, Users, Globe, Instagram, Linkedin, Twitter, Youtube, CheckCircle, XCircle, Heart, MessageCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Video } from 'lucide-react'
 
 export default function CreatorProfileModal({ profile, onClose }) {
   const [imgIdx, setImgIdx] = useState(0)
@@ -10,6 +10,12 @@ export default function CreatorProfileModal({ profile, onClose }) {
   const nextImg = () => setImgIdx((i) => (i + 1) % profile.images.length)
   const prevImg = () => setImgIdx((i) => (i - 1 + profile.images.length) % profile.images.length)
 
+  // Ensure we have at least 5 slots (1 large + 4 small)
+  const displayImages = profile.images.slice(0, 5)
+  const largeImage = displayImages[0]
+  const smallImages = displayImages.slice(1, 5)
+  const hasVideo = profile.images.some(img => img.includes('.mp4') || img.includes('.mov'))
+
   return (
     <>
       {/* Overlay */}
@@ -18,17 +24,17 @@ export default function CreatorProfileModal({ profile, onClose }) {
         onClick={onClose}
       />
 
-      {/* Slide-in panel from right - almost full width */}
-      <div className="fixed right-0 top-0 z-[51] h-full w-[90%] max-w-5xl bg-white shadow-2xl overflow-y-auto animate-slide-in">
+      {/* Slide-in panel from right - narrower width */}
+      <div className="fixed right-0 top-0 z-[51] h-full w-[450px] max-w-[90vw] bg-white shadow-2xl overflow-y-auto">
         {/* Header with close button */}
         <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-gray-200 bg-white">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 ring-2 ring-gray-100">
-              <img src={profile.images[0]} alt={profile.name} className="w-full h-full object-cover" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 ring-2 ring-gray-100">
+              <img src={profile.images[0] || '/placeholder-avatar.png'} alt={profile.name} className="w-full h-full object-cover" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{profile.name}</h2>
-              <p className="text-sm text-gray-500">{profile.profession} • {profile.location}</p>
+              <h2 className="text-lg font-bold text-gray-900">{profile.name}</h2>
+              <p className="text-xs text-gray-500">{profile.profession}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -36,90 +42,64 @@ export default function CreatorProfileModal({ profile, onClose }) {
           </button>
         </div>
 
-        {/* Large profile image */}
-        <div className="relative aspect-[16/9] bg-gray-100">
-          <img
-            src={profile.images[imgIdx]}
-            alt={`${profile.name} portfolio`}
-            className="w-full h-full object-cover"
-          />
-          {profile.images.length > 1 && (
-            <>
-              <button
-                onClick={prevImg}
-                className="absolute left-4 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm hover:bg-black/80 transition-colors"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button
-                onClick={nextImg}
-                className="absolute right-4 top-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm hover:bg-black/80 transition-colors"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                {profile.images.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setImgIdx(i)}
-                    className={`h-2 rounded-full transition-all ${i === imgIdx ? 'w-8 bg-white' : 'w-2 bg-white/50'}`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
+        {/* Media Grid - One large on left, 4 small on right */}
+        <div className="p-4">
+          <div className="grid grid-cols-2 gap-2">
+            {/* Large image - takes full height */}
+            <div className="row-span-2 aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
+              {largeImage ? (
+                largeImage.includes('.mp4') || largeImage.includes('.mov') ? (
+                  <video src={largeImage} controls className="w-full h-full object-cover" />
+                ) : (
+                  <img src={largeImage} alt={`${profile.name} main`} className="w-full h-full object-cover" />
+                )
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                  <ImageIcon className="w-8 h-8 text-gray-400" />
+                </div>
+              )}
+            </div>
+
+            {/* 4 small images */}
+            {[0, 1, 2, 3].map((idx) => {
+              const img = smallImages[idx]
+              return (
+                <div key={idx} className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
+                  {img ? (
+                    img.includes('.mp4') || img.includes('.mov') ? (
+                      <div className="w-full h-full relative">
+                        <video src={img} className="w-full h-full object-cover" />
+                        <Video className="absolute bottom-1 right-1 w-4 h-4 text-white bg-black/50 rounded p-0.5" />
+                      </div>
+                    ) : (
+                      <img src={img} alt={`${profile.name} ${idx + 2}`} className="w-full h-full object-cover" />
+                    )
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                      <ImageIcon className="w-4 h-4 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-8">
-          {/* Basic Info Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gray-50 rounded-xl p-4">
-              <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                <MapPin className="w-4 h-4" /> Location
-              </h3>
-              <p className="text-gray-600">{profile.location}</p>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-4">
-              <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                <Users className="w-4 h-4" /> Profession
-              </h3>
-              <p className="text-gray-600">{profile.profession}</p>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-4">
-              <h3 className="font-semibold text-gray-900 mb-2">Gender</h3>
-              <p className="text-gray-600">{profile.gender}</p>
-            </div>
+        <div className="p-4 space-y-4">
+          {/* Location */}
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <MapPin className="w-4 h-4" />
+            {profile.location}
           </div>
 
-          {profile.overlayText && (
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4">
-              <p className="text-lg font-bold text-purple-900">{profile.overlayText}</p>
-            </div>
-          )}
-
-          {/* Appearance Section */}
-          {profile.appearance && (
+          {/* Skills */}
+          {profile.skills && profile.skills.length > 0 && (
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Appearance</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {Object.entries(profile.appearance).map(([key, value]) => (
-                  <div key={key} className="bg-gray-50 rounded-xl p-3">
-                    <p className="text-xs text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
-                    <p className="text-gray-900 font-medium">{value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Skills Section */}
-          {profile.skills && (
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Skills & Expertise</h3>
-              <div className="flex flex-wrap gap-2">
-                {profile.skills.map((skill, idx) => (
-                  <span key={idx} className="px-4 py-2 bg-white rounded-full text-sm font-medium text-gray-700 border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">Skills</h3>
+              <div className="flex flex-wrap gap-1">
+                {profile.skills.slice(0, 6).map((skill, idx) => (
+                  <span key={idx} className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
                     {skill}
                   </span>
                 ))}
@@ -127,207 +107,57 @@ export default function CreatorProfileModal({ profile, onClose }) {
             </div>
           )}
 
-          {/* Credits Section */}
-          {profile.credits && (
+          {/* Credits */}
+          {profile.credits && (profile.credits.film?.length > 0 || profile.credits.commercials?.length > 0) && (
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Credits</h3>
-              <div className="space-y-4">
-                {profile.credits.film && profile.credits.film.length > 0 && (
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <h4 className="font-semibold text-gray-900 mb-3">Film</h4>
-                    <ul className="space-y-2">
-                      {profile.credits.film.map((credit, idx) => (
-                        <li key={idx} className="text-gray-600 flex items-center gap-2">
-                          <Star className="w-4 h-4 text-yellow-500" />
-                          {credit}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {profile.credits.commercials && profile.credits.commercials.length > 0 && (
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <h4 className="font-semibold text-gray-900 mb-3">Commercials</h4>
-                    <ul className="space-y-2">
-                      {profile.credits.commercials.map((credit, idx) => (
-                        <li key={idx} className="text-gray-600 flex items-center gap-2">
-                          <Star className="w-4 h-4 text-yellow-500" />
-                          {credit}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Education Section */}
-          {profile.education && (
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Education & Training</h3>
-              <div className="bg-gray-50 rounded-xl p-4">
-                <ul className="space-y-3">
-                  {profile.education.map((edu, idx) => (
-                    <li key={idx} className="text-gray-600 flex items-start gap-2">
-                      <Award className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
-                      {edu}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {/* Social Media Section */}
-          {profile.socialMedia && (
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Social Media</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {profile.socialMedia.instagram && (
-                  <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
-                    <Instagram className="w-5 h-5 text-pink-500" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Instagram</p>
-                      <p className="text-gray-600 text-sm">{profile.socialMedia.instagram}</p>
-                    </div>
-                  </div>
-                )}
-                {profile.socialMedia.linkedin && (
-                  <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
-                    <Linkedin className="w-5 h-5 text-blue-600" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">LinkedIn</p>
-                      <p className="text-gray-600 text-sm">{profile.socialMedia.linkedin}</p>
-                    </div>
-                  </div>
-                )}
-                {profile.socialMedia.twitter && (
-                  <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
-                    <Twitter className="w-5 h-5 text-blue-400" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Twitter</p>
-                      <p className="text-gray-600 text-sm">{profile.socialMedia.twitter}</p>
-                    </div>
-                  </div>
-                )}
-                {profile.socialMedia.youtube && (
-                  <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
-                    <Youtube className="w-5 h-5 text-red-600" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">YouTube</p>
-                      <p className="text-gray-600 text-sm">{profile.socialMedia.youtube}</p>
-                    </div>
-                  </div>
-                )}
-                {profile.socialMedia.tiktok && (
-                  <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
-                    <Globe className="w-5 h-5 text-gray-600" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">TikTok</p>
-                      <p className="text-gray-600 text-sm">{profile.socialMedia.tiktok}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Representation Section */}
-          {profile.representation && (
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Representation</h3>
-              <div className="bg-gray-50 rounded-xl p-4">
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-gray-500">Agency</p>
-                    <p className="text-gray-900 font-medium">{profile.representation.agent}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="text-gray-900 font-medium">{profile.representation.email}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Union Membership Section */}
-          {profile.unionMembership && (
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Union Membership</h3>
-              <div className="flex flex-wrap gap-2">
-                {profile.unionMembership.map((union, idx) => (
-                  <span key={idx} className="px-4 py-2 bg-white rounded-full text-sm font-medium text-gray-700 border border-gray-200 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    {union}
-                  </span>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">Credits</h3>
+              <div className="space-y-1">
+                {profile.credits.film?.slice(0, 3).map((credit, idx) => (
+                  <p key={idx} className="text-xs text-gray-600">• {credit}</p>
+                ))}
+                {profile.credits.commercials?.slice(0, 3).map((credit, idx) => (
+                  <p key={idx} className="text-xs text-gray-600">• {credit}</p>
                 ))}
               </div>
             </div>
           )}
 
-          {/* License & Passport Section */}
-          {profile.licensePassport && (
+          {/* Social Media */}
+          {profile.socialMedia && (
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">License & Passport</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Driver's License</p>
-                    <p className="text-gray-900 font-medium">{profile.licensePassport.driverLicense ? 'Valid' : 'Not Provided'}</p>
-                  </div>
-                  {profile.licensePassport.driverLicense ? (
-                    <CheckCircle className="w-6 h-6 text-green-500" />
-                  ) : (
-                    <XCircle className="w-6 h-6 text-gray-400" />
-                  )}
-                </div>
-                <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Passport</p>
-                    <p className="text-gray-900 font-medium">{profile.licensePassport.passport ? 'Valid' : 'Not Provided'}</p>
-                  </div>
-                  {profile.licensePassport.passport ? (
-                    <CheckCircle className="w-6 h-6 text-green-500" />
-                  ) : (
-                    <XCircle className="w-6 h-6 text-gray-400" />
-                  )}
-                </div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">Social</h3>
+              <div className="flex gap-2">
+                {profile.socialMedia.instagram && (
+                  <a href={profile.socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:text-pink-600">
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                )}
+                {profile.socialMedia.linkedin && (
+                  <a href={profile.socialMedia.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700">
+                    <Linkedin className="w-5 h-5" />
+                  </a>
+                )}
+                {profile.socialMedia.youtube && (
+                  <a href={profile.socialMedia.youtube} target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700">
+                    <Youtube className="w-5 h-5" />
+                  </a>
+                )}
               </div>
             </div>
           )}
-
-          {/* Photo Gallery Section */}
-          <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Portfolio Gallery</h3>
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {profile.images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setImgIdx(idx)}
-                  className={`aspect-square rounded-lg overflow-hidden bg-gray-100 border-2 transition-colors ${idx === imgIdx ? 'border-[#4F46E5]' : 'border-transparent'
-                    }`}
-                >
-                  <img src={img} alt={`${profile.name} ${idx + 1}`} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 border-t border-gray-200 p-4 bg-white flex gap-3">
-          <button className="flex-1 bg-[#4F46E5] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#4338CA] transition-colors flex items-center justify-center gap-2">
+        <div className="sticky bottom-0 border-t border-gray-200 p-4 bg-white flex gap-2">
+          <button className="flex-1 bg-black text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 text-sm">
             <MessageCircle className="w-4 h-4" />
-            Contact {profile.name}
+            Message
           </button>
           <button
             onClick={() => setFavorited(!favorited)}
-            className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-3 px-6 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
+            className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-sm"
           >
             <Heart className={`w-4 h-4 ${favorited ? 'fill-red-500 text-red-500' : ''}`} />
-            {favorited ? 'Saved' : 'Save'}
           </button>
         </div>
       </div>

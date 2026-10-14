@@ -20,7 +20,13 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
 
   const fetchMedia = async () => {
     try {
-      const mediaData = await ArtistMedia.filter({ artist_id: artistId, status: 'approved' }, 'order_index', 50)
+      // If editable, show all media (including pending). If not editable, only show approved.
+      const statusFilter = isEditable ? undefined : 'approved'
+      const mediaData = await ArtistMedia.filter(
+        { artist_id: artistId, ...(statusFilter && { status: statusFilter }) },
+        'order_index',
+        50
+      )
       setMedia(mediaData || [])
     } catch (err) {
       console.error('Error fetching media:', err)
@@ -144,7 +150,7 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
         {isEditable && (
           <label className="mt-4 inline-flex items-center px-4 py-2 bg-black text-white rounded-lg cursor-pointer hover:bg-gray-800">
             <Upload className="w-4 h-4 mr-2" />
-            Upload Media
+            {uploading ? 'Uploading...' : 'Upload Media'}
             <input
               type="file"
               accept="image/*,video/*"
@@ -154,6 +160,9 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
               disabled={uploading}
             />
           </label>
+        )}
+        {uploading && (
+          <p className="text-sm text-gray-400 mt-2">Please wait while media uploads...</p>
         )}
       </div>
     )
