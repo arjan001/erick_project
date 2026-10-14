@@ -51,6 +51,15 @@ export function ShopProvider({ children }) {
     }
   }, [user?.id])
 
+  // Listen for cart updates from shopService
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      loadCart()
+    }
+    window.addEventListener('cart-updated', handleCartUpdate)
+    return () => window.removeEventListener('cart-updated', handleCartUpdate)
+  }, [])
+
   const loadCart = async () => {
     setLoading(true)
     try {

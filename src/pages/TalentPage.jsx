@@ -1,32 +1,60 @@
 import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
 import ChatWidget from '@/components/landing/backstage/ChatWidget'
 import SEOMetaTags from '@/components/SEOMetaTags'
 import TalentCard from '@/components/landing/backstage/TalentCard'
 import CreatorProfileModal from '@/components/landing/backstage/CreatorProfileModal'
-import { talentProfiles, talentTabs, filterTags } from '@/components/landing/backstage/talentData'
-import { Search, SlidersHorizontal, ChevronDown, CheckSquare, HelpCircle, ZoomIn, Loader2 } from 'lucide-react'
+import { talentTabs, filterTags } from '@/components/landing/backstage/talentData'
+import { Search, SlidersHorizontal, ChevronDown, CheckSquare, HelpCircle, ZoomIn, Loader2, X } from 'lucide-react'
 import { User } from '@/lib/supabaseEntities'
 
 const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?name=SmartGigs&background=6366f1&color=fff&size=256'
 
 export default function TalentPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState('actors')
   const [activeTag, setActiveTag] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const [autoplay, setAutoplay] = useState(false)
   const [selectedProfile, setSelectedProfile] = useState(null)
   const [dbProfiles, setDbProfiles] = useState([])
   const [filteredProfiles, setFilteredProfiles] = useState([])
   const [loading, setLoading] = useState(true)
 
+  // Initialize state from URL params
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    const tagParam = searchParams.get('tag')
+    const searchParam = searchParams.get('q')
+
+    if (tabParam) setActiveTab(tabParam)
+    if (tagParam) setActiveTag(tagParam)
+    if (searchParam) setSearchQuery(searchParam)
+  }, [searchParams])
+
   useEffect(() => {
     loadDatabaseProfiles()
   }, [])
 
-  // Filter profiles based on active tab and tag
+  // Filter profiles based on active tab, tag, and search query
   useEffect(() => {
     let filtered = dbProfiles
+
+    // Filter by tab (role)
+    if (activeTab === 'actors') {
+      // Show all artists for now (since we only have artist role)
+      filtered = filtered
+    } else if (activeTab === 'ugc') {
+      // Same as actors for now
+      filtered = filtered
+    } else if (activeTab === 'voiceover') {
+      filtered = filtered
+    } else if (activeTab === 'crew') {
+      // When crew is enabled, filter by crew role
+      filtered = filtered.filter(p => p.profession === 'Crew')
+    }
 
     // Filter by tag if active
     if (activeTag) {
@@ -36,14 +64,31 @@ export default function TalentPage() {
         if (activeTag.includes('Kisumu')) return p.location.includes('Kisumu')
         if (activeTag.includes('Female')) return true // Can be enhanced with gender field
         if (activeTag.includes('Male')) return true // Can be enhanced with gender field
+        if (activeTag.includes('Theatre')) return true
+        if (activeTag.includes('Union')) return true
         return true
       })
     }
 
-    // For now, show all profiles in all tabs since we only have artist role
-    // Can be enhanced later when we have role-based data
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(p =>
+        p.name?.toLowerCase().includes(query) ||
+        p.profession?.toLowerCase().includes(query) ||
+        p.location?.toLowerCase().includes(query)
+      )
+    }
+
     setFilteredProfiles(filtered)
-  }, [activeTab, activeTag, dbProfiles])
+
+    // Update URL with current filters
+    const newParams = new URLSearchParams()
+    if (activeTab !== 'actors') newParams.set('tab', activeTab)
+    if (activeTag) newParams.set('tag', activeTag)
+    if (searchQuery) newParams.set('q', searchQuery)
+    setSearchParams(newParams)
+  }, [activeTab, activeTag, searchQuery, dbProfiles, setSearchParams])
 
   const loadDatabaseProfiles = async () => {
     try {
@@ -80,6 +125,12 @@ export default function TalentPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const clearFilters = () => {
+    setActiveTab('actors')
+    setActiveTag(null)
+    setSearchQuery('')
   }
 
   // Use filtered profiles based on active tab
@@ -139,9 +190,42 @@ export default function TalentPage() {
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-black/40" />
             <input
               type="text"
-              placeholder="Popular Actor & Performers Searches"
+              placeholder="Search by name, profession, or location..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full rounded-full border border-black/10 bg-white py-3 pl-12 pr-4 text-sm text-black placeholder:text-black/40 focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20"
             />
+
+            {/* Active filters */}
+            {(activeTag || searchQuery) && (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium text-black/60">Active filters:</span>
+                {activeTag && (
+                  <button
+                    onClick={() => setActiveTag(null)}
+                    className="flex items-center gap-1 rounded-full border border-[#6366f1] bg-[#6366f1]/10 px-3 py-1 text-sm font-medium text-[#6366f1]"
+                  >
+                    {activeTag}
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="flex items-center gap-1 rounded-full border border-[#6366f1] bg-[#6366f1]/10 px-3 py-1 text-sm font-medium text-[#6366f1]"
+                  >
+                    "{searchQuery}"
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+                <button
+                  onClick={clearFilters}
+                  className="text-sm font-medium text-black/60 hover:text-black"
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
 
             {/* Filter tags */}
             <div className="mt-4 flex flex-wrap gap-2">
