@@ -1,8 +1,5 @@
 import { ShopProduct, Cart, ShopOrder, ShopOrderItem, CardPayment } from '@/lib/supabaseEntities'
-import { buildSeedProducts } from '@/data/shopProducts'
 import { useAuth } from '@/lib/AuthContext'
-
-const seedProducts = buildSeedProducts()
 
 // Get current user ID for cart/wishlist operations
 let currentUserId = null
@@ -32,11 +29,11 @@ export async function listProducts() {
   try {
     const products = await ShopProduct.list('-created_at', 100)
     if (products && products.length > 0) return products
-    // Fallback to seed products if entity is empty
-    return seedProducts
+    // Return empty array if no products in database (no dummy items)
+    return []
   } catch (error) {
-    console.warn('Failed to list products, using seed products:', error)
-    return seedProducts
+    console.warn('Failed to list products:', error)
+    return []
   }
 }
 
@@ -53,16 +50,10 @@ export async function getProduct(idOrSlug) {
     const products = await ShopProduct.filter({ slug: idOrSlug })
     if (products && products.length > 0) return products[0]
 
-    // Fallback to seed products for development
-    const seedProduct = seedProducts.find(p => String(p.id) === String(idOrSlug) || p.slug === idOrSlug)
-    if (seedProduct) return seedProduct
-
     return null
   } catch (error) {
-    //
-    // Fallback to seed products on error
-    const seedProduct = seedProducts.find(p => String(p.id) === String(idOrSlug) || p.slug === idOrSlug)
-    return seedProduct || null
+    console.warn('Failed to get product:', error)
+    return null
   }
 }
 
