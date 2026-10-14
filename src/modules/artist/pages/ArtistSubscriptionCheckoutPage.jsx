@@ -267,16 +267,26 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
               <form onSubmit={handleCardSubmit} className="space-y-4">
                 <h3 className="font-semibold text-gray-900 mb-4">Card Payment</h3>
 
-                {/* Card logos */}
+                {/* Card logos with SVG */}
                 <div className="flex gap-3 mb-4">
-                  <div className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-lg">
-                    <span className="text-xs font-bold text-blue-600">VISA</span>
+                  <div className="flex items-center justify-center px-4 py-2 bg-gray-100 rounded-none border border-gray-300">
+                    <svg width="50" height="32" viewBox="0 0 50 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="50" height="32" rx="2" fill="#1A1F71" />
+                      <text x="25" y="20" fill="white" fontSize="10" fontWeight="bold" textAnchor="middle">VISA</text>
+                    </svg>
                   </div>
-                  <div className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-lg">
-                    <span className="text-xs font-bold text-red-600">MasterCard</span>
+                  <div className="flex items-center justify-center px-4 py-2 bg-gray-100 rounded-none border border-gray-300">
+                    <svg width="50" height="32" viewBox="0 0 50 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="50" height="32" rx="2" fill="#EB001B" />
+                      <circle cx="20" cy="16" r="10" fill="#F79E1B" />
+                      <circle cx="30" cy="16" r="10" fill="#FF5F00" />
+                    </svg>
                   </div>
-                  <div className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-lg">
-                    <span className="text-xs font-bold text-blue-500">AMEX</span>
+                  <div className="flex items-center justify-center px-4 py-2 bg-gray-100 rounded-none border border-gray-300">
+                    <svg width="50" height="32" viewBox="0 0 50 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="50" height="32" rx="2" fill="#006FCF" />
+                      <text x="25" y="20" fill="white" fontSize="10" fontWeight="bold" textAnchor="middle">AMEX</text>
+                    </svg>
                   </div>
                 </div>
 
@@ -290,7 +300,7 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
                       placeholder="1234 5678 9012 3456"
                       maxLength={19}
                       required
-                      className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                     />
                     <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   </div>
@@ -334,7 +344,7 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-3 bg-black text-white rounded-xl font-semibold text-sm hover:bg-gray-800 transition-all"
+                  className="w-full py-3 bg-black text-white rounded-none font-semibold text-sm hover:bg-gray-800 transition-all"
                 >
                   Pay {pkg.currency || 'KES'} {pkg.price_monthly}
                 </button>

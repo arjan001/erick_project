@@ -41,7 +41,9 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
     const files = Array.from(e.target.files)
     if (!files.length) return
 
-    if (!artistId) {
+    // Get artistId from user if not provided
+    const effectiveArtistId = artistId || user?.id
+    if (!effectiveArtistId) {
       toastError('Error', 'Artist profile not found. Please save your profile first.')
       return
     }
@@ -57,9 +59,9 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
         const fileExt = file.name.split('.').pop()
         const isVideo = file.type.startsWith('video/')
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-        const filePath = `${artistId}/${fileName}`
+        const filePath = `${effectiveArtistId}/${fileName}`
 
-        console.log('Uploading to:', filePath, 'Type:', file.type)
+        console.log('Uploading to:', filePath, 'Type:', file.type, 'Bucket: artist-profiles')
 
         // Upload to Supabase Storage - use artist-profiles bucket
         const { error: uploadError } = await supabase.storage
@@ -89,7 +91,7 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
 
         // Save to database
         await ArtistMedia.create({
-          artist_id: artistId,
+          artist_id: effectiveArtistId,
           media_type: isVideo ? 'video' : 'photo',
           media_url: publicUrl,
           thumbnail_url: thumbnailUrl,

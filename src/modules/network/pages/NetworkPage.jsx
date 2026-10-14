@@ -56,7 +56,7 @@ export default function NetworkPage() {
 
       // Transform to unified format - exclude current user
       const people = [
-        ...artists.filter(a => a.id !== user.id && a.email !== user.email).map(a => ({
+        ...artists.filter(a => a.email !== user.email).map(a => ({
           id: a.id,
           type: 'artist',
           name: a.full_name || a.email,
@@ -80,7 +80,7 @@ export default function NetworkPage() {
           isOnline: isOnline(t.last_active),
           email: t.contact_email,
         })),
-        ...clients.filter(c => c.id !== user.id && c.email !== user.email).map(c => ({
+        ...clients.filter(c => c.email !== user.email).map(c => ({
           id: c.id,
           type: 'client',
           name: c.company_name || c.display_name,

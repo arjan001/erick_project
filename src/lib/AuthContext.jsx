@@ -41,9 +41,9 @@ async function resolveAppRole(userId, metadataRole = null) {
   }
 
   // Fallback: check which profile exists (for existing users without metadata role)
-  // Use user_id to query entity tables
+  // Use email to query artists table (artists doesn't have user_id)
   try {
-    const artists = await Artist.filter({ user_id: userId })
+    const artists = await Artist.filter({ email: userId })
     if (artists && artists.length > 0) return 'artist'
   } catch { /* ignore - return default */ }
   try {
@@ -107,14 +107,14 @@ async function ensureProfile(user) {
 
   try {
     if (role === 'artist') {
-      const existing = await Artist.filter({ user_id: user.id })
+      const existing = await Artist.filter({ email: user.email })
       if (!existing || existing.length === 0) {
         await Artist.create({
-          user_id: user.id,
-          display_name: full_name,
-          years_experience: 0,
-          availability_status: 'available',
-          admin_approval_status: 'pending',
+          email: user.email,
+          full_name: full_name,
+          role: 'artist',
+          profession: 'Actor',
+          status: 'pending',
         })
       }
     } else if (role === 'team') {
@@ -178,7 +178,7 @@ async function updatePresence(u) {
       const backers = await Backer.filter({ user_id: u.id })
       if (backers[0]) await Backer.update(backers[0].id, { last_active: now })
     } else {
-      const artists = await Artist.filter({ user_id: u.id })
+      const artists = await Artist.filter({ email: u.email })
       if (artists[0]) await Artist.update(artists[0].id, { last_active: now })
     }
   } catch (err) {

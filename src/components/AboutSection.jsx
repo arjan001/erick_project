@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button'
 import { Plus, X, Sparkles, ThumbsUp, Edit2, Check, Globe, Instagram, Linkedin, MapPin, Languages, Award, Briefcase, Users as UsersIcon, Facebook, Youtube, Twitter, Film, GraduationCap, Video, Mail, AlertCircle } from 'lucide-react'
 import SkillsExperienceTagInput from '@/components/SkillsExperienceTagInput'
 import worldLanguages from '@/data/languages.json'
-import skillsAndRoles from '@/lib/skillsAndRoles.json'
+import { TALENT_ROLES, TALENT_ROLES_BY_CATEGORY } from '@/lib/filmRoles'
 
-const SKILL_SUGGESTIONS = Object.values(skillsAndRoles.talent_skills_by_category || {}).flat()
+const SKILL_SUGGESTIONS = TALENT_ROLES
 
 const CLIENT_SUGGESTIONS = [
   'Nike', 'Apple', 'Google', 'Coca-Cola', 'BMW', 'Sony', 'Netflix', 'Amazon', 'Meta',
@@ -228,9 +228,9 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
 
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
       {/* Left Column - Main Info */}
-      <div className="col-span-1 lg:col-span-2 space-y-6">
+      <div className="col-span-1 space-y-6">
         {/* Bio Section */}
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200">
           <div className="flex items-center justify-between mb-4">
@@ -540,7 +540,7 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
       </div>
 
       {/* Right Column - Contact & Languages */}
-      <div className="space-y-6">
+      <div className="col-span-1 space-y-6">
         {/* Languages */}
         <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 border border-orange-200">
           <div className="flex items-center justify-between mb-4">
