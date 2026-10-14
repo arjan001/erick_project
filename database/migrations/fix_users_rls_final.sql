@@ -9,6 +9,7 @@ DROP POLICY IF EXISTS "Users can insert own profile" ON public.users;
 DROP POLICY IF EXISTS "Users can delete own profile" ON public.users;
 DROP POLICY IF EXISTS "Users can view all users" ON public.users;
 DROP POLICY IF EXISTS "Users can insert new users" ON public.users;
+DROP POLICY IF EXISTS "Public can view all users" ON public.users;
 DROP POLICY IF EXISTS "Service role full access" ON public.users;
 
 -- Enable RLS on users table

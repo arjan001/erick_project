@@ -469,10 +469,10 @@ export const talentTabs = [
 
 export const filterTags = [
   'Female Actors',
-  'LA Actors',
-  'London Actors',
+  'Nairobi Actors',
+  'Mombasa Actors',
   'Male Actors',
-  'NYC Actors',
+  'Kisumu Actors',
   'Theatre',
   'Union Actors',
 ]
