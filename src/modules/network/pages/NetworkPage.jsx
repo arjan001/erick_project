@@ -5,7 +5,7 @@ import { Connection, Notification, Subscription } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { createPageUrl } from '@/shared/utils/routing'
 import { useToast } from '@/hooks/useToast'
-import { Search, MapPin, ChevronDown, Users, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock, User, Building, Zap } from 'lucide-react'
+import { Search, MapPin, ChevronDown, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock, User as UserIcon, Building, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import notificationService from '@/shared/services/notificationService'
 
@@ -282,7 +282,7 @@ export default function NetworkPage() {
     if (type === 'team' || type === 'team_admin') return Building2
     if (type === 'backer') return TrendingUp
     if (type === 'client' || type === 'project_owner') return Briefcase
-    return Users
+    return UserIcon
   }
 
   if (!user || loading) {
