@@ -20,13 +20,13 @@ export default function DashboardLayout({ children }) {
     localStorage.setItem('smartgigs_sidebar_expanded', String(value))
   }
 
-  const isCreator = user?.role === 'artist' || user?.role === 'artist_admin'
+  const isArtist = user?.role === 'artist' || user?.role === 'artist_admin'
   const isTeam = user?.role === 'team' || user?.role === 'team_admin'
   const isClient = user?.role === 'client' || user?.role === 'project_owner'
   const isBacker = user?.role === 'backer'
-  const hasSidebar = isCreator || isTeam || isClient || isBacker
+  const hasSidebar = isArtist || isTeam || isClient || isBacker
 
-  const userRole = isTeam ? 'team' : isClient ? 'client' : isBacker ? 'backer' : 'creator'
+  const userRole = isTeam ? 'team' : isClient ? 'client' : isBacker ? 'backer' : 'artist'
   const settingsPage = isTeam ? 'TeamProfile' : isClient ? 'ClientProfile' : isBacker ? 'BackerProfile' : 'ArtistProfile'
 
   // Handle sidebar toggle from UnifiedTopbar

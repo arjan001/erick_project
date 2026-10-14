@@ -8,7 +8,7 @@ import TalentCard from '@/components/landing/backstage/TalentCard'
 import CreatorProfileModal from '@/components/landing/backstage/CreatorProfileModal'
 import { talentTabs, filterTags } from '@/components/landing/backstage/talentData'
 import { Search, SlidersHorizontal, ChevronDown, CheckSquare, HelpCircle, ZoomIn, Loader2, X } from 'lucide-react'
-import { User } from '@/lib/supabaseEntities'
+import { Artist } from '@/lib/supabaseEntities'
 
 const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?name=SmartGigs&background=6366f1&color=fff&size=256'
 
@@ -93,28 +93,24 @@ export default function TalentPage() {
   const loadDatabaseProfiles = async () => {
     try {
       setLoading(true)
-      console.log('Fetching talent from users table...')
+      console.log('Fetching talent from artists table...')
 
-      // Fetch all users and filter for artist role
-      const allUsers = await User.list('-created_at', 1000)
-      console.log('Fetched all users:', allUsers.length)
-
-      const artistUsers = allUsers.filter(u => u.role === 'artist')
-      console.log('Filtered artist users:', artistUsers.length, artistUsers)
+      // Fetch all artists from artists table
+      const allArtists = await Artist.list('-created_at', 1000)
+      console.log('Fetched all artists:', allArtists.length)
 
       // Transform to talent card format
       const allProfiles = []
 
-      // Add artist users only
-      artistUsers.forEach(u => {
+      allArtists.forEach(a => {
         allProfiles.push({
-          id: u.id,
-          name: u.full_name || u.email?.split('@')[0] || 'Artist',
-          location: 'Kenya',
-          profession: 'Actor',
-          images: u.avatar_url ? [u.avatar_url] : [DEFAULT_AVATAR],
+          id: a.id,
+          name: a.full_name || a.email?.split('@')[0] || 'Artist',
+          location: a.based_in_city || a.based_in_country || 'Kenya',
+          profession: a.profession || 'Actor',
+          images: a.profile_photo_url ? [a.profile_photo_url] : [DEFAULT_AVATAR],
           badges: [],
-          email: u.email
+          email: a.email
         })
       })
 

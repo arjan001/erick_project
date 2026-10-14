@@ -11,8 +11,8 @@ import { Notification, Artist, Connection } from '@/lib/supabaseEntities'
 
 // Navigation configuration for different user roles
 const roleNavConfig = {
-  creator: {
-    label: 'Creator Dashboard',
+  artist: {
+    label: 'Artist Dashboard',
     logoInitials: 'SG',
     navGroups: [
       {
@@ -74,6 +74,7 @@ const roleNavConfig = {
         label: 'Communication',
         items: [
           { path: '/TeamMessages', label: 'Messages', icon: Mail, showBadge: true },
+          { path: '/Network', label: 'Network', icon: Network, showConnectionBadge: true },
           { path: '/Notifications', label: 'Notifications', icon: Bell, showNotificationBadge: true },
         ]
       },

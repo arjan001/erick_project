@@ -27,10 +27,8 @@ export default function ShopPage() {
         const products = await listProducts()
         setProducts(products)
       } catch (error) {
-        //
-        // Fallback to seed products on error
-        const seedProducts = buildSeedProducts()
-        setProducts(seedProducts)
+        console.error('Error loading products:', error)
+        setProducts([])
       } finally {
         setLoading(false)
       }
