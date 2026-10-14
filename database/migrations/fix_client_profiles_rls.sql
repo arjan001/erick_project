@@ -1,24 +1,26 @@
 -- Fix RLS policies on client-profiles storage bucket
--- Disable all policies to allow public uploads for client profile images
+-- Note: The bucket should already exist in Supabase Storage
+-- This migration sets up proper RLS policies for client profile images
 
-ALTER TABLE storage.buckets DISABLE ROW LEVEL SECURITY;
+-- Allow authenticated users to upload to client-profiles bucket
+CREATE POLICY "Authenticated Upload" ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'client-profiles');
 
--- Ensure bucket exists and is public
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES ('client-profiles', 'client-profiles', true, 10485760, 'image/*')
-ON CONFLICT (id) DO UPDATE SET public = true;
+-- Allow public read access to client-profiles bucket
+CREATE POLICY "Public Read Client Profiles" ON storage.objects
+FOR SELECT
+USING (bucket_id = 'client-profiles');
 
-ALTER TABLE storage.buckets ENABLE ROW LEVEL SECURITY;
+-- Allow authenticated users to update their own uploads
+CREATE POLICY "Authenticated Update Own" ON storage.objects
+FOR UPDATE
+TO authenticated
+USING (bucket_id = 'client-profiles' AND auth.uid()::text = (storage.foldername(name))[1]);
 
--- Allow public access for uploads
-CREATE POLICY "Public Upload" ON storage.objects
-FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Public Read" ON storage.objects
-FOR SELECT USING (true);
-
-CREATE POLICY "Public Update" ON storage.objects
-FOR UPDATE WITH CHECK (true);
-
-CREATE POLICY "Public Delete" ON storage.objects
-FOR DELETE WITH CHECK (true);
+-- Allow authenticated users to delete their own uploads
+CREATE POLICY "Authenticated Delete Own" ON storage.objects
+FOR DELETE
+TO authenticated
+USING (bucket_id = 'client-profiles' AND auth.uid()::text = (storage.foldername(name))[1]);
