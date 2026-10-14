@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/useToast'
 import { Search, MapPin, ChevronDown, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock, User as UserIcon, Building, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import notificationService from '@/shared/services/notificationService'
+import ArtistProfileDrawer from '@/components/artist/ArtistProfileDrawer'
 
 const ONLINE_THRESHOLD_MS = 90 * 1000 // consider online if active within last 90s
 
@@ -35,6 +36,8 @@ export default function NetworkPage() {
   const [showConnectionModal, setShowConnectionModal] = useState(false)
   const [selectedPerson, setSelectedPerson] = useState(null)
   const [connectionMessage, setConnectionMessage] = useState('')
+  const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
+  const [selectedArtistId, setSelectedArtistId] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -256,7 +259,12 @@ export default function NetworkPage() {
               const person = allPeople.find(p => p.id === conn.connected_user_id)
               if (!person) return null
               return (
-                <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => {
+                  if (person.type === 'artist') {
+                    setSelectedArtistId(person.id)
+                    setProfileDrawerOpen(true)
+                  }
+                }}>
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                       {person.image ? (
@@ -286,7 +294,7 @@ export default function NetworkPage() {
                   </div>
                   <div className="mt-3">
                     <Button
-                      onClick={() => startChat(person)}
+                      onClick={(e) => { e.stopPropagation(); startChat(person); }}
                       variant="outline"
                       className="w-full text-sm"
                     >
@@ -319,7 +327,12 @@ export default function NetworkPage() {
               const person = allPeople.find(p => p.id === conn.connected_user_id)
               if (!person) return null
               return (
-                <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => {
+                  if (person.type === 'artist') {
+                    setSelectedArtistId(person.id)
+                    setProfileDrawerOpen(true)
+                  }
+                }}>
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                       {person.image ? (
@@ -340,13 +353,13 @@ export default function NetworkPage() {
                   </div>
                   <div className="mt-3 flex gap-2">
                     <Button
-                      onClick={() => acceptConnection(conn)}
+                      onClick={(e) => { e.stopPropagation(); acceptConnection(conn); }}
                       className="flex-1 bg-green-600 text-white hover:bg-green-700 text-sm"
                     >
                       Accept
                     </Button>
                     <Button
-                      onClick={() => rejectConnection(conn)}
+                      onClick={(e) => { e.stopPropagation(); rejectConnection(conn); }}
                       variant="outline"
                       className="flex-1 text-sm"
                     >
@@ -372,7 +385,12 @@ export default function NetworkPage() {
               </div>
             ) : (
               availablePeople.map(person => (
-                <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => {
+                  if (person.type === 'artist') {
+                    setSelectedArtistId(person.id)
+                    setProfileDrawerOpen(true)
+                  }
+                }}>
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                       {person.image ? (
@@ -402,7 +420,7 @@ export default function NetworkPage() {
                   </div>
                   <div className="mt-3">
                     <Button
-                      onClick={() => { setSelectedPerson(person); setShowConnectionModal(true); }}
+                      onClick={(e) => { e.stopPropagation(); setSelectedPerson(person); setShowConnectionModal(true); }}
                       className="w-full text-sm bg-black text-white hover:bg-gray-800"
                     >
                       Connect
@@ -450,6 +468,16 @@ export default function NetworkPage() {
           </div>
         </div>
       )}
+
+      {/* Artist Profile Drawer */}
+      <ArtistProfileDrawer
+        artistId={selectedArtistId}
+        isOpen={profileDrawerOpen}
+        onClose={() => {
+          setProfileDrawerOpen(false)
+          setSelectedArtistId(null)
+        }}
+      />
     </div>
   )
 }
