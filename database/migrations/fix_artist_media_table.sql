@@ -34,27 +34,57 @@ CREATE INDEX idx_artist_media_status ON public.artist_media(status);
 -- Enable RLS
 ALTER TABLE public.artist_media ENABLE ROW LEVEL SECURITY;
 
--- Create policies
+-- Create policies - check ownership through artists table
 CREATE POLICY "Artists can insert own media" ON public.artist_media
   FOR INSERT
   TO authenticated
-  WITH CHECK (artist_id = auth.uid());
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.artists
+      WHERE artists.id = artist_media.artist_id
+      AND artists.user_id = auth.uid()
+    )
+  );
 
 CREATE POLICY "Artists can view own media" ON public.artist_media
   FOR SELECT
   TO authenticated
-  USING (artist_id = auth.uid());
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.artists
+      WHERE artists.id = artist_media.artist_id
+      AND artists.user_id = auth.uid()
+    )
+  );
 
 CREATE POLICY "Artists can update own media" ON public.artist_media
   FOR UPDATE
   TO authenticated
-  USING (artist_id = auth.uid())
-  WITH CHECK (artist_id = auth.uid());
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.artists
+      WHERE artists.id = artist_media.artist_id
+      AND artists.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.artists
+      WHERE artists.id = artist_media.artist_id
+      AND artists.user_id = auth.uid()
+    )
+  );
 
 CREATE POLICY "Artists can delete own media" ON public.artist_media
   FOR DELETE
   TO authenticated
-  USING (artist_id = auth.uid());
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.artists
+      WHERE artists.id = artist_media.artist_id
+      AND artists.user_id = auth.uid()
+    )
+  );
 
 CREATE POLICY "Public can view approved media" ON public.artist_media
   FOR SELECT

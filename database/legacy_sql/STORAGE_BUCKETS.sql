@@ -14,12 +14,12 @@ values ('avatars', 'avatars', true, 10485760, array['image/jpeg','image/png','im
 on conflict (id) do update set public = excluded.public, file_size_limit = excluded.file_size_limit;
 
 -- ---------------------------------------------------------------------------
--- 2. artist-profiles — Artist profile photos
---    Used by: ArtistProfilePage.jsx (profile_photo_url)
+-- 2. artist-profiles — Artist profile photos and videos
+--    Used by: ArtistProfilePage.jsx (profile_photo_url), ArtistMediaGallery
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('artist-profiles', 'artist-profiles', true, 10485760, array['image/jpeg','image/png','image/webp','image/gif'])
-on conflict (id) do update set public = excluded.public, file_size_limit = excluded.file_size_limit;
+values ('artist-profiles', 'artist-profiles', true, 104857600, array['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm','video/quicktime'])
+on conflict (id) do update set public = excluded.public, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
 
 -- ---------------------------------------------------------------------------
 -- 3. team-profiles — Team logos and member photos

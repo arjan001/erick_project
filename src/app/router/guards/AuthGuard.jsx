@@ -15,10 +15,12 @@ export function AuthGuard({ children }) {
     } else if (!isLoadingAuth && isAuthenticated) {
       // Check if there's a stored redirect from login
       const authRedirect = sessionStorage.getItem('auth_redirect')
+      // Only apply auth_redirect if user is on SignIn page (not when navigating to homepage)
       if (authRedirect && location.pathname === '/SignIn') {
         sessionStorage.removeItem('auth_redirect')
         navigate(authRedirect)
       }
+      // Don't redirect if user is on homepage or other public pages
     }
   }, [isAuthenticated, isLoadingAuth, navigate, location])
 
