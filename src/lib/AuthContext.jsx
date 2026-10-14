@@ -107,14 +107,17 @@ async function ensureProfile(user) {
 
   try {
     if (role === 'artist') {
-      const existing = await Artist.filter({ email: user.email })
+      const existing = await Artist.filter({ user_id: user.id })
       if (!existing || existing.length === 0) {
         await Artist.create({
-          email: user.email,
-          full_name: full_name,
-          role: 'artist',
-          profession: 'Actor',
-          status: 'pending',
+          user_id: user.id,
+          display_name: full_name,
+          stage_name: full_name,
+          skills: [],
+          years_experience: 0,
+          hourly_rate: 0,
+          availability_status: 'available',
+          admin_approval_status: 'pending',
         })
       }
     } else if (role === 'team') {

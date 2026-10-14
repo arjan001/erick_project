@@ -352,7 +352,7 @@ export default function ArtistPublicProfile() {
               {/* Large image on left */}
               <div className="lg:w-1/2 flex-shrink-0">
                 <button
-                  onClick={() => (portfolioClips[0]?.original_video_url || portfolioClips[0]?.video_embed_url) && setActiveClip(portfolioClips[0])}
+                  onClick={() => (portfolioClips[0]?.video_url || portfolioClips[0]?.video_embed_url) && setActiveClip(portfolioClips[0])}
                   className="w-full group text-left"
                 >
                   <div className="relative bg-gray-900 aspect-video rounded-lg overflow-hidden">
@@ -363,7 +363,7 @@ export default function ArtistPublicProfile() {
                         <Sparkles className="w-12 h-12 text-white/50" />
                       </div>
                     )}
-                    {(portfolioClips[0]?.original_video_url || portfolioClips[0]?.video_embed_url) && (
+                    {(portfolioClips[0]?.video_url || portfolioClips[0]?.video_embed_url) && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
                         <div className="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                           <Play className="w-7 h-7 text-gray-900 ml-0.5" />
@@ -379,7 +379,7 @@ export default function ArtistPublicProfile() {
                 {portfolioClips.slice(1, 5).map((clip) => (
                   <button
                     key={clip.id}
-                    onClick={() => (clip.original_video_url || clip.video_embed_url) && setActiveClip(clip)}
+                    onClick={() => (clip.video_url || clip.video_embed_url) && setActiveClip(clip)}
                     className="group text-left"
                   >
                     <div className="relative bg-gray-900 aspect-video rounded-lg overflow-hidden">
@@ -390,7 +390,7 @@ export default function ArtistPublicProfile() {
                           <Sparkles className="w-6 h-6 text-white/50" />
                         </div>
                       )}
-                      {(clip.original_video_url || clip.video_embed_url) && (
+                      {(clip.video_url || clip.video_embed_url) && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
                           <div className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <Play className="w-4 h-4 text-gray-900 ml-0.5" />
@@ -589,7 +589,7 @@ export default function ArtistPublicProfile() {
             {activeClip.video_embed_url ? (
               <iframe src={activeClip.video_embed_url} className="w-full aspect-video rounded-lg bg-black" frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title={activeClip.title} />
             ) : (
-              <video src={activeClip.original_video_url} controls autoPlay className="w-full rounded-lg" />
+              <video src={activeClip.video_url} controls autoPlay className="w-full rounded-lg" />
             )}
             <p className="text-white text-sm mt-3">{activeClip.title}</p>
           </div>

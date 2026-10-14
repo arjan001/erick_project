@@ -13,29 +13,9 @@ export function RoleGuard({ roles, children }) {
       return
     }
 
-    // Only redirect if user is authenticated but doesn't have the required role
-    // AND they're not already on their dashboard (to prevent redirect loops)
-    if (!isLoadingAuth && user && !roles.includes(user.role)) {
-      // admin can access everything — never redirect an admin
-      if (user.role === 'admin') return
-
-      // Check if user is already on their correct dashboard
-      const roleRedirects = {
-        artist: '/artistdashboard',
-        artist_admin: '/artistdashboard',
-        team: '/teamdashboard',
-        team_admin: '/teamdashboard',
-        client: '/clientdashboard',
-        project_owner: '/clientdashboard',
-        backer: '/backerdashboard',
-      }
-      const userDashboard = roleRedirects[user.role]
-
-      // Only redirect if not already on their dashboard
-      if (location.pathname !== userDashboard) {
-        navigate(userDashboard || '/')
-      }
-    }
+    // If user doesn't have the required role, don't force redirect
+    // Just prevent access by returning null below
+    // This allows seamless navigation between modules within the same role
   }, [isAuthenticated, isLoadingAuth, user, roles, navigate, location])
 
   if (isLoadingAuth) {

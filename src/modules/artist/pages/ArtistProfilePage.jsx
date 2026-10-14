@@ -171,10 +171,10 @@ export default function ArtistProfile() {
       try {
         return JSON.parse(savedDraft)
       } catch {
-        return { title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' }
+        return { title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', video_url: '' }
       }
     }
-    return { title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' }
+    return { title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', video_url: '' }
   })
   const [selectedCoverImage, setSelectedCoverImage] = useState(null)
   const [selectedVideoFile, setSelectedVideoFile] = useState(null)
@@ -239,7 +239,7 @@ export default function ArtistProfile() {
           setGoogleDriveFolderId(a.google_drive_folder_id || '')
 
           // Load applications
-          const applicationsData = await Application.filter({ applicant_email: user.email }, '-created_at', 10)
+          const applicationsData = await Application.filter({ user_id: user.id }, '-created_at', 10)
           const jobIds = applicationsData.map(app => app.job_id).filter(Boolean)
           if (jobIds.length > 0) {
             const jobsData = await Promise.all(
@@ -664,14 +664,14 @@ export default function ArtistProfile() {
           .getPublicUrl(videoFileName)
 
         videoUrl = videoPublicUrl
-      } else if (portfolioForm.video_source !== 'upload' && portfolioForm.original_video_url) {
-        videoUrl = portfolioForm.original_video_url
+      } else if (portfolioForm.video_source !== 'upload' && portfolioForm.video_url) {
+
         // Generate embed URL based on source
         const { getEmbedUrl } = await import('@/components/artist/PortfolioModal')
-        videoEmbedUrl = getEmbedUrl(portfolioForm.original_video_url, portfolioForm.video_source)
+        videoEmbedUrl = getEmbedUrl(portfolioForm.video_url, portfolioForm.video_source)
         // Generate thumbnail for YouTube
         if (portfolioForm.video_source === 'youtube') {
-          thumbnailUrl = getYouTubeThumbnail(portfolioForm.original_video_url)
+          thumbnailUrl = getYouTubeThumbnail(portfolioForm.video_url)
         }
       }
 
@@ -698,7 +698,6 @@ export default function ArtistProfile() {
         description: portfolioForm.description,
         role: portfolioForm.role,
         video_url: videoUrl, // Map to video_url as per schema
-        original_video_url: portfolioForm.original_video_url,
         video_embed_url: videoEmbedUrl,
         video_source: portfolioForm.video_source,
         thumbnail_url: thumbnailUrl,
@@ -724,7 +723,7 @@ export default function ArtistProfile() {
 
 
       setShowPortfolioModal(false)
-      setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', original_video_url: '' })
+      setPortfolioForm({ title: '', project_type: 'commercial', description: '', role: '', roles: [], video_source: 'upload', video_url: '' })
       setSelectedCoverImage(null)
       setSelectedVideoFile(null)
       setEditingPortfolio(null)
@@ -1478,14 +1477,14 @@ export default function ArtistProfile() {
               <div className="relative aspect-video rounded-lg overflow-hidden bg-black">
                 <iframe src={activeClip.video_embed_url} className="w-full h-full" frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title={activeClip.title || 'Portfolio Video'} />
               </div>
-            ) : activeClip.video_url || activeClip.original_video_url ? (
+            ) : activeClip.video_url ? (
               <video
-                src={activeClip.video_url || activeClip.original_video_url}
+                src={activeClip.video_url}
                 controls
                 autoPlay
                 className="w-full max-h-[80vh] rounded-lg bg-black"
               >
-                <source src={activeClip.video_url || activeClip.original_video_url} type="video/mp4" />
+                <source src={activeClip.video_url} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
             ) : (

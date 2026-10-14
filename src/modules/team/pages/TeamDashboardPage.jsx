@@ -361,7 +361,7 @@ export default function TeamDashboard() {
         title: portfolioForm.title,
         project_type: portfolioForm.project_type,
         description: portfolioForm.description,
-        original_video_url: videoUrl || '',
+        video_url: videoUrl || '',
         status: 'pending',
       })
 
@@ -452,14 +452,14 @@ export default function TeamDashboard() {
         title: portfolioForm.title,
         project_type: portfolioForm.project_type,
         description: portfolioForm.description,
-        original_video_url: videoUrl || '',
+        video_url: videoUrl || '',
       })
       const updatedClip = {
         ...editingPortfolio,
         title: portfolioForm.title,
         project_type: portfolioForm.project_type,
         description: portfolioForm.description,
-        original_video_url: videoUrl || '',
+        video_url: videoUrl || '',
       }
 
       setPortfolioClips(prev => prev.map(clip =>

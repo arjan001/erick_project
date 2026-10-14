@@ -65,7 +65,7 @@ export default function PortfolioModal({
   const videoInputRef = useRef(null)
   const [videoError, setVideoError] = useState('')
   const [videoSource, setVideoSource] = useState(portfolioForm?.video_source || 'upload')
-  const [videoLink, setVideoLink] = useState(portfolioForm?.original_video_url || '')
+  const [videoLink, setVideoLink] = useState(portfolioForm?.video_url || '')
   const [imagePreview, setImagePreview] = useState(null)
 
   // Generate image preview when file is selected
@@ -85,14 +85,14 @@ export default function PortfolioModal({
   React.useEffect(() => {
     if (editingPortfolio) {
       setVideoSource(editingPortfolio.video_source || 'upload')
-      setVideoLink(editingPortfolio.original_video_url || '')
+      setVideoLink(editingPortfolio.video_url || '')
       setPortfolioForm({
         title: editingPortfolio.title || '',
         project_type: editingPortfolio.project_type || 'commercial',
         description: editingPortfolio.description || '',
         role: editingPortfolio.role || '',
         video_source: editingPortfolio.video_source || 'upload',
-        original_video_url: editingPortfolio.original_video_url || ''
+        video_url: editingPortfolio.video_url || ''
       })
     }
   }, [editingPortfolio, setPortfolioForm])
@@ -130,7 +130,7 @@ export default function PortfolioModal({
     setVideoLink(val)
     setPortfolioForm(prev => ({
       ...prev,
-      original_video_url: val,
+      video_url: val,
       video_source: videoSource,
       video_embed_url: getEmbedUrl(val, videoSource),
     }))
@@ -142,7 +142,7 @@ export default function PortfolioModal({
       setPortfolioForm(prev => ({
         ...prev,
         video_source: videoSource,
-        original_video_url: videoLink,
+        video_url: videoLink,
         video_embed_url: getEmbedUrl(videoLink, videoSource),
       }))
     }
@@ -273,11 +273,10 @@ export default function PortfolioModal({
                       key={src.value}
                       type="button"
                       onClick={() => handleVideoSourceChange(src.value)}
-                      className={`px-4 py-2 text-sm rounded-lg transition-all ${
-                        videoSource === src.value
-                          ? 'bg-black text-white font-medium shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                      className={`px-4 py-2 text-sm rounded-lg transition-all ${videoSource === src.value
+                        ? 'bg-black text-white font-medium shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
                     >
                       {src.label}
                     </button>
@@ -321,9 +320,9 @@ export default function PortfolioModal({
                         onChange={handleVideoLinkChange}
                         placeholder={
                           videoSource === 'vimeo' ? 'https://vimeo.com/123456789' :
-                          videoSource === 'youtube' ? 'https://youtube.com/watch?v=...' :
-                          videoSource === 'tiktok' ? 'https://tiktok.com/@user/video/...' :
-                          'https://drive.google.com/file/d/...'
+                            videoSource === 'youtube' ? 'https://youtube.com/watch?v=...' :
+                              videoSource === 'tiktok' ? 'https://tiktok.com/@user/video/...' :
+                                'https://drive.google.com/file/d/...'
                         }
                         className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
                       />

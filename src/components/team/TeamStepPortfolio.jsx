@@ -37,7 +37,7 @@ export default function TeamStepPortfolio({ data, updateData }) {
       const clipData = {
         uploaded_by_type: 'team',
         uploaded_by_id: 'temp',
-        original_video_url: publicUrl,
+        video_url: publicUrl,
         trimmed_video_url: publicUrl,
         trim_start_time: 0,
         duration: 30,

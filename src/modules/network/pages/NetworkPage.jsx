@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Artist, Team, Client, Backer, Connection, Notification, Subscription } from '@/lib/supabaseEntities'
+import { Artist, Team, Client, Backer, Connection, Notification, Subscription, User } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { createPageUrl } from '@/shared/utils/routing'
 import { useToast } from '@/hooks/useToast'
@@ -46,74 +46,39 @@ export default function NetworkPage() {
       setLoading(true)
       console.log('NetworkPage: Loading data for user', user.id, 'role:', user.role)
 
-      // Fetch all users from respective tables
-      const [artists, teams, clients, backers] = await Promise.all([
-        Artist.list().catch(() => []),
-        Team.list().catch(() => []),
-        Client.list().catch(() => []),
-        Backer.list().catch(() => []),
-      ])
+      // Fetch ALL users from public.users table
+      const allUsers = await User.list().catch((err) => {
+        console.error('Error fetching users:', err)
+        return []
+      })
+      console.log('All users loaded:', allUsers.length)
 
-      // Transform to unified format - exclude current user
-      const people = [
-        ...artists.filter(a => a.email !== user.email).map(a => ({
-          id: a.id,
-          type: 'artist',
-          name: a.full_name || a.email,
-          role: 'Artist',
-          location: a.based_in_city || a.based_in_country || 'Kenya',
-          image: a.profile_photo_url,
-          skills: a.skills || [],
-          profession: a.profession,
-          isOnline: isOnline(a.last_active),
-          email: a.email,
-        })),
-        ...teams.filter(t => t.contact_email !== user.email).map(t => ({
-          id: t.id,
-          type: 'team',
-          name: t.team_name,
-          role: 'Team',
-          location: t.city || t.country || 'Kenya',
-          image: t.logo_url,
-          skills: t.specialties || [],
-          profession: t.industry,
-          isOnline: isOnline(t.last_active),
-          email: t.contact_email,
-        })),
-        ...clients.filter(c => c.email !== user.email).map(c => ({
-          id: c.id,
-          type: 'client',
-          name: c.company_name || c.display_name,
-          role: 'Client',
-          location: c.city || c.country || 'Kenya',
-          image: c.logo_url,
-          skills: [],
-          profession: c.company_type,
-          isOnline: isOnline(c.last_active),
-          email: c.contact_email,
-        })),
-        ...backers.filter(b => b.contact_email !== user.email).map(b => ({
-          id: b.id,
-          type: 'backer',
-          name: b.organization_name || b.display_name,
-          role: 'Backer',
-          location: b.city || b.country || 'Kenya',
-          image: b.logo_url,
-          skills: b.investment_interests || [],
-          profession: 'Investor',
-          isOnline: isOnline(b.last_active),
-          email: b.contact_email,
-        })),
-      ]
+      // Filter out current user
+      const otherUsers = allUsers.filter(u => u.id !== user.id && u.email !== user.email)
+      console.log('Other users after filtering:', otherUsers.length)
 
-      console.log('NetworkPage: All people loaded:', people.length)
+      // Transform to unified format
+      const people = otherUsers.map(u => ({
+        id: u.id,
+        type: u.role || 'user',
+        name: u.full_name || u.email,
+        role: u.role || 'User',
+        location: u.location || 'Kenya',
+        image: u.avatar_url,
+        skills: u.skills || [],
+        profession: u.profession,
+        isOnline: isOnline(u.last_active),
+        email: u.email,
+      }))
+
+      console.log('Transformed people:', people.length)
       setAllPeople(people)
 
       // Fetch connections
       const connectionsData = await Connection.filter({ user_id: user.id }).catch(() => [])
       console.log('NetworkPage: Connections loaded:', connectionsData.length)
 
-      // Filter into accepted and pending - use connected_artist_id
+      // Filter into accepted and pending - use connected_user_id
       const accepted = connectionsData.filter(c => c.status === 'accepted')
       const pending = connectionsData.filter(c => c.status === 'pending')
 
@@ -132,7 +97,7 @@ export default function NetworkPage() {
     try {
       await Connection.create({
         user_id: user.id,
-        connected_artist_id: person.id,
+        connected_user_id: person.id,
         connection_type: 'network',
         status: 'pending',
         metadata: { message: connectionMessage },
@@ -204,9 +169,9 @@ export default function NetworkPage() {
     return matchesSearch && matchesType
   })
 
-  // Get connected user IDs - use connected_artist_id
-  const connectedUserIds = new Set(myConnections.map(c => c.connected_artist_id))
-  const pendingUserIds = new Set(pendingRequests.map(c => c.connected_artist_id))
+  // Get connected user IDs - use connected_user_id
+  const connectedUserIds = new Set(myConnections.map(c => c.connected_user_id))
+  const pendingUserIds = new Set(pendingRequests.map(c => c.connected_user_id))
 
   // People available to connect (not already connected or pending)
   const availablePeople = filteredPeople.filter(p => !connectedUserIds.has(p.id) && !pendingUserIds.has(p.id))
@@ -288,7 +253,7 @@ export default function NetworkPage() {
             </div>
           ) : (
             myConnections.map(conn => {
-              const person = allPeople.find(p => p.id === conn.connected_artist_id)
+              const person = allPeople.find(p => p.id === conn.connected_user_id)
               if (!person) return null
               return (
                 <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
@@ -351,7 +316,7 @@ export default function NetworkPage() {
             </div>
           ) : (
             pendingRequests.map(conn => {
-              const person = allPeople.find(p => p.id === conn.connected_artist_id)
+              const person = allPeople.find(p => p.id === conn.connected_user_id)
               if (!person) return null
               return (
                 <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">

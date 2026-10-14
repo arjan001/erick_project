@@ -65,7 +65,7 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
   const [editingBio, setEditingBio] = useState(false)
   const [bioLoading, setBioLoading] = useState(false)
 
-  const [skills, setSkills] = useState(artist?.skills_experience?.map(s => s.skill) || [])
+  const [skills, setSkills] = useState(artist?.skills || [])
   const [editingSkills, setEditingSkills] = useState(false)
 
   const [clients, setClients] = useState(artist?.past_clients || [])
@@ -83,11 +83,6 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
   const [showLanguageSuggestions, setShowLanguageSuggestions] = useState(false)
   const [editingLanguages, setEditingLanguages] = useState(false)
 
-  const [countries, setCountries] = useState(artist?.countries_worked || [])
-  const [newCountry, setNewCountry] = useState('')
-  const [showCountrySuggestions, setShowCountrySuggestions] = useState(false)
-  const [editingCountries, setEditingCountries] = useState(false)
-
   // Physical appearance fields
   const [ethnicity, setEthnicity] = useState(artist?.ethnicity || '')
   const [height, setHeight] = useState(artist?.height_cms || '')
@@ -100,10 +95,9 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
   const [dateOfBirth, setDateOfBirth] = useState(artist?.date_of_birth || '')
   const [editingAppearance, setEditingAppearance] = useState(false)
 
-  // Contact & Social Media fields
-  const [website, setWebsite] = useState(artist?.website || '')
-  const [phone, setPhone] = useState(artist?.phone || '')
-  const [socialMedia, setSocialMedia] = useState(artist?.social_media || {})
+  // Contact & Social Media fields (using correct column names)
+  const [websiteUrl, setWebsiteUrl] = useState(artist?.website_url || '')
+  const [socialMediaUrl, setSocialMediaUrl] = useState(artist?.social_media_url || '')
   const [editingContact, setEditingContact] = useState(false)
 
   // Education fields
@@ -111,11 +105,17 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
   const [newEducation, setNewEducation] = useState({ year: '', institution: '', description: '' })
   const [editingEducation, setEditingEducation] = useState(false)
 
-  // Credits & Experience fields
+  // Credits & Experience fields (using new columns added in migration)
   const [filmCredits, setFilmCredits] = useState(artist?.film_credits || [])
   const [commercialCredits, setCommercialCredits] = useState(artist?.commercial_credits || [])
   const [newCredit, setNewCredit] = useState({ year: '', project: '', role: '', name: '' })
   const [editingCredits, setEditingCredits] = useState(false)
+
+  // Countries worked in
+  const [countries, setCountries] = useState(artist?.countries_worked || [])
+  const [newCountry, setNewCountry] = useState('')
+  const [showCountrySuggestions, setShowCountrySuggestions] = useState(false)
+  const [editingCountries, setEditingCountries] = useState(false)
 
   // Performing Samples fields
   const [performingSamples, setPerformingSamples] = useState(artist?.portfolio_urls || [])
@@ -123,7 +123,7 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
   const [editingSamples, setEditingSamples] = useState(false)
 
   // Self Recording fields
-  const [selfRecording, setSelfRecording] = useState(artist?.video_reel_url || '')
+  const [selfRecording, setSelfRecording] = useState(artist?.self_recording_description || '')
   const [editingSelfRecording, setEditingSelfRecording] = useState(false)
 
   // Helper function for safe saves with error handling
@@ -199,10 +199,6 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
     l.toLowerCase().includes(newLanguage.toLowerCase()) && !languages.includes(l)
   )
 
-  const filteredCountrySuggestions = COUNTRY_SUGGESTIONS.filter(c =>
-    c.toLowerCase().includes(newCountry.toLowerCase()) && !countries.includes(c)
-  )
-
 
   const addLanguage = (lang) => {
     if (lang && !languages.includes(lang)) {
@@ -215,16 +211,9 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
     setLanguages(languages.filter(l => l !== lang))
   }
 
-  const addCountry = (country) => {
-    if (country && !countries.includes(country)) {
-      setCountries([...countries, country])
-      setNewCountry('')
-    }
-  }
-
-  const removeCountry = (country) => {
-    setCountries(countries.filter(c => c !== country))
-  }
+  const filteredCountrySuggestions = COUNTRY_SUGGESTIONS.filter(country =>
+    country.toLowerCase().includes(newCountry.toLowerCase()) && !countries.includes(country)
+  )
 
 
   return (
@@ -309,12 +298,12 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
               <SkillsExperienceTagInput
                 selected={skills}
                 onChange={setSkills}
-                placeholder="Search skills... (e.g. After Effects, Editing, VFX)"
+                placeholder="Search skills... (e.g. Lead Actor, Voiceover, UGC Creator)"
+                suggestions={SKILL_SUGGESTIONS}
               />
               <Button
                 onClick={async () => {
-                  const skillsData = skills.map(s => ({ skill: s, years: 0 }))
-                  const success = await safeSave({ skills_experience: skillsData }, 'skills')
+                  const success = await safeSave({ skills: skills }, 'skills')
                   if (success) setEditingSkills(false)
                 }}
                 className="w-full bg-blue-600 text-white hover:bg-blue-700"
@@ -539,7 +528,7 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
         </div>
       </div>
 
-      {/* Right Column - Contact & Languages */}
+      {/* Right Column - Languages, Contact, Education */}
       <div className="col-span-1 space-y-6">
         {/* Languages */}
         <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 border border-orange-200">
@@ -619,88 +608,6 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
                   {lang}
                 </span>
               )) : <p className="text-gray-600 text-sm">No languages added yet</p>}
-            </div>
-          )}
-        </div>
-
-        {/* Countries Worked */}
-        <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-2xl p-6 border border-teal-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-teal-700" />
-              Countries Worked In
-            </h3>
-            {!editingCountries && (
-              <button
-                onClick={() => setEditingCountries(true)}
-                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
-              >
-                <Edit2 className="w-3 h-3" />
-                Edit
-              </button>
-            )}
-          </div>
-
-          {editingCountries ? (
-            <div className="space-y-3">
-              <div className="flex flex-wrap gap-2 mb-3">
-                {countries.map((c) => (
-                  <div key={c} className="flex items-center gap-2 px-3 py-1.5 bg-teal-600 text-white rounded-full text-sm shadow-sm">
-                    {c}
-                    <button onClick={() => removeCountry(c)} className="hover:opacity-70">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="relative">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newCountry}
-                    onChange={(e) => setNewCountry(e.target.value)}
-                    onFocus={() => setShowCountrySuggestions(true)}
-                    placeholder="Add a country..."
-                    className="flex-1 px-4 py-2 border border-teal-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  />
-                  <Button onClick={() => addCountry(newCountry)} size="sm" className="bg-teal-600 text-white hover:bg-teal-700">
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {showCountrySuggestions && filteredCountrySuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-teal-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
-                    {filteredCountrySuggestions.map((country) => (
-                      <button
-                        key={country}
-                        onClick={() => {
-                          addCountry(country)
-                          setShowCountrySuggestions(false)
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-teal-50 text-sm border-b border-teal-100 last:border-0"
-                      >
-                        {country}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <Button onClick={async () => {
-                const success = await safeSave({ countries_worked: countries }, 'countries')
-                if (success) setEditingCountries(false)
-              }} className="w-full bg-teal-600 text-white hover:bg-teal-700">
-                <Check className="w-4 h-4 mr-1" /> Done
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {countries.length > 0 ? countries.map((c) => (
-                <span key={c} className="px-3 py-1.5 bg-white border border-teal-200 rounded-full text-sm text-gray-800 shadow-sm">
-                  {c}
-                </span>
-              )) : <p className="text-gray-600 text-sm">No countries added yet</p>}
             </div>
           )}
         </div>
@@ -923,59 +830,19 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
                 <label className="block text-xs font-medium text-gray-700 mb-1">Website</label>
                 <input
                   type="url"
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
                   placeholder="https://yourwebsite.com"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+254 700 000 000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Instagram</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Social Media URL</label>
                 <input
                   type="url"
-                  value={socialMedia.instagram || ''}
-                  onChange={(e) => setSocialMedia({ ...socialMedia, instagram: e.target.value })}
+                  value={socialMediaUrl}
+                  onChange={(e) => setSocialMediaUrl(e.target.value)}
                   placeholder="https://instagram.com/username"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">LinkedIn</label>
-                <input
-                  type="url"
-                  value={socialMedia.linkedin || ''}
-                  onChange={(e) => setSocialMedia({ ...socialMedia, linkedin: e.target.value })}
-                  placeholder="https://linkedin.com/in/username"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Twitter/X</label>
-                <input
-                  type="url"
-                  value={socialMedia.twitter || ''}
-                  onChange={(e) => setSocialMedia({ ...socialMedia, twitter: e.target.value })}
-                  placeholder="https://twitter.com/username"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">YouTube</label>
-                <input
-                  type="url"
-                  value={socialMedia.youtube || ''}
-                  onChange={(e) => setSocialMedia({ ...socialMedia, youtube: e.target.value })}
-                  placeholder="https://youtube.com/channel/..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
                 />
               </div>
@@ -983,9 +850,8 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
                 onClick={async () => {
                   if (artist) {
                     const updated = await Artist.update(artist.id, {
-                      website,
-                      phone,
-                      social_media: socialMedia
+                      website_url: websiteUrl,
+                      social_media_url: socialMediaUrl
                     })
                     if (onUpdate) onUpdate(updated)
                   }
@@ -999,14 +865,9 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
             </div>
           ) : (
             <div className="space-y-3">
-              {artist?.email && <p className="text-sm text-gray-800"><strong>Email:</strong> <a href={`mailto:${artist.email}`} className="text-gray-600 hover:text-black transition-colors">{artist.email}</a></p>}
-              {phone && <p className="text-sm text-gray-800"><strong>Phone:</strong> {phone}</p>}
-              {website && <a href={website} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Globe className="w-4 h-4 inline mr-2" />{website}</a>}
-              {socialMedia?.instagram && <a href={socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Instagram className="w-4 h-4 inline mr-2" />Instagram</a>}
-              {socialMedia?.linkedin && <a href={socialMedia.linkedin} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Linkedin className="w-4 h-4 inline mr-2" />LinkedIn</a>}
-              {socialMedia?.twitter && <a href={socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Twitter className="w-4 h-4 inline mr-2" />Twitter/X</a>}
-              {socialMedia?.youtube && <a href={socialMedia.youtube} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Youtube className="w-4 h-4 inline mr-2" />YouTube</a>}
-              {!phone && !website && !socialMedia?.instagram && !socialMedia?.linkedin && !socialMedia?.twitter && !socialMedia?.youtube && (
+              {websiteUrl && <a href={websiteUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Globe className="w-4 h-4 inline mr-2" />{websiteUrl}</a>}
+              {socialMediaUrl && <a href={socialMediaUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-black transition-colors block"><Globe className="w-4 h-4 inline mr-2" />Social Media</a>}
+              {!websiteUrl && !socialMediaUrl && (
                 <p className="text-gray-600 text-sm">No contact details added yet. Click Edit to get started.</p>
               )}
             </div>
@@ -1110,13 +971,16 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
             </div>
           )}
         </div>
+      </div>
 
-        {/* Credits & Experience Section */}
+      {/* Left Column - Credits & Countries */}
+      <div className="col-span-1 space-y-6">
+        {/* Credits Section */}
         <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl p-6 border border-indigo-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
               <Film className="w-5 h-5 text-indigo-700" />
-              Credits & Experience
+              Credits
             </h3>
             {!editingCredits && (
               <button
@@ -1220,6 +1084,212 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
           )}
         </div>
 
+        {/* Countries Worked Section */}
+        <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-2xl p-6 border border-teal-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-teal-700" />
+              Countries Worked
+            </h3>
+            {!editingCountries && (
+              <button
+                onClick={() => setEditingCountries(true)}
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
+              >
+                <Edit2 className="w-3 h-3" />
+                Edit
+              </button>
+            )}
+          </div>
+
+          {editingCountries ? (
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-2 mb-3">
+                {countries.map((country) => (
+                  <div key={country} className="flex items-center gap-2 px-3 py-1.5 bg-teal-600 text-white rounded-full text-sm shadow-sm">
+                    {country}
+                    <button onClick={() => setCountries(countries.filter(c => c !== country))} className="hover:opacity-70">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="relative">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newCountry}
+                    onChange={(e) => setNewCountry(e.target.value)}
+                    onFocus={() => setShowCountrySuggestions(true)}
+                    placeholder="Add country..."
+                    className="flex-1 px-4 py-2 border border-teal-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  />
+                  <Button
+                    onClick={() => {
+                      if (newCountry && !countries.includes(newCountry)) {
+                        setCountries([...countries, newCountry])
+                        setNewCountry('')
+                      }
+                    }}
+                    size="sm"
+                    className="bg-teal-600 text-white hover:bg-teal-700"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {showCountrySuggestions && filteredCountrySuggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-teal-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                    {filteredCountrySuggestions.map((country) => (
+                      <button
+                        key={country}
+                        onClick={() => {
+                          if (!countries.includes(country)) {
+                            setCountries([...countries, country])
+                            setNewCountry('')
+                          }
+                          setShowCountrySuggestions(false)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-teal-50 text-sm border-b border-teal-100 last:border-0"
+                      >
+                        {country}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Button
+                onClick={async () => {
+                  const success = await safeSave({ countries_worked: countries }, 'countries')
+                  if (success) setEditingCountries(false)
+                }}
+                className="w-full bg-teal-600 text-white hover:bg-teal-700"
+              >
+                <Check className="w-4 h-4 mr-1" />
+                Done
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {countries.length > 0 ? countries.map((country) => (
+                <span key={country} className="px-3 py-1.5 bg-white border border-teal-200 rounded-full text-sm text-gray-800 shadow-sm">
+                  {country}
+                </span>
+              )) : (
+                <p className="text-gray-600 text-sm">No countries added yet. Click Edit to get started.</p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Right Column - Performing Samples & Self Recording */}
+      <div className="col-span-1 space-y-6">
+        {/* Performing Samples Section */}
+        <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-2xl p-6 border border-teal-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-teal-700" />
+              Countries Worked
+            </h3>
+            {!editingCountries && (
+              <button
+                onClick={() => setEditingCountries(true)}
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-black font-medium transition-colors"
+              >
+                <Edit2 className="w-3 h-3" />
+                Edit
+              </button>
+            )}
+          </div>
+
+          {editingCountries ? (
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-2 mb-3">
+                {countries.map((country) => (
+                  <div key={country} className="flex items-center gap-2 px-3 py-1.5 bg-teal-600 text-white rounded-full text-sm shadow-sm">
+                    {country}
+                    <button onClick={() => setCountries(countries.filter(c => c !== country))} className="hover:opacity-70">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="relative">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newCountry}
+                    onChange={(e) => setNewCountry(e.target.value)}
+                    onFocus={() => setShowCountrySuggestions(true)}
+                    placeholder="Add country..."
+                    className="flex-1 px-4 py-2 border border-teal-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  />
+                  <Button
+                    onClick={() => {
+                      if (newCountry && !countries.includes(newCountry)) {
+                        setCountries([...countries, newCountry])
+                        setNewCountry('')
+                      }
+                    }}
+                    size="sm"
+                    className="bg-teal-600 text-white hover:bg-teal-700"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {showCountrySuggestions && filteredCountrySuggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-teal-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                    {filteredCountrySuggestions.map((country) => (
+                      <button
+                        key={country}
+                        onClick={() => {
+                          if (!countries.includes(country)) {
+                            setCountries([...countries, country])
+                            setNewCountry('')
+                          }
+                          setShowCountrySuggestions(false)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-teal-50 text-sm border-b border-teal-100 last:border-0"
+                      >
+                        {country}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Button
+                onClick={async () => {
+                  const success = await safeSave({ countries_worked: countries }, 'countries')
+                  if (success) setEditingCountries(false)
+                }}
+                className="w-full bg-teal-600 text-white hover:bg-teal-700"
+              >
+                <Check className="w-4 h-4 mr-1" />
+                Done
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {countries.length > 0 ? countries.map((country) => (
+                <span key={country} className="px-3 py-1.5 bg-white border border-teal-200 rounded-full text-sm text-gray-800 shadow-sm">
+                  {country}
+                </span>
+              )) : (
+                <p className="text-gray-600 text-sm">No countries added yet. Click Edit to get started.</p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Right Column - Performing Samples & Self Recording */}
+      <div className="col-span-1 space-y-6">
         {/* Performing Samples Section */}
         <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200">
           <div className="flex items-center justify-between mb-4">
@@ -1342,22 +1412,18 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
           {editingSelfRecording ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Demo Reel / Self Tape URL</label>
-                <input
-                  type="url"
+                <label className="block text-xs font-medium text-gray-700 mb-1">Self Recording / Demo Reel (TEXT, not link)</label>
+                <textarea
                   value={selfRecording}
                   onChange={(e) => setSelfRecording(e.target.value)}
-                  placeholder="https://youtube.com/watch?v=..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  placeholder="Describe how you record yourself (e.g., I use a DSLR camera with 4K resolution, good lighting, and professional audio setup)"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none h-24"
                 />
               </div>
               <Button
                 onClick={async () => {
-                  if (artist) {
-                    const updated = await Artist.update(artist.id, { video_reel_url: selfRecording })
-                    if (onUpdate) onUpdate(updated)
-                  }
-                  setEditingSelfRecording(false)
+                  const success = await safeSave({ self_recording_description: selfRecording }, 'self recording')
+                  if (success) setEditingSelfRecording(false)
                 }}
                 className="w-full bg-cyan-600 text-white hover:bg-cyan-700"
               >
@@ -1368,16 +1434,14 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
           ) : (
             <div>
               {selfRecording ? (
-                <a href={selfRecording} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline block">
-                  {selfRecording}
-                </a>
+                <p className="text-sm text-gray-800">{selfRecording}</p>
               ) : (
-                <p className="text-gray-600 text-sm">No demo reel added yet. Click Edit to get started.</p>
+                <p className="text-gray-600 text-sm">No self-recording description added yet. Click Edit to get started.</p>
               )}
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   )
 }

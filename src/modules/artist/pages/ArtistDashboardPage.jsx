@@ -57,7 +57,7 @@ export default function ArtistDashboard() {
         setSavedJobs(savedData || [])
 
         const notifs = await Notification.filter({
-          recipient_id: user.id,
+          user_id: user.id,
           type: 'job_invitation'
         }, '-created_date', 10)
         setInvitations(notifs || [])
