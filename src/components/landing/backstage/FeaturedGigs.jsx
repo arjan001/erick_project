@@ -19,9 +19,9 @@ const tabs = [
 const fallbackGigs = [
   {
     id: 1,
-    title: 'Stylized Documentary B-roll Shoot',
+    title: 'Kenyan Documentary B-roll Shoot',
     description: 'Casting a stylized documentary B-roll shoot for an upcoming brand campaign.',
-    location: 'Cool Springs, TN',
+    location: 'Nairobi, Kenya',
     roles: [
       { name: 'Female, Lead', detail: 'Female, 30-39' },
       { name: 'Male, Supporting', detail: 'Male, 25-35' },
@@ -29,9 +29,9 @@ const fallbackGigs = [
   },
   {
     id: 2,
-    title: 'American Feature Film, Extras',
-    description: 'Casting an American feature film with high-profile talent.',
-    location: 'Sydney, NSW',
+    title: 'Kenyan Feature Film, Extras',
+    description: 'Casting a Kenyan feature film with high-profile talent.',
+    location: 'Mombasa, Kenya',
     roles: [
       { name: 'Background / Extra', detail: 'Any gender, 18-60' },
       { name: 'Featured Extra', detail: 'Female, 20-30' },
@@ -42,7 +42,7 @@ const fallbackGigs = [
     id: 3,
     title: 'TV Drama Series, Lead Role',
     description: 'Casting a streaming TV drama series seeking a lead performer.',
-    location: 'Los Angeles, CA',
+    location: 'Nairobi, Kenya',
     roles: [
       { name: 'Lead / Series Regular', detail: 'Female, 25-35' },
       { name: 'Recurring Guest', detail: 'Male, 30-40' },
@@ -52,7 +52,7 @@ const fallbackGigs = [
     id: 4,
     title: 'National Commercial, Spokesperson',
     description: 'Casting a national commercial campaign for a major consumer brand.',
-    location: 'New York, NY',
+    location: 'Kisumu, Kenya',
     roles: [
       { name: 'Principal / Spokesperson', detail: 'Any gender, 28-45' },
       { name: 'Supporting Cast', detail: 'Female, 20-30' },
@@ -60,9 +60,9 @@ const fallbackGigs = [
   },
   {
     id: 5,
-    title: 'Broadway Musical — Ensemble',
-    description: 'Casting ensemble performers for an upcoming Broadway musical revival.',
-    location: 'New York, NY',
+    title: 'Theater Production — Ensemble',
+    description: 'Casting ensemble performers for an upcoming theater production revival.',
+    location: 'Nairobi, Kenya',
     roles: [
       { name: 'Ensemble / Singer-Dancer', detail: 'Any gender, 20-35' },
       { name: 'Understudy', detail: 'Male, 25-40' },
@@ -83,15 +83,15 @@ const fallbackGigs = [
 // Country data for global API simulation
 const countries = [
   { code: 'KE', name: 'Kenya', regions: ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret'] },
-  { code: 'US', name: 'United States', regions: ['California', 'New York', 'Texas', 'Florida', 'Illinois'] },
-  { code: 'UK', name: 'United Kingdom', regions: ['London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow'] },
+  { code: 'TZ', name: 'Tanzania', regions: ['Dar es Salaam', 'Arusha', 'Mwanza', 'Dodoma', 'Zanzibar'] },
+  { code: 'UG', name: 'Uganda', regions: ['Kampala', 'Entebbe', 'Gulu', 'Mbarara', 'Jinja'] },
   { code: 'ZA', name: 'South Africa', regions: ['Johannesburg', 'Cape Town', 'Durban', 'Pretoria', 'Port Elizabeth'] },
   { code: 'NG', name: 'Nigeria', regions: ['Lagos', 'Abuja', 'Kano', 'Ibadan', 'Port Harcourt'] },
-  { code: 'CA', name: 'Canada', regions: ['Toronto', 'Vancouver', 'Montreal', 'Calgary', 'Ottawa'] },
-  { code: 'AU', name: 'Australia', regions: ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide'] },
-  { code: 'DE', name: 'Germany', regions: ['Berlin', 'Munich', 'Hamburg', 'Cologne', 'Frankfurt'] },
-  { code: 'FR', name: 'France', regions: ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice'] },
-  { code: 'IN', name: 'India', regions: ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad'] },
+  { code: 'GH', name: 'Ghana', regions: ['Accra', 'Kumasi', 'Tamale', 'Takoradi', 'Cape Coast'] },
+  { code: 'RW', name: 'Rwanda', regions: ['Kigali', 'Butare', 'Gitarama', 'Ruhengeri', 'Gisenyi'] },
+  { code: 'ET', name: 'Ethiopia', regions: ['Addis Ababa', 'Dire Dawa', 'Mekelle', 'Bahir Dar', 'Gondar'] },
+  { code: 'US', name: 'United States', regions: ['California', 'New York', 'Texas', 'Florida', 'Illinois'] },
+  { code: 'UK', name: 'United Kingdom', regions: ['London', 'Manchester', 'Birmingham', 'Leeds', 'Glasgow'] },
 ]
 
 export default function FeaturedGigs() {

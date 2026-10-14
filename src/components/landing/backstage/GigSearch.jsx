@@ -4,11 +4,11 @@ import { Search, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const popular = [
-  'Netflix',
+  'Maisha Magic',
   'Movie Auditions',
   'Voiceover',
-  'New York City, NY',
-  'Disney',
+  'Nairobi, Kenya',
+  'Showmax',
   'Reality TV',
   'Remote',
   'TV Series',
