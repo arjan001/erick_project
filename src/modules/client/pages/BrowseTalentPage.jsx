@@ -47,17 +47,15 @@ export default function BrowseTalentPage() {
 
       // Fetch all users first to get their roles
       const allUsers = await User.list('-created_at', 1000)
-      console.log('Fetched all users:', allUsers.length)
+      console.log('Fetched all users:', allUsers.length, allUsers)
 
-      // Filter for artist/creator roles (or any creative role)
-      const creativeUsers = allUsers.filter(u =>
-        u.role === 'artist' || u.role === 'creator' || u.role === 'artist_admin'
-      )
-      console.log('Filtered creative users:', creativeUsers.length, creativeUsers)
+      // Filter for artist role only (based on user's naming: artist = creator, client = employer)
+      const artistUsers = allUsers.filter(u => u.role === 'artist')
+      console.log('Filtered artist users:', artistUsers.length, artistUsers)
 
-      if (creativeUsers && creativeUsers.length > 0) {
-        // Convert users to talent format directly (without needing artist profiles)
-        const talentData = creativeUsers.map(u => ({
+      if (artistUsers && artistUsers.length > 0) {
+        // Convert users to talent format directly
+        const talentData = artistUsers.map(u => ({
           id: u.id,
           full_name: u.full_name,
           email: u.email,
@@ -71,7 +69,7 @@ export default function BrowseTalentPage() {
         console.log('Setting talent data:', talentData)
         setTalent(talentData)
       } else {
-        console.log('No creative users found, setting empty talent')
+        console.log('No artist users found, setting empty talent')
         setTalent([])
       }
     } catch (err) {
