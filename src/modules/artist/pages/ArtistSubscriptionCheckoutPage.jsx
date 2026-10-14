@@ -396,15 +396,9 @@ export default function ArtistSubscriptionCheckoutPage() {
   }
 
   useEffect(() => {
-    const checkSubscriptions = async () => {
-      const enabled = await features.areSubscriptionsEnabled()
-      setSubscriptionsEnabled(enabled)
-      if (!enabled) {
-        navigate('/ArtistDashboard')
-      }
-    }
-    checkSubscriptions()
-  }, [navigate])
+    // Skip subscription check - always allow access
+    setSubscriptionsEnabled(true)
+  }, [])
 
   useEffect(() => {
     if (!subscriptionsEnabled || !isAuthenticated || !user) return

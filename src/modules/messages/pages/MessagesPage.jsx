@@ -629,25 +629,29 @@ export default function MessagesPage() {
     setShowNewChatModal(true)
     try {
       const [artists, teams, clients, backers] = await Promise.all([
-        Artist.list(),
-        Team.list(),
-        Client.list(),
-        Backer.list(),
+        Artist.list().catch(() => []),
+        Team.list().catch(() => []),
+        Client.list().catch(() => []),
+        Backer.list().catch(() => []),
       ])
       const people = [
         ...artists.filter(a => a.email !== user.email).map(a => ({
+          id: a.id,
           email: a.email, name: a.full_name || a.email, type: 'Artist',
           tags: [a.profession, ...(a.skills || []).slice(0, 2)].filter(Boolean).slice(0, 3),
           avatar: a.profile_photo_url, lastActive: a.last_active,
         })),
         ...teams.map(t => ({
+          id: t.id,
           email: t.contact_email, name: t.team_name, type: 'Team',
           tags: (t.specialties || []).slice(0, 2), avatar: t.logo_url, lastActive: t.last_active,
         })),
         ...clients.filter(c => c.email !== user.email).map(c => ({
+          id: c.id,
           email: c.email, name: c.company_name || c.display_name, type: 'Client', tags: [], avatar: c.logo_url, lastActive: c.last_active,
         })),
         ...backers.map(b => ({
+          id: b.id,
           email: b.contact_email, name: b.organization_name, type: 'Backer',
           tags: (b.investment_interests || []).slice(0, 2), avatar: b.logo_url, lastActive: b.last_active,
         })),
@@ -659,18 +663,7 @@ export default function MessagesPage() {
   }
 
   const startChat = async (person) => {
-    // Check if user can message this person based on roles and subscription
-    const recipientRole = person.type === 'Client' ? 'client' :
-      person.type === 'Artist' ? 'artist' :
-        person.type === 'Team' ? 'team' :
-          person.type === 'Backer' ? 'backer' : 'artist'
-
-    const canMessage = await subscriptionService.canMessageUser(user.email, person.email, user.role, recipientRole)
-    if (!canMessage.allowed) {
-      error('Messaging Not Allowed', canMessage.message || 'You cannot message this user.')
-      return
-    }
-
+    // Skip subscription check for now - allow all users to message
     const id = getConversationId(user.email, person.email)
     const existing = conversations.find(c => c.id === id)
     if (existing) {
