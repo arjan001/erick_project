@@ -7,7 +7,7 @@ import TalentCard from '@/components/landing/backstage/TalentCard'
 import CreatorProfileModal from '@/components/landing/backstage/CreatorProfileModal'
 import { talentProfiles, talentTabs, filterTags } from '@/components/landing/backstage/talentData'
 import { Search, SlidersHorizontal, ChevronDown, CheckSquare, HelpCircle, ZoomIn, Loader2 } from 'lucide-react'
-import { Creator } from '@/lib/supabaseEntities'
+import { User } from '@/lib/supabaseEntities'
 
 const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?name=SmartGigs&background=6366f1&color=fff&size=256'
 
@@ -26,31 +26,34 @@ export default function TalentPage() {
   const loadDatabaseProfiles = async () => {
     try {
       setLoading(true)
-      // Fetch only creators from database
-      const creators = await Creator.list('-created_at', 100)
+      console.log('Fetching talent from users table...')
 
-      console.log('Fetched creators:', creators.length)
+      // Fetch all users and filter for artist role
+      const allUsers = await User.list('-created_at', 1000)
+      console.log('Fetched all users:', allUsers.length)
+
+      const artistUsers = allUsers.filter(u => u.role === 'artist')
+      console.log('Filtered artist users:', artistUsers.length, artistUsers)
 
       // Transform to talent card format
       const allProfiles = []
 
-      // Add creators only
-      creators.forEach(c => {
+      // Add artist users only
+      artistUsers.forEach(u => {
         allProfiles.push({
-          id: c.id,
-          name: c.full_name || c.display_name || c.email?.split('@')[0] || 'Creator',
-          location: c.location || c.city || 'Kenya',
-          profession: c.profession || 'Actor',
-          images: c.profile_image ? [c.profile_image] : [DEFAULT_AVATAR],
+          id: u.id,
+          name: u.full_name || u.email?.split('@')[0] || 'Artist',
+          location: 'Kenya',
+          profession: 'Actor',
+          images: u.avatar_url ? [u.avatar_url] : [DEFAULT_AVATAR],
           badges: [],
-          email: c.email
+          email: u.email
         })
       })
 
       setDbProfiles(allProfiles)
     } catch (err) {
       console.error('Error loading profiles:', err)
-      // No fallback to static data - only show database results
       setDbProfiles([])
     } finally {
       setLoading(false)
