@@ -959,6 +959,7 @@ export const routes = [
   ...clientRoutes,
   ...teamRoutes,
   ...backerRoutes,
+  ...sharedRoutes,
   ...protectedRoutes,
   {
     path: '*',
