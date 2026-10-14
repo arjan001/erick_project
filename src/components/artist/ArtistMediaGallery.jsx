@@ -11,6 +11,8 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
   const [media, setMedia] = useState([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [currentFile, setCurrentFile] = useState('')
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showGallery, setShowGallery] = useState(false)
 
@@ -45,8 +47,13 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
     }
 
     setUploading(true)
+    setUploadProgress(0)
     try {
-      for (const file of files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        setCurrentFile(file.name)
+        setUploadProgress(Math.round(((i + 1) / files.length) * 100))
+
         const fileExt = file.name.split('.').pop()
         const isVideo = file.type.startsWith('video/')
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
@@ -92,14 +99,24 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
       }
 
       success('Success', 'Media uploaded successfully')
+      setUploadProgress(100)
+      setTimeout(() => {
+        setUploadProgress(0)
+        setCurrentFile('')
+      }, 1000)
       fetchMedia()
     } catch (err) {
       console.error('Upload error:', err)
       toastError('Error', `Failed to upload media: ${err.message || 'Unknown error'}`)
+      setUploadProgress(0)
+      setCurrentFile('')
     } finally {
       setUploading(false)
     }
   }
+
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [currentFile, setCurrentFile] = useState('')
 
   const handleDelete = async (mediaId) => {
     if (!confirm('Are you sure you want to delete this media?')) return
@@ -160,6 +177,14 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
               disabled={uploading}
             />
           </label>
+        )}
+        {uploading && (
+          <div className="mt-2">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-black h-2 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">{currentFile} - {uploadProgress}%</p>
+          </div>
         )}
         {uploading && (
           <p className="text-sm text-gray-400 mt-2">Please wait while media uploads...</p>

@@ -191,7 +191,7 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
         {/* Step indicator */}
         <div className="px-6 py-4 flex items-center justify-center gap-2">
           {[1, 2, 3, 4].map((s) => (
-            <div key={s} className={`h-2 rounded-full ${s <= step ? 'bg-purple-600' : 'bg-gray-200'} ${s < 4 ? 'flex-1' : 'w-8'}`} />
+            <div key={s} className={`h-2 rounded-full ${s <= step ? 'bg-black' : 'bg-gray-200'} ${s < 4 ? 'flex-1' : 'w-8'}`} />
           ))}
         </div>
 
@@ -202,7 +202,7 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
 
             <button
               onClick={() => { setPaymentMethod('mpesa'); setStep(2) }}
-              className={`w-full p-4 rounded-xl border-2 transition-all ${paymentMethod === 'mpesa' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`w-full p-4 rounded-xl border-2 transition-all ${paymentMethod === 'mpesa' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
             >
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -217,15 +217,15 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
 
             <button
               onClick={() => { setPaymentMethod('card'); setStep(2) }}
-              className={`w-full p-4 rounded-xl border-2 transition-all ${paymentMethod === 'card' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`w-full p-4 rounded-xl border-2 transition-all ${paymentMethod === 'card' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <CreditCard className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <CreditCard className="w-6 h-6 text-gray-600" />
                 </div>
                 <div className="text-left">
                   <div className="font-semibold text-gray-900">Card Payment</div>
-                  <div className="text-sm text-gray-500">Visa, Mastercard, etc.</div>
+                  <div className="text-sm text-gray-500">Visa, Mastercard, Amex</div>
                 </div>
               </div>
             </button>
@@ -266,6 +266,20 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
             ) : (
               <form onSubmit={handleCardSubmit} className="space-y-4">
                 <h3 className="font-semibold text-gray-900 mb-4">Card Payment</h3>
+
+                {/* Card logos */}
+                <div className="flex gap-3 mb-4">
+                  <div className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-lg">
+                    <span className="text-xs font-bold text-blue-600">VISA</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-lg">
+                    <span className="text-xs font-bold text-red-600">MasterCard</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-3 py-2 bg-gray-100 rounded-lg">
+                    <span className="text-xs font-bold text-blue-500">AMEX</span>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1.5">Card Number</label>
                   <div className="relative">
@@ -276,7 +290,7 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
                       placeholder="1234 5678 9012 3456"
                       maxLength={19}
                       required
-                      className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                     />
                     <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   </div>
@@ -291,7 +305,7 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
                       placeholder="MM/YY"
                       maxLength={5}
                       required
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -303,7 +317,7 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
                       placeholder="123"
                       maxLength={3}
                       required
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -315,12 +329,12 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
                     onChange={(e) => setCardForm({ ...cardForm, cardholderName: e.target.value })}
                     placeholder="Name on card"
                     required
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-3 bg-purple-600 text-white rounded-xl font-semibold text-sm hover:bg-purple-700 transition-all"
+                  className="w-full py-3 bg-black text-white rounded-xl font-semibold text-sm hover:bg-gray-800 transition-all"
                 >
                   Pay {pkg.currency || 'KES'} {pkg.price_monthly}
                 </button>
@@ -332,7 +346,7 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
         {/* Step 3: Processing */}
         {step === 3 && (
           <div className="p-12 text-center">
-            <Loader2 className="w-16 h-16 animate-spin text-purple-600 mx-auto mb-4" />
+            <Loader2 className="w-16 h-16 animate-spin text-black mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Processing Payment</h3>
             <p className="text-sm text-gray-500">Please wait while we process your payment...</p>
           </div>
@@ -348,7 +362,7 @@ function SubscriptionCheckoutModal({ pkg, onClose, onSuccess }) {
             <p className="text-sm text-gray-500 mb-6">Your subscription to {pkg.name} is now active.</p>
             <button
               onClick={onClose}
-              className="w-full py-3 bg-purple-600 text-white rounded-xl font-semibold text-sm hover:bg-purple-700 transition-all"
+              className="w-full py-3 bg-black text-white rounded-xl font-semibold text-sm hover:bg-gray-800 transition-all"
             >
               Done
             </button>
