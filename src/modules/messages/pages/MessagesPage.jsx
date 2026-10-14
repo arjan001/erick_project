@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Message, Conversation, Artist, Team, ProjectOwner, Backer, Notification } from '@/lib/supabaseEntities'
+import { Message, Conversation, Artist, Team, Client, Backer, Notification } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { formatDistanceToNow } from 'date-fns'
@@ -78,26 +78,26 @@ function getMessageStatus(msg, currentUserId) {
 // Look up a participant's profile across all user types and return display info + tags + presence
 async function enrichParticipant(userId) {
   try {
-    const artists = await Artist.filter({ user_id: userId })
+    const artists = await Artist.filter({ id: userId })
     if (artists.length > 0) {
       const a = artists[0]
-      const tags = [a.display_name, ...(a.skills || []).slice(0, 2)].filter(Boolean).slice(0, 3)
-      return { name: a.display_name, avatar: null, type: 'Artist', tags, lastActive: null }
+      const tags = [a.profession, ...(a.skills || []).slice(0, 2)].filter(Boolean).slice(0, 3)
+      return { name: a.full_name || a.email, avatar: a.profile_photo_url, type: 'Artist', tags, lastActive: a.last_active }
     }
     const teams = await Team.filter({ user_id: userId })
     if (teams.length > 0) {
       const t = teams[0]
-      return { name: t.team_name, avatar: t.logo_url, type: 'Team', tags: (t.specialties || []).slice(0, 2), lastActive: null }
+      return { name: t.team_name, avatar: t.logo_url, type: 'Team', tags: (t.specialties || []).slice(0, 2), lastActive: t.last_active }
     }
-    const owners = await ProjectOwner.filter({ user_id: userId })
-    if (owners.length > 0) {
-      const o = owners[0]
-      return { name: o.full_name || o.company, avatar: o.profile_photo_url || o.logo_url, type: 'Client', tags: [], lastActive: null }
+    const clients = await Client.filter({ user_id: userId })
+    if (clients.length > 0) {
+      const c = clients[0]
+      return { name: c.company_name || c.display_name, avatar: c.logo_url, type: 'Client', tags: [], lastActive: c.last_active }
     }
     const backers = await Backer.filter({ user_id: userId })
     if (backers.length > 0) {
       const b = backers[0]
-      return { name: b.organization_name, avatar: b.logo_url, type: 'Backer', tags: (b.investment_focus || []).slice(0, 2), lastActive: null }
+      return { name: b.organization_name, avatar: b.logo_url, type: 'Backer', tags: (b.investment_interests || []).slice(0, 2), lastActive: b.last_active }
     }
   } catch (e) {
     console.error('Error enriching participant:', e)
@@ -628,33 +628,33 @@ export default function MessagesPage() {
   const openDirectory = async () => {
     setShowNewChatModal(true)
     try {
-      const [artists, teams, owners, backers] = await Promise.all([
+      const [artists, teams, clients, backers] = await Promise.all([
         Artist.list(),
         Team.list(),
-        ProjectOwner.list(),
+        Client.list(),
         Backer.list(),
       ])
       const people = [
         ...artists.filter(a => a.email !== user.email).map(a => ({
-          email: a.email, name: a.full_name, type: 'Artist',
-          tags: [a.role, ...(a.skills_experience || []).slice(0, 2).map(s => s.skill)].filter(Boolean).slice(0, 3),
+          email: a.email, name: a.full_name || a.email, type: 'Artist',
+          tags: [a.profession, ...(a.skills || []).slice(0, 2)].filter(Boolean).slice(0, 3),
           avatar: a.profile_photo_url, lastActive: a.last_active,
         })),
         ...teams.map(t => ({
           email: t.contact_email, name: t.team_name, type: 'Team',
-          tags: (t.specialties || []).slice(0, 2), avatar: t.team_logo_url, lastActive: t.last_active,
+          tags: (t.specialties || []).slice(0, 2), avatar: t.logo_url, lastActive: t.last_active,
         })),
-        ...owners.filter(o => o.email !== user.email).map(o => ({
-          email: o.email, name: o.full_name, type: 'Client', tags: [], avatar: o.profile_photo_url, lastActive: o.last_active,
+        ...clients.filter(c => c.email !== user.email).map(c => ({
+          email: c.email, name: c.company_name || c.display_name, type: 'Client', tags: [], avatar: c.logo_url, lastActive: c.last_active,
         })),
         ...backers.map(b => ({
           email: b.contact_email, name: b.organization_name, type: 'Backer',
-          tags: (b.interests || []).slice(0, 2), avatar: b.logo_url, lastActive: b.last_active,
+          tags: (b.investment_interests || []).slice(0, 2), avatar: b.logo_url, lastActive: b.last_active,
         })),
       ]
       setDirectory(people)
     } catch (err) {
-      //
+      console.error('Error loading directory:', err)
     }
   }
 
