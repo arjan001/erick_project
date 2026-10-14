@@ -26,7 +26,7 @@ export default function NetworkPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState('all')
-  const [activeTab, setActiveTab] = useState('discover') // 'discover', 'connections', 'pending'
+  const [activeTab, setActiveTab] = useState('connections') // 'connections', 'sent', 'pending'
 
   const [allPeople, setAllPeople] = useState([])
   const [myConnections, setMyConnections] = useState([])
@@ -54,9 +54,9 @@ export default function NetworkPage() {
         Backer.list().catch(() => []),
       ])
 
-      // Transform to unified format
+      // Transform to unified format - exclude current user
       const people = [
-        ...artists.filter(a => a.id !== user.id).map(a => ({
+        ...artists.filter(a => a.id !== user.id && a.email !== user.email).map(a => ({
           id: a.id,
           type: 'artist',
           name: a.full_name || a.email,
@@ -68,7 +68,7 @@ export default function NetworkPage() {
           isOnline: isOnline(a.last_active),
           email: a.email,
         })),
-        ...teams.map(t => ({
+        ...teams.filter(t => t.contact_email !== user.email).map(t => ({
           id: t.id,
           type: 'team',
           name: t.team_name,
@@ -80,7 +80,7 @@ export default function NetworkPage() {
           isOnline: isOnline(t.last_active),
           email: t.contact_email,
         })),
-        ...clients.filter(c => c.id !== user.id).map(c => ({
+        ...clients.filter(c => c.id !== user.id && c.email !== user.email).map(c => ({
           id: c.id,
           type: 'client',
           name: c.company_name || c.display_name,
@@ -92,7 +92,7 @@ export default function NetworkPage() {
           isOnline: isOnline(c.last_active),
           email: c.contact_email,
         })),
-        ...backers.map(b => ({
+        ...backers.filter(b => b.contact_email !== user.email).map(b => ({
           id: b.id,
           type: 'backer',
           name: b.organization_name || b.display_name,
@@ -251,9 +251,36 @@ export default function NetworkPage() {
         </select>
       </div>
 
-      {/* Connections Section */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Connections ({myConnections.length})</h2>
+      {/* Tabs */}
+      <div className="mb-6 flex gap-2 border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab('connections')}
+          className={`px-4 py-2 font-medium ${activeTab === 'connections' ? 'border-b-2 border-black text-black' : 'text-gray-600'}`}
+        >
+          Connections ({myConnections.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('sent')}
+          className={`px-4 py-2 font-medium ${activeTab === 'sent' ? 'border-b-2 border-black text-black' : 'text-gray-600'}`}
+        >
+          Sent Requests ({0})
+        </button>
+        <button
+          onClick={() => setActiveTab('pending')}
+          className={`px-4 py-2 font-medium ${activeTab === 'pending' ? 'border-b-2 border-black text-black' : 'text-gray-600'}`}
+        >
+          Pending Requests ({pendingRequests.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('discover')}
+          className={`px-4 py-2 font-medium ${activeTab === 'discover' ? 'border-b-2 border-black text-black' : 'text-gray-600'}`}
+        >
+          Discover ({availablePeople.length})
+        </button>
+      </div>
+
+      {/* Connections Tab */}
+      {activeTab === 'connections' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {myConnections.length === 0 ? (
             <div className="col-span-full text-center py-8 text-gray-500 text-sm">
@@ -306,102 +333,119 @@ export default function NetworkPage() {
             })
           )}
         </div>
-      </div>
+      )}
 
-      {/* Suggested Section */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Suggested for you ({availablePeople.length})</h2>
+      {/* Sent Requests Tab */}
+      {activeTab === 'sent' && (
+        <div className="text-center py-8 text-gray-500 text-sm">
+          No sent requests
+        </div>
+      )}
+
+      {/* Pending Requests Tab */}
+      {activeTab === 'pending' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {availablePeople.length === 0 ? (
+          {pendingRequests.length === 0 ? (
             <div className="col-span-full text-center py-8 text-gray-500 text-sm">
-              No suggestions available
+              No pending requests
             </div>
           ) : (
-            availablePeople.map(person => (
-              <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                    {person.image ? (
-                      <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                        {person.name[0]}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 text-sm truncate">{person.name}</h3>
-                    <p className="text-xs text-gray-600">{person.profession || person.role}</p>
-                    <p className="text-xs text-gray-500 flex items-center gap-1">
-                      <MapPin className="w-3 h-3" /> {person.location}
-                    </p>
-                    {person.skills && person.skills.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {person.skills.slice(0, 2).map((skill, idx) => (
-                          <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <Button
-                    onClick={() => { setSelectedPerson(person); setShowConnectionModal(true); }}
-                    className="w-full text-sm bg-black text-white hover:bg-gray-800"
-                  >
-                    Connect
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Pending Requests Modal - show as a modal overlay if pending */}
-      {pendingRequests.length > 0 && (
-        <div className="fixed bottom-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm">
-          <h3 className="font-semibold text-gray-900 mb-2">Pending Requests ({pendingRequests.length})</h3>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {pendingRequests.map(conn => {
+            pendingRequests.map(conn => {
               const person = allPeople.find(p => p.id === conn.connected_artist_id)
               if (!person) return null
               return (
-                <div key={conn.id} className="flex items-center gap-2 text-sm">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                    {person.image ? (
-                      <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-                        {person.name[0]}
-                      </div>
-                    )}
+                <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                      {person.image ? (
+                        <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                          {person.name[0]}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-gray-900 text-sm truncate">{person.name}</h3>
+                      <p className="text-xs text-gray-600">{person.profession || person.role}</p>
+                      {conn.metadata?.message && (
+                        <p className="text-xs text-gray-500 mt-1 italic">"{conn.metadata.message}"</p>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 truncate">{person.name}</p>
-                  </div>
-                  <div className="flex gap-1">
+                  <div className="mt-3 flex gap-2">
                     <Button
                       onClick={() => acceptConnection(conn)}
-                      size="sm"
-                      className="bg-green-600 text-white hover:bg-green-700 px-2 py-1 text-xs"
+                      className="flex-1 bg-green-600 text-white hover:bg-green-700 text-sm"
                     >
-                      ✓
+                      Accept
                     </Button>
                     <Button
                       onClick={() => rejectConnection(conn)}
-                      size="sm"
                       variant="outline"
-                      className="px-2 py-1 text-xs"
+                      className="flex-1 text-sm"
                     >
-                      ✕
+                      Decline
                     </Button>
                   </div>
                 </div>
               )
-            })}
+            })
+          )}
+        </div>
+      )}
+
+      {/* Discover Tab - for finding new people */}
+      {activeTab === 'discover' && (
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Suggested for you ({availablePeople.length})</h2>
+          <p className="text-sm text-gray-500 mb-4">Matched by skill and career niche</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {availablePeople.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-gray-500 text-sm">
+                No suggestions available
+              </div>
+            ) : (
+              availablePeople.map(person => (
+                <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                      {person.image ? (
+                        <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                          {person.name[0]}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-gray-900 text-sm truncate">{person.name}</h3>
+                      <p className="text-xs text-gray-600">{person.profession || person.role}</p>
+                      <p className="text-xs text-gray-500 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> {person.location}
+                      </p>
+                      {person.skills && person.skills.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {person.skills.slice(0, 2).map((skill, idx) => (
+                            <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <Button
+                      onClick={() => { setSelectedPerson(person); setShowConnectionModal(true); }}
+                      className="w-full text-sm bg-black text-white hover:bg-gray-800"
+                    >
+                      Connect
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}

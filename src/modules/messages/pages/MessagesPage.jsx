@@ -627,6 +627,7 @@ export default function MessagesPage() {
 
   const openDirectory = async () => {
     setShowNewChatModal(true)
+    setDirectorySearch('')
     try {
       const [artists, teams, clients, backers] = await Promise.all([
         Artist.list().catch(() => []),
@@ -634,6 +635,7 @@ export default function MessagesPage() {
         Client.list().catch(() => []),
         Backer.list().catch(() => []),
       ])
+      console.log('Directory loaded:', { artists: artists.length, teams: teams.length, clients: clients.length, backers: backers.length })
       const people = [
         ...artists.filter(a => a.email !== user.email).map(a => ({
           id: a.id,
@@ -656,6 +658,7 @@ export default function MessagesPage() {
           tags: (b.investment_interests || []).slice(0, 2), avatar: b.logo_url, lastActive: b.last_active,
         })),
       ]
+      console.log('Directory people loaded:', people.length)
       setDirectory(people)
     } catch (err) {
       console.error('Error loading directory:', err)
@@ -687,9 +690,11 @@ export default function MessagesPage() {
     return c.name?.toLowerCase().includes(q) || c.otherEmail?.toLowerCase().includes(q)
   })
 
-  const filteredDirectory = directory.filter(p =>
-    p.name?.toLowerCase().includes(directorySearch.toLowerCase()) || p.email?.toLowerCase().includes(directorySearch.toLowerCase())
-  )
+  const filteredDirectory = directory.filter(p => {
+    const q = directorySearch.toLowerCase().trim()
+    if (!q) return true
+    return p.name?.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q)
+  })
 
   // Virtual scrolling for conversation list
   const conversationsVirtualizer = useVirtualizer({
