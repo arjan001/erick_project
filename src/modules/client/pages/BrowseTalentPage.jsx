@@ -221,7 +221,7 @@ export default function BrowseTalentPage() {
             />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
@@ -233,39 +233,48 @@ export default function BrowseTalentPage() {
             </Button>
 
             {showFilters && (
-              <div className="flex items-center gap-3 flex-wrap">
-                <select
-                  value={filterRole}
-                  onChange={(e) => setFilterRole(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                >
-                  <option value="all">All Roles</option>
-                  {uniqueRoles.map(role => (
-                    <option key={role} value={role}>{role}</option>
-                  ))}
-                </select>
+              <div className="flex flex-wrap items-center gap-3 p-4 bg-gray-50 rounded-xl w-full">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-gray-600">Role</label>
+                  <select
+                    value={filterRole}
+                    onChange={(e) => setFilterRole(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm min-w-[150px]"
+                  >
+                    <option value="all">All Roles</option>
+                    {uniqueRoles.map(role => (
+                      <option key={role} value={role}>{role}</option>
+                    ))}
+                  </select>
+                </div>
 
-                <select
-                  value={filterSkill}
-                  onChange={(e) => setFilterSkill(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                >
-                  <option value="all">All Skills</option>
-                  {allSkills.map(skill => (
-                    <option key={skill} value={skill}>{skill}</option>
-                  ))}
-                </select>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-gray-600">Skill</label>
+                  <select
+                    value={filterSkill}
+                    onChange={(e) => setFilterSkill(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm min-w-[150px]"
+                  >
+                    <option value="all">All Skills</option>
+                    {allSkills.map(skill => (
+                      <option key={skill} value={skill}>{skill}</option>
+                    ))}
+                  </select>
+                </div>
 
-                <select
-                  value={filterLocation}
-                  onChange={(e) => setFilterLocation(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                >
-                  <option value="all">All Locations</option>
-                  {uniqueLocations.map(loc => (
-                    <option key={loc} value={loc}>{loc}</option>
-                  ))}
-                </select>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-gray-600">Location</label>
+                  <select
+                    value={filterLocation}
+                    onChange={(e) => setFilterLocation(e.target.value)}
+                    className="px-3 py-2 border border border-gray-300 rounded-lg text-sm min-w-[150px]"
+                  >
+                    <option value="all">All Locations</option>
+                    {uniqueLocations.map(loc => (
+                      <option key={loc} value={loc}>{loc}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             )}
 
@@ -307,7 +316,7 @@ export default function BrowseTalentPage() {
                 </div>
               )}
 
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 ml-auto">
                 {filteredTalent.length} talent found
               </p>
             </div>

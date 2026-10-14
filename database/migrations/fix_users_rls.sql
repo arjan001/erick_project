@@ -1,16 +1,13 @@
--- Fix RLS policies on users table to allow registration
+-- Fix RLS policies on users table to allow registration and BrowseTalent
 -- Run this in Supabase SQL Editor
 
--- Drop existing RLS policies on users table
+-- Drop existing restrictive RLS policies on users table
 DROP POLICY IF EXISTS "Users can view own profile" ON public.users;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
-DROP POLICY IF EXISTS "Users can insert own profile" ON public.users;
-DROP POLICY IF EXISTS "Users can delete own profile" ON public.users;
 
 -- Enable RLS
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
--- Create new permissive policies for development
 -- Allow authenticated users to view all users (needed for BrowseTalent)
 CREATE POLICY "Users can view all users" ON public.users
   FOR SELECT
@@ -23,11 +20,12 @@ CREATE POLICY "Users can insert new users" ON public.users
   TO authenticated
   WITH CHECK (true);
 
--- Allow users to update their own profile
+-- Allow users to update their own profile only
 CREATE POLICY "Users can update own profile" ON public.users
   FOR UPDATE
   TO authenticated
-  USING (auth.uid() = id);
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
 -- Allow service role to do everything (needed for system operations)
 CREATE POLICY "Service role full access" ON public.users
