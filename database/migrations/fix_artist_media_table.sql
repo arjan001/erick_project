@@ -16,6 +16,7 @@ CREATE TABLE public.artist_media (
   media_url text NOT NULL,
   thumbnail_url text,
   caption text,
+  description text,
   order_index integer DEFAULT 0,
   is_primary boolean DEFAULT false,
   status character varying DEFAULT 'pending'::character varying CHECK (status::text = ANY (ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying]::text[])),

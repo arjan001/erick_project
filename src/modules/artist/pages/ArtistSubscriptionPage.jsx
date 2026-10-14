@@ -14,7 +14,6 @@ export default function ArtistSubscriptionPage() {
   const [packages, setPackages] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedPackage, setSelectedPackage] = useState(null)
-  const [showCheckoutModal, setShowCheckoutModal] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -45,8 +44,8 @@ export default function ArtistSubscriptionPage() {
 
   const handleSelectPackage = (pkg) => {
     setSelectedPackage(pkg)
-    // Open checkout modal instead of redirecting
-    setShowCheckoutModal(true)
+    // Navigate to checkout page with the selected package
+    navigate(`/ArtistSubscriptionCheckout?package=${pkg.id}`)
   }
 
   const handleManageSubscription = () => {
@@ -203,27 +202,6 @@ export default function ArtistSubscriptionPage() {
           </div>
         </div>
       </div>
-
-      {/* Checkout Modal */}
-      {showCheckoutModal && selectedPackage && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">Subscribe to {selectedPackage.name}</h2>
-                <p className="text-sm text-gray-500">{selectedPackage.currency || 'KES'} {selectedPackage.price_monthly}/month</p>
-              </div>
-              <button onClick={() => setShowCheckoutModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6">
-              <p className="text-sm text-gray-600 mb-4">Checkout functionality coming soon. This will allow you to pay via M-Pesa or Card.</p>
-              <Button onClick={() => setShowCheckoutModal(false)} className="w-full">Close</Button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }

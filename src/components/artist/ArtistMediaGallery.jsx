@@ -46,14 +46,15 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
         const filePath = `${artistId}/${fileName}`
 
-        console.log('Uploading to:', filePath)
+        console.log('Uploading to:', filePath, 'Type:', file.type)
 
         // Upload to Supabase Storage - use artist-profiles bucket
         const { error: uploadError } = await supabase.storage
           .from('artist-profiles')
           .upload(filePath, file, {
             cacheControl: '3600',
-            upsert: false
+            upsert: false,
+            contentType: file.type // Set content type for MP4 and other formats
           })
 
         if (uploadError) {

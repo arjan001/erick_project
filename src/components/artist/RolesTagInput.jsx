@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Search, X } from 'lucide-react'
-import { ALL_FILM_ROLES, FILM_ROLES_BY_CATEGORY } from '@/lib/filmRoles'
+import { TALENT_ROLES, TALENT_ROLES_BY_CATEGORY } from '@/lib/filmRoles'
 
 // Compact multi-select tag input for film industry roles.
 // Used in the portfolio modal so artists can tag multiple roles per clip.
@@ -30,23 +30,23 @@ export default function RolesTagInput({ selected = [], onChange }) {
   }
 
   // Check if query matches a category name
-  const matchedCategory = Object.keys(FILM_ROLES_BY_CATEGORY).find(
+  const matchedCategory = Object.keys(TALENT_ROLES_BY_CATEGORY).find(
     cat => cat.toLowerCase().includes(query.toLowerCase())
   )
 
   // Flat filtered suggestions - search by role name
   const flatMatches = query
-    ? ALL_FILM_ROLES.filter(r => r.toLowerCase().includes(query.toLowerCase())).slice(0, 15)
+    ? TALENT_ROLES.filter(r => r.toLowerCase().includes(query.toLowerCase())).slice(0, 15)
     : []
 
   // If query matches a category, show all roles from that category
   const categoryMatches = matchedCategory
-    ? FILM_ROLES_BY_CATEGORY[matchedCategory]
+    ? TALENT_ROLES_BY_CATEGORY[matchedCategory]
     : []
 
   // Grouped suggestions when no query (show top roles per category)
   const groupedPreview = !query
-    ? Object.entries(FILM_ROLES_BY_CATEGORY).map(([cat, roles]) => ({ cat, roles: roles.slice(0, 6) }))
+    ? Object.entries(TALENT_ROLES_BY_CATEGORY).map(([cat, roles]) => ({ cat, roles: roles.slice(0, 6) }))
     : []
 
   return (
@@ -73,7 +73,7 @@ export default function RolesTagInput({ selected = [], onChange }) {
           value={query}
           onChange={(e) => { setQuery(e.target.value); setShowDropdown(true); }}
           onFocus={() => setShowDropdown(true)}
-          placeholder="Search film roles... (e.g. Director, Colorist, VFX Artist)"
+          placeholder="Search talent roles... (e.g. Lead Actor, Voice Over, UGC Creator)"
           className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
         />
       </div>
