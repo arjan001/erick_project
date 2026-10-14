@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Artist, PortfolioClip, Endorsement, Testimonial, Subscription, SubscriptionPackage, Application, Job } from '@/lib/supabaseEntities'
-import { X, MapPin, Star, MessageCircle, BadgeCheck, Share2, Calendar, Globe, Instagram, Linkedin, Twitter, Youtube, Film, Sparkles, ChevronDown, ChevronUp, Play } from 'lucide-react'
+import { Artist, PortfolioClip, ArtistMedia, Endorsement, Testimonial, Subscription, SubscriptionPackage, Application, Job } from '@/lib/supabaseEntities'
+import { X, MapPin, Star, MessageCircle, BadgeCheck, Share2, Calendar, Globe, Instagram, Linkedin, Twitter, Youtube, Film, Sparkles, ChevronDown, ChevronUp, Play, Image as ImageIcon } from 'lucide-react'
 import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge'
 import ShareProfileButton from '@/components/artist/ShareProfileButton'
 import { createPageUrl } from '@/shared/utils/routing'
@@ -10,6 +10,7 @@ export default function ArtistProfileDrawer({ artistId, isOpen, onClose }) {
   const { user: authUser } = useAuth()
   const [artist, setArtist] = useState(null)
   const [portfolioClips, setPortfolioClips] = useState([])
+  const [artistMedia, setArtistMedia] = useState([])
   const [endorsements, setEndorsements] = useState([])
   const [testimonials, setTestimonials] = useState([])
   const [applications, setApplications] = useState([])
@@ -35,13 +36,15 @@ export default function ArtistProfileDrawer({ artistId, isOpen, onClose }) {
         if (!artistData) return
         setArtist(artistData)
 
-        const [clipsData, endorsementsData, testimonialsData, applicationsData] = await Promise.all([
+        const [clipsData, mediaData, endorsementsData, testimonialsData, applicationsData] = await Promise.all([
           PortfolioClip.filter({ uploaded_by_type: 'artist', uploaded_by_id: artistId, status: 'approved' }),
+          ArtistMedia.filter({ artist_id: artistId, status: 'approved' }, 'order_index', 50),
           Endorsement.filter({ user_id: artistId }),
           Testimonial.filter({ user_id: artistId }),
           Application.filter({ user_id: artistId }, '-created_at', 10),
         ])
         setPortfolioClips(clipsData || [])
+        setArtistMedia(mediaData || [])
         setEndorsements(endorsementsData || [])
         setTestimonials(testimonialsData || [])
         setApplications(applicationsData || [])
@@ -240,7 +243,7 @@ export default function ArtistProfileDrawer({ artistId, isOpen, onClose }) {
               </div>
 
               {/* Portfolio/Reels - All media images */}
-              {portfolioClips.length > 0 && (
+              {(portfolioClips.length > 0 || artistMedia.length > 0) && (
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Film className="w-5 h-5 text-indigo-600" />
@@ -267,6 +270,34 @@ export default function ArtistProfileDrawer({ artistId, isOpen, onClose }) {
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                           <Play className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
+                      </div>
+                    ))}
+                    {artistMedia.map((media) => (
+                      <div
+                        key={media.id}
+                        className={`relative ${media.media_type === 'video' ? 'aspect-video' : 'aspect-square'} bg-gray-100 rounded-lg overflow-hidden cursor-pointer group`}
+                        onClick={() => setActiveClip(media)}
+                      >
+                        {media.thumbnail_url || media.media_url ? (
+                          <img
+                            src={media.thumbnail_url || media.media_url}
+                            alt={media.title || 'Media'}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                            {media.media_type === 'video' ? (
+                              <Film className="w-8 h-8 text-gray-400" />
+                            ) : (
+                              <ImageIcon className="w-8 h-8 text-gray-400" />
+                            )}
+                          </div>
+                        )}
+                        {media.media_type === 'video' && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                            <Play className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
