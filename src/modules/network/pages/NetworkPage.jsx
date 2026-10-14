@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Artist, Team, Backer, ProjectOwner, Connection, Notification, Subscription } from '@/lib/supabaseEntities'
+import { User } from '@/lib/supabaseEntities'
+import { Connection, Notification, Subscription } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { createPageUrl } from '@/shared/utils/routing'
 import { useToast } from '@/hooks/useToast'
@@ -12,60 +13,32 @@ const ONLINE_THRESHOLD_MS = 90 * 1000 // consider online if active within last 9
 
 const isOnline = (lastActive) => lastActive && (Date.now() - new Date(lastActive).getTime()) < ONLINE_THRESHOLD_MS
 
-// Maps the app's user.role values to the Connection entity's requester/recipient type enum
-const ROLE_TO_TYPE = {
-  artist: 'artist', artist_admin: 'artist',
-  team: 'team', team_admin: 'team',
-  backer: 'backer',
-  client: 'client', project_owner: 'client',
+// Maps the app's user.role values to display names
+const ROLE_TO_DISPLAY = {
+  artist: 'Artist',
+  artist_admin: 'Artist Admin',
+  team: 'Team',
+  team_admin: 'Team Admin',
+  backer: 'Backer',
+  client: 'Client',
+  project_owner: 'Client',
+  admin: 'Admin',
 }
 
 const toDisplay = (person) => {
-  if (person.type === 'artist') {
-    return {
-      id: person.id, type: 'artist', name: person.full_name,
-      role: [person.role, ...(person.secondary_roles || [])].filter(Boolean).join(', '),
-      location: [person.based_in_city, person.based_in_country].filter(Boolean).join(', '),
-      image: person.profile_photo_url,
-      skills: (person.skills_experience || []).map(s => s.skill).concat(person.secondary_roles || [], person.role ? [person.role] : []),
-      organizationType: 'Creator',
-      organizationName: '',
-      isOnline: isOnline(person.last_active),
-    }
-  }
-  if (person.type === 'team') {
-    return {
-      id: person.id, type: 'team', name: person.team_name,
-      role: (person.specialties || []).join(', '),
-      location: [person.city, person.country].filter(Boolean).join(', '),
-      image: person.team_logo_url,
-      skills: person.specialties || [],
-      organizationType: 'Team',
-      organizationName: person.team_name,
-      isOnline: isOnline(person.last_active),
-    }
-  }
-  if (person.type === 'client') {
-    return {
-      id: person.id, type: 'client', name: person.full_name,
-      role: person.company || 'Project Owner',
-      location: '',
-      image: person.profile_photo_url,
-      skills: person.company ? [person.company] : [],
-      organizationType: person.organization_type || 'Client',
-      organizationName: person.organization_name || person.company || '',
-      isOnline: isOnline(person.last_active),
-    }
-  }
   return {
-    id: person.id, type: 'backer', name: person.organization_name,
-    role: (person.interests || []).join(', '),
-    location: (person.locations || []).join(', '),
-    image: person.logo_url,
-    skills: person.interests || [],
-    organizationType: 'Backer',
-    organizationName: person.organization_name,
-    isOnline: isOnline(person.last_active),
+    id: person.id,
+    type: person.role,
+    name: person.full_name || person.email?.split('@')[0] || 'User',
+    role: ROLE_TO_DISPLAY[person.role] || person.role,
+    location: 'Kenya', // Fallback since users table doesn't have location
+    image: person.avatar_url,
+    skills: [], // Users table doesn't have skills
+    organizationType: person.role === 'client' || person.role === 'project_owner' ? 'Client' :
+      person.role === 'team' || person.role === 'team_admin' ? 'Team' :
+        person.role === 'backer' ? 'Backer' : 'Artist',
+    organizationName: person.full_name || '',
+    isOnline: isOnline(person.updated_at),
   }
 }
 
@@ -91,52 +64,45 @@ export default function NetworkPage() {
   const [selectedPerson, setSelectedPerson] = useState(null)
   const [connectionMessage, setConnectionMessage] = useState('')
 
-  const myType = ROLE_TO_TYPE[user?.role] || 'artist'
+  const myType = user?.role || 'artist'
 
   useEffect(() => {
     if (!user) return
 
     const fetchData = async () => {
       try {
-        // Fetch connections where I'm the user OR the connected artist using correct schema
+        console.log('NetworkPage: Fetching data for user', user.id, 'role:', user.role)
+
+        // Fetch connections
         const connectionsData = await Connection.filter({ user_id: user.id })
           .catch(err => { console.error('Error fetching connections:', err); return [] })
 
-        const [artists, teams, backers, clients] = await Promise.all([
-          Artist.list().catch(err => { console.error('Error fetching artists:', err); return [] }),
-          Team.list().catch(err => { console.error('Error fetching teams:', err); return [] }),
-          Backer.list().catch(err => { console.error('Error fetching backers:', err); return [] }),
-          ProjectOwner.list().catch(err => { console.error('Error fetching clients:', err); return [] }),
-        ])
+        console.log('NetworkPage: Connections data:', connectionsData.length)
 
-        const allPeople = [
-          ...artists.map(a => ({ ...a, type: 'artist' })),
-          ...teams.map(t => ({ ...t, type: 'team' })),
-          ...backers.map(b => ({ ...b, type: 'backer' })),
-          ...clients.map(c => ({ ...c, type: 'client' })),
-        ].map(toDisplay).filter(p => p.id !== user.id)
+        // Fetch all users from users table
+        const allUsers = await User.list()
+          .catch(err => { console.error('Error fetching users:', err); return [] })
+
+        console.log('NetworkPage: All users:', allUsers.length)
+
+        // Transform users to display format, excluding current user
+        const allPeople = allUsers
+          .filter(u => u.id !== user.id)
+          .map(toDisplay)
+
+        console.log('NetworkPage: People to display:', allPeople.length)
 
         setPeople(allPeople)
 
-        // My own profile (used to score suggestions by skill/career niche overlap)
-        if (myType === 'artist') {
-          const mine = await Artist.filter({ user_id: user.id })
-          setMyProfile(mine?.[0] || null)
-        } else if (myType === 'team') {
-          const mine = await Team.filter({ user_id: user.id })
-          setMyProfile(mine?.[0] || null)
-        } else if (myType === 'backer') {
-          const mine = await Backer.filter({ user_id: user.id })
-          setMyProfile(mine?.[0] || null)
-        } else {
-          const mine = await ProjectOwner.filter({ user_id: user.id })
-          setMyProfile(mine?.[0] || null)
-        }
+        // My own profile (just use user data for now)
+        setMyProfile(user)
 
         const myConnections = connectionsData.filter(c => c.user_id === user.id)
 
         setConnections(myConnections)
         setPendingRequests(myConnections.filter(c => c.status === 'pending'))
+
+        console.log('NetworkPage: My connections:', myConnections.length, 'Pending:', myConnections.filter(c => c.status === 'pending').length)
 
         // For backers/clients: track which creators have an active paid subscription
         if (myType === 'backer' || myType === 'client') {
@@ -159,7 +125,7 @@ export default function NetworkPage() {
 
   const getConnectionStatus = (person) => {
     const connection = connections.find(c =>
-      c.user_id === user.id && c.connected_artist_id === person.id
+      c.user_id === user.id && c.connected_user_id === person.id
     )
     return connection ? connection.status : 'not_connected'
   }
@@ -172,11 +138,11 @@ export default function NetworkPage() {
 
     // Find all accepted connections for the other person
     const theirAcceptedConnections = connections.filter(c =>
-      c.connected_artist_id === personId && c.status === 'accepted'
+      c.connected_user_id === personId && c.status === 'accepted'
     )
 
     // Extract user IDs from both sets
-    const myConnectionsIds = new Set(myAcceptedConnections.map(c => c.connected_artist_id))
+    const myConnectionsIds = new Set(myAcceptedConnections.map(c => c.connected_user_id))
     const theirConnectionsIds = new Set(theirAcceptedConnections.map(c => c.user_id))
 
     // Find mutual connections
@@ -200,7 +166,7 @@ export default function NetworkPage() {
     try {
       await Connection.create({
         user_id: user.id,
-        connected_artist_id: selectedPerson.id,
+        connected_user_id: selectedPerson.id,
         connection_type: 'network',
         status: 'pending',
       })
@@ -209,7 +175,7 @@ export default function NetworkPage() {
         type: 'connection_request',
         title: 'New Connection Request',
         content: `${user.full_name} wants to connect with you`,
-        link_url: '/network',
+        link_url: '/Network',
         is_read: false,
         metadata: { sender_id: user.id, sender_name: user.full_name, connection_message: connectionMessage }
       })
@@ -291,7 +257,7 @@ export default function NetworkPage() {
 
   const myConnections = people.filter(p => getConnectionStatus(p) === 'accepted' && filterPerson(p))
   const notConnected = people.filter(p => getConnectionStatus(p) === 'not_connected' && filterPerson(p))
-  const sentRequests = connections.filter(c => c.requester_id === user.id && c.status === 'pending')
+  const sentRequests = connections.filter(c => c.user_id === user.id && c.status === 'pending')
   const receivedRequests = connections.filter(c => c.recipient_id === user.id && c.status === 'pending')
 
   // Score suggestions by skill/role overlap with my profile — "career/niche" matching
@@ -313,9 +279,9 @@ export default function NetworkPage() {
     .sort((a, b) => b.matchScore - a.matchScore)
 
   const typeIcon = (type) => {
-    if (type === 'team') return Building2
+    if (type === 'team' || type === 'team_admin') return Building2
     if (type === 'backer') return TrendingUp
-    if (type === 'client') return Briefcase
+    if (type === 'client' || type === 'project_owner') return Briefcase
     return Users
   }
 
