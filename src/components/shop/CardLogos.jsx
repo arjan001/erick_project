@@ -1,6 +1,6 @@
 import React from 'react'
 
-// IMPORTANT: Place the card payment logo image (Visa, Mastercard, Amex) at: public/card-payment-logos.png
+// IMPORTANT: The card payment logo image (Visa, Mastercard, Amex) is at: public/card-payment-logos.png
 // The user provided this image showing the three card logos
 export const CardBrandLogo = ({ brand, className = '' }) => {
   const brandLower = (brand || '').toLowerCase()
