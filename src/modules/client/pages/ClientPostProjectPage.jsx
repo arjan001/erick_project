@@ -831,7 +831,7 @@ export default function ClientPostProject() {
                           placeholder="Search or select a country"
                           className="bg-white border-gray-300 text-black h-12"
                         />
-                        {showLocationSuggestions && locationSuggestions.length > 0 && (
+                        {showLocationSuggestions && locationSuggestions && locationSuggestions.length > 0 && (
                           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                             {locationSuggestions.map((country, idx) => (
                               <button
@@ -866,7 +866,7 @@ export default function ClientPostProject() {
                           disabled={!projectForm.location_country}
                           className="bg-white border-gray-300 text-black h-12"
                         />
-                        {showCitySuggestions && citySuggestions.length > 0 && (
+                        {showCitySuggestions && citySuggestions && citySuggestions.length > 0 && (
                           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                             {citySuggestions.map((city, idx) => (
                               <button
@@ -934,7 +934,7 @@ export default function ClientPostProject() {
                             <h3 className="text-sm font-semibold text-gray-900 mb-3 capitalize">{category.replace(/_/g, ' ')}</h3>
                             <div className="flex flex-wrap gap-2">
                               {filteredRoles.map((role) => {
-                                const selectedRole = projectForm.job_roles.find(r => r.title === role)
+                                const selectedRole = (projectForm.job_roles || []).find(r => r.title === role)
                                 const isSelected = !!selectedRole
                                 return (
                                   <div key={role} className="flex items-center gap-2">

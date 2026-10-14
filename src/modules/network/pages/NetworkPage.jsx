@@ -77,16 +77,20 @@ export default function NetworkPage() {
       console.log('Transformed people:', people.length)
       setAllPeople(people)
 
-      // Fetch connections
+      // Fetch connections - get all connections where user is involved
       const connectionsData = await Connection.filter({ user_id: user.id }).catch(() => [])
       console.log('NetworkPage: Connections loaded:', connectionsData.length)
 
-      // Filter into accepted and pending - use connected_user_id
+      // Filter correctly:
+      // - My accepted connections: status = accepted (I'm either sender or receiver)
+      // - Requests I sent: user_id = me AND status = pending
+      // - Requests I received: connected_user_id = me AND status = pending
       const accepted = connectionsData.filter(c => c.status === 'accepted')
-      const pending = connectionsData.filter(c => c.status === 'pending')
+      const sentRequests = connectionsData.filter(c => c.user_id === user.id && c.status === 'pending')
+      const receivedRequests = connectionsData.filter(c => c.connected_user_id === user.id && c.status === 'pending')
 
       setMyConnections(accepted)
-      setPendingRequests(pending)
+      setPendingRequests(receivedRequests) // Only show requests I received to accept
 
     } catch (err) {
       console.error('NetworkPage: Error loading data:', err)
