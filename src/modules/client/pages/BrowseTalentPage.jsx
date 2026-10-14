@@ -43,35 +43,21 @@ export default function BrowseTalentPage() {
   const fetchTalent = async () => {
     try {
       setLoading(true)
+      console.log('Fetching talent from users table...')
+
       // Fetch all users first to get their roles
       const allUsers = await User.list('-created_at', 1000)
+      console.log('Fetched all users:', allUsers.length)
 
       // Filter for artist/creator roles (or any creative role)
       const creativeUsers = allUsers.filter(u =>
         u.role === 'artist' || u.role === 'creator' || u.role === 'artist_admin'
       )
+      console.log('Filtered creative users:', creativeUsers.length, creativeUsers)
 
       if (creativeUsers && creativeUsers.length > 0) {
-        // Fetch artist profiles for these users
-        const artistProfiles = await Promise.all(
-          creativeUsers.map(u => Artist.filter({ user_id: u.id }))
-        )
-        const flattened = artistProfiles.flat().filter(Boolean)
-
-        // Merge user data with artist data
-        const merged = flattened.map(artist => {
-          const userData = creativeUsers.find(u => u.id === artist.user_id)
-          return {
-            ...artist,
-            email: userData?.email,
-            user_role: userData?.role
-          }
-        })
-
-        // Also include users without artist profiles (using user data only)
-        const usersWithoutProfiles = creativeUsers.filter(u =>
-          !flattened.some(artist => artist.user_id === u.id)
-        ).map(u => ({
+        // Convert users to talent format directly (without needing artist profiles)
+        const talentData = creativeUsers.map(u => ({
           id: u.id,
           full_name: u.full_name,
           email: u.email,
@@ -82,47 +68,15 @@ export default function BrowseTalentPage() {
           based_in_country: 'Kenya',
           skills_experience: []
         }))
-
-        setTalent([...merged, ...usersWithoutProfiles])
+        console.log('Setting talent data:', talentData)
+        setTalent(talentData)
       } else {
-        // Fallback: return users table data if no creative users found
-        const creativeUsersFromDB = allUsers.filter(u =>
-          u.role === 'artist' || u.role === 'creator' || u.role === 'artist_admin'
-        )
-        setTalent(creativeUsersFromDB.map(u => ({
-          id: u.id,
-          full_name: u.full_name,
-          email: u.email,
-          user_role: u.role,
-          role: u.role,
-          profile_photo_url: u.avatar_url,
-          based_in_city: null,
-          based_in_country: 'Kenya',
-          skills_experience: []
-        })))
+        console.log('No creative users found, setting empty talent')
+        setTalent([])
       }
     } catch (err) {
       console.error('Error fetching talent:', err)
-      // Fallback to users table directly
-      try {
-        const allUsers = await User.list('-created_at', 1000)
-        const creativeUsers = allUsers.filter(u =>
-          u.role === 'artist' || u.role === 'creator' || u.role === 'artist_admin'
-        )
-        setTalent(creativeUsers.map(u => ({
-          id: u.id,
-          full_name: u.full_name,
-          email: u.email,
-          user_role: u.role,
-          role: u.role,
-          profile_photo_url: u.avatar_url,
-          based_in_city: null,
-          based_in_country: 'Kenya',
-          skills_experience: []
-        })))
-      } catch {
-        setTalent([])
-      }
+      setTalent([])
     } finally {
       setLoading(false)
     }
