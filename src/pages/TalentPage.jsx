@@ -17,11 +17,33 @@ export default function TalentPage() {
   const [autoplay, setAutoplay] = useState(false)
   const [selectedProfile, setSelectedProfile] = useState(null)
   const [dbProfiles, setDbProfiles] = useState([])
+  const [filteredProfiles, setFilteredProfiles] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     loadDatabaseProfiles()
   }, [])
+
+  // Filter profiles based on active tab and tag
+  useEffect(() => {
+    let filtered = dbProfiles
+
+    // Filter by tag if active
+    if (activeTag) {
+      filtered = filtered.filter(p => {
+        if (activeTag.includes('Nairobi')) return p.location.includes('Nairobi')
+        if (activeTag.includes('Mombasa')) return p.location.includes('Mombasa')
+        if (activeTag.includes('Kisumu')) return p.location.includes('Kisumu')
+        if (activeTag.includes('Female')) return true // Can be enhanced with gender field
+        if (activeTag.includes('Male')) return true // Can be enhanced with gender field
+        return true
+      })
+    }
+
+    // For now, show all profiles in all tabs since we only have artist role
+    // Can be enhanced later when we have role-based data
+    setFilteredProfiles(filtered)
+  }, [activeTab, activeTag, dbProfiles])
 
   const loadDatabaseProfiles = async () => {
     try {
@@ -60,8 +82,8 @@ export default function TalentPage() {
     }
   }
 
-  // Use database profiles only (no fallback to static data)
-  const profilesToDisplay = dbProfiles
+  // Use filtered profiles based on active tab
+  const profilesToDisplay = filteredProfiles
 
   return (
     <div className="min-h-screen bg-[#1a1a23]">
