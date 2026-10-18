@@ -239,10 +239,10 @@ export default function MessagesPage() {
   return (
     <div className="h-screen bg-white flex">
       {/* Left Sidebar - Conversation List */}
-      <div className="w-96 border-r border-gray-200 flex flex-col">
+      <div className="w-80 border-r border-gray-200 flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -379,8 +379,8 @@ export default function MessagesPage() {
                 >
                   <div
                     className={`max-w-[70%] rounded-2xl px-4 py-2 ${msg.sender_id === user.id
-                        ? 'bg-[#dcf8c6] text-gray-900'
-                        : 'bg-white text-gray-900'
+                      ? 'bg-[#dcf8c6] text-gray-900'
+                      : 'bg-white text-gray-900'
                       }`}
                   >
                     <p className="text-sm">{msg.content}</p>

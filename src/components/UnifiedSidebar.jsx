@@ -40,7 +40,7 @@ const roleNavConfig = {
       {
         label: 'Finance',
         items: [
-          { path: '/ArtistFinance', label: 'Finances', icon: Wallet },
+          // { path: '/ArtistFinance', label: 'Finances', icon: Wallet }, // Commented out due to 404 error
           { path: '/ArtistSubscription', label: 'Subscription', icon: Crown },
         ]
       },
@@ -284,16 +284,10 @@ export default function UnifiedSidebar({ role = 'creator', mobileSidebarOpen, se
         </div>
         <div className="flex items-center gap-1">
           <button
-            onClick={handleCollapseToggle}
-            className="hidden lg:flex p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+            onClick={collapsed ? () => setMobileSidebarOpen(false) : handleCollapseToggle}
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
-          <button
-            onClick={() => setMobileSidebarOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
-          >
-            <X className="w-4 h-4" />
           </button>
         </div>
       </div>
