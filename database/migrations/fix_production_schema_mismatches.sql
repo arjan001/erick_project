@@ -37,3 +37,7 @@ ADD COLUMN IF NOT EXISTS admin_approval_status TEXT DEFAULT 'pending',
 ADD COLUMN IF NOT EXISTS rejection_reason TEXT,
 ADD COLUMN IF NOT EXISTS social_media_url TEXT,
 ADD COLUMN IF NOT EXISTS website_url TEXT;
+
+-- Add google_drive_folder_id for artists (optional, for future use)
+ALTER TABLE public.artists
+ADD COLUMN IF NOT EXISTS google_drive_folder_id TEXT;
