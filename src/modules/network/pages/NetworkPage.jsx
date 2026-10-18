@@ -42,7 +42,7 @@ export default function NetworkPage() {
   const [selectedPerson, setSelectedPerson] = useState(null)
   const [connectionMessage, setConnectionMessage] = useState('')
 
-  const myType = ROLE_TO_TYPE[user?.role] || 'artist'
+  const myType = user ? ROLE_TO_TYPE[user.role] || 'artist' : 'artist'
 
   useEffect(() => {
     if (!user) return

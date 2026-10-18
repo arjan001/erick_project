@@ -652,12 +652,13 @@ const artistRoutes = [
     layout: DashboardLayout,
     guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
-  {
-    path: '/ArtistFinance',
-    component: () => import('@/modules/artist/pages/ArtistFinancePage'),
-    layout: DashboardLayout,
-    guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
-  },
+  // Commented out due to 404 chunk error - needs investigation
+  // {
+  //   path: '/ArtistFinance',
+  //   component: () => import('@/modules/artist/pages/ArtistFinancePage'),
+  //   layout: DashboardLayout,
+  //   guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
+  // },
   {
     path: '/JobInvitations',
     component: () => import('@/modules/jobs/pages/JobInvitationsPage'),
