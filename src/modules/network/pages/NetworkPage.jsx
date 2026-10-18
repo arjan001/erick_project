@@ -268,12 +268,12 @@ export default function NetworkPage() {
                 <div key={request.id} className="flex items-center gap-3 p-2 bg-white border border-gray-200 rounded hover:border-gray-300 transition-colors">
                   <div className="relative flex-shrink-0">
                     <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-xs font-bold text-gray-600">
-                      {requester?.image ? <img src={requester.image} alt={requester.name} className="w-full h-full object-cover" /> : (requester?.name?.[0] || request.user_id[0]).toUpperCase()}
+                      {requester?.image ? <img src={requester.image} alt={requester.name} className="w-full h-full object-cover" /> : (requester?.name?.[0] || request.user_id?.[0] || '?').toUpperCase()}
                     </div>
                     <TypeIcon className="w-2.5 h-2.5 absolute -bottom-0.5 -right-0.5 bg-black text-white rounded-full p-0.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 text-sm">{requester?.name || request.user_id}</div>
+                    <div className="font-medium text-gray-900 text-sm">{requester?.name || request.user_id || 'Unknown'}</div>
                     <div className="text-xs text-gray-600">{requester?.role || 'User'}</div>
                   </div>
                   <div className="flex gap-1.5 flex-shrink-0">
@@ -315,9 +315,9 @@ export default function NetworkPage() {
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-xs font-bold text-gray-600">
-                            {recipient?.image ? <img src={recipient.image} alt={recipient.name} className="w-full h-full object-cover" /> : (recipient?.name?.[0] || request.connected_artist_id[0]).toUpperCase()}
+                            {recipient?.image ? <img src={recipient.image} alt={recipient.name} className="w-full h-full object-cover" /> : (recipient?.name?.[0] || request.connected_artist_id?.[0] || '?').toUpperCase()}
                           </div>
-                          <span className="text-sm font-medium text-gray-900">{recipient?.name || request.connected_artist_id}</span>
+                          <span className="text-sm font-medium text-gray-900">{recipient?.name || request.connected_artist_id || 'Unknown'}</span>
                         </div>
                       </td>
                       <td className="px-3 py-2 text-xs text-gray-600">{recipient?.role || 'User'}</td>
@@ -410,7 +410,7 @@ export default function NetworkPage() {
               <div key={`${person.type}-${person.id}`} className="p-3 hover:bg-gray-50">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden text-xs font-bold text-gray-600">
-                    {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
+                    {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : (person.name?.[0] || '?').toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
@@ -446,7 +446,7 @@ export default function NetworkPage() {
                   <div className="flex items-center gap-3">
                     <div className="relative flex-shrink-0">
                       <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-xs font-bold text-gray-600">
-                        {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
+                        {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : (person.name?.[0] || '?').toUpperCase()}
                       </div>
                       <TypeIcon className="w-2.5 h-2.5 absolute -bottom-0.5 -right-0.5 bg-black text-white rounded-full p-0.5" />
                     </div>
