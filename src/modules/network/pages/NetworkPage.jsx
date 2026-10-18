@@ -89,8 +89,11 @@ export default function NetworkPage() {
           setMyProfile(mine?.[0] || null)
         }
 
-        setConnections(connectionsData)
-        setPendingRequests(connectionsData.filter(c => c.connected_artist_id === user.id && c.status === 'pending'))
+        // Fetch all connections to check for both directions (pending requests TO and FROM user)
+        const allConnections = await Connection.filter().catch(() => [])
+        setConnections(allConnections)
+        setPendingRequests(allConnections.filter(c => c.connected_artist_id === user.id && c.status === 'pending'))
+        setSentRequests(allConnections.filter(c => c.user_id === user.id && c.status === 'pending'))
 
         // For backers/clients: track which creators have an active paid subscription
         if (myType === 'backer' || myType === 'client') {
@@ -342,27 +345,27 @@ export default function NetworkPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <h2 className="text-sm font-semibold text-gray-900 mb-4">Connections ({myConnections.length})</h2>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {myConnections.length === 0 && (
                   <div className="text-center py-8 text-gray-500 text-sm">No connections yet</div>
                 )}
                 {myConnections.map((person) => (
-                  <div key={`${person.type}-${person.id}`} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden text-xs font-bold text-gray-600">
+                  <div key={`${person.type}-${person.id}`} className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden text-xs font-bold text-gray-600">
                         {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : (person.name?.[0] || '?').toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
-                            <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <h3 className="font-semibold text-gray-900 text-sm truncate">{person.name}</h3>
+                            <span className="text-xs text-gray-600 truncate">{person.role}</span>
+                            {person.location && <span className="text-xs text-gray-500 flex items-center gap-1 flex-shrink-0"><MapPin className="w-3 h-3" />{person.location}</span>}
                           </div>
-                          <Button onClick={() => handleMessage(person)} size="sm" variant="outline" className="text-xs px-3 flex-shrink-0">
+                          <Button onClick={() => handleMessage(person)} size="sm" className="bg-black text-white hover:bg-gray-800 text-xs px-3 flex-shrink-0">
                             <MessageCircle className="w-3 h-3 mr-1" /> Message
                           </Button>
                         </div>
-                        {person.location && <div className="flex items-center gap-1 text-xs text-gray-500"><MapPin className="w-3 h-3" />{person.location}</div>}
                       </div>
                     </div>
                   </div>
@@ -372,36 +375,34 @@ export default function NetworkPage() {
 
             <div>
               <h2 className="text-sm font-semibold text-gray-900 mb-4">Suggested for you</h2>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {suggestions.length === 0 && (
                   <div className="text-center py-8 text-gray-500 text-sm">No suggestions available</div>
                 )}
                 {suggestions.map((person) => {
                   const TypeIcon = typeIcon(person.type)
                   return (
-                    <div key={`${person.type}-${person.id}`} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-start gap-3">
+                    <div key={`${person.type}-${person.id}`} className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3">
                         <div className="relative flex-shrink-0">
-                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-xs font-bold text-gray-600">
+                          <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-xs font-bold text-gray-600">
                             {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : (person.name?.[0] || '?').toUpperCase()}
                           </div>
                           <TypeIcon className="w-2.5 h-2.5 absolute -bottom-0.5 -right-0.5 bg-black text-white rounded-full p-0.5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
-                              <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <h3 className="font-semibold text-gray-900 text-sm truncate">{person.name}</h3>
+                              <span className="text-xs text-gray-600 truncate">{person.role}</span>
+                              {person.matchScore > 0 && <span className="text-xs font-medium text-indigo-600 flex-shrink-0">{person.matchScore} match{person.matchScore > 1 ? 'es' : ''}</span>}
+                              {person.location && <span className="text-xs text-gray-500 flex items-center gap-1 flex-shrink-0"><MapPin className="w-3 h-3" />{person.location}</span>}
                             </div>
                             {getConnectionStatus(person) === 'pending' ? (
                               <Button size="sm" variant="outline" className="text-xs px-3 flex-shrink-0" disabled>Pending</Button>
                             ) : (
                               <Button onClick={() => { setSelectedPerson(person); setShowConnectionModal(true); }} size="sm" className="bg-black text-white hover:bg-gray-800 text-xs px-3 flex-shrink-0">Connect</Button>
                             )}
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                            {person.matchScore > 0 && <span className="font-medium text-indigo-600">{person.matchScore} skill match{person.matchScore > 1 ? 'es' : ''}</span>}
-                            {person.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{person.location}</span>}
                           </div>
                         </div>
                       </div>
@@ -471,21 +472,24 @@ export default function NetworkPage() {
             {pendingRequests.length === 0 ? (
               <div className="text-center py-8 text-gray-500 text-sm">No pending requests</div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {pendingRequests.map((request) => {
                   const requester = people.find(p => p.id === request.user_id)
                   const TypeIcon = typeIcon(requester?.type)
                   return (
                     <div key={request.id} className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                       <div className="relative flex-shrink-0">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-xs font-bold text-gray-600">
+                        <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-xs font-bold text-gray-600">
                           {requester?.image ? <img src={requester.image} alt={requester.name} className="w-full h-full object-cover" /> : (requester?.name?.[0] || request.user_id?.[0] || '?').toUpperCase()}
                         </div>
                         <TypeIcon className="w-2.5 h-2.5 absolute -bottom-0.5 -right-0.5 bg-black text-white rounded-full p-0.5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 text-sm">{requester?.name || request.user_id || 'Unknown'}</div>
-                        <div className="text-xs text-gray-600">{requester?.role || 'User'}</div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium text-gray-900 text-sm truncate">{requester?.name || request.user_id || 'Unknown'}</h3>
+                          <span className="text-xs text-gray-600 truncate">{requester?.role || 'User'}</span>
+                          {requester?.location && <span className="text-xs text-gray-500 flex items-center gap-1 flex-shrink-0"><MapPin className="w-3 h-3" />{requester.location}</span>}
+                        </div>
                       </div>
                       <div className="flex gap-1.5 flex-shrink-0">
                         <button onClick={() => handleAcceptConnection(request.id)} className="px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium transition-colors">

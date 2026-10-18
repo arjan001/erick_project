@@ -186,10 +186,10 @@ export default function NotificationsPage() {
   const readCount = notifications.filter(n => n.is_read).length
 
   return (
-    <>
-      <div className="flex items-center justify-between mb-4">
+    <div className="p-6 max-w-6xl mx-auto bg-white min-h-screen">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
           <p className="text-sm text-gray-600 mt-0.5">
             {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
           </p>
@@ -317,6 +317,6 @@ export default function NotificationsPage() {
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   )
 }
