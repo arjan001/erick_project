@@ -1,45 +1,52 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { createPageUrl } from '@/shared/utils/routing'
 import { Bell, CalendarClock, UserCheck, Clock, Users } from 'lucide-react'
-import { Connection } from '@/lib/supabaseEntities'
+import { Connection, User } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 
 export default function RemindersCard({ invitations = [] }) {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState('invitations'); // 'invitations', 'connections', 'sent'
+  const [activeTab, setActiveTab] = useState('invitations')
   const [connections, setConnections] = useState([])
   const [sentRequests, setSentRequests] = useState([])
   const [pendingRequests, setPendingRequests] = useState([])
   const [loading, setLoading] = useState(false)
+  const [usersMap, setUsersMap] = useState({})
 
   const fetchConnections = async () => {
     if (!user?.id) return
     setLoading(true)
     try {
-      // TODO: Refactor to use user_id and connected_artist_id from connections table
-      // Need to join with users table to get email addresses for display
-      // For now, this feature is disabled pending proper refactoring
-      // const [sentConns, receivedConns] = await Promise.all([
-      //   Connection.filter({ user_id: user.id }),
-      //   Connection.filter({ connected_artist_id: user.id }),
-      // ])
-      // const allConnections = [...(sentConns || []), ...(receivedConns || [])]
-      //
-      // setConnections(allConnections.filter(c => c.status === 'accepted'))
-      // setSentRequests(allConnections.filter(c => c.user_id === user.id && c.status === 'pending'))
-      // setPendingRequests(allConnections.filter(c => c.connected_artist_id === user.id && c.status === 'pending'))
-      setConnections([])
-      setSentRequests([])
-      setPendingRequests([])
-    } catch (err) {
+      const connectionsData = await Connection.filter({ user_id: user.id }).catch(() => [])
 
+      // Fetch users for display
+      const allUsers = await User.list().catch(() => [])
+      const usersMapData = {}
+      allUsers.forEach(u => {
+        usersMapData[u.id] = {
+          name: u.full_name || u.email,
+          avatar: u.avatar_url,
+          role: u.role || 'User'
+        }
+      })
+      setUsersMap(usersMapData)
+
+      const accepted = connectionsData.filter(c => c.status === 'accepted')
+      const sent = connectionsData.filter(c => c.user_id === user.id && c.status === 'pending')
+      const pending = connectionsData.filter(c => c.connected_artist_id === user.id && c.status === 'pending')
+
+      setConnections(accepted)
+      setSentRequests(sent)
+      setPendingRequests(pending)
+    } catch (err) {
+      console.error('Error fetching connections:', err)
     } finally {
       setLoading(false)
     }
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (activeTab === 'connections' || activeTab === 'sent' || activeTab === 'pending') {
       fetchConnections()
     }
@@ -50,7 +57,7 @@ export default function RemindersCard({ invitations = [] }) {
       await Connection.update(connectionId, { status: 'accepted' })
       await fetchConnections()
     } catch (err) {
-
+      console.error('Error accepting connection:', err)
     }
   }
 
@@ -59,7 +66,7 @@ export default function RemindersCard({ invitations = [] }) {
       await Connection.update(connectionId, { status: 'declined' })
       await fetchConnections()
     } catch (err) {
-
+      console.error('Error declining connection:', err)
     }
   }
 
@@ -68,8 +75,12 @@ export default function RemindersCard({ invitations = [] }) {
       await Connection.delete(connectionId)
       await fetchConnections()
     } catch (err) {
-
+      console.error('Error cancelling connection:', err)
     }
+  }
+
+  const getUserDisplay = (userId) => {
+    return usersMap[userId] || { name: userId, avatar: null, role: 'User' }
   }
 
   return (
@@ -156,20 +167,25 @@ export default function RemindersCard({ invitations = [] }) {
             </div>
           ) : (
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {/* TODO: Enable after refactoring to use user_id-based connections */}
-              {/* {connections.slice(0, 3).map((conn) => (
-                <div key={conn.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                    {conn.user_id === user?.id ? conn.connected_artist_id[0].toUpperCase() : conn.user_id[0].toUpperCase()}
+              {connections.slice(0, 3).map((conn) => {
+                const userId = conn.user_id === user?.id ? conn.connected_artist_id : conn.user_id
+                const userData = getUserDisplay(userId)
+                return (
+                  <div key={conn.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                      {userData.avatar ? (
+                        <img src={userData.avatar} alt={userData.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xs font-bold text-gray-600">{userData.name[0].toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-900 truncate">{userData.name}</p>
+                      <p className="text-[10px] text-gray-500">Connected</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">
-                      {conn.user_id === user?.id ? conn.connected_artist_id : conn.user_id}
-                    </p>
-                    <p className="text-[10px] text-gray-500">Connected</p>
-                  </div>
-                </div>
-              ))} */}
+                )
+              })}
               {connections.length > 3 && (
                 <Link
                   to={createPageUrl('Network')}
@@ -199,24 +215,30 @@ export default function RemindersCard({ invitations = [] }) {
             </div>
           ) : (
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {/* TODO: Enable after refactoring to use user_id-based connections */}
-              {/* {sentRequests.slice(0, 3).map((request) => (
-                <div key={request.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                    {request.connected_artist_id[0].toUpperCase()}
+              {sentRequests.slice(0, 3).map((request) => {
+                const userData = getUserDisplay(request.connected_artist_id)
+                return (
+                  <div key={request.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                      {userData.avatar ? (
+                        <img src={userData.avatar} alt={userData.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xs font-bold text-gray-600">{userData.name[0].toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-900 truncate">{userData.name}</p>
+                      <p className="text-[10px] text-gray-500">Pending</p>
+                    </div>
+                    <button
+                      onClick={() => handleCancelRequest(request.id)}
+                      className="text-xs text-red-600 hover:text-red-700 font-medium"
+                    >
+                      Cancel
+                    </button>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">{request.connected_artist_id}</p>
-                    <p className="text-[10px] text-gray-500">Pending</p>
-                  </div>
-                  <button
-                    onClick={() => handleCancelRequest(request.id)}
-                    className="text-xs text-red-600 hover:text-red-700 font-medium"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ))}
+                )
+              })}
               {sentRequests.length > 3 && (
                 <Link
                   to={createPageUrl('Network')}
@@ -224,7 +246,7 @@ export default function RemindersCard({ invitations = [] }) {
                 >
                   View all {sentRequests.length} requests
                 </Link>
-              )} */}
+              )}
             </div>
           )}
         </>
@@ -246,32 +268,38 @@ export default function RemindersCard({ invitations = [] }) {
             </div>
           ) : (
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {/* TODO: Enable after refactoring to use user_id-based connections */}
-              {/* {pendingRequests.slice(0, 3).map((request) => (
-                <div key={request.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                    {request.user_id[0].toUpperCase()}
+              {pendingRequests.slice(0, 3).map((request) => {
+                const userData = getUserDisplay(request.user_id)
+                return (
+                  <div key={request.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                      {userData.avatar ? (
+                        <img src={userData.avatar} alt={userData.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xs font-bold text-gray-600">{userData.name[0].toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-900 truncate">{userData.name}</p>
+                      <p className="text-[10px] text-gray-500">Wants to connect</p>
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => handleAcceptConnection(request.id)}
+                        className="text-xs bg-black text-white px-2 py-1 rounded hover:bg-gray-800"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => handleDeclineConnection(request.id)}
+                        className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300"
+                      >
+                        Decline
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">{request.user_id}</p>
-                    <p className="text-[10px] text-gray-500">Wants to connect</p>
-                  </div>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => handleAcceptConnection(request.id)}
-                      className="text-xs bg-black text-white px-2 py-1 rounded hover:bg-gray-800"
-                    >
-                      Accept
-                    </button>
-                    <button
-                      onClick={() => handleDeclineConnection(request.id)}
-                      className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300"
-                    >
-                      Decline
-                    </button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
               {pendingRequests.length > 3 && (
                 <Link
                   to={createPageUrl('Network')}
@@ -279,7 +307,7 @@ export default function RemindersCard({ invitations = [] }) {
                 >
                   View all {pendingRequests.length} requests
                 </Link>
-              )} */}
+              )}
             </div>
           )}
         </>
