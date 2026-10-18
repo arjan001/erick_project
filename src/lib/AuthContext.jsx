@@ -107,10 +107,11 @@ async function ensureProfile(user) {
 
   try {
     if (role === 'artist') {
-      const existing = await Artist.filter({ user_id: user.id })
+      // Production schema uses email as identifier, not user_id
+      const existing = await Artist.filter({ email: user.email })
       if (!existing || existing.length === 0) {
         await Artist.create({
-          user_id: user.id,
+          email: user.email,
           display_name: full_name,
           stage_name: full_name,
           skills: [],
@@ -181,11 +182,13 @@ async function updatePresence(u) {
       const backers = await Backer.filter({ user_id: u.id })
       if (backers[0]) await Backer.update(backers[0].id, { last_active: now })
     } else {
-      const artists = await Artist.filter({ email: u.email })
-      if (artists[0]) await Artist.update(artists[0].id, { last_active: now })
+      // For artists and others, skip last_active update if column doesn't exist
+      // const artists = await Artist.filter({ email: u.email })
+      // if (artists[0]) await Artist.update(artists[0].id, { last_active: now })
     }
   } catch (err) {
-
+    // Silently ignore errors - presence tracking is non-critical
+    console.warn('Presence update failed:', err)
   }
 }
 

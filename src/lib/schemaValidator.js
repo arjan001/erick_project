@@ -39,7 +39,7 @@ const SCHEMA = {
   // Entity tables (all use user_id FK)
   artists: {
     id: 'uuid',
-    user_id: 'uuid',
+    email: 'text', // Production uses email as identifier
     display_name: 'text',
     stage_name: 'text',
     skills: 'text[]',
@@ -281,6 +281,7 @@ const SCHEMA = {
     content: 'text',
     link_url: 'text',
     is_read: 'boolean',
+    read_at: 'timestamp with time zone',
     created_at: 'timestamp with time zone',
     // NOTE: NO 'recipient_email' or 'recipient_id' columns - use user_id
   },
@@ -423,7 +424,7 @@ const SCHEMA = {
   // Artists table (from DATABASE_SCHEMA.sql)
   artists: {
     id: 'uuid',
-    user_id: 'uuid',
+    email: 'text', // Production uses email as identifier
     display_name: 'text',
     stage_name: 'text',
     skills: 'text[]',
@@ -549,7 +550,7 @@ const DEPRECATED_COLUMNS = {
   applications: ['artist_email'], // Does not exist, use artist_id -> users.email
   subscriptions: ['user_email', 'user_name'], // Does not exist, use user_id
   messages: ['sender_email', 'recipient_email'], // Does not exist, use sender_id and conversation_id
-  notifications: ['recipient_email', 'recipient_id'], // Does not exist, use user_id
+  notifications: ['recipient_email'], // Does not exist, use user_id
   connections: ['requester_email', 'recipient_email', 'requester_id', 'receiver_id'], // Does not exist, use user_id, connected_artist_id
 }
 

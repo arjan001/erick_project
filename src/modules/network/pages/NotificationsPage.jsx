@@ -13,13 +13,13 @@ export default function NotificationsPage() {
   const { user: authUser } = useAuth()
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all'); // all, unread, action_required
+  const [filter, setFilter] = useState('all') // all, unread
 
   const fetchNotifications = async () => {
     if (!authUser?.id) return
     try {
       const allNotifications = await Notification.filter({
-        recipient_id: authUser.id
+        user_id: authUser.id
       })
 
       // Sort by created_at descending
@@ -57,26 +57,26 @@ export default function NotificationsPage() {
 
   const handleMarkAsRead = async (notificationId) => {
     try {
-      await Notification.update(notificationId, { read: true })
+      await Notification.update(notificationId, { is_read: true, read_at: new Date().toISOString() })
       setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+        prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       )
     } catch (err) {
-      //
+      console.error('Error marking as read:', err)
       error('Failed', 'Failed to mark notification as read')
     }
   }
 
   const handleMarkAllAsRead = async () => {
     try {
-      const unread = notifications.filter(n => !n.read)
+      const unread = notifications.filter(n => !n.is_read)
       await Promise.all(
-        unread.map(n => Notification.update(n.id, { read: true }))
+        unread.map(n => Notification.update(n.id, { is_read: true, read_at: new Date().toISOString() }))
       )
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
       success('Success', 'All notifications marked as read')
     } catch (err) {
-      //
+      console.error('Error marking all as read:', err)
       error('Failed', 'Failed to mark all notifications as read')
     }
   }
@@ -87,21 +87,21 @@ export default function NotificationsPage() {
       setNotifications(prev => prev.filter(n => n.id !== notificationId))
       success('Deleted', 'Notification deleted')
     } catch (err) {
-      //
+      console.error('Error deleting notification:', err)
       error('Failed', 'Failed to delete notification')
     }
   }
 
   const handleDeleteAllRead = async () => {
     try {
-      const read = notifications.filter(n => n.read)
+      const read = notifications.filter(n => n.is_read)
       await Promise.all(
         read.map(n => Notification.delete(n.id))
       )
-      setNotifications(prev => prev.filter(n => !n.read))
+      setNotifications(prev => prev.filter(n => !n.is_read))
       success('Success', 'All read notifications deleted')
     } catch (err) {
-      //
+      console.error('Error deleting all read:', err)
       error('Failed', 'Failed to delete read notifications')
     }
   }
@@ -170,7 +170,7 @@ export default function NotificationsPage() {
   }
 
   const filteredNotifications = notifications.filter(n => {
-    if (filter === 'unread') return !n.read
+    if (filter === 'unread') return !n.is_read
     return true
   })
 
@@ -182,8 +182,8 @@ export default function NotificationsPage() {
     )
   }
 
-  const unreadCount = notifications.filter(n => !n.read).length
-  const readCount = notifications.filter(n => n.read).length
+  const unreadCount = notifications.filter(n => !n.is_read).length
+  const readCount = notifications.filter(n => n.is_read).length
 
   return (
     <>
@@ -245,11 +245,11 @@ export default function NotificationsPage() {
               filteredNotifications.map((notification) => (
                 <tr
                   key={notification.id}
-                  className={`hover:bg-gray-50 ${!notification.read ? 'bg-blue-50/20' : ''}`}
+                  className={`hover:bg-gray-50 ${!notification.is_read ? 'bg-blue-50/20' : ''}`}
                 >
                   <td className="px-4 py-3">
                     <div className="w-2 h-2 rounded-full flex-shrink-0">
-                      {!notification.read && <div className="w-2 h-2 rounded-full bg-blue-600" />}
+                      {!notification.is_read && <div className="w-2 h-2 rounded-full bg-blue-600" />}
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -258,21 +258,21 @@ export default function NotificationsPage() {
                         {getNotificationIcon(notification.type)}
                       </div>
                       <span className="text-xs font-medium text-gray-700 capitalize">
-                        {notification.type.replace('_', ' ')}
+                        {notification.type?.replace(/_/g, ' ') || 'Notification'}
                       </span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <div>
                       <p className="text-sm font-medium text-gray-900">{notification.title}</p>
-                      <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">{notification.message}</p>
+                      <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">{notification.content}</p>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-500">
                     {formatNotificationTime(notification.created_at)}
                   </td>
                   <td className="px-4 py-3">
-                    {!notification.read ? (
+                    {!notification.is_read ? (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         Unread
                       </span>
@@ -284,7 +284,7 @@ export default function NotificationsPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      {!notification.read && (
+                      {!notification.is_read && (
                         <button
                           onClick={() => handleMarkAsRead(notification.id)}
                           className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
@@ -293,10 +293,10 @@ export default function NotificationsPage() {
                           <Check className="w-4 h-4" />
                         </button>
                       )}
-                      {notification.action_required && (
+                      {notification.link_url && (
                         <Button
                           size="sm"
-                          onClick={() => handleAction(notification)}
+                          onClick={() => window.location.href = notification.link_url}
                           className="bg-black text-white hover:bg-gray-800"
                         >
                           View

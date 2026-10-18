@@ -4,7 +4,7 @@ import { Artist, Team, Client, Backer, Connection, Notification, Subscription, U
 import { useAuth } from '@/lib/AuthContext'
 import { createPageUrl } from '@/shared/utils/routing'
 import { useToast } from '@/hooks/useToast'
-import { Search, MapPin, ChevronDown, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock, User as UserIcon, Building, Zap } from 'lucide-react'
+import { Search, MapPin, ChevronDown, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock, User as UserIcon, Building, Zap, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import notificationService from '@/shared/services/notificationService'
 import ArtistProfileDrawer from '@/components/artist/ArtistProfileDrawer'
@@ -81,13 +81,13 @@ export default function NetworkPage() {
       const connectionsData = await Connection.filter({ user_id: user.id }).catch(() => [])
       console.log('NetworkPage: Connections loaded:', connectionsData.length)
 
-      // Filter correctly:
-      // - My accepted connections: status = accepted (I'm either sender or receiver)
+      // Filter correctly based on production schema (uses connected_artist_id):
+      // - My accepted connections: status = accepted
       // - Requests I sent: user_id = me AND status = pending
-      // - Requests I received: connected_user_id = me AND status = pending
+      // - Requests I received: connected_artist_id = me AND status = pending
       const accepted = connectionsData.filter(c => c.status === 'accepted')
       const sentRequests = connectionsData.filter(c => c.user_id === user.id && c.status === 'pending')
-      const receivedRequests = connectionsData.filter(c => c.connected_user_id === user.id && c.status === 'pending')
+      const receivedRequests = connectionsData.filter(c => c.connected_artist_id === user.id && c.status === 'pending')
 
       setMyConnections(accepted)
       setPendingRequests(receivedRequests) // Only show requests I received to accept
@@ -104,7 +104,7 @@ export default function NetworkPage() {
     try {
       await Connection.create({
         user_id: user.id,
-        connected_user_id: person.id,
+        connected_artist_id: person.id,
         connection_type: 'network',
         status: 'pending',
         metadata: { message: connectionMessage },
@@ -176,9 +176,9 @@ export default function NetworkPage() {
     return matchesSearch && matchesType
   })
 
-  // Get connected user IDs - use connected_user_id
-  const connectedUserIds = new Set(myConnections.map(c => c.connected_user_id))
-  const pendingUserIds = new Set(pendingRequests.map(c => c.connected_user_id))
+  // Get connected user IDs - use connected_artist_id (production schema)
+  const connectedUserIds = new Set(myConnections.map(c => c.connected_artist_id))
+  const pendingUserIds = new Set(pendingRequests.map(c => c.connected_artist_id))
 
   // People available to connect (not already connected or pending)
   const availablePeople = filteredPeople.filter(p => !connectedUserIds.has(p.id) && !pendingUserIds.has(p.id))
@@ -260,7 +260,7 @@ export default function NetworkPage() {
             </div>
           ) : (
             myConnections.map(conn => {
-              const person = allPeople.find(p => p.id === conn.connected_user_id)
+              const person = allPeople.find(p => p.id === conn.connected_artist_id)
               if (!person) return null
               return (
                 <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => {
@@ -328,7 +328,7 @@ export default function NetworkPage() {
             </div>
           ) : (
             pendingRequests.map(conn => {
-              const person = allPeople.find(p => p.id === conn.connected_user_id)
+              const person = allPeople.find(p => p.id === conn.connected_artist_id)
               if (!person) return null
               return (
                 <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => {
@@ -382,53 +382,69 @@ export default function NetworkPage() {
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Suggested for you ({availablePeople.length})</h2>
           <p className="text-sm text-gray-500 mb-4">Matched by skill and career niche</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {availablePeople.length === 0 ? (
-              <div className="col-span-full text-center py-8 text-gray-500 text-sm">
+              <div className="text-center py-8 text-gray-500 text-sm">
                 No suggestions available
               </div>
             ) : (
               availablePeople.map(person => (
-                <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => {
+                <div key={person.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all cursor-pointer group" onClick={() => {
                   if (person.type === 'artist') {
                     setSelectedArtistId(person.id)
                     setProfileDrawerOpen(true)
                   }
                 }}>
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                  <div className="flex items-start gap-4">
+                    <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                       {person.image ? (
                         <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl font-bold">
                           {person.name[0]}
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 text-sm truncate">{person.name}</h3>
-                      <p className="text-xs text-gray-600">{person.profession || person.role}</p>
-                      <p className="text-xs text-gray-500 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> {person.location}
-                      </p>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{person.name}</h3>
+                          <p className="text-sm text-gray-600 mt-1">{person.profession || person.role}</p>
+                          <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                            <MapPin className="w-4 h-4" /> {person.location}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={(e) => { e.stopPropagation(); window.location.href = `/Messages?user=${person.id}`; }}
+                            size="sm"
+                            variant="outline"
+                            className="flex items-center gap-1"
+                          >
+                            <MessageCircle className="w-4 h-4" /> Message
+                          </Button>
+                          <Button
+                            onClick={(e) => { e.stopPropagation(); setSelectedPerson(person); setShowConnectionModal(true); }}
+                            size="sm"
+                            className="flex items-center gap-1 bg-black text-white hover:bg-gray-800"
+                          >
+                            <UserPlus className="w-4 h-4" /> Connect
+                          </Button>
+                        </div>
+                      </div>
                       {person.skills && person.skills.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {person.skills.slice(0, 2).map((skill, idx) => (
-                            <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {person.skills.slice(0, 5).map((skill, idx) => (
+                            <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
                               {skill}
                             </span>
                           ))}
+                          {person.skills.length > 5 && (
+                            <span className="text-xs text-gray-500">+{person.skills.length - 5} more</span>
+                          )}
                         </div>
                       )}
                     </div>
-                  </div>
-                  <div className="mt-3">
-                    <Button
-                      onClick={(e) => { e.stopPropagation(); setSelectedPerson(person); setShowConnectionModal(true); }}
-                      className="w-full text-sm bg-black text-white hover:bg-gray-800"
-                    >
-                      Connect
-                    </Button>
                   </div>
                 </div>
               ))
