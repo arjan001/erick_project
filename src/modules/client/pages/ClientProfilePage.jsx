@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { ProjectOwner, Project, TeamMember, BillingInfo, Invoice, SecuritySettings, ActiveSession } from '@/lib/supabaseEntities'
+import { Client, Project, TeamMember, BillingInfo, Invoice, SecuritySettings, ActiveSession } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import CountrySelector from '@/components/CountrySelector'
@@ -65,7 +65,7 @@ export default function ClientProfilePage() {
   const [uploadingFiles, setUploadingFiles] = useState(false)
 
   const [formData, setFormData] = useState({
-    company: '', phone: '', website: '', bio: '', linkedin: '', instagram: '', twitter: '', youtube: '',
+    company_name: '', contact_phone: '', website_url: '', bio: '', linkedin: '', instagram: '', twitter: '', youtube: '',
     city: '', country: '', years_in_film: '', years_in_directing: ''
   })
 
@@ -84,12 +84,12 @@ export default function ClientProfilePage() {
 
     const fetchData = async () => {
       try {
-        const owners = await ProjectOwner.filter({ user_id: authUser.id })
-        if (owners.length > 0) {
-          const o = owners[0]
+        const clients = await Client.filter({ user_id: authUser.id })
+        if (clients.length > 0) {
+          const o = clients[0]
           setOwner(o)
           setFormData({
-            company: o.company || '', phone: o.phone || '', website: o.website || '', bio: o.bio || '',
+            company_name: o.company_name || '', contact_phone: o.contact_phone || '', website_url: o.website_url || '', bio: o.bio || '',
             linkedin: o.linkedin || '', instagram: o.instagram || '', twitter: o.twitter || '', youtube: o.youtube || '',
             city: o.city || '', country: o.country || '', years_in_film: o.years_in_film || '', years_in_directing: o.years_in_directing || ''
           })
@@ -200,13 +200,12 @@ export default function ClientProfilePage() {
     try {
       if (!owner) {
         // Create new client profile if it doesn't exist
-        const newOwner = await ProjectOwner.create({
+        const newOwner = await Client.create({
           user_id: authUser.id,
-          email: authUser.email,
-          full_name: authUser.full_name,
-          company: formData.company,
-          phone: formData.phone,
-          website: formData.website,
+          display_name: authUser.full_name || authUser.email,
+          company_name: formData.company_name,
+          contact_phone: formData.contact_phone,
+          website_url: formData.website_url,
           bio: formData.bio,
           linkedin: formData.linkedin,
           instagram: formData.instagram,
@@ -224,10 +223,10 @@ export default function ClientProfilePage() {
         setOwner(newOwner)
         success('Profile Created', 'Your profile has been created')
       } else {
-        const updated = await ProjectOwner.update(owner.id, {
-          company: formData.company,
-          phone: formData.phone,
-          website: formData.website,
+        const updated = await Client.update(owner.id, {
+          company_name: formData.company_name,
+          contact_phone: formData.contact_phone,
+          website_url: formData.website_url,
           bio: formData.bio,
           linkedin: formData.linkedin,
           instagram: formData.instagram,
@@ -257,7 +256,7 @@ export default function ClientProfilePage() {
       return
     }
     try {
-      const updated = await ProjectOwner.update(owner.id, { bio: formData.bio })
+      const updated = await Client.update(owner.id, { bio: formData.bio })
       setOwner(updated)
       success('Bio Updated', 'Your bio has been updated')
       setShowBioModal(false)
@@ -273,7 +272,7 @@ export default function ClientProfilePage() {
       return
     }
     try {
-      const updated = await ProjectOwner.update(owner.id, {
+      const updated = await Client.update(owner.id, {
         email_notifications: emailNotifications,
         project_updates: projectUpdates,
         profile_public: profilePublic
@@ -455,7 +454,7 @@ export default function ClientProfilePage() {
       const deletionDate = new Date()
       deletionDate.setDate(deletionDate.getDate() + 90)
 
-      await ProjectOwner.update(owner.id, {
+      await Client.update(owner.id, {
         is_suspended: true,
         deletion_requested_at: new Date().toISOString(),
         scheduled_deletion_date: deletionDate.toISOString()
@@ -577,7 +576,7 @@ export default function ClientProfilePage() {
       console.log('Public URL:', publicUrl)
 
       // Update logo_url column
-      const updated = await ProjectOwner.update(owner.id, {
+      const updated = await Client.update(owner.id, {
         logo_url: publicUrl
       })
 
@@ -621,7 +620,7 @@ export default function ClientProfilePage() {
       // Save to database as JSON array
       const existingImages = owner.company_images || []
       const updatedImages = [...existingImages, ...uploadedUrls]
-      await ProjectOwner.update(owner.id, { company_images: updatedImages })
+      await Client.update(owner.id, { company_images: updatedImages })
       setOwner({ ...owner, company_images: updatedImages })
 
       success('Images Uploaded', `${uploadedUrls.length} image(s) uploaded successfully`)
@@ -640,7 +639,7 @@ export default function ClientProfilePage() {
       setCompanyImages(updatedImages)
 
       // Update database
-      await ProjectOwner.update(owner.id, { company_images: updatedImages })
+      await Client.update(owner.id, { company_images: updatedImages })
       setOwner({ ...owner, company_images: updatedImages })
 
       success('Image Removed', 'Image has been removed')
@@ -682,7 +681,7 @@ export default function ClientProfilePage() {
       // Save to database as JSON array
       const existingFiles = owner.important_files || []
       const updatedFiles = [...existingFiles, ...uploadedFiles]
-      await ProjectOwner.update(owner.id, { important_files: updatedFiles })
+      await Client.update(owner.id, { important_files: updatedFiles })
       setOwner({ ...owner, important_files: updatedFiles })
 
       success('Files Uploaded', `${uploadedFiles.length} file(s) uploaded successfully`)
@@ -701,7 +700,7 @@ export default function ClientProfilePage() {
       setImportantFiles(updatedFiles)
 
       // Update database
-      await ProjectOwner.update(owner.id, { important_files: updatedFiles })
+      await Client.update(owner.id, { important_files: updatedFiles })
       setOwner({ ...owner, important_files: updatedFiles })
 
       success('File Removed', 'File has been removed')
@@ -769,7 +768,7 @@ export default function ClientProfilePage() {
                   </label>
                 </div>
                 <div className="flex-1 text-center sm:text-left">
-                  <h2 className="text-2xl font-bold text-gray-900">{formData.company || user.full_name}</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">{formData.company_name || user.full_name}</h2>
                   <p className="text-sm text-gray-500 mt-1">{user.email}</p>
                   <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
                     <Button onClick={() => setEditing(!editing)} variant={editing ? 'outline' : 'default'} className={editing ? '' : 'bg-black text-white hover:bg-gray-800'}>
@@ -850,15 +849,15 @@ export default function ClientProfilePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">Company Name</label>
-                      <Input value={formData.company} onChange={(e) => setFormData({ ...formData, company: e.target.value })} placeholder="Your company name" className="rounded-lg" />
+                      <Input value={formData.company_name} onChange={(e) => setFormData({ ...formData, company_name: e.target.value })} placeholder="Your company name" className="rounded-lg" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" />Phone</label>
-                      <Input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="+1 (555) 000-0000" className="rounded-lg" />
+                      <Input type="tel" value={formData.contact_phone} onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })} placeholder="+1 (555) 000-0000" className="rounded-lg" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2"><Globe className="w-4 h-4 text-gray-400" />Website</label>
-                      <Input type="url" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} placeholder="https://yourcompany.com" className="rounded-lg" />
+                      <Input type="url" value={formData.website_url} onChange={(e) => setFormData({ ...formData, website_url: e.target.value })} placeholder="https://yourcompany.com" className="rounded-lg" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" />City</label>
@@ -887,8 +886,8 @@ export default function ClientProfilePage() {
                     <h3 className="font-semibold text-gray-900 mb-4">Contact Information</h3>
                     <div className="space-y-3 text-sm">
                       <div className="flex items-center gap-2 text-gray-600"><Mail className="w-4 h-4" />{user.email}</div>
-                      {formData.phone && <div className="flex items-center gap-2 text-gray-600"><Phone className="w-4 h-4" />{formData.phone}</div>}
-                      {formData.website && <div className="flex items-center gap-2 text-gray-600"><Globe className="w-4 h-4" /><a href={formData.website} target="_blank" rel="noopener noreferrer" className="text-black hover:underline">{formData.website}</a></div>}
+                      {formData.contact_phone && <div className="flex items-center gap-2 text-gray-600"><Phone className="w-4 h-4" />{formData.contact_phone}</div>}
+                      {formData.website_url && <div className="flex items-center gap-2 text-gray-600"><Globe className="w-4 h-4" /><a href={formData.website_url} target="_blank" rel="noopener noreferrer" className="text-black hover:underline">{formData.website_url}</a></div>}
                       {formData.city && formData.country && <p className="text-gray-600">{formData.city}, {formData.country}</p>}
                     </div>
                   </div>
@@ -964,9 +963,9 @@ export default function ClientProfilePage() {
                   <div className="flex items-center gap-3">
                     <Globe className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} placeholder="Website URL" />
+                      <Input className="rounded-lg flex-1" value={formData.website_url} onChange={(e) => setFormData({ ...formData, website_url: e.target.value })} placeholder="Website URL" />
                     ) : (
-                      <p className="text-gray-900 flex-1">{owner?.website || 'Not set'}</p>
+                      <p className="text-gray-900 flex-1">{owner?.website_url || 'Not set'}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-3">
