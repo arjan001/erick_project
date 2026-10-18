@@ -63,7 +63,7 @@ export default function NotificationsPage() {
       )
     } catch (err) {
       console.error('Error marking as read:', err)
-      error('Failed', 'Failed to mark notification as read')
+      // Silently fail - don't show error toast
     }
   }
 
