@@ -1,23 +1,58 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Artist, Team, Client, Backer, Connection, Notification, Subscription, User } from '@/lib/supabaseEntities'
+import { Artist, Team, Backer, ProjectOwner, Connection, Notification, Subscription, User } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { createPageUrl } from '@/shared/utils/routing'
 import { useToast } from '@/hooks/useToast'
-import { Search, MapPin, ChevronDown, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock, User as UserIcon, Building, Zap, UserPlus } from 'lucide-react'
+import { Search, MapPin, ChevronDown, Users, Building2, TrendingUp, Briefcase, X, UserCheck, UserX, MessageCircle, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import notificationService from '@/shared/services/notificationService'
-import ArtistProfileDrawer from '@/components/artist/ArtistProfileDrawer'
 
-const ONLINE_THRESHOLD_MS = 90 * 1000
+const ROLE_TO_TYPE = {
+  artist: 'artist', artist_admin: 'artist',
+  team: 'team', team_admin: 'team',
+  backer: 'backer',
+  client: 'client', project_owner: 'client',
+}
 
-const isOnline = (lastActive) => lastActive && (Date.now() - new Date(lastActive).getTime()) < ONLINE_THRESHOLD_MS
-
-const typeIcon = (type) => {
-  if (type === 'team' || type === 'team_admin') return Building2
-  if (type === 'backer') return TrendingUp
-  if (type === 'client' || type === 'project_owner') return Briefcase
-  return UserIcon
+const toDisplay = (person) => {
+  if (person.type === 'artist') {
+    return {
+      id: person.id, type: 'artist', name: person.display_name || person.stage_name || person.email,
+      role: person.role || 'Artist',
+      location: person.location || 'Kenya',
+      image: person.profile_photo_url,
+      email: person.email,
+      skills: person.skills || [],
+    }
+  }
+  if (person.type === 'team') {
+    return {
+      id: person.id, type: 'team', name: person.team_name,
+      role: (person.specialties || []).join(', '),
+      location: person.location || 'Kenya',
+      image: person.logo_url,
+      email: person.contact_email,
+      skills: person.specialties || [],
+    }
+  }
+  if (person.type === 'client') {
+    return {
+      id: person.id, type: 'client', name: person.company_name || person.display_name,
+      role: 'Project Owner',
+      location: person.location || 'Kenya',
+      image: person.logo_url,
+      email: person.email,
+      skills: [],
+    }
+  }
+  return {
+    id: person.id, type: 'backer', name: person.organization_name,
+    role: (person.investment_interests || []).join(', '),
+    location: (person.locations || []).join(', ') || 'Kenya',
+    image: person.logo_url,
+    email: person.contact_email,
+    skills: person.investment_interests || [],
+  }
 }
 
 export default function NetworkPage() {
@@ -27,465 +62,449 @@ export default function NetworkPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState('all')
-  const [activeTab, setActiveTab] = useState('connections')
+  const [showTypeFilter, setShowTypeFilter] = useState(false)
+  const [subscriptionFilter, setSubscriptionFilter] = useState('all')
+  const [showSubFilter, setShowSubFilter] = useState(false)
+  const [subscribedEmails, setSubscribedEmails] = useState(new Set())
 
-  const [allPeople, setAllPeople] = useState([])
-  const [myConnections, setMyConnections] = useState([])
+  const [myProfile, setMyProfile] = useState(null)
+  const [people, setPeople] = useState([])
+  const [connections, setConnections] = useState([])
   const [pendingRequests, setPendingRequests] = useState([])
-  const [sentRequests, setSentRequests] = useState([])
 
   const [showConnectionModal, setShowConnectionModal] = useState(false)
   const [selectedPerson, setSelectedPerson] = useState(null)
   const [connectionMessage, setConnectionMessage] = useState('')
-  const [profileDrawerOpen, setProfileDrawerOpen] = useState(false)
-  const [selectedArtistId, setSelectedArtistId] = useState(null)
+
+  const myType = ROLE_TO_TYPE[user?.role] || 'artist'
 
   useEffect(() => {
     if (!user) return
-    loadData()
-  }, [user])
 
-  const loadData = async () => {
-    try {
-      setLoading(true)
+    const fetchData = async () => {
+      try {
+        // Fetch connections using production schema (user_id, connected_artist_id)
+        const connectionsData = await Connection.filter({ user_id: user.id }).catch(() => [])
 
-      const allUsers = await User.list().catch((err) => {
-        console.error('Error fetching users:', err)
-        return []
-      })
+        // Fetch all users from public.users
+        const allUsers = await User.list().catch(() => [])
+        const otherUsers = allUsers.filter(u => u.id !== user.id && u.email !== user.email)
 
-      const otherUsers = allUsers.filter(u => u.id !== user.id && u.email !== user.email)
+        // Transform users to people array
+        const allPeople = otherUsers.map(u => ({
+          id: u.id,
+          type: u.role || 'user',
+          name: u.full_name || u.email,
+          role: u.role || 'User',
+          location: u.location || 'Kenya',
+          image: u.avatar_url,
+          email: u.email,
+          skills: u.skills || [],
+          profession: u.profession,
+        }))
 
-      const people = otherUsers.map(u => ({
-        id: u.id,
-        type: u.role || 'user',
-        name: u.full_name || u.email,
-        role: u.role || 'User',
-        location: u.location || 'Kenya',
-        image: u.avatar_url,
-        skills: u.skills || [],
-        profession: u.profession,
-        isOnline: isOnline(u.last_active),
-        email: u.email,
-      }))
+        setPeople(allPeople)
 
-      setAllPeople(people)
+        // My own profile
+        if (myType === 'artist') {
+          const mine = await Artist.filter({ email: user.email })
+          setMyProfile(mine?.[0] || null)
+        } else if (myType === 'team') {
+          const mine = await Team.filter({ user_id: user.id })
+          setMyProfile(mine?.[0] || null)
+        } else if (myType === 'backer') {
+          const mine = await Backer.filter({ user_id: user.id })
+          setMyProfile(mine?.[0] || null)
+        } else {
+          const mine = await ProjectOwner.filter({ user_id: user.id })
+          setMyProfile(mine?.[0] || null)
+        }
 
-      const connectionsData = await Connection.filter({ user_id: user.id }).catch(() => [])
+        setConnections(connectionsData)
+        setPendingRequests(connectionsData.filter(c => c.connected_artist_id === user.id && c.status === 'pending'))
 
-      const accepted = connectionsData.filter(c => c.status === 'accepted')
-      const sentReqs = connectionsData.filter(c => c.user_id === user.id && c.status === 'pending')
-      const receivedRequests = connectionsData.filter(c => c.connected_artist_id === user.id && c.status === 'pending')
-
-      setMyConnections(accepted)
-      setSentRequests(sentReqs)
-      setPendingRequests(receivedRequests)
-
-    } catch (err) {
-      console.error('NetworkPage: Error loading data:', err)
-      error('Error', 'Failed to load network data')
-    } finally {
-      setLoading(false)
+        // For backers/clients: track which creators have an active paid subscription
+        if (myType === 'backer' || myType === 'client') {
+          try {
+            const activeSubs = await Subscription.filter({ status: 'active' })
+            setSubscribedEmails(new Set(activeSubs.map(s => s.user_email)))
+          } catch (subErr) {
+            console.error('Error fetching subscriptions:', subErr)
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching network data:', err)
+      } finally {
+        setLoading(false)
+      }
     }
+
+    fetchData()
+  }, [user, myType])
+
+  const getConnectionStatus = (person) => {
+    const connection = connections.find(c =>
+      (c.user_id === user.id && c.connected_artist_id === person.id) ||
+      (c.connected_artist_id === user.id && c.user_id === person.id)
+    )
+    return connection ? connection.status : 'not_connected'
   }
 
-  const sendConnectionRequest = async (person) => {
+  const refreshConnections = async () => {
+    const connectionsData = await Connection.filter({ user_id: user.id }).catch(() => [])
+    setConnections(connectionsData)
+    setPendingRequests(connectionsData.filter(c => c.connected_artist_id === user.id && c.status === 'pending'))
+  }
+
+  const handleConnect = async () => {
+    if (!selectedPerson) return
     try {
       await Connection.create({
         user_id: user.id,
-        connected_artist_id: person.id,
+        connected_artist_id: selectedPerson.id,
         connection_type: 'network',
         status: 'pending',
         metadata: { message: connectionMessage },
       })
-
       await Notification.create({
-        user_id: person.id,
+        user_id: selectedPerson.id,
         type: 'connection_request',
         title: 'New Connection Request',
-        content: `${user.full_name || user.email} wants to connect with you.`,
+        content: `${user.full_name || user.email} wants to connect with you`,
         link_url: '/Network',
         is_read: false,
       })
-
-      success('Request Sent', 'Connection request sent successfully')
       setShowConnectionModal(false)
       setConnectionMessage('')
-      setSelectedPerson(null)
-      loadData()
+      success('Sent', `Connection request sent to ${selectedPerson.name}`)
+      await refreshConnections()
     } catch (err) {
-      console.error('Error sending connection request:', err)
-      error('Error', 'Failed to send connection request')
+      console.error('Error sending connection:', err)
+      error('Failed', 'Failed to send connection request')
     }
   }
 
-  const acceptConnection = async (connection) => {
+  const handleAcceptConnection = async (connectionId) => {
     try {
-      await Connection.update(connection.id, { status: 'accepted' })
-
-      await Notification.create({
-        user_id: connection.user_id,
-        type: 'connection_request',
-        title: 'Connection Accepted',
-        content: `${user.full_name || user.email} accepted your connection request.`,
-        link_url: '/Network',
-        is_read: false,
-      })
-
-      success('Accepted', 'Connection accepted')
-      loadData()
+      await Connection.update(connectionId, { status: 'accepted' })
+      success('Accepted', 'You are now connected')
+      await refreshConnections()
+      const connection = connections.find(c => c.id === connectionId)
+      if (connection) {
+        await Notification.create({
+          user_id: connection.user_id,
+          type: 'connection_accepted',
+          title: 'Connection Accepted',
+          content: `${user.full_name || user.email} accepted your connection request`,
+          link_url: '/Network',
+          is_read: false,
+        })
+      }
     } catch (err) {
       console.error('Error accepting connection:', err)
       error('Error', 'Failed to accept connection')
     }
   }
 
-  const rejectConnection = async (connection) => {
+  const handleDeclineConnection = async (connectionId) => {
     try {
-      await Connection.update(connection.id, { status: 'declined' })
+      await Connection.update(connectionId, { status: 'declined' })
       success('Declined', 'Connection request declined')
-      loadData()
+      await refreshConnections()
     } catch (err) {
-      console.error('Error rejecting connection:', err)
+      console.error('Error declining connection:', err)
       error('Error', 'Failed to decline connection')
     }
   }
 
-  const cancelConnectionRequest = async (connection) => {
+  const handleCancelRequest = async (connectionId) => {
     try {
-      await Connection.delete(connection.id)
-      success('Cancelled', 'Connection request cancelled')
-      loadData()
+      await Connection.delete(connectionId)
+      success('Cancelled', 'Connection request withdrawn')
+      await refreshConnections()
     } catch (err) {
       console.error('Error cancelling connection:', err)
-      error('Error', 'Failed to cancel connection request')
+      error('Error', 'Failed to withdraw request')
     }
   }
 
-  const handleStartConversation = async (person) => {
-    if (user.role === 'client' || user.role === 'project_owner') {
-      try {
-        const subscriptions = await Subscription.filter({ user_id: user.id, status: 'active' })
-        if (!subscriptions || subscriptions.length === 0) {
-          error('Subscription Required', 'You need an active subscription to send messages. Please upgrade your plan.')
-          return
-        }
-      } catch (err) {
-        console.error('Error checking subscription:', err)
-      }
-    }
-    navigate(`/Messages?with=${person.id}`)
+  const handleMessage = (person) => {
+    navigate(createPageUrl('Messages') + `?with=${encodeURIComponent(person.id)}`)
   }
 
-  const filteredPeople = allPeople.filter(p => {
-    const matchesSearch = (p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.profession?.toLowerCase().includes(searchQuery.toLowerCase()))
-    const matchesType = selectedType === 'all' || p.type === selectedType
-    return matchesSearch && matchesType
-  })
+  const filterPerson = (person) => {
+    if (selectedType !== 'all' && person.type !== selectedType) return false
+    if ((myType === 'backer' || myType === 'client') && subscriptionFilter !== 'all' && person.type === 'artist') {
+      const isSubscribed = subscribedEmails.has(person.email)
+      if (subscriptionFilter === 'subscribed' && !isSubscribed) return false
+      if (subscriptionFilter === 'free' && isSubscribed) return false
+    }
+    const q = searchQuery.toLowerCase()
+    if (!q) return true
+    return person.name?.toLowerCase().includes(q) ||
+      person.role?.toLowerCase().includes(q) ||
+      person.location?.toLowerCase().includes(q) ||
+      person.skills?.some(s => s.toLowerCase().includes(q))
+  }
 
-  const connectedUserIds = new Set(myConnections.map(c => c.connected_artist_id))
-  const sentRequestUserIds = new Set(sentRequests.map(c => c.connected_artist_id))
-  const pendingUserIds = new Set(pendingRequests.map(c => c.connected_artist_id))
+  const myConnections = people.filter(p => getConnectionStatus(p) === 'accepted' && filterPerson(p))
+  const notConnected = people.filter(p => getConnectionStatus(p) === 'not_connected' && filterPerson(p))
+  const sentRequests = connections.filter(c => c.user_id === user.id && c.status === 'pending')
 
-  const availablePeople = filteredPeople.filter(p =>
-    !connectedUserIds.has(p.id) && !sentRequestUserIds.has(p.id) && !pendingUserIds.has(p.id)
-  )
+  const myskillSet = new Set([
+    myProfile?.role,
+    ...(myProfile?.skills || []),
+  ].filter(Boolean).map(s => s.toLowerCase()))
 
-  if (loading) {
+  const scorePerson = (person) => {
+    if (myskillSet.size === 0) return 0
+    return (person.skills || []).filter(s => myskillSet.has((s || '').toLowerCase())).length
+  }
+
+  const suggestions = notConnected
+    .map(p => ({ ...p, matchScore: scorePerson(p) }))
+    .sort((a, b) => b.matchScore - a.matchScore)
+
+  const typeIcon = (type) => {
+    if (type === 'team') return Building2
+    if (type === 'backer') return TrendingUp
+    if (type === 'client') return Briefcase
+    return Users
+  }
+
+  if (!user || loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="h-full flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Network</h1>
-        <p className="text-gray-600">Connect with artists, clients, teams, and backers</p>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Connection requests header */}
+      <div className="px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
+        <h2 className="text-base font-semibold text-gray-900 mb-2">Connection requests ({pendingRequests.length})</h2>
+        {pendingRequests.length > 0 && (
+          <div className="space-y-3">
+            {pendingRequests.map((request) => {
+              const requester = people.find(p => p.id === request.user_id)
+              const TypeIcon = typeIcon(requester?.type)
+              return (
+                <div key={request.id} className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-xs font-bold text-gray-600">
+                      {requester?.image ? <img src={requester.image} alt={requester.name} className="w-full h-full object-cover" /> : (requester?.name?.[0] || request.user_id[0]).toUpperCase()}
+                    </div>
+                    <TypeIcon className="w-3 h-3 absolute -bottom-0.5 -right-0.5 bg-black text-white rounded-full p-0.5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm">{requester?.name || request.user_id}</div>
+                    <div className="text-xs text-gray-600 mb-0.5">{requester?.role || 'User'}</div>
+                    {request.metadata?.message && <div className="text-[11px] text-gray-500 italic line-clamp-1">"{request.metadata.message}"</div>}
+                  </div>
+                  <div className="flex gap-1.5 flex-shrink-0">
+                    <button onClick={() => handleAcceptConnection(request.id)} className="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 text-xs font-medium transition-colors">
+                      Accept
+                    </button>
+                    <button onClick={() => handleDeclineConnection(request.id)} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors">
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Search and Filter */}
-      <div className="mb-6 flex gap-4">
-        <div className="relative flex-1">
+      {/* Requests you've sent */}
+      {sentRequests.length > 0 && (
+        <div className="px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
+          <h2 className="text-base font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-gray-400" /> Requests sent ({sentRequests.length})
+          </h2>
+          <div className="space-y-2">
+            {sentRequests.map((request) => {
+              const recipient = people.find(p => p.id === request.connected_artist_id)
+              const TypeIcon = typeIcon(recipient?.type)
+              return (
+                <div key={request.id} className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-xs font-bold text-gray-600">
+                      {recipient?.image ? <img src={recipient.image} alt={recipient.name} className="w-full h-full object-cover" /> : (recipient?.name?.[0] || request.connected_artist_id[0]).toUpperCase()}
+                    </div>
+                    <TypeIcon className="w-3 h-3 absolute -bottom-0.5 -right-0.5 bg-black text-white rounded-full p-0.5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm">{recipient?.name || request.connected_artist_id}</div>
+                    <div className="text-xs text-gray-600 mb-0.5">{recipient?.role || 'User'}</div>
+                    {request.metadata?.message && <div className="text-[11px] text-gray-500 italic line-clamp-1">"{request.metadata.message}"</div>}
+                  </div>
+                  <button onClick={() => handleCancelRequest(request.id)} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs font-medium transition-colors flex-shrink-0">
+                    Cancel
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Search + filter */}
+      <div className="p-4 border-b border-gray-200 bg-white flex-shrink-0 flex gap-3">
+        <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name, email, or profession..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
+            placeholder="Search by name, skill, or location..."
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400"
           />
         </div>
-        <select
-          value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
-        >
-          <option value="all">All Types</option>
-          <option value="artist">Artists</option>
-          <option value="client">Clients</option>
-          <option value="team">Teams</option>
-          <option value="backer">Backers</option>
-        </select>
-      </div>
-
-      {/* Tabs */}
-      <div className="mb-6 flex gap-4 border-b border-gray-200">
-        <button
-          onClick={() => setActiveTab('connections')}
-          className={`px-4 py-2 font-medium ${activeTab === 'connections' ? 'border-b-2 border-black text-black' : 'text-gray-600'}`}
-        >
-          Connections ({myConnections.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('sent')}
-          className={`px-4 py-2 font-medium ${activeTab === 'sent' ? 'border-b-2 border-black text-black' : 'text-gray-600'}`}
-        >
-          Sent Requests ({sentRequests.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('pending')}
-          className={`px-4 py-2 font-medium ${activeTab === 'pending' ? 'border-b-2 border-black text-black' : 'text-gray-600'}`}
-        >
-          Pending Requests ({pendingRequests.length})
-        </button>
-      </div>
-
-      {/* Connections Tab - 2 Column Design */}
-      {activeTab === 'connections' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column - My Connections */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Connections ({myConnections.length})</h2>
-            <div className="space-y-3">
-              {myConnections.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
-                  No connections yet
-                </div>
-              ) : (
-                myConnections.map(conn => {
-                  const person = allPeople.find(p => p.id === conn.connected_artist_id)
-                  if (!person) return null
-                  return (
-                    <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                          {person.image ? (
-                            <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg font-bold">
-                              {person.name[0]}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900">{person.name}</h3>
-                          <p className="text-sm text-gray-600">{person.profession || person.role}</p>
-                          <p className="text-sm text-gray-500 flex items-center gap-1">
-                            <MapPin className="w-3 h-3" /> {person.location}
-                          </p>
-                          {person.skills && person.skills.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {person.skills.slice(0, 3).map((skill, idx) => (
-                                <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                                  {skill}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="mt-3">
-                        <Button
-                          onClick={() => handleStartConversation(person)}
-                          size="sm"
-                          variant="outline"
-                          className="w-full"
-                        >
-                          <MessageCircle className="w-4 h-4 mr-2" /> Message
-                        </Button>
-                      </div>
-                    </div>
-                  )
-                })
-              )}
+        <div className="relative">
+          <button
+            onClick={() => setShowTypeFilter(!showTypeFilter)}
+            className="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+          >
+            {selectedType === 'all' ? 'All Types' : selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}
+            <ChevronDown className="w-4 h-4" />
+          </button>
+          {showTypeFilter && (
+            <div className="absolute z-50 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
+              {['all', 'artist', 'team', 'backer', 'client'].map(type => (
+                <button key={type} onClick={() => { setSelectedType(type); setShowTypeFilter(false); }} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm capitalize">
+                  {type === 'all' ? 'All Types' : type}
+                </button>
+              ))}
             </div>
-          </div>
-
-          {/* Right Column - Suggested for you */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Suggested for you ({availablePeople.length})</h2>
-            <div className="space-y-3">
-              {availablePeople.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
-                  No suggestions available
-                </div>
-              ) : (
-                availablePeople.map(person => (
-                  <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                        {person.image ? (
-                          <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg font-bold">
-                            {person.name[0]}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900">{person.name}</h3>
-                        <p className="text-sm text-gray-600">{person.profession || person.role}</p>
-                        <p className="text-sm text-gray-500 flex items-center gap-1">
-                          <MapPin className="w-3 h-3" /> {person.location}
-                        </p>
-                        {person.skills && person.skills.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {person.skills.slice(0, 3).map((skill, idx) => (
-                              <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                                {skill}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <Button
-                        onClick={() => { setSelectedPerson(person); setShowConnectionModal(true); }}
-                        size="sm"
-                        className="w-full bg-black text-white hover:bg-gray-800"
-                      >
-                        <UserPlus className="w-4 h-4 mr-2" /> Connect
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+          )}
         </div>
-      )}
-
-      {/* Sent Requests Tab */}
-      {activeTab === 'sent' && (
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Sent Requests ({sentRequests.length})</h2>
-          <div className="space-y-3">
-            {sentRequests.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 text-sm">
-                No sent requests
+        {(myType === 'backer' || myType === 'client') && (
+          <div className="relative">
+            <button
+              onClick={() => setShowSubFilter(!showSubFilter)}
+              className="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+            >
+              {subscriptionFilter === 'all' ? 'All Creators' : subscriptionFilter === 'subscribed' ? 'Subscribed' : 'No Subscription'}
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            {showSubFilter && (
+              <div className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
+                {[
+                  { value: 'all', label: 'All Creators' },
+                  { value: 'subscribed', label: 'Subscribed (Paid)' },
+                  { value: 'free', label: 'No Subscription' },
+                ].map(opt => (
+                  <button key={opt.value} onClick={() => { setSubscriptionFilter(opt.value); setShowSubFilter(false); }} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm">
+                    {opt.label}
+                  </button>
+                ))}
               </div>
-            ) : (
-              sentRequests.map(conn => {
-                const person = allPeople.find(p => p.id === conn.connected_artist_id)
-                if (!person) return null
-                return (
-                  <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                        {person.image ? (
-                          <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg font-bold">
-                            {person.name[0]}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900">{person.name}</h3>
-                        <p className="text-sm text-gray-600">{person.profession || person.role}</p>
-                        <p className="text-sm text-gray-500 flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> Request sent
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <Button
-                        onClick={() => cancelConnectionRequest(conn)}
-                        size="sm"
-                        variant="outline"
-                        className="w-full text-red-600 hover:text-red-700 hover:border-red-300"
-                      >
-                        Cancel Request
-                      </Button>
-                    </div>
-                  </div>
-                )
-              })
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Pending Requests Tab */}
-      {activeTab === 'pending' && (
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Pending Requests ({pendingRequests.length})</h2>
-          <div className="space-y-3">
-            {pendingRequests.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 text-sm">
-                No pending requests
-              </div>
-            ) : (
-              pendingRequests.map(conn => {
-                const person = allPeople.find(p => p.id === conn.user_id)
-                if (!person) return null
-                return (
-                  <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                        {person.image ? (
-                          <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg font-bold">
-                            {person.name[0]}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900">{person.name}</h3>
-                        <p className="text-sm text-gray-600">{person.profession || person.role}</p>
-                        <p className="text-sm text-gray-500 flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> Wants to connect with you
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex gap-2">
-                      <Button
-                        onClick={() => acceptConnection(conn)}
-                        size="sm"
-                        className="flex-1 bg-black text-white hover:bg-gray-800"
-                      >
-                        <UserCheck className="w-4 h-4 mr-2" /> Accept
-                      </Button>
-                      <Button
-                        onClick={() => rejectConnection(conn)}
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 text-red-600 hover:text-red-700 hover:border-red-300"
-                      >
-                        <UserX className="w-4 h-4 mr-2" /> Decline
-                      </Button>
-                    </div>
-                  </div>
-                )
-              })
+      {/* Two column layout */}
+      <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-2">
+        <div className="overflow-y-auto border-r border-gray-200">
+          <div className="p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+            <h2 className="text-sm font-semibold text-gray-900">Connections ({myConnections.length})</h2>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {myConnections.length === 0 && (
+              <div className="p-6 text-center text-sm text-gray-500">No connections yet</div>
             )}
+            {myConnections.map((person) => (
+              <div key={`${person.type}-${person.id}`} className="p-4 hover:bg-gray-50">
+                <div className="flex items-start gap-3">
+                  <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden text-sm font-bold text-gray-600">
+                    {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
+                        <p className="text-xs text-gray-600 line-clamp-1 mb-1">{person.role}</p>
+                        {person.location && <div className="flex items-center gap-1 text-xs text-gray-500"><MapPin className="w-3 h-3" />{person.location}</div>}
+                      </div>
+                      <Button onClick={() => handleMessage(person)} size="sm" variant="outline" className="text-xs px-3 flex-shrink-0">
+                        <MessageCircle className="w-3 h-3 mr-1" /> Message
+                      </Button>
+                    </div>
+                    {person.skills?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {person.skills.slice(0, 3).map((skill, idx) => (
+                          <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded">{skill}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      )}
 
-      {/* Connection Request Modal */}
+        <div className="overflow-y-auto">
+          <div className="p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+            <h2 className="text-sm font-semibold text-gray-900">Suggested for you</h2>
+            <p className="text-xs text-gray-600 mt-1">Matched by skill and career niche</p>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {suggestions.length === 0 && (
+              <div className="p-6 text-center text-sm text-gray-500">No suggestions available</div>
+            )}
+            {suggestions.map((person) => {
+              const TypeIcon = typeIcon(person.type)
+              return (
+                <div key={`${person.type}-${person.id}`} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-start gap-3">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-sm font-bold text-gray-600">
+                        {person.image ? <img src={person.image} alt={person.name} className="w-full h-full object-cover" /> : person.name?.[0]?.toUpperCase()}
+                      </div>
+                      <TypeIcon className="w-3 h-3 absolute -bottom-1 -right-1 bg-black text-white rounded-full p-0.5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 text-sm">{person.name}</h3>
+                          <p className="text-xs text-gray-600 line-clamp-1">{person.role}</p>
+                        </div>
+                        {getConnectionStatus(person) === 'pending' ? (
+                          <Button size="sm" variant="outline" className="text-xs px-3 flex-shrink-0" disabled>Pending</Button>
+                        ) : (
+                          <Button onClick={() => { setSelectedPerson(person); setShowConnectionModal(true); }} size="sm" className="bg-black text-white hover:bg-gray-800 text-xs px-3 flex-shrink-0">Connect</Button>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-gray-500 mb-1">
+                        {person.matchScore > 0 && <span className="font-medium text-indigo-600">{person.matchScore} skill match{person.matchScore > 1 ? 'es' : ''}</span>}
+                        {person.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{person.location}</span>}
+                      </div>
+                      {person.skills?.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {person.skills.slice(0, 3).map((skill, idx) => (
+                            <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded">{skill}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
       {showConnectionModal && selectedPerson && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Connect with {selectedPerson.name}</h2>
+              <h3 className="text-lg font-bold text-gray-900">Connect with {selectedPerson.name}</h3>
               <button onClick={() => setShowConnectionModal(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
@@ -493,38 +512,16 @@ export default function NetworkPage() {
             <textarea
               value={connectionMessage}
               onChange={(e) => setConnectionMessage(e.target.value)}
-              placeholder="Add a personal message (optional)"
-              className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-400 resize-none"
-              rows={3}
+              placeholder="Hi! I'd love to connect and explore potential collaboration opportunities..."
+              className="w-full h-28 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-gray-400 resize-none mb-4"
             />
-            <div className="mt-4 flex gap-2">
-              <Button
-                onClick={() => sendConnectionRequest(selectedPerson)}
-                className="flex-1 bg-black text-white hover:bg-gray-800"
-              >
-                Send Request
-              </Button>
-              <Button
-                onClick={() => setShowConnectionModal(false)}
-                variant="outline"
-                className="flex-1"
-              >
-                Cancel
-              </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => setShowConnectionModal(false)} variant="outline" className="flex-1">Cancel</Button>
+              <Button onClick={handleConnect} className="flex-1 bg-black text-white hover:bg-gray-800">Send Request</Button>
             </div>
           </div>
         </div>
       )}
-
-      {/* Artist Profile Drawer */}
-      <ArtistProfileDrawer
-        artistId={selectedArtistId}
-        isOpen={profileDrawerOpen}
-        onClose={() => {
-          setProfileDrawerOpen(false)
-          setSelectedArtistId(null)
-        }}
-      />
     </div>
   )
 }

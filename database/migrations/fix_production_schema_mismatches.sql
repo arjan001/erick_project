@@ -41,3 +41,7 @@ ADD COLUMN IF NOT EXISTS website_url TEXT;
 -- Add google_drive_folder_id for artists (optional, for future use)
 ALTER TABLE public.artists
 ADD COLUMN IF NOT EXISTS google_drive_folder_id TEXT;
+
+-- Add username column for artists
+ALTER TABLE public.artists
+ADD COLUMN IF NOT EXISTS username TEXT;
