@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import CountrySelector from '@/components/CountrySelector'
 import { formatSocialMediaUrl } from '@/lib/socialMediaUtils'
-import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2, FolderOpen, Users, CreditCard, Lock, Settings as SettingsIcon, Plus, Eye, MoreVertical, UserPlus, FileText, Monitor, MapPin, Share2, Image as ImageIcon } from 'lucide-react'
+import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2, FolderOpen, Users, CreditCard, Lock, Settings as SettingsIcon, Plus, Eye, MoreVertical, UserPlus, FileText, Monitor, MapPin, Share2, Image as ImageIcon, Film } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/lib/AuthContext'
 
@@ -61,10 +61,12 @@ export default function ClientProfilePage() {
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [changingPassword, setChangingPassword] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
+  const [importantFiles, setImportantFiles] = useState([])
+  const [uploadingFiles, setUploadingFiles] = useState(false)
 
   const [formData, setFormData] = useState({
     company: '', phone: '', website: '', bio: '', linkedin: '', instagram: '', twitter: '', youtube: '',
-    city: '', country: ''
+    city: '', country: '', years_in_film: '', years_in_directing: ''
   })
 
   const [emailNotifications, setEmailNotifications] = useState(true)
@@ -89,12 +91,13 @@ export default function ClientProfilePage() {
           setFormData({
             company: o.company || '', phone: o.phone || '', website: o.website || '', bio: o.bio || '',
             linkedin: o.linkedin || '', instagram: o.instagram || '', twitter: o.twitter || '', youtube: o.youtube || '',
-            city: o.city || '', country: o.country || ''
+            city: o.city || '', country: o.country || '', years_in_film: o.years_in_film || '', years_in_directing: o.years_in_directing || ''
           })
           setEmailNotifications(o.email_notifications ?? true)
           setProjectUpdates(o.project_updates ?? true)
           setProfilePublic(o.profile_public ?? true)
           setCompanyImages(o.company_images || [])
+          setImportantFiles(o.important_files || [])
         }
       } catch (err) {
         console.error('Error fetching client profile:', err)
@@ -211,6 +214,9 @@ export default function ClientProfilePage() {
           youtube: formData.youtube,
           city: formData.city,
           country: formData.country,
+          years_in_film: formData.years_in_film ? parseInt(formData.years_in_film) : null,
+          years_in_directing: formData.years_in_directing ? parseInt(formData.years_in_directing) : null,
+          important_files: importantFiles,
           email_notifications: emailNotifications,
           project_updates: projectUpdates,
           profile_public: profilePublic
@@ -228,7 +234,10 @@ export default function ClientProfilePage() {
           twitter: formData.twitter,
           youtube: formData.youtube,
           city: formData.city,
-          country: formData.country
+          country: formData.country,
+          years_in_film: formData.years_in_film ? parseInt(formData.years_in_film) : null,
+          years_in_directing: formData.years_in_directing ? parseInt(formData.years_in_directing) : null,
+          important_files: importantFiles
         })
         setOwner(updated)
         success('Profile Updated', 'Your profile has been saved')
@@ -640,6 +649,67 @@ export default function ClientProfilePage() {
     }
   }
 
+  const handleImportantFilesUpload = async (e) => {
+    const files = Array.from(e.target.files || [])
+    if (!files.length || !owner) return
+
+    setUploadingFiles(true)
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const fileName = `client-important-${owner.id}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+        const { data: uploadData, error } = await supabase.storage
+          .from('general-uploads')
+          .upload(fileName, file)
+
+        if (error) throw error
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('general-uploads')
+          .getPublicUrl(fileName)
+
+        return {
+          url: publicUrl,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          uploaded_at: new Date().toISOString()
+        }
+      })
+
+      const uploadedFiles = await Promise.all(uploadPromises)
+      setImportantFiles([...importantFiles, ...uploadedFiles])
+
+      // Save to database as JSON array
+      const existingFiles = owner.important_files || []
+      const updatedFiles = [...existingFiles, ...uploadedFiles]
+      await ProjectOwner.update(owner.id, { important_files: updatedFiles })
+      setOwner({ ...owner, important_files: updatedFiles })
+
+      success('Files Uploaded', `${uploadedFiles.length} file(s) uploaded successfully`)
+    } catch (err) {
+      toastError('Upload Failed', `Failed to upload files: ${err.message || 'Unknown error'}`)
+    } finally {
+      setUploadingFiles(false)
+    }
+  }
+
+  const handleRemoveImportantFile = async (fileIndex) => {
+    if (!confirm('Remove this file?')) return
+
+    try {
+      const updatedFiles = importantFiles.filter((_, i) => i !== fileIndex)
+      setImportantFiles(updatedFiles)
+
+      // Update database
+      await ProjectOwner.update(owner.id, { important_files: updatedFiles })
+      setOwner({ ...owner, important_files: updatedFiles })
+
+      success('File Removed', 'File has been removed')
+    } catch (err) {
+      toastError('Remove Failed', 'Failed to remove file')
+    }
+  }
+
   if (loading || !user) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -798,6 +868,14 @@ export default function ClientProfilePage() {
                       <label className="block text-sm font-medium text-gray-900 mb-2">Country</label>
                       <CountrySelector value={formData.country} onChange={(val) => setFormData({ ...formData, country: val })} />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2"><Film className="w-4 h-4 text-gray-400" />Years in Film</label>
+                      <Input type="number" value={formData.years_in_film} onChange={(e) => setFormData({ ...formData, years_in_film: e.target.value })} placeholder="e.g., 5" className="rounded-lg" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2"><Monitor className="w-4 h-4 text-gray-400" />Years in Directing</label>
+                      <Input type="number" value={formData.years_in_directing} onChange={(e) => setFormData({ ...formData, years_in_directing: e.target.value })} placeholder="e.g., 3" className="rounded-lg" />
+                    </div>
                   </div>
                   <Button onClick={handleSaveProfile} disabled={saving} className="bg-black text-white hover:bg-gray-800 rounded-lg">
                     {saving ? 'Saving...' : 'Save Changes'}
@@ -822,6 +900,62 @@ export default function ClientProfilePage() {
                   )}
                 </div>
               )}
+
+              {/* Important Files */}
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2"><FileText className="w-4 h-4 text-gray-400" /> Important Files</h3>
+                {editing ? (
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                      <label className="cursor-pointer">
+                        <div className="flex flex-col items-center gap-2">
+                          <Upload className="w-8 h-8 text-gray-400" />
+                          <span className="text-sm text-gray-600">Click to upload important files</span>
+                          <span className="text-xs text-gray-400">PDF, Word, Excel, images, etc.</span>
+                        </div>
+                        <input type="file" multiple onChange={handleImportantFilesUpload} disabled={uploadingFiles} className="hidden" />
+                      </label>
+                    </div>
+                    {importantFiles.length > 0 && (
+                      <div className="space-y-2">
+                        {importantFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="flex items-center gap-3">
+                              <FileText className="w-4 h-4 text-gray-400" />
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                                <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+                              </div>
+                            </div>
+                            <button onClick={() => handleRemoveImportantFile(index)} className="text-red-500 hover:text-red-700">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {importantFiles.length === 0 ? (
+                      <p className="text-sm text-gray-500">No important files uploaded</p>
+                    ) : (
+                      importantFiles.map((file, index) => (
+                        <div key={index} className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-200">
+                          <FileText className="w-4 h-4 text-gray-400" />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                            <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+                          </div>
+                          <a href={file.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-700">
+                            Download
+                          </a>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Social Links */}
               <div className="bg-gray-50 rounded-2xl p-6">
