@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import notificationService from '@/shared/services/notificationService'
 import ArtistProfileDrawer from '@/components/artist/ArtistProfileDrawer'
 
-const ONLINE_THRESHOLD_MS = 90 * 1000 // consider online if active within last 90s
+const ONLINE_THRESHOLD_MS = 90 * 1000
 
 const isOnline = (lastActive) => lastActive && (Date.now() - new Date(lastActive).getTime()) < ONLINE_THRESHOLD_MS
 
@@ -27,7 +27,7 @@ export default function NetworkPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState('all')
-  const [activeTab, setActiveTab] = useState('connections') // 'connections', 'sent', 'pending'
+  const [activeTab, setActiveTab] = useState('connections')
 
   const [allPeople, setAllPeople] = useState([])
   const [myConnections, setMyConnections] = useState([])
@@ -48,20 +48,14 @@ export default function NetworkPage() {
   const loadData = async () => {
     try {
       setLoading(true)
-      console.log('NetworkPage: Loading data for user', user.id, 'role:', user.role)
 
-      // Fetch ALL users from public.users table
       const allUsers = await User.list().catch((err) => {
         console.error('Error fetching users:', err)
         return []
       })
-      console.log('All users loaded:', allUsers.length)
 
-      // Filter out current user
       const otherUsers = allUsers.filter(u => u.id !== user.id && u.email !== user.email)
-      console.log('Other users after filtering:', otherUsers.length)
 
-      // Transform to unified format
       const people = otherUsers.map(u => ({
         id: u.id,
         type: u.role || 'user',
@@ -75,24 +69,17 @@ export default function NetworkPage() {
         email: u.email,
       }))
 
-      console.log('Transformed people:', people.length)
       setAllPeople(people)
 
-      // Fetch connections - get all connections where user is involved
       const connectionsData = await Connection.filter({ user_id: user.id }).catch(() => [])
-      console.log('NetworkPage: Connections loaded:', connectionsData.length)
 
-      // Filter correctly based on production schema (uses connected_artist_id):
-      // - My accepted connections: status = accepted
-      // - Requests I sent: user_id = me AND status = pending
-      // - Requests I received: connected_artist_id = me AND status = pending
       const accepted = connectionsData.filter(c => c.status === 'accepted')
       const sentReqs = connectionsData.filter(c => c.user_id === user.id && c.status === 'pending')
       const receivedRequests = connectionsData.filter(c => c.connected_artist_id === user.id && c.status === 'pending')
 
       setMyConnections(accepted)
       setSentRequests(sentReqs)
-      setPendingRequests(receivedRequests) // Only show requests I received to accept
+      setPendingRequests(receivedRequests)
 
     } catch (err) {
       console.error('NetworkPage: Error loading data:', err)
@@ -112,7 +99,6 @@ export default function NetworkPage() {
         metadata: { message: connectionMessage },
       })
 
-      // Send notification
       await Notification.create({
         user_id: person.id,
         type: 'connection_request',
@@ -165,12 +151,18 @@ export default function NetworkPage() {
     }
   }
 
-  const startChat = (person) => {
-    navigate(`/Messages?with=${person.id}`)
+  const cancelConnectionRequest = async (connection) => {
+    try {
+      await Connection.delete(connection.id)
+      success('Cancelled', 'Connection request cancelled')
+      loadData()
+    } catch (err) {
+      console.error('Error cancelling connection:', err)
+      error('Error', 'Failed to cancel connection request')
+    }
   }
 
   const handleStartConversation = async (person) => {
-    // Check if current user is a client and has subscription
     if (user.role === 'client' || user.role === 'project_owner') {
       try {
         const subscriptions = await Subscription.filter({ user_id: user.id, status: 'active' })
@@ -180,13 +172,11 @@ export default function NetworkPage() {
         }
       } catch (err) {
         console.error('Error checking subscription:', err)
-        // Allow proceeding even if check fails
       }
     }
     navigate(`/Messages?with=${person.id}`)
   }
 
-  // Filter people based on search and type
   const filteredPeople = allPeople.filter(p => {
     const matchesSearch = (p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -195,12 +185,13 @@ export default function NetworkPage() {
     return matchesSearch && matchesType
   })
 
-  // Get connected user IDs - use connected_artist_id (production schema)
   const connectedUserIds = new Set(myConnections.map(c => c.connected_artist_id))
+  const sentRequestUserIds = new Set(sentRequests.map(c => c.connected_artist_id))
   const pendingUserIds = new Set(pendingRequests.map(c => c.connected_artist_id))
 
-  // People available to connect (not already connected or pending)
-  const availablePeople = filteredPeople.filter(p => !connectedUserIds.has(p.id) && !pendingUserIds.has(p.id))
+  const availablePeople = filteredPeople.filter(p =>
+    !connectedUserIds.has(p.id) && !sentRequestUserIds.has(p.id) && !pendingUserIds.has(p.id)
+  )
 
   if (loading) {
     return (
@@ -211,7 +202,7 @@ export default function NetworkPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Network</h1>
         <p className="text-gray-600">Connect with artists, clients, teams, and backers</p>
@@ -243,7 +234,7 @@ export default function NetworkPage() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-2 border-b border-gray-200">
+      <div className="mb-6 flex gap-4 border-b border-gray-200">
         <button
           onClick={() => setActiveTab('connections')}
           className={`px-4 py-2 font-medium ${activeTab === 'connections' ? 'border-b-2 border-black text-black' : 'text-gray-600'}`}
@@ -254,7 +245,7 @@ export default function NetworkPage() {
           onClick={() => setActiveTab('sent')}
           className={`px-4 py-2 font-medium ${activeTab === 'sent' ? 'border-b-2 border-black text-black' : 'text-gray-600'}`}
         >
-          Sent Requests ({0})
+          Sent Requests ({sentRequests.length})
         </button>
         <button
           onClick={() => setActiveTab('pending')}
@@ -262,220 +253,224 @@ export default function NetworkPage() {
         >
           Pending Requests ({pendingRequests.length})
         </button>
-        <button
-          onClick={() => setActiveTab('discover')}
-          className={`px-4 py-2 font-medium ${activeTab === 'discover' ? 'border-b-2 border-black text-black' : 'text-gray-600'}`}
-        >
-          Discover ({availablePeople.length})
-        </button>
       </div>
 
-      {/* Connections Tab */}
+      {/* Connections Tab - 2 Column Design */}
       {activeTab === 'connections' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {myConnections.length === 0 ? (
-            <div className="col-span-full text-center py-8 text-gray-500 text-sm">
-              No connections yet
-            </div>
-          ) : (
-            myConnections.map(conn => {
-              const person = allPeople.find(p => p.id === conn.connected_artist_id)
-              if (!person) return null
-              return (
-                <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => {
-                  if (person.type === 'artist') {
-                    setSelectedArtistId(person.id)
-                    setProfileDrawerOpen(true)
-                  }
-                }}>
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                      {person.image ? (
-                        <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                          {person.name[0]}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 text-sm truncate">{person.name}</h3>
-                      <p className="text-xs text-gray-600">{person.profession || person.role}</p>
-                      <p className="text-xs text-gray-500 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> {person.location}
-                      </p>
-                      {person.skills && person.skills.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {person.skills.slice(0, 2).map((skill, idx) => (
-                            <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <Button
-                      onClick={(e) => { e.stopPropagation(); startChat(person); }}
-                      variant="outline"
-                      className="w-full text-sm"
-                    >
-                      Message
-                    </Button>
-                  </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column - My Connections */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Connections ({myConnections.length})</h2>
+            <div className="space-y-3">
+              {myConnections.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  No connections yet
                 </div>
-              )
-            })
-          )}
-        </div>
-      )}
-
-      {/* Sent Requests Tab */}
-      {activeTab === 'sent' && (
-        <div className="text-center py-8 text-gray-500 text-sm">
-          No sent requests
-        </div>
-      )}
-
-      {/* Pending Requests Tab */}
-      {activeTab === 'pending' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {pendingRequests.length === 0 ? (
-            <div className="col-span-full text-center py-8 text-gray-500 text-sm">
-              No pending requests
-            </div>
-          ) : (
-            pendingRequests.map(conn => {
-              const person = allPeople.find(p => p.id === conn.connected_artist_id)
-              if (!person) return null
-              return (
-                <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => {
-                  if (person.type === 'artist') {
-                    setSelectedArtistId(person.id)
-                    setProfileDrawerOpen(true)
-                  }
-                }}>
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                      {person.image ? (
-                        <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                          {person.name[0]}
+              ) : (
+                myConnections.map(conn => {
+                  const person = allPeople.find(p => p.id === conn.connected_artist_id)
+                  if (!person) return null
+                  return (
+                    <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex items-start gap-3">
+                        <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                          {person.image ? (
+                            <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg font-bold">
+                              {person.name[0]}
+                            </div>
+                          )}
                         </div>
-                      )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900">{person.name}</h3>
+                          <p className="text-sm text-gray-600">{person.profession || person.role}</p>
+                          <p className="text-sm text-gray-500 flex items-center gap-1">
+                            <MapPin className="w-3 h-3" /> {person.location}
+                          </p>
+                          {person.skills && person.skills.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {person.skills.slice(0, 3).map((skill, idx) => (
+                                <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <Button
+                          onClick={() => handleStartConversation(person)}
+                          size="sm"
+                          variant="outline"
+                          className="w-full"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" /> Message
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 text-sm truncate">{person.name}</h3>
-                      <p className="text-xs text-gray-600">{person.profession || person.role}</p>
-                      {conn.metadata?.message && (
-                        <p className="text-xs text-gray-500 mt-1 italic">"{conn.metadata.message}"</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="mt-3 flex gap-2">
-                    <Button
-                      onClick={(e) => { e.stopPropagation(); acceptConnection(conn); }}
-                      className="flex-1 bg-green-600 text-white hover:bg-green-700 text-sm"
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      onClick={(e) => { e.stopPropagation(); rejectConnection(conn); }}
-                      variant="outline"
-                      className="flex-1 text-sm"
-                    >
-                      Decline
-                    </Button>
-                  </div>
-                </div>
-              )
-            })
-          )}
-        </div>
-      )}
+                  )
+                })
+              )}
+            </div>
+          </div>
 
-      {/* Discover Tab - for finding new people */}
-      {activeTab === 'discover' && (
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Suggested for you ({availablePeople.length})</h2>
-          <p className="text-sm text-gray-500 mb-4">Matched by skill and career niche</p>
-          <div className="grid grid-cols-1 gap-3">
-            {availablePeople.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 text-sm">
-                No suggestions available
-              </div>
-            ) : (
-              availablePeople.map(person => {
-                const isPending = sentRequests.some(r => r.connected_artist_id === person.id)
-                return (
-                  <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all cursor-pointer group" onClick={() => {
-                    if (person.type === 'artist') {
-                      setSelectedArtistId(person.id)
-                      setProfileDrawerOpen(true)
-                    }
-                  }}>
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+          {/* Right Column - Suggested for you */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Suggested for you ({availablePeople.length})</h2>
+            <div className="space-y-3">
+              {availablePeople.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  No suggestions available
+                </div>
+              ) : (
+                availablePeople.map(person => (
+                  <div key={person.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                         {person.image ? (
                           <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xl font-bold">
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg font-bold">
                             {person.name[0]}
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 text-base">{person.name}</h3>
-                            <p className="text-sm text-gray-600">{person.profession || person.role}</p>
-                            <p className="text-sm text-gray-500 flex items-center gap-1">
-                              <MapPin className="w-3 h-3" /> {person.location}
-                            </p>
-                            {person.skills && person.skills.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {person.skills.slice(0, 4).map((skill, idx) => (
-                                  <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                                    {skill}
-                                  </span>
-                                ))}
-                                {person.skills.length > 4 && (
-                                  <span className="text-xs text-gray-500">+{person.skills.length - 4} more</span>
-                                )}
-                              </div>
-                            )}
+                        <h3 className="font-semibold text-gray-900">{person.name}</h3>
+                        <p className="text-sm text-gray-600">{person.profession || person.role}</p>
+                        <p className="text-sm text-gray-500 flex items-center gap-1">
+                          <MapPin className="w-3 h-3" /> {person.location}
+                        </p>
+                        {person.skills && person.skills.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {person.skills.slice(0, 3).map((skill, idx) => (
+                              <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                                {skill}
+                              </span>
+                            ))}
                           </div>
-                          <div className="flex items-center gap-2 ml-4">
-                            <Button
-                              onClick={(e) => { e.stopPropagation(); handleStartConversation(person); }}
-                              size="sm"
-                              variant="outline"
-                              className="flex items-center gap-1"
-                            >
-                              <MessageCircle className="w-4 h-4" /> Message
-                            </Button>
-                            {isPending ? (
-                              <Button
-                                size="sm"
-                                disabled
-                                className="flex items-center gap-1 bg-gray-200 text-gray-600"
-                              >
-                                <Clock className="w-4 h-4" /> Sent
-                              </Button>
-                            ) : (
-                              <Button
-                                onClick={(e) => { e.stopPropagation(); setSelectedPerson(person); setShowConnectionModal(true); }}
-                                size="sm"
-                                className="flex items-center gap-1 bg-black text-white hover:bg-gray-800"
-                              >
-                                <UserPlus className="w-4 h-4" /> Connect
-                              </Button>
-                            )}
-                          </div>
-                        </div>
+                        )}
                       </div>
+                    </div>
+                    <div className="mt-3">
+                      <Button
+                        onClick={() => { setSelectedPerson(person); setShowConnectionModal(true); }}
+                        size="sm"
+                        className="w-full bg-black text-white hover:bg-gray-800"
+                      >
+                        <UserPlus className="w-4 h-4 mr-2" /> Connect
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sent Requests Tab */}
+      {activeTab === 'sent' && (
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Sent Requests ({sentRequests.length})</h2>
+          <div className="space-y-3">
+            {sentRequests.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 text-sm">
+                No sent requests
+              </div>
+            ) : (
+              sentRequests.map(conn => {
+                const person = allPeople.find(p => p.id === conn.connected_artist_id)
+                if (!person) return null
+                return (
+                  <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                        {person.image ? (
+                          <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg font-bold">
+                            {person.name[0]}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900">{person.name}</h3>
+                        <p className="text-sm text-gray-600">{person.profession || person.role}</p>
+                        <p className="text-sm text-gray-500 flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> Request sent
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <Button
+                        onClick={() => cancelConnectionRequest(conn)}
+                        size="sm"
+                        variant="outline"
+                        className="w-full text-red-600 hover:text-red-700 hover:border-red-300"
+                      >
+                        Cancel Request
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Pending Requests Tab */}
+      {activeTab === 'pending' && (
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Pending Requests ({pendingRequests.length})</h2>
+          <div className="space-y-3">
+            {pendingRequests.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 text-sm">
+                No pending requests
+              </div>
+            ) : (
+              pendingRequests.map(conn => {
+                const person = allPeople.find(p => p.id === conn.user_id)
+                if (!person) return null
+                return (
+                  <div key={conn.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                        {person.image ? (
+                          <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg font-bold">
+                            {person.name[0]}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900">{person.name}</h3>
+                        <p className="text-sm text-gray-600">{person.profession || person.role}</p>
+                        <p className="text-sm text-gray-500 flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> Wants to connect with you
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <Button
+                        onClick={() => acceptConnection(conn)}
+                        size="sm"
+                        className="flex-1 bg-black text-white hover:bg-gray-800"
+                      >
+                        <UserCheck className="w-4 h-4 mr-2" /> Accept
+                      </Button>
+                      <Button
+                        onClick={() => rejectConnection(conn)}
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 text-red-600 hover:text-red-700 hover:border-red-300"
+                      >
+                        <UserX className="w-4 h-4 mr-2" /> Decline
+                      </Button>
                     </div>
                   </div>
                 )
