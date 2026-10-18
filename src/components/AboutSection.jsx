@@ -337,8 +337,8 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
           )}
         </div>
 
-        {/* Past Clients */}
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200">
+        {/* Past Clients - Hidden as requested */}
+        {/* <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
               <UsersIcon className="w-5 h-5 text-purple-700" />
@@ -433,7 +433,7 @@ export default function AboutSection({ artist, endorsements, onUpdate }) {
               )}
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Project Types */}
         <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200">
