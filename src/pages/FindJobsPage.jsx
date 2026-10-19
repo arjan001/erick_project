@@ -13,7 +13,7 @@ import { useAuth } from '@/lib/AuthContext'
 const dummyJobs = [
   {
     id: 1,
-    title: "VO Artist Ones: Voiceover (TV Commercial)",
+    title: "Voice Over Artist - TV Commercial",
     company: "KENYA TELEVISION NETWORK",
     compensation: "KES 40,000 (est. 2 hours of work)",
     location: "Worldwide",
@@ -24,7 +24,23 @@ const dummyJobs = [
     age: "25-36",
     description: "Casting a Swahili-language short drama exploring themes of family, migration, and identity. Seeking authentic Swahili-speaking performers for lead and supporting roles.",
     tags: ["Voiceover", "TV Commercial"],
-    roles: []
+    roles: [],
+    // Additional fields for detailed view
+    about_project: "We are producing a TV commercial for a major brand seeking authentic voice talent.",
+    job_description: "Seeking a female voice over artist aged 25-36 for a Swahili-language TV commercial. The role requires clear diction and emotional range.",
+    production_types: ["Voice Over", "TV Commercial", "Work from Home"],
+    duration: "2 hours",
+    budget_min: 40000,
+    budget_max: 40000,
+    budget_type: "fixed",
+    payment_terms: "Payment upon completion of recording",
+    additional_info: "Audition script will be provided after application.",
+    urgency: "normal",
+    contract_type: "freelance",
+    audition_format: "audio",
+    audition_duration: "2-3 minutes",
+    audition_language: "Swahili",
+    attachments: []
   },
   {
     id: 2,
@@ -44,50 +60,23 @@ const dummyJobs = [
       { title: "Elder", compensation: "KES 10,000/day", gender: "Any", age: "50s+" },
       { title: "Young Adult", compensation: "KES 7,000/day", gender: "Any", age: "18-25" },
       { title: "Professional", compensation: "KES 10,000/day", gender: "Any", age: "30s-40s" },
-    ]
-  },
-  {
-    id: 3,
-    title: "Independent Feature Film - Supporting Cast",
-    company: "Nairobi Film Productions",
-    compensation: "Deferred pay",
-    location: "Nairobi",
-    posted: "Sunday",
-    featured: false,
-    is_production: true,
-    description: "Indie feature film casting supporting roles for a coming-of-age drama set in Nairobi.",
-    tags: ["Feature Film", "Indie", "Drama"],
-    roles: [
-      { title: "Supporting — Male, 18-25", compensation: "Deferred" },
-      { title: "Supporting — Female, 18-25", compensation: "Deferred" },
-      { title: "Lead — Male, 20-30", compensation: "Deferred" },
-    ]
-  },
-  {
-    id: 4,
-    title: "Theater Production — Ensemble",
-    company: "Kenya National Theatre",
-    compensation: "KES 5,000/day",
-    location: "Nairobi",
-    posted: "Thursday",
-    featured: false,
-    is_production: false,
-    description: "Casting ensemble performers for an upcoming theater production revival.",
-    tags: ["Theater", "Musical", "Ensemble"],
-    roles: []
-  },
-  {
-    id: 5,
-    title: "UGC Creator — Tech Product Reviews",
-    company: "Content Creators Kenya",
-    compensation: "KES 5,000/day",
-    location: "Remote",
-    posted: "Today",
-    featured: true,
-    is_production: false,
-    description: "Seeking UGC creators to produce authentic tech product review content for social media campaigns.",
-    tags: ["UGC", "Content Creator", "Tech", "Remote"],
-    roles: []
+    ],
+    // Additional fields for detailed view
+    about_project: "Season 2 of our popular Kenyan drama series. This season explores themes of urban life and traditional values.",
+    job_description: "Multiple roles available for this TV series production. Looking for diverse cast representation.",
+    production_types: ["Film", "TV Show", "On Location"],
+    duration: "3 months",
+    budget_min: 50000,
+    budget_max: 200000,
+    budget_type: "daily",
+    payment_terms: "Daily rates paid weekly",
+    additional_info: "Shooting schedule will be provided upon casting.",
+    urgency: "normal",
+    contract_type: "contract",
+    audition_format: "video",
+    audition_duration: "3-5 minutes",
+    audition_language: "english",
+    attachments: []
   },
 ]
 
