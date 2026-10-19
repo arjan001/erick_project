@@ -98,7 +98,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
       {showLoadingScreen && (
         <div className="fixed inset-0 bg-white z-[100] flex items-center justify-center">
           <div className="w-32 h-32 rounded-full border-4 border-gray-200 flex items-center justify-center animate-pulse">
-            <span className="text-4xl font-black tracking-tighter text-[#1a1a1a]">22.</span>
+            <span className="text-2xl font-black tracking-tighter text-[#1a1a1a]">SmartGigs</span>
           </div>
         </div>
       )}
@@ -117,7 +117,7 @@ export default function MainLayout({ children, currentPageName: currentPageNameP
                 to="/"
                 className="hover:opacity-70 transition-opacity"
               >
-                <span className={`text-2xl font-black tracking-tighter ${isHomePage ? 'text-white' : 'text-[#1a1a1a]'}`}>22.</span>
+                <span className={`text-2xl font-black tracking-tighter ${isHomePage ? 'text-white' : 'text-[#1a1a1a]'}`}>SmartGigs</span>
               </Link>
 
               {/* Main Nav */}
