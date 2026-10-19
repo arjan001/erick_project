@@ -1,94 +1,43 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { X, MapPin, Clock, DollarSign, Share2, Heart, Building2, BadgeCheck, Briefcase, ChevronDown, ChevronUp, ChevronRight, Crown, ExternalLink, Play, Youtube, Video, Calendar, Users } from 'lucide-react'
+import { X, MapPin, Clock, Euro, Share2, Heart, Building2, BadgeCheck, Briefcase, Play, FileText, Download, Upload, Mic, Globe, Award, CheckCircle, AlertCircle, Star, Calendar, Users, ExternalLink, Video, Image as ImageIcon } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { canApplyForJobs, canContactJobPoster } from '@/services/subscriptionService'
+import { Button } from '@/components/ui/button'
 
 export default function GigDetailSlideOut({ job, onClose, onApply }) {
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
-  const [expandedRoles, setExpandedRoles] = useState(new Set())
-  const [requiresSubscription, setRequiresSubscription] = useState(false)
-  const [showVideo, setShowVideo] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
+  const [hasApplied, setHasApplied] = useState(false)
 
   if (!job) return null
 
-  const getEmbedUrl = (url) => {
-    if (!url) return null
-
-    // YouTube
-    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/)
-    if (youtubeMatch) {
-      return `https://www.youtube.com/embed/${youtubeMatch[1]}`
-    }
-
-    // Vimeo
-    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
-    if (vimeoMatch) {
-      return `https://player.vimeo.com/video/${vimeoMatch[1]}`
-    }
-
-    return url
-  }
-
-  const hasVideo = job.video_url || job.video_embed_url || job.showreel_url
-  const embedUrl = hasVideo ? getEmbedUrl(job.video_url || job.video_embed_url || job.showreel_url) : null
-  const isExternalVideo = embedUrl && (embedUrl.includes('youtube') || embedUrl.includes('vimeo'))
-
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({ title: job.title, text: job.description || job.body || '', url: window.location.href })
+      navigator.share({ title: job.title, text: job.description || '', url: window.location.href })
     } else {
       navigator.clipboard?.writeText(window.location.href)
     }
   }
 
-  const handleApply = async (role) => {
+  const handleSave = () => {
+    setIsSaved(!isSaved)
+  }
+
+  const handleApply = async (role = null) => {
     if (!isAuthenticated) {
       navigate('/SignIn', { state: { returnTo: window.location.pathname, job: job.title } })
       return
     }
 
-    // Check if user has active subscription
-    const canApply = await canApplyForJobs(user?.id)
-    if (!canApply) {
-      setRequiresSubscription(true)
-      return
-    }
-
-    // Call parent onApply with role info
     if (onApply) {
       onApply(job, role)
     }
   }
 
-  const handleContactPoster = async () => {
-    if (!isAuthenticated) {
-      navigate('/SignIn', { state: { returnTo: window.location.pathname, job: job.title } })
-      return
-    }
-
-    // Check if user has active subscription
-    const canContact = await canContactJobPoster(user?.id)
-    if (!canContact) {
-      setRequiresSubscription(true)
-      return
-    }
-
-    // Handle contact logic here
-
-  }
-
-  const toggleRole = (roleId) => {
-    const newExpanded = new Set(expandedRoles)
-    if (newExpanded.has(roleId)) {
-      newExpanded.delete(roleId)
-    } else {
-      newExpanded.add(roleId)
-    }
-    setExpandedRoles(newExpanded)
-  }
+  const rolePills = job.roles_needed || ['Voice Over', 'Animation']
+  const productionPills = job.production_types || ['Work from Home', 'Remote', 'On Location']
 
   return (
     <>
@@ -98,282 +47,282 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
         onClick={onClose}
       />
       {/* Panel — slides in from right */}
-      <div className="fixed right-0 top-0 z-[101] flex h-full w-full max-w-4xl flex-col overflow-y-auto bg-white shadow-2xl md:max-w-5xl">
+      <div className="fixed right-0 top-0 z-[101] flex h-full w-full max-w-6xl flex-col overflow-y-auto bg-white shadow-2xl">
         {/* Header with close button */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-5 py-4 md:px-6">
-          <div className="flex items-center gap-2">
-            {job.featured && (
-              <span className="flex items-center gap-1 bg-[#e11d48] px-3 py-1 text-xs font-bold text-white">
-                <BadgeCheck className="h-3.5 w-3.5" /> Featured
-              </span>
-            )}
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-5 py-4">
+          <div className="flex items-center gap-4">
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+            <h1 className="text-xl font-semibold text-gray-900 flex-1">{job.title}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={handleShare} className="p-2 hover:bg-gray-100" aria-label="Share">
-              <Share2 className="h-4 w-4 text-black/60" />
+            <button onClick={handleShare} className="p-2 hover:bg-gray-100 rounded-lg">
+              <Share2 className="w-5 h-5 text-gray-600" />
             </button>
-            <button className="p-2 hover:bg-gray-100" aria-label="Save">
-              <Heart className="h-4 w-4 text-black/60" />
-            </button>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100" aria-label="Close">
-              <X className="h-5 w-5 text-black" />
+            <button onClick={handleSave} className="p-2 hover:bg-gray-100 rounded-lg">
+              <Heart className={`w-5 h-5 ${isSaved ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-5 py-6 md:px-6">
-          {/* Video Section */}
-          {hasVideo && (
-            <div className="mb-6">
-              {!showVideo ? (
-                <div
-                  onClick={() => setShowVideo(true)}
-                  className="relative aspect-video bg-gray-900 overflow-hidden cursor-pointer group"
-                >
-                  {embedUrl && isExternalVideo ? (
-                    <img
-                      src={`https://img.youtube.com/vi/${embedUrl.match(/\/embed\/([\w-]+)/)?.[1] || ''}/maxresdefault.jpg`}
-                      alt="Video thumbnail"
-                      className="w-full h-full object-cover opacity-70 group-hover:opacity-50 transition-opacity"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-800">
-                      <Video className="h-16 w-16 text-gray-600" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex h-16 w-16 items-center justify-center bg-white/90 group-hover:bg-white transition-colors">
-                      <Play className="h-8 w-8 text-black ml-1" />
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 p-6 space-y-6">
+              {/* About Project */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-black">About Project</h2>
+                <p className="text-gray-700 text-sm leading-relaxed">{job.about_project || job.description || 'No project description available.'}</p>
+              </div>
+
+              {/* Job Description */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-gray-400">Job Description</h2>
+                <p className="text-gray-700 text-sm leading-relaxed">{job.job_description || job.description || 'No job description available.'}</p>
+              </div>
+
+              {/* Roles in the Project */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-black">Roles in the Project</h2>
+                <div className="flex flex-wrap gap-2">
+                  {rolePills.map((role, idx) => (
+                    <span key={idx} className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+                      {role}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Production Type */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-gray-400">Production Type</h2>
+                <div className="flex flex-wrap gap-2">
+                  {productionPills.map((type, idx) => (
+                    <span key={idx} className="px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-medium">
+                      {type}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dates and Location */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-black">Dates and Location</h2>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="text-xs text-gray-500">Application Deadline</p>
+                      <p className="text-sm font-medium text-gray-900">{job.posted || 'Not specified'}</p>
                     </div>
                   </div>
-                  <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-black/70 text-white text-xs font-bold">
-                    Watch Video
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="text-xs text-gray-500">Duration</p>
+                      <p className="text-sm font-medium text-gray-900">{job.duration || 'Not specified'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <MapPin className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="text-xs text-gray-500">Location</p>
+                      <p className="text-sm font-medium text-gray-900">{job.location || 'Remote'}</p>
+                    </div>
                   </div>
                 </div>
-              ) : (
-                <div className="relative aspect-video bg-gray-900 overflow-hidden">
-                  {isExternalVideo ? (
-                    <iframe
-                      src={embedUrl}
-                      className="w-full h-full"
-                      allowFullScreen
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    />
-                  ) : (
-                    <video
-                      src={job.video_url || job.showreel_url}
-                      controls
-                      className="w-full h-full"
-                    />
-                  )}
-                  <button
-                    onClick={() => setShowVideo(false)}
-                    className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 text-white"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+              </div>
 
-          {/* Title */}
-          <h1 className="text-xl font-bold text-black md:text-2xl">{job.title}</h1>
-
-          {/* Meta row */}
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm font-bold text-black/60">
-            <span className="flex items-center gap-1.5">
-              <DollarSign className="h-4 w-4" /> {job.pay || 'Pay not specified'}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <MapPin className="h-4 w-4" /> {job.location}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="h-4 w-4" /> Posted {job.posted || 'Recently'}
-            </span>
-          </div>
-
-          {/* Tags */}
-          {job.tags && job.tags.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {job.tags.map((t) => (
-                <span key={t} className="bg-gray-100 px-3 py-1 text-xs font-bold text-black/70">
-                  {t}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Divider */}
-          <div className="my-6 border-t border-gray-100" />
-
-          {/* Description */}
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wide text-black/50">Description</h3>
-            <p className="mt-2 text-sm leading-relaxed font-bold text-black/80">{job.description || job.body || 'No description available.'}</p>
-          </div>
-
-          {/* Roles */}
-          {job.roles && job.roles.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-sm font-bold uppercase tracking-wide text-black/50">
-                Roles on this Project ({job.roles.length})
-              </h3>
-              <div className="mt-3 space-y-3">
-                {job.roles.map((r, i) => (
-                  <div key={i} className="border border-gray-200 overflow-hidden">
-                    {/* Role header - always visible */}
-                    <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex-1">
-                        <p className="text-sm font-bold text-black">{r.title}</p>
-                        <div className="mt-1 flex flex-wrap gap-2 text-xs font-bold text-black/50">
-                          {r.compensation && <span>{r.compensation}</span>}
-                          {r.gender && <span>• {r.gender}</span>}
-                          {r.age && <span>• {r.age}</span>}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => toggleRole(i)}
-                          className="p-1.5 hover:bg-gray-100"
-                        >
-                          {expandedRoles.has(i) ? (
-                            <ChevronUp className="h-4 w-4 text-black/60" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4 text-black/60" />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => handleApply(r)}
-                          className="shrink-0 bg-[#4f46e5] px-4 py-2 text-xs font-bold text-white hover:bg-[#4338CA]"
-                        >
-                          Apply
-                        </button>
-                      </div>
+              {/* Compensation/Pay Terms */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-gray-400">Compensation / Pay Terms</h2>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Euro className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="text-xs text-gray-500">Budget Range</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {job.budget_min && job.budget_max
+                          ? `${job.budget_type}: ${job.budget_min} - ${job.budget_max}`
+                          : job.compensation || 'Not specified'
+                        }
+                      </p>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Building2 className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="text-xs text-gray-500">Payment Type</p>
+                      <p className="text-sm font-medium text-gray-900">{job.payment_terms || 'As per industry standard'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-                    {/* Expanded role details */}
-                    {expandedRoles.has(i) && (
-                      <div className="border-t border-gray-200 bg-gray-50 p-4">
-                        {r.description && (
-                          <p className="text-sm font-bold text-black/70 mb-3">{r.description}</p>
+              {/* Additional Info */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-black">Additional Info</h2>
+                <p className="text-gray-700 text-sm leading-relaxed">{job.additional_info || 'Additional requirements and information about this opportunity will be provided during the application process.'}</p>
+              </div>
+
+              {/* Key Details */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-gray-400">Key Details</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Posted</p>
+                    <p className="text-sm font-medium text-gray-900">{job.posted || 'Recently'}</p>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Views</p>
+                    <p className="text-sm font-medium text-gray-900">{job.views || 0}</p>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Applications</p>
+                    <p className="text-sm font-medium text-gray-900">{job.application_count || 0}</p>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Status</p>
+                    <p className="text-sm font-medium text-green-600">Open</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Material */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-black">Additional Material</h2>
+                <div className="space-y-3">
+                  {job.attachments && job.attachments.length > 0 ? (
+                    job.attachments.map((file, idx) => (
+                      <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        {file.type?.startsWith('image/') ? (
+                          <ImageIcon className="w-5 h-5 text-gray-500" />
+                        ) : file.type?.startsWith('video/') ? (
+                          <Video className="w-5 h-5 text-gray-500" />
+                        ) : (
+                          <FileText className="w-5 h-5 text-gray-500" />
                         )}
-                        <div className="grid grid-cols-2 gap-3 text-xs">
-                          {r.gender_requirement && (
-                            <div>
-                              <span className="font-bold text-black/50">Gender:</span>{' '}
-                              <span className="font-bold text-black">{r.gender_requirement}</span>
-                            </div>
-                          )}
-                          {r.age_min && r.age_max && (
-                            <div>
-                              <span className="font-bold text-black/50">Age:</span>{' '}
-                              <span className="font-bold text-black">{r.age_min}-{r.age_max}</span>
-                            </div>
-                          )}
-                          {r.ethnicity_requirement && (
-                            <div>
-                              <span className="font-bold text-black/50">Ethnicity:</span>{' '}
-                              <span className="font-bold text-black">{r.ethnicity_requirement}</span>
-                            </div>
-                          )}
-                          {r.union_requirement && (
-                            <div>
-                              <span className="font-bold text-black/50">Union:</span>{' '}
-                              <span className="font-bold text-black">{r.union_requirement}</span>
-                            </div>
-                          )}
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                          <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                         </div>
-                        <button
-                          onClick={() => handleApply(r)}
-                          className="mt-3 w-full bg-[#4f46e5] py-2 text-xs font-bold text-white hover:bg-[#4338CA]"
-                        >
-                          Apply to {r.title}
-                        </button>
+                        <Button size="sm" variant="ghost">
+                          <Download className="w-4 h-4" />
+                        </Button>
                       </div>
-                    )}
-                  </div>
-                ))}
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No additional materials attached</p>
+                  )}
+                </div>
               </div>
             </div>
-          )}
 
-          {/* Company info with link to producer profile */}
-          <div className="mt-6 bg-gray-50 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center bg-[#4F46E5]/10">
-                <Building2 className="h-5 w-5 text-[#4F46E5]" />
-              </div>
-              <div className="flex-1">
-                <Link
-                  to={`/ClientPublicProfile/${job.posted_by || job.company_id || 'default'}`}
-                  className="text-sm font-bold text-black hover:text-[#4F46E5] flex items-center gap-1"
-                >
-                  {job.project || job.company || 'Production Company'}
-                  <ExternalLink className="h-3 w-3" />
-                </Link>
-                <p className="text-xs font-bold text-black/50">View producer profile</p>
-              </div>
-              <button
-                onClick={handleContactPoster}
-                className="shrink-0 bg-[#4F46E5] px-4 py-2 text-xs font-bold text-white hover:bg-[#4338CA]"
-              >
-                Contact
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Subscription required banner */}
-        {requiresSubscription && (
-          <div className="mx-5 mb-4 bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] p-4 md:mx-6">
-            <div className="flex items-start gap-3">
-              <Crown className="mt-0.5 h-5 w-5 text-white" />
-              <div className="flex-1">
-                <p className="text-sm font-bold text-white">Subscription Required</p>
-                <p className="mt-1 text-xs text-white/90">
-                  Contacting job posters and applying for roles requires an active subscription.
+            {/* Right Sidebar */}
+            <div className="p-6 space-y-6">
+              {/* Ready to Apply Card */}
+              <div className="bg-blue-600 rounded-xl p-6 text-white">
+                <h3 className="text-lg font-bold mb-2">Ready to Apply?</h3>
+                <p className="text-blue-100 text-sm mb-4">
+                  Submit your application and get noticed by the client.
                 </p>
-                <button
-                  onClick={() => navigate('/Pricing')}
-                  className="mt-3 bg-white px-4 py-2 text-xs font-bold text-[#8B5CF6] hover:bg-gray-100"
-                >
-                  View Subscription Plans
-                </button>
+                {hasApplied ? (
+                  <div className="flex items-center gap-2 bg-blue-700 rounded-lg p-3">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="text-sm font-medium">Application Submitted</span>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={() => handleApply()}
+                    className="w-full bg-white text-blue-600 hover:bg-blue-50"
+                    disabled={!isAuthenticated}
+                  >
+                    {isAuthenticated ? 'Apply Now' : 'Sign In to Apply'}
+                  </Button>
+                )}
               </div>
-              <button
-                onClick={() => setRequiresSubscription(false)}
-                className="p-1 hover:bg-white/20"
-              >
-                <X className="h-4 w-4 text-white" />
-              </button>
+
+              {/* Audition Details */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-gray-400">Audition Details</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Mic className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="text-xs text-gray-500">Format</p>
+                      <p className="text-sm font-medium text-gray-900">{job.audition_format || 'Video Audition'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="text-xs text-gray-500">Duration</p>
+                      <p className="text-sm font-medium text-gray-900">{job.audition_duration || '2-3 minutes'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Globe className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="text-xs text-gray-500">Language</p>
+                      <p className="text-sm font-medium text-gray-900">{job.audition_language || 'English'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Similar Calls */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-black">Similar Calls</h3>
+                <div className="space-y-3">
+                  <div className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+                    <p className="text-sm font-medium text-gray-900">Voice Over Artist Needed</p>
+                    <p className="text-xs text-gray-500 mt-1">Remote • KES 50,000</p>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+                    <p className="text-sm font-medium text-gray-900">Animation Voice Actor</p>
+                    <p className="text-xs text-gray-500 mt-1">Remote • KES 75,000</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Featured Calls */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-gray-400">Featured Calls</h3>
+                <div className="space-y-3">
+                  <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg hover:from-blue-100 hover:to-purple-100 cursor-pointer transition-colors">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                      <p className="text-sm font-medium text-gray-900">Feature Film Lead Role</p>
+                    </div>
+                    <p className="text-xs text-gray-500">Nairobi • KES 50,000/day</p>
+                  </div>
+                  <div className="p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg hover:from-green-100 hover:to-blue-100 cursor-pointer transition-colors">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                      <p className="text-sm font-medium text-gray-900">Commercial Voice Over</p>
+                    </div>
+                    <p className="text-xs text-gray-500">Remote • KES 20,000</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Client Info */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-black">Client</h3>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-gray-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{job.company || 'Client'}</p>
+                    <p className="text-xs text-gray-500">Verified Client</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        )}
-
-        {/* Footer CTA — sticky at bottom */}
-        <div className="sticky bottom-0 border-t border-gray-200 bg-white px-5 py-4 md:px-6">
-          {job.is_production && job.roles && job.roles.length > 0 ? (
-            <div className="space-y-3">
-              <p className="text-center text-xs font-bold text-black/50">Select a role above to apply, or apply to the production</p>
-              <button
-                onClick={() => handleApply({ title: job.title })}
-                className="flex w-full items-center justify-center gap-2 bg-[#4f46e5] py-3 text-sm font-bold text-white hover:bg-[#4338CA]"
-              >
-                <Briefcase className="h-4 w-4" />
-                Apply to This Production
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => handleApply({ title: job.title })}
-              className="flex w-full items-center justify-center gap-2 bg-[#4f46e5] py-3 text-sm font-bold text-white hover:bg-[#4338CA]"
-            >
-              <Briefcase className="h-4 w-4" />
-              Apply Now
-            </button>
-          )}
         </div>
       </div>
     </>
