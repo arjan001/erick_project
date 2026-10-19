@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Artist, PortfolioClip, Subscription, SubscriptionPackage, Application, Job } from '@/lib/supabaseEntities'
+import { Artist, PortfolioClip, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
 import ChatWidget from '@/components/landing/backstage/ChatWidget'
@@ -8,9 +8,8 @@ import ShareProfileButton from '@/components/artist/ShareProfileButton'
 import SubscriptionBadge from '@/modules/artist/components/SubscriptionBadge'
 import { useAuth } from '@/lib/AuthContext'
 import {
-  MapPin, MessageCircle, Globe, Instagram, Linkedin, Twitter, Youtube, Star, ThumbsUp,
-  Play, BadgeCheck, Film, Quote, Sparkles, Plus, X, ChevronDown, ChevronUp, CreditCard, Shield, Briefcase,
-  Mail, Phone, Calendar, Award, ExternalLink, FileText, Image as ImageIcon, Video
+  MapPin, MessageCircle, Globe, Instagram, Linkedin, Twitter, Youtube, BadgeCheck, Film,
+  Play, Plus, Award, ExternalLink, Mail, Phone, Video, Image as ImageIcon, CreditCard, Shield, Briefcase
 } from 'lucide-react'
 
 export default function ArtistPublicProfile() {
@@ -19,7 +18,6 @@ export default function ArtistPublicProfile() {
   const [viewer, setViewer] = useState(null)
   const [viewedArtist, setViewedArtist] = useState(null)
   const [portfolioClips, setPortfolioClips] = useState([])
-  const [applications, setApplications] = useState([])
   const [subscription, setSubscription] = useState(null)
   const [subscriptionPackage, setSubscriptionPackage] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -48,27 +46,8 @@ export default function ArtistPublicProfile() {
         setViewedArtist(artist)
 
         // Fix: Use artist_id for portfolio_clips
-        const [clipsData, applicationsData] = await Promise.all([
-          PortfolioClip.filter({ artist_id: artist.id, status: 'approved' }),
-          Application.filter({ artist_id: artist.id }, '-applied_at', 10),
-        ])
+        const clipsData = await PortfolioClip.filter({ artist_id: artist.id, status: 'approved' })
         setPortfolioClips(clipsData || [])
-        setApplications(applicationsData || [])
-
-        const jobIds = applicationsData.map(app => app.job_id).filter(Boolean)
-        if (jobIds.length > 0) {
-          const jobsData = await Promise.all(
-            jobIds.map(jobId => Job.get(jobId).catch(() => null))
-          )
-          const jobsMap = {}
-          jobsData.forEach(job => {
-            if (job) jobsMap[job.id] = job
-          })
-          setApplications(applicationsData.map(app => ({
-            ...app,
-            job: jobsMap[app.job_id] || null
-          })))
-        }
 
         try {
           const subsData = await Subscription.filter({ user_id: artist.user_id, status: 'active' })
@@ -92,8 +71,16 @@ export default function ArtistPublicProfile() {
   }, [artistId])
 
   const artist = viewedArtist
-  const skills = artist?.skills || []
+  const appearance = artist?.appearance || {}
+  const licensePassport = artist?.licensePassport || {}
   const socialMedia = artist?.socialMedia || {}
+  const representation = artist?.representation || {}
+  const credits = artist?.credits || { film: [], commercials: [] }
+  const skills = artist?.skills || []
+  const education = artist?.education || []
+  const unionMembership = artist?.unionMembership || []
+
+  // Portfolio items - real data or dummy
   const portfolioItems = portfolioClips.length > 0 ? portfolioClips : [
     { id: 1, title: 'Featured Project 1', project_type: 'film', thumbnail_url: null, video_url: null },
     { id: 2, title: 'Featured Project 2', project_type: 'commercial', thumbnail_url: null, video_url: null },
@@ -113,93 +100,85 @@ export default function ArtistPublicProfile() {
             </div>
           ) : (
             <>
-              {/* Profile Header */}
+              {/* Profile Header with Images - EXACTLY LIKE SCREENSHOT */}
               <div className="bg-white rounded-2xl shadow-sm border border-black/5 overflow-hidden mb-8">
                 <div className="p-6 sm:p-8">
                   <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Profile Image */}
-                    <div className="flex-shrink-0">
-                      <div className="w-40 h-40 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 border-4 border-white shadow-xl overflow-hidden flex items-center justify-center">
+                    {/* Left: Large Main Image */}
+                    <div className="flex-shrink-0 lg:w-1/2">
+                      <div className="aspect-[4/3] bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl overflow-hidden">
                         {artist?.profile_photo_url ? (
                           <img src={artist.profile_photo_url} alt={artist.full_name} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-4xl font-bold text-gray-500">{artist?.full_name?.[0]?.toUpperCase() || 'A'}</span>
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ImageIcon className="w-16 h-16 text-gray-400" />
+                          </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Name and Basic Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-3 mb-2">
-                        <h1 className="text-3xl font-bold text-gray-900">{artist?.full_name || 'Artist Name'}</h1>
-                        {subscriptionPackage && <SubscriptionBadge subscription={subscription} package={subscriptionPackage} />}
-                        <BadgeCheck className="w-6 h-6 text-blue-600" />
-                      </div>
-
-                      <p className="text-lg text-gray-600 font-medium mb-3">
-                        {artist?.profession || artist?.role || 'Creative Professional'}
-                      </p>
-
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
-                        {(artist?.based_in_city || artist?.based_in_country) && (
-                          <span className="flex items-center gap-1.5">
-                            <MapPin className="w-4 h-4" />
-                            {[artist.based_in_city, artist.based_in_country].filter(Boolean).join(', ')}
-                          </span>
-                        )}
-                        {artist?.email && (
-                          <span className="flex items-center gap-1.5">
-                            <Mail className="w-4 h-4" />
-                            {artist.email}
-                          </span>
-                        )}
-                        {artist?.phone && (
-                          <span className="flex items-center gap-1.5">
-                            <Phone className="w-4 h-4" />
-                            {artist.phone}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Bio */}
-                      {artist?.bio && (
-                        <p className="text-gray-700 text-sm leading-relaxed max-w-2xl mb-4">
-                          {artist.bio}
-                        </p>
+                    {/* Right: 4 Smaller Images Stacked Vertically */}
+                    <div className="flex-1 grid grid-cols-2 gap-3">
+                      {portfolioItems.slice(0, 4).map((item, idx) => (
+                        <div key={item.id || idx} className="aspect-square bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg overflow-hidden relative group cursor-pointer">
+                          {item.thumbnail_url ? (
+                            <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ImageIcon className="w-8 h-8 text-gray-400" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                            <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Play className="w-5 h-5 text-gray-900 ml-0.5" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {portfolioItems.length > 4 && (
+                        <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors">
+                          <span className="text-sm font-medium text-gray-600">View {portfolioItems.length - 4} more</span>
+                        </div>
                       )}
+                    </div>
+                  </div>
 
-                      {/* Social Links */}
-                      <div className="flex items-center gap-3">
-                        {artist?.website && (
-                          <a href={artist.website} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
-                            <Globe className="w-5 h-5" />
-                          </a>
-                        )}
-                        {socialMedia?.instagram && (
-                          <a href={socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
-                            <Instagram className="w-5 h-5" />
-                          </a>
-                        )}
-                        {socialMedia?.linkedin && (
-                          <a href={socialMedia.linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
-                            <Linkedin className="w-5 h-5" />
-                          </a>
-                        )}
-                        {socialMedia?.twitter && (
-                          <a href={socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
-                            <Twitter className="w-5 h-5" />
-                          </a>
-                        )}
-                        {socialMedia?.youtube && (
-                          <a href={socialMedia.youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
-                            <Youtube className="w-5 h-5" />
-                          </a>
-                        )}
-                      </div>
+                  {/* Artist Name and Info - Below Images */}
+                  <div className="mt-6 pt-6 border-t border-gray-100">
+                    <div className="flex flex-wrap items-center gap-3 mb-2">
+                      <h1 className="text-3xl font-bold text-gray-900">{artist?.full_name || 'Artist Name'}</h1>
+                      {subscriptionPackage && <SubscriptionBadge subscription={subscription} package={subscriptionPackage} />}
+                      <BadgeCheck className="w-6 h-6 text-blue-600" />
+                    </div>
+
+                    <p className="text-lg text-gray-600 font-medium mb-3">
+                      {artist?.profession || artist?.role || 'Creative Professional'}
+                    </p>
+
+                    {/* Location and Physical Stats */}
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
+                      {(artist?.based_in_city || artist?.based_in_country) && (
+                        <span className="flex items-center gap-1.5">
+                          <MapPin className="w-4 h-4" />
+                          {[artist.based_in_city, artist.based_in_country].filter(Boolean).join(', ')}
+                        </span>
+                      )}
+                      {appearance.height && (
+                        <span className="flex items-center gap-1.5">
+                          <Award className="w-4 h-4" />
+                          {appearance.height}
+                        </span>
+                      )}
+                      {appearance.weight && (
+                        <span className="flex items-center gap-1.5">
+                          <Award className="w-4 h-4" />
+                          {appearance.weight}
+                        </span>
+                      )}
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col gap-3 flex-shrink-0">
+                    <div className="flex flex-wrap gap-3">
                       {viewer ? (
                         <Link
                           to="/Messages"
@@ -222,29 +201,121 @@ export default function ArtistPublicProfile() {
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Stats Bar */}
-                <div className="border-t border-gray-100 px-6 py-4 bg-gray-50">
-                  <div className="flex flex-wrap justify-around gap-4 text-center">
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900">{skills.length}</p>
-                      <p className="text-xs text-gray-500 uppercase tracking-wide">Skills</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900">{portfolioItems.length}</p>
-                      <p className="text-xs text-gray-500 uppercase tracking-wide">Projects</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900">0</p>
-                      <p className="text-xs text-gray-500 uppercase tracking-wide">Reviews</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900">{applications.length}</p>
-                      <p className="text-xs text-gray-500 uppercase tracking-wide">Applications</p>
-                    </div>
+              {/* About Me Section */}
+              {artist?.bio && (
+                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">About Me</h2>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    {artist.bio}
+                  </p>
+                </div>
+              )}
+
+              {/* Appearance Section */}
+              {(appearance.hairColor || appearance.eyeColor || appearance.ethnicity || appearance.build || appearance.ageRange) && (
+                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Appearance</h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {appearance.hairColor && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Hair Color</p>
+                        <p className="text-sm font-medium text-gray-900">{appearance.hairColor}</p>
+                      </div>
+                    )}
+                    {appearance.eyeColor && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Eye Color</p>
+                        <p className="text-sm font-medium text-gray-900">{appearance.eyeColor}</p>
+                      </div>
+                    )}
+                    {appearance.ethnicity && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Ethnicity</p>
+                        <p className="text-sm font-medium text-gray-900">{appearance.ethnicity}</p>
+                      </div>
+                    )}
+                    {appearance.build && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Build</p>
+                        <p className="text-sm font-medium text-gray-900">{appearance.build}</p>
+                      </div>
+                    )}
+                    {appearance.ageRange && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Age Range</p>
+                        <p className="text-sm font-medium text-gray-900">{appearance.ageRange}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
+              )}
+
+              {/* Acting & Performing Video Samples */}
+              <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Video className="w-5 h-5 text-gray-500" /> Acting & Performing Video Samples
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {portfolioItems.slice(0, 6).map((item, idx) => (
+                    <div key={item.id || idx} className="relative aspect-video bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg overflow-hidden group cursor-pointer">
+                      {item.thumbnail_url ? (
+                        <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Video className="w-12 h-12 text-gray-400" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                        <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Play className="w-6 h-6 text-gray-900 ml-1" />
+                        </div>
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
+                        <p className="text-white text-sm font-medium truncate">{item.title || 'Project'}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {/* Credits & Experience */}
+              {(credits.film?.length > 0 || credits.commercials?.length > 0) && (
+                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-gray-500" /> Credits & Experience
+                  </h2>
+
+                  {credits.film?.length > 0 && (
+                    <div className="mb-4">
+                      <h3 className="font-semibold text-gray-900 mb-2">Film</h3>
+                      <ul className="space-y-2">
+                        {credits.film.map((credit, idx) => (
+                          <li key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                            <ExternalLink className="w-4 h-4 text-gray-400" />
+                            {credit}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {credits.commercials?.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-2">Commercials & Industrials</h3>
+                      <ul className="space-y-2">
+                        {credits.commercials.map((credit, idx) => (
+                          <li key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                            <ExternalLink className="w-4 h-4 text-gray-400" />
+                            {credit}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Skills Section */}
               {skills.length > 0 && (
@@ -262,98 +333,105 @@ export default function ArtistPublicProfile() {
                 </div>
               )}
 
-              {/* Portfolio / Media Section - AFTER ABOUT/HEADER, BEFORE CREDITS */}
-              <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Film className="w-5 h-5 text-gray-500" /> Portfolio & Media
-                </h2>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {/* Large featured item */}
-                  <div className="col-span-2 row-span-2">
-                    <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl overflow-hidden group cursor-pointer">
-                      {portfolioItems[0]?.thumbnail_url ? (
-                        <img src={portfolioItems[0].thumbnail_url} alt={portfolioItems[0].title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Video className="w-16 h-16 text-gray-400" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                        <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Play className="w-8 h-8 text-gray-900 ml-1" />
-                        </div>
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-                        <p className="text-white font-semibold">{portfolioItems[0]?.title || 'Featured Project'}</p>
-                        <p className="text-white/80 text-sm">{portfolioItems[0]?.project_type || 'Film'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Smaller items */}
-                  {portfolioItems.slice(1, 5).map((item, idx) => (
-                    <div key={item.id || idx} className="relative aspect-square bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl overflow-hidden group cursor-pointer">
-                      {item.thumbnail_url ? (
-                        <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ImageIcon className="w-8 h-8 text-gray-400" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                        <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Play className="w-5 h-5 text-gray-900 ml-0.5" />
-                        </div>
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
-                        <p className="text-white text-sm font-medium truncate">{item.title || 'Project'}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {portfolioItems.length > 5 && (
-                  <button className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium">
-                    View All {portfolioItems.length} Projects →
-                  </button>
-                )}
-              </div>
-
-              {/* Credits Section */}
-              {artist?.credits && (artist.credits.film?.length > 0 || artist.credits.commercials?.length > 0) && (
+              {/* Education & Training */}
+              {education.length > 0 && (
                 <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Briefcase className="w-5 h-5 text-gray-500" /> Credits & Experience
+                    <Award className="w-5 h-5 text-gray-500" /> Education & Training
                   </h2>
+                  <ul className="space-y-2">
+                    {education.map((edu, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                        <ExternalLink className="w-4 h-4 text-gray-400" />
+                        {edu}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-                  {artist.credits.film?.length > 0 && (
-                    <div className="mb-4">
-                      <h3 className="font-semibold text-gray-900 mb-2">Film</h3>
-                      <ul className="space-y-2">
-                        {artist.credits.film.map((credit, idx) => (
-                          <li key={idx} className="flex items-center gap-2 text-sm text-gray-700">
-                            <ExternalLink className="w-4 h-4 text-gray-400" />
-                            {credit}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+              {/* Self Recording */}
+              {artist?.self_recording_equipment && (
+                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <Video className="w-5 h-5 text-gray-500" /> Self Recording
+                  </h2>
+                  <p className="text-sm text-gray-700">{artist.self_recording_equipment}</p>
+                </div>
+              )}
 
-                  {artist.credits.commercials?.length > 0 && (
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-2">Commercials & Industrials</h3>
-                      <ul className="space-y-2">
-                        {artist.credits.commercials.map((credit, idx) => (
-                          <li key={idx} className="flex items-center gap-2 text-sm text-gray-700">
-                            <ExternalLink className="w-4 h-4 text-gray-400" />
-                            {credit}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+              {/* Websites/Social Media */}
+              {(artist?.website || socialMedia.instagram || socialMedia.linkedin || socialMedia.twitter || socialMedia.youtube) && (
+                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <Globe className="w-5 h-5 text-gray-500" /> Websites/Social Media
+                  </h2>
+                  <div className="flex flex-wrap gap-3">
+                    {artist?.website && (
+                      <a href={artist.website} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                        <Globe className="w-5 h-5" />
+                      </a>
+                    )}
+                    {socialMedia.instagram && (
+                      <a href={socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                        <Instagram className="w-5 h-5" />
+                      </a>
+                    )}
+                    {socialMedia.linkedin && (
+                      <a href={socialMedia.linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                        <Linkedin className="w-5 h-5" />
+                      </a>
+                    )}
+                    {socialMedia.twitter && (
+                      <a href={socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                        <Twitter className="w-5 h-5" />
+                      </a>
+                    )}
+                    {socialMedia.youtube && (
+                      <a href={socialMedia.youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                        <Youtube className="w-5 h-5" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Union Membership */}
+              {unionMembership.length > 0 && (
+                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-gray-500" /> Union Membership
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {unionMembership.map((union, idx) => (
+                      <span key={idx} className="px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-700">
+                        {union}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* License & Passport */}
+              {(licensePassport.driverLicense || licensePassport.passport) && (
+                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <CreditCard className="w-5 h-5 text-gray-500" /> License & Passport
+                  </h2>
+                  <div className="flex flex-wrap gap-4">
+                    {licensePassport.driverLicense && (
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-green-600" />
+                        <span className="text-sm text-gray-700">Driver's License</span>
+                      </div>
+                    )}
+                    {licensePassport.passport && (
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-green-600" />
+                        <span className="text-sm text-gray-700">Passport</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -381,14 +459,21 @@ export default function ArtistPublicProfile() {
                       </div>
                     </div>
                   )}
-                  {artist?.website && (
+                  {representation.agent && (
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <Globe className="w-5 h-5 text-gray-500" />
+                      <Briefcase className="w-5 h-5 text-gray-500" />
                       <div>
-                        <p className="text-xs text-gray-500">Website</p>
-                        <a href={artist.website} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-blue-600 hover:underline">
-                          {artist.website}
-                        </a>
+                        <p className="text-xs text-gray-500">Agent</p>
+                        <p className="text-sm font-medium text-gray-900">{representation.agent}</p>
+                      </div>
+                    </div>
+                  )}
+                  {representation.email && (
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <Mail className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <p className="text-xs text-gray-500">Agent Email</p>
+                        <p className="text-sm font-medium text-gray-900">{representation.email}</p>
                       </div>
                     </div>
                   )}
