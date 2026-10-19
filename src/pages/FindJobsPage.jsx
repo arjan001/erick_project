@@ -1,14 +1,15 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, BadgeCheck, Building2, MapPin, Clock, Users, Briefcase, Calendar } from 'lucide-react'
+import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Share2, Heart, BadgeCheck, Building2, MapPin, Clock, Users, Briefcase, Calendar, Upload, X, Video, FileText, CheckCircle } from 'lucide-react'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
 import Marquee from '@/components/landing/backstage/Marquee'
 import GigDetailSlideOut from '@/components/landing/backstage/GigDetailSlideOut'
-import { Job } from '@/lib/supabaseEntities'
+import { Job, Application } from '@/lib/supabaseEntities'
 import { supabase } from '@/lib/supabase'
 import { saveJob, unsaveJob, isJobSaved, savePendingApplication } from '@/services/savedJobsService'
 import { useAuth } from '@/lib/AuthContext'
+import { useToast } from '@/hooks/useToast'
 
 const dummyJobs = [
   {
@@ -119,7 +120,8 @@ function FilterDropdown({ label, options, value, onChange }) {
 }
 
 export default function FindJobsPage() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
+  const { success, error } = useToast()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState({ location: '', jobType: '', gender: '', age: '' })
@@ -132,6 +134,8 @@ export default function FindJobsPage() {
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
   const [showClientModal, setShowClientModal] = useState(null)
+  const [auditionFile, setAuditionFile] = useState(null)
+  const [uploading, setUploading] = useState(false)
   const perPage = 12
 
   // Fetch jobs from Supabase database on mount, fall back to dummy data

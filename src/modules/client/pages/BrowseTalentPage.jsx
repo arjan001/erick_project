@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { Artist, Connection, User } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, SlidersHorizontal, Heart, MapPin, Mail, User as UserIcon, MessageCircle, ExternalLink, Star, Filter, ChevronDown, ChevronLeft, ChevronRight, CheckSquare, Square, Play, Pause, X } from 'lucide-react'
+import TalentCard from '@/components/landing/backstage/TalentCard'
+import { Search, SlidersHorizontal, Heart, MapPin, Mail, User as UserIcon, MessageCircle, ExternalLink, Star, Filter, ChevronDown, ChevronLeft, ChevronRight, CheckSquare, Square, Play, Pause, X, UserPlus } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -136,8 +137,41 @@ export default function BrowseTalentPage() {
     }
   }
 
-  const handleMessage = (artistEmail) => {
-    navigate('/Messages', { state: { recipientEmail: artistEmail } })
+  const handleMessage = (artistId) => {
+    navigate('/Messages?with=' + artistId)
+  }
+
+  const handleConnect = async (artistId) => {
+    if (!user?.id) {
+      error('Authentication Required', 'Please sign in to connect with talent')
+      return
+    }
+    try {
+      // Check if connection already exists
+      const existingConnections = await Connection.filter({
+        user_id: user.id,
+        connected_artist_id: artistId,
+        connection_type: 'connection'
+      })
+
+      if (existingConnections.length > 0) {
+        success('Already Connected', 'You are already connected with this artist')
+        return
+      }
+
+      // Create new connection
+      await Connection.create({
+        user_id: user.id,
+        connected_artist_id: artistId,
+        connection_type: 'connection',
+        status: 'pending',
+        created_at: new Date().toISOString()
+      })
+      success('Connection Request Sent', 'Your connection request has been sent')
+    } catch (err) {
+      console.error('Error connecting with artist:', err)
+      error('Failed', 'Failed to send connection request')
+    }
   }
 
   const handleViewProfile = (artistId) => {
@@ -387,91 +421,37 @@ export default function BrowseTalentPage() {
             <p className="text-gray-500">No talent found matching your criteria</p>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {paginatedTalent.map((artist) => (
-              <div key={artist.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
-                <div className="flex items-start gap-4 mb-3">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedTalent.has(artist.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedTalent(prev => new Set(prev).add(artist.id))
-                        } else {
-                          setSelectedTalent(prev => {
-                            const newSet = new Set(prev)
-                            newSet.delete(artist.id)
-                            return newSet
-                          })
-                        }
-                      }}
-                      className="w-4 h-4 rounded border-gray-300"
-                    />
-                    <div
-                      className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center text-gray-500 font-semibold flex-shrink-0 cursor-pointer"
-                      onClick={() => handleViewProfile(artist.id)}
-                    >
-                      {artist.profile_photo_url ? (
-                        <img src={artist.profile_photo_url} alt={artist.full_name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span>{artist.full_name?.[0] || 'U'}</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3
-                      className="font-semibold text-gray-900 truncate cursor-pointer hover:text-[#4F46E5]"
-                      onClick={() => handleViewProfile(artist.id)}
-                    >{artist.full_name}</h3>
-                    <p className="text-xs text-gray-500 capitalize">{artist.user_role || artist.role || 'Artist'}</p>
-                    {artist.based_in_city && (
-                      <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
-                        <MapPin className="w-3 h-3" />
-                        {artist.based_in_city}
-                      </p>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleSave(artist.id)}
-                    className={`flex-shrink-0 ${savedArtistIds.has(artist.id) ? 'text-red-500 hover:text-red-700 hover:bg-red-50' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
-                  >
-                    <Heart className={`w-4 h-4 ${savedArtistIds.has(artist.id) ? 'fill-current' : ''}`} />
-                  </Button>
-                </div>
-
-                {/* Skills preview */}
-                {artist.skills_experience && artist.skills_experience.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {artist.skills_experience.slice(0, 3).map((skill, idx) => (
-                      <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
-                        {skill.skill}
-                      </span>
-                    ))}
-                    {artist.skills_experience.length > 3 && (
-                      <span className="px-2 py-0.5 bg-gray-100 text-gray-400 rounded text-xs">
-                        +{artist.skills_experience.length - 3}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                <div className="flex gap-2">
+              <div key={artist.id} className="group">
+                <TalentCard
+                  profile={{
+                    id: artist.id,
+                    name: artist.full_name,
+                    images: artist.profile_photo_url ? [artist.profile_photo_url] : ['https://ui-avatars.com/api/?name=' + (artist.full_name || 'Artist') + '&background=6366f1&color=fff&size=256'],
+                    profession: artist.user_role || 'Artist',
+                    location: artist.based_in_city || 'Kenya',
+                    skills: (artist.skills_experience || []).map(s => s.skill),
+                    overlayText: 'FEATURED'
+                  }}
+                  onOpenProfile={(id) => navigate(`/ArtistPublicProfile?id=${id}`)}
+                  showActions={true}
+                  showControls={true}
+                />
+                <div className="flex gap-2 mt-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1"
-                    onClick={() => handleViewProfile(artist.id)}
+                    className="flex-1 text-xs"
+                    onClick={() => handleConnect(artist.id)}
                   >
-                    <ExternalLink className="w-3 h-3 mr-1" />
-                    View Profile
+                    <UserPlus className="w-3 h-3 mr-1" />
+                    Connect
                   </Button>
                   <Button
                     size="sm"
-                    className="flex-1 bg-[#4F46E5] hover:bg-[#4338CA]"
-                    onClick={() => handleMessage(artist.email)}
+                    className="flex-1 bg-[#4F46E5] hover:bg-[#4338CA] text-xs"
+                    onClick={() => handleMessage(artist.id)}
                   >
                     <MessageCircle className="w-3 h-3 mr-1" />
                     Message

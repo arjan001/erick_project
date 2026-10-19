@@ -13,6 +13,7 @@ import {
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
+import filmIndustryRoles from '@/data/filmIndustryRoles.json'
 
 const STEPS = [
   { id: 1, title: 'Basic Info', icon: Briefcase },
@@ -37,6 +38,8 @@ export default function ClientPostProject() {
   const [roleTemplates, setRoleTemplates] = useState([])
   const [editingSection, setEditingSection] = useState(null)
   const [editModalContent, setEditModalContent] = useState('')
+  const [isDraft, setIsDraft] = useState(false)
+  const [draftId, setDraftId] = useState(null)
 
   const [formData, setFormData] = useState({
     // Basic Info
@@ -73,6 +76,7 @@ export default function ClientPostProject() {
     auditionFormat: 'video',
     auditionDuration: '',
     auditionLanguage: 'english',
+    auditionDetails: '',
 
     // Client Info
     companyName: '',
@@ -104,10 +108,33 @@ export default function ClientPostProject() {
         .select('*')
         .order('name')
 
-      if (error) throw error
-      setRoleTemplates(data || [])
+      if (error) {
+        console.error('Error fetching role templates:', error)
+        // Fallback to filmIndustryRoles.json if table doesn't exist
+        const rolesFromJson = []
+        Object.entries(filmIndustryRoles).forEach(([category, roles]) => {
+          if (Array.isArray(roles)) {
+            roles.forEach(role => {
+              rolesFromJson.push({ name: role, category })
+            })
+          }
+        })
+        setRoleTemplates(rolesFromJson)
+      } else {
+        setRoleTemplates(data || [])
+      }
     } catch (err) {
       console.error('Error fetching role templates:', err)
+      // Fallback to filmIndustryRoles.json
+      const rolesFromJson = []
+      Object.entries(filmIndustryRoles).forEach(([category, roles]) => {
+        if (Array.isArray(roles)) {
+          roles.forEach(role => {
+            rolesFromJson.push({ name: role, category })
+          })
+        }
+      })
+      setRoleTemplates(rolesFromJson)
     }
   }
 
@@ -179,7 +206,7 @@ export default function ClientPostProject() {
     setAttachments(attachments.filter(a => a.id !== id))
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, saveAsDraft = false) => {
     e.preventDefault()
     setLoading(true)
 
@@ -195,59 +222,84 @@ export default function ClientPostProject() {
         salary_range: formData.budgetType,
         rate: formData.compensation,
         submission_deadline: formData.applicationDeadline,
-        status: 'open',
+        status: saveAsDraft ? 'draft' : 'open',
         created_at: new Date().toISOString(),
+        // Direct columns (after migration)
+        about_project: formData.aboutProject,
+        project_description: formData.projectDescription,
+        production_types: formData.productionTypes,
+        duration: formData.duration,
+        budget_min: formData.budgetMin,
+        budget_max: formData.budgetMax,
+        budget_type: formData.budgetType,
+        payment_terms: formData.paymentTerms,
+        additional_info: formData.additionalInfo,
+        urgency: 'normal',
+        contract_type: 'freelance',
+        audition_format: formData.auditionFormat,
+        audition_duration: formData.auditionDuration,
+        audition_language: formData.auditionLanguage,
+        company_name: formData.companyName,
+        company_website: formData.companyWebsite,
+        is_work_from_home: formData.isWorkFromHome,
+        expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        // Metadata for additional data
         metadata: {
-          project_type: formData.projectType,
-          about_project: formData.aboutProject,
-          production_types: formData.productionTypes,
-          is_work_from_home: formData.isWorkFromHome,
-          payment_terms: formData.paymentTerms,
-          additional_info: formData.additionalInfo,
-          audition_format: formData.auditionFormat,
-          audition_duration: formData.auditionDuration,
-          audition_language: formData.auditionLanguage,
-          company_name: formData.companyName,
-          company_website: formData.companyWebsite,
+          audition_details: formData.auditionDetails || '',
           attachments: attachments,
-          roles_needed: formData.rolesNeeded,
-          duration: formData.duration,
-          budget_min: formData.budgetMin,
-          budget_max: formData.budgetMax,
-          expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+          roles_needed: formData.rolesNeeded
         }
       }
 
-      await Job.create(jobData)
-      success('Job posted successfully!')
+      if (draftId) {
+        // Update existing draft
+        await Job.update(draftId, jobData)
+        success(saveAsDraft ? 'Draft saved successfully!' : 'Job posted successfully!')
+      } else {
+        // Create new job
+        const created = await Job.create(jobData)
+        if (saveAsDraft) {
+          setDraftId(created.id)
+          success('Draft saved successfully!')
+        } else {
+          success('Job posted successfully!')
+        }
+      }
+
       await fetchPostedJobs()
-      setCurrentStep(1)
-      setFormData({
-        title: '',
-        projectType: 'film',
-        jobType: 'role',
-        aboutProject: '',
-        projectDescription: '',
-        additionalInfo: '',
-        rolesNeeded: [],
-        newRole: '',
-        productionTypes: [],
-        applicationDeadline: '',
-        duration: '',
-        location: '',
-        isRemote: false,
-        isWorkFromHome: false,
-        budgetMin: '',
-        budgetMax: '',
-        budgetType: 'fixed',
-        paymentTerms: '',
-        auditionFormat: 'video',
-        auditionDuration: '',
-        auditionLanguage: 'english',
-        companyName: '',
-        companyWebsite: ''
-      })
-      setAttachments([])
+
+      if (!saveAsDraft) {
+        // Reset form only when posting, not when saving draft
+        setCurrentStep(1)
+        setFormData({
+          title: '',
+          projectType: 'film',
+          jobType: 'role',
+          aboutProject: '',
+          projectDescription: '',
+          additionalInfo: '',
+          rolesNeeded: [],
+          newRole: '',
+          productionTypes: [],
+          applicationDeadline: '',
+          duration: '',
+          location: '',
+          isRemote: false,
+          isWorkFromHome: false,
+          budgetMin: '',
+          budgetMax: '',
+          budgetType: 'fixed',
+          paymentTerms: '',
+          auditionFormat: 'video',
+          auditionDuration: '',
+          auditionLanguage: 'english',
+          auditionDetails: '',
+          companyName: '',
+          companyWebsite: ''
+        })
+        setAttachments([])
+        setDraftId(null)
+      }
     } catch (err) {
       console.error('Error posting job:', err)
       toastError('Failed to post job')
@@ -692,6 +744,16 @@ export default function ClientPostProject() {
                         <option value="both">Both</option>
                       </select>
                     </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Audition Details</label>
+                      <textarea
+                        value={formData.auditionDetails}
+                        onChange={(e) => setFormData({ ...formData, auditionDetails: e.target.value })}
+                        placeholder="Provide additional audition requirements or instructions..."
+                        rows={3}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -772,9 +834,24 @@ export default function ClientPostProject() {
                   Previous
                 </Button>
                 {currentStep === STEPS.length ? (
-                  <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700">
-                    {loading ? 'Posting...' : 'Post Job'}
-                  </Button>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={(e) => handleSubmit(e, true)}
+                      disabled={loading}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save as Draft
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      {loading ? 'Posting...' : 'Post Job'}
+                    </Button>
+                  </div>
                 ) : (
                   <Button type="button" onClick={handleNext} className="bg-purple-600 hover:bg-purple-700">
                     Next
@@ -814,56 +891,65 @@ export default function ClientPostProject() {
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-gray-400">Additional Material</h3>
               <div className="space-y-4">
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-sm text-gray-600 mb-2">
-                    Upload images, PDFs, or other files
-                  </p>
-                  <input
-                    type="file"
-                    multiple
-                    onChange={handleFileUpload}
-                    disabled={uploading}
-                    className="hidden"
-                    id="file-upload"
-                  />
-                  <label
-                    htmlFor="file-upload"
-                    className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg cursor-pointer hover:bg-purple-700 transition-colors"
-                  >
-                    {uploading ? 'Uploading...' : 'Choose Files'}
-                  </label>
-                </div>
-                {attachments.length > 0 && (
-                  <div className="space-y-2">
+                {attachments.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3">
                     {attachments.map((file) => (
-                      <div key={file.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div key={file.id} className="relative group">
                         {file.type?.startsWith('image/') ? (
-                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-200">
+                          <div className="aspect-square rounded-xl overflow-hidden bg-gray-200">
                             <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
                           </div>
                         ) : file.type?.startsWith('video/') ? (
-                          <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
-                            <Video className="w-5 h-5 text-gray-500" />
+                          <div className="aspect-square rounded-xl bg-gray-200 flex items-center justify-center">
+                            <Video className="w-8 h-8 text-gray-500" />
                           </div>
                         ) : (
-                          <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-gray-500" />
+                          <div className="aspect-square rounded-xl bg-gray-200 flex items-center justify-center">
+                            <FileText className="w-8 h-8 text-gray-500" />
                           </div>
                         )}
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                          <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                        </div>
                         <button
                           type="button"
                           onClick={() => handleRemoveAttachment(file.id)}
-                          className="p-1 hover:bg-gray-200 rounded"
+                          className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <Trash2 className="w-4 h-4 text-red-500" />
+                          <X className="w-4 h-4 text-red-500" />
                         </button>
+                        <p className="text-xs text-gray-600 mt-1 truncate">{file.name}</p>
                       </div>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById('file-upload').click()}
+                      className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center hover:border-purple-400 hover:bg-purple-50 transition-colors"
+                    >
+                      <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                      <span className="text-xs text-gray-500">Add More</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+                    <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-base text-gray-600 mb-2">
+                      Upload images, PDFs, or other files
+                    </p>
+                    <p className="text-sm text-gray-400 mb-4">
+                      Drag and drop or click to upload
+                    </p>
+                    <input
+                      type="file"
+                      multiple
+                      onChange={handleFileUpload}
+                      disabled={uploading}
+                      className="hidden"
+                      id="file-upload"
+                    />
+                    <label
+                      htmlFor="file-upload"
+                      className="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg cursor-pointer hover:bg-purple-700 transition-colors"
+                    >
+                      {uploading ? 'Uploading...' : 'Choose Files'}
+                    </label>
                   </div>
                 )}
               </div>

@@ -25,6 +25,7 @@ ADD COLUMN IF NOT EXISTS contract_type TEXT DEFAULT 'freelance',
 ADD COLUMN IF NOT EXISTS audition_format TEXT DEFAULT 'video',
 ADD COLUMN IF NOT EXISTS audition_duration TEXT,
 ADD COLUMN IF NOT EXISTS audition_language TEXT DEFAULT 'english',
+ADD COLUMN IF NOT EXISTS audition_details TEXT,
 ADD COLUMN IF NOT EXISTS company_name TEXT,
 ADD COLUMN IF NOT EXISTS company_website TEXT,
 ADD COLUMN IF NOT EXISTS is_work_from_home BOOLEAN DEFAULT false,
@@ -52,35 +53,112 @@ CREATE TABLE IF NOT EXISTS public.role_templates (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insert predefined roles
-INSERT INTO public.role_templates (name, category, description, requirements, skills) VALUES
--- Acting Roles
-('Lead Actor', 'acting', 'Main character in a production', ARRAY['Drama experience', 'Memorization skills'], ARRAY['Acting', 'Script Analysis', 'Emotional Range']),
-('Supporting Actor', 'acting', 'Secondary character role', ARRAY['Previous acting experience'], ARRAY['Acting', 'Character Development']),
-('Extra / Background', 'acting', 'Background performer', ARRAY['Punctuality', 'Ability to follow directions'], ARRAY['Acting', 'Movement']),
-('Voice Actor', 'acting', 'Voice-only performance', ARRAY['Voice training', 'Clear diction'], ARRAY['Voice Acting', 'Diction', 'Character Voices']),
+-- Insert predefined roles from filmIndustryRoles.json
+INSERT INTO public.role_templates (name, category, description) VALUES
+-- Pre-production
+('Director', 'pre_production', 'Directs the overall vision of the production'),
+('Producer', 'pre_production', 'Manages production logistics and budget'),
+('Executive Producer', 'pre_production', 'Provides funding and oversees production'),
+('Writer', 'pre_production', 'Writes scripts and screenplays'),
+('Screenwriter', 'pre_production', 'Creates screenplays for films and shows'),
+('Storyboard Artist', 'pre_production', 'Creates visual storyboards for scenes'),
+('Concept Artist', 'pre_production', 'Develops visual concepts and designs'),
+('Art Director', 'pre_production', 'Oversees the visual style of production'),
+('Production Designer', 'pre_production', 'Designs the overall visual look'),
+('Location Scout', 'pre_production', 'Finds and secures filming locations'),
+('Casting Director', 'pre_production', 'Casts actors for roles'),
 
--- Voice Over Roles
-('Commercial Voice Over', 'voice_over', 'TV or radio commercial voice', ARRAY['Professional voice quality', 'Clear articulation'], ARRAY['Voice Over', 'Commercial', 'Articulation']),
-('Narrator', 'voice_over', 'Documentary or narration voice', ARRAY['Authoritative voice', 'Clear pronunciation'], ARRAY['Narration', 'Voice Control', 'Pacing']),
-('Character Voice', 'voice_over', 'Animated character voice', ARRAY['Versatile voice range', 'Character work'], ARRAY['Character Voices', 'Voice Acting', 'Improv']),
-('Audiobook Narrator', 'voice_over', 'Book narration', ARRAY['Stamina for long sessions', 'Storytelling ability'], ARRAY['Narration', 'Storytelling', 'Voice Control']),
+-- Production
+('Director of Photography', 'production', 'Manages camera and lighting'),
+('Cinematographer', 'production', 'Oversees the visual aspects of filming'),
+('Camera Operator', 'production', 'Operates camera equipment'),
+('1st AC', 'production', 'First assistant camera - focus puller'),
+('Focus Puller', 'production', 'Maintains focus during filming'),
+('2nd AC', 'production', 'Second assistant camera - slate and equipment'),
+('Drone Pilot', 'production', 'Operates drone cameras for aerial shots'),
+('FPV Pilot', 'production', 'First-person view drone pilot'),
+('Gaffer', 'production', 'Head of lighting department'),
+('Best Boy Electric', 'production', 'Chief electrician assistant'),
+('Lighting Technician', 'production', 'Sets up and operates lighting'),
+('Grip', 'production', 'Supports camera and lighting equipment'),
+('Key Grip', 'production', 'Head of grip department'),
+('Dolly Grip', 'production', 'Operates camera dollies and tracks'),
+('Sound Recordist', 'production', 'Records on-set audio'),
+('Boom Operator', 'production', 'Holds and positions boom microphone'),
+('Production Assistant', 'production', 'General production support'),
+('Set Designer', 'production', 'Designs and builds sets'),
+('Set Decorator', 'production', 'Decorates sets with props and furniture'),
+('Prop Master', 'production', 'Manages all props on set'),
+('Hair Artist', 'production', 'Styles actors hair'),
+('Makeup Artist', 'production', 'Applies makeup to actors'),
+('Costume Designer', 'production', 'Designs and creates costumes'),
 
--- UGC Roles
-('UGC Creator', 'ugc', 'User-generated content creator', ARRAY['On-camera presence', 'Authentic delivery'], ARRAY['Content Creation', 'On-Camera', 'Script Delivery']),
-('Product Reviewer', 'ugc', 'Product review content creator', ARRAY['Knowledgeable delivery', 'Engaging personality'], ARRAY['Product Reviews', 'Content Creation', 'On-Camera']),
-('Testimonial Creator', 'ugc', 'Customer testimonial creator', ARRAY['Natural delivery', 'Authentic presence'], ARRAY['Testimonials', 'Storytelling', 'On-Camera']),
+-- 3D/CGI
+('3D Generalist', '3d_cgi', 'General 3D modeling and animation'),
+('Hard Surface Modeler', '3d_cgi', 'Creates hard surface 3D models'),
+('Character Artist', '3d_cgi', 'Creates 3D character models'),
+('Environment Artist', '3d_cgi', 'Creates 3D environment assets'),
+('Texture Artist', '3d_cgi', 'Creates textures for 3D models'),
+('Material Artist', '3d_cgi', 'Creates materials and shaders'),
+('Look Development Artist', '3d_cgi', 'Develops visual look of 3D assets'),
+('Lighting Artist', '3d_cgi', 'Lights 3D scenes'),
+('Rendering Artist', '3d_cgi', 'Handles rendering of 3D scenes'),
+('Animator', '3d_cgi', 'Animates 3D characters and objects'),
+('Character Animator', '3d_cgi', 'Specializes in character animation'),
+('Motion Designer', '3d_cgi', 'Creates motion graphics'),
+('VFX Artist', '3d_cgi', 'Creates visual effects'),
+('FX Artist', '3d_cgi', 'Creates particle and physics effects'),
+('Houdini Artist', '3d_cgi', 'Specializes in Houdini'),
+('Cloth Artist', '3d_cgi', 'Simulates cloth and fabrics'),
+('Groom Artist', '3d_cgi', 'Creates hair and fur'),
+('Rigger', '3d_cgi', 'Rigs characters for animation'),
+('Technical Artist', '3d_cgi', 'Bridges art and programming'),
+('Unreal Engine Artist', '3d_cgi', 'Works with Unreal Engine'),
+('Virtual Production Artist', '3d_cgi', 'Virtual production and real-time rendering'),
 
--- Crew Roles
-('Camera Operator', 'crew', 'Camera equipment operator', ARRAY['Camera operation experience', 'Technical knowledge'], ARRAY['Camera Operation', 'Lighting', 'Technical']),
-('Sound Engineer', 'crew', 'Audio recording and mixing', ARRAY['Audio equipment knowledge', 'Sound mixing skills'], ARRAY['Sound Engineering', 'Audio Equipment', 'Mixing']),
-('Lighting Technician', 'crew', 'Lighting setup and operation', ARRAY['Lighting knowledge', 'Safety awareness'], ARRAY['Lighting', 'Electrical', 'Safety']),
-('Editor', 'crew', 'Video post-production editing', ARRAY['Editing software proficiency', 'Creative storytelling'], ARRAY['Video Editing', 'Post-Production', 'Storytelling']),
+-- Post-production
+('Video Editor', 'post_production', 'Edits video footage'),
+('Assistant Editor', 'post_production', 'Assists with editing tasks'),
+('Colorist', 'post_production', 'Color grades video footage'),
+('Online Editor', 'post_production', 'Final assembly and finishing'),
+('Compositor', 'post_production', 'Composites visual effects'),
+('Matchmove Artist', 'post_production', 'Tracks camera movement'),
+('Rotoscope Artist', 'post_production', 'Creates rotoscope mattes'),
+('Paint Artist', 'post_production', 'Paints and cleans footage'),
+('Cleanup Artist', 'post_production', 'Cleans up footage'),
+('Motion Graphics Designer', 'post_production', 'Creates motion graphics'),
+('Title Designer', 'post_production', 'Designs titles and graphics'),
+('Sound Designer', 'post_production', 'Designs audio tracks'),
+('Foley Artist', 'post_production', 'Creates foley sound effects'),
+('Dialogue Editor', 'post_production', 'Edits dialogue audio'),
+('Re Recording Mixer', 'post_production', 'Mixes final audio'),
+('Music Composer', 'post_production', 'Composes music'),
+('Music Producer', 'post_production', 'Produces music tracks'),
+('Voice Over Artist', 'post_production', 'Records voice over'),
 
--- Production Roles
-('Director', 'production', 'Production director', ARRAY['Leadership experience', 'Creative vision'], ARRAY['Directing', 'Leadership', 'Creative Vision']),
-('Producer', 'production', 'Production coordinator', ARRAY['Organization skills', 'Budget management'], ARRAY['Producing', 'Organization', 'Budget Management']),
-('Script Writer', 'production', 'Script and screenplay writer', ARRAY['Writing skills', 'Story structure knowledge'], ARRAY['Writing', 'Screenwriting', 'Storytelling'])
+-- Photography/Product
+('Product Photographer', 'photography_product', 'Photographs products'),
+('Automotive Photographer', 'photography_product', 'Photographs vehicles'),
+('Retoucher', 'photography_product', 'Retouches photos'),
+('CGI Product Artist', 'photography_product', 'Creates CGI product visuals'),
+
+-- Marketing/Social Media
+('Creative Director', 'marketing_social_media', 'Oversees creative direction'),
+('Content Creator', 'marketing_social_media', 'Creates digital content'),
+('Social Media Manager', 'marketing_social_media', 'Manages social media accounts'),
+('Thumbnail Designer', 'marketing_social_media', 'Designs video thumbnails'),
+('Graphic Designer', 'marketing_social_media', 'Creates graphic designs'),
+('Copywriter', 'marketing_social_media', 'Writes marketing copy'),
+('Community Manager', 'marketing_social_media', 'Manages online communities'),
+('SEO Specialist', 'marketing_social_media', 'Optimizes for search engines'),
+
+-- Technical
+('Pipeline TD', 'technical', 'Develops production pipelines'),
+('Render Wrangler', 'technical', 'Manages render farms'),
+('Render Farm Manager', 'technical', 'Manages rendering infrastructure'),
+('Software Developer', 'technical', 'Develops software tools'),
+('AI Artist', 'technical', 'Uses AI for creative work'),
+('Prompt Engineer', 'technical', 'Crafts AI prompts')
 ON CONFLICT DO NOTHING;
 
 -- ============================================================
