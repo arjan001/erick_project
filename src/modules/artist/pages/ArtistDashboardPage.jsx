@@ -62,7 +62,7 @@ export default function ArtistDashboard() {
         }, '-created_date', 10)
         setInvitations(notifs || [])
 
-        const artists = await Artist.filter({ user_id: user.id }, '-created_date', 1)
+        const artists = await Artist.filter({ email: user.email }, '-created_date', 1)
         const artist = artists?.[0] || null
         setArtistProfile(artist)
 

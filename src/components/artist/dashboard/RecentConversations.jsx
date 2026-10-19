@@ -34,13 +34,17 @@ export default function RecentConversations({ userEmail }) {
     if (!user?.id) return
     (async () => {
       try {
-        // Fetch conversations where user is a participant
-        const convos = await Conversation.filter({
-          or: `participant_1.eq.${user.id},participant_2.eq.${user.id}`
-        }, '-updated_at', 5)
+        // Fetch conversations where user is participant_1
+        const convos1 = await Conversation.filter({ participant_1: user.id }, '-updated_at', 5)
+        // Fetch conversations where user is participant_2
+        const convos2 = await Conversation.filter({ participant_2: user.id }, '-updated_at', 5)
+
+        // Merge and deduplicate
+        const allConvos = [...convos1, ...convos2]
+        const uniqueConvos = Array.from(new Map(allConvos.map(c => [c.id, c])).values())
 
         // Get the last message for each conversation
-        const enriched = await Promise.all(convos.map(async (convo) => {
+        const enriched = await Promise.all(uniqueConvos.map(async (convo) => {
           const otherUserId = convo.participant_1 === user.id ? convo.participant_2 : convo.participant_1
           const userInfo = await lookupUser(otherUserId)
 
