@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Artist, PortfolioClip, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
+import { Artist, ArtistMedia, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
 import ChatWidget from '@/components/landing/backstage/ChatWidget'
@@ -17,7 +17,7 @@ export default function ArtistPublicProfile() {
   const { user: authUser } = useAuth()
   const [viewer, setViewer] = useState(null)
   const [viewedArtist, setViewedArtist] = useState(null)
-  const [portfolioClips, setPortfolioClips] = useState([])
+  const [mediaItems, setMediaItems] = useState([])
   const [subscription, setSubscription] = useState(null)
   const [subscriptionPackage, setSubscriptionPackage] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -45,9 +45,9 @@ export default function ArtistPublicProfile() {
         if (!artist) { setNotFound(true); setLoading(false); return; }
         setViewedArtist(artist)
 
-        // Fix: Use artist_id for portfolio_clips
-        const clipsData = await PortfolioClip.filter({ artist_id: artist.id, status: 'approved' })
-        setPortfolioClips(clipsData || [])
+        // Fix: Use ArtistMedia (not PortfolioClip) - this is what the settings page uses
+        const mediaData = await ArtistMedia.filter({ artist_id: artist.id, status: 'approved' })
+        setMediaItems(mediaData || [])
 
         try {
           const subsData = await Subscription.filter({ user_id: artist.user_id, status: 'active' })
@@ -80,15 +80,16 @@ export default function ArtistPublicProfile() {
   const education = artist?.education || []
   const unionMembership = artist?.unionMembership || []
 
-  // Portfolio items - real data or dummy
-  const portfolioItems = portfolioClips.length > 0 ? portfolioClips : [
-    { id: 1, title: 'Featured Project 1', project_type: 'film', thumbnail_url: null, video_url: null },
-    { id: 2, title: 'Featured Project 2', project_type: 'commercial', thumbnail_url: null, video_url: null },
-    { id: 3, title: 'Featured Project 3', project_type: 'music_video', thumbnail_url: null, video_url: null },
-    { id: 4, title: 'Featured Project 4', project_type: 'documentary', thumbnail_url: null, video_url: null },
-    { id: 5, title: 'Featured Project 5', project_type: 'short_film', thumbnail_url: null, video_url: null },
+  // Media items - real data or dummy
+  const portfolioItems = mediaItems.length > 0 ? mediaItems : [
+    { id: 1, title: 'Featured Project 1', media_type: 'photo', media_url: null, thumbnail_url: null },
+    { id: 2, title: 'Featured Project 2', media_type: 'photo', media_url: null, thumbnail_url: null },
+    { id: 3, title: 'Featured Project 3', media_type: 'video', media_url: null, thumbnail_url: null },
+    { id: 4, title: 'Featured Project 4', media_type: 'photo', media_url: null, thumbnail_url: null },
+    { id: 5, title: 'Featured Project 5', media_type: 'photo', media_url: null, thumbnail_url: null },
   ]
 
+  // Single container with short horizontal dividers
   return (
     <div className="min-h-screen bg-[#F5F3EF]">
       <Navbar />
@@ -99,113 +100,113 @@ export default function ArtistPublicProfile() {
               <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
             </div>
           ) : (
-            <>
-              {/* Profile Header with Images - EXACTLY LIKE SCREENSHOT */}
-              <div className="bg-white rounded-2xl shadow-sm border border-black/5 overflow-hidden mb-8">
-                <div className="p-6 sm:p-8">
-                  <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Left: Large Main Image */}
-                    <div className="flex-shrink-0 lg:w-1/2">
-                      <div className="aspect-[4/3] bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl overflow-hidden">
-                        {artist?.profile_photo_url ? (
-                          <img src={artist.profile_photo_url} alt={artist.full_name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <ImageIcon className="w-16 h-16 text-gray-400" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Right: 4 Smaller Images Stacked Vertically */}
-                    <div className="flex-1 grid grid-cols-2 gap-3">
-                      {portfolioItems.slice(0, 4).map((item, idx) => (
-                        <div key={item.id || idx} className="aspect-square bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg overflow-hidden relative group cursor-pointer">
-                          {item.thumbnail_url ? (
-                            <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <ImageIcon className="w-8 h-8 text-gray-400" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                            <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Play className="w-5 h-5 text-gray-900 ml-0.5" />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      {portfolioItems.length > 4 && (
-                        <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors">
-                          <span className="text-sm font-medium text-gray-600">View {portfolioItems.length - 4} more</span>
+            <div className="bg-white border border-black/5 rounded-2xl overflow-hidden">
+              {/* Images Section - FIRST */}
+              <div className="p-6 sm:p-8 border-b border-gray-100">
+                <div className="flex flex-col lg:flex-row gap-6">
+                  {/* Left: Large Main Image */}
+                  <div className="flex-shrink-0 lg:w-1/2">
+                    <div className="aspect-[4/3] bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl overflow-hidden">
+                      {artist?.profile_photo_url ? (
+                        <img src={artist.profile_photo_url} alt={artist.full_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageIcon className="w-16 h-16 text-gray-400" />
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Artist Name and Info - Below Images */}
-                  <div className="mt-6 pt-6 border-t border-gray-100">
-                    <div className="flex flex-wrap items-center gap-3 mb-2">
-                      <h1 className="text-3xl font-bold text-gray-900">{artist?.full_name || 'Artist Name'}</h1>
-                      {subscriptionPackage && <SubscriptionBadge subscription={subscription} package={subscriptionPackage} />}
-                      <BadgeCheck className="w-6 h-6 text-blue-600" />
-                    </div>
+                  {/* Right: 4 Smaller Images Stacked Vertically */}
+                  <div className="flex-1 grid grid-cols-2 gap-3">
+                    {portfolioItems.slice(0, 4).map((item, idx) => (
+                      <div key={item.id || idx} className="aspect-square bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg overflow-hidden relative group cursor-pointer">
+                        {item.thumbnail_url || item.media_url ? (
+                          <img src={item.thumbnail_url || item.media_url} alt={item.title || 'Media'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ImageIcon className="w-8 h-8 text-gray-400" />
+                          </div>
+                        )}
+                        {item.media_type === 'video' && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                            <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Play className="w-5 h-5 text-gray-900 ml-0.5" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {portfolioItems.length > 4 && (
+                      <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors">
+                        <span className="text-sm font-medium text-gray-600">View {portfolioItems.length - 4} more</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-                    <p className="text-lg text-gray-600 font-medium mb-3">
-                      {artist?.profession || artist?.role || 'Creative Professional'}
-                    </p>
+                {/* Artist Name and Info - Below Images */}
+                <div className="mt-6 pt-6 border-t border-gray-100">
+                  <div className="flex flex-wrap items-center gap-3 mb-2">
+                    <h1 className="text-3xl font-bold text-gray-900">{artist?.full_name || 'Artist Name'}</h1>
+                    {subscriptionPackage && <SubscriptionBadge subscription={subscription} package={subscriptionPackage} />}
+                    <BadgeCheck className="w-6 h-6 text-blue-600" />
+                  </div>
 
-                    {/* Location and Physical Stats */}
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
-                      {(artist?.based_in_city || artist?.based_in_country) && (
-                        <span className="flex items-center gap-1.5">
-                          <MapPin className="w-4 h-4" />
-                          {[artist.based_in_city, artist.based_in_country].filter(Boolean).join(', ')}
-                        </span>
-                      )}
-                      {appearance.height && (
-                        <span className="flex items-center gap-1.5">
-                          <Award className="w-4 h-4" />
-                          {appearance.height}
-                        </span>
-                      )}
-                      {appearance.weight && (
-                        <span className="flex items-center gap-1.5">
-                          <Award className="w-4 h-4" />
-                          {appearance.weight}
-                        </span>
-                      )}
-                    </div>
+                  <p className="text-lg text-gray-600 font-medium mb-3">
+                    {artist?.profession || artist?.role || 'Creative Professional'}
+                  </p>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-wrap gap-3">
-                      {viewer ? (
-                        <Link
-                          to="/Messages"
-                          className="px-6 py-3 bg-black text-white rounded-xl text-sm font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-                        >
-                          <MessageCircle className="w-4 h-4" /> Contact
-                        </Link>
-                      ) : (
-                        <Link
-                          to="/SignIn"
-                          className="px-6 py-3 bg-black text-white rounded-xl text-sm font-semibold hover:bg-gray-800 transition-colors"
-                        >
-                          Sign in to Contact
-                        </Link>
-                      )}
-                      <button className="px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                        <Plus className="w-4 h-4" /> Add to Role
-                      </button>
-                      {!notFound && artist && <ShareProfileButton artistId={artist.id} />}
-                    </div>
+                  {/* Location and Physical Stats */}
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
+                    {(artist?.based_in_city || artist?.based_in_country) && (
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4" />
+                        {[artist.based_in_city, artist.based_in_country].filter(Boolean).join(', ')}
+                      </span>
+                    )}
+                    {appearance.height && (
+                      <span className="flex items-center gap-1.5">
+                        <Award className="w-4 h-4" />
+                        {appearance.height}
+                      </span>
+                    )}
+                    {appearance.weight && (
+                      <span className="flex items-center gap-1.5">
+                        <Award className="w-4 h-4" />
+                        {appearance.weight}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap gap-3">
+                    {viewer ? (
+                      <Link
+                        to="/Messages"
+                        className="px-6 py-3 bg-black text-white rounded-xl text-sm font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <MessageCircle className="w-4 h-4" /> Contact
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/SignIn"
+                        className="px-6 py-3 bg-black text-white rounded-xl text-sm font-semibold hover:bg-gray-800 transition-colors"
+                      >
+                        Sign in to Contact
+                      </Link>
+                    )}
+                    <button className="px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                      <Plus className="w-4 h-4" /> Add to Role
+                    </button>
+                    {!notFound && artist && <ShareProfileButton artistId={artist.id} />}
                   </div>
                 </div>
               </div>
 
               {/* About Me Section */}
               {artist?.bio && (
-                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                <div className="p-6 sm:p-8 border-b border-gray-100">
                   <h2 className="text-xl font-bold text-gray-900 mb-4">About Me</h2>
                   <p className="text-gray-700 text-sm leading-relaxed">
                     {artist.bio}
@@ -215,7 +216,7 @@ export default function ArtistPublicProfile() {
 
               {/* Appearance Section */}
               {(appearance.hairColor || appearance.eyeColor || appearance.ethnicity || appearance.build || appearance.ageRange) && (
-                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                <div className="p-6 sm:p-8 border-b border-gray-100">
                   <h2 className="text-xl font-bold text-gray-900 mb-4">Appearance</h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {appearance.hairColor && (
@@ -253,25 +254,27 @@ export default function ArtistPublicProfile() {
               )}
 
               {/* Acting & Performing Video Samples */}
-              <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+              <div className="p-6 sm:p-8 border-b border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <Video className="w-5 h-5 text-gray-500" /> Acting & Performing Video Samples
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {portfolioItems.slice(0, 6).map((item, idx) => (
                     <div key={item.id || idx} className="relative aspect-video bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg overflow-hidden group cursor-pointer">
-                      {item.thumbnail_url ? (
-                        <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      {item.thumbnail_url || item.media_url ? (
+                        <img src={item.thumbnail_url || item.media_url} alt={item.title || 'Media'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Video className="w-12 h-12 text-gray-400" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                        <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Play className="w-6 h-6 text-gray-900 ml-1" />
+                      {item.media_type === 'video' && (
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                          <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Play className="w-6 h-6 text-gray-900 ml-1" />
+                          </div>
                         </div>
-                      </div>
+                      )}
                       <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
                         <p className="text-white text-sm font-medium truncate">{item.title || 'Project'}</p>
                       </div>
@@ -282,7 +285,7 @@ export default function ArtistPublicProfile() {
 
               {/* Credits & Experience */}
               {(credits.film?.length > 0 || credits.commercials?.length > 0) && (
-                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                <div className="p-6 sm:p-8 border-b border-gray-100">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Briefcase className="w-5 h-5 text-gray-500" /> Credits & Experience
                   </h2>
@@ -319,7 +322,7 @@ export default function ArtistPublicProfile() {
 
               {/* Skills Section */}
               {skills.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                <div className="p-6 sm:p-8 border-b border-gray-100">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Award className="w-5 h-5 text-gray-500" /> Skills
                   </h2>
@@ -335,7 +338,7 @@ export default function ArtistPublicProfile() {
 
               {/* Education & Training */}
               {education.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                <div className="p-6 sm:p-8 border-b border-gray-100">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Award className="w-5 h-5 text-gray-500" /> Education & Training
                   </h2>
@@ -352,7 +355,7 @@ export default function ArtistPublicProfile() {
 
               {/* Self Recording */}
               {artist?.self_recording_equipment && (
-                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                <div className="p-6 sm:p-8 border-b border-gray-100">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Video className="w-5 h-5 text-gray-500" /> Self Recording
                   </h2>
@@ -362,7 +365,7 @@ export default function ArtistPublicProfile() {
 
               {/* Websites/Social Media */}
               {(artist?.website || socialMedia.instagram || socialMedia.linkedin || socialMedia.twitter || socialMedia.youtube) && (
-                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                <div className="p-6 sm:p-8 border-b border-gray-100">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Globe className="w-5 h-5 text-gray-500" /> Websites/Social Media
                   </h2>
@@ -398,7 +401,7 @@ export default function ArtistPublicProfile() {
 
               {/* Union Membership */}
               {unionMembership.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                <div className="p-6 sm:p-8 border-b border-gray-100">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Shield className="w-5 h-5 text-gray-500" /> Union Membership
                   </h2>
@@ -414,7 +417,7 @@ export default function ArtistPublicProfile() {
 
               {/* License & Passport */}
               {(licensePassport.driverLicense || licensePassport.passport) && (
-                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+                <div className="p-6 sm:p-8 border-b border-gray-100">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-gray-500" /> License & Passport
                   </h2>
@@ -436,7 +439,7 @@ export default function ArtistPublicProfile() {
               )}
 
               {/* Contact Information */}
-              <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
+              <div className="p-6 sm:p-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <Mail className="w-5 h-5 text-gray-500" /> Contact Information
                 </h2>
@@ -481,13 +484,13 @@ export default function ArtistPublicProfile() {
               </div>
 
               {notFound && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
+                <div className="p-6 sm:p-8 bg-yellow-50 border-t border-yellow-200">
                   <p className="text-yellow-800 text-sm">
                     <strong>Note:</strong> This artist profile doesn't exist in the database. Please provide a valid artist ID to see real data.
                   </p>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       </main>
