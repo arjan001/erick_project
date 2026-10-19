@@ -150,18 +150,16 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
                             <h3 className="text-lg font-bold text-gray-900">{role}</h3>
                           </div>
                           <div className="flex items-center gap-2">
-                            {rolePills.length > 2 && (
-                              <button
-                                onClick={() => toggleRole(idx)}
-                                className="p-2 hover:bg-gray-200 rounded"
-                              >
-                                {expandedRoles.has(idx) ? (
-                                  <ChevronUp className="w-5 h-5 text-gray-600" />
-                                ) : (
-                                  <ChevronDown className="w-5 h-5 text-gray-600" />
-                                )}
-                              </button>
-                            )}
+                            <button
+                              onClick={() => toggleRole(idx)}
+                              className="p-2 hover:bg-gray-200 rounded"
+                            >
+                              {expandedRoles.has(idx) ? (
+                                <ChevronUp className="w-5 h-5 text-gray-600" />
+                              ) : (
+                                <ChevronDown className="w-5 h-5 text-gray-600" />
+                              )}
+                            </button>
                             <button
                               onClick={() => handleApply(role)}
                               className="px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded hover:bg-purple-700"
@@ -200,8 +198,11 @@ export default function GigDetailSlideOut({ job, onClose, onApply }) {
                       </div>
                     </div>
                   ))}
-                  {rolePills.length > 2 && (
-                    <button className="text-sm text-purple-600 font-medium hover:text-purple-700">
+                  {rolePills.length > 1 && (
+                    <button
+                      onClick={() => setExpandedRoles(new Set())}
+                      className="text-sm text-purple-600 font-medium hover:text-purple-700"
+                    >
                       Collapse All Roles
                     </button>
                   )}

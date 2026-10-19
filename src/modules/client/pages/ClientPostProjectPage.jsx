@@ -7,7 +7,8 @@ import {
   MapPin, Clock, Euro, Calendar, Building2, Upload, X,
   FileText, Video, Image as ImageIcon, Plus, Trash2, CheckCircle,
   AlertCircle, Briefcase, Users, Globe, Mic, Award, Save, ArrowLeft,
-  ChevronRight, ChevronLeft, Sparkles, DollarSign, Phone, Film, Radio
+  ChevronRight, ChevronLeft, Sparkles, DollarSign, Phone, Film, Radio,
+  Edit, Eye
 } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/lib/AuthContext'
@@ -33,6 +34,9 @@ export default function ClientPostProject() {
   const [attachments, setAttachments] = useState([])
   const [currentStep, setCurrentStep] = useState(1)
   const [postedJobs, setPostedJobs] = useState([])
+  const [roleTemplates, setRoleTemplates] = useState([])
+  const [editingSection, setEditingSection] = useState(null)
+  const [editModalContent, setEditModalContent] = useState('')
 
   const [formData, setFormData] = useState({
     // Basic Info
@@ -81,6 +85,7 @@ export default function ClientPostProject() {
       return
     }
     fetchPostedJobs()
+    fetchRoleTemplates()
   }, [isAuthenticated, navigate])
 
   const fetchPostedJobs = async () => {
@@ -89,6 +94,20 @@ export default function ClientPostProject() {
       setPostedJobs(jobs || [])
     } catch (err) {
       console.error('Error fetching posted jobs:', err)
+    }
+  }
+
+  const fetchRoleTemplates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('role_templates')
+        .select('*')
+        .order('name')
+
+      if (error) throw error
+      setRoleTemplates(data || [])
+    } catch (err) {
+      console.error('Error fetching role templates:', err)
     }
   }
 
@@ -446,16 +465,30 @@ export default function ClientPostProject() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Roles in the Project</label>
+                      <div className="flex gap-2 mb-3">
+                        <select
+                          value={formData.newRole}
+                          onChange={(e) => setFormData({ ...formData, newRole: e.target.value })}
+                          className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        >
+                          <option value="">Select from predefined roles...</option>
+                          {roleTemplates.map((template) => (
+                            <option key={template.id} value={template.name}>
+                              {template.name} ({template.category})
+                            </option>
+                          ))}
+                        </select>
+                        <Button type="button" onClick={handleAddRole} className="bg-purple-600 hover:bg-purple-700">
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
                       <div className="flex gap-2">
                         <Input
                           value={formData.newRole}
                           onChange={(e) => setFormData({ ...formData, newRole: e.target.value })}
-                          placeholder="Add a role (e.g., Lead Actor)"
+                          placeholder="Or type custom role..."
                           onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddRole())}
                         />
-                        <Button type="button" onClick={handleAddRole} className="bg-purple-600 hover:bg-purple-700">
-                          <Plus className="w-4 h-4" />
-                        </Button>
                       </div>
                       <div className="flex flex-wrap gap-2 mt-3">
                         {formData.rolesNeeded.map((role, idx) => (
@@ -677,23 +710,50 @@ export default function ClientPostProject() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="p-4 bg-gray-50 rounded-xl">
-                      <h3 className="font-semibold text-gray-900 mb-2">{formData.title}</h3>
-                      <p className="text-sm text-gray-600">{formData.projectDescription}</p>
+                    <div className="p-4 bg-gray-50 rounded-xl flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-2">{formData.title}</h3>
+                        <p className="text-sm text-gray-600">{formData.projectDescription}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setEditingSection('title'); setEditModalContent(formData.title); }}
+                        className="p-2 hover:bg-gray-200 rounded"
+                      >
+                        <Edit className="w-4 h-4 text-gray-600" />
+                      </button>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <span className="text-gray-500">Location:</span>
-                        <span className="ml-2 font-medium">{formData.location || 'Not specified'}</span>
+                      <div className="p-3 bg-gray-50 rounded-lg flex items-center justify-between">
+                        <div>
+                          <span className="text-gray-500">Location:</span>
+                          <span className="ml-2 font-medium">{formData.location || 'Not specified'}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => { setEditingSection('location'); setEditModalContent(formData.location); }}
+                          className="p-1 hover:bg-gray-200 rounded"
+                        >
+                          <Edit className="w-3 h-3 text-gray-600" />
+                        </button>
                       </div>
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <span className="text-gray-500">Budget:</span>
-                        <span className="ml-2 font-medium">
-                          {formData.budgetMin && formData.budgetMax
-                            ? `${formData.budgetMin} - ${formData.budgetMax} KES`
-                            : 'Not specified'
-                          }
-                        </span>
+                      <div className="p-3 bg-gray-50 rounded-lg flex items-center justify-between">
+                        <div>
+                          <span className="text-gray-500">Budget:</span>
+                          <span className="ml-2 font-medium">
+                            {formData.budgetMin && formData.budgetMax
+                              ? `${formData.budgetMin} - ${formData.budgetMax} KES`
+                              : 'Not specified'
+                            }
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => { setEditingSection('budget'); setEditModalContent(`${formData.budgetMin}-${formData.budgetMax}`); }}
+                          className="p-1 hover:bg-gray-200 rounded"
+                        >
+                          <Edit className="w-3 h-3 text-gray-600" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -779,11 +839,17 @@ export default function ClientPostProject() {
                     {attachments.map((file) => (
                       <div key={file.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         {file.type?.startsWith('image/') ? (
-                          <ImageIcon className="w-5 h-5 text-gray-500" />
+                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-200">
+                            <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
+                          </div>
                         ) : file.type?.startsWith('video/') ? (
-                          <Video className="w-5 h-5 text-gray-500" />
+                          <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                            <Video className="w-5 h-5 text-gray-500" />
+                          </div>
                         ) : (
-                          <FileText className="w-5 h-5 text-gray-500" />
+                          <div className="w-12 h-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                            <FileText className="w-5 h-5 text-gray-500" />
+                          </div>
                         )}
                         <div className="flex-1">
                           <p className="text-sm font-medium text-gray-900">{file.name}</p>
@@ -805,15 +871,29 @@ export default function ClientPostProject() {
 
             {/* Posted Jobs */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-gray-400">Your Posted Jobs</h3>
+              <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-gray-400">
+                <h3 className="text-lg font-bold text-gray-900">Your Posted Jobs</h3>
+                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold">
+                  {postedJobs.length}
+                </span>
+              </div>
               <div className="space-y-3">
                 {postedJobs.length > 0 ? (
-                  postedJobs.map((job) => (
-                    <div key={job.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-                      <p className="text-sm font-medium text-gray-900">{job.title}</p>
-                      <p className="text-xs text-gray-500 mt-1">{job.status || 'Open'}</p>
-                    </div>
-                  ))
+                  <>
+                    {postedJobs.slice(0, 3).map((job) => (
+                      <div key={job.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+                        <p className="text-sm font-medium text-gray-900">{job.title}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {job.status || 'Open'} • {new Date(job.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))}
+                    {postedJobs.length > 3 && (
+                      <button className="text-sm text-purple-600 font-medium hover:text-purple-700 w-full text-center">
+                        View all {postedJobs.length} jobs
+                      </button>
+                    )}
+                  </>
                 ) : (
                   <p className="text-sm text-gray-500">No jobs posted yet</p>
                 )}
