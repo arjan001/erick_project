@@ -641,6 +641,18 @@ const artistRoutes = [
     guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
   {
+    path: '/Jobs/:id',
+    component: () => import('@/pages/JobDetailPage'),
+    layout: null,
+    guard: AuthGuard
+  },
+  {
+    path: '/PostJob',
+    component: () => import('@/modules/client/pages/PostJobPage'),
+    layout: DashboardLayout,
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
+  },
+  {
     path: '/JobApplications',
     component: () => import('@/modules/jobs/pages/JobApplicationsPage'),
     layout: DashboardLayout,
