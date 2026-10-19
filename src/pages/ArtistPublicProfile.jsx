@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useSearchParams, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { Artist, PortfolioClip, Endorsement, Testimonial, Subscription, SubscriptionPackage, Application, Job } from '@/lib/supabaseEntities'
 import { createPageUrl } from '@/shared/utils/routing'
 import ShareProfileButton from '@/components/artist/ShareProfileButton'
@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 
 export default function ArtistPublicProfile() {
-  const [searchParams] = useSearchParams()
+  const { id: artistId } = useParams()
   const { user: authUser } = useAuth()
   const [viewer, setViewer] = useState(null)
   const [viewedArtist, setViewedArtist] = useState(null)
@@ -31,7 +31,6 @@ export default function ArtistPublicProfile() {
   }, [authUser])
 
   useEffect(() => {
-    const artistId = searchParams.get('id')
     if (!artistId) { setLoading(false); setNotFound(true); return; }
 
     const fetchData = async () => {
@@ -86,7 +85,7 @@ export default function ArtistPublicProfile() {
     }
 
     fetchData()
-  }, [searchParams])
+  }, [artistId])
 
   if (loading) {
     return (

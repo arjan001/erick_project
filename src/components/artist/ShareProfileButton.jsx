@@ -7,13 +7,13 @@ export default function ShareProfileButton({ artistId }) {
   const [copied, setCopied] = useState(false)
 
   const handleShare = async () => {
-    const url = `${window.location.origin}${createPageUrl('ArtistPublicProfile')}?id=${artistId}`
+    const url = `${window.location.origin}/artist/${artistId}`
     try {
       await navigator.clipboard.writeText(url)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
-      
+
     }
   }
 
