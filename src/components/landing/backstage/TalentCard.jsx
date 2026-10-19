@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Star, Flame, MessageCircle, ChevronLeft, ChevronRight, ZoomIn, Home, Heart } from 'lucide-react'
 
 const badgeConfig = {
@@ -22,11 +23,10 @@ export default function TalentCard({ profile, showActions = true, onOpenProfile,
   }
 
   return (
-    <div className="group rounded-xl bg-white p-2 shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md">
+    <Link to={`/artist/${profile.id}`} className="group rounded-xl bg-white p-2 shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md block">
       {/* Image area */}
       <div
         className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-pointer"
-        onClick={() => onOpenProfile?.(profile)}
       >
         <img
           src={profile.images[imgIdx]}
@@ -58,7 +58,6 @@ export default function TalentCard({ profile, showActions = true, onOpenProfile,
         {/* Zoom button */}
         {showControls && (
           <button
-            onClick={(e) => { e.stopPropagation(); onOpenProfile?.(profile); }}
             className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-[#4F46E5] text-white opacity-0 transition-opacity hover:bg-[#4338CA] group-hover:opacity-100"
             aria-label="View profile"
           >
@@ -116,6 +115,6 @@ export default function TalentCard({ profile, showActions = true, onOpenProfile,
           </button>
         </div>
       )}
-    </div>
+    </Link>
   )
 }

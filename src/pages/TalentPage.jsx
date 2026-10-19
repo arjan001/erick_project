@@ -5,7 +5,6 @@ import Footer from '@/components/landing/backstage/Footer'
 import ChatWidget from '@/components/landing/backstage/ChatWidget'
 import SEOMetaTags from '@/components/SEOMetaTags'
 import TalentCard from '@/components/landing/backstage/TalentCard'
-import CreatorProfileModal from '@/components/landing/backstage/CreatorProfileModal'
 import { talentTabs, filterTags } from '@/components/landing/backstage/talentData'
 import { Search, SlidersHorizontal, ChevronDown, CheckSquare, HelpCircle, ZoomIn, Loader2, X } from 'lucide-react'
 import { Artist } from '@/lib/supabaseEntities'
@@ -318,12 +317,6 @@ export default function TalentPage() {
 
       <Footer />
       <ChatWidget />
-
-      {/* Creator profile modal */}
-      <CreatorProfileModal
-        profile={selectedProfile}
-        onClose={() => setSelectedProfile(null)}
-      />
     </div>
   )
 }

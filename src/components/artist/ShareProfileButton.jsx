@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Share2, Check } from 'lucide-react'
-import { createPageUrl } from '@/shared/utils/routing'
 
 export default function ShareProfileButton({ artistId }) {
   const [copied, setCopied] = useState(false)

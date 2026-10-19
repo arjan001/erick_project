@@ -206,7 +206,7 @@ const publicRoutes = [
   {
     path: '/artist/:id',
     component: () => import('@/pages/ArtistPublicProfile'),
-    layout: MainLayout
+    layout: null
   },
   {
     path: '/Categories',
