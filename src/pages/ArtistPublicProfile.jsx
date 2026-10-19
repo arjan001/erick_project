@@ -102,7 +102,7 @@ export default function ArtistPublicProfile() {
           ) : (
             <div className="bg-white border border-black/5 rounded-2xl overflow-hidden">
               {/* Images Section - FIRST */}
-              <div className="p-6 sm:p-8 border-b border-gray-100">
+              <div className="p-6 sm:p-8 border-b-2 border-gray-300">
                 <div className="flex flex-col lg:flex-row gap-6">
                   {/* Left: Large Main Image */}
                   <div className="flex-shrink-0 lg:w-1/2">
@@ -146,7 +146,7 @@ export default function ArtistPublicProfile() {
                 </div>
 
                 {/* Artist Name and Info - Below Images */}
-                <div className="mt-6 pt-6 border-t border-gray-100">
+                <div className="mt-6 pt-6 border-t-2 border-gray-300">
                   <div className="flex flex-wrap items-center gap-3 mb-2">
                     <h1 className="text-3xl font-bold text-gray-900">{artist?.full_name || 'Artist Name'}</h1>
                     {subscriptionPackage && <SubscriptionBadge subscription={subscription} package={subscriptionPackage} />}
@@ -206,7 +206,7 @@ export default function ArtistPublicProfile() {
 
               {/* About Me Section */}
               {artist?.bio && (
-                <div className="p-6 sm:p-8 border-b border-gray-100">
+                <div className="p-6 sm:p-8 border-b-2 border-gray-300">
                   <h2 className="text-xl font-bold text-gray-900 mb-4">About Me</h2>
                   <p className="text-gray-700 text-sm leading-relaxed">
                     {artist.bio}
@@ -216,7 +216,7 @@ export default function ArtistPublicProfile() {
 
               {/* Appearance Section */}
               {(appearance.hairColor || appearance.eyeColor || appearance.ethnicity || appearance.build || appearance.ageRange) && (
-                <div className="p-6 sm:p-8 border-b border-gray-100">
+                <div className="p-6 sm:p-8 border-b-2 border-gray-300">
                   <h2 className="text-xl font-bold text-gray-900 mb-4">Appearance</h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {appearance.hairColor && (
@@ -254,7 +254,7 @@ export default function ArtistPublicProfile() {
               )}
 
               {/* Acting & Performing Video Samples */}
-              <div className="p-6 sm:p-8 border-b border-gray-100">
+              <div className="p-6 sm:p-8 border-b-2 border-gray-300">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <Video className="w-5 h-5 text-gray-500" /> Acting & Performing Video Samples
                 </h2>
@@ -285,7 +285,7 @@ export default function ArtistPublicProfile() {
 
               {/* Credits & Experience */}
               {(credits.film?.length > 0 || credits.commercials?.length > 0) && (
-                <div className="p-6 sm:p-8 border-b border-gray-100">
+                <div className="p-6 sm:p-8 border-b-2 border-gray-300">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Briefcase className="w-5 h-5 text-gray-500" /> Credits & Experience
                   </h2>
@@ -322,7 +322,7 @@ export default function ArtistPublicProfile() {
 
               {/* Skills Section */}
               {skills.length > 0 && (
-                <div className="p-6 sm:p-8 border-b border-gray-100">
+                <div className="p-6 sm:p-8 border-b-2 border-gray-300">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Award className="w-5 h-5 text-gray-500" /> Skills
                   </h2>
@@ -338,7 +338,7 @@ export default function ArtistPublicProfile() {
 
               {/* Education & Training */}
               {education.length > 0 && (
-                <div className="p-6 sm:p-8 border-b border-gray-100">
+                <div className="p-6 sm:p-8 border-b-2 border-gray-300">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Award className="w-5 h-5 text-gray-500" /> Education & Training
                   </h2>
@@ -355,7 +355,7 @@ export default function ArtistPublicProfile() {
 
               {/* Self Recording */}
               {artist?.self_recording_equipment && (
-                <div className="p-6 sm:p-8 border-b border-gray-100">
+                <div className="p-6 sm:p-8 border-b-2 border-gray-300">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Video className="w-5 h-5 text-gray-500" /> Self Recording
                   </h2>
@@ -365,7 +365,7 @@ export default function ArtistPublicProfile() {
 
               {/* Websites/Social Media */}
               {(artist?.website || socialMedia.instagram || socialMedia.linkedin || socialMedia.twitter || socialMedia.youtube) && (
-                <div className="p-6 sm:p-8 border-b border-gray-100">
+                <div className="p-6 sm:p-8 border-b-2 border-gray-300">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Globe className="w-5 h-5 text-gray-500" /> Websites/Social Media
                   </h2>
@@ -401,7 +401,7 @@ export default function ArtistPublicProfile() {
 
               {/* Union Membership */}
               {unionMembership.length > 0 && (
-                <div className="p-6 sm:p-8 border-b border-gray-100">
+                <div className="p-6 sm:p-8 border-b-2 border-gray-300">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Shield className="w-5 h-5 text-gray-500" /> Union Membership
                   </h2>
@@ -417,7 +417,7 @@ export default function ArtistPublicProfile() {
 
               {/* License & Passport */}
               {(licensePassport.driverLicense || licensePassport.passport) && (
-                <div className="p-6 sm:p-8 border-b border-gray-100">
+                <div className="p-6 sm:p-8 border-b-2 border-gray-300">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-gray-500" /> License & Passport
                   </h2>
@@ -484,7 +484,7 @@ export default function ArtistPublicProfile() {
               </div>
 
               {notFound && (
-                <div className="p-6 sm:p-8 bg-yellow-50 border-t border-yellow-200">
+                <div className="p-6 sm:p-8 bg-yellow-50 border-t-2 border-yellow-200">
                   <p className="text-yellow-800 text-sm">
                     <strong>Note:</strong> This artist profile doesn't exist in the database. Please provide a valid artist ID to see real data.
                   </p>
