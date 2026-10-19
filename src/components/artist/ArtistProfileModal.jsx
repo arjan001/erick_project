@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { X } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 import { Artist, ArtistMedia, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
