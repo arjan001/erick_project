@@ -45,8 +45,8 @@ export default function ArtistPublicProfile() {
         if (!artist) { setNotFound(true); setLoading(false); return; }
         setViewedArtist(artist)
 
-        // Fix: Use ArtistMedia (not PortfolioClip) - this is what the settings page uses
-        const mediaData = await ArtistMedia.filter({ artist_id: artist.id, status: 'approved' })
+        // Fix: Use ArtistMedia with user_id (not artist_id - that's the schema)
+        const mediaData = await ArtistMedia.filter({ user_id: artist.user_id, status: 'approved' })
         setMediaItems(mediaData || [])
 
         try {
