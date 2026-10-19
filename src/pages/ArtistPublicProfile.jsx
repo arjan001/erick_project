@@ -35,8 +35,16 @@ export default function ArtistPublicProfile() {
 
     const fetchData = async () => {
       try {
-        const artistsData = await Artist.filter({ id: artistId })
-        const artist = artistsData?.[0]
+        // Try to find artist by ID first, then by user_id
+        let artistsData = await Artist.filter({ id: artistId })
+        let artist = artistsData?.[0]
+
+        // If not found by ID, try by user_id
+        if (!artist) {
+          artistsData = await Artist.filter({ user_id: artistId })
+          artist = artistsData?.[0]
+        }
+
         if (!artist) { setNotFound(true); setLoading(false); return; }
         setViewedArtist(artist)
 

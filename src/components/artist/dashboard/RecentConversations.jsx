@@ -1,63 +1,73 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { createPageUrl } from '@/shared/utils/routing'
-import { Message, Artist, Team, ProjectOwner, Backer } from '@/lib/supabaseEntities'
+import { Conversation, Message, Artist, Team, Client, Backer, User } from '@/lib/supabaseEntities'
 import { MessageCircle } from 'lucide-react'
+import { useAuth } from '@/lib/AuthContext'
 
-async function lookupName(email) {
+async function lookupUser(userId) {
   try {
-    const artists = await Artist.filter({ email })
+    const user = await User.get(userId)
+    if (user) {
+      return { name: user.full_name || user.email, avatar: user.avatar_url }
+    }
+    const artists = await Artist.filter({ user_id: userId })
     if (artists[0]) return { name: artists[0].full_name, avatar: artists[0].profile_photo_url }
-    const owners = await ProjectOwner.filter({ email })
-    if (owners[0]) return { name: owners[0].full_name, avatar: owners[0].profile_photo_url }
-    const teams = await Team.filter({ contact_email: email })
+    const clients = await Client.filter({ user_id: userId })
+    if (clients[0]) return { name: clients[0].company_name || clients[0].display_name, avatar: clients[0].logo_url }
+    const teams = await Team.filter({ user_id: userId })
     if (teams[0]) return { name: teams[0].team_name, avatar: teams[0].team_logo_url }
-    const backers = await Backer.filter({ contact_email: email })
+    const backers = await Backer.filter({ user_id: userId })
     if (backers[0]) return { name: backers[0].organization_name, avatar: backers[0].logo_url }
   } catch {
     // ignore lookup failures
   }
-  return { name: email, avatar: null }
+  return { name: 'Unknown User', avatar: null }
 }
 
 export default function RecentConversations({ userEmail }) {
+  const { user } = useAuth()
   const [conversations, setConversations] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!userEmail) return
+    if (!user?.id) return
     (async () => {
       try {
-        // TODO: Refactor to use conversation_id and sender_id instead of email-based filtering
-        // Need to join with conversations table to get participant_1 and participant_2
-        // For now, this feature is disabled pending proper refactoring
-        // const [sent, received] = await Promise.all([
-        //   Message.filter({ sender_id: userId }, '-created_at', 100),
-        //   // Use conversation table to find conversations where user is a participant
-        // ])
-        // const grouped = {}
-        // sent.concat(received).forEach(m => {
-        //   const existing = grouped[m.conversation_id]
-        //   if (!existing || new Date(m.created_at) > new Date(existing.created_at)) grouped[m.conversation_id] = m
-        // })
-        // const top = Object.values(grouped)
-        //   .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        //   .slice(0, 3)
-        // const enriched = await Promise.all(top.map(async m => {
-        //   const otherId = m.sender_id === userId ? (get other participant from conversation) : m.sender_id
-        //   const info = await lookupName(otherId)
-        //   return { ...m, otherId, ...info }
-        // }))
-        // setConversations(enriched)
-        setConversations([])
-      } catch (err) {
+        // Fetch conversations where user is a participant
+        const convos = await Conversation.filter({
+          or: `participant_1.eq.${user.id},participant_2.eq.${user.id}`
+        }, '-updated_at', 5)
 
+        // Get the last message for each conversation
+        const enriched = await Promise.all(convos.map(async (convo) => {
+          const otherUserId = convo.participant_1 === user.id ? convo.participant_2 : convo.participant_1
+          const userInfo = await lookupUser(otherUserId)
+
+          // Get the last message in this conversation
+          const messages = await Message.filter({ conversation_id: convo.id }, '-created_at', 1)
+          const lastMessage = messages[0] || null
+
+          return {
+            conversation_id: convo.id,
+            otherUserId,
+            ...userInfo,
+            lastMessage: lastMessage?.text || lastMessage?.file_name || 'No messages yet',
+            timestamp: lastMessage?.created_at || convo.updated_at
+          }
+        }))
+
+        // Sort by timestamp
+        enriched.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        setConversations(enriched)
+      } catch (err) {
+        console.error('Error fetching conversations:', err)
         setConversations([])
       } finally {
         setLoading(false)
       }
     })()
-  }, [userEmail])
+  }, [user])
 
   return (
     <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5">

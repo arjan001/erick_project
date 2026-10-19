@@ -58,7 +58,7 @@ export default function JobOpportunitiesCard({ jobs = [] }) {
         const combined = [...allJobs, ...projectJobs].slice(0, 5)
         setAllOpportunities(combined)
       } catch (err) {
-        
+
         setAllOpportunities(jobs.slice(0, 5))
       }
     }
@@ -94,7 +94,7 @@ export default function JobOpportunitiesCard({ jobs = [] }) {
         <div className="space-y-2">
           {displayItems.map((item, idx) => {
             return (
-              <Link key={item.id} to={createPageUrl('Jobs')} className="flex gap-3 hover:bg-gray-50 p-3 rounded-xl transition-colors group border border-gray-100">
+              <Link key={item.id} to={item.isProject ? `/project/${item.id}` : `/job/${item.id}`} className="flex gap-3 hover:bg-gray-50 p-3 rounded-xl transition-colors group border border-gray-100">
                 {/* Left - Client Avatar */}
                 <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
                   <Building2 className="w-5 h-5 text-gray-400" />

@@ -1,4 +1,6 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
+import { createPageUrl } from '@/shared/utils/routing'
 import { Heart, Briefcase, MapPin, DollarSign, Clock, ChevronRight } from 'lucide-react'
 
 export default function SavedJobsCard({ savedJobs }) {
@@ -35,16 +37,17 @@ export default function SavedJobsCard({ savedJobs }) {
             <p className="text-xs text-gray-500">{savedJobs.length} saved</p>
           </div>
         </div>
-        <button className="text-sm font-semibold text-[#4F46E5] hover:text-[#4338CA]">
+        <Link to={createPageUrl('Jobs')} className="text-sm font-semibold text-[#4F46E5] hover:text-[#4338CA]">
           View All
-        </button>
+        </Link>
       </div>
 
       <div className="space-y-3">
         {savedJobs.slice(0, 5).map((saved) => (
-          <div
+          <Link
             key={saved.id}
-            className="group border border-gray-200 rounded-xl p-4 hover:border-[#4F46E5] hover:shadow-md transition-all cursor-pointer"
+            to={`/job/${saved.job_id}`}
+            className="group border border-gray-200 rounded-xl p-4 hover:border-[#4F46E5] hover:shadow-md transition-all cursor-pointer block"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
@@ -73,14 +76,14 @@ export default function SavedJobsCard({ savedJobs }) {
               </div>
               <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#4F46E5] flex-shrink-0 ml-2" />
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
       {savedJobs.length > 5 && (
-        <button className="mt-4 w-full text-center text-sm font-semibold text-[#4F46E5] hover:text-[#4338CA]">
+        <Link to={createPageUrl('Jobs')} className="mt-4 w-full text-center text-sm font-semibold text-[#4F46E5] hover:text-[#4338CA] block">
           View all {savedJobs.length} saved jobs
-        </button>
+        </Link>
       )}
     </div>
   )
