@@ -25,7 +25,7 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
       // If editable, show all media (including pending). If not editable, only show approved.
       const statusFilter = isEditable ? undefined : 'approved'
       const mediaData = await ArtistMedia.filter(
-        { artist_id: artistId, ...(statusFilter && { status: statusFilter }) },
+        { user_id: artistId, ...(statusFilter && { status: statusFilter }) },
         'order_index',
         50
       )

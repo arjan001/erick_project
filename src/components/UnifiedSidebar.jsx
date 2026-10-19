@@ -283,12 +283,15 @@ export default function UnifiedSidebar({ role = 'creator', mobileSidebarOpen, se
           )}
         </div>
         <div className="flex items-center gap-1">
-          <button
-            onClick={collapsed ? () => setMobileSidebarOpen(false) : handleCollapseToggle}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
-          >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
+          {/* Only show collapse toggle on desktop - removed inner chevron */}
+          {!collapsed && (
+            <button
+              onClick={handleCollapseToggle}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
