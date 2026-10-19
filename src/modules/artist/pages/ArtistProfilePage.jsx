@@ -766,7 +766,7 @@ export default function ArtistProfile() {
             <div className="flex gap-4 sm:gap-8 min-w-max">
               <button onClick={() => setActiveTab('profile')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'profile' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Profile</button>
               <button onClick={() => setActiveTab('portfolio')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'portfolio' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Media & Reels</button>
-              <button onClick={() => setActiveTab('work')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'work' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Work</button>
+              <button onClick={() => setActiveTab('work')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'work' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Acting & Performing Video Samples</button>
               <button onClick={() => setActiveTab('about')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'about' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>About</button>
               <button onClick={() => setActiveTab('credits')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'credits' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Credits & Experience</button>
               <button onClick={() => setActiveTab('education')} className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'education' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Education</button>
@@ -1305,11 +1305,11 @@ export default function ArtistProfile() {
 
           {activeTab === 'work' && (
             <div className="space-y-6">
-              {/* Video Clips Portfolio */}
+              {/* Acting & Performing Video Samples */}
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-900">Video Clips & Work</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Acting & Performing Video Samples</h2>
                 <Button onClick={() => setShowPortfolioModal(true)} className="bg-black text-white hover:bg-gray-800">
-                  <Plus className="w-4 h-4 mr-2" /> Add Work
+                  <Plus className="w-4 h-4 mr-2" /> Add Sample
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
