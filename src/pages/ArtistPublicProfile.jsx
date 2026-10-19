@@ -47,10 +47,10 @@ export default function ArtistPublicProfile() {
         if (!artist) { setNotFound(true); setLoading(false); return; }
         setViewedArtist(artist)
 
-        // Fix: Use correct schema
+        // Fix: Use artist_id for portfolio_clips
         const [clipsData, applicationsData] = await Promise.all([
-          PortfolioClip.filter({ uploaded_by_type: 'artist', uploaded_by_id: artistId, status: 'approved' }),
-          Application.filter({ artist_id: artistId }, '-applied_at', 10),
+          PortfolioClip.filter({ artist_id: artist.id, status: 'approved' }),
+          Application.filter({ artist_id: artist.id }, '-applied_at', 10),
         ])
         setPortfolioClips(clipsData || [])
         setApplications(applicationsData || [])
@@ -91,32 +91,9 @@ export default function ArtistPublicProfile() {
     fetchData()
   }, [artistId])
 
-  // Use dummy data if profile not found, but show layout
-  const artist = viewedArtist || {
-    full_name: 'Sample Artist',
-    profession: 'Actor',
-    role: 'Actor',
-    bio: 'This is a sample profile to demonstrate the layout. Please provide a valid artist ID.',
-    profile_photo_url: null,
-    based_in_city: 'Nairobi',
-    based_in_country: 'Kenya',
-    email: 'sample@smartgigs.co.ke',
-    phone: '+254 700 000 000',
-    website: 'https://smartgigs.co.ke',
-    socialMedia: {
-      instagram: 'https://instagram.com',
-      linkedin: 'https://linkedin.com',
-      twitter: 'https://twitter.com',
-      youtube: 'https://youtube.com'
-    },
-    skills: ['Acting', 'Voiceover', 'Dancing', 'Modeling'],
-    credits: {
-      film: ['Sample Film 1', 'Sample Film 2'],
-      commercials: ['Sample Commercial 1']
-    }
-  }
-  const skills = artist.skills || []
-  const socialMedia = artist.socialMedia || {}
+  const artist = viewedArtist
+  const skills = artist?.skills || []
+  const socialMedia = artist?.socialMedia || {}
   const portfolioItems = portfolioClips.length > 0 ? portfolioClips : [
     { id: 1, title: 'Featured Project 1', project_type: 'film', thumbnail_url: null, video_url: null },
     { id: 2, title: 'Featured Project 2', project_type: 'commercial', thumbnail_url: null, video_url: null },
@@ -124,7 +101,6 @@ export default function ArtistPublicProfile() {
     { id: 4, title: 'Featured Project 4', project_type: 'documentary', thumbnail_url: null, video_url: null },
     { id: 5, title: 'Featured Project 5', project_type: 'short_film', thumbnail_url: null, video_url: null },
   ]
-  const isNotFound = notFound || !viewedArtist
 
   return (
     <div className="min-h-screen bg-[#F5F3EF]">
@@ -144,10 +120,10 @@ export default function ArtistPublicProfile() {
                     {/* Profile Image */}
                     <div className="flex-shrink-0">
                       <div className="w-40 h-40 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 border-4 border-white shadow-xl overflow-hidden flex items-center justify-center">
-                        {artist.profile_photo_url ? (
+                        {artist?.profile_photo_url ? (
                           <img src={artist.profile_photo_url} alt={artist.full_name} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-4xl font-bold text-gray-500">{artist.full_name?.[0]?.toUpperCase() || 'A'}</span>
+                          <span className="text-4xl font-bold text-gray-500">{artist?.full_name?.[0]?.toUpperCase() || 'A'}</span>
                         )}
                       </div>
                     </div>
@@ -155,29 +131,29 @@ export default function ArtistPublicProfile() {
                     {/* Name and Basic Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-3 mb-2">
-                        <h1 className="text-3xl font-bold text-gray-900">{artist.full_name || 'Artist Name'}</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">{artist?.full_name || 'Artist Name'}</h1>
                         {subscriptionPackage && <SubscriptionBadge subscription={subscription} package={subscriptionPackage} />}
                         <BadgeCheck className="w-6 h-6 text-blue-600" />
                       </div>
 
                       <p className="text-lg text-gray-600 font-medium mb-3">
-                        {artist.profession || artist.role || 'Creative Professional'}
+                        {artist?.profession || artist?.role || 'Creative Professional'}
                       </p>
 
                       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
-                        {(artist.based_in_city || artist.based_in_country) && (
+                        {(artist?.based_in_city || artist?.based_in_country) && (
                           <span className="flex items-center gap-1.5">
                             <MapPin className="w-4 h-4" />
                             {[artist.based_in_city, artist.based_in_country].filter(Boolean).join(', ')}
                           </span>
                         )}
-                        {artist.email && (
+                        {artist?.email && (
                           <span className="flex items-center gap-1.5">
                             <Mail className="w-4 h-4" />
                             {artist.email}
                           </span>
                         )}
-                        {artist.phone && (
+                        {artist?.phone && (
                           <span className="flex items-center gap-1.5">
                             <Phone className="w-4 h-4" />
                             {artist.phone}
@@ -186,7 +162,7 @@ export default function ArtistPublicProfile() {
                       </div>
 
                       {/* Bio */}
-                      {artist.bio && (
+                      {artist?.bio && (
                         <p className="text-gray-700 text-sm leading-relaxed max-w-2xl mb-4">
                           {artist.bio}
                         </p>
@@ -194,27 +170,27 @@ export default function ArtistPublicProfile() {
 
                       {/* Social Links */}
                       <div className="flex items-center gap-3">
-                        {artist.website && (
+                        {artist?.website && (
                           <a href={artist.website} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
                             <Globe className="w-5 h-5" />
                           </a>
                         )}
-                        {socialMedia.instagram && (
+                        {socialMedia?.instagram && (
                           <a href={socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
                             <Instagram className="w-5 h-5" />
                           </a>
                         )}
-                        {socialMedia.linkedin && (
+                        {socialMedia?.linkedin && (
                           <a href={socialMedia.linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
                             <Linkedin className="w-5 h-5" />
                           </a>
                         )}
-                        {socialMedia.twitter && (
+                        {socialMedia?.twitter && (
                           <a href={socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
                             <Twitter className="w-5 h-5" />
                           </a>
                         )}
-                        {socialMedia.youtube && (
+                        {socialMedia?.youtube && (
                           <a href={socialMedia.youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
                             <Youtube className="w-5 h-5" />
                           </a>
@@ -242,7 +218,7 @@ export default function ArtistPublicProfile() {
                       <button className="px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
                         <Plus className="w-4 h-4" /> Add to Role
                       </button>
-                      {!isNotFound && <ShareProfileButton artistId={artist.id} />}
+                      {!notFound && artist && <ShareProfileButton artistId={artist.id} />}
                     </div>
                   </div>
                 </div>
@@ -286,7 +262,7 @@ export default function ArtistPublicProfile() {
                 </div>
               )}
 
-              {/* Portfolio / Media Section - Irregular Grid Layout */}
+              {/* Portfolio / Media Section - AFTER ABOUT/HEADER, BEFORE CREDITS */}
               <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <Film className="w-5 h-5 text-gray-500" /> Portfolio & Media
@@ -345,7 +321,7 @@ export default function ArtistPublicProfile() {
               </div>
 
               {/* Credits Section */}
-              {artist.credits && (artist.credits.film?.length > 0 || artist.credits.commercials?.length > 0) && (
+              {artist?.credits && (artist.credits.film?.length > 0 || artist.credits.commercials?.length > 0) && (
                 <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 mb-8">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Briefcase className="w-5 h-5 text-gray-500" /> Credits & Experience
@@ -387,7 +363,7 @@ export default function ArtistPublicProfile() {
                   <Mail className="w-5 h-5 text-gray-500" /> Contact Information
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {artist.email && (
+                  {artist?.email && (
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <Mail className="w-5 h-5 text-gray-500" />
                       <div>
@@ -396,7 +372,7 @@ export default function ArtistPublicProfile() {
                       </div>
                     </div>
                   )}
-                  {artist.phone && (
+                  {artist?.phone && (
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <Phone className="w-5 h-5 text-gray-500" />
                       <div>
@@ -405,7 +381,7 @@ export default function ArtistPublicProfile() {
                       </div>
                     </div>
                   )}
-                  {artist.website && (
+                  {artist?.website && (
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <Globe className="w-5 h-5 text-gray-500" />
                       <div>
@@ -419,10 +395,10 @@ export default function ArtistPublicProfile() {
                 </div>
               </div>
 
-              {isNotFound && (
+              {notFound && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
                   <p className="text-yellow-800 text-sm">
-                    <strong>Note:</strong> This is a sample profile. The artist ID you provided doesn't exist in the database. Please provide a valid artist ID to see real data.
+                    <strong>Note:</strong> This artist profile doesn't exist in the database. Please provide a valid artist ID to see real data.
                   </p>
                 </div>
               )}
