@@ -24,6 +24,7 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
     try {
       // If editable, show all media (including pending). If not editable, only show approved.
       const statusFilter = isEditable ? undefined : 'approved'
+      // The artist_id passed is actually the user_id in the database
       const mediaData = await ArtistMedia.filter(
         { user_id: artistId, ...(statusFilter && { status: statusFilter }) },
         'order_index',
@@ -89,9 +90,9 @@ export default function ArtistMediaGallery({ artistId, isEditable = false }) {
           thumbnailUrl = publicUrl
         }
 
-        // Save to database
+        // Save to database - use user_id (not artist_id) to match schema
         await ArtistMedia.create({
-          artist_id: effectiveArtistId,
+          user_id: effectiveArtistId,
           media_type: isVideo ? 'video' : 'photo',
           media_url: publicUrl,
           thumbnail_url: thumbnailUrl,

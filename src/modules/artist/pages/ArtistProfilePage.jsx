@@ -1298,7 +1298,7 @@ export default function ArtistProfile() {
               {/* Photo & Video Gallery */}
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Photos & Videos</h2>
-                <ArtistMediaGallery artistId={artist?.id} isEditable={true} />
+                <ArtistMediaGallery artistId={artist?.user_id} isEditable={true} />
               </div>
             </div>
           )}
