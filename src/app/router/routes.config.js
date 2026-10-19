@@ -758,6 +758,12 @@ const clientRoutes = [
     guard: createRoleGuard(['admin', 'client', 'project_owner'])
   },
   {
+    path: '/JobAnalytics',
+    component: () => import('@/modules/client/pages/JobAnalyticsPage'),
+    layout: DashboardLayout,
+    guard: createRoleGuard(['admin', 'client', 'project_owner'])
+  },
+  {
     path: '/ClientApplications',
     component: () => import('@/modules/client/pages/ClientApplicationsPage'),
     layout: DashboardLayout,

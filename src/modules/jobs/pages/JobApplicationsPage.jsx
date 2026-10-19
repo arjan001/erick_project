@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Job, Project, Application } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
-import { MapPin, Clock } from 'lucide-react'
+import { MapPin, Clock, Upload, X, FileText, Video, Image as ImageIcon, CheckCircle } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { useToast } from '@/hooks/useToast'
 
 export default function JobApplications() {
   const navigate = useNavigate()
