@@ -53,44 +53,53 @@ CREATE TABLE IF NOT EXISTS public.role_templates (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insert predefined roles from filmIndustryRoles.json (Actor/UGC/Voice Over focused)
+-- Insert predefined roles (Actor/UGC/Voice Over/Stunts/Extras focused - NO CREW ROLES)
 INSERT INTO public.role_templates (name, category, description) VALUES
 -- Acting Roles
-('Lead Actor', 'acting', 'Main character in a production'),
-('Supporting Actor', 'acting', 'Secondary character role'),
-('Extra / Background', 'acting', 'Background performer'),
-('Stunt Double', 'acting', 'Performs stunts for actors'),
-('Stand-in', 'acting', 'Replaces actor during setup'),
-('Body Double', 'acting', 'Body replacement for specific scenes'),
-('Voice Actor', 'acting', 'Voice-only performance'),
+('Lead Actor', 'Acting', 'Main character in a production'),
+('Supporting Actor', 'Acting', 'Secondary character role'),
+('Extra / Background', 'Acting', 'Background performer'),
+('Stunt Double', 'Stunts', 'Performs stunts for actors'),
+('Stunt Performer', 'Stunts', 'Performs dangerous stunts'),
+('Stand-in', 'Acting', 'Replaces actor during setup'),
+('Body Double', 'Acting', 'Body replacement for specific scenes'),
+('Voice Actor', 'Acting', 'Voice-only performance'),
 
 -- Voice Over Roles
-('Commercial Voice Over', 'voice_over', 'TV or radio commercial voice'),
-('Narrator', 'voice_over', 'Documentary or narration voice'),
-('Character Voice', 'voice_over', 'Animated character voice'),
-('Audiobook Narrator', 'voice_over', 'Book narration'),
-('E-Learning Voice Over', 'voice_over', 'Educational content narration'),
-('IVR Voice Over', 'voice_over', 'Interactive voice response'),
-('Video Game Voice', 'voice_over', 'Video game character voice'),
+('Commercial Voice Over', 'Voice Over', 'TV or radio commercial voice'),
+('Narrator', 'Voice Over', 'Documentary or narration voice'),
+('Character Voice', 'Voice Over', 'Animated character voice'),
+('Audiobook Narrator', 'Voice Over', 'Book narration'),
+('E-Learning Voice Over', 'Voice Over', 'Educational content narration'),
+('IVR Voice Over', 'Voice Over', 'Interactive voice response'),
+('Video Game Voice', 'Voice Over', 'Video game character voice'),
 
 -- UGC Roles
-('UGC Creator', 'ugc', 'User-generated content creator'),
-('Product Reviewer', 'ugc', 'Product review content creator'),
-('Testimonial Creator', 'ugc', 'Customer testimonial creator'),
-('Unboxing Creator', 'ugc', 'Product unboxing content'),
-('Lifestyle Content Creator', 'ugc', 'Lifestyle and daily vlogs'),
-('Tech Reviewer', 'ugc', 'Technology product reviews'),
+('UGC Creator', 'UGC', 'User-generated content creator'),
+('Product Reviewer', 'UGC', 'Product review content creator'),
+('Testimonial Creator', 'UGC', 'Customer testimonial creator'),
+('Unboxing Creator', 'UGC', 'Product unboxing content'),
+('Lifestyle Content Creator', 'UGC', 'Lifestyle and daily vlogs'),
+('Tech Reviewer', 'UGC', 'Technology product reviews'),
 
--- Crew Roles (limited - focus on on-set roles)
-('Camera Operator', 'crew', 'Camera equipment operator'),
-('Sound Recordist', 'crew', 'Records on-set audio'),
-('Lighting Technician', 'crew', 'Lighting setup and operation'),
-('Editor', 'crew', 'Video post-production editing'),
+-- Stunt Roles
+('Stunt Coordinator', 'Stunts', 'Coordinates stunt sequences'),
+('Fight Choreographer', 'Stunts', 'Designs fight scenes'),
+('High Fall Performer', 'Stunts', 'Performs high fall stunts'),
+('Fire Stunt Performer', 'Stunts', 'Performs fire-related stunts'),
+('Water Stunt Performer', 'Stunts', 'Performs water stunts'),
 
--- Production Roles
-('Director', 'production', 'Production director'),
-('Producer', 'production', 'Production coordinator'),
-('Script Writer', 'production', 'Script and screenplay writer')
+-- Extra Roles
+('Background Extra', 'Extras', 'Background crowd performer'),
+('Featured Extra', 'Extras', 'Non-speaking featured role'),
+('Crowd Extra', 'Extras', 'Large crowd scene participant'),
+('Atmosphere Extra', 'Extras', 'Background atmosphere creator'),
+
+-- Additional Talent Roles
+('Presenter / Host', 'Acting', 'TV or event presenter'),
+('Model', 'Acting', 'Print or runway model'),
+('Dancer', 'Acting', 'Professional dancer'),
+('Choreographer', 'Acting', 'Dance routine designer')
 ON CONFLICT DO NOTHING;
 
 -- ============================================================

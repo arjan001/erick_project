@@ -111,10 +111,11 @@ export default function ClientPostProject() {
 
       if (error) {
         console.error('Error fetching role templates:', error)
-        // Fallback to filmIndustryRoles.json if table doesn't exist
+        // Fallback to filmIndustryRoles.json - filter for talent roles only
+        const talentCategories = ['Acting', 'Voice Over', 'UGC', 'Stunts', 'Extras']
         const rolesFromJson = []
         Object.entries(filmIndustryRoles).forEach(([category, roles]) => {
-          if (Array.isArray(roles)) {
+          if (Array.isArray(roles) && talentCategories.includes(category)) {
             roles.forEach(role => {
               rolesFromJson.push({ name: role, category })
             })
@@ -122,14 +123,20 @@ export default function ClientPostProject() {
         })
         setRoleTemplates(rolesFromJson)
       } else {
-        setRoleTemplates(data || [])
+        // Filter server data for talent roles only
+        const talentCategories = ['Acting', 'Voice Over', 'UGC', 'Stunts', 'Extras']
+        const filteredData = (data || []).filter(role =>
+          talentCategories.includes(role.category)
+        )
+        setRoleTemplates(filteredData)
       }
     } catch (err) {
       console.error('Error fetching role templates:', err)
-      // Fallback to filmIndustryRoles.json
+      // Fallback to filmIndustryRoles.json - filter for talent roles only
+      const talentCategories = ['Acting', 'Voice Over', 'UGC', 'Stunts', 'Extras']
       const rolesFromJson = []
       Object.entries(filmIndustryRoles).forEach(([category, roles]) => {
-        if (Array.isArray(roles)) {
+        if (Array.isArray(roles) && talentCategories.includes(category)) {
           roles.forEach(role => {
             rolesFromJson.push({ name: role, category })
           })
