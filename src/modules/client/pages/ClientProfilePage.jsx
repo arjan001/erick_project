@@ -65,11 +65,13 @@ export default function ClientProfilePage() {
   const [uploadingFiles, setUploadingFiles] = useState(false)
 
   const [formData, setFormData] = useState({
-    company_name: '', contact_phone: '', website_url: '', bio: '', linkedin: '', instagram: '', twitter: '', youtube: '',
-    city: '', country: ''
+    company_name: '', contact_phone: '', website_url: '', bio: '',
+    city: '', country: '',
+    social_media: { linkedin: '', instagram: '', twitter: '', youtube: '' }
   })
 
   // Removed: years_in_film, years_in_directing, email_notifications, project_updates, profile_public
+  // Removed: linkedin, instagram, twitter, youtube individual columns - use social_media JSONB instead
   // These fields don't exist in the clients table schema
 
   useEffect(() => {
@@ -87,13 +89,19 @@ export default function ClientProfilePage() {
         if (clients.length > 0) {
           const o = clients[0]
           setOwner(o)
+          const socialMedia = o.social_media || {}
           setFormData({
             company_name: o.company_name || '', contact_phone: o.contact_phone || '', website_url: o.website_url || '', bio: o.bio || '',
-            linkedin: o.linkedin || '', instagram: o.instagram || '', twitter: o.twitter || '', youtube: o.youtube || '',
-            city: o.city || '', country: o.country || ''
+            city: o.city || '', country: o.country || '',
+            social_media: {
+              linkedin: socialMedia.linkedin || '',
+              instagram: socialMedia.instagram || '',
+              twitter: socialMedia.twitter || '',
+              youtube: socialMedia.youtube || ''
+            }
           })
           // Removed: years_in_film, years_in_directing, email_notifications, project_updates, profile_public
-          // These fields don't exist in the clients table schema
+          // Removed: linkedin, instagram, twitter, youtube individual columns - use social_media JSONB instead
           setCompanyImages(o.company_images || [])
           setImportantFiles(o.important_files || [])
         }
@@ -205,15 +213,12 @@ export default function ClientProfilePage() {
           contact_phone: formData.contact_phone,
           website_url: formData.website_url,
           bio: formData.bio,
-          linkedin: formData.linkedin,
-          instagram: formData.instagram,
-          twitter: formData.twitter,
-          youtube: formData.youtube,
           city: formData.city,
           country: formData.country,
-          important_files: importantFiles
+          social_media: formData.social_media
           // Removed: years_in_film, years_in_directing, email_notifications, project_updates, profile_public
-          // These fields don't exist in the clients table schema
+          // Removed: linkedin, instagram, twitter, youtube individual columns - use social_media JSONB instead
+          // Removed: important_files - field doesn't exist in clients table
         })
         setOwner(newOwner)
         success('Profile Created', 'Your profile has been created')
@@ -223,15 +228,12 @@ export default function ClientProfilePage() {
           contact_phone: formData.contact_phone,
           website_url: formData.website_url,
           bio: formData.bio,
-          linkedin: formData.linkedin,
-          instagram: formData.instagram,
-          twitter: formData.twitter,
-          youtube: formData.youtube,
           city: formData.city,
           country: formData.country,
-          years_in_film: formData.years_in_film ? parseInt(formData.years_in_film) : null,
-          years_in_directing: formData.years_in_directing ? parseInt(formData.years_in_directing) : null,
-          important_files: importantFiles
+          social_media: formData.social_media
+          // Removed: years_in_film, years_in_directing, email_notifications, project_updates, profile_public
+          // Removed: linkedin, instagram, twitter, youtube individual columns - use social_media JSONB instead
+          // Removed: important_files - field doesn't exist in clients table
         })
         setOwner(updated)
         success('Profile Updated', 'Your profile has been saved')
@@ -886,61 +888,8 @@ export default function ClientProfilePage() {
                 </div>
               )}
 
-              {/* Important Files */}
-              <div className="bg-gray-50 rounded-2xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2"><FileText className="w-4 h-4 text-gray-400" /> Important Files</h3>
-                {editing ? (
-                  <div className="space-y-4">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      <label className="cursor-pointer">
-                        <div className="flex flex-col items-center gap-2">
-                          <Upload className="w-8 h-8 text-gray-400" />
-                          <span className="text-sm text-gray-600">Click to upload important files</span>
-                          <span className="text-xs text-gray-400">PDF, Word, Excel, images, etc.</span>
-                        </div>
-                        <input type="file" multiple onChange={handleImportantFilesUpload} disabled={uploadingFiles} className="hidden" />
-                      </label>
-                    </div>
-                    {importantFiles.length > 0 && (
-                      <div className="space-y-2">
-                        {importantFiles.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
-                            <div className="flex items-center gap-3">
-                              <FileText className="w-4 h-4 text-gray-400" />
-                              <div>
-                                <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                                <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
-                              </div>
-                            </div>
-                            <button onClick={() => handleRemoveImportantFile(index)} className="text-red-500 hover:text-red-700">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {importantFiles.length === 0 ? (
-                      <p className="text-sm text-gray-500">No important files uploaded</p>
-                    ) : (
-                      importantFiles.map((file, index) => (
-                        <div key={index} className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-200">
-                          <FileText className="w-4 h-4 text-gray-400" />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                            <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
-                          </div>
-                          <a href={file.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-700">
-                            Download
-                          </a>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
+              {/* Important Files section removed - important_files column doesn't exist in clients table schema */}
+              {/* Will be replaced with licensing certificate upload for KYC */}
 
               {/* Social Links */}
               <div className="bg-gray-50 rounded-2xl p-6">
@@ -957,33 +906,33 @@ export default function ClientProfilePage() {
                   <div className="flex items-center gap-3">
                     <Linkedin className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.linkedin} onChange={(e) => setFormData({ ...formData, linkedin: formatSocialMediaUrl('linkedin', e.target.value) })} placeholder="username" />
+                      <Input className="rounded-lg flex-1" value={formData.social_media.linkedin} onChange={(e) => setFormData({ ...formData, social_media: { ...formData.social_media, linkedin: formatSocialMediaUrl('linkedin', e.target.value) } })} placeholder="username" />
                     ) : (
-                      <p className="text-gray-900 flex-1">{owner?.linkedin || 'Not set'}</p>
+                      <p className="text-gray-900 flex-1">{owner?.social_media?.linkedin || 'Not set'}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-3">
                     <Instagram className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: formatSocialMediaUrl('instagram', e.target.value) })} placeholder="username" />
+                      <Input className="rounded-lg flex-1" value={formData.social_media.instagram} onChange={(e) => setFormData({ ...formData, social_media: { ...formData.social_media, instagram: formatSocialMediaUrl('instagram', e.target.value) } })} placeholder="username" />
                     ) : (
-                      <p className="text-gray-900 flex-1">{owner?.instagram || 'Not set'}</p>
+                      <p className="text-gray-900 flex-1">{owner?.social_media?.instagram || 'Not set'}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-3">
                     <Twitter className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.twitter} onChange={(e) => setFormData({ ...formData, twitter: formatSocialMediaUrl('twitter', e.target.value) })} placeholder="username" />
+                      <Input className="rounded-lg flex-1" value={formData.social_media.twitter} onChange={(e) => setFormData({ ...formData, social_media: { ...formData.social_media, twitter: formatSocialMediaUrl('twitter', e.target.value) } })} placeholder="username" />
                     ) : (
-                      <p className="text-gray-900 flex-1">{owner?.twitter || 'Not set'}</p>
+                      <p className="text-gray-900 flex-1">{owner?.social_media?.twitter || 'Not set'}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-3">
                     <Youtube className="w-5 h-5 text-gray-400 flex-shrink-0" />
                     {editing ? (
-                      <Input className="rounded-lg flex-1" value={formData.youtube} onChange={(e) => setFormData({ ...formData, youtube: formatSocialMediaUrl('youtube', e.target.value) })} placeholder="channel" />
+                      <Input className="rounded-lg flex-1" value={formData.social_media.youtube} onChange={(e) => setFormData({ ...formData, social_media: { ...formData.social_media, youtube: formatSocialMediaUrl('youtube', e.target.value) } })} placeholder="channel" />
                     ) : (
-                      <p className="text-gray-900 flex-1">{owner?.youtube || 'Not set'}</p>
+                      <p className="text-gray-900 flex-1">{owner?.social_media?.youtube || 'Not set'}</p>
                     )}
                   </div>
                 </div>
@@ -1326,17 +1275,8 @@ export default function ClientProfilePage() {
 
           {activeTab === 'settings' && (
             <div className="max-w-3xl space-y-6">
-              <div className="bg-gray-50 rounded-2xl p-6">
-                <h3 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2"><Bell className="w-4 h-4 text-gray-400" /> Notifications</h3>
-                <ToggleRow title="Email Notifications" description="Get emailed about applications and messages" checked={emailNotifications} onChange={() => setEmailNotifications(!emailNotifications)} />
-                <ToggleRow title="Project Updates" description="Get notified about your project's progress" checked={projectUpdates} onChange={() => setProjectUpdates(!projectUpdates)} isLast />
-                <Button onClick={handleSavePreferences} className="w-full bg-black text-white hover:bg-gray-800 rounded-lg py-2.5 mt-4">Save Notification Preferences</Button>
-              </div>
-              <div className="bg-gray-50 rounded-2xl p-6">
-                <h3 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2"><Shield className="w-4 h-4 text-gray-400" /> Privacy</h3>
-                <ToggleRow title="Public Profile" description="Allow creators to view your company profile" checked={profilePublic} onChange={() => setProfilePublic(!profilePublic)} isLast />
-                <Button onClick={handleSavePreferences} className="w-full bg-black text-white hover:bg-gray-800 rounded-lg py-2.5 mt-4">Save Privacy Settings</Button>
-              </div>
+              {/* Notifications section removed - fields don't exist in clients table schema */}
+              {/* Privacy section removed - fields don't exist in clients table schema */}
               <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
                 <h3 className="font-bold text-red-900 text-base mb-4 flex items-center gap-2"><Trash2 className="w-4 h-4 text-red-600" /> Danger Zone</h3>
                 <p className="text-sm text-red-700 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
