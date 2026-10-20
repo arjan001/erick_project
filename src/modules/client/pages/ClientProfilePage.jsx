@@ -61,8 +61,7 @@ export default function ClientProfilePage() {
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [changingPassword, setChangingPassword] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
-  const [importantFiles, setImportantFiles] = useState([])
-  const [uploadingFiles, setUploadingFiles] = useState(false)
+  // Removed: importantFiles and uploadingFiles - section removed, field doesn't exist in schema
 
   const [formData, setFormData] = useState({
     client_name: '', // Individual client name (person representing the company)
@@ -110,8 +109,8 @@ export default function ClientProfilePage() {
           })
           // Removed: years_in_film, years_in_directing, email_notifications, project_updates, profile_public
           // Removed: linkedin, instagram, twitter, youtube individual columns - use social_media JSONB instead
+          // Removed: important_files - field doesn't exist in clients table
           setCompanyImages(o.company_images || [])
-          setImportantFiles(o.important_files || [])
         }
       } catch (err) {
         console.error('Error fetching client profile:', err)
@@ -660,64 +659,13 @@ export default function ClientProfilePage() {
   }
 
   const handleImportantFilesUpload = async (e) => {
-    const files = Array.from(e.target.files || [])
-    if (!files.length || !owner) return
-
-    setUploadingFiles(true)
-    try {
-      const uploadPromises = files.map(async (file) => {
-        const fileName = `client-important-${owner.id}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-        const { data: uploadData, error } = await supabase.storage
-          .from('general-uploads')
-          .upload(fileName, file)
-
-        if (error) throw error
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('general-uploads')
-          .getPublicUrl(fileName)
-
-        return {
-          url: publicUrl,
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          uploaded_at: new Date().toISOString()
-        }
-      })
-
-      const uploadedFiles = await Promise.all(uploadPromises)
-      setImportantFiles([...importantFiles, ...uploadedFiles])
-
-      // Save to database as JSON array
-      const existingFiles = owner.important_files || []
-      const updatedFiles = [...existingFiles, ...uploadedFiles]
-      await Client.update(owner.id, { important_files: updatedFiles })
-      setOwner({ ...owner, important_files: updatedFiles })
-
-      success('Files Uploaded', `${uploadedFiles.length} file(s) uploaded successfully`)
-    } catch (err) {
-      toastError('Upload Failed', `Failed to upload files: ${err.message || 'Unknown error'}`)
-    } finally {
-      setUploadingFiles(false)
-    }
+    // Disabled - important_files column doesn't exist in clients table schema
+    console.log('Important files upload disabled')
   }
 
   const handleRemoveImportantFile = async (fileIndex) => {
-    if (!confirm('Remove this file?')) return
-
-    try {
-      const updatedFiles = importantFiles.filter((_, i) => i !== fileIndex)
-      setImportantFiles(updatedFiles)
-
-      // Update database
-      await Client.update(owner.id, { important_files: updatedFiles })
-      setOwner({ ...owner, important_files: updatedFiles })
-
-      success('File Removed', 'File has been removed')
-    } catch (err) {
-      toastError('Remove Failed', 'Failed to remove file')
-    }
+    // Disabled - important_files column doesn't exist in clients table schema
+    console.log('Important files removal disabled')
   }
 
   if (loading || !user) {
