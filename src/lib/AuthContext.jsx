@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Artist, Team, Client, Backer, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
+import { Artist, Team, Client, Backer, Subscription, SubscriptionPackage, User } from '@/lib/supabaseEntities'
 import auditLogger from '@/lib/auditLogger'
 import { useToast } from '@/hooks/useToast'
 
@@ -107,6 +107,16 @@ async function ensureProfile(user) {
 
   try {
     if (role === 'artist') {
+      // First ensure user exists in public.users table
+      const userEntity = await User.filter({ id: user.id })
+      if (!userEntity || userEntity.length === 0) {
+        await User.create({
+          id: user.id,
+          email: user.email,
+          full_name: full_name,
+          role: 'artist',
+        })
+      }
       // Production schema uses email as identifier, not user_id
       const existing = await Artist.filter({ email: user.email })
       if (!existing || existing.length === 0) {
@@ -122,6 +132,16 @@ async function ensureProfile(user) {
         })
       }
     } else if (role === 'team') {
+      // First ensure user exists in public.users table
+      const userEntity = await User.filter({ id: user.id })
+      if (!userEntity || userEntity.length === 0) {
+        await User.create({
+          id: user.id,
+          email: user.email,
+          full_name: full_name,
+          role: 'team',
+        })
+      }
       if (user.team_id) return
       const existing = await Team.filter({ user_id: user.id })
       if (!existing || existing.length === 0) {
@@ -134,6 +154,16 @@ async function ensureProfile(user) {
         })
       }
     } else if (role === 'backer') {
+      // First ensure user exists in public.users table
+      const userEntity = await User.filter({ id: user.id })
+      if (!userEntity || userEntity.length === 0) {
+        await User.create({
+          id: user.id,
+          email: user.email,
+          full_name: full_name,
+          role: 'backer',
+        })
+      }
       const existing = await Backer.filter({ user_id: user.id })
       if (!existing || existing.length === 0) {
         await Backer.create({
@@ -144,6 +174,16 @@ async function ensureProfile(user) {
         })
       }
     } else if (role === 'client' || role === 'project_owner') {
+      // First ensure user exists in public.users table
+      const userEntity = await User.filter({ id: user.id })
+      if (!userEntity || userEntity.length === 0) {
+        await User.create({
+          id: user.id,
+          email: user.email,
+          full_name: full_name,
+          role: 'client',
+        })
+      }
       const existing = await Client.filter({ user_id: user.id })
       if (!existing || existing.length === 0) {
         await Client.create({
@@ -151,6 +191,17 @@ async function ensureProfile(user) {
           display_name: full_name,
           company_name: full_name,
           contact_email: user.email,
+        })
+      }
+    } else if (role === 'admin') {
+      // First ensure user exists in public.users table
+      const userEntity = await User.filter({ id: user.id })
+      if (!userEntity || userEntity.length === 0) {
+        await User.create({
+          id: user.id,
+          email: user.email,
+          full_name: full_name,
+          role: 'admin',
         })
       }
     }

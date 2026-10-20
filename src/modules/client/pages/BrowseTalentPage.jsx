@@ -155,10 +155,14 @@ export default function BrowseTalentPage() {
       return
     }
     try {
+      // Find the artist's user_id
+      const artist = talent.find(a => a.id === artistId)
+      const targetUserId = artist?.user_id || artistId
+
       // Check if connection already exists
       const existingConnections = await Connection.filter({
         user_id: user.id,
-        connected_artist_id: artistId,
+        connected_artist_id: targetUserId,
         connection_type: 'connection'
       })
 
@@ -167,10 +171,10 @@ export default function BrowseTalentPage() {
         return
       }
 
-      // Create new connection
+      // Create new connection using user_id
       await Connection.create({
         user_id: user.id,
-        connected_artist_id: artistId,
+        connected_artist_id: targetUserId,
         connection_type: 'connection',
         status: 'pending',
         created_at: new Date().toISOString()

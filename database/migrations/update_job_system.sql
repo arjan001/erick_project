@@ -243,3 +243,45 @@ DO $$
 BEGIN
   RAISE NOTICE 'Client profile fields added for KYC and client_name distinction';
 END $$;
+
+-- ============================================================
+-- FIX SUPABASE AUTH TRIGGER FOR USERS TABLE
+-- ============================================================
+
+-- Create or replace the trigger that syncs auth.users to public.users
+-- This fixes the "no unique or exclusion constraint" error when inviting/creating users
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.users (id, email, full_name, role, avatar_url)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', NEW.email),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'artist'),
+    NEW.raw_user_meta_data->>'avatar_url'
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    full_name = EXCLUDED.full_name,
+    role = EXCLUDED.role,
+    avatar_url = EXCLUDED.avatar_url,
+    updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Drop existing trigger if exists
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+
+-- Create trigger for new user creation
+CREATE TRIGGER on_auth_user_created
+AFTER INSERT ON auth.users
+FOR EACH ROW
+EXECUTE FUNCTION public.handle_new_user();
+
+DO $$
+BEGIN
+  RAISE NOTICE 'Auth trigger fixed for users table';
+END $$;

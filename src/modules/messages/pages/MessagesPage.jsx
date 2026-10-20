@@ -111,6 +111,8 @@ export default function MessagesPage() {
         fetchConversations()
       }).catch(err => {
         console.error('Error getting conversation:', err)
+        // Even if conversation creation fails, still try to fetch conversations
+        fetchConversations()
       })
     }
   }, [searchParams, user])
