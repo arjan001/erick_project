@@ -178,15 +178,16 @@ export default function BrowseTalentPage() {
     const matchesSearch =
       artist.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       artist.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      artist.user_role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (artist.skills_experience || []).some(s => s.skill?.toLowerCase().includes(searchQuery.toLowerCase()))
+      artist.profession?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (artist.skills || []).some(s => s?.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    const matchesRole = filterRole === 'all' || artist.user_role === filterRole || artist.role === filterRole
+    const matchesRole = filterRole === 'all' || artist.profession === filterRole || artist.user_role === filterRole
     const matchesLocation = filterLocation === 'all' ||
-      artist.based_in_city?.toLowerCase().includes(filterLocation.toLowerCase()) ||
-      artist.based_in_country?.toLowerCase().includes(filterLocation.toLowerCase())
+      artist.location?.toLowerCase().includes(filterLocation.toLowerCase()) ||
+      (artist.based_in_city && artist.based_in_city.toLowerCase().includes(filterLocation.toLowerCase())) ||
+      (artist.based_in_country && artist.based_in_country.toLowerCase().includes(filterLocation.toLowerCase()))
     const matchesSkill = filterSkill === 'all' ||
-      (artist.skills_experience || []).some(s => s.skill?.toLowerCase() === filterSkill.toLowerCase())
+      (artist.skills || []).some(s => s?.toLowerCase() === filterSkill.toLowerCase())
 
     return matchesSearch && matchesRole && matchesLocation && matchesSkill
   })

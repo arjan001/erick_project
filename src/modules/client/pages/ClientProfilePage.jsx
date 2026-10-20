@@ -65,9 +65,13 @@ export default function ClientProfilePage() {
   const [uploadingFiles, setUploadingFiles] = useState(false)
 
   const [formData, setFormData] = useState({
+    client_name: '', // Individual client name (person representing the company)
     company_name: '', contact_phone: '', website_url: '', bio: '',
     city: '', country: '',
-    social_media: { linkedin: '', instagram: '', twitter: '', youtube: '' }
+    social_media: { linkedin: '', instagram: '', twitter: '', youtube: '' },
+    license_certificate_url: '',
+    license_certificate_issued_date: '',
+    license_certificate_expiry_date: ''
   })
 
   // Removed: years_in_film, years_in_directing, email_notifications, project_updates, profile_public
@@ -91,6 +95,7 @@ export default function ClientProfilePage() {
           setOwner(o)
           const socialMedia = o.social_media || {}
           setFormData({
+            client_name: o.client_name || '',
             company_name: o.company_name || '', contact_phone: o.contact_phone || '', website_url: o.website_url || '', bio: o.bio || '',
             city: o.city || '', country: o.country || '',
             social_media: {
@@ -98,7 +103,10 @@ export default function ClientProfilePage() {
               instagram: socialMedia.instagram || '',
               twitter: socialMedia.twitter || '',
               youtube: socialMedia.youtube || ''
-            }
+            },
+            license_certificate_url: o.license_certificate_url || '',
+            license_certificate_issued_date: o.license_certificate_issued_date || '',
+            license_certificate_expiry_date: o.license_certificate_expiry_date || ''
           })
           // Removed: years_in_film, years_in_directing, email_notifications, project_updates, profile_public
           // Removed: linkedin, instagram, twitter, youtube individual columns - use social_media JSONB instead
@@ -209,13 +217,17 @@ export default function ClientProfilePage() {
         const newOwner = await Client.create({
           user_id: authUser.id,
           display_name: authUser.full_name || authUser.email,
+          client_name: formData.client_name,
           company_name: formData.company_name,
           contact_phone: formData.contact_phone,
           website_url: formData.website_url,
           bio: formData.bio,
           city: formData.city,
           country: formData.country,
-          social_media: formData.social_media
+          social_media: formData.social_media,
+          license_certificate_url: formData.license_certificate_url,
+          license_certificate_issued_date: formData.license_certificate_issued_date || null,
+          license_certificate_expiry_date: formData.license_certificate_expiry_date || null
           // Removed: years_in_film, years_in_directing, email_notifications, project_updates, profile_public
           // Removed: linkedin, instagram, twitter, youtube individual columns - use social_media JSONB instead
           // Removed: important_files - field doesn't exist in clients table
@@ -224,13 +236,17 @@ export default function ClientProfilePage() {
         success('Profile Created', 'Your profile has been created')
       } else {
         const updated = await Client.update(owner.id, {
+          client_name: formData.client_name,
           company_name: formData.company_name,
           contact_phone: formData.contact_phone,
           website_url: formData.website_url,
           bio: formData.bio,
           city: formData.city,
           country: formData.country,
-          social_media: formData.social_media
+          social_media: formData.social_media,
+          license_certificate_url: formData.license_certificate_url,
+          license_certificate_issued_date: formData.license_certificate_issued_date || null,
+          license_certificate_expiry_date: formData.license_certificate_expiry_date || null
           // Removed: years_in_film, years_in_directing, email_notifications, project_updates, profile_public
           // Removed: linkedin, instagram, twitter, youtube individual columns - use social_media JSONB instead
           // Removed: important_files - field doesn't exist in clients table
@@ -843,6 +859,10 @@ export default function ClientProfilePage() {
                   <h3 className="text-lg font-semibold text-gray-900">Edit Profile Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Client Name (Your Name)</label>
+                      <Input value={formData.client_name} onChange={(e) => setFormData({ ...formData, client_name: e.target.value })} placeholder="Your personal name" className="rounded-lg" />
+                    </div>
+                    <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">Company Name</label>
                       <Input value={formData.company_name} onChange={(e) => setFormData({ ...formData, company_name: e.target.value })} placeholder="Your company name" className="rounded-lg" />
                     </div>
@@ -935,6 +955,45 @@ export default function ClientProfilePage() {
                       <p className="text-gray-900 flex-1">{owner?.social_media?.youtube || 'Not set'}</p>
                     )}
                   </div>
+                </div>
+              </div>
+
+              {/* Licensing Certificate (KYC) */}
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2"><Shield className="w-4 h-4 text-gray-400" /> Licensing Certificate (Film Classification Board)</h3>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Certificate URL</label>
+                      {editing ? (
+                        <Input value={formData.license_certificate_url} onChange={(e) => setFormData({ ...formData, license_certificate_url: e.target.value })} placeholder="https://..." className="rounded-lg" />
+                      ) : (
+                        <p className="text-gray-900">{owner?.license_certificate_url || 'Not uploaded'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Issued Date</label>
+                      {editing ? (
+                        <Input type="date" value={formData.license_certificate_issued_date} onChange={(e) => setFormData({ ...formData, license_certificate_issued_date: e.target.value })} className="rounded-lg" />
+                      ) : (
+                        <p className="text-gray-900">{owner?.license_certificate_issued_date || 'Not set'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Expiry Date</label>
+                      {editing ? (
+                        <Input type="date" value={formData.license_certificate_expiry_date} onChange={(e) => setFormData({ ...formData, license_certificate_expiry_date: e.target.value })} className="rounded-lg" />
+                      ) : (
+                        <p className="text-gray-900">{owner?.license_certificate_expiry_date || 'Not set'}</p>
+                      )}
+                    </div>
+                  </div>
+                  {owner?.kyc_verified && (
+                    <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-2 rounded-lg">
+                      <CheckCircle className="w-4 h-4" />
+                      <span className="text-sm font-medium">KYC Verified</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

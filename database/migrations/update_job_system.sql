@@ -53,112 +53,44 @@ CREATE TABLE IF NOT EXISTS public.role_templates (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insert predefined roles from filmIndustryRoles.json
+-- Insert predefined roles from filmIndustryRoles.json (Actor/UGC/Voice Over focused)
 INSERT INTO public.role_templates (name, category, description) VALUES
--- Pre-production
-('Director', 'pre_production', 'Directs the overall vision of the production'),
-('Producer', 'pre_production', 'Manages production logistics and budget'),
-('Executive Producer', 'pre_production', 'Provides funding and oversees production'),
-('Writer', 'pre_production', 'Writes scripts and screenplays'),
-('Screenwriter', 'pre_production', 'Creates screenplays for films and shows'),
-('Storyboard Artist', 'pre_production', 'Creates visual storyboards for scenes'),
-('Concept Artist', 'pre_production', 'Develops visual concepts and designs'),
-('Art Director', 'pre_production', 'Oversees the visual style of production'),
-('Production Designer', 'pre_production', 'Designs the overall visual look'),
-('Location Scout', 'pre_production', 'Finds and secures filming locations'),
-('Casting Director', 'pre_production', 'Casts actors for roles'),
+-- Acting Roles
+('Lead Actor', 'acting', 'Main character in a production'),
+('Supporting Actor', 'acting', 'Secondary character role'),
+('Extra / Background', 'acting', 'Background performer'),
+('Stunt Double', 'acting', 'Performs stunts for actors'),
+('Stand-in', 'acting', 'Replaces actor during setup'),
+('Body Double', 'acting', 'Body replacement for specific scenes'),
+('Voice Actor', 'acting', 'Voice-only performance'),
 
--- Production
-('Director of Photography', 'production', 'Manages camera and lighting'),
-('Cinematographer', 'production', 'Oversees the visual aspects of filming'),
-('Camera Operator', 'production', 'Operates camera equipment'),
-('1st AC', 'production', 'First assistant camera - focus puller'),
-('Focus Puller', 'production', 'Maintains focus during filming'),
-('2nd AC', 'production', 'Second assistant camera - slate and equipment'),
-('Drone Pilot', 'production', 'Operates drone cameras for aerial shots'),
-('FPV Pilot', 'production', 'First-person view drone pilot'),
-('Gaffer', 'production', 'Head of lighting department'),
-('Best Boy Electric', 'production', 'Chief electrician assistant'),
-('Lighting Technician', 'production', 'Sets up and operates lighting'),
-('Grip', 'production', 'Supports camera and lighting equipment'),
-('Key Grip', 'production', 'Head of grip department'),
-('Dolly Grip', 'production', 'Operates camera dollies and tracks'),
-('Sound Recordist', 'production', 'Records on-set audio'),
-('Boom Operator', 'production', 'Holds and positions boom microphone'),
-('Production Assistant', 'production', 'General production support'),
-('Set Designer', 'production', 'Designs and builds sets'),
-('Set Decorator', 'production', 'Decorates sets with props and furniture'),
-('Prop Master', 'production', 'Manages all props on set'),
-('Hair Artist', 'production', 'Styles actors hair'),
-('Makeup Artist', 'production', 'Applies makeup to actors'),
-('Costume Designer', 'production', 'Designs and creates costumes'),
+-- Voice Over Roles
+('Commercial Voice Over', 'voice_over', 'TV or radio commercial voice'),
+('Narrator', 'voice_over', 'Documentary or narration voice'),
+('Character Voice', 'voice_over', 'Animated character voice'),
+('Audiobook Narrator', 'voice_over', 'Book narration'),
+('E-Learning Voice Over', 'voice_over', 'Educational content narration'),
+('IVR Voice Over', 'voice_over', 'Interactive voice response'),
+('Video Game Voice', 'voice_over', 'Video game character voice'),
 
--- 3D/CGI
-('3D Generalist', '3d_cgi', 'General 3D modeling and animation'),
-('Hard Surface Modeler', '3d_cgi', 'Creates hard surface 3D models'),
-('Character Artist', '3d_cgi', 'Creates 3D character models'),
-('Environment Artist', '3d_cgi', 'Creates 3D environment assets'),
-('Texture Artist', '3d_cgi', 'Creates textures for 3D models'),
-('Material Artist', '3d_cgi', 'Creates materials and shaders'),
-('Look Development Artist', '3d_cgi', 'Develops visual look of 3D assets'),
-('Lighting Artist', '3d_cgi', 'Lights 3D scenes'),
-('Rendering Artist', '3d_cgi', 'Handles rendering of 3D scenes'),
-('Animator', '3d_cgi', 'Animates 3D characters and objects'),
-('Character Animator', '3d_cgi', 'Specializes in character animation'),
-('Motion Designer', '3d_cgi', 'Creates motion graphics'),
-('VFX Artist', '3d_cgi', 'Creates visual effects'),
-('FX Artist', '3d_cgi', 'Creates particle and physics effects'),
-('Houdini Artist', '3d_cgi', 'Specializes in Houdini'),
-('Cloth Artist', '3d_cgi', 'Simulates cloth and fabrics'),
-('Groom Artist', '3d_cgi', 'Creates hair and fur'),
-('Rigger', '3d_cgi', 'Rigs characters for animation'),
-('Technical Artist', '3d_cgi', 'Bridges art and programming'),
-('Unreal Engine Artist', '3d_cgi', 'Works with Unreal Engine'),
-('Virtual Production Artist', '3d_cgi', 'Virtual production and real-time rendering'),
+-- UGC Roles
+('UGC Creator', 'ugc', 'User-generated content creator'),
+('Product Reviewer', 'ugc', 'Product review content creator'),
+('Testimonial Creator', 'ugc', 'Customer testimonial creator'),
+('Unboxing Creator', 'ugc', 'Product unboxing content'),
+('Lifestyle Content Creator', 'ugc', 'Lifestyle and daily vlogs'),
+('Tech Reviewer', 'ugc', 'Technology product reviews'),
 
--- Post-production
-('Video Editor', 'post_production', 'Edits video footage'),
-('Assistant Editor', 'post_production', 'Assists with editing tasks'),
-('Colorist', 'post_production', 'Color grades video footage'),
-('Online Editor', 'post_production', 'Final assembly and finishing'),
-('Compositor', 'post_production', 'Composites visual effects'),
-('Matchmove Artist', 'post_production', 'Tracks camera movement'),
-('Rotoscope Artist', 'post_production', 'Creates rotoscope mattes'),
-('Paint Artist', 'post_production', 'Paints and cleans footage'),
-('Cleanup Artist', 'post_production', 'Cleans up footage'),
-('Motion Graphics Designer', 'post_production', 'Creates motion graphics'),
-('Title Designer', 'post_production', 'Designs titles and graphics'),
-('Sound Designer', 'post_production', 'Designs audio tracks'),
-('Foley Artist', 'post_production', 'Creates foley sound effects'),
-('Dialogue Editor', 'post_production', 'Edits dialogue audio'),
-('Re Recording Mixer', 'post_production', 'Mixes final audio'),
-('Music Composer', 'post_production', 'Composes music'),
-('Music Producer', 'post_production', 'Produces music tracks'),
-('Voice Over Artist', 'post_production', 'Records voice over'),
+-- Crew Roles (limited - focus on on-set roles)
+('Camera Operator', 'crew', 'Camera equipment operator'),
+('Sound Recordist', 'crew', 'Records on-set audio'),
+('Lighting Technician', 'crew', 'Lighting setup and operation'),
+('Editor', 'crew', 'Video post-production editing'),
 
--- Photography/Product
-('Product Photographer', 'photography_product', 'Photographs products'),
-('Automotive Photographer', 'photography_product', 'Photographs vehicles'),
-('Retoucher', 'photography_product', 'Retouches photos'),
-('CGI Product Artist', 'photography_product', 'Creates CGI product visuals'),
-
--- Marketing/Social Media
-('Creative Director', 'marketing_social_media', 'Oversees creative direction'),
-('Content Creator', 'marketing_social_media', 'Creates digital content'),
-('Social Media Manager', 'marketing_social_media', 'Manages social media accounts'),
-('Thumbnail Designer', 'marketing_social_media', 'Designs video thumbnails'),
-('Graphic Designer', 'marketing_social_media', 'Creates graphic designs'),
-('Copywriter', 'marketing_social_media', 'Writes marketing copy'),
-('Community Manager', 'marketing_social_media', 'Manages online communities'),
-('SEO Specialist', 'marketing_social_media', 'Optimizes for search engines'),
-
--- Technical
-('Pipeline TD', 'technical', 'Develops production pipelines'),
-('Render Wrangler', 'technical', 'Manages render farms'),
-('Render Farm Manager', 'technical', 'Manages rendering infrastructure'),
-('Software Developer', 'technical', 'Develops software tools'),
-('AI Artist', 'technical', 'Uses AI for creative work'),
-('Prompt Engineer', 'technical', 'Crafts AI prompts')
+-- Production Roles
+('Director', 'production', 'Production director'),
+('Producer', 'production', 'Production coordinator'),
+('Script Writer', 'production', 'Script and screenplay writer')
 ON CONFLICT DO NOTHING;
 
 -- ============================================================
@@ -267,4 +199,35 @@ BEGIN
   RAISE NOTICE 'Migration completed successfully!';
   RAISE NOTICE 'Tables updated: jobs, job_applications';
   RAISE NOTICE 'New tables created: role_templates, job_attachments, application_messages, job_analytics';
+END $$;
+
+-- ============================================================
+-- ADD CLIENT PROFILES FIELDS FOR KYC AND CLIENT NAME DISTINCTION
+-- ============================================================
+
+-- Add client_name field to distinguish from company_name
+ALTER TABLE public.clients 
+ADD COLUMN IF NOT EXISTS client_name TEXT;
+
+-- Add licensing certificate fields for KYC
+ALTER TABLE public.clients 
+ADD COLUMN IF NOT EXISTS license_certificate_url TEXT,
+ADD COLUMN IF NOT EXISTS license_certificate_issued_date DATE,
+ADD COLUMN IF NOT EXISTS license_certificate_expiry_date DATE,
+ADD COLUMN IF NOT EXISTS kyc_verified BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS kyc_verified_at TIMESTAMP WITH TIME ZONE,
+ADD COLUMN IF NOT EXISTS kyc_verified_by UUID REFERENCES public.users(id);
+
+-- Add organization_type and username if not exists
+ALTER TABLE public.clients 
+ADD COLUMN IF NOT EXISTS organization_type TEXT,
+ADD COLUMN IF NOT EXISTS username TEXT UNIQUE;
+
+-- Add created_date field
+ALTER TABLE public.clients 
+ADD COLUMN IF NOT EXISTS created_date TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
+DO $$
+BEGIN
+  RAISE NOTICE 'Client profile fields added for KYC and client_name distinction';
 END $$;
