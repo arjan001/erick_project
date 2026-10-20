@@ -214,7 +214,7 @@ export default function SignIn() {
         const acc = DEMO_ACCOUNTS[email]
         // Block admin demo account from normal sign-in
         if (acc.role === 'admin') {
-          setError('Admin account not found. Please use the admin login page.')
+          setError('Invalid credentials')
           setLoading(false)
           return
         }
@@ -238,7 +238,7 @@ export default function SignIn() {
         if (resolvedEmail) {
           loginEmail = resolvedEmail
         } else {
-          setError('Username not found. Please check your username or use your email.')
+          setError('Invalid credentials')
           setLoading(false)
           return
         }
@@ -255,7 +255,7 @@ export default function SignIn() {
 
       if (userRole === 'admin') {
         await supabase.auth.signOut()
-        setError('Admin account not found. Please use the admin login page at /erick')
+        setError('Invalid credentials')
         setLoading(false)
         return
       }
@@ -284,7 +284,7 @@ export default function SignIn() {
         }
       }, 500)
     } catch (err) {
-      setError(err.message || 'Invalid email or password')
+      setError('Invalid credentials')
     } finally {
       setLoading(false)
     }

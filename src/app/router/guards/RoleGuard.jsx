@@ -9,9 +9,9 @@ export function RoleGuard({ roles, children }) {
 
   useEffect(() => {
     if (!isLoadingAuth && !isAuthenticated) {
-      // If trying to access admin routes, redirect to /erick
+      // If trying to access admin routes, redirect to homepage (not /erick - it's hidden)
       if (location.pathname.startsWith('/Admin') || location.pathname.startsWith('/admin')) {
-        navigate('/erick')
+        navigate('/')
       } else {
         navigate('/SignIn')
       }
@@ -21,7 +21,7 @@ export function RoleGuard({ roles, children }) {
     // If authenticated but trying to access admin routes without admin role
     if (!isLoadingAuth && isAuthenticated && (location.pathname.startsWith('/Admin') || location.pathname.startsWith('/admin'))) {
       if (user?.role !== 'admin') {
-        navigate('/erick')
+        navigate('/')
         return
       }
     }
