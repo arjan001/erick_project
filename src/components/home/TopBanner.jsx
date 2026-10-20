@@ -25,15 +25,15 @@ export default function TopBanner() {
       try {
         const [tickerData, articlesData] = await Promise.all([
           TickerEntry.list('-display_order', 100),
-          Article.list('-published_date', 100)
+          Article.list('-published_at', 100)
         ])
-        
+
         const liveEntries = tickerData
           .filter(e => e.status === 'live')
           .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
-        
+
         setEntries(liveEntries.filter(e => e.text))
-        
+
         // Create a map of articles for easy lookup
         const articlesMap = {}
         articlesData.forEach(article => {
@@ -41,7 +41,7 @@ export default function TopBanner() {
         })
         setArticles(articlesMap)
       } catch (error) {
-        
+
       } finally {
         setLoading(false)
       }
@@ -67,13 +67,13 @@ export default function TopBanner() {
     'Emerging director added portfolio to platform'
   ]
 
-  const displayEntries = entries.length > 0 
-    ? entries.map(e => ({ 
-        text: e.text, 
-        link_type: e.link_type, 
-        link_url: e.link_url,
-        link_target_id: e.link_target_id 
-      }))
+  const displayEntries = entries.length > 0
+    ? entries.map(e => ({
+      text: e.text,
+      link_type: e.link_type,
+      link_url: e.link_url,
+      link_target_id: e.link_target_id
+    }))
     : defaultMessages.map(msg => ({ text: msg, link_type: 'none' }))
 
   const tickerItems = [...displayEntries, ...displayEntries]

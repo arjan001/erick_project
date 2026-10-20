@@ -35,7 +35,7 @@ export default function AdminArticlesPage() {
       const all = await Article.list('-display_order', 100)
       setArticles(all || [])
     } catch (err) {
-      
+
       toastError('Load Failed', 'Failed to load articles')
     } finally {
       setLoading(false)
@@ -91,7 +91,7 @@ export default function AdminArticlesPage() {
         ...form,
         slug: form.slug || form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
         tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
-        published_date: form.status === 'published' && !editingArticle?.published_date ? new Date().toISOString() : editingArticle?.published_date,
+        published_at: form.status === 'published' && !editingArticle?.published_at ? new Date().toISOString() : editingArticle?.published_at,
       }
       if (editingArticle) {
         await Article.update(editingArticle.id, dataToSave)
@@ -103,7 +103,7 @@ export default function AdminArticlesPage() {
       setShowModal(false)
       fetchArticles()
     } catch (err) {
-      
+
       toastError('Save Failed', `Failed to save article: ${err.message || 'Unknown error'}`)
     }
   }
@@ -115,7 +115,7 @@ export default function AdminArticlesPage() {
       success('Deleted', 'Article deleted')
       fetchArticles()
     } catch (err) {
-      
+
       toastError('Delete Failed', 'Failed to delete article')
     }
   }
@@ -123,9 +123,9 @@ export default function AdminArticlesPage() {
   const toggleStatus = async (article) => {
     try {
       const newStatus = article.status === 'published' ? 'draft' : 'published'
-      await Article.update(article.id, { 
-        status: newStatus, 
-        published_date: newStatus === 'published' ? new Date().toISOString() : article.published_date 
+      await Article.update(article.id, {
+        status: newStatus,
+        published_at: newStatus === 'published' ? new Date().toISOString() : article.published_at
       })
       success(newStatus === 'published' ? 'Published' : 'Unpublished', `Article is now ${newStatus}`)
       fetchArticles()
@@ -203,7 +203,7 @@ export default function AdminArticlesPage() {
                       <span className="capitalize">{article.category}</span>
                       <span>Order: {article.display_order || 0}</span>
                       {article.author_name && <span className="flex items-center gap-1"><User className="w-3 h-3" /> {article.author_name}</span>}
-                      {article.published_date && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(article.published_date).toLocaleDateString()}</span>}
+                      {article.published_at && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(article.published_at).toLocaleDateString()}</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">

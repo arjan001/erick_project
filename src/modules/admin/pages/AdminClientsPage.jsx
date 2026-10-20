@@ -34,7 +34,23 @@ export default function AdminClientsPage() {
     try {
       setLoading(true)
       const rows = await Client.list('-created_at', 100)
-      setClients(rows || [])
+      // Fetch job counts for each client
+      const clientsWithJobs = await Promise.all(
+        (rows || []).map(async (client) => {
+          if (client.user_id) {
+            // Try to fetch jobs for this client
+            try {
+              const { Job } = await import('@/lib/supabaseEntities')
+              const jobs = await Job.filter({ client_id: client.id })
+              return { ...client, jobs_count: jobs?.length || 0 }
+            } catch (err) {
+              return { ...client, jobs_count: 0 }
+            }
+          }
+          return { ...client, jobs_count: 0 }
+        })
+      )
+      setClients(clientsWithJobs || [])
     } catch (err) {
       console.error('Error fetching clients:', err)
       setClients([]) // Set empty array on error instead of showing error
@@ -191,7 +207,7 @@ export default function AdminClientsPage() {
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Client</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Company</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Projects</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jobs Posted</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
               <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
@@ -223,7 +239,7 @@ export default function AdminClientsPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-600">
-                  -
+                  {client.jobs_count || 0}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-600">
                   {client.created_at ? new Date(client.created_at).toLocaleDateString() : 'N/A'}
@@ -325,12 +341,40 @@ export default function AdminClientsPage() {
                     <p className="font-medium flex items-center gap-2"><Building className="w-4 h-4" /> {selectedClient.company_name}</p>
                   </div>
                 )}
+                {selectedClient.contact_email && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Email</label>
+                    <p className="font-medium flex items-center gap-2"><Mail className="w-4 h-4" /> {selectedClient.contact_email}</p>
+                  </div>
+                )}
+                {selectedClient.contact_phone && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Phone</label>
+                    <p className="font-medium flex items-center gap-2"><Phone className="w-4 h-4" /> {selectedClient.contact_phone}</p>
+                  </div>
+                )}
+                {selectedClient.website_url && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Website</label>
+                    <p className="font-medium flex items-center gap-2"><Globe className="w-4 h-4" /> {selectedClient.website_url}</p>
+                  </div>
+                )}
+                {selectedClient.location && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Location</label>
+                    <p className="font-medium flex items-center gap-2"><MapPin className="w-4 h-4" /> {selectedClient.location}</p>
+                  </div>
+                )}
                 {selectedClient.created_at && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Joined</label>
+                    <label className="text-sm font-medium text-gray-500">Member Since</label>
                     <p className="font-medium flex items-center gap-2"><Calendar className="w-4 h-4" /> {new Date(selectedClient.created_at).toLocaleDateString()}</p>
                   </div>
                 )}
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Jobs Posted</label>
+                  <p className="font-medium flex items-center gap-2"><Briefcase className="w-4 h-4" /> {selectedClient.jobs_count || 0}</p>
+                </div>
               </div>
 
               {selectedClient.bio && (

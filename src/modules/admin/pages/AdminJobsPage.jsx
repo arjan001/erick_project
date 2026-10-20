@@ -35,7 +35,7 @@ export default function AdminJobsPage() {
   const fetchJobs = async () => {
     try {
       setLoading(true)
-      const rows = await Job.list('-posted_at')
+      const rows = await Job.list('-created_at')
       setJobs(rows || [])
     } catch (err) {
       console.error('Error fetching jobs:', err)

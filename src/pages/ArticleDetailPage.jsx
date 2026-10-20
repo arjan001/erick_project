@@ -13,7 +13,7 @@ export default function ArticleDetailPage() {
   useEffect(() => {
     const fetchArticle = async () => {
       try {
-        const allArticles = await Article.list('-published_date', 100)
+        const allArticles = await Article.list('-published_at', 100)
         const foundArticle = allArticles.find(a => a.slug === slug && a.status === 'published')
         setArticle(foundArticle || null)
       } catch (error) {
@@ -91,10 +91,10 @@ export default function ArticleDetailPage() {
                 <span>{article.author_name}</span>
               </div>
             )}
-            {article.published_date && (
+            {article.published_at && (
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                <span>{new Date(article.published_date).toLocaleDateString()}</span>
+                <span>{new Date(article.published_at).toLocaleDateString()}</span>
               </div>
             )}
           </div>
@@ -112,7 +112,7 @@ export default function ArticleDetailPage() {
         )}
 
         {/* Content */}
-        <div 
+        <div
           className="prose prose-lg max-w-none"
           dangerouslySetInnerHTML={{ __html: article.content }}
         />

@@ -22,12 +22,12 @@ export default function AdminTickerPage() {
     try {
       const [tickerData, articlesData] = await Promise.all([
         TickerEntry.list('-display_order', 100),
-        Article.list('-published_date', 100)
+        Article.list('-published_at', 100)
       ])
       setEntries(tickerData || [])
       setArticles(articlesData || [])
     } catch (err) {
-      
+
       toastError('Load Failed', 'Failed to load data')
     } finally {
       setLoading(false)
@@ -63,13 +63,13 @@ export default function AdminTickerPage() {
         await TickerEntry.update(editingEntry.id, dataToSave)
         success('Updated', 'Ticker entry updated')
       } else {
-        await TickerEntry.create({ ...dataToSave, published_date: new Date().toISOString() })
+        await TickerEntry.create({ ...dataToSave, updated_at: new Date().toISOString() })
         success('Created', 'Ticker entry created')
       }
       setShowModal(false)
       fetchData()
     } catch (err) {
-      
+
       toastError('Save Failed', `Failed to save ticker entry: ${err.message || 'Unknown error'}`)
     }
   }
@@ -81,7 +81,7 @@ export default function AdminTickerPage() {
       success('Deleted', 'Ticker entry deleted')
       fetchData()
     } catch (err) {
-      
+
       toastError('Delete Failed', 'Failed to delete entry')
     }
   }
@@ -89,7 +89,7 @@ export default function AdminTickerPage() {
   const toggleStatus = async (entry) => {
     try {
       const newStatus = entry.status === 'live' ? 'draft' : 'live'
-      await TickerEntry.update(entry.id, { status: newStatus, published_date: newStatus === 'live' ? new Date().toISOString() : entry.published_date })
+      await TickerEntry.update(entry.id, { status: newStatus, updated_at: new Date().toISOString() })
       success(newStatus === 'live' ? 'Published' : 'Unpublished', `Entry is now ${newStatus}`)
       fetchData()
     } catch (err) {
@@ -224,8 +224,8 @@ export default function AdminTickerPage() {
               {form.link_type === 'article' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">Select Article</label>
-                  <select 
-                    value={form.link_target_id || ''} 
+                  <select
+                    value={form.link_target_id || ''}
                     onChange={(e) => setForm({ ...form, link_target_id: e.target.value || null })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   >
