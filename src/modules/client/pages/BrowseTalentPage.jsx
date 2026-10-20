@@ -483,7 +483,7 @@ export default function BrowseTalentPage() {
             </Button>
           </div>
         )}
-        )}
+        
       </div>
     </div>
   )

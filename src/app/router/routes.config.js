@@ -97,11 +97,6 @@ const publicRoutes = [
     layout: null
   },
   {
-    path: '/accept-invitation',
-    component: () => import('@/pages/AcceptInvitation'),
-    layout: MainLayout
-  },
-  {
     path: '/',
     component: () => import('@/pages/Home'),
     layout: null,

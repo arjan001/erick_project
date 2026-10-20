@@ -205,23 +205,8 @@ class EmailService {
     return this.sendEmail({ to: userEmail, subject, html, text })
   }
 
-  // Team invitation email
-  async sendTeamInvitationEmail(userEmail, inviterName, companyName, acceptUrl) {
-    const subject = `You're invited to join ${companyName} on SmartGigs Kenya`
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #C9A962;">Team Invitation</h1>
-        <p>Hi,</p>
-        <p><strong>${inviterName}</strong> from <strong>${companyName}</strong> has invited you to join their team on SmartGigs Kenya.</p>
-        <p>As a team member, you'll be able to collaborate on projects, manage postings, and more.</p>
-        <a href="${acceptUrl}" style="display: inline-block; padding: 12px 24px; background: #C9A962; color: #fff; text-decoration: none; border-radius: 4px;">Accept Invitation</a>
-        <p style="margin-top: 20px; font-size: 12px; color: #666;">This invitation will expire in 7 days.</p>
-      </div>
-    `
-    const text = `Hi, ${inviterName} from ${companyName} has invited you to join their team on SmartGigs Kenya. Visit ${acceptUrl} to accept the invitation. This invitation will expire in 7 days.`
-
-    return this.sendEmail({ to: userEmail, subject, html, text })
-  }
+  // Team invitation email - disabled
+  // async sendTeamInvitationEmail(userEmail, inviterName, companyName, acceptUrl) { ... }
 
   // Connection request notification
   async sendConnectionRequestEmail(userEmail, userName, requesterName) {

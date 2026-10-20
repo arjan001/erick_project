@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Client, Project, TeamMember, BillingInfo, Invoice, TeamInvitation } from '@/lib/supabaseEntities'
+import { Client, Project, TeamMember, BillingInfo, Invoice } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import CountrySelector from '@/components/CountrySelector'
@@ -9,7 +9,7 @@ import { formatSocialMediaUrl } from '@/lib/socialMediaUtils'
 import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2, FolderOpen, Users, CreditCard, Lock, Settings as SettingsIcon, Plus, Eye, MoreVertical, UserPlus, FileText, Monitor, MapPin, Share2, Image as ImageIcon, Film } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/lib/AuthContext'
-import EmailService from '@/shared/services/emailService'
+// EmailService import removed - invitation functionality disabled
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
   return (
@@ -47,9 +47,6 @@ export default function ClientProfilePage() {
   const [loadingProjects, setLoadingProjects] = useState(false)
   const [teamMembers, setTeamMembers] = useState([])
   const [loadingTeam, setLoadingTeam] = useState(false)
-  const [showInviteModal, setShowInviteModal] = useState(false)
-  const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState('member')
   const [billingInfo, setBillingInfo] = useState([])
   const [invoices, setInvoices] = useState([])
   const [loadingBilling, setLoadingBilling] = useState(false)
@@ -314,47 +311,8 @@ export default function ClientProfilePage() {
   }
 
   // Team CRUD operations
-  const handleInviteTeamMember = async () => {
-    if (!inviteEmail || !owner) return
-
-    // Generate a secure token for the invitation
-    const token = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)
-
-    try {
-      // Create invitation record
-      const invitation = await TeamInvitation.create({
-        client_id: owner.id,
-        email: inviteEmail,
-        role: inviteRole,
-        token: token,
-        status: 'pending',
-        invited_by: authUser?.id,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days
-      })
-
-      // Send invitation email
-      const emailService = new EmailService()
-      const acceptUrl = `${window.location.origin}/accept-invitation?token=${token}`
-      await emailService.sendTeamInvitationEmail(
-        inviteEmail,
-        owner.display_name || owner.company_name || 'Team Admin',
-        owner.company_name || 'SmartGigs Kenya',
-        acceptUrl
-      )
-
-      setInviteEmail('')
-      setInviteRole('member')
-      setShowInviteModal(false)
-      success('Invitation Sent', `Invitation sent to ${inviteEmail}. They will receive an email with instructions.`)
-
-      // Reload team members (show pending invitations)
-      const members = await TeamMember.filter({ client_id: owner.id })
-      setTeamMembers(members)
-    } catch (err) {
-      console.error('Invite error:', err)
-      toastError('Invite Failed', err.message || 'Failed to send invitation')
-    }
-  }
+  // Invitation functionality disabled - removed due to schema issues
+  // const handleInviteTeamMember = async () => { ... }
 
   const handleRemoveTeamMember = async (memberId) => {
     if (!confirm('Are you sure you want to remove this team member?')) return
@@ -1018,7 +976,8 @@ export default function ClientProfilePage() {
                   <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2"><Users className="w-5 h-5 text-gray-400" /> Team Members</h3>
                   <p className="text-gray-500 text-sm mt-1">Manage team members who can access your account</p>
                 </div>
-                <Button onClick={() => setShowInviteModal(true)} className="bg-black text-white hover:bg-gray-800">
+                {/* Invite button disabled - invitation functionality removed */}
+                <Button disabled className="bg-gray-300 text-gray-500 cursor-not-allowed">
                   <UserPlus className="w-4 h-4 mr-2" />
                   Invite Member
                 </Button>
@@ -1030,8 +989,8 @@ export default function ClientProfilePage() {
                 <div className="bg-gray-50 rounded-2xl p-12 text-center border-2 border-dashed border-gray-200">
                   <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">No team members yet</h3>
-                  <p className="text-gray-500 mb-4">Invite team members to collaborate on your projects</p>
-                  <Button onClick={() => setShowInviteModal(true)} className="bg-black text-white hover:bg-gray-800">
+                  <p className="text-gray-500 mb-4">Team member invitation functionality is currently disabled</p>
+                  <Button disabled className="bg-gray-300 text-gray-500 cursor-not-allowed">
                     Invite Your First Team Member
                   </Button>
                 </div>
@@ -1270,46 +1229,6 @@ export default function ClientProfilePage() {
             <div className="flex justify-end gap-3 mt-4">
               <Button variant="outline" onClick={() => setShowBioModal(false)}>Cancel</Button>
               <Button onClick={handleSaveBio} className="bg-black text-white hover:bg-gray-800">Save Bio</Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Invite Team Member Modal */}
-      {showInviteModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Invite Team Member</h2>
-              <Button variant="ghost" size="sm" onClick={() => setShowInviteModal(false)}><X className="w-4 h-4" /></Button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Email Address</label>
-                <Input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="team@company.com"
-                  className="rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Role</label>
-                <select
-                  value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                >
-                  <option value="member">Team Member</option>
-                  <option value="admin">Admin</option>
-                  <option value="viewer">Viewer</option>
-                </select>
-              </div>
-              <div className="flex justify-end gap-3 mt-4">
-                <Button variant="outline" onClick={() => setShowInviteModal(false)}>Cancel</Button>
-                <Button onClick={handleInviteTeamMember} className="bg-black text-white hover:bg-gray-800">Send Invitation</Button>
-              </div>
             </div>
           </div>
         </div>

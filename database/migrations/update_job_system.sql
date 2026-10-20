@@ -243,31 +243,3 @@ DO $$
 BEGIN
   RAISE NOTICE 'Client profile fields added for KYC and client_name distinction';
 END $$;
-
--- ============================================================
--- 8. CREATE TEAM INVITATIONS TABLE
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS public.team_invitations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE,
-  email TEXT NOT NULL,
-  role TEXT DEFAULT 'member', -- member, admin, viewer
-  token TEXT UNIQUE NOT NULL,
-  status TEXT DEFAULT 'pending', -- pending, accepted, declined, expired
-  invited_by UUID REFERENCES public.users(id),
-  accepted_by UUID REFERENCES public.users(id),
-  invited_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  accepted_at TIMESTAMP WITH TIME ZONE,
-  expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '7 days')
-);
-
-CREATE INDEX IF NOT EXISTS idx_team_invitations_client_id ON public.team_invitations(client_id);
-CREATE INDEX IF NOT EXISTS idx_team_invitations_email ON public.team_invitations(email);
-CREATE INDEX IF NOT EXISTS idx_team_invitations_token ON public.team_invitations(token);
-CREATE INDEX IF NOT EXISTS idx_team_invitations_status ON public.team_invitations(status);
-
-DO $$
-BEGIN
-  RAISE NOTICE 'Team invitations table created';
-END $$;
