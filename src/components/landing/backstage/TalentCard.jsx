@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Star, Flame, MessageCircle, ChevronLeft, ChevronRight, ZoomIn, Home, Heart } from 'lucide-react'
+import { Star, Flame, MessageCircle, ChevronLeft, ChevronRight, ZoomIn, Home, Heart, Eye } from 'lucide-react'
 
 const badgeConfig = {
   star: { icon: Star, color: '#6366f1' },
@@ -61,14 +61,24 @@ export default function TalentCard({ profile, showActions = true, onOpenProfile,
           </>
         )}
 
-        {/* Zoom button */}
+        {/* Zoom button - shows profile picture on hover */}
         {showControls && (
-          <button
-            className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-[#4F46E5] text-white opacity-0 transition-opacity hover:bg-[#4338CA] group-hover:opacity-100"
-            aria-label="View profile"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </button>
+          <div className="absolute right-2 top-2 group/zoom">
+            <button
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#4F46E5] text-white opacity-0 transition-opacity hover:bg-[#4338CA] group-hover:opacity-100"
+              aria-label="View profile"
+            >
+              <ZoomIn className="h-4 w-4" />
+            </button>
+            {/* Profile picture preview on hover */}
+            <div className="absolute right-0 top-10 w-24 h-24 rounded-lg overflow-hidden bg-white shadow-lg opacity-0 invisible group-hover/zoom:opacity-100 group-hover/zoom:visible transition-all z-50 pointer-events-none">
+              <img
+                src={profile.images[0]}
+                alt={profile.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
         )}
 
         {/* Overlay text (e.g. "BOLD & BEYOND") */}

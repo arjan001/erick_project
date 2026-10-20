@@ -22,7 +22,7 @@ function formatFileSize(bytes) {
 
 async function enrichParticipant(userId) {
   try {
-    const artists = await Artist.filter({ email: userId })
+    const artists = await Artist.filter({ user_id: userId })
     if (artists.length > 0) {
       const a = artists[0]
       const tags = [a.profession, ...(a.skills || []).slice(0, 2)].filter(Boolean).slice(0, 3)
