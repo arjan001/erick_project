@@ -75,6 +75,7 @@ export default function SignIn() {
   const [returnTo, setReturnTo] = useState(location.state?.returnTo || null)
   const [pendingApplication, setPendingApplication] = useState(null)
   const [partnerLogos, setPartnerLogos] = useState([])
+  const [invitationToken, setInvitationToken] = useState(searchParams.get('invitation_token'))
 
   useEffect(() => {
     listPartnerLogos().then(setPartnerLogos).catch(() => setPartnerLogos([]))
@@ -252,6 +253,12 @@ export default function SignIn() {
       // AuthContext will handle the redirect based on the role
       // Just wait a moment for auth state to update
       setTimeout(() => {
+        // If there's an invitation token, redirect to accept it
+        if (invitationToken) {
+          navigate(`/accept-invitation?token=${invitationToken}`)
+          return
+        }
+
         // Navigate to the stored redirect or let AuthContext handle it
         const finalRedirect = sessionStorage.getItem('auth_redirect')
         if (finalRedirect) {

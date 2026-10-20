@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Client, Project, TeamMember, BillingInfo, Invoice } from '@/lib/supabaseEntities'
+import { Client, Project, TeamMember, BillingInfo, Invoice, TeamInvitation } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import CountrySelector from '@/components/CountrySelector'
@@ -9,6 +9,7 @@ import { formatSocialMediaUrl } from '@/lib/socialMediaUtils'
 import { Building2, Globe, Phone, Mail, Upload, Bell, Shield, Edit2, Save, X, Linkedin, Instagram, Twitter, Youtube, Trash2, FolderOpen, Users, CreditCard, Lock, Settings as SettingsIcon, Plus, Eye, MoreVertical, UserPlus, FileText, Monitor, MapPin, Share2, Image as ImageIcon, Film } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/lib/AuthContext'
+import EmailService from '@/shared/services/emailService'
 
 function ToggleRow({ title, description, checked, onChange, isLast }) {
   return (
@@ -315,21 +316,42 @@ export default function ClientProfilePage() {
   // Team CRUD operations
   const handleInviteTeamMember = async () => {
     if (!inviteEmail || !owner) return
+
+    // Generate a secure token for the invitation
+    const token = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)
+
     try {
-      await TeamMember.create({
+      // Create invitation record
+      const invitation = await TeamInvitation.create({
         client_id: owner.id,
         email: inviteEmail,
         role: inviteRole,
-        status: 'pending'
+        token: token,
+        status: 'pending',
+        invited_by: authUser?.id,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days
       })
+
+      // Send invitation email
+      const emailService = new EmailService()
+      const acceptUrl = `${window.location.origin}/accept-invitation?token=${token}`
+      await emailService.sendTeamInvitationEmail(
+        inviteEmail,
+        owner.display_name || owner.company_name || 'Team Admin',
+        owner.company_name || 'SmartGigs Kenya',
+        acceptUrl
+      )
+
       setInviteEmail('')
       setInviteRole('member')
       setShowInviteModal(false)
-      success('Invitation Sent', `Invitation sent to ${inviteEmail}`)
-      // Reload team members
+      success('Invitation Sent', `Invitation sent to ${inviteEmail}. They will receive an email with instructions.`)
+
+      // Reload team members (show pending invitations)
       const members = await TeamMember.filter({ client_id: owner.id })
       setTeamMembers(members)
     } catch (err) {
+      console.error('Invite error:', err)
       toastError('Invite Failed', err.message || 'Failed to send invitation')
     }
   }
