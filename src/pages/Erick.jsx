@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { AlertCircle, Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { User } from '@/lib/supabaseEntities'
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -41,9 +42,10 @@ export default function Erick() {
 
       if (error) throw error
 
-      // Get user metadata from Supabase
+      // Get user from public.users table to check role
       const user = data.user
-      const userRole = user?.user_metadata?.role || user?.user_metadata?.user_type
+      const userRecords = await User.filter({ id: user.id })
+      const userRole = userRecords?.[0]?.role || user?.user_metadata?.role
 
       // Check if user is admin
       if (userRole !== 'admin') {
@@ -56,7 +58,7 @@ export default function Erick() {
       await login(email, password)
 
       setTimeout(() => {
-        navigate('/admin')
+        navigate('/Admin')
       }, 1000)
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.')

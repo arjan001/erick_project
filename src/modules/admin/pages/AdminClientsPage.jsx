@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { ProjectOwner, AuditLog } from '@/lib/supabaseEntities'
+import { Client, AuditLog } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
@@ -33,7 +33,7 @@ export default function AdminClientsPage() {
   const fetchClients = async () => {
     try {
       setLoading(true)
-      const rows = await ProjectOwner.list('-created_at', 100)
+      const rows = await Client.list('-created_at', 100)
       setClients(rows || [])
     } catch (err) {
       console.error('Error fetching clients:', err)
@@ -48,10 +48,10 @@ export default function AdminClientsPage() {
   const handleDeleteClient = async (clientId) => {
     if (!window.confirm('Delete this client? This cannot be undone.')) return
     try {
-      await ProjectOwner.delete(clientId)
+      await Client.delete(clientId)
       setClients(prev => prev.filter(c => c.id !== clientId))
       success('Deleted', 'Client deleted successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'client.delete', entity_type: 'ProjectOwner', entity_id: clientId, details: 'Deleted client' }).catch(() => { })
+      AuditLog.create({ actor_email: user?.email, action: 'client.delete', entity_type: 'Client', entity_id: clientId, details: 'Deleted client' }).catch(() => { })
     } catch (err) {
 
       toastError('Failed', 'Failed to delete client')
@@ -60,7 +60,7 @@ export default function AdminClientsPage() {
 
   const toggleSuspend = async (client) => {
     try {
-      await ProjectOwner.update(client.id, { is_suspended: !client.is_suspended })
+      await Client.update(client.id, { is_suspended: !client.is_suspended })
       success(!client.is_suspended ? 'Suspended' : 'Unsuspended', `Client ${!client.is_suspended ? 'suspended' : 'unsuspended'}`)
       fetchClients()
     } catch (err) {
@@ -70,7 +70,7 @@ export default function AdminClientsPage() {
 
   const toggleDisable = async (client) => {
     try {
-      await ProjectOwner.update(client.id, { is_disabled: !client.is_disabled })
+      await Client.update(client.id, { is_disabled: !client.is_disabled })
       success(!client.is_disabled ? 'Disabled' : 'Enabled', `Client ${!client.is_disabled ? 'disabled' : 'enabled'}`)
       fetchClients()
     } catch (err) {

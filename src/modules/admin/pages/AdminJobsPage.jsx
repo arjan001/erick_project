@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Job, AuditLog } from '@/lib/supabaseEntities'
+import { Job, Application, AuditLog } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Briefcase, Search, Eye, Trash2, Calendar, MapPin, CheckCircle, XCircle, X, Crown, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Briefcase, Search, Eye, Trash2, Calendar, MapPin, CheckCircle, XCircle, X, ChevronLeft, ChevronRight, Users } from 'lucide-react'
 
 const STATUSES = ['draft', 'pending_approval', 'open', 'closed', 'filled']
 
@@ -17,17 +18,9 @@ export default function AdminJobsPage() {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [selectedJob, setSelectedJob] = useState(null)
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [createForm, setCreateForm] = useState({
-    title: '',
-    description: '',
-    job_type: 'director',
-    employment_type: 'fulltime',
-    location: '',
-    budget: '',
-    duration: 'short_term',
-    status: 'open'
-  })
+  const [showJobDetailsModal, setShowJobDetailsModal] = useState(false)
+  const [jobApplications, setJobApplications] = useState([])
+  const [loadingApplications, setLoadingApplications] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(10)
 
@@ -93,57 +86,22 @@ export default function AdminJobsPage() {
     }
   }
 
-  const handleCreateJob = async () => {
-    if (!createForm.title || !createForm.description) {
-      error('Validation Error', 'Title and description are required')
-      return
-    }
-    try {
-      const newJob = await Job.create({
-        title: createForm.title,
-        description: createForm.description,
-        job_type: createForm.job_type,
-        employment_type: createForm.employment_type,
-        location: createForm.location,
-        budget: parseFloat(createForm.budget) || 0,
-        duration: createForm.duration,
-        status: createForm.status,
-        client_email: user?.email || 'admin@ericrabar.com',
-        client_name: user?.full_name || 'Admin'
-      })
-      setJobs(prev => [newJob, ...prev])
-      setShowCreateModal(false)
-      setCreateForm({
-        title: '',
-        description: '',
-        job_type: 'director',
-        employment_type: 'fulltime',
-        location: '',
-        budget: '',
-        duration: 'short_term',
-        status: 'open'
-      })
-      success('Created', 'Job created successfully')
-      AuditLog.create({ actor_email: user?.email, action: 'job.create', entity_type: 'Job', entity_id: newJob.id, details: 'Created job' }).catch(err => {
-        console.error('Failed to create audit log:', err)
-      })
-    } catch (err) {
-      console.error('Error creating job:', err)
-      error('Failed', 'Failed to create job')
-    }
-  }
 
-  const handleToggleProRequired = async (jobId, currentProRequired) => {
+
+
+
+  const handleViewJobDetails = async (job) => {
+    setSelectedJob(job)
+    setShowJobDetailsModal(true)
+    setLoadingApplications(true)
     try {
-      await Job.update(jobId, { requires_subscription: !currentProRequired })
-      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, requires_subscription: !currentProRequired } : j))
-      success('Updated', `Job ${!currentProRequired ? 'now requires' : 'no longer requires'} Pro subscription`)
-      AuditLog.create({ actor_email: user?.email, action: 'job.pro_requirement_update', entity_type: 'Job', entity_id: jobId, details: `Changed pro requirement to ${!currentProRequired}` }).catch(err => {
-        console.error('Failed to create audit log:', err)
-      })
+      const applications = await Application.filter({ job_id: job.id })
+      setJobApplications(applications || [])
     } catch (err) {
-      console.error('Error updating pro requirement:', err)
-      error('Failed', 'Failed to update pro requirement')
+      console.error('Error fetching applications:', err)
+      setJobApplications([])
+    } finally {
+      setLoadingApplications(false)
     }
   }
 
@@ -218,13 +176,6 @@ export default function AdminJobsPage() {
               {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
-          <Button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-black text-white hover:bg-gray-800"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Job
-          </Button>
           <div className="text-sm text-gray-500">Total Jobs: {filteredJobs.length}</div>
         </div>
 
@@ -250,40 +201,46 @@ export default function AdminJobsPage() {
                 <tr key={job.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <div className="text-sm font-medium text-gray-900">{job.title}</div>
-                    <div className="text-xs text-gray-500 truncate max-w-xs">{job.short_description}</div>
+                    <div className="text-xs text-gray-500 truncate max-w-xs">{job.short_description || job.description?.substring(0, 100)}</div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{job.client_name}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{job.client_name || 'N/A'}</td>
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">
                     {job.budget_min || job.budget_max ? `$${(job.budget_min || 0).toLocaleString()} - $${(job.budget_max || 0).toLocaleString()}` : 'N/A'}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-2"><MapPin className="w-3 h-3" />{job.location || 'N/A'}</td>
                   <td className="px-4 py-3">{getStatusBadge(job.status)}</td>
                   <td className="px-4 py-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <button
                       onClick={() => handleToggleProRequired(job.id, job.requires_subscription)}
-                      title={job.requires_subscription ? 'Remove Pro requirement' : 'Require Pro subscription'}
-                      className="p-1"
+                      className={`text-xs px-2 py-1 rounded ${job.requires_subscription ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}
                     >
-                      <Crown className={`w-4 h-4 ${job.requires_subscription ? 'text-yellow-600 fill-yellow-600' : 'text-gray-400'}`} />
-                    </Button>
+                      {job.requires_subscription ? 'Yes' : 'No'}
+                    </button>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-2">
-                    <Calendar className="w-3 h-3" />
-                    {job.posted_at ? new Date(job.posted_at).toLocaleDateString() : 'N/A'}
-                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{new Date(job.created_at || job.posted_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedJob(job)} title="View Details" className="p-1">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleViewJobDetails(job)}
+                        className="p-1.5 text-gray-600 hover:text-black hover:bg-gray-100 rounded"
+                        title="View Details"
+                      >
                         <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleToggleStatus(job.id, job.status)} title="Toggle Status" className="p-1">
-                        {job.status === 'open' ? <XCircle className="w-4 h-4 text-red-600" /> : <CheckCircle className="w-4 h-4 text-green-600" />}
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)} title="Delete" className="p-1">
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </Button>
+                      </button>
+                      <button
+                        onClick={() => handleToggleStatus(job.id, job.status)}
+                        className="p-1.5 text-gray-600 hover:text-black hover:bg-gray-100 rounded"
+                        title="Toggle Status"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteJob(job.id)}
+                        className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -333,125 +290,92 @@ export default function AdminJobsPage() {
         )}
       </div>
 
-      {selectedJob && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Job Details</h2>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedJob(null)}><X className="w-4 h-4" /></Button>
-            </div>
-            <div className="space-y-3 text-sm">
-              <div><span className="font-medium text-gray-500">Title:</span> {selectedJob.title}</div>
-              <div><span className="font-medium text-gray-500">Client:</span> {selectedJob.client_name} ({selectedJob.client_email})</div>
-              <div><span className="font-medium text-gray-500">Description:</span> {selectedJob.description}</div>
-              <div><span className="font-medium text-gray-500">Roles Needed:</span> {selectedJob.roles_needed?.join(', ') || 'N/A'}</div>
-              <div><span className="font-medium text-gray-500">Skills:</span> {selectedJob.skills_required?.join(', ') || 'N/A'}</div>
-              <div><span className="font-medium text-gray-500">Status:</span> <span className="capitalize">{selectedJob.status}</span></div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Job Details Modal */}
+      {showJobDetailsModal && selectedJob && (
+        <Dialog open={showJobDetailsModal} onOpenChange={setShowJobDetailsModal}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Job Details</DialogTitle>
+              <DialogDescription>View job information and applications</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">{selectedJob.title}</h3>
+                <p className="text-gray-600">{selectedJob.description}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Client</Label>
+                  <p className="text-gray-600">{selectedJob.client_name || 'N/A'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Location</Label>
+                  <p className="text-gray-600">{selectedJob.location || 'N/A'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Budget</Label>
+                  <p className="text-gray-600">
+                    {selectedJob.budget_min || selectedJob.budget_max
+                      ? `$${(selectedJob.budget_min || 0).toLocaleString()} - $${(selectedJob.budget_max || 0).toLocaleString()}`
+                      : 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Status</Label>
+                  <div>{getStatusBadge(selectedJob.status)}</div>
+                </div>
+              </div>
 
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Create Job</h2>
-              <Button variant="ghost" size="sm" onClick={() => setShowCreateModal(false)}><X className="w-4 h-4" /></Button>
-            </div>
-            <div className="space-y-4">
+              {/* Applications Section */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-                <Input
-                  value={createForm.title}
-                  onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
-                  placeholder="Job title"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
-                <textarea
-                  value={createForm.description}
-                  onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-                  placeholder="Job description"
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
-                <select
-                  value={createForm.job_type}
-                  onChange={(e) => setCreateForm({ ...createForm, job_type: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                >
-                  <option value="director">Director</option>
-                  <option value="cinematographer">Cinematographer</option>
-                  <option value="editor">Editor</option>
-                  <option value="sound_engineer">Sound Engineer</option>
-                  <option value="producer">Producer</option>
-                  <option value="actor">Actor</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Employment Type</label>
-                <select
-                  value={createForm.employment_type}
-                  onChange={(e) => setCreateForm({ ...createForm, employment_type: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                >
-                  <option value="fulltime">Full-time</option>
-                  <option value="day_payment">Day Payment</option>
-                  <option value="gig">Gig</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                <Input
-                  value={createForm.location}
-                  onChange={(e) => setCreateForm({ ...createForm, location: e.target.value })}
-                  placeholder="City or remote"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Budget</label>
-                <Input
-                  type="number"
-                  value={createForm.budget}
-                  onChange={(e) => setCreateForm({ ...createForm, budget: e.target.value })}
-                  placeholder="0.00"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
-                <select
-                  value={createForm.duration}
-                  onChange={(e) => setCreateForm({ ...createForm, duration: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                >
-                  <option value="short_term">Short-term</option>
-                  <option value="long_term">Long-term</option>
-                  <option value="ongoing">Ongoing</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  value={createForm.status}
-                  onChange={(e) => setCreateForm({ ...createForm, status: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                >
-                  {STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
-                </select>
-              </div>
-              <div className="flex gap-3 pt-4">
-                <Button variant="outline" onClick={() => setShowCreateModal(false)}>Cancel</Button>
-                <Button onClick={handleCreateJob} className="bg-black text-white hover:bg-gray-800">Create Job</Button>
+                <h4 className="text-md font-semibold mb-3 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Applications ({jobApplications.length})
+                </h4>
+                {loadingApplications ? (
+                  <div className="text-center py-4 text-gray-500">Loading applications...</div>
+                ) : jobApplications.length === 0 ? (
+                  <div className="text-center py-4 text-gray-500">No applications yet</div>
+                ) : (
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Applicant</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Email</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Status</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Applied</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {jobApplications.map(app => (
+                          <tr key={app.id} className="hover:bg-gray-50">
+                            <td className="px-4 py-2 text-sm">{app.applicant_name || 'N/A'}</td>
+                            <td className="px-4 py-2 text-sm text-gray-600">{app.applicant_email || 'N/A'}</td>
+                            <td className="px-4 py-2 text-sm">
+                              <span className={`px-2 py-1 rounded text-xs ${app.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                                app.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                  'bg-yellow-100 text-yellow-700'
+                                }`}>
+                                {app.status || 'pending'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-600">
+                              {app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowJobDetailsModal(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   )
