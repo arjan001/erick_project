@@ -323,7 +323,7 @@ export default function ClientProfilePage() {
     try {
       // Create invitation record
       const invitation = await TeamInvitation.create({
-        client_id: owner.id,
+        user_id: authUser?.id,
         email: inviteEmail,
         role: inviteRole,
         token: token,

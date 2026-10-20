@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { TeamInvitation, TeamMember, Client } from '@/lib/supabaseEntities'
+import { TeamInvitation, TeamMember } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { CheckCircle, XCircle, Users, Building2, Mail, Lock, User } from 'lucide-react'
+import { CheckCircle, XCircle, Users, Building2, Mail, Lock, User as UserIcon } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/lib/AuthContext'
 
@@ -59,9 +59,14 @@ export default function AcceptInvitation() {
         return
       }
 
-      // Load client info
-      const clientData = await Client.get(inv.client_id)
-      setClient(clientData)
+      // Load inviter info
+      const { data: userData } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', inv.invited_by)
+        .single()
+
+      setClient({ company_name: userData?.full_name || 'SmartGigs Kenya' })
       setInvitation(inv)
       setStatus('valid')
       setLoading(false)
@@ -81,9 +86,8 @@ export default function AcceptInvitation() {
         return
       }
 
-      // Create team member record
+      // Create team member record using user_id
       await TeamMember.create({
-        client_id: invitation.client_id,
         user_id: authUser.id,
         email: authUser.email,
         role: invitation.role,
@@ -129,9 +133,8 @@ export default function AcceptInvitation() {
       if (signUpError) throw signUpError
 
       if (signUpData.user) {
-        // Create team member record
+        // Create team member record using user_id
         await TeamMember.create({
-          client_id: invitation.client_id,
           user_id: signUpData.user.id,
           email: invitation.email,
           role: invitation.role,
@@ -239,7 +242,7 @@ export default function AcceptInvitation() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <User className="w-5 h-5 text-gray-400" />
+            <UserIcon className="w-5 h-5 text-gray-400" />
             <div>
               <p className="text-sm text-gray-500">Role</p>
               <p className="font-medium text-gray-900 capitalize">{invitation?.role}</p>

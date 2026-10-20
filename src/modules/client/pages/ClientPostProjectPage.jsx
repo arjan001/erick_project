@@ -91,7 +91,32 @@ export default function ClientPostProject() {
     }
     fetchPostedJobs()
     fetchRoleTemplates()
+
+    // Load draft from localStorage
+    const savedDraft = localStorage.getItem('job_posting_draft')
+    if (savedDraft) {
+      try {
+        const draftData = JSON.parse(savedDraft)
+        setFormData(draftData.formData)
+        setAttachments(draftData.attachments || [])
+        setCurrentStep(draftData.currentStep || 1)
+        setDraftId(draftData.draftId || null)
+      } catch (err) {
+        console.error('Error loading draft:', err)
+      }
+    }
   }, [isAuthenticated, navigate])
+
+  // Auto-save to localStorage on form changes
+  useEffect(() => {
+    const draftData = {
+      formData,
+      attachments,
+      currentStep,
+      draftId
+    }
+    localStorage.setItem('job_posting_draft', JSON.stringify(draftData))
+  }, [formData, attachments, currentStep, draftId])
 
   const fetchPostedJobs = async () => {
     try {
@@ -255,30 +280,36 @@ export default function ClientPostProject() {
         description: formData.projectDescription,
         job_type: formData.jobType,
         location: formData.location,
+        city: formData.location?.split(',')[0] || '',
+        country: 'Kenya',
+        remote: formData.isRemote,
+        salary_range: formData.budgetType,
+        rate: formData.compensation,
         submission_deadline: formData.applicationDeadline,
         status: saveAsDraft ? 'draft' : 'open',
         created_at: new Date().toISOString(),
-        // Store additional data in metadata since columns don't exist yet
+        // Direct columns (after migration)
+        about_project: formData.aboutProject,
+        project_description: formData.projectDescription,
+        production_types: formData.productionTypes,
+        duration: formData.duration,
+        budget_min: formData.budgetMin,
+        budget_max: formData.budgetMax,
+        budget_type: formData.budgetType,
+        payment_terms: formData.paymentTerms,
+        additional_info: formData.additionalInfo,
+        urgency: 'normal',
+        contract_type: 'freelance',
+        audition_format: formData.auditionFormat,
+        audition_duration: formData.auditionDuration,
+        audition_language: formData.auditionLanguage,
+        company_name: formData.companyName,
+        company_website: formData.companyWebsite,
+        is_work_from_home: formData.isWorkFromHome,
+        expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        // Metadata for additional data
         metadata: {
-          about_project: formData.aboutProject,
-          project_description: formData.projectDescription,
-          production_types: formData.productionTypes,
-          duration: formData.duration,
-          budget_min: formData.budgetMin,
-          budget_max: formData.budgetMax,
-          budget_type: formData.budgetType,
-          payment_terms: formData.paymentTerms,
-          additional_info: formData.additionalInfo,
-          urgency: 'normal',
-          contract_type: 'freelance',
-          audition_format: formData.auditionFormat,
-          audition_duration: formData.auditionDuration,
-          audition_language: formData.auditionLanguage,
           audition_details: formData.auditionDetails || '',
-          company_name: formData.companyName,
-          company_website: formData.companyWebsite,
-          is_work_from_home: formData.isWorkFromHome,
-          expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
           attachments: attachments,
           roles_needed: formData.rolesNeeded,
           role_details: formData.jobType === 'production' ? formData.roleDetails : {}

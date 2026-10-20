@@ -250,7 +250,7 @@ END $$;
 
 CREATE TABLE IF NOT EXISTS public.team_invitations (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
   role TEXT DEFAULT 'member', -- member, admin, viewer
   token TEXT UNIQUE NOT NULL,
@@ -262,7 +262,7 @@ CREATE TABLE IF NOT EXISTS public.team_invitations (
   expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '7 days')
 );
 
-CREATE INDEX IF NOT EXISTS idx_team_invitations_client_id ON public.team_invitations(client_id);
+CREATE INDEX IF NOT EXISTS idx_team_invitations_user_id ON public.team_invitations(user_id);
 CREATE INDEX IF NOT EXISTS idx_team_invitations_email ON public.team_invitations(email);
 CREATE INDEX IF NOT EXISTS idx_team_invitations_token ON public.team_invitations(token);
 CREATE INDEX IF NOT EXISTS idx_team_invitations_status ON public.team_invitations(status);
