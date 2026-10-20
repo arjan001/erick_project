@@ -29,14 +29,25 @@ function buildUser(supabaseUser, appRole) {
   }
 }
 
-// Resolve the app role (artist/team/client/backer) for a logged-in Supabase
+// Resolve the app role (artist/team/client/backer/admin) for a logged-in Supabase
 // user by checking which entity profile exists for their user_id.
-// PRIORITY: user metadata role > which profile exists > default to artist
+// PRIORITY: public.users table > user metadata role > which profile exists > default to artist
 async function resolveAppRole(userId, metadataRole = null) {
   if (!userId) return 'artist'
 
-  // First, check if role is in user metadata (from signup/OAuth)
-  if (metadataRole && ['artist', 'team', 'client', 'backer'].includes(metadataRole)) {
+  // First, check public.users table (this is the authoritative source)
+  try {
+    const userRecords = await User.filter({ id: userId })
+    if (userRecords && userRecords.length > 0) {
+      const dbRole = userRecords[0].role
+      if (dbRole && dbRole !== 'creator') {
+        return dbRole
+      }
+    }
+  } catch { /* ignore - continue to other checks */ }
+
+  // Second, check if role is in user metadata (from signup/OAuth)
+  if (metadataRole && ['artist', 'team', 'client', 'backer', 'admin'].includes(metadataRole)) {
     return metadataRole
   }
 
@@ -51,7 +62,7 @@ async function resolveAppRole(userId, metadataRole = null) {
     if (teams && teams.length > 0) return 'team'
   } catch { /* ignore - return default */ }
   try {
-    const owners = await ProjectOwner.filter({ user_id: userId })
+    const owners = await Client.filter({ user_id: userId })
     if (owners && owners.length > 0) return 'client'
   } catch { /* ignore - return default */ }
   try {
