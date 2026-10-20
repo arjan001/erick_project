@@ -2,6 +2,7 @@ import React, { useState, createContext, useContext, useEffect } from 'react'
 import { useAuth } from '@/lib/AuthContext'
 import UnifiedSidebar from '@/components/UnifiedSidebar'
 import UnifiedTopbar from '@/components/UnifiedTopbar'
+import AuthNotification from '@/components/AuthNotification'
 
 const SidebarContext = createContext()
 
@@ -61,6 +62,9 @@ export default function DashboardLayout({ children }) {
           {hasSidebar && <UnifiedTopbar settingsPage={settingsPage} />}
           <div className="flex-1 min-w-0 overflow-y-auto">{children}</div>
         </main>
+
+        {/* Auth Notification */}
+        <AuthNotification />
       </div>
     </SidebarContext.Provider>
   )
