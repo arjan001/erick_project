@@ -6,11 +6,11 @@
 -- ============================================================
 
 -- Add metadata column if not exists
-ALTER TABLE public.jobs 
+ALTER TABLE public.jobs
 ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}';
 
--- Add additional fields
-ALTER TABLE public.jobs 
+-- Add additional fields to match frontend needs
+ALTER TABLE public.jobs
 ADD COLUMN IF NOT EXISTS about_project TEXT,
 ADD COLUMN IF NOT EXISTS project_description TEXT,
 ADD COLUMN IF NOT EXISTS production_types TEXT[],
@@ -30,6 +30,9 @@ ADD COLUMN IF NOT EXISTS company_name TEXT,
 ADD COLUMN IF NOT EXISTS company_website TEXT,
 ADD COLUMN IF NOT EXISTS is_work_from_home BOOLEAN DEFAULT false,
 ADD COLUMN IF NOT EXISTS expiry_date TIMESTAMP WITH TIME ZONE;
+
+-- Drop check constraint that's causing issues
+ALTER TABLE public.jobs DROP CONSTRAINT IF EXISTS jobs_duration_check;
 
 -- Add indexes
 CREATE INDEX IF NOT EXISTS idx_jobs_urgency ON public.jobs(urgency);
@@ -215,11 +218,11 @@ END $$;
 -- ============================================================
 
 -- Add client_name field to distinguish from company_name
-ALTER TABLE public.clients 
+ALTER TABLE public.clients
 ADD COLUMN IF NOT EXISTS client_name TEXT;
 
 -- Add licensing certificate fields for KYC
-ALTER TABLE public.clients 
+ALTER TABLE public.clients
 ADD COLUMN IF NOT EXISTS license_certificate_url TEXT,
 ADD COLUMN IF NOT EXISTS license_certificate_issued_date DATE,
 ADD COLUMN IF NOT EXISTS license_certificate_expiry_date DATE,
@@ -228,12 +231,12 @@ ADD COLUMN IF NOT EXISTS kyc_verified_at TIMESTAMP WITH TIME ZONE,
 ADD COLUMN IF NOT EXISTS kyc_verified_by UUID REFERENCES public.users(id);
 
 -- Add organization_type and username if not exists
-ALTER TABLE public.clients 
+ALTER TABLE public.clients
 ADD COLUMN IF NOT EXISTS organization_type TEXT,
 ADD COLUMN IF NOT EXISTS username TEXT UNIQUE;
 
 -- Add created_date field
-ALTER TABLE public.clients 
+ALTER TABLE public.clients
 ADD COLUMN IF NOT EXISTS created_date TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
 DO $$

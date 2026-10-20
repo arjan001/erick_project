@@ -13,7 +13,7 @@ import {
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
-import filmIndustryRoles from '@/data/filmIndustryRoles.json'
+import skillsAndRoles from '@/lib/skillsAndRoles.json'
 
 const STEPS = [
   { id: 1, title: 'Basic Info', icon: Briefcase },
@@ -111,11 +111,10 @@ export default function ClientPostProject() {
 
       if (error) {
         console.error('Error fetching role templates:', error)
-        // Fallback to filmIndustryRoles.json - filter for talent roles only
-        const talentCategories = ['Acting', 'Voice Over', 'UGC', 'Stunts', 'Extras']
+        // Fallback to skillsAndRoles.json - talent roles only
         const rolesFromJson = []
-        Object.entries(filmIndustryRoles).forEach(([category, roles]) => {
-          if (Array.isArray(roles) && talentCategories.includes(category)) {
+        Object.entries(skillsAndRoles.talent_roles_by_category).forEach(([category, roles]) => {
+          if (Array.isArray(roles)) {
             roles.forEach(role => {
               rolesFromJson.push({ name: role, category })
             })
@@ -124,7 +123,7 @@ export default function ClientPostProject() {
         setRoleTemplates(rolesFromJson)
       } else {
         // Filter server data for talent roles only
-        const talentCategories = ['Acting', 'Voice Over', 'UGC', 'Stunts', 'Extras']
+        const talentCategories = ['Acting', 'Voice Over', 'UGC', 'Stunts', 'Extras', 'On-Screen Acting', 'Voice & Audio', 'Performance', 'Content Creation', 'Commercial & Ads', 'Specialized Performance']
         const filteredData = (data || []).filter(role =>
           talentCategories.includes(role.category)
         )
@@ -132,11 +131,10 @@ export default function ClientPostProject() {
       }
     } catch (err) {
       console.error('Error fetching role templates:', err)
-      // Fallback to filmIndustryRoles.json - filter for talent roles only
-      const talentCategories = ['Acting', 'Voice Over', 'UGC', 'Stunts', 'Extras']
+      // Fallback to skillsAndRoles.json - talent roles only
       const rolesFromJson = []
-      Object.entries(filmIndustryRoles).forEach(([category, roles]) => {
-        if (Array.isArray(roles) && talentCategories.includes(category)) {
+      Object.entries(skillsAndRoles.talent_roles_by_category).forEach(([category, roles]) => {
+        if (Array.isArray(roles)) {
           roles.forEach(role => {
             rolesFromJson.push({ name: role, category })
           })
@@ -257,36 +255,30 @@ export default function ClientPostProject() {
         description: formData.projectDescription,
         job_type: formData.jobType,
         location: formData.location,
-        city: formData.location?.split(',')[0] || '',
-        country: 'Kenya',
-        remote: formData.isRemote,
-        salary_range: formData.budgetType,
-        rate: formData.compensation,
         submission_deadline: formData.applicationDeadline,
         status: saveAsDraft ? 'draft' : 'open',
         created_at: new Date().toISOString(),
-        // Direct columns (after migration)
-        about_project: formData.aboutProject,
-        project_description: formData.projectDescription,
-        production_types: formData.productionTypes,
-        duration: formData.duration,
-        budget_min: formData.budgetMin,
-        budget_max: formData.budgetMax,
-        budget_type: formData.budgetType,
-        payment_terms: formData.paymentTerms,
-        additional_info: formData.additionalInfo,
-        urgency: 'normal',
-        contract_type: 'freelance',
-        audition_format: formData.auditionFormat,
-        audition_duration: formData.auditionDuration,
-        audition_language: formData.auditionLanguage,
-        company_name: formData.companyName,
-        company_website: formData.companyWebsite,
-        is_work_from_home: formData.isWorkFromHome,
-        expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        // Metadata for additional data
+        // Store additional data in metadata since columns don't exist yet
         metadata: {
+          about_project: formData.aboutProject,
+          project_description: formData.projectDescription,
+          production_types: formData.productionTypes,
+          duration: formData.duration,
+          budget_min: formData.budgetMin,
+          budget_max: formData.budgetMax,
+          budget_type: formData.budgetType,
+          payment_terms: formData.paymentTerms,
+          additional_info: formData.additionalInfo,
+          urgency: 'normal',
+          contract_type: 'freelance',
+          audition_format: formData.auditionFormat,
+          audition_duration: formData.auditionDuration,
+          audition_language: formData.auditionLanguage,
           audition_details: formData.auditionDetails || '',
+          company_name: formData.companyName,
+          company_website: formData.companyWebsite,
+          is_work_from_home: formData.isWorkFromHome,
+          expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
           attachments: attachments,
           roles_needed: formData.rolesNeeded,
           role_details: formData.jobType === 'production' ? formData.roleDetails : {}
@@ -569,8 +561,24 @@ export default function ClientPostProject() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                         {formData.jobType === 'production' ? 'Roles in the Production' : 'Role'}
+                        {formData.jobType === 'production' && (
+                          <div className="relative group inline-block">
+                            <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                            <div className="absolute left-0 top-full mt-2 w-72 bg-gray-900 text-white text-xs rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-10">
+                              <p className="font-semibold mb-1">Multiple Roles Supported</p>
+                              <p className="mb-2">For productions, you can add multiple roles. Each role can have:</p>
+                              <ul className="list-disc list-inside space-y-1 text-gray-300">
+                                <li>Unique description and requirements</li>
+                                <li>Individual compensation details</li>
+                                <li>Specific audition instructions</li>
+                                <li>Custom skill requirements</li>
+                              </ul>
+                              <p className="mt-2 text-gray-400">Examples: "Lead Actor (Male)", "Voice Actor (Hero)", "Background Extra (Day Crowd)"</p>
+                            </div>
+                          </div>
+                        )}
                       </label>
                       <div className="flex gap-2 mb-3">
                         <select
@@ -579,8 +587,8 @@ export default function ClientPostProject() {
                           className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         >
                           <option value="">Select from predefined roles...</option>
-                          {roleTemplates.map((template) => (
-                            <option key={template.id} value={template.name}>
+                          {roleTemplates.map((template, idx) => (
+                            <option key={idx} value={template.name}>
                               {template.name} ({template.category})
                             </option>
                           ))}
@@ -889,7 +897,7 @@ export default function ClientPostProject() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => { setEditingSection('title'); setEditModalContent(formData.title); }}
+                        onClick={() => { setEditingSection('title'); setEditModalContent(formData.title); setCurrentStep(1); }}
                         className="p-2 hover:bg-gray-200 rounded"
                       >
                         <Edit className="w-4 h-4 text-gray-600" />
@@ -903,7 +911,7 @@ export default function ClientPostProject() {
                         </div>
                         <button
                           type="button"
-                          onClick={() => { setEditingSection('location'); setEditModalContent(formData.location); }}
+                          onClick={() => { setCurrentStep(4); }}
                           className="p-1 hover:bg-gray-200 rounded"
                         >
                           <Edit className="w-3 h-3 text-gray-600" />
@@ -921,7 +929,7 @@ export default function ClientPostProject() {
                         </div>
                         <button
                           type="button"
-                          onClick={() => { setEditingSection('budget'); setEditModalContent(`${formData.budgetMin}-${formData.budgetMax}`); }}
+                          onClick={() => { setCurrentStep(5); }}
                           className="p-1 hover:bg-gray-200 rounded"
                         >
                           <Edit className="w-3 h-3 text-gray-600" />
@@ -1038,7 +1046,10 @@ export default function ClientPostProject() {
                     </button>
                   </div>
                 ) : (
-                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+                  <div
+                    onClick={() => document.getElementById('file-upload').click()}
+                    className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-colors"
+                  >
                     <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <p className="text-base text-gray-600 mb-2">
                       Upload images, PDFs, or other files
@@ -1054,12 +1065,9 @@ export default function ClientPostProject() {
                       className="hidden"
                       id="file-upload"
                     />
-                    <label
-                      htmlFor="file-upload"
-                      className="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg cursor-pointer hover:bg-purple-700 transition-colors"
-                    >
+                    <span className="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
                       {uploading ? 'Uploading...' : 'Choose Files'}
-                    </label>
+                    </span>
                   </div>
                 )}
               </div>
