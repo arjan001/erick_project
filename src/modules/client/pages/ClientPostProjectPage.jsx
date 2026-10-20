@@ -163,6 +163,39 @@ export default function ClientPostProject() {
     })
   }
 
+  const handleAddProductionRole = () => {
+    if (formData.newRole.trim()) {
+      const roleName = formData.newRole.trim()
+      setFormData({
+        ...formData,
+        rolesNeeded: [...formData.rolesNeeded, roleName],
+        roleDetails: {
+          ...formData.roleDetails,
+          [roleName]: {
+            description: '',
+            compensation: '',
+            requirements: '',
+            auditionDetails: ''
+          }
+        },
+        newRole: ''
+      })
+    }
+  }
+
+  const handleUpdateRoleDetail = (roleName, field, value) => {
+    setFormData({
+      ...formData,
+      roleDetails: {
+        ...formData.roleDetails,
+        [roleName]: {
+          ...formData.roleDetails[roleName],
+          [field]: value
+        }
+      }
+    })
+  }
+
   const handleToggleProductionType = (type) => {
     setFormData({
       ...formData,
@@ -255,7 +288,8 @@ export default function ClientPostProject() {
         metadata: {
           audition_details: formData.auditionDetails || '',
           attachments: attachments,
-          roles_needed: formData.rolesNeeded
+          roles_needed: formData.rolesNeeded,
+          role_details: formData.jobType === 'production' ? formData.roleDetails : {}
         }
       }
 
@@ -452,9 +486,9 @@ export default function ClientPostProject() {
                             <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
                             <div className="absolute left-0 top-full mt-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-10">
                               <p className="font-semibold mb-1">Role:</p>
-                              <p className="mb-2">Single position like Actor, Voice Over, Camera Operator.</p>
+                              <p className="mb-2">Single position like Actor, Voice Over, or UGC Creator.</p>
                               <p className="font-semibold mb-1">Production:</p>
-                              <p>Full project with multiple roles and crew positions.</p>
+                              <p>Full project with multiple roles. Each role will have individual details for description, compensation, requirements, and audition details.</p>
                             </div>
                           </div>
                         </label>
@@ -535,7 +569,9 @@ export default function ClientPostProject() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Roles in the Project</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        {formData.jobType === 'production' ? 'Roles in the Production' : 'Role'}
+                      </label>
                       <div className="flex gap-2 mb-3">
                         <select
                           value={formData.newRole}
@@ -549,7 +585,7 @@ export default function ClientPostProject() {
                             </option>
                           ))}
                         </select>
-                        <Button type="button" onClick={handleAddRole} className="bg-purple-600 hover:bg-purple-700">
+                        <Button type="button" onClick={formData.jobType === 'production' ? handleAddProductionRole : handleAddRole} className="bg-purple-600 hover:bg-purple-700">
                           <Plus className="w-4 h-4" />
                         </Button>
                       </div>
@@ -558,7 +594,7 @@ export default function ClientPostProject() {
                           value={formData.newRole}
                           onChange={(e) => setFormData({ ...formData, newRole: e.target.value })}
                           placeholder="Or type custom role..."
-                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddRole())}
+                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), formData.jobType === 'production' ? handleAddProductionRole() : handleAddRole())}
                         />
                       </div>
                       <div className="flex flex-wrap gap-2 mt-3">
@@ -572,6 +608,61 @@ export default function ClientPostProject() {
                         ))}
                       </div>
                     </div>
+
+                    {/* Dynamic Role Details for Production Type */}
+                    {formData.jobType === 'production' && formData.rolesNeeded.length > 0 && (
+                      <div className="mt-6 space-y-4 border-t border-gray-200 pt-6">
+                        <h4 className="font-semibold text-gray-900">Role Details</h4>
+                        {formData.rolesNeeded.map((role, idx) => (
+                          <div key={idx} className="bg-gray-50 rounded-xl p-4 space-y-3">
+                            <h5 className="font-medium text-gray-900 flex items-center gap-2">
+                              <Users className="w-4 h-4 text-purple-600" />
+                              {role}
+                            </h5>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                              <textarea
+                                value={formData.roleDetails[role]?.description || ''}
+                                onChange={(e) => handleUpdateRoleDetail(role, 'description', e.target.value)}
+                                placeholder="Describe this role..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                rows={2}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Compensation</label>
+                              <Input
+                                value={formData.roleDetails[role]?.compensation || ''}
+                                onChange={(e) => handleUpdateRoleDetail(role, 'compensation', e.target.value)}
+                                placeholder="e.g., KES 50,000"
+                                className="w-full"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Requirements</label>
+                              <textarea
+                                value={formData.roleDetails[role]?.requirements || ''}
+                                onChange={(e) => handleUpdateRoleDetail(role, 'requirements', e.target.value)}
+                                placeholder="List requirements..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                rows={2}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Audition Details</label>
+                              <textarea
+                                value={formData.roleDetails[role]?.auditionDetails || ''}
+                                onChange={(e) => handleUpdateRoleDetail(role, 'auditionDetails', e.target.value)}
+                                placeholder="What should applicants prepare..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                rows={2}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Production Type</label>
                       <div className="flex flex-wrap gap-2">
