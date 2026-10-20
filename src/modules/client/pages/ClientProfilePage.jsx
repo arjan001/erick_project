@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Client, Project, TeamMember, BillingInfo, Invoice, SecuritySettings, ActiveSession } from '@/lib/supabaseEntities'
+import { Client, Project, TeamMember, BillingInfo, Invoice } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import CountrySelector from '@/components/CountrySelector'
@@ -190,14 +190,15 @@ export default function ClientProfilePage() {
       if (owner?.id && activeTab === 'security') {
         setLoadingSecurity(true)
         try {
-          const [settings, sessions] = await Promise.all([
-            SecuritySettings.filter({ client_id: owner.id }),
-            ActiveSession.filter({ client_id: owner.id })
-          ])
-          setSecuritySettings(settings[0] || null)
-          setActiveSessions(sessions || [])
+          // Using Supabase Auth directly for password changes
+          // 2FA and session management require backend implementation
+          setSecuritySettings({
+            password_last_changed: owner.created_at,
+            two_factor_enabled: false // Not available without backend
+          })
+          setActiveSessions([]) // Not available without backend
         } catch (err) {
-          //
+          console.error('Error loading security settings:', err)
           setSecuritySettings(null)
           setActiveSessions([])
         } finally {
@@ -374,85 +375,53 @@ export default function ClientProfilePage() {
     }
   }
 
-  // Security CRUD operations
-  const handleToggle2FA = async () => {
-    if (!owner) return
-    try {
-      if (securitySettings) {
-        await SecuritySettings.update(securitySettings.id, {
-          two_factor_enabled: !securitySettings.two_factor_enabled
-        })
-        setSecuritySettings({
-          ...securitySettings,
-          two_factor_enabled: !securitySettings.two_factor_enabled
-        })
-      } else {
-        const newSettings = await SecuritySettings.create({
-          client_id: owner.id,
-          two_factor_enabled: true
-        })
-        setSecuritySettings(newSettings)
-      }
-      success('2FA Updated', 'Two-factor authentication has been updated')
-    } catch (err) {
-      toastError('Update Failed', err.message || 'Failed to update 2FA settings')
-    }
-  }
-
-  const handleRevokeSession = async (sessionId) => {
-    if (!confirm('Are you sure you want to revoke this session?')) return
-    try {
-      await ActiveSession.delete(sessionId)
-      setActiveSessions(activeSessions.filter(s => s.id !== sessionId))
-      success('Session Revoked', 'Session has been revoked successfully')
-    } catch (err) {
-      toastError('Revoke Failed', err.message || 'Failed to revoke session')
-    }
-  }
-
+  // Security operations using Supabase Auth
   const handleChangePassword = async () => {
-    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-      toastError('Validation Error', 'Please fill in all password fields')
+    const { currentPassword, newPassword, confirmPassword } = passwordForm
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toastError('Missing Fields', 'Please fill in all password fields')
       return
     }
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toastError('Validation Error', 'New passwords do not match')
+
+    if (newPassword !== confirmPassword) {
+      toastError('Passwords Don\'t Match', 'New password and confirmation do not match')
       return
     }
-    if (passwordForm.newPassword.length < 8) {
-      toastError('Validation Error', 'Password must be at least 8 characters')
+
+    if (newPassword.length < 6) {
+      toastError('Password Too Short', 'Password must be at least 6 characters')
       return
     }
 
     setChangingPassword(true)
     try {
       const { error } = await supabase.auth.updateUser({
-        password: passwordForm.newPassword
+        password: newPassword
       })
 
       if (error) throw error
 
-      // Update password last changed in security settings
-      if (securitySettings) {
-        await SecuritySettings.update(securitySettings.id, {
-          password_last_changed: new Date().toISOString()
-        })
-      } else {
-        await SecuritySettings.create({
-          client_id: owner.id,
-          password_last_changed: new Date().toISOString()
-        })
-      }
-
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
-      setShowPasswordModal(false)
       success('Password Changed', 'Your password has been updated successfully')
+      setShowPasswordModal(false)
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
     } catch (err) {
-      //
       toastError('Password Change Failed', err.message || 'Failed to change password')
     } finally {
       setChangingPassword(false)
     }
+  }
+
+  const handleToggle2FA = async () => {
+    // Supabase Auth MFA requires server-side implementation
+    // For now, show a message that this feature requires backend setup
+    toastError('Feature Not Available', 'Two-factor authentication requires backend configuration. Please contact support.')
+  }
+
+  const handleRevokeSession = async (sessionId) => {
+    // Supabase Auth doesn't provide client-side session enumeration/revocation
+    // This would require a backend endpoint
+    toastError('Feature Not Available', 'Session management requires backend configuration. Use "Sign out everywhere" from your device settings.')
   }
 
   const handleDeleteAccount = async () => {
@@ -1220,60 +1189,27 @@ export default function ClientProfilePage() {
                       <Button
                         variant="outline"
                         onClick={handleToggle2FA}
-                        className={`text-sm ${securitySettings?.two_factor_enabled
-                          ? 'text-red-600 hover:text-red-700 hover:border-red-300'
-                          : ''
-                          }`}
+                        className="text-sm"
                       >
-                        {securitySettings?.two_factor_enabled ? 'Disable 2FA' : 'Enable 2FA'}
+                        Enable 2FA
                       </Button>
                     </div>
-                    {securitySettings?.two_factor_enabled && (
-                      <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <p className="text-sm text-green-700">
-                          <span className="font-medium">2FA is enabled</span> - Your account is protected with two-factor authentication.
-                        </p>
-                      </div>
-                    )}
+                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-700">
+                        <span className="font-medium">Backend Required:</span> Two-factor authentication requires server-side configuration. Contact support to enable this feature.
+                      </p>
+                    </div>
                   </div>
 
                   {/* Active Sessions */}
                   <div className="bg-white border border-gray-200 rounded-xl p-6">
                     <h4 className="font-semibold text-gray-900 mb-4">Active Sessions</h4>
                     <p className="text-sm text-gray-500 mb-4">Manage your active login sessions</p>
-                    {activeSessions.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        <Monitor className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                        <p>No active sessions</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {activeSessions.map((session) => (
-                          <div key={session.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                            <div className="flex items-center gap-4">
-                              <Monitor className="w-5 h-5 text-gray-400" />
-                              <div>
-                                <p className="font-medium text-gray-900">{session.device_type || 'Unknown Device'}</p>
-                                <p className="text-sm text-gray-500">
-                                  {session.browser} • {session.location_country || 'Unknown Location'}
-                                </p>
-                                <p className="text-xs text-gray-400">
-                                  IP: {session.ip_address || 'Unknown'} • Last active: {new Date(session.last_activity).toLocaleString()}
-                                </p>
-                              </div>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleRevokeSession(session.id)}
-                              className="text-red-600 hover:text-red-700 hover:border-red-300"
-                            >
-                              Revoke
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-700">
+                        <span className="font-medium">Backend Required:</span> Session management requires server-side configuration. Use "Sign out everywhere" from your device settings or contact support.
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1364,22 +1300,12 @@ export default function ClientProfilePage() {
             <h3 className="text-xl font-bold text-gray-900 mb-4">Change Password</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Current Password</label>
-                <Input
-                  type="password"
-                  value={passwordForm.currentPassword}
-                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                  placeholder="Enter current password"
-                  className="rounded-lg"
-                />
-              </div>
-              <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">New Password</label>
                 <Input
                   type="password"
                   value={passwordForm.newPassword}
                   onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                  placeholder="Enter new password (min 8 characters)"
+                  placeholder="Enter new password (min 6 characters)"
                   className="rounded-lg"
                 />
               </div>
@@ -1401,14 +1327,14 @@ export default function ClientProfilePage() {
                   setShowPasswordModal(false)
                   setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
                 }}
-                className="flex-1"
+                disabled={changingPassword}
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleChangePassword}
                 disabled={changingPassword}
-                className="flex-1 bg-black text-white hover:bg-gray-800"
+                className="bg-black text-white hover:bg-gray-800"
               >
                 {changingPassword ? 'Changing...' : 'Change Password'}
               </Button>
@@ -1417,7 +1343,7 @@ export default function ClientProfilePage() {
         </div>
       )}
 
-      {/* Delete Account Confirmation Modal */}
+      {/* Delete Account Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md">
@@ -1440,16 +1366,16 @@ export default function ClientProfilePage() {
               <Button
                 variant="outline"
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1"
+                disabled={deletingAccount}
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleDeleteAccount}
                 disabled={deletingAccount}
-                className="flex-1 bg-red-600 text-white hover:bg-red-700"
+                className="bg-red-600 text-white hover:bg-red-700"
               >
-                {deletingAccount ? 'Processing...' : 'Delete Account'}
+                {deletingAccount ? 'Deleting...' : 'Delete Account'}
               </Button>
             </div>
           </div>
