@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { TeamInvitation, TeamMember } from '@/lib/supabaseEntities'
+import { TeamInvitation, TeamMember, Client } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CheckCircle, XCircle, Users, Building2, Mail, Lock, User as UserIcon } from 'lucide-react'
@@ -59,14 +59,9 @@ export default function AcceptInvitation() {
         return
       }
 
-      // Load inviter info
-      const { data: userData } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', inv.invited_by)
-        .single()
-
-      setClient({ company_name: userData?.full_name || 'SmartGigs Kenya' })
+      // Load client info
+      const clientData = await Client.get(inv.client_id)
+      setClient(clientData)
       setInvitation(inv)
       setStatus('valid')
       setLoading(false)
@@ -86,8 +81,9 @@ export default function AcceptInvitation() {
         return
       }
 
-      // Create team member record using user_id
+      // Create team member record
       await TeamMember.create({
+        client_id: invitation.client_id,
         user_id: authUser.id,
         email: authUser.email,
         role: invitation.role,

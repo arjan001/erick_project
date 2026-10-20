@@ -34,21 +34,27 @@ export default function SavedTalentPage() {
       })
 
       if (connections && connections.length > 0) {
-        // Fetch user details for each saved connection (connections are linked to user IDs)
-        const userIds = connections.map(c => c.connected_artist_id || c.connected_user_id).filter(Boolean)
-        const users = await Promise.all(
-          userIds.map(id => UserEntity.get(id))
+        // Fetch artist details for each saved connection
+        const artistIds = connections.map(c => c.connected_artist_id).filter(Boolean)
+        const artists = await Promise.all(
+          artistIds.map(id => Artist.get(id))
         )
 
-        // Transform users to talent format
-        const talentData = users.filter(Boolean).map(u => ({
-          id: u.id,
-          full_name: u.full_name,
-          email: u.email,
-          profile_photo_url: u.avatar_url,
-          profession: u.role === 'artist' ? 'Artist' : u.role,
-          location: 'Kenya',
-          skills: []
+        // Transform artists to talent format with full details
+        const talentData = artists.filter(Boolean).map(artist => ({
+          id: artist.id,
+          full_name: artist.display_name || artist.user_id,
+          email: '', // Email not in artists table
+          profile_photo_url: artist.profile_photo_url || artist.profile_image,
+          profession: artist.profession || 'Artist',
+          location: artist.location || 'Kenya',
+          city: artist.city,
+          country: artist.country,
+          skills: artist.skills || [],
+          disciplines: artist.disciplines || [],
+          bio: artist.bio,
+          reel_url: artist.video_reel_url,
+          social_media: artist.social_media
         }))
         setSavedTalent(talentData)
       } else {

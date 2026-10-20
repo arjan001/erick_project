@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Artist, Team, ProjectOwner, Backer, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
+import { Artist, Team, Client, Backer, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 import auditLogger from '@/lib/auditLogger'
 import { useToast } from '@/hooks/useToast'
 
@@ -144,12 +144,13 @@ async function ensureProfile(user) {
         })
       }
     } else if (role === 'client' || role === 'project_owner') {
-      const existing = await ProjectOwner.filter({ user_id: user.id })
+      const existing = await Client.filter({ user_id: user.id })
       if (!existing || existing.length === 0) {
-        await ProjectOwner.create({
+        await Client.create({
           user_id: user.id,
-          email: user.email,
-          full_name,
+          display_name: full_name,
+          company_name: full_name,
+          contact_email: user.email,
         })
       }
     }
@@ -176,8 +177,8 @@ async function updatePresence(u) {
         if (teams[0]) await Team.update(teams[0].id, { last_active: now })
       }
     } else if (u.role === 'client' || u.role === 'project_owner') {
-      const owners = await ProjectOwner.filter({ user_id: u.id })
-      if (owners[0]) await ProjectOwner.update(owners[0].id, { last_active: now })
+      const owners = await Client.filter({ user_id: u.id })
+      if (owners[0]) await Client.update(owners[0].id, { last_active: now })
     } else if (u.role === 'backer') {
       const backers = await Backer.filter({ user_id: u.id })
       if (backers[0]) await Backer.update(backers[0].id, { last_active: now })

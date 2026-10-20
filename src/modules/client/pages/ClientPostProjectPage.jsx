@@ -60,6 +60,9 @@ export default function ClientPostProject() {
     // Production Type
     productionTypes: [],
 
+    // Scheduling
+    scheduleDate: '', // For scheduled publishing
+
     // Dates and Location
     applicationDeadline: '',
     duration: '',
@@ -286,7 +289,7 @@ export default function ClientPostProject() {
         salary_range: formData.budgetType,
         rate: formData.compensation,
         submission_deadline: formData.applicationDeadline,
-        status: saveAsDraft ? 'draft' : 'open',
+        status: saveAsDraft ? 'draft' : (formData.scheduleDate ? 'scheduled' : 'open'),
         created_at: new Date().toISOString(),
         // Direct columns (after migration)
         about_project: formData.aboutProject,
@@ -306,13 +309,14 @@ export default function ClientPostProject() {
         company_name: formData.companyName,
         company_website: formData.companyWebsite,
         is_work_from_home: formData.isWorkFromHome,
-        expiry_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        expiry_date: formData.scheduleDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         // Metadata for additional data
         metadata: {
           audition_details: formData.auditionDetails || '',
           attachments: attachments,
           roles_needed: formData.rolesNeeded,
-          role_details: formData.jobType === 'production' ? formData.roleDetails : {}
+          role_details: formData.jobType === 'production' ? formData.roleDetails : {},
+          schedule_date: formData.scheduleDate
         }
       }
 
@@ -346,6 +350,7 @@ export default function ClientPostProject() {
           rolesNeeded: [],
           newRole: '',
           productionTypes: [],
+          scheduleDate: '',
           applicationDeadline: '',
           duration: '',
           location: '',
@@ -994,11 +999,26 @@ export default function ClientPostProject() {
                       Save as Draft
                     </Button>
                     <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const date = prompt('Enter schedule date (YYYY-MM-DD):')
+                        if (date) {
+                          setFormData({ ...formData, scheduleDate: date })
+                          handleSubmit(null, false)
+                        }
+                      }}
+                      disabled={loading}
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Schedule
+                    </Button>
+                    <Button
                       type="submit"
                       disabled={loading}
                       className="bg-purple-600 hover:bg-purple-700"
                     >
-                      {loading ? 'Posting...' : 'Post Job'}
+                      {loading ? 'Posting...' : 'Post Now'}
                     </Button>
                   </div>
                 ) : (
