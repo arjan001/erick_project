@@ -3,6 +3,7 @@ import { Artist, Connection, User as UserEntity } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import TalentCard from '@/components/landing/backstage/TalentCard'
+import ArtistProfileModal from '@/components/artist/ArtistProfileModal'
 import { Search, SlidersHorizontal, Heart, MapPin, Mail, User as UserIcon, MessageCircle, ExternalLink, Star, Filter, ChevronDown, ChevronLeft, ChevronRight, CheckSquare, Square, Play, Pause, X, UserPlus } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
@@ -25,6 +26,7 @@ export default function BrowseTalentPage() {
   const [itemsPerPage] = useState(12)
   const [selectedTalent, setSelectedTalent] = useState(new Set())
   const [autoPlay, setAutoPlay] = useState(false)
+  const [selectedArtist, setSelectedArtist] = useState(null)
 
   // Update URL when filters change
   useEffect(() => {
@@ -54,6 +56,7 @@ export default function BrowseTalentPage() {
         // Convert artists to talent format
         const talentData = allArtists.map(a => ({
           id: a.id,
+          user_id: a.user_id, // Include user_id for messaging
           full_name: a.display_name || a.stage_name || a.full_name,
           email: a.email,
           user_role: 'artist',
@@ -134,7 +137,16 @@ export default function BrowseTalentPage() {
   }
 
   const handleMessage = (artistId) => {
-    navigate('/Messages?with=' + artistId)
+    // Close modal if open
+    setSelectedArtist(null)
+    // Use user_id for messaging instead of artist id
+    // Find the artist's user_id from the talent data
+    const artist = talent.find(a => a.id === artistId)
+    if (artist?.user_id) {
+      navigate('/Messages?with=' + artist.user_id)
+    } else {
+      navigate('/Messages?with=' + artistId)
+    }
   }
 
   const handleConnect = async (artistId) => {
@@ -171,7 +183,7 @@ export default function BrowseTalentPage() {
   }
 
   const handleViewProfile = (artistId) => {
-    navigate(`/TalentPage?id=${artistId}`)
+    setSelectedArtist(artistId)
   }
 
   const filteredTalent = talent.filter(artist => {
@@ -431,7 +443,7 @@ export default function BrowseTalentPage() {
                     skills: (artist.skills_experience || []).map(s => s.skill),
                     overlayText: 'FEATURED'
                   }}
-                  onOpenProfile={(id) => navigate(`/ArtistPublicProfile?id=${id}`)}
+                  onOpenProfile={(id) => setSelectedArtist(id)}
                   showActions={true}
                   showControls={true}
                 />
@@ -483,8 +495,16 @@ export default function BrowseTalentPage() {
             </Button>
           </div>
         )}
-        
+
       </div>
+
+      {/* Artist Profile Modal */}
+      {selectedArtist && (
+        <ArtistProfileModal
+          artistId={selectedArtist}
+          onClose={() => setSelectedArtist(null)}
+        />
+      )}
     </div>
   )
 }

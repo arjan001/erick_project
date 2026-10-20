@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { X } from 'lucide-react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Artist, ArtistMedia, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
 import Navbar from '@/components/landing/backstage/Navbar'
 import Footer from '@/components/landing/backstage/Footer'
@@ -15,6 +15,7 @@ import {
 
 export default function ArtistProfileModal({ artistId, onClose }) {
   const { user: authUser } = useAuth()
+  const navigate = useNavigate()
   const [viewer, setViewer] = useState(null)
   const [viewedArtist, setViewedArtist] = useState(null)
   const [mediaItems, setMediaItems] = useState([])
@@ -185,9 +186,15 @@ export default function ArtistProfileModal({ artistId, onClose }) {
                     </div>
                     <div className="flex flex-wrap gap-3">
                       {viewer ? (
-                        <div className="px-6 py-3 bg-black text-white rounded-xl text-sm font-semibold">
+                        <button
+                          onClick={() => {
+                            onClose()
+                            navigate('/Messages?with=' + artist.user_id)
+                          }}
+                          className="px-6 py-3 bg-black text-white rounded-xl text-sm font-semibold hover:bg-gray-800 transition-colors"
+                        >
                           <MessageCircle className="w-4 h-4 inline mr-2" /> Contact
-                        </div>
+                        </button>
                       ) : (
                         <div className="px-6 py-3 bg-black text-white rounded-xl text-sm font-semibold">
                           Sign in to Contact
