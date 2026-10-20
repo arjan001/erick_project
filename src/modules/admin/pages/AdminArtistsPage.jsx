@@ -89,12 +89,12 @@ export default function AdminArtistsPage() {
     // Fetch additional data for the artist
     try {
       const [applications, jobs] = await Promise.all([
-        Application.filter({ artist_email: artist.email }, '-created_date', 10),
+        Application.filter({ user_id: artist.user_id }, '-created_date', 10),
         Job.list('-created_date', 20)
       ])
       setViewingArtist(prev => ({ ...prev, applications: applications || [], jobs: jobs || [] }))
     } catch (err) {
-
+      console.error('Error fetching artist details:', err)
     }
   }
 

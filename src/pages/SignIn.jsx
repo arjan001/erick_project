@@ -3,7 +3,7 @@ import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-do
 import { AlertCircle, Eye, EyeOff, Mail, Lock, Newspaper, ShieldCheck, Target, Briefcase, AtSign } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { Artist, Team, Backer, Client, Subscription, SubscriptionPackage } from '@/lib/supabaseEntities'
+import { Artist, Team, Backer, Client, Subscription, SubscriptionPackage, User } from '@/lib/supabaseEntities'
 import { getPendingApplication, clearPendingApplication } from '@/services/savedJobsService'
 import { listPartnerLogos } from '@/services/partnerLogoService'
 import { resolveUsernameToEmail } from '@/services/usernameService'
@@ -41,7 +41,6 @@ const DEMO_ACCOUNTS = {
 }
 
 const DEMO_BUTTONS = [
-  { email: 'admin@smartgigskenya.com', label: 'Admin', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AD&backgroundColor=4f46e5' },
   { email: 'client@client.com', label: 'Client', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CL&backgroundColor=0a0b2e' },
   { email: 'artist@artist.com', label: 'Creator', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CR&backgroundColor=00a37e' },
   // Temporarily hide team and backer demo buttons
@@ -213,6 +212,12 @@ export default function SignIn() {
       // Demo accounts (localStorage only — no Supabase account needed)
       if (DEMO_ACCOUNTS[email] && password === email) {
         const acc = DEMO_ACCOUNTS[email]
+        // Block admin demo account from normal sign-in
+        if (acc.role === 'admin') {
+          setError('Admin account not found. Please use the admin login page.')
+          setLoading(false)
+          return
+        }
         login({ id: email, email, full_name: acc.name, role: acc.role })
         if (acc.role === 'team') {
           localStorage.setItem('smartgigs_team', JSON.stringify({ id: 'team_001', team_name: acc.name, contact_email: email, role: 'team_admin' }))
@@ -242,6 +247,18 @@ export default function SignIn() {
       // Real Supabase email/password login - let AuthContext handle role resolution and redirect
       const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmail, password })
       if (error) throw error
+
+      // Check if user has admin role - block normal sign-in for admins
+      const user = data.user
+      const userRecords = await User.filter({ id: user.id })
+      const userRole = userRecords?.[0]?.role || user?.user_metadata?.role
+
+      if (userRole === 'admin') {
+        await supabase.auth.signOut()
+        setError('Admin account not found. Please use the admin login page at /erick')
+        setLoading(false)
+        return
+      }
 
       // Store redirect destination for AuthContext to use
       const redirectDest = sessionStorage.getItem('redirectAfterLogin')

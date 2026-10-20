@@ -27,7 +27,7 @@ export default function AdminClientsPage() {
   const [showModal, setShowModal] = useState(false)
   const [page, setPage] = useState(1)
   const [form, setForm] = useState({
-    full_name: '', email: '', company: '', phone: '', website: '', bio: '', status: 'active', is_suspended: false, is_disabled: false
+    client_name: '', display_name: '', company_name: '', phone: '', website: '', bio: '', status: 'active', is_suspended: false, is_disabled: false
   })
 
   const fetchClients = async () => {
@@ -82,9 +82,9 @@ export default function AdminClientsPage() {
     if (client) {
       setEditingClient(client)
       setForm({
-        full_name: client.full_name || '',
-        email: client.email || '',
-        company: client.company || '',
+        client_name: client.client_name || '',
+        display_name: client.display_name || '',
+        company_name: client.company_name || '',
         phone: client.phone || '',
         website: client.website || '',
         bio: client.bio || '',
@@ -94,25 +94,24 @@ export default function AdminClientsPage() {
       })
     } else {
       setEditingClient(null)
-      setForm({ full_name: '', email: '', company: '', phone: '', website: '', bio: '', status: 'active', is_suspended: false, is_disabled: false })
+      setForm({ client_name: '', display_name: '', company_name: '', phone: '', website: '', bio: '', status: 'active', is_suspended: false, is_disabled: false })
     }
     setShowModal(true)
   }
 
   const handleSave = async () => {
-    if (!form.full_name.trim()) { toastError('Validation', 'Name is required'); return; }
+    if (!form.client_name.trim()) { toastError('Validation', 'Name is required'); return; }
     try {
       if (editingClient) {
-        await ProjectOwner.update(editingClient.id, form)
+        await Client.update(editingClient.id, form)
         success('Updated', 'Client updated')
       } else {
-        await ProjectOwner.create(form)
+        await Client.create(form)
         success('Created', 'Client created')
       }
       setShowModal(false)
       fetchClients()
     } catch (err) {
-
       toastError('Save Failed', `Failed to save client: ${err.message || 'Unknown error'}`)
     }
   }
@@ -124,9 +123,9 @@ export default function AdminClientsPage() {
   }
 
   const filteredClients = clients.filter(client => {
-    const matchesSearch = client.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.company?.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = client.client_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      client.company_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      client.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' ||
       (statusFilter === 'active' && !client.is_suspended && !client.is_disabled) ||
       (statusFilter === 'suspended' && client.is_suspended) ||
@@ -203,20 +202,20 @@ export default function AdminClientsPage() {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     {client.profile_image ? (
-                      <img src={client.profile_image} alt={client.full_name} className="w-8 h-8 rounded-full object-cover" />
+                      <img src={client.profile_image} alt={client.display_name} className="w-8 h-8 rounded-full object-cover" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                        {client.full_name?.[0]?.toUpperCase() || 'C'}
+                        {client.display_name?.[0]?.toUpperCase() || 'C'}
                       </div>
                     )}
                     <div>
-                      <div className="font-medium text-gray-900 text-sm">{client.full_name || 'Unknown'}</div>
-                      <div className="text-xs text-gray-500 flex items-center gap-2"><Mail className="w-3 h-3" />{client.email || 'No email'}</div>
+                      <div className="font-medium text-gray-900 text-sm">{client.display_name || client.client_name || 'Unknown'}</div>
+                      <div className="text-xs text-gray-500">ID: {client.user_id?.slice(0, 8) || 'N/A'}</div>
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-600">
-                  {client.company || <span className="text-gray-400 text-xs">N/A</span>}
+                  {client.company_name || <span className="text-gray-400 text-xs">N/A</span>}
                 </td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-1 text-xs font-medium rounded-full border ${STATUS_STYLES[getStatus(client)]}`}>
@@ -224,7 +223,7 @@ export default function AdminClientsPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-600">
-                  {client.projects_submitted?.length || 0}
+                  -
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-600">
                   {client.created_at ? new Date(client.created_at).toLocaleDateString() : 'N/A'}
@@ -303,15 +302,15 @@ export default function AdminClientsPage() {
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4 mb-6">
                 {selectedClient.profile_image ? (
-                  <img src={selectedClient.profile_image} alt={selectedClient.full_name} className="w-16 h-16 rounded-full object-cover" />
+                  <img src={selectedClient.profile_image} alt={selectedClient.display_name} className="w-16 h-16 rounded-full object-cover" />
                 ) : (
                   <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-600">
-                    {selectedClient.full_name?.[0]?.toUpperCase() || 'C'}
+                    {selectedClient.display_name?.[0]?.toUpperCase() || 'C'}
                   </div>
                 )}
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900">{selectedClient.full_name || 'Unknown'}</h3>
-                  <p className="text-gray-600">{selectedClient.email || 'No email'}</p>
+                  <h3 className="text-2xl font-bold text-gray-900">{selectedClient.display_name || selectedClient.client_name || 'Unknown'}</h3>
+                  <p className="text-gray-600">User ID: {selectedClient.user_id?.slice(0, 8) || 'N/A'}</p>
                 </div>
               </div>
 
@@ -320,10 +319,10 @@ export default function AdminClientsPage() {
                   <label className="text-sm font-medium text-gray-500">Status</label>
                   <p className="font-medium capitalize">{getStatus(selectedClient)}</p>
                 </div>
-                {selectedClient.company && (
+                {selectedClient.company_name && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Company</label>
-                    <p className="font-medium flex items-center gap-2"><Building className="w-4 h-4" /> {selectedClient.company}</p>
+                    <p className="font-medium flex items-center gap-2"><Building className="w-4 h-4" /> {selectedClient.company_name}</p>
                   </div>
                 )}
                 {selectedClient.created_at && (
@@ -358,9 +357,9 @@ export default function AdminClientsPage() {
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
-              <div><label className="block text-sm font-medium mb-2">Full Name</label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></div>
-              <div><label className="block text-sm font-medium mb-2">Email</label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-              <div><label className="block text-sm font-medium mb-2">Company</label><Input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} /></div>
+              <div><label className="block text-sm font-medium mb-2">Client Name</label><Input value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })} /></div>
+              <div><label className="block text-sm font-medium mb-2">Display Name</label><Input value={form.display_name} onChange={(e) => setForm({ ...form, display_name: e.target.value })} /></div>
+              <div><label className="block text-sm font-medium mb-2">Company Name</label><Input value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} /></div>
               <div><label className="block text-sm font-medium mb-2">Phone</label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
               <div><label className="block text-sm font-medium mb-2">Website</label><Input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} /></div>
               <div><label className="block text-sm font-medium mb-2">Bio</label><textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>

@@ -35,6 +35,7 @@ export default function Erick() {
     setLoading(true)
 
     try {
+      // Sign in with Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -54,12 +55,10 @@ export default function Erick() {
         return
       }
 
-      // Log in via AuthContext
-      await login(email, password)
-
+      // Navigate to admin panel
       setTimeout(() => {
         navigate('/Admin')
-      }, 1000)
+      }, 500)
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.')
     } finally {

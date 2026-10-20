@@ -9,13 +9,23 @@ export function RoleGuard({ roles, children }) {
 
   useEffect(() => {
     if (!isLoadingAuth && !isAuthenticated) {
-      navigate('/SignIn')
+      // If trying to access admin routes, redirect to /erick
+      if (location.pathname.startsWith('/Admin') || location.pathname.startsWith('/admin')) {
+        navigate('/erick')
+      } else {
+        navigate('/SignIn')
+      }
       return
     }
 
-    // Don't redirect for role mismatches - just prevent access
-    // This allows seamless navigation between modules within the same role
-  }, [isAuthenticated, isLoadingAuth, navigate])
+    // If authenticated but trying to access admin routes without admin role
+    if (!isLoadingAuth && isAuthenticated && (location.pathname.startsWith('/Admin') || location.pathname.startsWith('/admin'))) {
+      if (user?.role !== 'admin') {
+        navigate('/erick')
+        return
+      }
+    }
+  }, [isAuthenticated, isLoadingAuth, navigate, location, user])
 
   if (isLoadingAuth) {
     return (
@@ -26,6 +36,11 @@ export function RoleGuard({ roles, children }) {
   }
 
   if (!isAuthenticated) {
+    return null
+  }
+
+  // If trying to access admin routes, must be admin
+  if ((location.pathname.startsWith('/Admin') || location.pathname.startsWith('/admin')) && user?.role !== 'admin') {
     return null
   }
 
