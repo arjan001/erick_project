@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Artist, Connection, User } from '@/lib/supabaseEntities'
+import { Artist, Connection, User as UserEntity } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import TalentCard from '@/components/landing/backstage/TalentCard'
@@ -44,33 +44,29 @@ export default function BrowseTalentPage() {
   const fetchTalent = async () => {
     try {
       setLoading(true)
-      console.log('Fetching talent from users table...')
+      console.log('Fetching talent from artists table...')
 
-      // Fetch all users first to get their roles
-      const allUsers = await User.list('-created_at', 1000)
-      console.log('Fetched all users:', allUsers.length, allUsers)
+      // Fetch all artists from artists table
+      const allArtists = await Artist.list('-created_at', 1000)
+      console.log('Fetched all artists:', allArtists.length, allArtists)
 
-      // Filter for artist role only (based on user's naming: artist = creator, client = employer)
-      const artistUsers = allUsers.filter(u => u.role === 'artist')
-      console.log('Filtered artist users:', artistUsers.length, artistUsers)
-
-      if (artistUsers && artistUsers.length > 0) {
-        // Convert users to talent format directly
-        const talentData = artistUsers.map(u => ({
-          id: u.id,
-          full_name: u.full_name,
-          email: u.email,
-          user_role: u.role,
-          role: u.role,
-          profile_photo_url: u.avatar_url,
-          based_in_city: null,
+      if (allArtists && allArtists.length > 0) {
+        // Convert artists to talent format
+        const talentData = allArtists.map(a => ({
+          id: a.id,
+          full_name: a.display_name || a.stage_name || a.full_name,
+          email: a.email,
+          user_role: 'artist',
+          role: 'artist',
+          profile_photo_url: a.profile_photo_url,
+          based_in_city: a.location?.split(',')[0] || null,
           based_in_country: 'Kenya',
-          skills_experience: []
+          skills_experience: (a.skills || []).map(s => ({ skill: s }))
         }))
         console.log('Setting talent data:', talentData)
         setTalent(talentData)
       } else {
-        console.log('No artist users found, setting empty talent')
+        console.log('No artists found, setting empty talent')
         setTalent([])
       }
     } catch (err) {

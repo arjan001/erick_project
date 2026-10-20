@@ -8,7 +8,7 @@ import {
   FileText, Video, Image as ImageIcon, Plus, Trash2, CheckCircle,
   AlertCircle, Briefcase, Users, Globe, Mic, Award, Save, ArrowLeft,
   ChevronRight, ChevronLeft, Sparkles, DollarSign, Phone, Film, Radio,
-  Edit, Eye
+  Edit, Eye, HelpCircle
 } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/lib/AuthContext'
@@ -55,6 +55,7 @@ export default function ClientPostProject() {
     // Roles
     rolesNeeded: [],
     newRole: '',
+    roleDetails: {}, // Store details for each role when production type
 
     // Production Type
     productionTypes: [],
@@ -438,7 +439,18 @@ export default function ClientPostProject() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Job Type</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                          Job Type
+                          <div className="relative group">
+                            <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
+                            <div className="absolute left-0 top-full mt-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-10">
+                              <p className="font-semibold mb-1">Role:</p>
+                              <p className="mb-2">Single position like Actor, Voice Over, Camera Operator.</p>
+                              <p className="font-semibold mb-1">Production:</p>
+                              <p>Full project with multiple roles and crew positions.</p>
+                            </div>
+                          </div>
+                        </label>
                         <select
                           value={formData.jobType}
                           onChange={(e) => setFormData({ ...formData, jobType: e.target.value })}

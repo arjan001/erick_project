@@ -12,7 +12,7 @@ import ProfileCompletionRing from '@/components/artist/dashboard/ProfileCompleti
 import ConnectsTrackerCard from '@/components/artist/dashboard/ConnectsTrackerCard'
 import QuickNotesCard from '@/components/artist/QuickNotesCard'
 import SavedJobsCard from '@/components/artist/dashboard/SavedJobsCard'
-import OnboardingTour from '@/components/onboarding/OnboardingTour'
+// import OnboardingTour from '@/components/onboarding/OnboardingTour' // Commented out - not needed
 import { Job, Application, Message, Notification, Artist, Subscription, SavedJob } from '@/lib/supabaseEntities'
 import { useAuth } from '@/lib/AuthContext'
 import { getSavedJobs, clearPendingApplication } from '@/services/savedJobsService'
@@ -28,7 +28,7 @@ export default function ArtistDashboard() {
   const [subscription, setSubscription] = useState(null)
   const [savedJobs, setSavedJobs] = useState([])
   const [showOnboarding, setShowOnboarding] = useState(false)
-  const [showTour, setShowTour] = useState(false)
+  // const [showTour, setShowTour] = useState(false) // Commented out - onboarding modal not needed
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -73,10 +73,11 @@ export default function ArtistDashboard() {
         }
 
         // Check if tour was dismissed
-        const tourDismissed = localStorage.getItem('onboarding_dismissed_artist')
-        if (!tourDismissed && artist) {
-          setShowTour(true)
-        }
+        // const tourDismissed = localStorage.getItem('onboarding_dismissed_artist')
+        // if (!tourDismissed && artist) {
+        //   setShowTour(true)
+        // }
+        // Onboarding tour disabled - not needed
 
         // Handle pending application from login redirect
         const jobId = searchParams.get('jobId')
@@ -226,13 +227,14 @@ export default function ArtistDashboard() {
         />
       )}
 
-      {showTour && (
+      {/* Onboarding tour disabled - not needed */}
+      {/* {showTour && (
         <OnboardingTour
           userRole="artist"
           onClose={() => setShowTour(false)}
           onComplete={() => setShowTour(false)}
         />
-      )}
+      )} */}
     </div>
   )
 }

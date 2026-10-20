@@ -10,7 +10,7 @@ import ClientRecentApplications from '@/components/client/ClientRecentApplicatio
 import ClientProjectCard from '@/components/client/ClientProjectCard'
 import ClientJobRow from '@/components/client/ClientJobRow'
 import ClientPostProjectModal from '@/components/client/ClientPostProjectModal'
-import OnboardingTour from '@/components/onboarding/OnboardingTour'
+// import OnboardingTour from '@/components/onboarding/OnboardingTour' // Commented out - not needed
 import { Plus, Briefcase, Send, MessageSquare, FolderKanban, X, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import InviteCodeCard from '@/components/InviteCodeCard'
@@ -31,7 +31,7 @@ export default function ClientDashboard() {
 
   const [showProjectModal, setShowProjectModal] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
-  const [showTour, setShowTour] = useState(false)
+  // const [showTour, setShowTour] = useState(false) // Commented out - onboarding modal not needed
 
   // Clear any stored AI context when dashboard loads
   useEffect(() => {
@@ -88,10 +88,11 @@ export default function ClientDashboard() {
         setUnreadMessages(0)
 
         // Check if tour was dismissed
-        const tourDismissed = localStorage.getItem('onboarding_dismissed_client')
-        if (!tourDismissed) {
-          setShowTour(true)
-        }
+        // const tourDismissed = localStorage.getItem('onboarding_dismissed_client')
+        // if (!tourDismissed) {
+        //   setShowTour(true)
+        // }
+        // Onboarding tour disabled - not needed
       } catch (err) {
         console.error('Error fetching dashboard data:', err)
         setProjects([])
@@ -318,13 +319,14 @@ export default function ClientDashboard() {
         editingProject={editingProject}
       />
 
-      {showTour && (
+      {/* Onboarding tour disabled - not needed */}
+      {/* {showTour && (
         <OnboardingTour
           userRole="client"
           onClose={() => setShowTour(false)}
           onComplete={() => setShowTour(false)}
         />
-      )}
+      )} */}
     </div>
   )
 }

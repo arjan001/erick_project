@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Artist, Connection } from '@/lib/supabaseEntities'
+import { Artist, Connection, User as UserEntity } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Star, Search, Heart, MapPin, Mail, User, MessageCircle, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
+import TalentCard from '@/components/landing/backstage/TalentCard'
+import { Star, Search, Heart, MapPin, Mail, User, MessageCircle, ExternalLink, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { useNavigate } from 'react-router-dom'
@@ -33,12 +34,23 @@ export default function SavedTalentPage() {
       })
 
       if (connections && connections.length > 0) {
-        // Fetch artist details for each saved connection
-        const artistIds = connections.map(c => c.connected_artist_id).filter(Boolean)
-        const artists = await Promise.all(
-          artistIds.map(id => Artist.get(id))
+        // Fetch user details for each saved connection (connections are linked to user IDs)
+        const userIds = connections.map(c => c.connected_artist_id || c.connected_user_id).filter(Boolean)
+        const users = await Promise.all(
+          userIds.map(id => UserEntity.get(id))
         )
-        setSavedTalent(artists.filter(Boolean))
+
+        // Transform users to talent format
+        const talentData = users.filter(Boolean).map(u => ({
+          id: u.id,
+          full_name: u.full_name,
+          email: u.email,
+          profile_photo_url: u.avatar_url,
+          profession: u.role === 'artist' ? 'Artist' : u.role,
+          location: 'Kenya',
+          skills: []
+        }))
+        setSavedTalent(talentData)
       } else {
         setSavedTalent([])
       }
@@ -71,8 +83,8 @@ export default function SavedTalentPage() {
     }
   }
 
-  const handleMessage = (artistEmail) => {
-    navigate('/Messages', { state: { recipientEmail: artistEmail } })
+  const handleMessage = (artistId) => {
+    navigate('/Messages?with=' + artistId)
   }
 
   const handleViewProfile = (artistId) => {
@@ -125,68 +137,37 @@ export default function SavedTalentPage() {
             <p className="text-gray-500">No saved talent found</p>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {paginatedTalent.map((artist) => (
-              <div key={artist.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow bg-white">
-                <div className="flex items-start gap-4 mb-3">
-                  <div
-                    className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center text-gray-500 font-semibold flex-shrink-0 cursor-pointer"
-                    onClick={() => handleViewProfile(artist.id)}
-                  >
-                    {artist.profile_photo_url ? (
-                      <img src={artist.profile_photo_url} alt={artist.full_name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span>{artist.full_name?.[0] || 'U'}</span>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3
-                      className="font-semibold text-gray-900 truncate cursor-pointer hover:text-[#4F46E5]"
-                      onClick={() => handleViewProfile(artist.id)}
-                    >{artist.full_name}</h3>
-                    <p className="text-xs text-gray-500 capitalize">{artist.role || 'Artist'}</p>
-                    {artist.based_in_city && (
-                      <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
-                        <MapPin className="w-3 h-3" />
-                        {artist.based_in_city}
-                      </p>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleUnsave(artist.id)}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
-                  >
-                    <Heart className="w-4 h-4 fill-current" />
-                  </Button>
-                </div>
-                <div className="space-y-2 text-sm text-gray-600 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-gray-400" />
-                    <span className="truncate">{artist.email}</span>
-                  </div>
-                  {artist.city && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-400" />
-                      <span>{artist.city}, {artist.country || 'Kenya'}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-2">
+              <div key={artist.id} className="group">
+                <TalentCard
+                  profile={{
+                    id: artist.id,
+                    name: artist.full_name,
+                    images: artist.profile_photo_url ? [artist.profile_photo_url] : ['https://ui-avatars.com/api/?name=' + (artist.full_name || 'Artist') + '&background=6366f1&color=fff&size=256'],
+                    profession: artist.profession || 'Artist',
+                    location: artist.location || 'Kenya',
+                    skills: artist.skills || [],
+                    overlayText: 'SAVED'
+                  }}
+                  onOpenProfile={(id) => navigate(`/ArtistPublicProfile?id=${id}`)}
+                  showActions={true}
+                  showControls={true}
+                />
+                <div className="flex gap-2 mt-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1"
-                    onClick={() => handleViewProfile(artist.id)}
+                    className="flex-1 text-xs"
+                    onClick={() => handleUnsave(artist.id)}
                   >
-                    <ExternalLink className="w-3 h-3 mr-1" />
-                    View Profile
+                    <Heart className="w-3 h-3 mr-1" />
+                    Unsave
                   </Button>
                   <Button
                     size="sm"
-                    className="flex-1 bg-[#4F46E5] hover:bg-[#4338CA]"
-                    onClick={() => handleMessage(artist.email)}
+                    className="flex-1 bg-[#4F46E5] hover:bg-[#4338CA] text-xs"
+                    onClick={() => handleMessage(artist.id)}
                   >
                     <MessageCircle className="w-3 h-3 mr-1" />
                     Message

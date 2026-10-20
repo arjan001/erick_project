@@ -66,12 +66,11 @@ export default function ClientProfilePage() {
 
   const [formData, setFormData] = useState({
     company_name: '', contact_phone: '', website_url: '', bio: '', linkedin: '', instagram: '', twitter: '', youtube: '',
-    city: '', country: '', years_in_film: '', years_in_directing: ''
+    city: '', country: ''
   })
 
-  const [emailNotifications, setEmailNotifications] = useState(true)
-  const [projectUpdates, setProjectUpdates] = useState(true)
-  const [profilePublic, setProfilePublic] = useState(true)
+  // Removed: years_in_film, years_in_directing, email_notifications, project_updates, profile_public
+  // These fields don't exist in the clients table schema
 
   useEffect(() => {
     if (isLoadingAuth) return
@@ -91,11 +90,10 @@ export default function ClientProfilePage() {
           setFormData({
             company_name: o.company_name || '', contact_phone: o.contact_phone || '', website_url: o.website_url || '', bio: o.bio || '',
             linkedin: o.linkedin || '', instagram: o.instagram || '', twitter: o.twitter || '', youtube: o.youtube || '',
-            city: o.city || '', country: o.country || '', years_in_film: o.years_in_film || '', years_in_directing: o.years_in_directing || ''
+            city: o.city || '', country: o.country || ''
           })
-          setEmailNotifications(o.email_notifications ?? true)
-          setProjectUpdates(o.project_updates ?? true)
-          setProfilePublic(o.profile_public ?? true)
+          // Removed: years_in_film, years_in_directing, email_notifications, project_updates, profile_public
+          // These fields don't exist in the clients table schema
           setCompanyImages(o.company_images || [])
           setImportantFiles(o.important_files || [])
         }
@@ -213,12 +211,9 @@ export default function ClientProfilePage() {
           youtube: formData.youtube,
           city: formData.city,
           country: formData.country,
-          years_in_film: formData.years_in_film ? parseInt(formData.years_in_film) : null,
-          years_in_directing: formData.years_in_directing ? parseInt(formData.years_in_directing) : null,
-          important_files: importantFiles,
-          email_notifications: emailNotifications,
-          project_updates: projectUpdates,
-          profile_public: profilePublic
+          important_files: importantFiles
+          // Removed: years_in_film, years_in_directing, email_notifications, project_updates, profile_public
+          // These fields don't exist in the clients table schema
         })
         setOwner(newOwner)
         success('Profile Created', 'Your profile has been created')
@@ -272,12 +267,10 @@ export default function ClientProfilePage() {
       return
     }
     try {
-      const updated = await Client.update(owner.id, {
-        email_notifications: emailNotifications,
-        project_updates: projectUpdates,
-        profile_public: profilePublic
-      })
-      setOwner(updated)
+      // Removed: email_notifications, project_updates, profile_public
+      // These fields don't exist in the clients table schema
+      // Preferences toggle section removed
+      setOwner(owner)
       success('Preferences Updated', 'Your settings have been saved')
     } catch (err) {
       //
@@ -867,14 +860,7 @@ export default function ClientProfilePage() {
                       <label className="block text-sm font-medium text-gray-900 mb-2">Country</label>
                       <CountrySelector value={formData.country} onChange={(val) => setFormData({ ...formData, country: val })} />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2"><Film className="w-4 h-4 text-gray-400" />Years in Film</label>
-                      <Input type="number" value={formData.years_in_film} onChange={(e) => setFormData({ ...formData, years_in_film: e.target.value })} placeholder="e.g., 5" className="rounded-lg" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2"><Monitor className="w-4 h-4 text-gray-400" />Years in Directing</label>
-                      <Input type="number" value={formData.years_in_directing} onChange={(e) => setFormData({ ...formData, years_in_directing: e.target.value })} placeholder="e.g., 3" className="rounded-lg" />
-                    </div>
+                    {/* Removed: Years in Film and Years in Directing - fields don't exist in clients table schema */}
                   </div>
                   <Button onClick={handleSaveProfile} disabled={saving} className="bg-black text-white hover:bg-gray-800 rounded-lg">
                     {saving ? 'Saving...' : 'Save Changes'}

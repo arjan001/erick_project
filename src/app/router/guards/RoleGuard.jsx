@@ -13,10 +13,9 @@ export function RoleGuard({ roles, children }) {
       return
     }
 
-    // If user doesn't have the required role, don't force redirect
-    // Just prevent access by returning null below
+    // Don't redirect for role mismatches - just prevent access
     // This allows seamless navigation between modules within the same role
-  }, [isAuthenticated, isLoadingAuth, user, roles, navigate, location])
+  }, [isAuthenticated, isLoadingAuth, navigate])
 
   if (isLoadingAuth) {
     return (
@@ -33,6 +32,7 @@ export function RoleGuard({ roles, children }) {
   // admin bypasses all role checks
   if (user?.role === 'admin') return children
 
+  // Check if user has the required role
   if (!user || !roles.includes(user.role)) {
     return null
   }
