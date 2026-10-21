@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { TickerEntry, Article } from '@/lib/supabaseEntities'
+import { TickerEntry } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,25 +9,18 @@ import { useToast } from '@/hooks/useToast.jsx'
 export default function AdminTickerPage() {
   const { success, error: toastError } = useToast()
   const [entries, setEntries] = useState([])
-  const [articles, setArticles] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingEntry, setEditingEntry] = useState(null)
   const [form, setForm] = useState({
-    text: '', category: 'news', link_type: 'none',
-    link_url: '', link_target_id: null, status: 'draft', display_order: 0,
+    text: '', link: '', active: true, display_order: 0,
   })
 
   const fetchData = async () => {
     try {
-      const [tickerData, articlesData] = await Promise.all([
-        TickerEntry.list('-display_order', 100),
-        Article.list('-published_at', 100)
-      ])
+      const tickerData = await TickerEntry.list('-display_order', 100)
       setEntries(tickerData || [])
-      setArticles(articlesData || [])
     } catch (err) {
-
       toastError('Load Failed', 'Failed to load data')
     } finally {
       setLoading(false)
@@ -41,13 +34,13 @@ export default function AdminTickerPage() {
       setEditingEntry(entry)
       setForm({
         text: entry.text || '',
-        category: entry.category || 'news', link_type: entry.link_type || 'none',
-        link_url: entry.link_url || '', link_target_id: entry.link_target_id || null,
-        status: entry.status || 'draft', display_order: entry.display_order || 0,
+        link: entry.link || '',
+        active: entry.active !== false,
+        display_order: entry.display_order || 0,
       })
     } else {
       setEditingEntry(null)
-      setForm({ text: '', category: 'news', link_type: 'none', link_url: '', link_target_id: null, status: 'draft', display_order: 0 })
+      setForm({ text: '', link: '', active: true, display_order: 0 })
     }
     setShowModal(true)
   }
@@ -56,20 +49,21 @@ export default function AdminTickerPage() {
     if (!form.text.trim()) { toastError('Validation', 'Text is required'); return; }
     try {
       const dataToSave = {
-        ...form,
-        link_target_id: form.link_target_id || null
+        text: form.text,
+        link: form.link || null,
+        active: form.active,
+        display_order: form.display_order || 0,
       }
       if (editingEntry) {
         await TickerEntry.update(editingEntry.id, dataToSave)
         success('Updated', 'Ticker entry updated')
       } else {
-        await TickerEntry.create({ ...dataToSave, updated_at: new Date().toISOString() })
+        await TickerEntry.create(dataToSave)
         success('Created', 'Ticker entry created')
       }
       setShowModal(false)
       fetchData()
     } catch (err) {
-
       toastError('Save Failed', `Failed to save ticker entry: ${err.message || 'Unknown error'}`)
     }
   }
@@ -88,9 +82,9 @@ export default function AdminTickerPage() {
 
   const toggleStatus = async (entry) => {
     try {
-      const newStatus = entry.status === 'live' ? 'draft' : 'live'
-      await TickerEntry.update(entry.id, { status: newStatus, updated_at: new Date().toISOString() })
-      success(newStatus === 'live' ? 'Published' : 'Unpublished', `Entry is now ${newStatus}`)
+      const newActive = !entry.active
+      await TickerEntry.update(entry.id, { active: newActive })
+      success(newActive ? 'Activated' : 'Deactivated', `Entry is now ${newActive ? 'active' : 'inactive'}`)
       fetchData()
     } catch (err) {
       toastError('Failed', 'Failed to update status')
@@ -120,7 +114,7 @@ export default function AdminTickerPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Navbar Marquee / Ticker</h1>
-          <p className="text-gray-600">Manage the scrolling marquee items shown on the top banner. Items can link to articles, projects, or external URLs.</p>
+          <p className="text-gray-600">Manage the scrolling marquee items shown on the top banner. Items can link to any page or external URL.</p>
         </div>
         <Button onClick={() => openModal()} className="bg-black text-white hover:bg-gray-800">
           <Plus className="w-4 h-4 mr-2" /> Add Ticker Item
@@ -147,21 +141,20 @@ export default function AdminTickerPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-900 truncate">{entry.text}</span>
-                      {entry.link_type !== 'none' && entry.link_url && (
-                        <a href={entry.link_url} target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-700">
+                      {entry.link && (
+                        <a href={entry.link} target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-700">
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       )}
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                      <span className="capitalize">{entry.category?.replace(/_/g, ' ')}</span>
                       <span>Order: {entry.display_order || 0}</span>
-                      <span>Link: {entry.link_type}</span>
+                      <span>{entry.active ? 'Active' : 'Inactive'}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <button onClick={() => toggleStatus(entry)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${entry.status === 'live' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                      {entry.status === 'live' ? <><Eye className="w-3 h-3 inline mr-1" />Live</> : <><EyeOff className="w-3 h-3 inline mr-1" />Draft</>}
+                    <button onClick={() => toggleStatus(entry)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${entry.active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                      {entry.active ? <><Eye className="w-3 h-3 inline mr-1" />Active</> : <><EyeOff className="w-3 h-3 inline mr-1" />Inactive</>}
                     </button>
                     <button onClick={() => openModal(entry)} className="p-2 hover:bg-gray-200 rounded text-gray-600"><Edit2 className="w-4 h-4" /></button>
                     <button onClick={() => handleDelete(entry.id)} className="p-2 hover:bg-red-50 rounded text-red-600"><Trash2 className="w-4 h-4" /></button>
@@ -183,59 +176,18 @@ export default function AdminTickerPage() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">Text (shown in marquee)</label>
-                <Input value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} placeholder="e.g., New documentary project seeking cultural backing" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Category</label>
-                  <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                    <option value="news">News</option>
-                    <option value="article">Article</option>
-                    <option value="announcement">Announcement</option>
-                    <option value="sponsorship">Sponsorship</option>
-                    <option value="cultural_support">Cultural Support</option>
-                    <option value="co_production">Co-Production</option>
-                    <option value="partnership">Partnership</option>
-                    <option value="institutional">Institutional</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Status</label>
-                  <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                    <option value="draft">Draft (hidden)</option>
-                    <option value="live">Live (visible in marquee)</option>
-                  </select>
-                </div>
+                <Input value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} placeholder="e.g., 🎬 SmartGigs Kenya - Your gateway to creative talent" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Link Type (what happens when clicked)</label>
-                <select value={form.link_type} onChange={(e) => setForm({ ...form, link_type: e.target.value, link_url: '', link_target_id: null })} className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                  <option value="none">No link (plain text)</option>
-                  <option value="url">External URL</option>
-                  <option value="article">Article page</option>
-                </select>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Link URL (optional)</label>
+                <Input value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} placeholder="https://smartgigs.oneplusafrica.com/FindGigs" />
               </div>
-              {form.link_type === 'url' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Link URL</label>
-                  <Input value={form.link_url} onChange={(e) => setForm({ ...form, link_url: e.target.value })} placeholder="https://..." />
-                </div>
-              )}
-              {form.link_type === 'article' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Select Article</label>
-                  <select
-                    value={form.link_target_id || ''}
-                    onChange={(e) => setForm({ ...form, link_target_id: e.target.value || null })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  >
-                    <option value="">-- Select an article --</option>
-                    {articles.filter(a => a.status === 'published').map(article => (
-                      <option key={article.id} value={article.id}>{article.title}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} className="w-4 h-4" />
+                  Active (visible in marquee)
+                </label>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">Display Order (lower = appears first)</label>
                 <Input type="number" value={form.display_order} onChange={(e) => setForm({ ...form, display_order: parseInt(e.target.value) || 0 })} />

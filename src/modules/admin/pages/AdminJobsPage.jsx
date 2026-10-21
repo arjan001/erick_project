@@ -305,8 +305,8 @@ export default function AdminJobsPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium">Client</Label>
-                  <p className="text-gray-600">{selectedJob.client_name || 'N/A'}</p>
+                  <Label className="text-sm font-medium">Job Type</Label>
+                  <p className="text-gray-600">{selectedJob.job_type || 'N/A'}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Location</Label>
@@ -317,12 +317,20 @@ export default function AdminJobsPage() {
                   <p className="text-gray-600">
                     {selectedJob.budget_min || selectedJob.budget_max
                       ? `$${(selectedJob.budget_min || 0).toLocaleString()} - $${(selectedJob.budget_max || 0).toLocaleString()}`
-                      : 'N/A'}
+                      : selectedJob.budget || 'N/A'}
                   </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Status</Label>
                   <div>{getStatusBadge(selectedJob.status)}</div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Created</Label>
+                  <p className="text-gray-600">{selectedJob.created_at ? new Date(selectedJob.created_at).toLocaleDateString() : 'N/A'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Application Deadline</Label>
+                  <p className="text-gray-600">{selectedJob.application_deadline ? new Date(selectedJob.application_deadline).toLocaleDateString() : 'N/A'}</p>
                 </div>
               </div>
 

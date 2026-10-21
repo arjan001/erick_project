@@ -217,8 +217,8 @@ export default function AdminClientsPage() {
               <tr key={client.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    {client.profile_image ? (
-                      <img src={client.profile_image} alt={client.display_name} className="w-8 h-8 rounded-full object-cover" />
+                    {client.logo_url ? (
+                      <img src={client.logo_url} alt={client.display_name} className="w-8 h-8 rounded-full object-cover" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
                         {client.display_name?.[0]?.toUpperCase() || 'C'}
@@ -317,8 +317,8 @@ export default function AdminClientsPage() {
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4 mb-6">
-                {selectedClient.profile_image ? (
-                  <img src={selectedClient.profile_image} alt={selectedClient.display_name} className="w-16 h-16 rounded-full object-cover" />
+                {selectedClient.logo_url ? (
+                  <img src={selectedClient.logo_url} alt={selectedClient.display_name} className="w-16 h-16 rounded-full object-cover" />
                 ) : (
                   <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-600">
                     {selectedClient.display_name?.[0]?.toUpperCase() || 'C'}

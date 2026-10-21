@@ -244,7 +244,17 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================================
--- 5. CREATE INDEXES FOR PERFORMANCE
+-- 5. DISABLE RLS POLICIES (DISABLED PER USER REQUEST)
+-- ============================================================
+
+-- Disable RLS on roles and permissions tables for now
+ALTER TABLE public.permissions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.roles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.role_permissions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_roles DISABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- 6. CREATE INDEXES FOR PERFORMANCE
 -- ============================================================
 
 CREATE INDEX IF NOT EXISTS idx_permissions_module ON public.permissions(module);
