@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { Briefcase, Search, Eye, Trash2, Calendar, MapPin, CheckCircle, XCircle, X, ChevronLeft, ChevronRight, Users } from 'lucide-react'
+import { Briefcase, Search, Eye, Trash2, Calendar, MapPin, CheckCircle, XCircle, X, ChevronLeft, ChevronRight, Users, Star } from 'lucide-react'
 
 const STATUSES = ['draft', 'pending_approval', 'open', 'closed', 'filled']
 
