@@ -63,6 +63,21 @@ export default function AdminJobsPage() {
     }
   }
 
+  const handleToggleFeatured = async (jobId, currentFeatured) => {
+    try {
+      await Job.update(jobId, { is_featured: !currentFeatured })
+      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, is_featured: !currentFeatured } : j))
+      const message = !currentFeatured ? 'Job marked as featured' : 'Job removed from featured'
+      success('Updated', message)
+      AuditLog.create({ actor_email: user?.email, action: 'job.featured_toggle', entity_type: 'Job', entity_id: jobId, details: `Featured set to ${!currentFeatured}` }).catch(err => {
+        console.error('Failed to create audit log:', err)
+      })
+    } catch (err) {
+      console.error('Error toggling featured:', err)
+      error('Failed', 'Failed to toggle featured status')
+    }
+  }
+
   const handleToggleStatus = async (jobId, currentStatus) => {
     let newStatus
     if (currentStatus === 'pending_approval') {
@@ -221,6 +236,13 @@ export default function AdminJobsPage() {
                   <td className="px-4 py-3 text-sm text-gray-600">{new Date(job.created_at || job.posted_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleToggleFeatured(job.id, job.is_featured)}
+                        className={`p-1.5 rounded ${job.is_featured ? 'text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50' : 'text-gray-400 hover:text-yellow-500 hover:bg-gray-100'}`}
+                        title={job.is_featured ? 'Remove from Featured' : 'Mark as Featured'}
+                      >
+                        <Star className={`w-4 h-4 ${job.is_featured ? 'fill-current' : ''}`} />
+                      </button>
                       <button
                         onClick={() => handleViewJobDetails(job)}
                         className="p-1.5 text-gray-600 hover:text-black hover:bg-gray-100 rounded"

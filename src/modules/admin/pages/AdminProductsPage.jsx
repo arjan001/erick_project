@@ -30,8 +30,15 @@ export default function AdminProductsPage() {
     auction_end_time: '',
     auction_target_count: 1000,
     auction_participants: 0,
+    auction_start_time: '',
+    auction_min_bid: '',
+    auction_reserve_price: '',
     currency: 'KES',
     fulfillment: 'physical',
+    weight: '',
+    dimensions: '',
+    tags: '',
+    specifications: '',
   })
 
   const categories = ['Wardrobe', 'Equipment', 'Merchandise', 'Collectibles', 'Experiences']
@@ -60,14 +67,23 @@ export default function AdminProductsPage() {
       const newProduct = await ShopProduct.create({
         ...productForm,
         price: parseFloat(productForm.price),
+        discount_price: productForm.discount_price ? parseFloat(productForm.discount_price) : null,
         stock: parseInt(productForm.stock),
         sold: 0,
-        images: productForm.images.length > 0 ? productForm.images : ['placeholder.jpg']
+        images: productForm.images.length > 0 ? productForm.images : ['placeholder.jpg'],
+        auction_min_bid: productForm.auction_min_bid ? parseFloat(productForm.auction_min_bid) : null,
+        auction_reserve_price: productForm.auction_reserve_price ? parseFloat(productForm.auction_reserve_price) : null,
       })
       setProducts([...products, newProduct])
       success('Success', 'Product created successfully')
       setShowModal(false)
-      setProductForm({ name: '', description: '', price: '', discount_price: '', category: '', stock: '', sku: '', images: [], status: 'active', featured: false, auction_enabled: false, auction_type: 'time', auction_duration_hours: 24, auction_end_time: '', auction_target_count: 1000, auction_participants: 0, currency: 'KES', fulfillment: 'physical' })
+      setProductForm({
+        name: '', description: '', price: '', discount_price: '', category: '', stock: '', sku: '', images: [],
+        status: 'active', featured: false, auction_enabled: false, auction_type: 'time', auction_duration_hours: 24,
+        auction_end_time: '', auction_target_count: 1000, auction_participants: 0, auction_start_time: '',
+        auction_min_bid: '', auction_reserve_price: '', currency: 'KES', fulfillment: 'physical', weight: '',
+        dimensions: '', tags: '', specifications: '',
+      })
     } catch (err) {
       console.error('Error creating product:', err)
       error('Failed', 'Failed to create product')
@@ -322,13 +338,25 @@ export default function AdminProductsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description (HTML supported)</label>
                 <textarea
                   value={productForm.description}
                   onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                  rows={3}
+                  rows={6}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  placeholder="You can use HTML tags for formatting. Rich text editor coming soon."
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Product Images (URLs, comma-separated)</label>
+                <textarea
+                  value={productForm.images.join(', ')}
+                  onChange={(e) => setProductForm({ ...productForm, images: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
+                />
+                <p className="text-xs text-gray-500 mt-1">Enter image URLs separated by commas. Upload functionality coming soon.</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -394,6 +422,47 @@ export default function AdminProductsPage() {
                 </div>
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  value={productForm.tags}
+                  onChange={(e) => setProductForm({ ...productForm, tags: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  placeholder="action, vintage, limited-edition"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Specifications (JSON or plain text)</label>
+                <textarea
+                  value={productForm.specifications}
+                  onChange={(e) => setProductForm({ ...productForm, specifications: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  placeholder='{"size": "M", "material": "Cotton", "color": "Black"}'
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
+                  <input
+                    type="text"
+                    value={productForm.weight}
+                    onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Dimensions (LxWxH cm)</label>
+                  <input
+                    type="text"
+                    value={productForm.dimensions}
+                    onChange={(e) => setProductForm({ ...productForm, dimensions: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                    placeholder="30x20x10"
+                  />
+                </div>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Fulfillment Type</label>
                 <select
                   value={productForm.fulfillment}
@@ -425,26 +494,35 @@ export default function AdminProductsPage() {
                         {auctionTypes.map(type => <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}-based</option>)}
                       </select>
                     </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                        <input
+                          type="datetime-local"
+                          value={productForm.auction_start_time}
+                          onChange={(e) => setProductForm({ ...productForm, auction_start_time: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                        <input
+                          type="datetime-local"
+                          value={productForm.auction_end_time}
+                          onChange={(e) => setProductForm({ ...productForm, auction_end_time: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                        />
+                      </div>
+                    </div>
                     {productForm.auction_type === 'time' ? (
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Duration (hours)</label>
-                          <input
-                            type="number"
-                            value={productForm.auction_duration_hours}
-                            onChange={(e) => setProductForm({ ...productForm, auction_duration_hours: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-                          <input
-                            type="datetime-local"
-                            value={productForm.auction_end_time}
-                            onChange={(e) => setProductForm({ ...productForm, auction_end_time: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                          />
-                        </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Duration (hours)</label>
+                        <input
+                          type="number"
+                          value={productForm.auction_duration_hours}
+                          onChange={(e) => setProductForm({ ...productForm, auction_duration_hours: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                        />
                       </div>
                     ) : (
                       <div>
@@ -457,6 +535,26 @@ export default function AdminProductsPage() {
                         />
                       </div>
                     )}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Bid</label>
+                        <input
+                          type="number"
+                          value={productForm.auction_min_bid}
+                          onChange={(e) => setProductForm({ ...productForm, auction_min_bid: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Reserve Price (Optional)</label>
+                        <input
+                          type="number"
+                          value={productForm.auction_reserve_price}
+                          onChange={(e) => setProductForm({ ...productForm, auction_reserve_price: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                        />
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

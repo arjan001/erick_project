@@ -10,7 +10,8 @@ const navItems = [
   { path: '/Admin/Invites', label: 'Invites', icon: Mail },
   { path: '/Admin/Clients', label: 'Clients', icon: Users },
   { path: '/Admin/Artists', label: 'Creators', icon: Users },
-  { path: '/Admin/Projects', label: 'Projects', icon: FolderKanban },
+  { path: '/Admin/Teams', label: 'Teams', icon: Users, disabled: true },
+  { path: '/Admin/Backers', label: 'Backers', icon: DollarSign, disabled: true },
   { path: '/Admin/Jobs', label: 'Jobs', icon: FileText },
   { path: '/Admin/FeaturedWork', label: 'Featured Jobs', icon: Star },
   { path: '/Admin/Categories', label: 'Categories', icon: Grid3x3 },
@@ -43,7 +44,7 @@ const navItems = [
 const navGroups = [
   { label: 'Main', items: ['/Admin'] },
   { label: 'User Management', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
-  { label: 'Content Management', items: ['/Admin/Clients', '/Admin/Artists', '/Admin/Projects', '/Admin/Jobs', '/Admin/FeaturedWork', '/Admin/Categories', '/Admin/Ticker'] },
+  { label: 'Content Management', items: ['/Admin/Clients', '/Admin/Artists', '/Admin/Teams', '/Admin/Backers', '/Admin/Jobs', '/Admin/FeaturedWork', '/Admin/Categories', '/Admin/Ticker'] },
   { label: 'Shop', items: ['/Admin/Products', '/Admin/Orders', '/Admin/CardPayments', '/Admin/ShopSettings', '/Admin/Partners'] },
   { label: 'Content & Communication', items: ['/Admin/Articles', '/Admin/Newsletter', '/Admin/MailingList', '/Admin/Messages', '/Admin/CMS'] },
   { label: 'Integrations', items: ['/Admin/SEOCMS', '/Admin/ImageStorage', '/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
@@ -185,18 +186,21 @@ export default function AdminLayout({ children }) {
                     if (!item) return null
                     const Icon = item.icon
                     const active = isActive(path, item.exact)
+                    const disabled = item.disabled || false
                     return (
-                      <Link
+                      <div
                         key={path}
-                        to={path}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${active
-                          ? 'bg-indigo-100 text-indigo-700 font-semibold'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${disabled
+                          ? 'text-gray-400 cursor-not-allowed opacity-60'
+                          : active
+                            ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                           }`}
                       >
                         <Icon className="w-4 h-4" />
                         <span className="flex-1 text-left">{item.label}</span>
-                      </Link>
+                        {disabled && <span className="text-xs text-gray-400">Coming Soon</span>}
+                      </div>
                     )
                   })}
                 </div>
