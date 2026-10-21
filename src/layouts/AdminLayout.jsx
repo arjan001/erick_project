@@ -160,18 +160,32 @@ export default function AdminLayout({ children }) {
             navItems.map((item) => {
               const active = isActive(item.path, item.exact)
               const Icon = item.icon
+              const disabled = item.disabled || false
+              const navContent = (
+                <Icon className="w-4 h-4 flex-shrink-0" />
+              )
               return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center justify-center w-full p-2 rounded-lg transition-all mb-2 ${active
-                    ? 'bg-gray-900 text-white font-semibold'
-                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  title={item.label}
-                >
-                  <Icon className="w-4 h-4 flex-shrink-0" />
-                </Link>
+                disabled ? (
+                  <div
+                    key={item.path}
+                    className="flex items-center justify-center w-full p-2 rounded-lg transition-all mb-2 text-gray-400 cursor-not-allowed opacity-60"
+                    title={item.label}
+                  >
+                    {navContent}
+                  </div>
+                ) : (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center justify-center w-full p-2 rounded-lg transition-all mb-2 cursor-pointer ${active
+                      ? 'bg-gray-900 text-white font-semibold'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    title={item.label}
+                  >
+                    {navContent}
+                  </Link>
+                )
               )
             })
           ) : (
@@ -187,20 +201,33 @@ export default function AdminLayout({ children }) {
                     const Icon = item.icon
                     const active = isActive(path, item.exact)
                     const disabled = item.disabled || false
-                    return (
-                      <div
-                        key={path}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${disabled
-                          ? 'text-gray-400 cursor-not-allowed opacity-60'
-                          : active
-                            ? 'bg-indigo-100 text-indigo-700 font-semibold'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                          }`}
-                      >
+                    const navContent = (
+                      <>
                         <Icon className="w-4 h-4" />
                         <span className="flex-1 text-left">{item.label}</span>
                         {disabled && <span className="text-xs text-gray-400">Coming Soon</span>}
-                      </div>
+                      </>
+                    )
+                    return (
+                      disabled ? (
+                        <div
+                          key={path}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors text-gray-400 cursor-not-allowed opacity-60"
+                        >
+                          {navContent}
+                        </div>
+                      ) : (
+                        <Link
+                          key={path}
+                          to={path}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors cursor-pointer ${active
+                            ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        >
+                          {navContent}
+                        </Link>
+                      )
                     )
                   })}
                 </div>
