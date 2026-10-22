@@ -152,19 +152,21 @@ export default function AdminPartnersPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {partners.map((p) => (
-            <div key={p.id} className={`rounded-lg border bg-white p-4 ${p.is_active === false ? 'border-dashed border-gray-300 opacity-60' : 'border-gray-200'}`}>
+            <div key={p.id} className={`rounded-lg border bg-white p-4 ${p.status === 'inactive' ? 'border-dashed border-gray-300 opacity-60' : 'border-gray-200'}`}>
               <div className="flex h-24 items-center justify-center rounded-md bg-gray-50 p-3">
                 <img src={p.logo_url} alt={p.name} className="max-h-full max-w-full object-contain" />
               </div>
               <div className="mt-3 flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-gray-900">{p.name}</p>
-                  <p className="truncate text-xs text-gray-500">{p.website_url || 'No website'}</p>
-                  <p className="mt-1 text-xs text-gray-400">Order: {p.sort_order}</p>
+                  <p className="truncate text-xs text-gray-500">{p.website || 'No website'}</p>
+                  {p.featured && (
+                    <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Featured</span>
+                  )}
                 </div>
                 <div className="flex shrink-0 items-center">
-                  <button onClick={() => handleToggle(p)} className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100" title={p.is_active === false ? 'Show' : 'Hide'}>
-                    {p.is_active === false ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <button onClick={() => handleToggle(p)} className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100" title={p.status === 'inactive' ? 'Show' : 'Hide'}>
+                    {p.status === 'inactive' ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                   <button onClick={() => openEdit(p)} className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100" title="Edit">
                     <Edit className="h-4 w-4" />
@@ -181,8 +183,13 @@ export default function AdminPartnersPage() {
 
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <form onSubmit={handleSave} className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h2 className="text-lg font-bold text-gray-900">{editing.id ? 'Edit partner' : 'Add partner'}</h2>
+          <form onSubmit={handleSave} className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">{editing.id ? 'Edit partner' : 'Add partner'}</h2>
+              <button type="button" onClick={() => setEditing(null)} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
             <div className="mt-4 space-y-3">
               <label className="block">
                 <span className="mb-1 block text-xs font-medium text-gray-600">Name</span>
@@ -192,7 +199,7 @@ export default function AdminPartnersPage() {
                 <span className="mb-1 block text-xs font-medium text-gray-600">Logo URL</span>
                 <input
                   className={inputCls}
-                  placeholder="https://… or /brands/logo.svg"
+                  placeholder="/ericlogo/filename.png"
                   value={form.logo_url}
                   onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
                 />
@@ -230,23 +237,34 @@ export default function AdminPartnersPage() {
               )}
               <label className="block">
                 <span className="mb-1 block text-xs font-medium text-gray-600">Website (optional)</span>
-                <input className={inputCls} value={form.website_url} onChange={(e) => setForm({ ...form, website_url: e.target.value })} />
+                <input className={inputCls} value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-gray-600">Description (optional)</span>
+                <textarea className={inputCls} rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-gray-600">Industry (optional)</span>
+                <input className={inputCls} value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-gray-600">Contact Email (optional)</span>
+                <input className={inputCls} value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} />
               </label>
               <div className="flex items-center gap-4">
                 <label className="block flex-1">
-                  <span className="mb-1 block text-xs font-medium text-gray-600">Display order</span>
-                  <input
-                    type="number"
-                    className={inputCls}
-                    value={form.sort_order}
-                    onChange={(e) => setForm({ ...form, sort_order: e.target.value })}
-                  />
+                  <span className="mb-1 block text-xs font-medium text-gray-600">Status</span>
+                  <select className={inputCls} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="pending">Pending</option>
+                  </select>
                 </label>
                 <label className="mt-5 flex items-center gap-2 text-sm text-gray-700">
                   <input
                     type="checkbox"
-                    checked={form.is_active}
-                    onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+                    checked={form.featured}
+                    onChange={(e) => setForm({ ...form, featured: e.target.checked })}
                   />
                   Visible
                 </label>
@@ -264,5 +282,7 @@ export default function AdminPartnersPage() {
         </div>
       )}
     </div>
+  )
+}
   )
 }

@@ -31,6 +31,7 @@ const columns = [
     title: 'Company',
     links: [
       { label: 'About', to: '/About' },
+      { label: 'Blog', to: '/Blog' },
       { label: 'Careers', to: '/Careers' },
       { label: 'Partners', to: '#' },
       { label: 'Privacy Policy', to: '/legal/privacy' },

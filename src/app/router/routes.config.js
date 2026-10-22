@@ -234,6 +234,16 @@ const publicRoutes = [
     layout: null
   },
   {
+    path: '/Blog',
+    component: () => import('@/pages/BlogListing'),
+    layout: null
+  },
+  {
+    path: '/Blog/:slug',
+    component: () => import('@/pages/Blog'),
+    layout: null
+  },
+  {
     path: '/Shop',
     component: () => import('@/pages/Shop'),
     layout: null
