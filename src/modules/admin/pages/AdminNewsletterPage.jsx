@@ -29,7 +29,7 @@ export default function AdminNewsletterPage() {
   const [campaigns, setCampaigns] = useState([])
   const [showCampaignModal, setShowCampaignModal] = useState(false)
   const [editingCampaign, setEditingCampaign] = useState(null)
-  const [campaignForm, setCampaignForm] = useState({ name: '', subject: '', content: '', status: 'draft', scheduled_for: '' })
+  const [campaignForm, setCampaignForm] = useState({ subject: '', content: '' })
 
   // Templates
   const [templates, setTemplates] = useState([])
@@ -45,7 +45,7 @@ export default function AdminNewsletterPage() {
     setLoading(true)
     try {
       const [subsData, campData, tempData] = await Promise.all([
-        supabase.from('newsletter_subscribers').select('*').order('subscribed_at', { ascending: false }),
+        supabase.from('mailing_list').select('*').order('created_at', { ascending: false }),
         supabase.from('newsletter_campaigns').select('*').order('created_at', { ascending: false }),
         supabase.from('newsletter_templates').select('*').order('name')
       ])
@@ -70,14 +70,14 @@ export default function AdminNewsletterPage() {
     try {
       if (editingSubscriber) {
         const { error } = await supabase
-          .from('newsletter_subscribers')
+          .from('mailing_list')
           .update(subscriberForm)
           .eq('id', editingSubscriber.id)
         if (error) throw error
         success('Success', 'Subscriber updated')
       } else {
         const { error } = await supabase
-          .from('newsletter_subscribers')
+          .from('mailing_list')
           .insert({ ...subscriberForm, subscribed_at: new Date().toISOString() })
         if (error) throw error
         success('Success', 'Subscriber added')
@@ -96,7 +96,7 @@ export default function AdminNewsletterPage() {
     if (!confirm('Delete this subscriber?')) return
     try {
       const { error } = await supabase
-        .from('newsletter_subscribers')
+        .from('mailing_list')
         .delete()
         .eq('id', id)
       if (error) throw error
@@ -110,12 +110,12 @@ export default function AdminNewsletterPage() {
 
   // Campaign CRUD
   const handleSaveCampaign = async () => {
-    if (!campaignForm.name.trim() || !campaignForm.subject.trim()) {
-      toastError('Error', 'Name and subject are required')
+    if (!campaignForm.subject.trim()) {
+      toastError('Error', 'Subject is required')
       return
     }
     try {
-      const data = { ...campaignForm, scheduled_for: campaignForm.scheduled_for || null }
+      const data = campaignForm
       if (editingCampaign) {
         const { error } = await supabase
           .from('newsletter_campaigns')
@@ -132,7 +132,7 @@ export default function AdminNewsletterPage() {
       }
       setShowCampaignModal(false)
       setEditingCampaign(null)
-      setCampaignForm({ name: '', subject: '', content: '', status: 'draft', scheduled_for: '' })
+      setCampaignForm({ subject: '', content: '' })
       loadData()
     } catch (err) {
       console.error('Error saving campaign:', err)
@@ -214,7 +214,7 @@ export default function AdminNewsletterPage() {
   }
 
   const activeSubscribers = subscribers.filter(s => s.status === 'active').length
-  const totalSent = campaigns.reduce((sum, c) => sum + (c.sent_count || 0), 0)
+  const totalSent = campaigns.reduce((sum, c) => sum + (c.total_recipients || 0), 0)
 
   const subscriberColumns = [
     { key: 'email', label: 'Email', sortable: true, filterable: true },
@@ -230,19 +230,11 @@ export default function AdminNewsletterPage() {
   ]
 
   const campaignColumns = [
-    { key: 'name', label: 'Name', sortable: true, filterable: true },
     { key: 'subject', label: 'Subject', sortable: true, filterable: true },
-    {
-      key: 'status', label: 'Status', sortable: true, filterable: true, render: (value) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${value === 'sent' ? 'bg-green-100 text-green-700' :
-          value === 'scheduled' ? 'bg-blue-100 text-blue-700' :
-            value === 'sending' ? 'bg-yellow-100 text-yellow-700' :
-              'bg-gray-100 text-gray-700'
-          }`}>{value}</span>
-      )
-    },
-    { key: 'sent_count', label: 'Sent', sortable: true, filterable: false },
-    { key: 'scheduled_for', label: 'Scheduled', sortable: true, filterable: false, render: (value) => value ? new Date(value).toLocaleString() : '-' },
+    { key: 'total_recipients', label: 'Recipients', sortable: true, filterable: false },
+    { key: 'opened', label: 'Opened', sortable: true, filterable: false },
+    { key: 'clicked', label: 'Clicked', sortable: true, filterable: false },
+    { key: 'sent_at', label: 'Sent', sortable: true, filterable: false, render: (value) => value ? new Date(value).toLocaleDateString() : '-' },
     { key: 'created_at', label: 'Created', sortable: true, filterable: false, render: (value) => value ? new Date(value).toLocaleDateString() : '-' },
   ]
 
@@ -374,7 +366,7 @@ export default function AdminNewsletterPage() {
                   </CardTitle>
                   <CardDescription>Create and manage email campaigns</CardDescription>
                 </div>
-                <Button onClick={() => { setEditingCampaign(null); setCampaignForm({ name: '', subject: '', content: '', status: 'draft', scheduled_for: '' }); setShowCampaignModal(true); }} className="bg-black text-white hover:bg-gray-800">
+                <Button onClick={() => { setEditingCampaign(null); setCampaignForm({ subject: '', content: '' }); setShowCampaignModal(true); }} className="bg-black text-white hover:bg-gray-800">
                   <Plus className="w-4 h-4 mr-2" /> New Campaign
                 </Button>
               </div>
@@ -491,10 +483,6 @@ export default function AdminNewsletterPage() {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <Label>Campaign Name</Label>
-                <Input value={campaignForm.name} onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })} />
-              </div>
-              <div>
                 <Label>Subject</Label>
                 <Input value={campaignForm.subject} onChange={(e) => setCampaignForm({ ...campaignForm, subject: e.target.value })} />
               </div>
@@ -507,21 +495,6 @@ export default function AdminNewsletterPage() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                 />
               </div>
-              <div>
-                <Label>Status</Label>
-                <select value={campaignForm.status} onChange={(e) => setCampaignForm({ ...campaignForm, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                  <option value="draft">Draft</option>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="sending">Sending</option>
-                  <option value="sent">Sent</option>
-                </select>
-              </div>
-              {campaignForm.status === 'scheduled' && (
-                <div>
-                  <Label>Scheduled For</Label>
-                  <Input type="datetime-local" value={campaignForm.scheduled_for} onChange={(e) => setCampaignForm({ ...campaignForm, scheduled_for: e.target.value })} />
-                </div>
-              )}
             </div>
             <div className="p-6 border-t border-gray-200 flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setShowCampaignModal(false)}>Cancel</Button>
