@@ -348,15 +348,50 @@ export default function AdminProductsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Product Images (URLs, comma-separated)</label>
-                <textarea
-                  value={productForm.images.join(', ')}
-                  onChange={(e) => setProductForm({ ...productForm, images: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
-                  rows={2}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                  placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
-                />
-                <p className="text-xs text-gray-500 mt-1">Enter image URLs separated by commas. Upload functionality coming soon.</p>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Product Images</label>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files)
+                        const imageUrls = files.map(file => URL.createObjectURL(file))
+                        setProductForm({ ...productForm, images: [...productForm.images, ...imageUrls] })
+                      }}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = prompt('Enter image URL:')
+                        if (url) {
+                          setProductForm({ ...productForm, images: [...productForm.images, url] })
+                        }
+                      }}
+                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium"
+                    >
+                      Add URL
+                    </button>
+                  </div>
+                  {productForm.images.length > 0 && (
+                    <div className="grid grid-cols-4 gap-2">
+                      {productForm.images.map((img, idx) => (
+                        <div key={idx} className="relative group">
+                          <img src={img} alt={`Product ${idx + 1}`} className="w-full h-20 object-cover rounded-lg" />
+                          <button
+                            type="button"
+                            onClick={() => setProductForm({ ...productForm, images: productForm.images.filter((_, i) => i !== idx) })}
+                            className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

@@ -219,9 +219,9 @@ export default function AdminJobsPage() {
                     <div className="text-sm font-medium text-gray-900">{job.title}</div>
                     <div className="text-xs text-gray-500 truncate max-w-xs">{job.short_description || job.description?.substring(0, 100)}</div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{job.client_name || 'N/A'}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{job.client_name || job.client_id || 'N/A'}</td>
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                    {job.budget_min || job.budget_max ? `$${(job.budget_min || 0).toLocaleString()} - $${(job.budget_max || 0).toLocaleString()}` : 'N/A'}
+                    {job.budget ? `$${Number(job.budget).toLocaleString()}` : (job.budget_min || job.budget_max ? `$${(job.budget_min || 0).toLocaleString()} - $${(job.budget_max || 0).toLocaleString()}` : 'N/A')}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-2"><MapPin className="w-3 h-3" />{job.location || 'N/A'}</td>
                   <td className="px-4 py-3">{getStatusBadge(job.status)}</td>
