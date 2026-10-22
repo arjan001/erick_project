@@ -37,14 +37,10 @@ CREATE TABLE IF NOT EXISTS public.newsletter_templates (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Enable RLS on newsletter_templates
-ALTER TABLE public.newsletter_templates ENABLE ROW LEVEL SECURITY;
-
--- RLS policies for newsletter_templates
-CREATE POLICY IF NOT EXISTS "Anyone can view newsletter_templates" ON public.newsletter_templates FOR SELECT USING (true);
-CREATE POLICY IF NOT EXISTS "Admins can insert newsletter_templates" ON public.newsletter_templates FOR INSERT WITH CHECK (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY IF NOT EXISTS "Admins can update newsletter_templates" ON public.newsletter_templates FOR UPDATE USING (auth.jwt() ->> 'role' = 'admin');
-CREATE POLICY IF NOT EXISTS "Admins can delete newsletter_templates" ON public.newsletter_templates FOR DELETE USING (auth.jwt() ->> 'role' = 'admin');
+-- DISABLE RLS on all newsletter tables (user wants no RLS)
+ALTER TABLE public.newsletter_campaigns DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.newsletter_templates DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.mailing_list DISABLE ROW LEVEL SECURITY;
 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_newsletter_campaigns_status ON public.newsletter_campaigns(status);
