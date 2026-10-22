@@ -1,59 +1,59 @@
--- Create newsletter tables if they don't exist
+-- Newsletter Tables Migration
+-- This creates newsletter tables with proper schema
 -- Run this in Supabase SQL Editor
 
--- First, check if table exists and add missing columns if needed
+-- Check if update_updated_at_column function exists, if not create it
 DO $$
 BEGIN
-  -- Create table if it doesn't exist
-  CREATE TABLE IF NOT EXISTS public.newsletter_subscribers (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    email TEXT NOT NULL UNIQUE,
-    subscribed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    unsubscribed_at TIMESTAMP WITH TIME ZONE,
-    metadata JSONB DEFAULT '{}'::jsonb,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-  );
-
-  -- Add status column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'newsletter_subscribers' 
-    AND column_name = 'status'
-  ) THEN
-    ALTER TABLE public.newsletter_subscribers ADD COLUMN status TEXT DEFAULT 'active' CHECK (status IN ('active', 'unsubscribed', 'bounced'));
-  END IF;
-
-  -- Add source column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'newsletter_subscribers' 
-    AND column_name = 'source'
-  ) THEN
-    ALTER TABLE public.newsletter_subscribers ADD COLUMN source TEXT DEFAULT 'manual' CHECK (source IN ('manual', 'landing', 'footer', 'import'));
+  IF NOT EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'update_updated_at_column') THEN
+    CREATE OR REPLACE FUNCTION update_updated_at_column()
+    RETURNS TRIGGER AS $$
+    BEGIN
+      NEW.updated_at = NOW();
+      RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
   END IF;
 END $$;
 
+-- Drop existing tables if they exist to ensure clean slate
+DROP TABLE IF EXISTS public.newsletter_campaigns CASCADE;
+DROP TABLE IF EXISTS public.newsletter_templates CASCADE;
+DROP TABLE IF EXISTS public.newsletter_subscribers CASCADE;
+
+-- Newsletter Subscribers Table
+CREATE TABLE public.newsletter_subscribers (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'unsubscribed', 'bounced')),
+  source TEXT DEFAULT 'manual' CHECK (source IN ('manual', 'landing', 'footer', 'import')),
+  subscribed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  unsubscribed_at TIMESTAMP WITH TIME ZONE,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Newsletter Campaigns Table
-CREATE TABLE IF NOT EXISTS public.newsletter_campaigns (
+CREATE TABLE public.newsletter_campaigns (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   subject TEXT NOT NULL,
   content TEXT NOT NULL,
-  template_id UUID REFERENCES public.newsletter_templates(id) ON DELETE SET NULL,
+  template_id UUID,
   status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'scheduled', 'sending', 'sent', 'failed')),
   scheduled_for TIMESTAMP WITH TIME ZONE,
   sent_at TIMESTAMP WITH TIME ZONE,
   sent_count INTEGER DEFAULT 0,
   opened_count INTEGER DEFAULT 0,
   clicked_count INTEGER DEFAULT 0,
-  created_by UUID REFERENCES auth.users(id),
+  created_by UUID,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Newsletter Templates Table
-CREATE TABLE IF NOT EXISTS public.newsletter_templates (
+CREATE TABLE public.newsletter_templates (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
@@ -91,20 +91,12 @@ CREATE POLICY "Admins can update newsletter_templates" ON public.newsletter_temp
 CREATE POLICY "Admins can delete newsletter_templates" ON public.newsletter_templates FOR DELETE USING (auth.jwt() ->> 'role' = 'admin');
 
 -- Create indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_email ON public.newsletter_subscribers(email);
-CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_status ON public.newsletter_subscribers(status);
-CREATE INDEX IF NOT EXISTS idx_newsletter_campaigns_status ON public.newsletter_campaigns(status);
-CREATE INDEX IF NOT EXISTS idx_newsletter_campaigns_scheduled_for ON public.newsletter_campaigns(scheduled_for);
+CREATE INDEX idx_newsletter_subscribers_email ON public.newsletter_subscribers(email);
+CREATE INDEX idx_newsletter_subscribers_status ON public.newsletter_subscribers(status);
+CREATE INDEX idx_newsletter_campaigns_status ON public.newsletter_campaigns(status);
+CREATE INDEX idx_newsletter_campaigns_scheduled_for ON public.newsletter_campaigns(scheduled_for);
 
--- Updated_at trigger
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
+-- Updated_at triggers
 CREATE TRIGGER update_newsletter_subscribers_updated_at BEFORE UPDATE ON public.newsletter_subscribers
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
