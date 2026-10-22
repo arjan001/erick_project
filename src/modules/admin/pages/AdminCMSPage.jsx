@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 import { Search, Edit2, Save, X, FileText, Image, Bold, Italic, Underline, List, Link2, Heading } from 'lucide-react'
-import { CMSPage as CMSPageEntity } from '@/lib/supabaseEntities'
 
 const STORAGE_KEY = 'smartgigs_cms_pages'
 
@@ -46,10 +46,16 @@ export default function AdminCMSPage() {
   const fetchPages = async () => {
     setLoading(true)
     try {
-      const rows = await CMSPageEntity.list('-updated_at', 100)
-      if (rows && rows.length > 0) {
+      const { data, error } = await supabase
+        .from('cms_pages')
+        .select('*')
+        .order('updated_at', { ascending: false })
+
+      if (error) throw error
+
+      if (data && data.length > 0) {
         const merged = DEFAULT_PAGES.map(dp => {
-          const found = rows.find(r => r.page_key === dp.page_key)
+          const found = data.find(r => r.page_key === dp.page_key)
           return found || dp
         })
         setPages(merged)
@@ -61,7 +67,8 @@ export default function AdminCMSPage() {
           setPages(DEFAULT_PAGES)
         }
       }
-    } catch {
+    } catch (err) {
+      console.error('Error fetching CMS pages:', err)
       const stored = loadFromStorage()
       setPages(stored && stored.length > 0 ? stored : DEFAULT_PAGES)
     }
@@ -83,11 +90,20 @@ export default function AdminCMSPage() {
     saveToStorage(updated)
     try {
       if (editingPage.id) {
-        await CMSPageEntity.update(editingPage.id, { ...formData, updated_at: new Date().toISOString() })
+        const { error } = await supabase
+          .from('cms_pages')
+          .update({ ...formData, updated_at: new Date().toISOString() })
+          .eq('id', editingPage.id)
+        if (error) throw error
       } else {
-        await CMSPageEntity.create({ page_key: editingPage.page_key, ...formData })
+        const { error } = await supabase
+          .from('cms_pages')
+          .insert({ page_key: editingPage.page_key, ...formData })
+        if (error) throw error
       }
-    } catch { /* fallback to localStorage */ }
+    } catch (err) {
+      console.error('Error saving CMS page:', err)
+    }
     setEditingPage(null)
   }
 
@@ -140,88 +156,78 @@ export default function AdminCMSPage() {
                   <Edit2 className="h-4 w-4" />
                 </button>
               </div>
-              {page.content ? (
-                <p className="mt-3 text-xs text-gray-500 line-clamp-2">
-                  {page.content.replace(/<[^>]*>/g, '').slice(0, 100)}...
-                </p>
-              ) : (
-                <p className="mt-3 text-xs text-gray-400 italic">No content yet</p>
-              )}
             </div>
           ))
         )}
       </div>
 
       {editingPage && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 pt-10">
-          <div className="w-full max-w-3xl rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-4xl rounded-xl bg-white p-6 max-h-[90vh] overflow-y-auto">
+            <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">Edit: {editingPage.title}</h2>
-              <button onClick={() => setEditingPage(null)} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100">
+              <button onClick={() => setEditingPage(null)} className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="max-h-[70vh] overflow-y-auto px-6 py-5 space-y-4">
+            <div className="space-y-4">
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Page Title</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Title</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
 
               <div>
-                <label className="mb-1 flex items-center gap-1 text-sm font-medium text-gray-700">
-                  <Image className="h-3.5 w-3.5" /> Hero Image URL
-                </label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Hero Image URL</label>
                 <input
                   type="text"
                   value={formData.hero_image}
                   onChange={(e) => setFormData({ ...formData, hero_image: e.target.value })}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-                  placeholder="https://..."
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 />
-                {formData.hero_image && (
-                  <img src={formData.hero_image} alt="Preview" className="mt-2 h-32 w-full rounded-lg object-cover" />
-                )}
               </div>
 
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Content</label>
-                <div className="flex flex-wrap items-center gap-1 rounded-t-lg border border-b-0 border-gray-200 bg-gray-50 px-2 py-1.5">
-                  <button onClick={() => execCommand('bold')} className="rounded p-1.5 hover:bg-gray-200" title="Bold"><Bold className="h-4 w-4 text-gray-600" /></button>
-                  <button onClick={() => execCommand('italic')} className="rounded p-1.5 hover:bg-gray-200" title="Italic"><Italic className="h-4 w-4 text-gray-600" /></button>
-                  <button onClick={() => execCommand('underline')} className="rounded p-1.5 hover:bg-gray-200" title="Underline"><Underline className="h-4 w-4 text-gray-600" /></button>
-                  <div className="h-4 w-px bg-gray-300" />
-                  <button onClick={() => execCommand('insertUnorderedList')} className="rounded p-1.5 hover:bg-gray-200" title="Bullet list"><List className="h-4 w-4 text-gray-600" /></button>
-                  <button onClick={() => execCommand('formatBlock', 'h2')} className="rounded px-2 py-1 text-xs font-bold hover:bg-gray-200">H2</button>
-                  <button onClick={() => execCommand('formatBlock', 'h3')} className="rounded px-2 py-1 text-xs font-bold hover:bg-gray-200">H3</button>
-                  <button onClick={() => execCommand('formatBlock', 'p')} className="rounded px-2 py-1 text-xs hover:bg-gray-200">P</button>
-                  <div className="h-4 w-px bg-gray-300" />
-                  <button onClick={() => { const url = prompt('Enter URL:'); if (url) execCommand('createLink', url); }} className="rounded p-1.5 hover:bg-gray-200" title="Insert link"><Link2 className="h-4 w-4 text-gray-600" /></button>
-                  <button onClick={() => { const url = prompt('Enter image URL:'); if (url) execCommand('insertImage', url); }} className="rounded p-1.5 hover:bg-gray-200" title="Insert image"><Image className="h-4 w-4 text-gray-600" /></button>
+                <div className="mb-2 flex gap-2">
+                  <button onClick={() => execCommand('bold')} className="rounded border border-gray-200 px-2 py-1 text-sm hover:bg-gray-50">
+                    <Bold className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => execCommand('italic')} className="rounded border border-gray-200 px-2 py-1 text-sm hover:bg-gray-50">
+                    <Italic className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => execCommand('underline')} className="rounded border border-gray-200 px-2 py-1 text-sm hover:bg-gray-50">
+                    <Underline className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => execCommand('insertUnorderedList')} className="rounded border border-gray-200 px-2 py-1 text-sm hover:bg-gray-50">
+                    <List className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => execCommand('createLink', prompt('Enter URL:'))} className="rounded border border-gray-200 px-2 py-1 text-sm hover:bg-gray-50">
+                    <Link2 className="h-4 w-4" />
+                  </button>
                 </div>
                 <div
                   id="cms-rich-editor"
                   contentEditable
-                  suppressContentEditableWarning
-                  onInput={(e) => setFormData(prev => ({ ...prev, content: e.currentTarget.innerHTML }))}
-                  className="min-h-[300px] rounded-b-lg border border-gray-200 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                  style={{ lineHeight: '1.6' }}
+                  className="min-h-[300px] rounded-lg border border-gray-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   dangerouslySetInnerHTML={{ __html: formData.content }}
+                  onInput={(e) => setFormData({ ...formData, content: e.target.innerHTML })}
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 border-t border-gray-100 px-6 py-4">
-              <button onClick={() => setEditingPage(null)} className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+            <div className="mt-6 flex justify-end gap-3">
+              <button onClick={() => setEditingPage(null)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                 Cancel
               </button>
-              <button onClick={handleSave} className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
-                <Save className="h-4 w-4" /> Save
+              <button onClick={handleSave} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                <Save className="mr-2 inline h-4 w-4" />
+                Save Changes
               </button>
             </div>
           </div>

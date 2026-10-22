@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Article } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,10 +34,15 @@ export default function AdminArticlesPage() {
 
   const fetchArticles = async () => {
     try {
-      const all = await Article.list('-display_order', 100)
-      setArticles(all || [])
-    } catch (err) {
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .order('created_at', { ascending: false })
 
+      if (error) throw error
+      setArticles(data || [])
+    } catch (err) {
+      console.error('Error fetching articles:', err)
       toastError('Load Failed', 'Failed to load articles')
     } finally {
       setLoading(false)
@@ -90,22 +95,34 @@ export default function AdminArticlesPage() {
     if (!form.content.trim()) { toastError('Validation', 'Content is required'); return; }
     try {
       const dataToSave = {
-        ...form,
+        title: form.title,
         slug: form.slug || form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+        excerpt: form.excerpt,
+        content: form.content,
+        cover_image: form.featured_image_url,
+        category: form.category,
         tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+        published: form.status === 'published',
         published_at: form.status === 'published' && !editingArticle?.published_at ? new Date().toISOString() : editingArticle?.published_at,
       }
       if (editingArticle) {
-        await Article.update(editingArticle.id, dataToSave)
+        const { error } = await supabase
+          .from('articles')
+          .update(dataToSave)
+          .eq('id', editingArticle.id)
+        if (error) throw error
         success('Updated', 'Article updated')
       } else {
-        await Article.create(dataToSave)
+        const { error } = await supabase
+          .from('articles')
+          .insert(dataToSave)
+        if (error) throw error
         success('Created', 'Article created')
       }
       setShowModal(false)
       fetchArticles()
     } catch (err) {
-
+      console.error('Error saving article:', err)
       toastError('Save Failed', `Failed to save article: ${err.message || 'Unknown error'}`)
     }
   }
@@ -113,10 +130,15 @@ export default function AdminArticlesPage() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this article?')) return
     try {
-      await Article.delete(id)
+      const { error } = await supabase
+        .from('articles')
+        .delete()
+        .eq('id', id)
+      if (error) throw error
       success('Deleted', 'Article deleted')
       fetchArticles()
     } catch (err) {
+      console.error('Error deleting article:', err)
       toastError('Delete Failed', 'Failed to delete article')
     }
   }
@@ -125,11 +147,16 @@ export default function AdminArticlesPage() {
     if (selectedIds.length === 0) return
     if (!confirm(`Delete ${selectedIds.length} articles?`)) return
     try {
-      await Promise.all(selectedIds.map(id => Article.delete(id)))
+      const { error } = await supabase
+        .from('articles')
+        .delete()
+        .in('id', selectedIds)
+      if (error) throw error
       success('Deleted', `${selectedIds.length} articles deleted`)
       setSelectedIds([])
       fetchArticles()
     } catch (err) {
+      console.error('Error deleting articles:', err)
       toastError('Delete Failed', 'Failed to delete articles')
     }
   }

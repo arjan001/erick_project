@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Edit, Eye, EyeOff, Handshake, Plus, Trash2, X, Upload } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-const emptyForm = { name: '', logo_url: '', website_url: '', sort_order: 1, is_active: true }
+const emptyForm = { name: '', logo_url: '', website: '', description: '', industry: '', contact_email: '', status: 'active', featured: false }
 
 export default function AdminPartnersPage() {
   const { success, error } = useToast()
@@ -17,9 +17,9 @@ export default function AdminPartnersPage() {
   const load = async () => {
     try {
       const { data, error } = await supabase
-        .from('partner_logos')
+        .from('partners')
         .select('*')
-        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false })
 
       if (error) throw error
       setPartners(data || [])
@@ -44,37 +44,43 @@ export default function AdminPartnersPage() {
     setForm({
       name: p.name || '',
       logo_url: p.logo_url || '',
-      website_url: p.website_url || '',
-      sort_order: p.sort_order ?? 1,
-      is_active: p.is_active !== false,
+      website: p.website || '',
+      description: p.description || '',
+      industry: p.industry || '',
+      contact_email: p.contact_email || '',
+      status: p.status || 'active',
+      featured: p.featured || false,
     })
     setEditing(p)
   }
 
   const handleSave = async (e) => {
     e.preventDefault()
-    if (!form.name.trim() || !form.logo_url.trim()) {
-      error('Missing details', 'A name and a logo URL are required')
+    if (!form.name.trim()) {
+      error('Missing details', 'A name is required')
       return
     }
     setSaving(true)
     const data = {
       name: form.name.trim(),
-      logo_url: form.logo_url.trim(),
-      website_url: form.website_url || null,
-      sort_order: Number(form.sort_order) || 0,
-      is_active: form.is_active
+      logo_url: form.logo_url || null,
+      website: form.website || null,
+      description: form.description || null,
+      industry: form.industry || null,
+      contact_email: form.contact_email || null,
+      status: form.status || 'active',
+      featured: form.featured || false,
     }
     try {
       if (editing?.id) {
         const { error } = await supabase
-          .from('partner_logos')
+          .from('partners')
           .update(data)
           .eq('id', editing.id)
         if (error) throw error
       } else {
         const { error } = await supabase
-          .from('partner_logos')
+          .from('partners')
           .insert(data)
         if (error) throw error
       }
@@ -92,8 +98,8 @@ export default function AdminPartnersPage() {
   const handleToggle = async (p) => {
     try {
       const { error } = await supabase
-        .from('partner_logos')
-        .update({ is_active: p.is_active === false })
+        .from('partners')
+        .update({ status: p.status === 'active' ? 'inactive' : 'active' })
         .eq('id', p.id)
       if (error) throw error
       await load()
@@ -107,7 +113,7 @@ export default function AdminPartnersPage() {
     if (!confirm(`Delete ${p.name}?`)) return
     try {
       const { error } = await supabase
-        .from('partner_logos')
+        .from('partners')
         .delete()
         .eq('id', p.id)
       if (error) throw error
