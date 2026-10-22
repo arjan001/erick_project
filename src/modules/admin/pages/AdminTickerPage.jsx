@@ -180,11 +180,11 @@ export default function AdminTickerPage() {
               onRowClick={(row) => openModal(row)}
               actions={(row) => (
                 <div className="flex items-center gap-2">
-                  <button onClick={() => moveOrder(row, -1)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Move Up"><ArrowUp className="w-4 h-4" /></button>
-                  <button onClick={() => moveOrder(row, 1)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Move Down"><ArrowDown className="w-4 h-4" /></button>
-                  <button onClick={() => toggleStatus(row)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title={row.active ? 'Deactivate' : 'Activate'}>{row.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button>
-                  <button onClick={() => openModal(row)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Edit"><Edit2 className="w-4 h-4" /></button>
-                  <button onClick={() => handleDelete(row.id)} className="p-1 hover:bg-red-50 rounded text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); moveOrder(row, -1); }} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Move Up"><ArrowUp className="w-4 h-4" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); moveOrder(row, 1); }} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Move Down"><ArrowDown className="w-4 h-4" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); toggleStatus(row); }} className="p-1 hover:bg-gray-200 rounded text-gray-500" title={row.active ? 'Deactivate' : 'Activate'}>{row.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button>
+                  <button onClick={(e) => { e.stopPropagation(); openModal(row); }} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Edit"><Edit2 className="w-4 h-4" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(row.id); }} className="p-1 hover:bg-red-50 rounded text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
                 </div>
               )}
             />

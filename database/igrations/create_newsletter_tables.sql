@@ -1,18 +1,38 @@
 -- Create newsletter tables if they don't exist
 -- Run this in Supabase SQL Editor
 
--- Newsletter Subscribers Table
-CREATE TABLE IF NOT EXISTS public.newsletter_subscribers (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  email TEXT NOT NULL UNIQUE,
-  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'unsubscribed', 'bounced')),
-  source TEXT DEFAULT 'manual' CHECK (source IN ('manual', 'landing', 'footer', 'import')),
-  subscribed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  unsubscribed_at TIMESTAMP WITH TIME ZONE,
-  metadata JSONB DEFAULT '{}'::jsonb,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- First, check if table exists and add missing columns if needed
+DO $$
+BEGIN
+  -- Create table if it doesn't exist
+  CREATE TABLE IF NOT EXISTS public.newsletter_subscribers (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    subscribed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    unsubscribed_at TIMESTAMP WITH TIME ZONE,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  );
+
+  -- Add status column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'newsletter_subscribers' 
+    AND column_name = 'status'
+  ) THEN
+    ALTER TABLE public.newsletter_subscribers ADD COLUMN status TEXT DEFAULT 'active' CHECK (status IN ('active', 'unsubscribed', 'bounced'));
+  END IF;
+
+  -- Add source column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'newsletter_subscribers' 
+    AND column_name = 'source'
+  ) THEN
+    ALTER TABLE public.newsletter_subscribers ADD COLUMN source TEXT DEFAULT 'manual' CHECK (source IN ('manual', 'landing', 'footer', 'import'));
+  END IF;
+END $$;
 
 -- Newsletter Campaigns Table
 CREATE TABLE IF NOT EXISTS public.newsletter_campaigns (

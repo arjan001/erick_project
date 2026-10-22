@@ -21,7 +21,7 @@ const navItems = [
   { path: '/Admin/CardPayments', label: 'Cards', icon: CreditCard },
   { path: '/Admin/ShopSettings', label: 'Shop Settings', icon: Settings },
   { path: '/Admin/Partners', label: 'Partners', icon: Trophy },
-  { path: '/Admin/Articles', label: 'Articles & Blogs', icon: FileText },
+  { path: '/Admin/Articles', label: 'Articles', icon: FileText },
   { path: '/Admin/Newsletter', label: 'Newsletter', icon: Mail },
   { path: '/Admin/MailingList', label: 'Mailing List', icon: Mail },
   { path: '/Admin/Messages', label: 'Messages', icon: Mail },
@@ -44,10 +44,10 @@ const navItems = [
 const navGroups = [
   { label: 'Main', items: ['/Admin'] },
   { label: 'User Management', items: ['/Admin/UserManagement', '/Admin/RolesPermissions', '/Admin/Invites'] },
-  { label: 'Content Management', items: ['/Admin/Clients', '/Admin/Artists', '/Admin/Teams', '/Admin/Backers', '/Admin/Jobs', '/Admin/FeaturedWork', '/Admin/Categories', '/Admin/Ticker'] },
+  { label: 'Content Management', items: ['/Admin/Clients', '/Admin/Artists', '/Admin/Teams', '/Admin/Backers', '/Admin/Jobs', '/Admin/FeaturedWork', '/Admin/Categories', '/Admin/Ticker', '/Admin/Articles'] },
   { label: 'Shop', items: ['/Admin/Products', '/Admin/Orders', '/Admin/CardPayments', '/Admin/ShopSettings', '/Admin/Partners'] },
-  { label: 'Content & Communication', items: ['/Admin/Articles', '/Admin/Newsletter', '/Admin/MailingList', '/Admin/Messages', '/Admin/CMS'] },
-  { label: 'Integrations', items: ['/Admin/SEOCMS', '/Admin/ImageStorage', '/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
+  { label: 'Communication', items: ['/Admin/Newsletter', '/Admin/MailingList', '/Admin/Messages'] },
+  { label: 'Content & Integrations', items: ['/Admin/CMS', '/Admin/SEOCMS', '/Admin/ImageStorage', '/Admin/LoginProviders', '/Admin/APISettings', '/Admin/PaymentSettings'] },
   { label: 'System', items: ['/Admin/GeneralSettings', '/Admin/Analytics', '/Admin/FinanceDashboard', '/Admin/AuditLogs', '/Admin/SuccessStories', '/Admin/RecentProjects'] },
 ]
 

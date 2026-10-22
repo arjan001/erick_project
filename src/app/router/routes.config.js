@@ -547,6 +547,24 @@ const adminRoutes = [
     guard: TickerGuard
   },
   {
+    path: '/Admin/Articles',
+    component: () => import('@/modules/admin/pages/AdminArticlesPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
+  },
+  {
+    path: '/Admin/Newsletter',
+    component: () => import('@/modules/admin/pages/AdminNewsletterPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
+  },
+  {
+    path: '/Admin/MailingList',
+    component: () => import('@/modules/admin/pages/AdminMailingListPage'),
+    layout: AdminLayout,
+    guard: AdminGuard
+  },
+  {
     path: '/Admin/Categories',
     component: () => import('@/modules/admin/pages/AdminCategoriesPage'),
     layout: AdminLayout,

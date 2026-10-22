@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react'
-import { Search, Download, FileText, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter } from 'lucide-react'
+import React, { useState, useMemo, useEffect } from 'react'
+import { Search, Download, FileText, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -10,12 +10,16 @@ export default function DataTable({
   exportable = true,
   pagination = true,
   pageSize = 10,
+  selectable = false,
+  onSelect = null,
   onRowClick = null,
+  actions = null,
 }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })
   const [columnFilters, setColumnFilters] = useState({})
+  const [selectedRows, setSelectedRows] = useState(new Set())
 
   // Filter data based on search and column filters
   const filteredData = useMemo(() => {
@@ -76,6 +80,35 @@ export default function DataTable({
       direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
     }))
   }
+
+  // Handle row selection
+  const handleSelectRow = (rowId) => {
+    setSelectedRows(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(rowId)) {
+        newSet.delete(rowId)
+      } else {
+        newSet.add(rowId)
+      }
+      return newSet
+    })
+  }
+
+  // Handle select all
+  const handleSelectAll = () => {
+    if (selectedRows.size === paginatedData.length) {
+      setSelectedRows(new Set())
+    } else {
+      setSelectedRows(new Set(paginatedData.map(row => row.id)))
+    }
+  }
+
+  // Notify parent of selection changes
+  useEffect(() => {
+    if (onSelect && selectable) {
+      onSelect(Array.from(selectedRows))
+    }
+  }, [selectedRows, onSelect, selectable])
 
   // Export to CSV
   const exportToCSV = () => {
@@ -188,6 +221,16 @@ export default function DataTable({
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
+                {selectable && (
+                  <th className="px-4 py-3 text-left w-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.size === paginatedData.length && paginatedData.length > 0}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 rounded"
+                    />
+                  </th>
+                )}
                 {columns.map(col => (
                   <th
                     key={col.key}
@@ -206,12 +249,13 @@ export default function DataTable({
                     </div>
                   </th>
                 ))}
+                {actions && <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="px-4 py-8 text-center text-sm text-gray-500">
+                  <td colSpan={columns.length + (selectable ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-8 text-center text-sm text-gray-500">
                     No data found
                   </td>
                 </tr>
@@ -222,11 +266,26 @@ export default function DataTable({
                     className={`hover:bg-gray-50 ${onRowClick ? 'cursor-pointer' : ''}`}
                     onClick={() => onRowClick && onRowClick(row)}
                   >
+                    {selectable && (
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedRows.has(row.id)}
+                          onChange={() => handleSelectRow(row.id)}
+                          className="w-4 h-4 rounded"
+                        />
+                      </td>
+                    )}
                     {columns.map(col => (
                       <td key={col.key} className="px-4 py-3 text-sm">
                         {col.render ? col.render(row[col.key], row) : row[col.key] || 'N/A'}
                       </td>
                     ))}
+                    {actions && (
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        {actions(row)}
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

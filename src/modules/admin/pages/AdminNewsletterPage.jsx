@@ -235,9 +235,9 @@ export default function AdminNewsletterPage() {
     {
       key: 'status', label: 'Status', sortable: true, filterable: true, render: (value) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${value === 'sent' ? 'bg-green-100 text-green-700' :
-            value === 'scheduled' ? 'bg-blue-100 text-blue-700' :
-              value === 'sending' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-gray-100 text-gray-700'
+          value === 'scheduled' ? 'bg-blue-100 text-blue-700' :
+            value === 'sending' ? 'bg-yellow-100 text-yellow-700' :
+              'bg-gray-100 text-gray-700'
           }`}>{value}</span>
       )
     },
@@ -350,10 +350,10 @@ export default function AdminNewsletterPage() {
                 pageSize={10}
                 actions={(row) => (
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => { setEditingSubscriber(row); setSubscriberForm(row); setShowSubscriberModal(true); }}>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setEditingSubscriber(row); setSubscriberForm(row); setShowSubscriberModal(true); }}>
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDeleteSubscriber(row.id)}>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleDeleteSubscriber(row.id); }}>
                       <Trash2 className="w-4 h-4 text-red-600" />
                     </Button>
                   </div>
@@ -389,10 +389,10 @@ export default function AdminNewsletterPage() {
                 pageSize={10}
                 actions={(row) => (
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => { setEditingCampaign(row); setCampaignForm(row); setShowCampaignModal(true); }}>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setEditingCampaign(row); setCampaignForm(row); setShowCampaignModal(true); }}>
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDeleteCampaign(row.id)}>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleDeleteCampaign(row.id); }}>
                       <Trash2 className="w-4 h-4 text-red-600" />
                     </Button>
                   </div>
@@ -428,10 +428,10 @@ export default function AdminNewsletterPage() {
                 pageSize={10}
                 actions={(row) => (
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => { setEditingTemplate(row); setTemplateForm(row); setShowTemplateModal(true); }}>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setEditingTemplate(row); setTemplateForm(row); setShowTemplateModal(true); }}>
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDeleteTemplate(row.id)}>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(row.id); }}>
                       <Trash2 className="w-4 h-4 text-red-600" />
                     </Button>
                   </div>

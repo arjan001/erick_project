@@ -172,10 +172,10 @@ export default function AdminMailingListPage() {
             pageSize={10}
             actions={(row) => (
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => { setEditingSubscriber(row); setForm(row); setShowAdd(true); }}>
+                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setEditingSubscriber(row); setForm(row); setShowAdd(true); }}>
                   <Edit className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(row.id)}>
+                <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleDelete(row.id); }}>
                   <Trash2 className="w-4 h-4 text-red-600" />
                 </Button>
               </div>
