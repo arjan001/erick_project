@@ -4,8 +4,7 @@ import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import DataTable from '@/components/admin/DataTable'
-import { Building, Eye, Trash2, Mail, Phone, Briefcase, Edit2, Ban, CheckCircle, User, Calendar, MapPin, Search, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Building, Eye, Trash2, Mail, Phone, Briefcase, Edit2, Ban, CheckCircle, User, Calendar, MapPin, Search, X, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
 
 const PAGE_SIZE = 10
 

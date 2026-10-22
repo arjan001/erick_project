@@ -22,9 +22,9 @@ export default function JobSearch() {
 
   const handleSearch = () => {
     if (query.trim()) {
-      navigate(`/Jobs?q=${encodeURIComponent(query.trim())}`)
+      navigate(`/FindGigs?q=${encodeURIComponent(query.trim())}`)
     } else {
-      navigate('/Jobs')
+      navigate('/FindGigs')
     }
   }
 
@@ -36,9 +36,9 @@ export default function JobSearch() {
 
   const handlePopularClick = (tag) => {
     if (tag === 'Browse All Jobs') {
-      navigate('/Jobs')
+      navigate('/FindGigs')
     } else {
-      navigate(`/Jobs?q=${encodeURIComponent(tag)}`)
+      navigate(`/FindGigs?q=${encodeURIComponent(tag)}`)
     }
   }
 
