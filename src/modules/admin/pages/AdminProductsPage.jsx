@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
-import { Package, Search, Plus, Edit, Trash2, DollarSign, Box, Eye, ToggleLeft, ToggleRight, Image as ImageIcon, Tag, MoreVertical, ShoppingCart } from 'lucide-react'
+import { Package, Search, Plus, Edit, Trash2, DollarSign, Box, Eye, ToggleLeft, ToggleRight, Image as ImageIcon, Tag, MoreVertical, ShoppingCart, Ban, CheckCircle, X } from 'lucide-react'
 import { ShopProduct } from '@/lib/supabaseEntities'
 
 export default function AdminProductsPage() {
@@ -12,7 +12,9 @@ export default function AdminProductsPage() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterCategory, setFilterCategory] = useState('all')
   const [showModal, setShowModal] = useState(false)
+  const [showPreviewModal, setShowPreviewModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
   const [productForm, setProductForm] = useState({
     name: '',
     description: '',
@@ -111,6 +113,57 @@ export default function AdminProductsPage() {
     await handleUpdateProduct(productId, { featured: !currentFeatured })
   }
 
+  const openEditModal = (product) => {
+    setSelectedProduct(product)
+    setIsEditing(true)
+    setProductForm({
+      name: product.name || '',
+      description: product.description || '',
+      price: product.price || '',
+      discount_price: product.discount_price || '',
+      category: product.category || '',
+      stock: product.stock || '',
+      sku: product.sku || '',
+      images: product.images || [],
+      status: product.status || 'active',
+      featured: product.featured || false,
+      auction_enabled: product.auction_enabled || false,
+      auction_type: product.auction_type || 'time',
+      auction_duration_hours: product.auction_duration_hours || 24,
+      auction_end_time: product.auction_end_time || '',
+      auction_target_count: product.auction_target_count || 1000,
+      auction_participants: product.auction_participants || 0,
+      currency: product.currency || 'KES',
+      fulfillment_type: product.fulfillment_type || 'physical',
+    })
+    setShowModal(true)
+  }
+
+  const openPreviewModal = (product) => {
+    setSelectedProduct(product)
+    setShowPreviewModal(true)
+  }
+
+  const handleUpdateProductSave = async () => {
+    if (!selectedProduct) return
+    try {
+      await ShopProduct.update(selectedProduct.id, {
+        ...productForm,
+        price: parseFloat(productForm.price),
+        discount_price: productForm.discount_price ? parseFloat(productForm.discount_price) : null,
+        stock: parseInt(productForm.stock),
+      })
+      setProducts(products.map(p => p.id === selectedProduct.id ? { ...p, ...productForm } : p))
+      success('Updated', 'Product updated successfully')
+      setShowModal(false)
+      setIsEditing(false)
+      setSelectedProduct(null)
+    } catch (err) {
+      console.error('Error updating product:', err)
+      error('Failed', 'Failed to update product')
+    }
+  }
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'active':
@@ -171,8 +224,8 @@ export default function AdminProductsPage() {
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm text-gray-500">Total Sold</div>
-                <div className="text-2xl font-bold text-gray-900">{products.reduce((sum, p) => sum + p.sold, 0)}</div>
+                <div className="text-sm text-gray-500">In Stock</div>
+                <div className="text-2xl font-bold text-gray-900">{products.filter(p => p.stock > 0).length}</div>
               </div>
               <ShoppingCart className="w-8 h-8 text-green-600" />
             </div>
@@ -246,12 +299,16 @@ export default function AdminProductsPage() {
                   <tr key={product.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                          <ImageIcon className="w-6 h-6 text-gray-400" />
-                        </div>
+                        {product.images && product.images.length > 0 ? (
+                          <img src={product.images[0]} alt={product.name} className="w-12 h-12 object-cover rounded-lg" />
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <ImageIcon className="w-6 h-6 text-gray-400" />
+                          </div>
+                        )}
                         <div>
                           <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                          <div className="text-sm text-gray-500 truncate max-w-xs">{product.description}</div>
+                          <div className="text-sm text-gray-500 truncate max-w-xs">{product.description || 'No description'}</div>
                         </div>
                       </div>
                     </td>
@@ -290,14 +347,14 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm" title="View">
+                        <Button variant="ghost" size="sm" onClick={() => openPreviewModal(product)} title="Preview">
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" title="Edit">
+                        <Button variant="ghost" size="sm" onClick={() => openEditModal(product)} title="Edit">
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleToggleStatus(product.id, product.status)} title="Toggle Status">
-                          {product.status === 'active' ? <ToggleLeft className="w-4 h-4 text-red-600" /> : <ToggleRight className="w-4 h-4 text-green-600" />}
+                          {product.status === 'active' ? <Ban className="w-4 h-4 text-red-600" /> : <CheckCircle className="w-4 h-4 text-green-600" />}
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleDeleteProduct(product.id)} title="Delete">
                           <Trash2 className="w-4 h-4 text-red-600" />
@@ -345,12 +402,34 @@ export default function AdminProductsPage() {
                       type="file"
                       accept="image/*"
                       multiple
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const files = Array.from(e.target.files)
-                        const imageUrls = files.map(file => URL.createObjectURL(file))
-                        setProductForm({ ...productForm, images: [...productForm.images, ...imageUrls] })
+                        if (files.length === 0) return
+
+                        try {
+                          const uploadPromises = files.map(async (file) => {
+                            const fileName = `${Date.now()}-${file.name}`
+                            const { data, error } = await supabase.storage
+                              .from('shop-images')
+                              .upload(fileName, file)
+
+                            if (error) throw error
+
+                            const { data: { publicUrl } } = supabase.storage
+                              .from('shop-images')
+                              .getPublicUrl(fileName)
+
+                            return publicUrl
+                          })
+
+                          const uploadedUrls = await Promise.all(uploadPromises)
+                          setProductForm({ ...productForm, images: [...productForm.images, ...uploadedUrls] })
+                        } catch (err) {
+                          console.error('Error uploading images:', err)
+                          toastError('Upload Failed', 'Failed to upload images')
+                        }
                       }}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                      className="flex-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
                     />
                     <button
                       type="button"
@@ -523,8 +602,75 @@ export default function AdminProductsPage() {
               </label>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-              <Button onClick={handleCreateProduct} className="bg-black text-white hover:bg-gray-800">Add Product</Button>
+              <Button variant="outline" onClick={() => {
+                setShowModal(false)
+                setIsEditing(false)
+                setSelectedProduct(null)
+              }}>Cancel</Button>
+              <Button onClick={isEditing ? handleUpdateProductSave : handleCreateProduct} className="bg-black text-white hover:bg-gray-800">
+                {isEditing ? 'Update Product' : 'Add Product'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Preview Modal */}
+      {showPreviewModal && selectedProduct && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Product Preview</h2>
+              <button onClick={() => setShowPreviewModal(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="p-6">
+              <div className="mb-6">
+                {selectedProduct.images && selectedProduct.images.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    {selectedProduct.images.map((img, idx) => (
+                      <img key={idx} src={img} alt={selectedProduct.name} className="w-full h-48 object-cover rounded-lg" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <ImageIcon className="w-12 h-12 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{selectedProduct.name}</h3>
+              <p className="text-gray-600 mb-4">{selectedProduct.description}</p>
+              <div className="flex items-center gap-4 mb-4">
+                <span className="text-2xl font-bold text-gray-900">{selectedProduct.currency} {selectedProduct.price?.toLocaleString()}</span>
+                {selectedProduct.discount_price && (
+                  <span className="text-lg text-green-600 line-through">{selectedProduct.currency} {selectedProduct.discount_price?.toLocaleString()}</span>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-500">SKU:</span>
+                  <span className="ml-2 font-medium">{selectedProduct.sku}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Category:</span>
+                  <span className="ml-2 font-medium">{selectedProduct.category}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Stock:</span>
+                  <span className="ml-2 font-medium">{selectedProduct.stock}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Status:</span>
+                  <span className="ml-2">{getStatusBadge(selectedProduct.status)}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Featured:</span>
+                  <span className="ml-2">{selectedProduct.featured ? 'Yes' : 'No'}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Auction:</span>
+                  <span className="ml-2">{selectedProduct.auction_enabled ? `Yes (${selectedProduct.auction_type})` : 'No'}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

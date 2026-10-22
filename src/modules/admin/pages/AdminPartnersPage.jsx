@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
-import { listPartnerLogos } from '@/services/partnerLogoService'
-import { Edit, Eye, EyeOff, Handshake, Plus, Trash2 } from 'lucide-react'
+import { Edit, Eye, EyeOff, Handshake, Plus, Trash2, X, Upload } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 const emptyForm = { name: '', logo_url: '', website_url: '', sort_order: 1, is_active: true }
 
@@ -16,9 +16,15 @@ export default function AdminPartnersPage() {
 
   const load = async () => {
     try {
-      setPartners(await listPartnerLogos())
-    } catch (err) {
+      const { data, error } = await supabase
+        .from('partner_logos')
+        .select('*')
+        .order('sort_order', { ascending: true })
 
+      if (error) throw error
+      setPartners(data || [])
+    } catch (err) {
+      console.error('Error loading partners:', err)
       error('Error', 'Failed to load partner logos')
     } finally {
       setLoading(false)
@@ -52,15 +58,31 @@ export default function AdminPartnersPage() {
       return
     }
     setSaving(true)
-    const data = { ...form, name: form.name.trim(), logo_url: form.logo_url.trim(), sort_order: Number(form.sort_order) || 0 }
+    const data = {
+      name: form.name.trim(),
+      logo_url: form.logo_url.trim(),
+      website_url: form.website_url || null,
+      sort_order: Number(form.sort_order) || 0,
+      is_active: form.is_active
+    }
     try {
-      if (editing?.id) await PartnerLogoStore.update(editing.id, data)
-      else await PartnerLogoStore.create(data)
+      if (editing?.id) {
+        const { error } = await supabase
+          .from('partner_logos')
+          .update(data)
+          .eq('id', editing.id)
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from('partner_logos')
+          .insert(data)
+        if (error) throw error
+      }
       success('Saved', editing?.id ? 'Partner updated' : 'Partner added')
       setEditing(null)
       await load()
     } catch (err) {
-
+      console.error('Error saving partner:', err)
       error('Failed', 'Could not save the partner')
     } finally {
       setSaving(false)
@@ -69,21 +91,30 @@ export default function AdminPartnersPage() {
 
   const handleToggle = async (p) => {
     try {
-      await PartnerLogoStore.update(p.id, { is_active: p.is_active === false })
+      const { error } = await supabase
+        .from('partner_logos')
+        .update({ is_active: p.is_active === false })
+        .eq('id', p.id)
+      if (error) throw error
       await load()
     } catch (err) {
-
+      console.error('Error toggling partner:', err)
       error('Failed', 'Could not update the partner')
     }
   }
 
   const handleDelete = async (p) => {
+    if (!confirm(`Delete ${p.name}?`)) return
     try {
-      await PartnerLogoStore.delete(p.id)
+      const { error } = await supabase
+        .from('partner_logos')
+        .delete()
+        .eq('id', p.id)
+      if (error) throw error
       success('Deleted', `${p.name} removed`)
       await load()
     } catch (err) {
-
+      console.error('Error deleting partner:', err)
       error('Failed', 'Could not delete the partner')
     }
   }
@@ -158,6 +189,32 @@ export default function AdminPartnersPage() {
                   placeholder="https://… or /brands/logo.svg"
                   value={form.logo_url}
                   onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-gray-600">Or upload logo file</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files[0]
+                    if (!file) return
+                    try {
+                      const fileName = `partner-${Date.now()}-${file.name}`
+                      const { data, error } = await supabase.storage
+                        .from('cms-assets')
+                        .upload(fileName, file)
+                      if (error) throw error
+                      const { data: { publicUrl } } = supabase.storage
+                        .from('cms-assets')
+                        .getPublicUrl(fileName)
+                      setForm({ ...form, logo_url: publicUrl })
+                    } catch (err) {
+                      console.error('Error uploading logo:', err)
+                      error('Upload Failed', 'Failed to upload logo')
+                    }
+                  }}
+                  className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
                 />
               </label>
               {form.logo_url && (

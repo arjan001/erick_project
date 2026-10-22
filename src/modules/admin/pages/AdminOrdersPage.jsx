@@ -149,8 +149,7 @@ export default function AdminOrdersPage() {
   return (
     <div className="p-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders Management</h1>
-        <p className="text-gray-600">View and manage shop orders and payments</p>
+        <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
       </div>
 
       <div className="grid grid-cols-5 gap-4 mb-6">

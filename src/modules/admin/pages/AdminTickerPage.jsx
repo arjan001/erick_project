@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
+import { TickerEntry } from '@/lib/supabaseEntities'
 import { useToast } from '@/hooks/useToast.jsx'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, ExternalLink, Search, Check } from 'lucide-react'
+import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, ExternalLink } from 'lucide-react'
 import DataTable from '@/components/admin/DataTable'
 
 export default function AdminTickerPage() {
@@ -19,23 +20,11 @@ export default function AdminTickerPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/ticker_items?select=*&order=display_order.asc`, {
-        headers: {
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      setEntries(data || [])
+      const tickerData = await TickerEntry.list('-display_order', 100)
+      setEntries(tickerData || [])
     } catch (err) {
       console.error('Error fetching ticker entries:', err)
-      toastError('Load Failed', `Failed to load ticker entries: ${err.message}`)
+      toastError('Load Failed', 'Failed to load ticker entries')
       setEntries([])
     } finally {
       setLoading(false)
@@ -63,36 +52,19 @@ export default function AdminTickerPage() {
   const handleSave = async () => {
     if (!form.text.trim()) { toastError('Validation', 'Text is required'); return; }
     try {
-      const url = editingEntry
-        ? `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/ticker_items?id=eq.${editingEntry.id}`
-        : `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/ticker_items`
-
-      const method = editingEntry ? 'PATCH' : 'POST'
-
       const dataToSave = {
         text: form.text,
         link: form.link || null,
         active: form.active,
         display_order: form.display_order || 0,
       }
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': editingEntry ? 'return=representation' : 'return=representation'
-        },
-        body: JSON.stringify(dataToSave)
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to save')
+      if (editingEntry) {
+        await TickerEntry.update(editingEntry.id, dataToSave)
+        success('Updated', 'Ticker entry updated')
+      } else {
+        await TickerEntry.create(dataToSave)
+        success('Created', 'Ticker entry created')
       }
-
-      success(editingEntry ? 'Updated' : 'Created', `Ticker entry ${editingEntry ? 'updated' : 'created'}`)
       setShowModal(false)
       fetchData()
     } catch (err) {
@@ -103,18 +75,7 @@ export default function AdminTickerPage() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this ticker entry?')) return
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/ticker_items?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: {
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete')
-      }
-
+      await TickerEntry.delete(id)
       success('Deleted', 'Ticker entry deleted')
       fetchData()
     } catch (err) {
@@ -124,21 +85,7 @@ export default function AdminTickerPage() {
 
   const toggleStatus = async (entry) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/ticker_items?id=eq.${entry.id}`, {
-        method: 'PATCH',
-        headers: {
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
-        },
-        body: JSON.stringify({ active: !entry.active })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to update status')
-      }
-
+      await TickerEntry.update(entry.id, { active: !entry.active })
       success(!entry.active ? 'Activated' : 'Deactivated', `Entry is now ${!entry.active ? 'active' : 'inactive'}`)
       fetchData()
     } catch (err) {
@@ -149,20 +96,7 @@ export default function AdminTickerPage() {
   const moveOrder = async (entry, direction) => {
     const newOrder = (entry.display_order || 0) + direction
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/ticker_items?id=eq.${entry.id}`, {
-        method: 'PATCH',
-        headers: {
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ display_order: newOrder })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to reorder')
-      }
-
+      await TickerEntry.update(entry.id, { display_order: newOrder })
       fetchData()
     } catch (err) {
       toastError('Failed', 'Failed to reorder')
