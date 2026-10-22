@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/useToast.jsx'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, ExternalLink } from 'lucide-react'
+import { Plus, Edit2, Trash2, X, Search, Check, ExternalLink, Eye, EyeOff, ArrowUp, ArrowDown } from 'lucide-react'
 import DataTable from '@/components/admin/DataTable'
 
 export default function AdminTickerPage() {
@@ -13,6 +13,7 @@ export default function AdminTickerPage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingEntry, setEditingEntry] = useState(null)
+  const [selectedIds, setSelectedIds] = useState([])
   const [form, setForm] = useState({
     text: '', link: '', active: true, display_order: 0,
   })
@@ -83,6 +84,19 @@ export default function AdminTickerPage() {
     }
   }
 
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return
+    if (!confirm(`Delete ${selectedIds.length} ticker entries?`)) return
+    try {
+      await Promise.all(selectedIds.map(id => TickerEntry.delete(id)))
+      success('Deleted', `${selectedIds.length} entries deleted`)
+      setSelectedIds([])
+      fetchData()
+    } catch (err) {
+      toastError('Delete Failed', 'Failed to delete entries')
+    }
+  }
+
   const toggleStatus = async (entry) => {
     try {
       await TickerEntry.update(entry.id, { active: !entry.active })
@@ -132,9 +146,16 @@ export default function AdminTickerPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Navbar Marquee / Ticker</h1>
           <p className="text-gray-600">Manage the scrolling marquee items shown on the top banner</p>
         </div>
-        <Button onClick={() => openModal()} className="bg-black text-white hover:bg-gray-800">
-          <Plus className="w-4 h-4 mr-2" /> Add Ticker Item
-        </Button>
+        <div className="flex gap-3">
+          {selectedIds.length > 0 && (
+            <Button onClick={handleBulkDelete} variant="destructive">
+              <Trash2 className="w-4 h-4 mr-2" /> Delete Selected ({selectedIds.length})
+            </Button>
+          )}
+          <Button onClick={() => openModal()} className="bg-black text-white hover:bg-gray-800">
+            <Plus className="w-4 h-4 mr-2" /> Add Ticker Item
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -154,6 +175,8 @@ export default function AdminTickerPage() {
               exportable={true}
               pagination={true}
               pageSize={10}
+              selectable={true}
+              onSelect={(ids) => setSelectedIds(ids)}
               onRowClick={(row) => openModal(row)}
               actions={(row) => (
                 <div className="flex items-center gap-2">

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { Article } from '@/lib/supabaseEntities'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
-import { Badge } from '@/shared/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 import { Plus, Edit2, Trash2, X, Eye, EyeOff, ArrowUp, ArrowDown, Calendar, User } from 'lucide-react'
 import { useToast } from '@/hooks/useToast.jsx'
+import DataTable from '@/components/admin/DataTable'
 
 export default function AdminArticlesPage() {
   const { success, error: toastError } = useToast()
@@ -14,6 +15,7 @@ export default function AdminArticlesPage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingArticle, setEditingArticle] = useState(null)
+  const [selectedIds, setSelectedIds] = useState([])
   const [form, setForm] = useState({
     title: '',
     slug: '',
@@ -115,8 +117,20 @@ export default function AdminArticlesPage() {
       success('Deleted', 'Article deleted')
       fetchArticles()
     } catch (err) {
-
       toastError('Delete Failed', 'Failed to delete article')
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return
+    if (!confirm(`Delete ${selectedIds.length} articles?`)) return
+    try {
+      await Promise.all(selectedIds.map(id => Article.delete(id)))
+      success('Deleted', `${selectedIds.length} articles deleted`)
+      setSelectedIds([])
+      fetchArticles()
+    } catch (err) {
+      toastError('Delete Failed', 'Failed to delete articles')
     }
   }
 
@@ -162,6 +176,22 @@ export default function AdminArticlesPage() {
     )
   }
 
+  const columns = [
+    { key: 'title', label: 'Title', sortable: true, filterable: true },
+    { key: 'category', label: 'Category', sortable: true, filterable: true, render: (value) => <span className="capitalize">{value}</span> },
+    { key: 'author_name', label: 'Author', sortable: true, filterable: false },
+    {
+      key: 'status', label: 'Status', sortable: true, filterable: true, render: (value) => (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${value === 'published' ? 'bg-green-100 text-green-700' : value === 'draft' ? 'bg-gray-100 text-gray-700' : 'bg-red-100 text-red-700'}`}>
+          {value}
+        </span>
+      )
+    },
+    { key: 'is_featured', label: 'Featured', sortable: true, filterable: true, render: (value) => value ? <Badge className="bg-yellow-100 text-yellow-800">Yes</Badge> : <span className="text-gray-400">No</span> },
+    { key: 'published_at', label: 'Published', sortable: true, filterable: false, render: (value) => value ? new Date(value).toLocaleDateString() : '-' },
+    { key: 'display_order', label: 'Order', sortable: true, filterable: false },
+  ]
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
@@ -169,9 +199,16 @@ export default function AdminArticlesPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Articles</h1>
           <p className="text-gray-600">Manage blog posts, news, and content articles</p>
         </div>
-        <Button onClick={() => openModal()} className="bg-gray-900 text-white hover:bg-gray-800">
-          <Plus className="w-4 h-4 mr-2" /> Add Article
-        </Button>
+        <div className="flex gap-3">
+          {selectedIds.length > 0 && (
+            <Button onClick={handleBulkDelete} variant="destructive">
+              <Trash2 className="w-4 h-4 mr-2" /> Delete Selected ({selectedIds.length})
+            </Button>
+          )}
+          <Button onClick={() => openModal()} className="bg-gray-900 text-white hover:bg-gray-800">
+            <Plus className="w-4 h-4 mr-2" /> Add Article
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -184,41 +221,27 @@ export default function AdminArticlesPage() {
               </Button>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
-              {articles.map((article) => (
-                <div key={article.id} className="flex items-center gap-4 p-4 hover:bg-gray-50">
-                  <div className="flex flex-col gap-1 flex-shrink-0">
-                    <button onClick={() => moveOrder(article, -1)} className="p-1 hover:bg-gray-200 rounded text-gray-500"><ArrowUp className="w-3 h-3" /></button>
-                    <button onClick={() => moveOrder(article, 1)} className="p-1 hover:bg-gray-200 rounded text-gray-500"><ArrowDown className="w-3 h-3" /></button>
-                  </div>
-                  {article.featured_image_url && (
-                    <img src={article.featured_image_url} alt="" className="w-16 h-12 object-cover rounded" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900 truncate">{article.title}</span>
-                      {article.is_featured && <Badge className="bg-yellow-100 text-yellow-800">Featured</Badge>}
-                    </div>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                      <span className="capitalize">{article.category}</span>
-                      <span>Order: {article.display_order || 0}</span>
-                      {article.author_name && <span className="flex items-center gap-1"><User className="w-3 h-3" /> {article.author_name}</span>}
-                      {article.published_at && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(article.published_at).toLocaleDateString()}</span>}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <button onClick={() => toggleFeatured(article)} className={`p-2 rounded-lg ${article.is_featured ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => toggleStatus(article)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${article.status === 'published' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                      {article.status === 'published' ? <><Eye className="w-3 h-3 inline mr-1" />Published</> : <><EyeOff className="w-3 h-3 inline mr-1" />Draft</>}
-                    </button>
-                    <button onClick={() => openModal(article)} className="p-2 hover:bg-gray-200 rounded text-gray-600"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDelete(article.id)} className="p-2 hover:bg-red-50 rounded text-red-600"><Trash2 className="w-4 h-4" /></button>
-                  </div>
+            <DataTable
+              data={articles}
+              columns={columns}
+              searchable={true}
+              exportable={true}
+              pagination={true}
+              pageSize={10}
+              selectable={true}
+              onSelect={(ids) => setSelectedIds(ids)}
+              onRowClick={(row) => openModal(row)}
+              actions={(row) => (
+                <div className="flex items-center gap-2">
+                  <button onClick={() => moveOrder(row, -1)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Move Up"><ArrowUp className="w-4 h-4" /></button>
+                  <button onClick={() => moveOrder(row, 1)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Move Down"><ArrowDown className="w-4 h-4" /></button>
+                  <button onClick={() => toggleFeatured(row)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Toggle Featured">{row.is_featured ? <Eye className="w-4 h-4 text-yellow-600" /> : <EyeOff className="w-4 h-4" />}</button>
+                  <button onClick={() => toggleStatus(row)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Toggle Status">{row.status === 'published' ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4" />}</button>
+                  <button onClick={() => openModal(row)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Edit"><Edit2 className="w-4 h-4" /></button>
+                  <button onClick={() => handleDelete(row.id)} className="p-1 hover:bg-red-50 rounded text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
                 </div>
-              ))}
-            </div>
+              )}
+            />
           )}
         </CardContent>
       </Card>
