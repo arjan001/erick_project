@@ -104,11 +104,13 @@ export default function AdminClientsPage() {
         phone: client.phone || '',
         website: client.website || '',
         bio: client.bio || '',
-        status: client.status || 'active'
+        status: client.status || 'active',
+        is_suspended: client.is_suspended || false,
+        is_disabled: client.is_disabled || false
       })
     } else {
       setEditingClient(null)
-      setForm({ client_name: '', display_name: '', company_name: '', phone: '', website: '', bio: '', status: 'active' })
+      setForm({ client_name: '', display_name: '', company_name: '', phone: '', website: '', bio: '', status: 'active', is_suspended: false, is_disabled: false })
     }
     setShowModal(true)
   }
@@ -131,6 +133,8 @@ export default function AdminClientsPage() {
   }
 
   const getStatus = (client) => {
+    if (client.is_suspended) return 'suspended'
+    if (client.is_disabled) return 'disabled'
     return client.status || 'active'
   }
 
@@ -139,9 +143,9 @@ export default function AdminClientsPage() {
       client.company_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       client.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' ||
-      (statusFilter === 'active' && client.status === 'active') ||
-      (statusFilter === 'suspended' && client.status === 'suspended') ||
-      (statusFilter === 'disabled' && client.status === 'disabled') ||
+      (statusFilter === 'active' && !client.is_suspended && !client.is_disabled) ||
+      (statusFilter === 'suspended' && client.is_suspended) ||
+      (statusFilter === 'disabled' && client.is_disabled) ||
       (statusFilter === 'pending' && client.status === 'pending')
     return matchesSearch && matchesStatus
   })

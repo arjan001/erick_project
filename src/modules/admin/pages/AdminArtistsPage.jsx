@@ -59,6 +59,8 @@ export default function AdminArtistsPage() {
   const totalPages = Math.ceil(filteredArtists.length / PAGE_SIZE)
 
   const getStatus = (artist) => {
+    if (artist.is_suspended) return 'suspended'
+    if (artist.is_disabled) return 'disabled'
     return artist.admin_approval_status || 'pending'
   }
 
@@ -71,11 +73,13 @@ export default function AdminArtistsPage() {
         bio: artist.bio || '',
         location: artist.location || '',
         skills: artist.skills || '',
-        admin_approval_status: artist.admin_approval_status || 'pending'
+        admin_approval_status: artist.admin_approval_status || 'pending',
+        is_suspended: artist.is_suspended || false,
+        is_disabled: artist.is_disabled || false
       })
     } else {
       setEditingArtist(null)
-      setForm({ full_name: '', email: '', bio: '', location: '', skills: '', admin_approval_status: 'pending' })
+      setForm({ full_name: '', email: '', bio: '', location: '', skills: '', admin_approval_status: 'pending', is_suspended: false, is_disabled: false })
     }
     setShowModal(true)
   }

@@ -30,15 +30,8 @@ export default function AdminProductsPage() {
     auction_end_time: '',
     auction_target_count: 1000,
     auction_participants: 0,
-    auction_start_time: '',
-    auction_min_bid: '',
-    auction_reserve_price: '',
     currency: 'KES',
-    fulfillment: 'physical',
-    weight: '',
-    dimensions: '',
-    tags: '',
-    specifications: '',
+    fulfillment_type: 'physical',
   })
 
   const categories = ['Wardrobe', 'Equipment', 'Merchandise', 'Collectibles', 'Experiences']
@@ -71,8 +64,6 @@ export default function AdminProductsPage() {
         stock: parseInt(productForm.stock),
         sold: 0,
         images: productForm.images.length > 0 ? productForm.images : ['placeholder.jpg'],
-        auction_min_bid: productForm.auction_min_bid ? parseFloat(productForm.auction_min_bid) : null,
-        auction_reserve_price: productForm.auction_reserve_price ? parseFloat(productForm.auction_reserve_price) : null,
       })
       setProducts([...products, newProduct])
       success('Success', 'Product created successfully')
@@ -80,9 +71,8 @@ export default function AdminProductsPage() {
       setProductForm({
         name: '', description: '', price: '', discount_price: '', category: '', stock: '', sku: '', images: [],
         status: 'active', featured: false, auction_enabled: false, auction_type: 'time', auction_duration_hours: 24,
-        auction_end_time: '', auction_target_count: 1000, auction_participants: 0, auction_start_time: '',
-        auction_min_bid: '', auction_reserve_price: '', currency: 'KES', fulfillment: 'physical', weight: '',
-        dimensions: '', tags: '', specifications: '',
+        auction_end_time: '', auction_target_count: 1000, auction_participants: 0,
+        currency: 'KES', fulfillment_type: 'physical',
       })
     } catch (err) {
       console.error('Error creating product:', err)
@@ -457,51 +447,10 @@ export default function AdminProductsPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma-separated)</label>
-                <input
-                  type="text"
-                  value={productForm.tags}
-                  onChange={(e) => setProductForm({ ...productForm, tags: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                  placeholder="action, vintage, limited-edition"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Specifications (JSON or plain text)</label>
-                <textarea
-                  value={productForm.specifications}
-                  onChange={(e) => setProductForm({ ...productForm, specifications: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                  placeholder='{"size": "M", "material": "Cotton", "color": "Black"}'
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
-                  <input
-                    type="text"
-                    value={productForm.weight}
-                    onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Dimensions (LxWxH cm)</label>
-                  <input
-                    type="text"
-                    value={productForm.dimensions}
-                    onChange={(e) => setProductForm({ ...productForm, dimensions: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                    placeholder="30x20x10"
-                  />
-                </div>
-              </div>
-              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Fulfillment Type</label>
                 <select
-                  value={productForm.fulfillment}
-                  onChange={(e) => setProductForm({ ...productForm, fulfillment: e.target.value })}
+                  value={productForm.fulfillment_type}
+                  onChange={(e) => setProductForm({ ...productForm, fulfillment_type: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                 >
                   {fulfillmentTypes.map(type => <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>)}
@@ -531,11 +480,11 @@ export default function AdminProductsPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Duration (hours)</label>
                         <input
-                          type="datetime-local"
-                          value={productForm.auction_start_time}
-                          onChange={(e) => setProductForm({ ...productForm, auction_start_time: e.target.value })}
+                          type="number"
+                          value={productForm.auction_duration_hours}
+                          onChange={(e) => setProductForm({ ...productForm, auction_duration_hours: parseInt(e.target.value) || 24 })}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                         />
                       </div>
@@ -549,61 +498,29 @@ export default function AdminProductsPage() {
                         />
                       </div>
                     </div>
-                    {productForm.auction_type === 'time' ? (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Duration (hours)</label>
-                        <input
-                          type="number"
-                          value={productForm.auction_duration_hours}
-                          onChange={(e) => setProductForm({ ...productForm, auction_duration_hours: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                        />
-                      </div>
-                    ) : (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Target Participant Count</label>
-                        <input
-                          type="number"
-                          value={productForm.auction_target_count}
-                          onChange={(e) => setProductForm({ ...productForm, auction_target_count: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                        />
-                      </div>
-                    )}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Bid</label>
-                        <input
-                          type="number"
-                          value={productForm.auction_min_bid}
-                          onChange={(e) => setProductForm({ ...productForm, auction_min_bid: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Reserve Price (Optional)</label>
-                        <input
-                          type="number"
-                          value={productForm.auction_reserve_price}
-                          onChange={(e) => setProductForm({ ...productForm, auction_reserve_price: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Target Count</label>
+                      <input
+                        type="number"
+                        value={productForm.auction_target_count}
+                        onChange={(e) => setProductForm({ ...productForm, auction_target_count: parseInt(e.target.value) || 1000 })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                      />
                     </div>
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={productForm.featured}
-                    onChange={(e) => setProductForm({ ...productForm, featured: e.target.checked })}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm text-gray-700">Featured Product</span>
-                </label>
-              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={productForm.featured}
+                  onChange={(e) => setProductForm({ ...productForm, featured: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm text-gray-700">Featured Product</span>
+              </label>
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>

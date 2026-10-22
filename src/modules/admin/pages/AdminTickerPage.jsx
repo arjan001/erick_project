@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { TickerEntry } from '@/lib/supabaseEntities'
+import { useToast } from '@/hooks/useToast.jsx'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, ExternalLink } from 'lucide-react'
-import { useToast } from '@/hooks/useToast.jsx'
+import { Card, CardContent } from '@/components/ui/card'
+import { Plus, Edit2, Trash2, X, ArrowUp, ArrowDown, Eye, EyeOff, ExternalLink, Search, Check } from 'lucide-react'
+import DataTable from '@/components/admin/DataTable'
 
 export default function AdminTickerPage() {
   const { success, error: toastError } = useToast()
@@ -18,10 +18,25 @@ export default function AdminTickerPage() {
 
   const fetchData = async () => {
     try {
-      const tickerData = await TickerEntry.list('-display_order', 100)
-      setEntries(tickerData || [])
+      setLoading(true)
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/ticker_items?select=*&order=display_order.asc`, {
+        headers: {
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      setEntries(data || [])
     } catch (err) {
-      toastError('Load Failed', 'Failed to load data')
+      console.error('Error fetching ticker entries:', err)
+      toastError('Load Failed', `Failed to load ticker entries: ${err.message}`)
+      setEntries([])
     } finally {
       setLoading(false)
     }
@@ -40,7 +55,7 @@ export default function AdminTickerPage() {
       })
     } else {
       setEditingEntry(null)
-      setForm({ text: '', link: '', active: true, display_order: 0 })
+      setForm({ text: '', link: '', active: true, display_order: entries.length })
     }
     setShowModal(true)
   }
@@ -48,19 +63,36 @@ export default function AdminTickerPage() {
   const handleSave = async () => {
     if (!form.text.trim()) { toastError('Validation', 'Text is required'); return; }
     try {
+      const url = editingEntry
+        ? `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/ticker_items?id=eq.${editingEntry.id}`
+        : `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/ticker_items`
+
+      const method = editingEntry ? 'PATCH' : 'POST'
+
       const dataToSave = {
         text: form.text,
         link: form.link || null,
         active: form.active,
         display_order: form.display_order || 0,
       }
-      if (editingEntry) {
-        await TickerEntry.update(editingEntry.id, dataToSave)
-        success('Updated', 'Ticker entry updated')
-      } else {
-        await TickerEntry.create(dataToSave)
-        success('Created', 'Ticker entry created')
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': editingEntry ? 'return=representation' : 'return=representation'
+        },
+        body: JSON.stringify(dataToSave)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to save')
       }
+
+      success(editingEntry ? 'Updated' : 'Created', `Ticker entry ${editingEntry ? 'updated' : 'created'}`)
       setShowModal(false)
       fetchData()
     } catch (err) {
@@ -71,20 +103,43 @@ export default function AdminTickerPage() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this ticker entry?')) return
     try {
-      await TickerEntry.delete(id)
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/ticker_items?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: {
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete')
+      }
+
       success('Deleted', 'Ticker entry deleted')
       fetchData()
     } catch (err) {
-
       toastError('Delete Failed', 'Failed to delete entry')
     }
   }
 
   const toggleStatus = async (entry) => {
     try {
-      const newActive = !entry.active
-      await TickerEntry.update(entry.id, { active: newActive })
-      success(newActive ? 'Activated' : 'Deactivated', `Entry is now ${newActive ? 'active' : 'inactive'}`)
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/ticker_items?id=eq.${entry.id}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({ active: !entry.active })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update status')
+      }
+
+      success(!entry.active ? 'Activated' : 'Deactivated', `Entry is now ${!entry.active ? 'active' : 'inactive'}`)
       fetchData()
     } catch (err) {
       toastError('Failed', 'Failed to update status')
@@ -94,12 +149,39 @@ export default function AdminTickerPage() {
   const moveOrder = async (entry, direction) => {
     const newOrder = (entry.display_order || 0) + direction
     try {
-      await TickerEntry.update(entry.id, { display_order: newOrder })
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/ticker_items?id=eq.${entry.id}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ display_order: newOrder })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to reorder')
+      }
+
       fetchData()
     } catch (err) {
       toastError('Failed', 'Failed to reorder')
     }
   }
+
+  const columns = [
+    { key: 'text', label: 'Text', sortable: true, filterable: true },
+    { key: 'link', label: 'Link', sortable: false, filterable: false, render: (value) => value ? <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" />{value}</a> : '-' },
+    { key: 'display_order', label: 'Order', sortable: true, filterable: false },
+    {
+      key: 'active', label: 'Status', sortable: true, filterable: true, render: (value) => (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${value ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+          {value ? 'Active' : 'Inactive'}
+        </span>
+      )
+    },
+    { key: 'created_at', label: 'Created', sortable: true, filterable: false, render: (value) => value ? new Date(value).toLocaleDateString() : '-' }
+  ]
 
   if (loading) {
     return (
@@ -114,7 +196,7 @@ export default function AdminTickerPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Navbar Marquee / Ticker</h1>
-          <p className="text-gray-600">Manage the scrolling marquee items shown on the top banner. Items can link to any page or external URL.</p>
+          <p className="text-gray-600">Manage the scrolling marquee items shown on the top banner</p>
         </div>
         <Button onClick={() => openModal()} className="bg-black text-white hover:bg-gray-800">
           <Plus className="w-4 h-4 mr-2" /> Add Ticker Item
@@ -131,37 +213,24 @@ export default function AdminTickerPage() {
               </Button>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
-              {entries.map((entry) => (
-                <div key={entry.id} className="flex items-center gap-4 p-4 hover:bg-gray-50">
-                  <div className="flex flex-col gap-1 flex-shrink-0">
-                    <button onClick={() => moveOrder(entry, -1)} className="p-1 hover:bg-gray-200 rounded text-gray-500"><ArrowUp className="w-3 h-3" /></button>
-                    <button onClick={() => moveOrder(entry, 1)} className="p-1 hover:bg-gray-200 rounded text-gray-500"><ArrowDown className="w-3 h-3" /></button>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900 truncate">{entry.text}</span>
-                      {entry.link && (
-                        <a href={entry.link} target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-700">
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                      <span>Order: {entry.display_order || 0}</span>
-                      <span>{entry.active ? 'Active' : 'Inactive'}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <button onClick={() => toggleStatus(entry)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${entry.active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                      {entry.active ? <><Eye className="w-3 h-3 inline mr-1" />Active</> : <><EyeOff className="w-3 h-3 inline mr-1" />Inactive</>}
-                    </button>
-                    <button onClick={() => openModal(entry)} className="p-2 hover:bg-gray-200 rounded text-gray-600"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => handleDelete(entry.id)} className="p-2 hover:bg-red-50 rounded text-red-600"><Trash2 className="w-4 h-4" /></button>
-                  </div>
+            <DataTable
+              data={entries}
+              columns={columns}
+              searchable={true}
+              exportable={true}
+              pagination={true}
+              pageSize={10}
+              onRowClick={(row) => openModal(row)}
+              actions={(row) => (
+                <div className="flex items-center gap-2">
+                  <button onClick={() => moveOrder(row, -1)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Move Up"><ArrowUp className="w-4 h-4" /></button>
+                  <button onClick={() => moveOrder(row, 1)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Move Down"><ArrowDown className="w-4 h-4" /></button>
+                  <button onClick={() => toggleStatus(row)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title={row.active ? 'Deactivate' : 'Activate'}>{row.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button>
+                  <button onClick={() => openModal(row)} className="p-1 hover:bg-gray-200 rounded text-gray-500" title="Edit"><Edit2 className="w-4 h-4" /></button>
+                  <button onClick={() => handleDelete(row.id)} className="p-1 hover:bg-red-50 rounded text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
                 </div>
-              ))}
-            </div>
+              )}
+            />
           )}
         </CardContent>
       </Card>
