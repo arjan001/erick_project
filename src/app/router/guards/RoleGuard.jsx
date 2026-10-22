@@ -19,12 +19,7 @@ export function RoleGuard({ roles, children }) {
     }
 
     // If authenticated but trying to access admin routes without admin role
-    if (!isLoadingAuth && isAuthenticated && (location.pathname.startsWith('/Admin') || location.pathname.startsWith('/admin'))) {
-      if (user?.role !== 'admin') {
-        navigate('/Admin')
-        return
-      }
-    }
+    // Just let the render check handle it - don't redirect
   }, [isAuthenticated, isLoadingAuth, navigate, location, user])
 
   if (isLoadingAuth) {

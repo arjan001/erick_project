@@ -25,7 +25,7 @@ const navItems = [
   { path: '/Admin/Newsletter', label: 'Newsletter', icon: Mail },
   { path: '/Admin/MailingList', label: 'Mailing List', icon: Mail },
   { path: '/Admin/Messages', label: 'Messages', icon: Mail },
-  { path: '/Admin/CMS', label: 'CMS — Page Content', icon: FileText },
+  { path: '/Admin/CMS', label: 'CMS', icon: FileText },
   { path: '/Admin/SEOCMS', label: 'SEO & CMS', icon: FileText },
   { path: '/Admin/ImageStorage', label: 'Image Storage', icon: Image },
   { path: '/Admin/LoginProviders', label: 'Login Providers', icon: Shield },

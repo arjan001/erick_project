@@ -409,6 +409,12 @@ const adminRoutes = [
     guard: SettingsGuard
   },
   {
+    path: '/Admin/CMS',
+    component: () => import('@/modules/admin/pages/AdminCMSPage'),
+    layout: AdminLayout,
+    guard: SEOCMSGuard
+  },
+  {
     path: '/Admin/SEOCMS',
     component: () => import('@/modules/admin/pages/AdminSEOCMSPage'),
     layout: AdminLayout,

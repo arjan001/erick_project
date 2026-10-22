@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Message } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import { MessageSquare, Search, Send, Trash2, User } from 'lucide-react'
-import realtimeMessagingService from '@/services/realtimeMessagingService'
 
 export default function AdminMessagesPage() {
   const { user } = useAuth()
@@ -19,76 +18,54 @@ export default function AdminMessagesPage() {
   const fetchMessages = async () => {
     try {
       setLoading(true)
-      const rows = await Message.list('-created_at', 500)
-      const grouped = {}
-        (rows || []).forEach(m => {
-          if (!grouped[m.conversation_id]) grouped[m.conversation_id] = []
-          grouped[m.conversation_id].push(m)
-        })
-      const convs = Object.entries(grouped).map(([id, msgs]) => {
-        const sorted = msgs.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-        const last = sorted[sorted.length - 1]
-        const otherParty = sorted.find(m => m.sender_email !== user?.email)?.sender_email || last.sender_email
-        return { id, messages: sorted, lastMessage: last.text, lastMessageTime: last.created_at, participant: otherParty }
-      }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime))
-      setConversations(convs)
-    } catch (err) {
+      // Fetch conversations with participant info
+      const { data: convs, error: convError } = await supabase
+        .from('conversations')
+        .select(`
+          *,
+          participant_1:users!conversations_participant_1_fkey(id, email, full_name),
+          participant_2:users!conversations_participant_2_fkey(id, email, full_name)
+        `)
+        .order('last_message_at', { ascending: false, nullsFirst: false })
 
+      if (convError) throw convError
+
+      // Fetch messages for each conversation
+      const conversationsWithMessages = await Promise.all(
+        (convs || []).map(async (conv) => {
+          const { data: msgs, error: msgError } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('conversation_id', conv.id)
+            .order('created_at', { ascending: true })
+
+          if (msgError) throw msgError
+
+          const lastMessage = msgs[msgs.length - 1]
+          const otherParticipant = conv.participant_1.id === user?.id ? conv.participant_2 : conv.participant_1
+
+          return {
+            id: conv.id,
+            messages: msgs || [],
+            lastMessage: lastMessage?.content || '',
+            lastMessageTime: lastMessage?.created_at || conv.created_at,
+            participant: otherParticipant.email,
+            participantName: otherParticipant.full_name,
+            participantId: otherParticipant.id
+          }
+        })
+      )
+
+      setConversations(conversationsWithMessages)
+    } catch (err) {
+      console.error('Error fetching messages:', err)
       error('Error', 'Failed to fetch messages')
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => { fetchMessages(); }, [])
-
-  // Real-time message subscription using Supabase Realtime
-  useEffect(() => {
-    if (!user) return
-
-    const handleNewMessage = (newMessage) => {
-
-
-      // Check if conversation already exists
-      const existingConv = conversations.find(c => c.id === newMessage.conversation_id)
-
-      if (existingConv) {
-        // Update existing conversation
-        setConversations(prev => prev.map(c => {
-          if (c.id === newMessage.conversation_id) {
-            return {
-              ...c,
-              messages: [...c.messages, newMessage],
-              lastMessage: newMessage.text || '',
-              lastMessageTime: newMessage.created_at
-            }
-          }
-          return c
-        }))
-      } else {
-        // Create new conversation
-        const newConv = {
-          id: newMessage.conversation_id,
-          messages: [newMessage],
-          lastMessage: newMessage.text || '',
-          lastMessageTime: newMessage.created_at,
-          participant: newMessage.sender_id === user.id ? newMessage.recipient_id : newMessage.sender_id
-        }
-        setConversations(prev => [newConv, ...prev])
-      }
-    }
-
-    // Subscribe to real-time messages
-    const unsubscribe = realtimeMessagingService.subscribeToMessages(
-      user.email,
-      handleNewMessage
-    )
-
-    // Cleanup on unmount
-    return () => {
-      unsubscribe()
-    }
-  }, [user])
+  useEffect(() => { fetchMessages(); }, [user])
 
   const selectedConversation = conversations.find(c => c.id === selectedId)
 
@@ -96,20 +73,32 @@ export default function AdminMessagesPage() {
     if (!newMessage.trim() || !selectedConversation) return
     setSending(true)
     try {
-      const created = await Message.create({
-        conversation_id: selectedConversation.id,
-        sender_email: user?.email,
-        recipient_email: selectedConversation.participant,
-        text: newMessage,
-      })
+      const { data: newMsg, error: sendError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: selectedConversation.id,
+          sender_id: user?.id,
+          content: newMessage,
+        })
+        .select()
+        .single()
+
+      if (sendError) throw sendError
+
+      // Update conversation last_message_at
+      await supabase
+        .from('conversations')
+        .update({ last_message_at: new Date().toISOString() })
+        .eq('id', selectedConversation.id)
+
       setConversations(prev => prev.map(c => c.id === selectedConversation.id
-        ? { ...c, messages: [...c.messages, created], lastMessage: created.text, lastMessageTime: created.created_at }
+        ? { ...c, messages: [...c.messages, newMsg], lastMessage: newMsg.content, lastMessageTime: newMsg.created_at }
         : c
       ))
       setNewMessage('')
       success('Sent', 'Message sent successfully')
     } catch (err) {
-
+      console.error('Error sending message:', err)
       error('Failed', 'Failed to send message')
     } finally {
       setSending(false)
@@ -120,18 +109,20 @@ export default function AdminMessagesPage() {
     if (!window.confirm('Delete this entire conversation? This cannot be undone.')) return
     try {
       const conv = conversations.find(c => c.id === conversationId)
-      await Promise.all(conv.messages.map(m => Message.delete(m.id)))
+      await Promise.all(conv.messages.map(m => supabase.from('messages').delete().eq('id', m.id)))
+      await supabase.from('conversations').delete().eq('id', conversationId)
       setConversations(prev => prev.filter(c => c.id !== conversationId))
       if (selectedId === conversationId) setSelectedId(null)
       success('Deleted', 'Conversation deleted successfully')
     } catch (err) {
-
+      console.error('Error deleting conversation:', err)
       error('Failed', 'Failed to delete conversation')
     }
   }
 
   const filteredConversations = conversations.filter(c =>
-    c.participant?.toLowerCase().includes(searchQuery.toLowerCase())
+    c.participant?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.participantName?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   if (loading) {
@@ -203,10 +194,10 @@ export default function AdminMessagesPage() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {selectedConversation.messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.sender_email === user?.email ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-md rounded-lg p-3 ${msg.sender_email === user?.email ? 'bg-black text-white' : 'bg-gray-100 text-gray-900'}`}>
-                    <div className="text-sm">{msg.text}</div>
-                    <div className={`text-xs mt-1 ${msg.sender_email === user?.email ? 'text-gray-300' : 'text-gray-500'}`}>
+                <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-md rounded-lg p-3 ${msg.sender_id === user?.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-900'}`}>
+                    <div className="text-sm">{msg.content}</div>
+                    <div className={`text-xs mt-1 ${msg.sender_id === user?.id ? 'text-gray-300' : 'text-gray-500'}`}>
                       {new Date(msg.created_at).toLocaleTimeString()}
                     </div>
                   </div>
