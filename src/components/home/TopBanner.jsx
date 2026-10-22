@@ -64,7 +64,7 @@ export default function TopBanner() {
           href={item.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="px-8 text-sm font-medium flex items-center h-full border-r border-gray-300 last:border-r-0 hover:bg-gray-50 transition-colors cursor-pointer"
+          className="px-8 text-sm font-medium flex items-center h-full border-r border-gray-300 last:border-r-0 hover:bg-gray-100 hover:text-[#5850EC] transition-all duration-200 cursor-pointer relative z-10"
         >
           {item.text}
         </a>
@@ -74,7 +74,7 @@ export default function TopBanner() {
     return (
       <div
         key={idx}
-        className="px-8 text-sm font-medium flex items-center h-full border-r border-gray-300 last:border-r-0"
+        className="px-8 text-sm font-medium flex items-center h-full border-r border-gray-300 last:border-r-0 cursor-default"
       >
         {item.text}
       </div>

@@ -1,29 +1,33 @@
--- Fix newsletter tables based on actual schema
--- The schema shows mailing_list table exists, newsletter_campaigns exists without status column
--- We need to add the missing columns to newsletter_campaigns
+-- Fix newsletter tables - clean version without any conditional statements
 -- Run this in Supabase SQL Editor
 
--- Add missing columns to newsletter_campaigns
-ALTER TABLE public.newsletter_campaigns 
-ADD COLUMN IF NOT EXISTS name TEXT,
-ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'scheduled', 'sending', 'sent', 'failed')),
-ADD COLUMN IF NOT EXISTS scheduled_for TIMESTAMP WITH TIME ZONE,
-ADD COLUMN IF NOT EXISTS sent_count INTEGER DEFAULT 0,
-ADD COLUMN IF NOT EXISTS opened_count INTEGER DEFAULT 0,
-ADD COLUMN IF NOT EXISTS clicked_count INTEGER DEFAULT 0,
-ADD COLUMN IF NOT EXISTS template_id UUID,
-ADD COLUMN IF NOT EXISTS created_by UUID,
-ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+-- Drop existing tables to ensure clean state
+DROP TABLE IF EXISTS public.newsletter_campaigns CASCADE;
+DROP TABLE IF EXISTS public.newsletter_templates CASCADE;
 
--- Add missing columns to mailing_list
-ALTER TABLE public.mailing_list
-ADD COLUMN IF NOT EXISTS name TEXT,
-ADD COLUMN IF NOT EXISTS unsubscribed_at TIMESTAMP WITH TIME ZONE,
-ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb,
-ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+-- Recreate newsletter_campaigns with proper schema
+CREATE TABLE public.newsletter_campaigns (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  subject TEXT NOT NULL,
+  content TEXT,
+  name TEXT,
+  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'scheduled', 'sending', 'sent', 'failed')),
+  scheduled_for TIMESTAMP WITH TIME ZONE,
+  sent_at TIMESTAMP WITH TIME ZONE,
+  total_recipients INTEGER DEFAULT 0,
+  opened INTEGER DEFAULT 0,
+  clicked INTEGER DEFAULT 0,
+  sent_count INTEGER DEFAULT 0,
+  opened_count INTEGER DEFAULT 0,
+  clicked_count INTEGER DEFAULT 0,
+  template_id UUID,
+  created_by UUID,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
--- Create newsletter_templates table (doesn't exist in schema)
-CREATE TABLE IF NOT EXISTS public.newsletter_templates (
+-- Create newsletter_templates table
+CREATE TABLE public.newsletter_templates (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
   description TEXT,
@@ -37,17 +41,24 @@ CREATE TABLE IF NOT EXISTS public.newsletter_templates (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- DISABLE RLS on all newsletter tables (user wants no RLS)
+-- Add missing columns to mailing_list
+ALTER TABLE public.mailing_list
+ADD COLUMN IF NOT EXISTS name TEXT,
+ADD COLUMN IF NOT EXISTS unsubscribed_at TIMESTAMP WITH TIME ZONE,
+ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb,
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
+-- DISABLE RLS on all tables
 ALTER TABLE public.newsletter_campaigns DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.newsletter_templates DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.mailing_list DISABLE ROW LEVEL SECURITY;
 
 -- Create indexes
-CREATE INDEX IF NOT EXISTS idx_newsletter_campaigns_status ON public.newsletter_campaigns(status);
-CREATE INDEX IF NOT EXISTS idx_newsletter_campaigns_scheduled_for ON public.newsletter_campaigns(scheduled_for);
-CREATE INDEX IF NOT EXISTS idx_mailing_list_status ON public.mailing_list(status);
+CREATE INDEX idx_newsletter_campaigns_status ON public.newsletter_campaigns(status);
+CREATE INDEX idx_newsletter_campaigns_scheduled_for ON public.newsletter_campaigns(scheduled_for);
+CREATE INDEX idx_mailing_list_status ON public.mailing_list(status);
 
--- Create updated_at trigger function if it doesn't exist
+-- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN

@@ -603,7 +603,7 @@ export default function SignUp() {
               {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
-          )}
+          
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">

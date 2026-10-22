@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Facebook, Twitter, Instagram, Youtube, Music2, Podcast, Globe, Check } from 'lucide-react'
+import { Facebook, Twitter, Instagram, Youtube, Music2, Podcast, Globe, Check, Loader2 } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 const columns = [
   {
@@ -66,24 +67,44 @@ const socials = [
 export default function Footer() {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleSubscribe = async () => {
     if (!email) return
-    const sub = {
-      id: Date.now().toString(),
-      email,
-      source: 'footer',
-      status: 'active',
-      created_at: new Date().toISOString(),
+    setLoading(true)
+    try {
+      const { error } = await supabase
+        .from('mailing_list')
+        .insert({
+          email,
+          source: 'footer',
+          status: 'active',
+          subscribed_at: new Date().toISOString()
+        })
+      if (error) throw error
+      setSubscribed(true)
+      setEmail('')
+      setTimeout(() => setSubscribed(false), 4000)
+    } catch (err) {
+      console.error('Failed to subscribe:', err)
+      // Fallback to localStorage if Supabase fails
+      const sub = {
+        id: Date.now().toString(),
+        email,
+        source: 'footer',
+        status: 'active',
+        created_at: new Date().toISOString(),
+      }
+      const raw = localStorage.getItem('smartgigs_mailing_list')
+      const list = raw ? JSON.parse(raw) : []
+      list.unshift(sub)
+      localStorage.setItem('smartgigs_mailing_list', JSON.stringify(list))
+      setSubscribed(true)
+      setEmail('')
+      setTimeout(() => setSubscribed(false), 4000)
+    } finally {
+      setLoading(false)
     }
-    // Store in localStorage as fallback
-    const raw = localStorage.getItem('smartgigs_mailing_list')
-    const list = raw ? JSON.parse(raw) : []
-    list.unshift(sub)
-    localStorage.setItem('smartgigs_mailing_list', JSON.stringify(list))
-    setSubscribed(true)
-    setEmail('')
-    setTimeout(() => setSubscribed(false), 4000)
   }
 
   return (
@@ -193,10 +214,12 @@ export default function Footer() {
                   onChange={(e) => setEmail(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSubscribe()}
                   placeholder="Enter email"
-                  className="w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-xs font-medium text-white placeholder:text-gray-400 focus:outline-none md:text-sm"
+                  disabled={loading}
+                  className="w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-xs font-medium text-white placeholder:text-gray-400 focus:outline-none md:text-sm disabled:opacity-50"
                 />
-                <button onClick={handleSubscribe} className="shrink-0 rounded-lg bg-[#5850EC] px-4 py-2 text-xs font-semibold text-white hover:bg-[#4F46E5] md:px-5 md:text-sm">
-                  Submit
+                <button onClick={handleSubscribe} disabled={loading} className="shrink-0 rounded-lg bg-[#5850EC] px-4 py-2 text-xs font-semibold text-white hover:bg-[#4F46E5] md:px-5 md:text-sm disabled:opacity-50 flex items-center gap-2">
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  {loading ? 'Subscribing...' : 'Submit'}
                 </button>
               </div>
             )}
