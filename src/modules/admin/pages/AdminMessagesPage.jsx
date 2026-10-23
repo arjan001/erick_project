@@ -32,8 +32,8 @@ export default function AdminMessagesPage() {
         .from('conversations')
         .select(`
           *,
-          participant_1:users!conversations_participant_1_fkey(id, email, full_name, avatar_url, last_seen),
-          participant_2:users!conversations_participant_2_fkey(id, email, full_name, avatar_url, last_seen)
+          participant_1:users!conversations_participant_1_fkey(id, email, full_name, avatar_url),
+          participant_2:users!conversations_participant_2_fkey(id, email, full_name, avatar_url)
         `)
         .order('last_message_at', { ascending: false, nullsFirst: false })
 
@@ -61,7 +61,7 @@ export default function AdminMessagesPage() {
             participantName: otherParticipant.full_name,
             participantId: otherParticipant.id,
             participantAvatar: otherParticipant.avatar_url,
-            participantLastSeen: otherParticipant.last_seen,
+            participantLastSeen: null, // Disabled until last_seen column is added
           }
         })
       )
@@ -79,7 +79,7 @@ export default function AdminMessagesPage() {
     try {
       const { data: users, error } = await supabase
         .from('users')
-        .select('id, email, full_name, role, avatar_url, last_seen')
+        .select('id, email, full_name, role, avatar_url')
         .neq('id', user?.id)
 
       if (error) throw error
@@ -326,15 +326,8 @@ export default function AdminMessagesPage() {
   }
 
   const getUserStatus = (lastSeen) => {
-    if (!lastSeen) return { text: 'Offline', color: 'bg-gray-400' }
-    const lastSeenDate = new Date(lastSeen)
-    const now = new Date()
-    const diffMinutes = (now - lastSeenDate) / (1000 * 60)
-
-    if (diffMinutes < 5) return { text: 'Active', color: 'bg-green-500' }
-    if (diffMinutes < 60) return { text: `${Math.floor(diffMinutes)}m ago`, color: 'bg-yellow-500' }
-    if (diffMinutes < 1440) return { text: `${Math.floor(diffMinutes / 60)}h ago`, color: 'bg-orange-500' }
-    return { text: lastSeenDate.toLocaleDateString(), color: 'bg-gray-400' }
+    // Always show offline until last_seen column is added to users table
+    return { text: 'Offline', color: 'bg-gray-400' }
   }
 
   const filteredConversations = conversations.filter(c =>
@@ -637,7 +630,7 @@ export default function AdminMessagesPage() {
                           <User className="w-5 h-5 text-gray-600" />
                         </div>
                       )}
-                      <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${getUserStatus(u.last_seen).color}`} />
+                      <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${getUserStatus(null).color}`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm text-gray-900 truncate">{u.full_name || 'Unknown'}</div>

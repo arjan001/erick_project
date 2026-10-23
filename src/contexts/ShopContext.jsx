@@ -64,7 +64,7 @@ export function ShopProvider({ children }) {
   }, [])
 
   const loadCart = async () => {
-    if (!currentUserId) {
+    if (!user?.id) {
       setCartState([])
       return
     }
