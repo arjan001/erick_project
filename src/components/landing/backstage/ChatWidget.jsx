@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MessageCircle, X, Search, ChevronRight, Home, HelpCircle, Mail, Phone, User, MessageSquare, ArrowRight, Send, Check, Paperclip } from 'lucide-react'
+import { MessageCircle, X, Search, ChevronRight, Home, HelpCircle, Mail, Phone, User, MessageSquare, ArrowRight, Send, Check, Paperclip, Mic, Square, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
@@ -46,11 +46,66 @@ export default function ChatWidget() {
   })
   const [submitting, setSubmitting] = useState(false)
   const [attachments, setAttachments] = useState([])
+  const [isRecording, setIsRecording] = useState(false)
+  const [recordingTime, setRecordingTime] = useState(0)
   const fileInputRef = useRef(null)
+  const mediaRecorderRef = useRef(null)
+  const audioChunksRef = useRef([])
 
   useEffect(() => {
     setSiteName('SmartGigs Kenya')
   }, [])
+
+  // Audio recording functions
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaRecorderRef.current = new MediaRecorder(stream)
+      audioChunksRef.current = []
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data)
+      }
+
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        const audioFile = new File([audioBlob], `voice-message-${Date.now()}.webm`, { type: 'audio/webm' })
+        setAttachments(prev => [...prev, audioFile])
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      mediaRecorderRef.current.start()
+      setIsRecording(true)
+      setRecordingTime(0)
+
+      const timer = setInterval(() => {
+        setRecordingTime(prev => prev + 1)
+      }, 1000)
+
+      mediaRecorderRef.current._timer = timer
+    } catch (err) {
+      console.error('Error starting recording:', err)
+      error('Error', 'Could not access microphone')
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop()
+      clearInterval(mediaRecorderRef.current._timer)
+      setIsRecording(false)
+    }
+  }
+
+  const deleteRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop()
+      clearInterval(mediaRecorderRef.current._timer)
+    }
+    setIsRecording(false)
+    setRecordingTime(0)
+    audioChunksRef.current = []
+  }
 
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files)
@@ -59,6 +114,20 @@ export default function ChatWidget() {
 
   const removeAttachment = (index) => {
     setAttachments(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const formatRecordingTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const getFileIcon = (file) => {
+    if (file.type.startsWith('image/')) return '📷'
+    if (file.type.startsWith('audio/')) return '🎤'
+    if (file.type.startsWith('video/')) return '🎬'
+    if (file.type === 'application/pdf') return '📄'
+    return '📎'
   }
 
   const handleTabClick = (tab) => {
@@ -103,16 +172,12 @@ export default function ChatWidget() {
 
     setSubmitting(true)
     try {
-      // Upload attachments to Supabase Storage (only images)
+      // Upload attachments to Supabase Storage (max 20MB)
       const attachmentUrls = []
       for (const file of attachments) {
-        if (!file.type.startsWith('image/')) {
-          error('Error', 'Only image files are currently supported')
-          setSubmitting(false)
-          return
-        }
-        if (file.size > 5 * 1024 * 1024) {
-          error('Error', 'File size must be less than 5MB')
+        // Check file size (max 20MB)
+        if (file.size > 20 * 1024 * 1024) {
+          error('Error', 'File size must be less than 20MB')
           setSubmitting(false)
           return
         }
@@ -155,7 +220,12 @@ export default function ChatWidget() {
       let messageContent = `Contact Form Submission\n\nName: ${sanitizedName}\nEmail: ${sanitizedEmail}\nPhone: ${sanitizedPhone}\nTopic: ${formData.topic}\n\nMessage:\n${sanitizedMessage}`
 
       if (attachmentUrls.length > 0) {
-        const attachmentText = attachmentUrls.map(a => `[Image: ${a.url}]`).join('\n')
+        const attachmentText = attachmentUrls.map(a => {
+          if (a.type.startsWith('audio')) return `[Audio: ${a.url}]`
+          if (a.type.startsWith('video')) return `[Video: ${a.url}]`
+          if (a.type.startsWith('image')) return `[Image: ${a.url}]`
+          return `[File: ${a.url}]`
+        }).join('\n')
         messageContent += `\n\n${attachmentText}`
       }
 
@@ -305,30 +375,54 @@ export default function ChatWidget() {
 
                 {/* Attachments */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Attachments (images only, max 5MB)</label>
-                  <div className="flex gap-2 items-center">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Attachments (max 20MB each)</label>
+                  <div className="flex gap-2 items-center flex-wrap">
                     <input
                       ref={fileInputRef}
                       type="file"
                       multiple
                       onChange={handleFileSelect}
                       className="hidden"
-                      accept="image/*"
+                      accept="image/*,audio/*,video/*,.pdf"
                     />
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 flex items-center gap-2"
                     >
                       <Paperclip className="w-4 h-4" />
-                      Add Images
+                      Add Files
                     </button>
+                    <button
+                      onClick={isRecording ? stopRecording : startRecording}
+                      className={`px-3 py-2 border rounded-lg text-sm flex items-center gap-2 ${isRecording ? 'border-red-300 bg-red-50 text-red-600' : 'border-gray-300 hover:bg-gray-50'
+                        }`}
+                    >
+                      {isRecording ? (
+                        <span className="font-mono">{formatRecordingTime(recordingTime)}</span>
+                      ) : (
+                        <Mic className="w-4 h-4" />
+                      )}
+                    </button>
+                    {isRecording && (
+                      <button
+                        onClick={deleteRecording}
+                        className="px-3 py-2 border border-red-300 rounded-lg text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </button>
+                    )}
                   </div>
                   {attachments.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
                       {attachments.map((file, index) => (
                         <div key={index} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
+                          <span className="text-lg">{getFileIcon(file)}</span>
                           <span className="text-sm text-gray-700 max-w-[150px] truncate">
                             {file.name}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {(file.size / (1024 * 1024)).toFixed(1)}MB
                           </span>
                           <button
                             onClick={() => removeAttachment(index)}

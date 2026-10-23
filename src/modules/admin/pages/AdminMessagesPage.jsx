@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
-import { MessageSquare, Search, Send, Trash2, User, Plus, X, Paperclip, Clock, CheckCircle2 } from 'lucide-react'
+import { MessageSquare, Search, Send, Trash2, User, Plus, X, Paperclip, Clock, CheckCircle2, Mic, Square, Trash2 as TrashIcon } from 'lucide-react'
 
 export default function AdminMessagesPage() {
   const { user } = useAuth()
@@ -19,12 +19,15 @@ export default function AdminMessagesPage() {
   const [userSearchQuery, setUserSearchQuery] = useState('')
   const [attachments, setAttachments] = useState([])
   const [typingUsers, setTypingUsers] = useState(new Set())
+  const [isRecording, setIsRecording] = useState(false)
+  const [recordingTime, setRecordingTime] = useState(0)
   const fileInputRef = useRef(null)
+  const mediaRecorderRef = useRef(null)
+  const audioChunksRef = useRef([])
 
   const fetchMessages = async () => {
     try {
       setLoading(true)
-      // Fetch conversations with participant info
       const { data: convs, error: convError } = await supabase
         .from('conversations')
         .select(`
@@ -36,7 +39,6 @@ export default function AdminMessagesPage() {
 
       if (convError) throw convError
 
-      // Fetch messages for each conversation
       const conversationsWithMessages = await Promise.all(
         (convs || []).map(async (conv) => {
           const { data: msgs, error: msgError } = await supabase
@@ -92,12 +94,11 @@ export default function AdminMessagesPage() {
     fetchAllUsers()
   }, [user])
 
-  // Real-time subscription for new messages
+  // Real-time subscription
   useEffect(() => {
     const channel = supabase
       .channel('messages-channel')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-        // Refresh conversations when new message arrives
         fetchMessages()
       })
       .subscribe()
@@ -109,12 +110,62 @@ export default function AdminMessagesPage() {
 
   const selectedConversation = conversations.find(c => c.id === selectedId)
 
+  // Audio recording
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaRecorderRef.current = new MediaRecorder(stream)
+      audioChunksRef.current = []
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data)
+      }
+
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        const audioFile = new File([audioBlob], `voice-message-${Date.now()}.webm`, { type: 'audio/webm' })
+        setAttachments(prev => [...prev, audioFile])
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      mediaRecorderRef.current.start()
+      setIsRecording(true)
+      setRecordingTime(0)
+
+      const timer = setInterval(() => {
+        setRecordingTime(prev => prev + 1)
+      }, 1000)
+
+      mediaRecorderRef.current._timer = timer
+    } catch (err) {
+      console.error('Error starting recording:', err)
+      error('Error', 'Could not access microphone')
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop()
+      clearInterval(mediaRecorderRef.current._timer)
+      setIsRecording(false)
+    }
+  }
+
+  const deleteRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop()
+      clearInterval(mediaRecorderRef.current._timer)
+    }
+    setIsRecording(false)
+    setRecordingTime(0)
+    audioChunksRef.current = []
+  }
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() && attachments.length === 0) return
     if (!selectedConversation) return
     setSending(true)
     try {
-      // Sanitize message
       const sanitizeInput = (input) => {
         return input.replace(/<script[^>]*>.*?<\/script>/gi, '')
           .replace(/<[^>]*>/g, '')
@@ -122,16 +173,10 @@ export default function AdminMessagesPage() {
       }
       const sanitizedMessage = sanitizeInput(newMessage)
 
-      // Upload attachments to Supabase Storage (only images)
       const attachmentUrls = []
       for (const file of attachments) {
-        if (!file.type.startsWith('image/')) {
-          error('Error', 'Only image files are currently supported')
-          setSending(false)
-          return
-        }
-        if (file.size > 5 * 1024 * 1024) {
-          error('Error', 'File size must be less than 5MB')
+        if (file.size > 20 * 1024 * 1024) {
+          error('Error', 'File size must be less than 20MB')
           setSending(false)
           return
         }
@@ -157,10 +202,14 @@ export default function AdminMessagesPage() {
         })
       }
 
-      // Create message content with attachments
       let messageContent = sanitizedMessage
       if (attachmentUrls.length > 0) {
-        const attachmentText = attachmentUrls.map(a => `[Image: ${a.url}]`).join('\n')
+        const attachmentText = attachmentUrls.map(a => {
+          if (a.type.startsWith('audio')) return `[Audio: ${a.url}]`
+          if (a.type.startsWith('video')) return `[Video: ${a.url}]`
+          if (a.type.startsWith('image')) return `[Image: ${a.url}]`
+          return `[File: ${a.url}]`
+        }).join('\n')
         messageContent = sanitizedMessage ? `${sanitizedMessage}\n\n${attachmentText}` : attachmentText
       }
 
@@ -176,7 +225,6 @@ export default function AdminMessagesPage() {
 
       if (sendError) throw sendError
 
-      // Update conversation last_message_at
       await supabase
         .from('conversations')
         .update({ last_message_at: new Date().toISOString() })
@@ -188,7 +236,6 @@ export default function AdminMessagesPage() {
       ))
       setNewMessage('')
       setAttachments([])
-      // Success alert removed per user request
     } catch (err) {
       console.error('Error sending message:', err)
       error('Failed', 'Failed to send message')
@@ -260,6 +307,20 @@ export default function AdminMessagesPage() {
 
   const removeAttachment = (index) => {
     setAttachments(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const getFileIcon = (file) => {
+    if (file.type.startsWith('image/')) return '📷'
+    if (file.type.startsWith('audio/')) return '🎤'
+    if (file.type.startsWith('video/')) return '🎬'
+    if (file.type === 'application/pdf') return '📄'
+    return '📎'
+  }
+
+  const formatRecordingTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   const getUserStatus = (lastSeen) => {
@@ -392,12 +453,26 @@ export default function AdminMessagesPage() {
                       {attachmentLines.length > 0 && (
                         <div className="mt-2 space-y-2">
                           {attachmentLines.map((line, idx) => {
-                            const match = line.match(/\[(Image|Audio|File|Video): (.+)\]/)
+                            const match = line.match(/\[(Image|Audio|Video|File): (.+)\]/)
                             if (match) {
                               const [, type, url] = match
                               if (type === 'Image') {
                                 return (
                                   <img key={idx} src={url} alt="Attachment" className="max-w-full h-auto rounded" />
+                                )
+                              } else if (type === 'Audio') {
+                                return (
+                                  <audio key={idx} controls className="w-full max-w-xs">
+                                    <source src={url} type="audio/webm" />
+                                    Your browser does not support audio.
+                                  </audio>
+                                )
+                              } else if (type === 'Video') {
+                                return (
+                                  <video key={idx} controls className="w-full max-w-xs h-auto rounded">
+                                    <source src={url} type="video/mp4" />
+                                    Your browser does not support video.
+                                  </video>
                                 )
                               } else {
                                 return (
@@ -426,7 +501,9 @@ export default function AdminMessagesPage() {
                 <div className="flex flex-wrap gap-2 mb-3">
                   {attachments.map((file, index) => (
                     <div key={index} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
+                      <span className="text-lg">{getFileIcon(file)}</span>
                       <span className="text-sm text-gray-700 max-w-[200px] truncate">{file.name}</span>
+                      <span className="text-xs text-gray-500">{(file.size / (1024 * 1024)).toFixed(1)}MB</span>
                       <button onClick={() => removeAttachment(index)} className="text-gray-500 hover:text-red-600">
                         <X className="w-4 h-4" />
                       </button>
@@ -452,7 +529,7 @@ export default function AdminMessagesPage() {
                   multiple
                   onChange={handleFileSelect}
                   className="hidden"
-                  accept="image/*"
+                  accept="image/*,audio/*,video/*,.pdf"
                 />
                 <Button
                   variant="ghost"
@@ -462,6 +539,28 @@ export default function AdminMessagesPage() {
                 >
                   <Paperclip className="w-5 h-5" />
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className={isRecording ? "text-red-600 hover:text-red-700" : "text-gray-600 hover:text-gray-900"}
+                >
+                  {isRecording ? (
+                    <span className="font-mono">{formatRecordingTime(recordingTime)}</span>
+                  ) : (
+                    <Mic className="w-5 h-5" />
+                  )}
+                </Button>
+                {isRecording && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={deleteRecording}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <TrashIcon className="w-5 h-5" />
+                  </Button>
+                )}
                 <Button onClick={handleSendMessage} disabled={sending} className="bg-black text-white hover:bg-gray-800">
                   {sending ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="w-4 h-4" />}
                 </Button>
