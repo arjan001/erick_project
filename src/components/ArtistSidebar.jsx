@@ -19,7 +19,6 @@ const MENU_ITEMS = [
   { label: 'Network', icon: Network, href: 'Network', showConnectionBadge: true },
   { label: 'Notifications', icon: Bell, href: 'Notifications', showNotificationBadge: true },
   { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets', showTicketBadge: true },
-  { label: 'Finances', icon: Wallet, href: 'ArtistFinance' },
   { label: 'Subscription', icon: Users, href: 'ArtistSubscription' },
   { label: 'My Profile & Settings', icon: User, href: 'ArtistProfile' }
 ]

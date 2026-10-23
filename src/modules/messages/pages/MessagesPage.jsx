@@ -4,7 +4,7 @@ import { Message, Conversation, Artist, Team, Client, Backer, Notification, Subs
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { formatDistanceToNow } from 'date-fns'
-import { Search, Send, Plus, X, MoreVertical, Mic, Paperclip, Smile, Phone, Video, Archive, Check, CheckCheck } from 'lucide-react'
+import { Search, Send, Plus, X, MoreVertical, Mic, Paperclip, Smile, Phone, Video, Archive, Check, CheckCheck, Pause, Square, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { uploadFile } from '@/lib/fileUploadService'
 
@@ -72,6 +72,9 @@ export default function MessagesPage() {
   const [directorySearch, setDirectorySearch] = useState('')
   const [attachedFile, setAttachedFile] = useState(null)
   const [isRecording, setIsRecording] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const [recordingTime, setRecordingTime] = useState(0)
+  const [timerInterval, setTimerInterval] = useState(null)
   const messagesEndRef = useRef(null)
   const fileInputRef = useRef(null)
   const mediaRecorderRef = useRef(null)
@@ -210,18 +213,78 @@ export default function MessagesPage() {
         const audioFile = new File([audioBlob], `recording_${Date.now()}.webm`, { type: 'audio/webm' })
         setAttachedFile(audioFile)
         setIsRecording(false)
+        setIsPaused(false)
+        setRecordingTime(0)
+        if (timerInterval) {
+          clearInterval(timerInterval)
+          setTimerInterval(null)
+        }
       }
       mediaRecorderRef.current.start()
       setIsRecording(true)
+      setIsPaused(false)
+      setRecordingTime(0)
+      const timer = setInterval(() => {
+        setRecordingTime(prev => prev + 1)
+      }, 1000)
+      setTimerInterval(timer)
     } catch (err) {
       error('Microphone Error', 'Could not access microphone')
+    }
+  }
+
+  const pauseRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.pause()
+      setIsPaused(true)
+      if (timerInterval) {
+        clearInterval(timerInterval)
+        setTimerInterval(null)
+      }
+    }
+  }
+
+  const resumeRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
+      mediaRecorderRef.current.resume()
+      setIsPaused(false)
+      const timer = setInterval(() => {
+        setRecordingTime(prev => prev + 1)
+      }, 1000)
+      setTimerInterval(timer)
     }
   }
 
   const stopRecording = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop()
+      setIsRecording(false)
+      setIsPaused(false)
+      if (timerInterval) {
+        clearInterval(timerInterval)
+        setTimerInterval(null)
+      }
     }
+  }
+
+  const deleteRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop()
+    }
+    setIsRecording(false)
+    setIsPaused(false)
+    setRecordingTime(0)
+    setAttachedFile(null)
+    if (timerInterval) {
+      clearInterval(timerInterval)
+      setTimerInterval(null)
+    }
+  }
+
+  const formatRecordingTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   const filteredConversations = conversations.filter(c => {
@@ -420,8 +483,20 @@ export default function MessagesPage() {
           {/* Input Area */}
           <div className="p-4 border-t border-gray-200 bg-white">
             {attachedFile && (
-              <div className="mb-3 p-2 bg-gray-100 rounded-lg flex items-center justify-between">
-                <span className="text-sm text-gray-600">{attachedFile.name}</span>
+              <div className="mb-3 p-2 bg-gray-100 rounded-lg flex items-center gap-3">
+                {attachedFile.type.startsWith('image/') ? (
+                  <img src={URL.createObjectURL(attachedFile)} alt="Preview" className="w-16 h-16 object-cover rounded" />
+                ) : attachedFile.type.startsWith('video/') ? (
+                  <video src={URL.createObjectURL(attachedFile)} className="w-16 h-16 object-cover rounded" />
+                ) : (
+                  <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+                    <Paperclip className="w-6 h-6 text-gray-400" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <span className="text-sm text-gray-600">{attachedFile.name}</span>
+                  <span className="text-xs text-gray-400 block">{formatFileSize(attachedFile.size)}</span>
+                </div>
                 <button onClick={() => setAttachedFile(null)} className="p-1 hover:bg-gray-200 rounded">
                   <X className="w-4 h-4 text-gray-500" />
                 </button>
@@ -441,12 +516,29 @@ export default function MessagesPage() {
                 <Paperclip className="w-5 h-5 text-gray-600" />
               </button>
               {isRecording ? (
-                <button
-                  onClick={stopRecording}
-                  className="p-2 hover:bg-gray-100 rounded-lg bg-red-100"
-                >
-                  <X className="w-5 h-5 text-red-600" />
-                </button>
+                <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-full">
+                  <span className="text-sm font-medium text-red-600 animate-pulse">
+                    {formatRecordingTime(recordingTime)}
+                  </span>
+                  <button
+                    onClick={isPaused ? resumeRecording : pauseRecording}
+                    className="p-1 hover:bg-gray-200 rounded"
+                  >
+                    {isPaused ? <Mic className="w-4 h-4 text-gray-600" /> : <Pause className="w-4 h-4 text-gray-600" />}
+                  </button>
+                  <button
+                    onClick={deleteRecording}
+                    className="p-1 hover:bg-gray-200 rounded"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-600" />
+                  </button>
+                  <button
+                    onClick={stopRecording}
+                    className="p-1 hover:bg-gray-200 rounded"
+                  >
+                    <Square className="w-4 h-4 text-green-600" />
+                  </button>
+                </div>
               ) : (
                 <button
                   onClick={startRecording}
