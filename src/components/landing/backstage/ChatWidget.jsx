@@ -53,7 +53,7 @@ export default function ChatWidget() {
   const audioChunksRef = useRef([])
 
   useEffect(() => {
-    setSiteName('SmartGigs Kenya')
+    setSiteName('SMARTGIGS')
   }, [])
 
   // Audio recording functions
@@ -341,8 +341,8 @@ export default function ChatWidget() {
                     key={topic}
                     onClick={() => setFormData({ ...formData, topic })}
                     className={`w-full text-left px-4 py-3 rounded-lg border text-sm font-medium transition-colors ${formData.topic === topic
-                        ? 'border-black bg-black text-white'
-                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      ? 'border-black bg-black text-white'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
                       }`}
                   >
                     {topic}
