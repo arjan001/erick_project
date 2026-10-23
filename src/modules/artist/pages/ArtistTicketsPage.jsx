@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import DataTable from '@/components/admin/DataTable'
-import { Ticket, Search, Plus, X, CheckCircle, Clock, AlertCircle, Ban, MessageSquare, Bell } from 'lucide-react'
+import { Ticket, Search, Plus, X, CheckCircle, Clock, AlertCircle, Ban, MessageSquare, Bell, Eye, Trash2 } from 'lucide-react'
 import notificationService from '@/shared/services/notificationService'
 
 const STATUS_CONFIG = {
@@ -41,9 +41,11 @@ export default function ArtistTicketsPage() {
   const [tickets, setTickets] = useState([])
   const [selectedTicket, setSelectedTicket] = useState(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showResponseModal, setShowResponseModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [submitting, setSubmitting] = useState(false)
+  const [newResponse, setNewResponse] = useState('')
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -56,7 +58,10 @@ export default function ArtistTicketsPage() {
       setLoading(true)
       const { data, error: err } = await supabase
         .from('support_tickets')
-        .select('*')
+        .select(`
+          *,
+          responses:ticket_responses(id, user_id, is_admin, response, created_at, user:users(id, email, full_name))
+        `)
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false })
 
@@ -143,21 +148,56 @@ export default function ArtistTicketsPage() {
     }
   }
 
-  const handleWithdrawTicket = async (ticketId) => {
-    if (!window.confirm('Are you sure you want to withdraw this ticket?')) return
+  const handleSubmitResponse = async () => {
+    if (!newResponse.trim()) return
+    setSubmitting(true)
+    try {
+      const { error } = await supabase
+        .from('ticket_responses')
+        .insert({
+          ticket_id: selectedTicket.id,
+          user_id: user?.id,
+          is_admin: false,
+          response: newResponse,
+        })
+
+      if (error) throw error
+
+      // Update ticket status to in_progress if it was open
+      if (selectedTicket.status === 'open') {
+        await supabase
+          .from('support_tickets')
+          .update({ status: 'in_progress' })
+          .eq('id', selectedTicket.id)
+      }
+
+      setNewResponse('')
+      setShowResponseModal(false)
+      fetchTickets()
+      success('Sent', 'Response sent successfully')
+    } catch (err) {
+      console.error('Error sending response:', err)
+      error('Failed', 'Failed to send response')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteTicket = async (ticketId) => {
+    if (!window.confirm('Are you sure you want to delete this ticket? This action cannot be undone.')) return
     try {
       const { error } = await supabase
         .from('support_tickets')
-        .update({ status: 'withdrawn' })
+        .delete()
         .eq('id', ticketId)
 
       if (error) throw error
 
-      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: 'withdrawn' } : t))
-      success('Withdrawn', 'Ticket withdrawn successfully')
+      setTickets(prev => prev.filter(t => t.id !== ticketId))
+      success('Deleted', 'Ticket deleted successfully')
     } catch (err) {
-      console.error('Error withdrawing ticket:', err)
-      error('Failed', 'Failed to withdraw ticket')
+      console.error('Error deleting ticket:', err)
+      error('Failed', 'Failed to delete ticket')
     }
   }
 
@@ -175,6 +215,7 @@ export default function ArtistTicketsPage() {
     { key: 'priority', label: 'Priority', sortable: true },
     { key: 'status', label: 'Status', sortable: true },
     { key: 'created_at', label: 'Created', sortable: true },
+    { key: 'actions', label: 'Actions', sortable: false },
   ]
 
   const tableData = filteredTickets.map(t => ({
@@ -193,6 +234,26 @@ export default function ArtistTicketsPage() {
       </span>
     ),
     created_at: new Date(t.created_at).toLocaleDateString(),
+    actions: (
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setSelectedTicket(t)}
+          className="text-blue-600 hover:text-blue-700"
+        >
+          <Eye className="w-4 h-4" />
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => handleDeleteTicket(t.id)}
+          className="text-red-600 hover:text-red-700"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+    )
   }))
 
   if (loading) {
@@ -264,8 +325,7 @@ export default function ArtistTicketsPage() {
         <DataTable
           columns={columns}
           data={tableData}
-          selectable
-          onRowClick={(row) => setSelectedTicket(tickets.find(t => t.id === row.id))}
+          selectable={false}
           emptyMessage="No tickets found"
         />
       </div>
@@ -320,7 +380,7 @@ export default function ArtistTicketsPage() {
               <div>
                 <div className="text-sm text-gray-500 mb-2">Responses</div>
                 <div className="space-y-3">
-                  {selectedTicket.responses?.length === 0 ? (
+                  {(!selectedTicket.responses || selectedTicket.responses.length === 0) ? (
                     <div className="text-sm text-gray-400 italic">No responses yet</div>
                   ) : (
                     selectedTicket.responses.map((response) => (
@@ -344,14 +404,39 @@ export default function ArtistTicketsPage() {
               </div>
             </div>
             <div className="p-4 border-t border-gray-200 flex justify-between">
-              {selectedTicket.status === 'open' || selectedTicket.status === 'in_progress' ? (
-                <Button onClick={() => handleWithdrawTicket(selectedTicket.id)} variant="destructive">
-                  Withdraw Ticket
-                </Button>
-              ) : (
-                <div />
-              )}
+              <Button onClick={() => setShowResponseModal(true)} className="bg-black text-white hover:bg-gray-800">
+                Add Response
+              </Button>
               <Button onClick={() => setSelectedTicket(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Response Modal */}
+      {showResponseModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">Add Response</h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowResponseModal(false)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="p-4">
+              <textarea
+                value={newResponse}
+                onChange={(e) => setNewResponse(e.target.value)}
+                rows={5}
+                placeholder="Type your response..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+              />
+            </div>
+            <div className="p-4 border-t border-gray-200 flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => setShowResponseModal(false)}>Cancel</Button>
+              <Button onClick={handleSubmitResponse} disabled={submitting} className="bg-black text-white hover:bg-gray-800">
+                {submitting ? 'Sending...' : 'Send Response'}
+              </Button>
             </div>
           </div>
         </div>

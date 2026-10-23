@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import DataTable from '@/components/admin/DataTable'
-import { Ticket, Search, Filter, Plus, X, CheckCircle, Clock, AlertCircle, Ban, User } from 'lucide-react'
+import { Ticket, Search, Filter, Plus, X, CheckCircle, Clock, AlertCircle, Ban, User, Eye, Trash2, MessageSquare } from 'lucide-react'
 import notificationService from '@/shared/services/notificationService'
 
 const STATUS_CONFIG = {
@@ -42,7 +42,8 @@ export default function AdminTicketsPage() {
         .from('support_tickets')
         .select(`
           *,
-          user:users!support_tickets_user_id_fkey(id, email, full_name)
+          user:users!support_tickets_user_id_fkey(id, email, full_name),
+          responses:ticket_responses(id, user_id, is_admin, response, created_at, user:users(id, email, full_name))
         `)
         .order('created_at', { ascending: false })
 
@@ -75,20 +76,21 @@ export default function AdminTicketsPage() {
     }
   }
 
-  const handleAssignTicket = async (ticketId, assignedTo) => {
+  const handleDeleteTicket = async (ticketId) => {
+    if (!window.confirm('Are you sure you want to delete this ticket? This action cannot be undone.')) return
     try {
       const { error } = await supabase
         .from('support_tickets')
-        .update({ assigned_to: assignedTo || null })
+        .delete()
         .eq('id', ticketId)
 
       if (error) throw error
 
-      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, assigned_to: assignedTo } : t))
-      success('Updated', 'Ticket assigned successfully')
+      setTickets(prev => prev.filter(t => t.id !== ticketId))
+      success('Deleted', 'Ticket deleted successfully')
     } catch (err) {
-      console.error('Error assigning ticket:', err)
-      error('Failed', 'Failed to assign ticket')
+      console.error('Error deleting ticket:', err)
+      error('Failed', 'Failed to delete ticket')
     }
   }
 
@@ -127,7 +129,7 @@ export default function AdminTicketsPage() {
     }
   }
 
-  const filteredTickets = tickets.filter(t => {
+  const filteredTickets = (tickets || []).filter(t => {
     const matchesSearch = t.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.ticket_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.user?.email?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -144,6 +146,7 @@ export default function AdminTicketsPage() {
     { key: 'priority', label: 'Priority', sortable: true },
     { key: 'status', label: 'Status', sortable: true },
     { key: 'created_at', label: 'Created', sortable: true },
+    { key: 'actions', label: 'Actions', sortable: false },
   ]
 
   const tableData = filteredTickets.map(t => ({
@@ -163,6 +166,26 @@ export default function AdminTicketsPage() {
       </span>
     ),
     created_at: new Date(t.created_at).toLocaleDateString(),
+    actions: (
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setSelectedTicket(t)}
+          className="text-blue-600 hover:text-blue-700"
+        >
+          <Eye className="w-4 h-4" />
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => handleDeleteTicket(t.id)}
+          className="text-red-600 hover:text-red-700"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+    )
   }))
 
   if (loading) {
@@ -241,8 +264,7 @@ export default function AdminTicketsPage() {
         <DataTable
           columns={columns}
           data={tableData}
-          selectable
-          onRowClick={(row) => setSelectedTicket(tickets.find(t => t.id === row.id))}
+          selectable={false}
           emptyMessage="No tickets found"
         />
       </div>
@@ -303,7 +325,7 @@ export default function AdminTicketsPage() {
               <div>
                 <div className="text-sm text-gray-500 mb-2">Responses</div>
                 <div className="space-y-3">
-                  {selectedTicket.responses?.length === 0 ? (
+                  {(!selectedTicket.responses || selectedTicket.responses.length === 0) ? (
                     <div className="text-sm text-gray-400 italic">No responses yet</div>
                   ) : (
                     selectedTicket.responses.map((response) => (
