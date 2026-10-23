@@ -245,6 +245,11 @@ const publicRoutes = [
     layout: null
   },
   {
+    path: '/Partners',
+    component: () => import('@/pages/Partners'),
+    layout: null
+  },
+  {
     path: '/Shop',
     component: () => import('@/pages/Shop'),
     layout: null

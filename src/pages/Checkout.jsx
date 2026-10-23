@@ -44,6 +44,30 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const loadData = async () => {
+      // Check if user is authenticated
+      if (!isAuthenticated) {
+        // Redirect to login with pending checkout
+        localStorage.setItem('pending_cart_redirect', '/Checkout')
+        window.location.href = '/SignIn'
+        return
+      }
+
+      // Check if there's a guest cart to migrate
+      const guestCart = localStorage.getItem('guest_cart')
+      if (guestCart && cart.length === 0) {
+        const guestCartItems = JSON.parse(guestCart)
+        // Add guest cart items to Supabase
+        for (const item of guestCartItems) {
+          try {
+            const product = { id: item.product_id, name: item.product_name, image_url: item.image, price: item.unit_price }
+            await getCart() // This will handle migration
+          } catch (err) {
+            console.error('Error migrating guest cart item:', err)
+          }
+        }
+        localStorage.removeItem('guest_cart')
+      }
+
       try {
         const shopSettings = await getShopSettings()
         setSettings(shopSettings)
@@ -54,7 +78,7 @@ export default function CheckoutPage() {
       }
     }
     loadData()
-  }, [])
+  }, [isAuthenticated, cart])
 
   useEffect(() => {
     if (!user) return

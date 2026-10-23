@@ -48,9 +48,16 @@ export function ShopProvider({ children }) {
     if (user?.id) {
       setCurrentUserId(user.id)
       loadCart()
+      // Clear guest cart after loading from Supabase
+      localStorage.removeItem('guest_cart')
     } else {
-      // Clear cart when user logs out
-      setCartState([])
+      // Load cart from localStorage when not authenticated
+      const localCart = localStorage.getItem('guest_cart')
+      if (localCart) {
+        setCartState(JSON.parse(localCart))
+      } else {
+        setCartState([])
+      }
     }
   }, [user?.id])
 
@@ -81,6 +88,28 @@ export function ShopProvider({ children }) {
   }
 
   const addToCart = async (product, quantity = 1, options = {}) => {
+    if (!user?.id) {
+      // Save to localStorage for guest users
+      const localCart = JSON.parse(localStorage.getItem('guest_cart') || '[]')
+      const existingItem = localCart.find(item => item.product_id === product.id)
+      if (existingItem) {
+        existingItem.quantity += quantity
+      } else {
+        localCart.push({
+          id: Date.now(),
+          product_id: product.id,
+          product_name: product.name,
+          image: product.image_url,
+          unit_price: product.price,
+          quantity: quantity,
+          is_auction_claim: options.is_auction_claim || false
+        })
+      }
+      localStorage.setItem('guest_cart', JSON.stringify(localCart))
+      setCartState(localCart)
+      toastSuccess('Added to Cart', `${product.name} has been added to your cart`)
+      return true
+    }
     const updated = await addToCartService(product, quantity, options)
     setCartState(updated)
     toastSuccess('Added to Cart', `${product.name} has been added to your cart`)

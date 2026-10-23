@@ -459,6 +459,13 @@ export const AuthProvider = ({ children }) => {
     // Show login notification
     toastSuccess('Welcome Back', `Welcome back, ${u.full_name}!`)
 
+    // Check if there's a pending redirect
+    const pendingRedirect = localStorage.getItem('pending_cart_redirect')
+    if (pendingRedirect) {
+      localStorage.removeItem('pending_cart_redirect')
+      window.location.href = pendingRedirect
+    }
+
     return u
   }
 

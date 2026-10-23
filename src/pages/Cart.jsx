@@ -25,6 +25,16 @@ export default function CartPage() {
 
   const totals = calcTotals(cart, settings)
 
+  const handleCheckout = () => {
+    if (!isAuthenticated) {
+      // Save cart to localStorage before redirecting to login
+      localStorage.setItem('pending_cart_redirect', '/Checkout')
+      navigate('/SignIn')
+    } else {
+      navigate('/Checkout')
+    }
+  }
+
   return (
     <ShopShell
       title="Your Cart — SmartGigs Kenya Shop"
@@ -124,7 +134,7 @@ export default function CartPage() {
                   </div>
                 </dl>
                 <button
-                  onClick={() => navigate('/Checkout')}
+                  onClick={handleCheckout}
                   className="mt-5 w-full rounded-full bg-[#4F46E5] py-3 text-sm font-semibold text-white hover:bg-[#4338CA]"
                 >
                   Proceed to checkout
