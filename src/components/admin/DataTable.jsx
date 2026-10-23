@@ -160,9 +160,9 @@ export default function DataTable({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="w-full">
       {/* Header with search and actions */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
         {searchable && (
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />

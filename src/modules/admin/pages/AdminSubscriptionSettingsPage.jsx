@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { SubscriptionPackage } from '@/lib/supabaseEntities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { CreditCard, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, DollarSign, Users, Check } from 'lucide-react'
+import { CreditCard, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, DollarSign, Users, Check, MessageSquare, Star, Zap, BarChart3 } from 'lucide-react'
 import { createPageUrl } from '@/shared/utils/routing'
 import { useToast } from '@/hooks/useToast.jsx'
 
@@ -17,17 +17,20 @@ export default function AdminSubscriptionSettingsPage() {
 
   const [packageForm, setPackageForm] = useState({
     name: '',
+    slug: '',
     description: '',
-    price: 0,
-    currency: 'USD',
-    billing_cycle: 'monthly',
-    job_applications_limit: 5,
-    message_limit: 50,
-    connects_included: 0,
-    duration_days: 30,
-    featured_listing: false,
-    priority_support: false,
-    analytics_access: false,
+    price_monthly: 0,
+    price_yearly: 0,
+    currency: 'KES',
+    features: {
+      job_applications_limit: 5,
+      message_limit: 50,
+      connects_included: 0,
+      featured_listing: false,
+      priority_support: false,
+      analytics_access: false,
+      custom_perks: []
+    },
     active: true
   })
 
@@ -49,26 +52,19 @@ export default function AdminSubscriptionSettingsPage() {
   const handleCreatePackage = async () => {
     try {
       await SubscriptionPackage.create({
-        ...packageForm,
+        name: packageForm.name,
+        slug: packageForm.slug || packageForm.name.toLowerCase().replace(/\s+/g, '-'),
+        description: packageForm.description,
+        price_monthly: packageForm.price_monthly,
+        price_yearly: packageForm.price_yearly,
+        currency: packageForm.currency,
+        features: packageForm.features,
+        active: packageForm.active,
         created_at: new Date().toISOString()
       })
       success('Package Created', 'Subscription package created successfully')
       setShowModal(false)
-      setPackageForm({
-        name: '',
-        description: '',
-        price: 0,
-        currency: 'USD',
-        billing_cycle: 'monthly',
-        job_applications_limit: 5,
-        message_limit: 50,
-        connects_included: 0,
-        duration_days: 30,
-        featured_listing: false,
-        priority_support: false,
-        analytics_access: false,
-        active: true
-      })
+      resetForm()
       fetchPackages()
     } catch (err) {
       toastError('Create Failed', 'Failed to create package')
@@ -78,25 +74,20 @@ export default function AdminSubscriptionSettingsPage() {
   const handleUpdatePackage = async () => {
     if (!editingPackage) return
     try {
-      await SubscriptionPackage.update(editingPackage.id, packageForm)
+      await SubscriptionPackage.update(editingPackage.id, {
+        name: packageForm.name,
+        slug: packageForm.slug || packageForm.name.toLowerCase().replace(/\s+/g, '-'),
+        description: packageForm.description,
+        price_monthly: packageForm.price_monthly,
+        price_yearly: packageForm.price_yearly,
+        currency: packageForm.currency,
+        features: packageForm.features,
+        active: packageForm.active
+      })
       success('Package Updated', 'Subscription package updated successfully')
       setShowModal(false)
       setEditingPackage(null)
-      setPackageForm({
-        name: '',
-        description: '',
-        price: 0,
-        currency: 'USD',
-        billing_cycle: 'monthly',
-        job_applications_limit: 5,
-        message_limit: 50,
-        connects_included: 0,
-        duration_days: 30,
-        featured_listing: false,
-        priority_support: false,
-        analytics_access: false,
-        active: true
-      })
+      resetForm()
       fetchPackages()
     } catch (err) {
       toastError('Update Failed', 'Failed to update package')
@@ -116,24 +107,44 @@ export default function AdminSubscriptionSettingsPage() {
 
   const handleEdit = (pkg) => {
     setEditingPackage(pkg)
-    setPackageForm(pkg)
+    setPackageForm({
+      name: pkg.name,
+      slug: pkg.slug,
+      description: pkg.description,
+      price_monthly: pkg.price_monthly || 0,
+      price_yearly: pkg.price_yearly || 0,
+      currency: pkg.currency || 'KES',
+      features: pkg.features || {
+        job_applications_limit: 5,
+        message_limit: 50,
+        connects_included: 0,
+        featured_listing: false,
+        priority_support: false,
+        analytics_access: false,
+        custom_perks: []
+      },
+      active: pkg.active !== false
+    })
     setShowModal(true)
   }
 
   const resetForm = () => {
     setPackageForm({
       name: '',
+      slug: '',
       description: '',
-      price: 0,
-      currency: 'USD',
-      billing_cycle: 'monthly',
-      job_applications_limit: 5,
-      message_limit: 50,
-      connects_included: 0,
-      duration_days: 30,
-      featured_listing: false,
-      priority_support: false,
-      analytics_access: false,
+      price_monthly: 0,
+      price_yearly: 0,
+      currency: 'KES',
+      features: {
+        job_applications_limit: 5,
+        message_limit: 50,
+        connects_included: 0,
+        featured_listing: false,
+        priority_support: false,
+        analytics_access: false,
+        custom_perks: []
+      },
       active: true
     })
   }
@@ -159,8 +170,13 @@ export default function AdminSubscriptionSettingsPage() {
               <div>
                 <h3 className="text-xl font-bold">{pkg.name}</h3>
                 <p className="text-2xl font-bold text-gray-900 mt-2">
-                  ${pkg.price} <span className="text-sm font-normal text-gray-600">/{pkg.billing_cycle}</span>
+                  {pkg.currency} {pkg.price_monthly?.toLocaleString() || 0} <span className="text-sm font-normal text-gray-600">/month</span>
                 </p>
+                {pkg.price_yearly && (
+                  <p className="text-sm text-gray-600">
+                    {pkg.currency} {pkg.price_yearly?.toLocaleString() || 0} <span className="text-xs">/year</span>
+                  </p>
+                )}
               </div>
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={() => handleEdit(pkg)}>
@@ -173,14 +189,42 @@ export default function AdminSubscriptionSettingsPage() {
             </div>
             <p className="text-gray-600 text-sm mb-4">{pkg.description}</p>
             <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                <span>{pkg.job_applications_limit} job applications/month</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4" />
-                <span>{pkg.connects_included} connects included</span>
-              </div>
+              {pkg.features?.job_applications_limit && (
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  <span>{pkg.features.job_applications_limit} job applications/month</span>
+                </div>
+              )}
+              {pkg.features?.connects_included && (
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  <span>{pkg.features.connects_included} connects included</span>
+                </div>
+              )}
+              {pkg.features?.message_limit && (
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  <span>{pkg.features.message_limit} messages/month</span>
+                </div>
+              )}
+              {pkg.features?.featured_listing && (
+                <div className="flex items-center gap-2">
+                  <Star className="w-4 h-4 text-yellow-500" />
+                  <span>Featured listing</span>
+                </div>
+              )}
+              {pkg.features?.priority_support && (
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-orange-500" />
+                  <span>Priority support</span>
+                </div>
+              )}
+              {pkg.features?.analytics_access && (
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-blue-500" />
+                  <span>Analytics access</span>
+                </div>
+              )}
             </div>
             <div className="mt-4 pt-4 border-t">
               <div className="flex items-center gap-2">
@@ -194,12 +238,16 @@ export default function AdminSubscriptionSettingsPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">{editingPackage ? 'Edit Package' : 'Add Package'}</h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Name</label>
                 <Input value={packageForm.name} onChange={(e) => setPackageForm({ ...packageForm, name: e.target.value })} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Slug (URL-friendly name)</label>
+                <Input value={packageForm.slug} onChange={(e) => setPackageForm({ ...packageForm, slug: e.target.value })} placeholder="package-name" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Description</label>
@@ -212,41 +260,70 @@ export default function AdminSubscriptionSettingsPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Price</label>
-                  <Input type="number" value={packageForm.price} onChange={(e) => setPackageForm({ ...packageForm, price: parseFloat(e.target.value) })} />
+                  <label className="block text-sm font-medium mb-2">Monthly Price</label>
+                  <Input type="number" value={packageForm.price_monthly} onChange={(e) => setPackageForm({ ...packageForm, price_monthly: parseFloat(e.target.value) })} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Currency</label>
-                  <select
-                    value={packageForm.currency}
-                    onChange={(e) => setPackageForm({ ...packageForm, currency: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="KES">KES</option>
-                  </select>
+                  <label className="block text-sm font-medium mb-2">Yearly Price</label>
+                  <Input type="number" value={packageForm.price_yearly} onChange={(e) => setPackageForm({ ...packageForm, price_yearly: parseFloat(e.target.value) })} />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Billing Cycle</label>
+                <label className="block text-sm font-medium mb-2">Currency</label>
                 <select
-                  value={packageForm.billing_cycle}
-                  onChange={(e) => setPackageForm({ ...packageForm, billing_cycle: e.target.value })}
+                  value={packageForm.currency}
+                  onChange={(e) => setPackageForm({ ...packageForm, currency: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
-                  <option value="monthly">Monthly</option>
-                  <option value="yearly">Yearly</option>
+                  <option value="KES">KES</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Job Applications Limit</label>
-                  <Input type="number" value={packageForm.job_applications_limit} onChange={(e) => setPackageForm({ ...packageForm, job_applications_limit: parseInt(e.target.value) })} />
+              <div className="border-t pt-4">
+                <h3 className="font-medium mb-3">Features</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Job Applications Limit</label>
+                    <Input type="number" value={packageForm.features.job_applications_limit} onChange={(e) => setPackageForm({ ...packageForm, features: { ...packageForm.features, job_applications_limit: parseInt(e.target.value) } })} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Message Limit</label>
+                    <Input type="number" value={packageForm.features.message_limit} onChange={(e) => setPackageForm({ ...packageForm, features: { ...packageForm.features, message_limit: parseInt(e.target.value) } })} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Connects Included</label>
+                    <Input type="number" value={packageForm.features.connects_included} onChange={(e) => setPackageForm({ ...packageForm, features: { ...packageForm.features, connects_included: parseInt(e.target.value) } })} />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Message Limit</label>
-                  <Input type="number" value={packageForm.message_limit} onChange={(e) => setPackageForm({ ...packageForm, message_limit: parseInt(e.target.value) })} />
+                <div className="space-y-2 mt-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={packageForm.features.featured_listing}
+                      onChange={(e) => setPackageForm({ ...packageForm, features: { ...packageForm.features, featured_listing: e.target.checked } })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Featured Listing</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={packageForm.features.priority_support}
+                      onChange={(e) => setPackageForm({ ...packageForm, features: { ...packageForm.features, priority_support: e.target.checked } })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Priority Support</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={packageForm.features.analytics_access}
+                      onChange={(e) => setPackageForm({ ...packageForm, features: { ...packageForm.features, analytics_access: e.target.checked } })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Analytics Access</span>
+                  </label>
                 </div>
               </div>
               <div className="flex gap-4">
