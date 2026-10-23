@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import { MessageSquare, Search, Send, Trash2, User, Plus, X, Paperclip, Clock, CheckCircle2, Mic, Square, Trash2 as TrashIcon } from 'lucide-react'
+import notificationService from '@/shared/services/notificationService'
 
 export default function AdminMessagesPage() {
   const { user } = useAuth()
@@ -113,15 +114,26 @@ export default function AdminMessagesPage() {
   useEffect(() => {
     const channel = supabase
       .channel('messages-channel')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload) => {
         fetchMessages()
+        // Trigger notification check when new message received
+        if (payload.new.sender_id !== user?.id) {
+          await notificationService.createNotification({
+            userId: user?.id,
+            type: 'message',
+            title: 'New Message',
+            message: 'You have received a new message',
+            actionUrl: '/Admin/Messages',
+            metadata: { conversationId: payload.new.conversation_id }
+          })
+        }
       })
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [user])
 
   const selectedConversation = conversations.find(c => c.id === selectedId)
 
@@ -239,6 +251,18 @@ export default function AdminMessagesPage() {
         .single()
 
       if (sendError) throw sendError
+
+      // Create notification for the recipient
+      if (selectedConversation.participantId) {
+        await notificationService.createNotification({
+          userId: selectedConversation.participantId,
+          type: 'message',
+          title: 'New Message',
+          message: `You have a new message from ${user?.full_name || 'SmartGigs Admin'}`,
+          actionUrl: '/Messages',
+          metadata: { conversationId: selectedConversation.id }
+        })
+      }
 
       await supabase
         .from('conversations')

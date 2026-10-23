@@ -4,6 +4,7 @@ import { MessageCircle, X, Search, ChevronRight, Home, HelpCircle, Mail, Phone, 
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
+import notificationService from '@/shared/services/notificationService'
 
 const HELP_ARTICLES = [
   { title: 'Self-Tape Audition Requests', desc: 'How to submit and manage self-tape requests.' },
@@ -241,6 +242,31 @@ export default function ChatWidget() {
         })
 
       if (msgError) throw msgError
+
+      // Create notification for admin users
+      try {
+        // Fetch admin users
+        const { data: adminUsers } = await supabase
+          .from('users')
+          .select('id')
+          .eq('role', 'admin')
+
+        if (adminUsers && adminUsers.length > 0) {
+          for (const admin of adminUsers) {
+            await notificationService.createNotification({
+              userId: admin.id,
+              type: 'message',
+              title: 'New Contact Inquiry',
+              message: `New inquiry from ${sanitizedName}: ${formData.topic}`,
+              actionUrl: '/Admin/Messages',
+              metadata: { conversationId: conversation.id }
+            })
+          }
+        }
+      } catch (notifErr) {
+        console.error('Error creating notification:', notifErr)
+        // Don't fail the entire process if notification fails
+      }
 
       success('Sent', 'Your inquiry has been submitted. Our team will get back to you soon.')
       setShowContactForm(false)
