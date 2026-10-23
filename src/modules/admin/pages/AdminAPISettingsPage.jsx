@@ -11,7 +11,7 @@ export default function AdminAPISettingsPage() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [showSecrets, setShowSecrets] = useState({})
-
+  
   const [apiKeys, setApiKeys] = useState([])
   const [rateLimits, setRateLimits] = useState({
     enabled: true,
@@ -77,7 +77,7 @@ export default function AdminAPISettingsPage() {
       ])
 
       setApiKeys(keysData || [])
-
+      
       if (rateLimitData) {
         setRateLimits({
           enabled: rateLimitData.enabled,
@@ -109,7 +109,7 @@ export default function AdminAPISettingsPage() {
       if (integrationsData) {
         const googleDrive = integrationsData.find(i => i.integration_name === 'google_drive')
         const chatGPT = integrationsData.find(i => i.integration_name === 'chatgpt')
-
+        
         if (googleDrive) {
           setGoogleDriveSettings({
             enabled: googleDrive.is_enabled,
@@ -261,7 +261,7 @@ export default function AdminAPISettingsPage() {
               Generate Key
             </Button>
           </div>
-
+          
           {apiKeys.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               No API keys generated yet
@@ -674,8 +674,7 @@ export default function AdminAPISettingsPage() {
       </div>
     </div>
 
-    {
-    showAddKeyModal && (
+    {showAddKeyModal && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-md">
           <h2 className="text-xl font-bold mb-4">Generate API Key</h2>
@@ -723,8 +722,7 @@ export default function AdminAPISettingsPage() {
           </form>
         </div>
       </div>
-    )
-  }
-    </div >
+    )}
+    </div>
   )
 }
