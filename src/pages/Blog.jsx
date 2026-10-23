@@ -127,9 +127,10 @@ export default function BlogPage() {
           {/* Article Content */}
           <div className="lg:col-span-2">
             <div className="prose prose-lg max-w-none">
-              <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-                {article.content}
-              </div>
+              <div
+                className="text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: article.content }}
+              />
             </div>
 
             {/* Tags */}

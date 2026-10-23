@@ -133,7 +133,7 @@ export default function ArtistOnboardingFullModal({ user, onClose }) {
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#000000', '#666666', '#999999', '#CCCCCC']
+        colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ff8800', '#8800ff']
       })
 
       setTimeout(() => onClose(), 1500)

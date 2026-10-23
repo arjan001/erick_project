@@ -48,8 +48,11 @@ export function ShopProvider({ children }) {
     if (user?.id) {
       setCurrentUserId(user.id)
       loadCart()
-      // Clear guest cart after loading from Supabase
-      localStorage.removeItem('guest_cart')
+      // Migrate guest cart to Supabase
+      const guestCart = localStorage.getItem('guest_cart')
+      if (guestCart) {
+        migrateGuestCart(guestCart)
+      }
     } else {
       // Load cart from localStorage when not authenticated
       const localCart = localStorage.getItem('guest_cart')
@@ -60,6 +63,23 @@ export function ShopProvider({ children }) {
       }
     }
   }, [user?.id])
+
+  const migrateGuestCart = async (guestCartStr) => {
+    try {
+      const guestCartItems = JSON.parse(guestCartStr)
+      for (const item of guestCartItems) {
+        await addToCartService(
+          { id: item.product_id, name: item.product_name, image_url: item.image, price: item.unit_price },
+          item.quantity,
+          { is_auction_claim: item.is_auction_claim }
+        )
+      }
+      localStorage.removeItem('guest_cart')
+      loadCart() // Reload cart from Supabase after migration
+    } catch (err) {
+      console.error('Error migrating guest cart:', err)
+    }
+  }
 
   // Listen for cart updates from shopService
   useEffect(() => {

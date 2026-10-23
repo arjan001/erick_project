@@ -28,6 +28,7 @@ export default function CartPage() {
   const handleCheckout = () => {
     if (!isAuthenticated) {
       // Save cart to localStorage before redirecting to login
+      localStorage.setItem('guest_cart', JSON.stringify(cart))
       localStorage.setItem('pending_cart_redirect', '/Checkout')
       navigate('/SignIn')
     } else {

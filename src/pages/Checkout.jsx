@@ -52,22 +52,8 @@ export default function CheckoutPage() {
         return
       }
 
-      // Check if there's a guest cart to migrate
-      const guestCart = localStorage.getItem('guest_cart')
-      if (guestCart && cart.length === 0) {
-        const guestCartItems = JSON.parse(guestCart)
-        // Add guest cart items to Supabase
-        for (const item of guestCartItems) {
-          try {
-            const product = { id: item.product_id, name: item.product_name, image_url: item.image, price: item.unit_price }
-            await getCart() // This will handle migration
-          } catch (err) {
-            console.error('Error migrating guest cart item:', err)
-          }
-        }
-        localStorage.removeItem('guest_cart')
-      }
-
+      // Wait for cart to load before continuing
+      // Don't clear cart on checkout page load
       try {
         const shopSettings = await getShopSettings()
         setSettings(shopSettings)
@@ -78,7 +64,7 @@ export default function CheckoutPage() {
       }
     }
     loadData()
-  }, [isAuthenticated, cart])
+  }, [isAuthenticated])
 
   useEffect(() => {
     if (!user) return
@@ -183,6 +169,7 @@ export default function CheckoutPage() {
                   customer_email: customer.email,
                 })
                 setPhase('done')
+                // Only clear cart after successful payment
                 clear()
                 showNotification(`Your order ${order.order_number} has been paid successfully.`)
               } else if (status.status === 'failed' || status.status === 'cancelled') {
@@ -342,32 +329,43 @@ export default function CheckoutPage() {
         </section>
 
         <section className="rounded-2xl bg-white p-5">
-          <h2 className="text-lg font-bold text-black">Payment</h2>
+          <h2 className="text-lg font-bold text-black">Payment Method</h2>
           {noMethods ? (
             <p className="mt-3 text-sm text-black/60">Online payments are currently unavailable. Please check back soon.</p>
           ) : (
             <>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {settings.enableMpesa && (
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => setMethod('mpesa')}
-                    className={`flex items-center gap-2 rounded-xl border-2 px-4 py-2 text-sm font-semibold ${method === 'mpesa' ? 'border-[#4F46E5] bg-[#4F46E5]/5' : 'border-black/10'}`}
-                  >
-                    <span className="text-green-600 font-bold">M-Pesa</span>
-                  </button>
+              <div className="mt-4">
+                <select
+                  value={method}
+                  onChange={(e) => setMethod(e.target.value)}
+                  disabled={busy}
+                  className="w-full rounded-lg border border-black/15 bg-white px-4 py-3 text-sm text-black focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20"
+                >
+                  {settings.enableMpesa && (
+                    <option value="mpesa">M-Pesa - Mobile Payment</option>
+                  )}
+                  {settings.enableCard && (
+                    <option value="card">Card - Visa / Mastercard</option>
+                  )}
+                </select>
+              </div>
+
+              <div className="mt-4 flex items-center gap-4">
+                {settings.enableMpesa && method === 'mpesa' && (
+                  <div className="flex items-center gap-2 rounded-lg bg-green-50 px-4 py-2">
+                    <div className="text-green-600 font-bold text-lg">LIPA NA</div>
+                    <div className="text-green-600 font-bold text-xl">m-pesa</div>
+                  </div>
                 )}
-                {settings.enableCard && (
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => setMethod('card')}
-                    className={`flex items-center gap-2 rounded-xl border-2 px-4 py-2 text-sm font-semibold ${method === 'card' ? 'border-[#4F46E5] bg-[#4F46E5]/5' : 'border-black/10'}`}
-                  >
-                    <span className="text-blue-600 font-bold">Visa</span>
-                    <span className="text-red-600 font-bold">Mastercard</span>
-                  </button>
+                {settings.enableCard && method === 'card' && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <div className="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center">
+                        <div className="h-4 w-4 rounded-full bg-orange-500 -ml-2"></div>
+                      </div>
+                      <span className="text-blue-600 font-bold text-lg">VISA</span>
+                    </div>
+                  </div>
                 )}
               </div>
 
