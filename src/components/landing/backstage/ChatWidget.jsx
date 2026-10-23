@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MessageCircle, X, Search, ChevronRight, Home, HelpCircle, Mail, Phone, User, MessageSquare, ArrowRight, Send, Check } from 'lucide-react'
+import { MessageCircle, X, Search, ChevronRight, Home, HelpCircle, Mail, Phone, User, MessageSquare, ArrowRight, Send, Check, Mic, Paperclip } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
@@ -45,12 +45,72 @@ export default function ChatWidget() {
     message: '',
   })
   const [submitting, setSubmitting] = useState(false)
+  const [attachments, setAttachments] = useState([])
+  const [isRecording, setIsRecording] = useState(false)
+  const [recordingTime, setRecordingTime] = useState(0)
+  const fileInputRef = useRef(null)
+  const mediaRecorderRef = useRef(null)
+  const audioChunksRef = useRef([])
 
   useEffect(() => {
-    features.getSiteName().then(name => {
-      if (name) setSiteName(name)
-    }).catch(() => { })
+    setSiteName('SmartGigs Kenya')
   }, [])
+
+  // Audio recording functions
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaRecorderRef.current = new MediaRecorder(stream)
+      audioChunksRef.current = []
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data)
+      }
+
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        const audioFile = new File([audioBlob], `voice-message-${Date.now()}.webm`, { type: 'audio/webm' })
+        setAttachments(prev => [...prev, audioFile])
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      mediaRecorderRef.current.start()
+      setIsRecording(true)
+      setRecordingTime(0)
+
+      const timer = setInterval(() => {
+        setRecordingTime(prev => prev + 1)
+      }, 1000)
+
+      mediaRecorderRef.current._timer = timer
+    } catch (err) {
+      console.error('Error starting recording:', err)
+      error('Error', 'Could not access microphone')
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop()
+      clearInterval(mediaRecorderRef.current._timer)
+      setIsRecording(false)
+    }
+  }
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files)
+    setAttachments(prev => [...prev, ...files])
+  }
+
+  const removeAttachment = (index) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const formatRecordingTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
 
   const handleTabClick = (tab) => {
     setActiveTab(tab)
@@ -75,6 +135,27 @@ export default function ChatWidget() {
 
     setSubmitting(true)
     try {
+      // Upload attachments to Supabase Storage
+      const attachmentUrls = []
+      for (const file of attachments) {
+        const fileName = `${Date.now()}-${file.name}`
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('message-attachments')
+          .upload(fileName, file)
+
+        if (uploadError) throw uploadError
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('message-attachments')
+          .getPublicUrl(fileName)
+
+        attachmentUrls.push({
+          url: publicUrl,
+          type: file.type,
+          name: file.name
+        })
+      }
+
       // Create a conversation or message for admin
       const { data: conversation, error: convError } = await supabase
         .from('conversations')
@@ -88,13 +169,23 @@ export default function ChatWidget() {
 
       if (convError) throw convError
 
+      // Create message content with attachments
+      let messageContent = `Contact Form Submission\n\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nTopic: ${formData.topic}\n\nMessage:\n${formData.message}`
+
+      if (attachmentUrls.length > 0) {
+        const attachmentText = attachmentUrls.map(a =>
+          `[${a.type.startsWith('audio') ? 'Audio' : 'File'}: ${a.url}]`
+        ).join('\n')
+        messageContent += `\n\n${attachmentText}`
+      }
+
       // Send the message
       const { error: msgError } = await supabase
         .from('messages')
         .insert({
           conversation_id: conversation.id,
           sender_id: user?.id || null,
-          content: `Contact Form Submission\n\nName: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nTopic: ${formData.topic}\n\nMessage:\n${formData.message}`,
+          content: messageContent,
         })
 
       if (msgError) throw msgError
@@ -103,6 +194,7 @@ export default function ChatWidget() {
       setShowContactForm(false)
       setFormStep(1)
       setFormData({ name: '', email: '', phone: '', topic: 'General Inquiry', message: '' })
+      setAttachments([])
       setOpen(false)
     } catch (err) {
       console.error('Error submitting contact form:', err)
@@ -229,6 +321,56 @@ export default function ChatWidget() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:border-transparent resize-none"
                     placeholder="Describe your inquiry in detail..."
                   />
+                </div>
+
+                {/* Attachments */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Attachments (optional)</label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      accept="image/*,audio/*,video/*,.pdf,.doc,.docx"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <Paperclip className="w-4 h-4" />
+                      Add Files
+                    </button>
+                    <button
+                      onClick={isRecording ? stopRecording : startRecording}
+                      className={`px-3 py-2 border rounded-lg text-sm flex items-center gap-2 ${isRecording ? 'border-red-300 bg-red-50 text-red-600' : 'border-gray-300 hover:bg-gray-50'
+                        }`}
+                    >
+                      {isRecording ? (
+                        <span className="font-mono">{formatRecordingTime(recordingTime)}</span>
+                      ) : (
+                        <Mic className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                  {attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {attachments.map((file, index) => (
+                        <div key={index} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
+                          <span className="text-sm text-gray-700 max-w-[150px] truncate">
+                            {file.name}
+                          </span>
+                          <button
+                            onClick={() => removeAttachment(index)}
+                            className="text-gray-500 hover:text-red-600"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex justify-between gap-2 mt-6">

@@ -1,7 +1,7 @@
--- Seed dummy blog articles with featured data
+-- Seed dummy blog articles
 -- Run this in Supabase SQL Editor
 
-INSERT INTO public.articles (title, slug, excerpt, content, cover_image, category, tags, published, published_at, featured, views) VALUES
+INSERT INTO public.articles (title, slug, excerpt, content, cover_image, category, tags, published, published_at, views) VALUES
 (
   'Earn CA$1,500 for a Supernatural Thriller + More Casting Calls In Canada',
   'earn-1500-supernatural-thriller-casting-calls-canada',
@@ -21,7 +21,6 @@ INSERT INTO public.articles (title, slug, excerpt, content, cover_image, categor
   ARRAY['supernatural', 'thriller', 'vancouver', 'canada', 'casting', 'paid'],
   true,
   NOW(),
-  true,
   245
 ),
 (
@@ -44,7 +43,6 @@ INSERT INTO public.articles (title, slug, excerpt, content, cover_image, categor
   ARRAY['launch', 'platform', 'kenya', 'creative', 'industry', 'tech'],
   true,
   NOW(),
-  true,
   520
 )
 ON CONFLICT DO NOTHING;

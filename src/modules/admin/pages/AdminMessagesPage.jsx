@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
-import { MessageSquare, Search, Send, Trash2, User, Plus, X } from 'lucide-react'
+import { MessageSquare, Search, Send, Trash2, User, Plus, X, Mic, Paperclip } from 'lucide-react'
 
 export default function AdminMessagesPage() {
   const { user } = useAuth()
@@ -17,6 +17,12 @@ export default function AdminMessagesPage() {
   const [sending, setSending] = useState(false)
   const [showNewConversation, setShowNewConversation] = useState(false)
   const [userSearchQuery, setUserSearchQuery] = useState('')
+  const [attachments, setAttachments] = useState([])
+  const [isRecording, setIsRecording] = useState(false)
+  const [recordingTime, setRecordingTime] = useState(0)
+  const fileInputRef = useRef(null)
+  const mediaRecorderRef = useRef(null)
+  const audioChunksRef = useRef([])
 
   const fetchMessages = async () => {
     try {
@@ -90,15 +96,46 @@ export default function AdminMessagesPage() {
   const selectedConversation = conversations.find(c => c.id === selectedId)
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation) return
+    if (!newMessage.trim() && attachments.length === 0) return
+    if (!selectedConversation) return
     setSending(true)
     try {
+      // Upload attachments to Supabase Storage
+      const attachmentUrls = []
+      for (const file of attachments) {
+        const fileName = `${Date.now()}-${file.name}`
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('message-attachments')
+          .upload(fileName, file)
+
+        if (uploadError) throw uploadError
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('message-attachments')
+          .getPublicUrl(fileName)
+
+        attachmentUrls.push({
+          url: publicUrl,
+          type: file.type,
+          name: file.name
+        })
+      }
+
+      // Create message content with attachments
+      let messageContent = newMessage
+      if (attachmentUrls.length > 0) {
+        const attachmentText = attachmentUrls.map(a =>
+          `[${a.type.startsWith('audio') ? 'Audio' : 'File'}: ${a.url}]`
+        ).join('\n')
+        messageContent = newMessage ? `${newMessage}\n\n${attachmentText}` : attachmentText
+      }
+
       const { data: newMsg, error: sendError } = await supabase
         .from('messages')
         .insert({
           conversation_id: selectedConversation.id,
           sender_id: user?.id,
-          content: newMessage,
+          content: messageContent,
         })
         .select()
         .single()
@@ -116,6 +153,7 @@ export default function AdminMessagesPage() {
         : c
       ))
       setNewMessage('')
+      setAttachments([])
       success('Sent', 'Message sent successfully')
     } catch (err) {
       console.error('Error sending message:', err)
@@ -194,6 +232,62 @@ export default function AdminMessagesPage() {
     u.full_name?.toLowerCase().includes(userSearchQuery.toLowerCase())
   )
 
+  // Audio recording functions
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaRecorderRef.current = new MediaRecorder(stream)
+      audioChunksRef.current = []
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data)
+      }
+
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        const audioFile = new File([audioBlob], `voice-message-${Date.now()}.webm`, { type: 'audio/webm' })
+        setAttachments(prev => [...prev, audioFile])
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      mediaRecorderRef.current.start()
+      setIsRecording(true)
+      setRecordingTime(0)
+
+      const timer = setInterval(() => {
+        setRecordingTime(prev => prev + 1)
+      }, 1000)
+
+      mediaRecorderRef.current._timer = timer
+    } catch (err) {
+      console.error('Error starting recording:', err)
+      error('Error', 'Could not access microphone')
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop()
+      clearInterval(mediaRecorderRef.current._timer)
+      setIsRecording(false)
+    }
+  }
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files)
+    setAttachments(prev => [...prev, ...files])
+  }
+
+  const removeAttachment = (index) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const formatRecordingTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
@@ -268,28 +362,114 @@ export default function AdminMessagesPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {selectedConversation.messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-md rounded-lg p-3 ${msg.sender_id === user?.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-900'}`}>
-                    <div className="text-sm">{msg.content}</div>
-                    <div className={`text-xs mt-1 ${msg.sender_id === user?.id ? 'text-gray-300' : 'text-gray-500'}`}>
-                      {new Date(msg.created_at).toLocaleTimeString()}
+              {selectedConversation.messages.map(msg => {
+                // Parse attachments from content
+                const contentLines = msg.content.split('\n')
+                const textContent = contentLines.filter(line => !line.startsWith('[') || !line.includes(']')).join('\n')
+                const attachmentLines = contentLines.filter(line => line.startsWith('[') && line.includes(']'))
+
+                return (
+                  <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-md rounded-lg p-3 ${msg.sender_id === user?.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-900'}`}>
+                      {textContent && <div className="text-sm whitespace-pre-wrap">{textContent}</div>}
+                      {attachmentLines.length > 0 && (
+                        <div className="mt-2 space-y-2">
+                          {attachmentLines.map((line, idx) => {
+                            const match = line.match(/\[(Audio|File|Image|Video): (.+)\]/)
+                            if (match) {
+                              const [, type, url] = match
+                              if (type === 'Audio') {
+                                return (
+                                  <audio key={idx} controls className="w-full max-w-xs">
+                                    <source src={url} type="audio/webm" />
+                                    Your browser does not support audio.
+                                  </audio>
+                                )
+                              } else if (type === 'Image') {
+                                return (
+                                  <img key={idx} src={url} alt="Attachment" className="max-w-full h-auto rounded" />
+                                )
+                              } else {
+                                return (
+                                  <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm underline">
+                                    <Paperclip className="w-4 h-4" />
+                                    View {type.toLowerCase()}
+                                  </a>
+                                )
+                              }
+                            }
+                            return null
+                          })}
+                        </div>
+                      )}
+                      <div className={`text-xs mt-1 ${msg.sender_id === user?.id ? 'text-gray-300' : 'text-gray-500'}`}>
+                        {new Date(msg.created_at).toLocaleTimeString()}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             <div className="p-4 border-t border-gray-200">
-              <div className="flex gap-3">
+              {/* Attachments preview */}
+              {attachments.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {attachments.map((file, index) => (
+                    <div key={index} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
+                      <span className="text-sm text-gray-700 max-w-[200px] truncate">
+                        {file.name}
+                      </span>
+                      <button
+                        onClick={() => removeAttachment(index)}
+                        className="text-gray-500 hover:text-red-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex gap-3 items-end">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                    placeholder="Type a message..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  />
+                </div>
                 <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Type a message..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  accept="image/*,audio/*,video/*,.pdf,.doc,.docx"
                 />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className={isRecording ? "text-red-600 hover:text-red-700" : "text-gray-600 hover:text-gray-900"}
+                >
+                  {isRecording ? (
+                    <span className="text-sm font-mono">{formatRecordingTime(recordingTime)}</span>
+                  ) : (
+                    <Mic className="w-5 h-5" />
+                  )}
+                </Button>
                 <Button onClick={handleSendMessage} disabled={sending} className="bg-black text-white hover:bg-gray-800">
                   <Send className="w-4 h-4" />
                 </Button>
