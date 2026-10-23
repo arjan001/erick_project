@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS public.support_tickets (
   category TEXT DEFAULT 'general',
   priority TEXT DEFAULT 'medium',
   status TEXT DEFAULT 'open',
-  is_public BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -40,7 +39,7 @@ ALTER TABLE public.ticket_responses ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for support_tickets
 DROP POLICY IF EXISTS "Users can view own tickets" ON public.support_tickets;
-CREATE POLICY "Users can view own tickets" ON public.support_tickets FOR SELECT USING (auth.uid() = user_id OR is_public = true);
+CREATE POLICY "Users can view own tickets" ON public.support_tickets FOR SELECT USING (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Users can create tickets" ON public.support_tickets;
 CREATE POLICY "Users can create tickets" ON public.support_tickets FOR INSERT WITH CHECK (auth.uid() = user_id);
@@ -64,7 +63,7 @@ CREATE POLICY "Users can view responses for their tickets" ON public.ticket_resp
   EXISTS (
     SELECT 1 FROM public.support_tickets st
     WHERE st.id = ticket_responses.ticket_id 
-    AND (st.user_id = auth.uid() OR st.is_public = true)
+    AND st.user_id = auth.uid()
   )
 );
 

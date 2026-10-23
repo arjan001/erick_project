@@ -8,6 +8,7 @@ import { createPageUrl } from '@/shared/utils/routing'
 import { useSidebar } from '@/layouts/DashboardLayout'
 import { useAuth } from '@/lib/AuthContext'
 import { Notification, Artist } from '@/lib/supabaseEntities'
+import { supabase } from '@/lib/supabase'
 
 const MENU_ITEMS = [
   { label: 'Dashboard', icon: HomeIcon, href: 'artistdashboard' },
@@ -17,7 +18,7 @@ const MENU_ITEMS = [
   { label: 'Messages', icon: Mail, href: 'Messages', showBadge: true },
   { label: 'Network', icon: Network, href: 'Network', showConnectionBadge: true },
   { label: 'Notifications', icon: Bell, href: 'Notifications', showNotificationBadge: true },
-  { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets' },
+  { label: 'Support Tickets', icon: Ticket, href: 'SupportTickets', showTicketBadge: true },
   { label: 'Finances', icon: Wallet, href: 'ArtistFinance' },
   { label: 'Subscription', icon: Users, href: 'ArtistSubscription' },
   { label: 'My Profile & Settings', icon: User, href: 'ArtistProfile' }
@@ -28,6 +29,7 @@ export default function ArtistSidebar() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [pendingConnections, setPendingConnections] = useState(0)
   const [notificationCount, setNotificationCount] = useState(0)
+  const [ticketCount, setTicketCount] = useState(0)
   const [artistProfile, setArtistProfile] = useState(null)
   const { sidebarExpanded: expanded, setSidebarExpanded, mobileSidebarOpen, setMobileSidebarOpen } = useSidebar()
   const { logout, user } = useAuth()
@@ -90,6 +92,35 @@ export default function ArtistSidebar() {
     // Poll for updates every 30 seconds instead of using subscribe
     const interval = setInterval(() => {
       fetchNotifications()
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [user])
+
+  useEffect(() => {
+    if (!user) return
+    const fetchTicketCount = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('support_tickets')
+          .select('id')
+          .eq('user_id', user.id)
+          .in('status', ['open', 'in_progress'])
+
+        if (!error && data) {
+          setTicketCount(data.length)
+        } else {
+          setTicketCount(0)
+        }
+      } catch {
+        setTicketCount(0)
+      }
+    }
+    fetchTicketCount()
+
+    // Poll for updates every 30 seconds
+    const interval = setInterval(() => {
+      fetchTicketCount()
     }, 30000)
 
     return () => clearInterval(interval)
@@ -168,6 +199,11 @@ export default function ArtistSidebar() {
                       {notificationCount > 9 ? '9+' : notificationCount}
                     </span>
                   )}
+                  {item.showTicketBadge && ticketCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                      {ticketCount > 9 ? '9+' : ticketCount}
+                    </span>
+                  )}
                 </Link>
                 {/* Tooltip */}
                 <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-[#1a1a1a] text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
@@ -200,6 +236,11 @@ export default function ArtistSidebar() {
               {item.showNotificationBadge && notificationCount > 0 && (
                 <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
                   {notificationCount > 9 ? '9+' : notificationCount}
+                </span>
+              )}
+              {item.showTicketBadge && ticketCount > 0 && (
+                <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                  {ticketCount > 9 ? '9+' : ticketCount}
                 </span>
               )}
             </Link>

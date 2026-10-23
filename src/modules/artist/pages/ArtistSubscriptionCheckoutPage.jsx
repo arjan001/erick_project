@@ -8,6 +8,7 @@ import { features } from '@/lib/settings'
 import { useAuth } from '@/lib/AuthContext'
 import { initiateMakamescoSTKPush, checkMakamescoStatus } from '@/services/makamescoService'
 import { recordSubscriptionCardAttempt } from '@/services/shopService'
+import notificationService from '@/shared/services/notificationService'
 
 // Simple confetti component
 function Confetti({ active }) {
@@ -532,23 +533,23 @@ export default function ArtistSubscriptionCheckoutPage() {
         }
       }
 
-      // Send notifications
-      await Notification.create({
-        user_id: user.id,
+      // Send notifications using notificationService
+      await notificationService.createNotification({
+        userId: user.id,
         type: 'payment',
         title: 'Payment Successful',
-        content: `Your payment of ${selectedPackage.currency || 'KES'} ${selectedPackage.price_monthly} for ${selectedPackage.name} was successful.`,
-        metadata: { amount: selectedPackage.price_monthly, package_name: selectedPackage.name },
-        is_read: false
+        message: `Your payment of ${selectedPackage.currency || 'KES'} ${selectedPackage.price_monthly} for ${selectedPackage.name} was successful.`,
+        actionUrl: '/ArtistSubscription',
+        metadata: { amount: selectedPackage.price_monthly, package_name: selectedPackage.name }
       })
 
-      await Notification.create({
-        user_id: user.id,
+      await notificationService.createNotification({
+        userId: user.id,
         type: 'subscription',
         title: 'Subscription Activated',
-        content: `Your ${selectedPackage.name} subscription is now active. Enjoy your benefits!`,
-        metadata: { package_name: selectedPackage.name, package_id: selectedPackage.id },
-        is_read: false
+        message: `Your ${selectedPackage.name} subscription is now active. Enjoy your benefits!`,
+        actionUrl: '/ArtistSubscription',
+        metadata: { package_name: selectedPackage.name, package_id: selectedPackage.id }
       })
 
       setShowModal(false)
