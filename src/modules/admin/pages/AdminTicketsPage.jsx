@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
-import DataTable from '@/components/ui/DataTable'
+import DataTable from '@/components/admin/DataTable'
 import { Ticket, Search, Filter, Plus, X, CheckCircle, Clock, AlertCircle, Ban, User } from 'lucide-react'
 
 const STATUS_CONFIG = {

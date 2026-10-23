@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
-import DataTable from '@/components/ui/DataTable'
+import DataTable from '@/components/admin/DataTable'
 import { Ticket, Search, Plus, X, CheckCircle, Clock, AlertCircle, Ban, MessageSquare } from 'lucide-react'
 
 const STATUS_CONFIG = {
@@ -127,7 +127,7 @@ export default function ArtistTicketsPage() {
 
   const filteredTickets = tickets.filter(t => {
     const matchesSearch = t.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         t.ticket_number?.toLowerCase().includes(searchQuery.toLowerCase())
+      t.ticket_number?.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter
     return matchesSearch && matchesStatus
   })
