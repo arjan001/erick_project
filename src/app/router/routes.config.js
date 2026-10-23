@@ -682,7 +682,7 @@ const artistRoutes = [
   },
   {
     path: '/Jobs',
-    component: () => import('@/modules/jobs/pages/JobsPage'),
+    component: () => import('@/modules/jobs/pages/ArtistJobsPage'),
     layout: DashboardLayout,
     guard: createRoleGuard(['admin', 'artist', 'artist_admin'])
   },
